@@ -1,25 +1,28 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, expect, it } from 'vitest';
 import L from 'leaflet';
-import { isMapOverdragged } from '@/services/map/core/mapOverdrag';
+import { CoverageBounds } from './coverageBounds';
+import { isMapOverdragged } from './mapOverdrag';
 
-const createMap = (center: L.LatLngExpression) => {
-    const currentCenter = L.latLng(center);
-    return {
-        getCenter: () => currentCenter,
-        getZoom: () => 0,
-        project: (latLng: L.LatLng) => L.point(latLng.lng, latLng.lat),
-        _limitCenter: () => L.latLng(0, 0),
-    } as unknown as L.Map;
-};
+const cleanups: Array<() => void> = [];
+afterEach(() => cleanups.splice(0).forEach((cleanup) => cleanup()));
 
-describe('isMapOverdragged', () => {
-    const bounds = L.latLngBounds([-1, -1], [1, 1]);
-
-    it('does not flag a legal center when the viewport is larger than bounds', () => {
-        expect(isMapOverdragged(createMap([0, 0]), bounds)).toBe(false);
+it('reflects the coverage rebound state without rectangular map bounds', () => {
+    const host = document.createElement('div');
+    Object.defineProperties(host, { clientWidth: { value: 800 }, clientHeight: { value: 600 } });
+    document.body.append(host);
+    const map = L.map(host, { crs: L.CRS.Simple, zoomAnimation: false });
+    const controller = new CoverageBounds(map);
+    controller.setCoverage({
+        coverage: { zooms: { '0': { '': { '-2': [40, 44], '-1': [40, 44], '0': [40, 44] } } } },
+        suffixes: [''], tileSize: 200, maxNativeZoom: 0,
     });
-
-    it('flags a center that still needs to be constrained', () => {
-        expect(isMapOverdragged(createMap([2, 0]), bounds)).toBe(true);
-    });
+    cleanups.push(() => { controller.dispose(); map.remove(); host.remove(); });
+    map.setView([100, 8500], 0);
+    expect(map.options.maxBounds).toBeUndefined();
+    expect(isMapOverdragged(map)).toBe(false);
+    (map as L.Map & { _rawPanBy(offset: L.Point): void })._rawPanBy(L.point(10000, 0));
+    expect(controller.isVisible()).toBe(true);
+    expect(isMapOverdragged(map)).toBe(true);
+    map.setView(controller.limitCenter(map.getCenter(), map.getZoom()), map.getZoom(), { animate: false });
+    expect(isMapOverdragged(map)).toBe(false);
 });

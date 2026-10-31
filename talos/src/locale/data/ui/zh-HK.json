@@ -12,6 +12,7 @@
     "settings": "偏好設定"
   },
   "mapControls": {
+    "satellite": "衛星模式",
     "layerSelect": "圖層選擇",
     "locationTracking": "啟用位置同步"
   },

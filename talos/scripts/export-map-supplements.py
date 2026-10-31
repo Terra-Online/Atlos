@@ -9,7 +9,6 @@ import importlib.util
 import json
 import math
 from pathlib import Path
-import subprocess
 import sys
 
 sys.dont_write_bytecode = True
@@ -108,13 +107,6 @@ def main():
         raise ValueError('LevelData and registry wall IDs disagree')
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output / 'Wuling.json').write_text(json.dumps(records, separators=(',', ':')) + '\n')
-    manifest = {'schemaVersion': 2, 'sourceRepository': 'AKEData',
-                'sourceCommit': subprocess.check_output(['git', '-C', str(args.source), 'rev-parse', 'HEAD'], text=True).strip(),
-                'geometry': 'projected-model-centerline', 'record': ['id', 'tier', 'segment'],
-                'point': ['mapZ', 'mapX'], 'modelAliases': aliases,
-                'tierSource': 'MapRegionTable Tier volumes; existing tierResolver outside-volume main-map rule',
-                'files': ['Wuling.json'], 'walls': len(seen)}
-    (args.output / 'index.json').write_text(json.dumps(manifest, indent=2) + '\n')
     print(f'Exported {len(seen)} walls to {args.output}')
 
 

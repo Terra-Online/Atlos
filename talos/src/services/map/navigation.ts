@@ -6,6 +6,7 @@ import { useMarkerStore } from '@/store/marker';
 import { findMarkerById } from '@/data/marker';
 import { REGION_DICT } from '@/data/map';
 import type { IMapView } from './types';
+import { getAvailableLayers } from './tileCoverage';
 
 // A marker link focuses one content item.
 export type MarkerContentTarget = { kind: 'image'; id: string } | { kind: 'comment'; id: string };
@@ -142,13 +143,6 @@ const navigateToLocation = async (target: SharedLocationTarget, isCurrent: () =>
     if (regionApplied === false || !isCurrent()) return;
 
     const center = L.latLng(target.center[0], target.center[1]);
-    const configuredBounds = mapCore.map.options.maxBounds;
-    if (
-        configuredBounds
-        && typeof (configuredBounds as L.LatLngBounds).contains === 'function'
-        && !(configuredBounds as L.LatLngBounds).contains(center)
-    ) return;
-
     const region = REGION_DICT[target.regionKey];
     const requestedZoom = target.zoom ?? region?.initialZoom ?? mapCore.map.getZoom();
     const zoom = Math.min(
@@ -174,7 +168,7 @@ export const prepareInitialNavigation = async (): Promise<void> => {
         view = { lat: point.pos[0], lng: point.pos[1], zoom: TARGET_ZOOM };
         if (pendingNavigation !== navigation || mapCoreRef) return;
         const layer = getLayerByTier(point.tier ?? 0);
-        if (layer && (layer === 'M' || config.layers?.includes(layer))) {
+        if (layer && getAvailableLayers(navigation.target.regionKey).includes(layer)) {
             useLayerStore.getState().setCurrentLayer(layer);
         }
     } else {

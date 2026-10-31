@@ -16,14 +16,13 @@ python3 scripts/export-map-supplements.py \
   --source /path/to/AKEData --tools /path/to/endfield-bots/scene
 ```
 
-The exporter verifies LevelData/WorldEntityRegistry IDs and records the source
-commit in `data/index.json`. Floor assignment follows the existing tier resolver
+The exporter verifies LevelData/WorldEntityRegistry IDs. Floor assignment follows the existing tier resolver
 with AKEData's MapRegionTable volumes: special floors override the main map.
 
 Each segment passes through the transformed ModelRadiusTable box center along
 its longest projected box axis. This indicates position and orientation, not a
 mesh silhouette or exact collision boundary. Three template/model aliases are
-recorded explicitly in the manifest. Mixed-axis transforms use Unity ZXY order;
+defined explicitly in the exporter. Mixed-axis transforms use Unity ZXY order;
 the existing exporter's XYZ spline rotation is intentionally left untouched.
 Old-region walls may depend on quest state; the overlay shows reference geometry
 and does not infer destruction from collectible progress. This geometry does not

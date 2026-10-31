@@ -1,6 +1,7 @@
 import L from 'leaflet';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SmoothWheelZoom } from '@/services/map/core/smoothWheelZoom';
+import { CoverageBounds } from './coverageBounds';
 import { WHEEL_GESTURE_IDLE_MS } from 'trackpad-input';
 
 let container: HTMLDivElement;
@@ -8,6 +9,23 @@ let map: L.Map;
 let smoothWheel: SmoothWheelZoom;
 let nextFrameId: number;
 let animationFrames: Map<number, FrameRequestCallback>;
+let coverage: CoverageBounds | undefined;
+
+const constrainToCoverage = () => {
+    smoothWheel.dispose();
+    const controller = new CoverageBounds(map);
+    controller.setCoverage({
+        coverage: { zooms: { '0': { '': Object.fromEntries(Array.from({ length: 6 }, (_, i) => [i - 3, [-4, 3]])) } } },
+        suffixes: [''], tileSize: 25, maxNativeZoom: 0,
+    });
+    coverage = controller;
+    smoothWheel = new SmoothWheelZoom(map, {
+        enableInertia: false,
+        constrainPan: (center, zoom) => controller.pan(center, zoom),
+        constrainZoom: (center, zoom) => controller.zoom(center, zoom),
+    });
+    return controller;
+};
 
 interface LegacyWheelFields {
     wheelDelta: number;
@@ -92,6 +110,8 @@ beforeEach(() => {
 
 afterEach(() => {
     smoothWheel.dispose();
+    coverage?.dispose();
+    coverage = undefined;
     map.remove();
     container.remove();
     vi.useRealTimers();
@@ -183,25 +203,23 @@ describe('SmoothWheelZoom wheel routing', () => {
         expect(events.at(-1)).toBe('dragend');
     });
 
-    it('limits trackpad overdrag and starts an early bounds rebound', () => {
-        const initialCenter = map.getCenter();
-        const initialBounds = map.getBounds();
-        const panInsideBounds = vi.spyOn(map, 'panInsideBounds');
-        map.setMaxBounds(initialBounds);
-        panInsideBounds.mockClear();
+    it('limits trackpad overdrag and starts an early coverage rebound', () => {
+        const controller = constrainToCoverage();
+        const rebound = vi.spyOn(map, 'panBy');
 
-        for (let index = 0; index < 20; index += 1) {
+        for (let index = 0; index < 40; index += 1) {
             dispatchWheel({ deltaX: 20, deltaY: 0 });
         }
 
         const visualOffset = map
             .project(map.getCenter(), map.getZoom())
-            .distanceTo(map.project(initialCenter, map.getZoom()));
-        expect(visualOffset).toBeGreaterThan(0);
+            .distanceTo(map.project(controller.limitCenter(map.getCenter(), map.getZoom()), map.getZoom()));
+        expect(visualOffset).toBeGreaterThanOrEqual(80);
         expect(visualOffset).toBeLessThanOrEqual(96);
 
         vi.advanceTimersByTime(50);
-        expect(panInsideBounds).toHaveBeenCalled();
+        expect(controller.isVisible()).toBe(true);
+        expect(rebound).toHaveBeenCalled();
     });
 
     it('never pans a pure vertical legacy mouse stream', () => {
@@ -311,14 +329,13 @@ describe('SmoothWheelZoom wheel routing', () => {
     });
 
     it('keeps overdrag momentum in pan after the early visual rebound', () => {
-        const initialBounds = map.getBounds();
+        constrainToCoverage();
         const continuousMap = map as L.Map & {
             _limitZoom(zoom: number): number;
         };
         continuousMap._limitZoom = (zoom) => zoom;
-        map.setMaxBounds(initialBounds);
 
-        for (let index = 0; index < 20; index += 1) {
+        for (let index = 0; index < 40; index += 1) {
             dispatchWheel({ deltaX: 20, deltaY: 0 });
         }
         vi.advanceTimersByTime(50);

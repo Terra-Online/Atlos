@@ -14,7 +14,7 @@ vi.mock('./behaviorOverlay/useBehaviorOverlay', () => ({ useBehaviorOverlay: () 
 vi.mock('./behaviorOverlay/useMapSupplements', () => ({ useMapSupplements: () => null }));
 vi.mock('./behaviorOverlay/SupplementTooltip', () => ({ default: () => null }));
 vi.mock('./MapContextMenu', () => ({ default: () => null }));
-vi.mock('@/services/map/core/mapOverdrag', () => ({ toMapBounds: () => ({}), isMapOverdragged: () => { state.measure(); return state.over; } }));
+vi.mock('@/services/map/core/mapOverdrag', () => ({ isMapOverdragged: () => { state.measure(); return state.over; } }));
 let fixture: ReturnType<typeof mapFixture>;
 beforeEach(() => { vi.useFakeTimers(); vi.clearAllMocks(); fixture = mapFixture(); state.map = fixture.map; state.over = false; });
 afterEach(() => { cleanup(); fixture.dispose(); vi.useRealTimers(); vi.restoreAllMocks(); });

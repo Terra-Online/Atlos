@@ -4,7 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 const startup = vi.hoisted(() => {
     const resolved = () => Promise.resolve();
     return {
-        render: vi.fn(), createRoot: vi.fn(), devtools: vi.fn(),
+        render: vi.fn(), createRoot: vi.fn(), devtools: vi.fn(), entry: vi.fn(),
         region: vi.fn(() => Promise.resolve('Wuling')),
         apply: vi.fn(resolved), prepare: vi.fn(resolved), font: vi.fn(resolved), mapFonts: vi.fn((_region: string) => Promise.resolve()),
         markers: vi.fn((_region: string) => Promise.resolve([])), tiles: vi.fn(),
@@ -18,6 +18,7 @@ vi.mock('./locale/fontLoader.ts', () => ({ fontLoader: startup.font }));
 vi.mock('@/locale', () => ({ i18nInitPromise: Promise.resolve(), preloadMapFonts: startup.mapFonts }));
 vi.mock('@/devtools/loadDevTool', () => ({ loadDevTools: startup.devtools }));
 vi.mock('@/services/routing', () => ({ applyUrlParams: startup.apply, resolveInitialRegion: startup.region, parseUrlState: () => startup.state }));
+vi.mock('@/services/routing/entry', () => ({ applyMapEntry: startup.entry }));
 vi.mock('@/data/marker', () => ({ loadRegionMarkers: startup.markers }));
 vi.mock('@/services/map/preload', () => ({ preloadMapTiles: startup.tiles }));
 vi.mock('@/data/map', () => ({ REGION_DICT: { Wuling: { initialZoom: 2 } } }));
@@ -46,6 +47,8 @@ it('starts region resources early and waits for navigation and both font gates b
     startup.font.mockImplementation(() => new Promise<void>((resolve) => { finishFont = resolve; }));
     startup.mapFonts.mockImplementation(() => new Promise<void>((resolve) => { finishMapFonts = resolve; }));
     await bootstrap();
+    expect(startup.entry).toHaveBeenCalledExactlyOnceWith(window.location);
+    expect(startup.entry).toHaveBeenCalledBefore(startup.region);
     expect(startup.markers).toHaveBeenCalledWith('Wuling');
     expect(startup.tiles).toHaveBeenCalledWith('Wuling', undefined);
     expect(startup.apply).toHaveBeenCalledBefore(startup.prepare);

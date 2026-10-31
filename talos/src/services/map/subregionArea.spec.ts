@@ -4,8 +4,8 @@ import { containsSubregionPixel, resolveSubregionAtLocation } from './subregionA
 
 vi.mock('@/data/map', () => ({
     REGION_DICT: {
-        overlap: { maxZoom: 3, subregions: ['edge', 'deep'] },
-        bounds: { maxZoom: 2, subregions: ['rectangle'] },
+        overlap: { coordZoom: 3, subregions: ['edge', 'deep'] },
+        bounds: { coordZoom: 2, subregions: ['rectangle'] },
     },
     SUBREGION_DICT: {
         edge: { id: 'edge', polygon: [[[0, 0], [10, 0], [10, 10], [0, 10]]] },
@@ -27,7 +27,7 @@ describe('configured subregion geometry', () => {
         expect(containsSubregionPixel(area, { x: 15, y: 5 })).toBe(false);
     });
 
-    it('projects at native max zoom and selects the deeper overlapping region', () => {
+    it('projects at the configured coordinate zoom and selects the deeper overlapping region', () => {
         const project = vi.fn(() => L.point(9, 5));
         expect(resolveSubregionAtLocation({ project }, 'overlap', [1, 2])).toBe('deep');
         expect(project).toHaveBeenCalledWith([1, 2], 3);

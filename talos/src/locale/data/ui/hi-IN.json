@@ -12,6 +12,7 @@
     "settings": "प्राथमिकताएं"
   },
   "mapControls": {
+    "satellite": "उपग्रह मोड",
     "layerSelect": "परत चयन",
     "locationTracking": "Location Sync"
   },

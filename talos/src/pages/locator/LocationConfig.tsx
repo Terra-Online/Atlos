@@ -69,8 +69,6 @@ const saveScope = (scope: EFTrackerScope[], binding: EFBindingSummary | null): v
         scope,
         trackPoints: true,
         centerOnPosition: true,
-        trail: false,
-        debug: false,
     };
     saveEFTrackerConf(next);
 };
@@ -99,8 +97,6 @@ const saveTrackPoints = (trackPoints: boolean, binding: EFBindingSummary | null)
         scope: ['balanced'],
         trackPoints,
         centerOnPosition: true,
-        trail: false,
-        debug: false,
     };
     saveEFTrackerConf(next);
 };
@@ -129,8 +125,6 @@ const saveCenterOnPosition = (centerOnPosition: boolean, binding: EFBindingSumma
         scope: ['balanced'],
         trackPoints: true,
         centerOnPosition,
-        trail: false,
-        debug: false,
     };
     saveEFTrackerConf(next);
 };

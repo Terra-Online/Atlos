@@ -12,6 +12,7 @@
     "settings": "Προτιμήσεις"
   },
   "mapControls": {
+    "satellite": "Λειτουργία δορυφόρου",
     "layerSelect": "Επιλογή επιπέδου",
     "locationTracking": "Συγχρονισμός θέσης"
   },

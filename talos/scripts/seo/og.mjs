@@ -1,3 +1,4 @@
+import { selectTileZoom } from './tiles.mjs';
 import path from 'node:path';
 import os from 'node:os';
 import fs from 'node:fs/promises';
@@ -184,7 +185,7 @@ export async function buildOgSignature(point, sharedFingerprints) {
       documentTitle: point.documentTitle,
       description: point.description,
       regionKey: point.regionKey,
-      regionMaxZoom: point.region.maxZoom,
+      regionCoordZoom: point.region.coordZoom,
       typeKey: point.typeInfo.key,
       typeIcon: point.typeInfo.icon ?? null,
       noFrame: Boolean(point.typeInfo.noFrame),
@@ -222,7 +223,7 @@ export async function buildFallbackOgSignature(point, sharedFingerprints) {
       documentTitle: point.documentTitle,
       description: point.description,
       regionKey: point.regionKey,
-      regionMaxZoom: point.region.maxZoom,
+      regionCoordZoom: point.region.coordZoom,
       typeKey: point.typeInfo.key,
       typeIcon: point.typeInfo.icon ?? null,
       noFrame: Boolean(point.typeInfo.noFrame),
@@ -737,17 +738,17 @@ async function renderBrandCompositeInput() {
 }
 
 function markerToTileImagePixel(marker, region, tileZoom) {
-  const maxZoomPixel = markerToPixel(marker, region);
-  const leafletScale = 2 ** (region.maxZoom - tileZoom);
+  const coordZoomPixel = markerToPixel(marker, region);
+  const leafletScale = 2 ** (region.coordZoom - tileZoom);
   const tileImageScale = TILE_IMAGE_SIZE / LEAFLET_TILE_SIZE;
   return {
-    x: (maxZoomPixel.x / leafletScale) * tileImageScale,
-    y: (maxZoomPixel.y / leafletScale) * tileImageScale,
+    x: (coordZoomPixel.x / leafletScale) * tileImageScale,
+    y: (coordZoomPixel.y / leafletScale) * tileImageScale,
   };
 }
 
-function maxZoomPixelToTileImagePixel(pixel, region, tileZoom) {
-  const leafletScale = 2 ** (region.maxZoom - tileZoom);
+function coordZoomPixelToTileImagePixel(pixel, region, tileZoom) {
+  const leafletScale = 2 ** (region.coordZoom - tileZoom);
   const tileImageScale = TILE_IMAGE_SIZE / LEAFLET_TILE_SIZE;
   return {
     x: (pixel[0] / leafletScale) * tileImageScale,
@@ -784,8 +785,10 @@ function tileImagePixelToOgPixel(pixel, centerPixel) {
   return workPixelToOgPixel(tileImagePixelToWorkPixel(pixel, centerPixel));
 }
 
-function getOgTileZoom(region) {
-  return Math.min(3, region.maxZoom);
+const tileCoverage = JSON.parse(await fs.readFile(new URL('../../src/data/map/tileCoverage.json', import.meta.url), 'utf8'));
+
+function getOgTileZoom(point) {
+  return selectTileZoom({ zooms: tileCoverage.regions[point.regionKey] }, tileSuffixForTier(point.marker.tier));
 }
 
 async function addTileComposite(composites, regionKey, tileZoom, centerPixel, sourceTier, offsetX, offsetY, suffixOverride) {
@@ -807,7 +810,7 @@ async function labelCompositeInputs(point, centerPixel, tileZoom) {
     if (label.type !== 'site') continue;
     const text = resolveLabelTextWithFallback(point.regionLocale, point.fallbackRegionLocale, point.regionCode, label);
     if (!text) continue;
-    const labelPixel = maxZoomPixelToTileImagePixel(label.point, point.region, tileZoom);
+    const labelPixel = coordZoomPixelToTileImagePixel(label.point, point.region, tileZoom);
     const { x, y } = tileImagePixelToOgPixel(labelPixel, centerPixel);
     const { input, width, height } = await cachedRender(
       `label:${label.type}:${text}`, () => labelSvg(text, label.type),
@@ -831,7 +834,7 @@ async function labelCompositeInputs(point, centerPixel, tileZoom) {
 
 async function generateLegacyOgImage(point) {
   const region = point.region;
-  const tileZoom = getOgTileZoom(region);
+  const tileZoom = getOgTileZoom(point);
   const centerPixel = markerToTileImagePixel(point.marker, region, tileZoom);
   const markerCenter = tileImagePixelToOgPixel(centerPixel, centerPixel);
   const mainTileComposites = [];
@@ -920,7 +923,7 @@ export async function generateOgImage(point) {
   if (useLegacyOgPipeline) return generateLegacyOgImage(point);
 
   const region = point.region;
-  const tileZoom = getOgTileZoom(region);
+  const tileZoom = getOgTileZoom(point);
   const centerPixel = markerToTileImagePixel(point.marker, region, tileZoom);
   const markerCenter = tileImagePixelToOgPixel(centerPixel, centerPixel);
   const mainTileComposites = [];
@@ -1005,7 +1008,7 @@ export async function generateFallbackOgImage(point) {
 
 function buildTilePathsForPoint(point) {
   const region = point.region;
-  const tileZoom = getOgTileZoom(region);
+  const tileZoom = getOgTileZoom(point);
   const centerPixel = markerToTileImagePixel(point.marker, region, tileZoom);
   const suffix = tileSuffixForTier(point.marker.tier);
   const offsets = getOgTileOffsets();

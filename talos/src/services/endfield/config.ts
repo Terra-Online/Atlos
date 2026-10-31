@@ -11,9 +11,7 @@ export type EFTrackerConf = {
     scope?: EFTrackerScope[];
     trackPoints?: boolean;
     centerOnPosition?: boolean;
-    trail?: boolean;
     intervalMs?: number;
-    debug?: boolean;
 };
 
 export const LOCATOR_CONFIG_KEY = 'endfield.tracker.config';
@@ -50,9 +48,7 @@ export const readEFTrackerConf = (): EFTrackerConf | null => {
                 : undefined,
             trackPoints: parsed.trackPoints ?? true,
             centerOnPosition: parsed.centerOnPosition ?? false,
-            trail: parsed.trail ?? false,
             intervalMs: parsed.intervalMs,
-            debug: parsed.debug ?? false,
         };
     } catch {
         return null;

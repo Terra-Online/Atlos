@@ -2,7 +2,6 @@ import { ensureMapPane } from '@/services/map/panes';
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import useRegion from '@/store/region';
-import { useUiPrefsStore } from '@/store/uiPrefs';
 import { REGION_DICT } from '@/data/map';
 import trackerIconUrl from '@/assets/images/UI/icon_char.png';
 import { LOCATOR_RETURN_CURRENT_EVENT, useLocatorStore } from '@/store/locator';
@@ -30,7 +29,6 @@ type TrackerConfig = {
     locatorSync: boolean;
     centerOnPosition?: boolean;
     intervalMs?: number;
-    debug?: boolean;
 };
 
 const ensureTrackerPane = (map: L.Map) => ensureMapPane(map, 'locator');
@@ -139,8 +137,6 @@ const disableLocatorSync = (): void => {
             locatorSync: false,
         });
     }
-
-    useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(false);
     useLocatorStore.getState().setViewMode('off');
     useLocatorStore.getState().setLastPosition(null);
 };

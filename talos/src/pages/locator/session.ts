@@ -1,5 +1,4 @@
 import { useAuthStore } from '@/store/auth';
-import { useUiPrefsStore } from '@/store/uiPrefs';
 import { type EFRoleOption } from '@/services/endfield';
 import {
     readEFTrackerConf,
@@ -75,12 +74,9 @@ export const applyRole = (
         scope: current?.scope?.length ? current.scope : ['balanced'],
         trackPoints: current?.trackPoints ?? true,
         centerOnPosition: current?.centerOnPosition ?? false,
-        trail: current?.trail ?? false,
-        debug: current?.debug ?? false,
         intervalMs: current?.intervalMs,
     };
     saveEFTrackerConf(next);
-    useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(true);
     useLocatorStore.getState().setViewMode('tracking');
 };
 
@@ -131,10 +127,7 @@ export const enableSession = async (isOwnerCurrent: () => boolean = () => true, 
         scope: current?.scope?.length ? current.scope : ['balanced'],
         trackPoints: current?.trackPoints ?? true,
         centerOnPosition: current?.centerOnPosition ?? false,
-        trail: current?.trail ?? false,
-        debug: current?.debug ?? false,
     });
-    useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(true);
     useLocatorStore.getState().setViewMode('tracking');
     return true;
 };
@@ -151,7 +144,6 @@ export const disableSession = (): void => {
             locatorSync: false,
         });
     }
-    useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(false);
     useLocatorStore.getState().setViewMode('off');
 };
 

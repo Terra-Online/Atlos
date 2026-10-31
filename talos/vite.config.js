@@ -158,8 +158,8 @@ if (isProd) {
     );
 }
 
-const getMapClipTargets = () => {
-    const clipsDir = resolve(__dirname, 'public/clips');
+const getMapClipTargets = (source = 'clips') => {
+    const clipsDir = resolve(__dirname, 'public', source);
     if (!existsSync(clipsDir)) return [];
 
     const targets = [];
@@ -177,8 +177,8 @@ const getMapClipTargets = () => {
             // Only copy directories (e.g. 0, 1, 2, 3)
             if (fs.statSync(itemPath).isDirectory()) {
                 targets.push({
-                    src: `public/clips/${mapName}/${item}`,
-                    dest: `clips/${mapName}`,
+                    src: `public/${source}/${mapName}/${item}`,
+                    dest: `${source}/${mapName}`,
                 });
             }
         }
@@ -212,26 +212,41 @@ const cleanDistClipsPlugin = () => {
             distDir = resolve(resolvedConfig.root, resolvedConfig.build.outDir);
         },
         closeBundle() {
-            const clipsDir = resolve(distDir, 'clips');
-            if (!existsSync(clipsDir)) return;
+            for (const source of ['clips', 'satellite']) {
+                const clipsDir = resolve(distDir, source);
+                if (!existsSync(clipsDir)) continue;
 
-            const entries = fs.readdirSync(clipsDir, { withFileTypes: true });
-            for (const entry of entries) {
-                const fullPath = resolve(clipsDir, entry.name);
-                if (entry.isDirectory()) {
-                    if (isExcludedClipDir(entry.name)) {
-                        fs.rmSync(fullPath, { recursive: true, force: true });
+                const entries = fs.readdirSync(clipsDir, { withFileTypes: true });
+                for (const entry of entries) {
+                    const fullPath = resolve(clipsDir, entry.name);
+                    if (entry.isDirectory()) {
+                        if (isExcludedClipDir(entry.name)) {
+                            fs.rmSync(fullPath, { recursive: true, force: true });
+                        }
+                        continue;
                     }
-                    continue;
+
+                    if (source === 'satellite' && entry.name === 'index.html') continue;
+
+                    fs.rmSync(fullPath, { force: true });
                 }
 
-                fs.rmSync(fullPath, { force: true });
+                removeScriptFiles(clipsDir);
             }
-
-            removeScriptFiles(clipsDir);
         },
     };
 };
+
+const satelliteEntryPlugin = () => ({
+    name: 'satellite-entry',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+        const entry = bundle['index.html'];
+        if (entry?.type === 'asset') {
+            this.emitFile({ type: 'asset', fileName: 'satellite/index.html', source: entry.source });
+        }
+    },
+});
 
 const cleanDistSeoPointsPlugin = () => {
     let distDir = resolve(__dirname, 'dist');
@@ -285,6 +300,7 @@ export default defineConfig({
                 },
             },
         }),
+        satelliteEntryPlugin(),
         // 只复制存在的目录，避免构建失败
         viteStaticCopy({
             targets: [
@@ -306,7 +322,7 @@ export default defineConfig({
                 },
             ]
                 .filter((target) => existsSync(target.src))
-                .concat(getMapClipTargets()), // 只包含存在的源路径
+                .concat(getMapClipTargets(), getMapClipTargets('satellite')), // 只包含存在的源路径
         }),
         cleanDistClipsPlugin(),
         cleanDistSeoPointsPlugin(),

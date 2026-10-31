@@ -1,19 +1,18 @@
 import IconButton from '@/component/button/IconButton';
 import React, { useMemo } from 'react';
 import styles from '@/pages/regSwitch/regSwitch.module.scss';
-import { useCurrentLayer, useSetCurrentLayer, type LayerType } from '@/store/layer';
+import { useCurrentLayer, useSetCurrentLayer, useLayerStore } from '@/store/layer';
 import classNames from 'classnames';
 import LayerIcon from '@/assets/images/UI/layer.svg?react';
+import SatelliteIcon from '@/assets/images/UI/satellite.svg?react';
+import { getAvailableLayers, hasSatelliteTiles } from '@/services/map/tileCoverage';
 import { useForceLayerSubOpen } from '@/store/uiPrefs';
 import useRegion from '@/store/region';
-import { REGION_DICT } from '@/data/map';
 import { useDevice } from '@/platform/device';
 import PopoverTooltip from '@/component/popover/popover';
 import { useTranslateUI } from '@/locale';
 import { useSwitchMenu } from '@/pages/regSwitch/useSwitchMenu';
 import { usePresence } from '@/lib/dom/usePresence';
-
-const PREDEFINED_LAYER_ORDER: LayerType[] = ['L4', 'L3', 'L2', 'L1', 'M', 'B1', 'B2', 'B3', 'B4'];
 
 const getContainerStyle = (selectedIndex: number, isMobile: boolean) => {
     if (selectedIndex < 0) return {};
@@ -39,18 +38,14 @@ const LayerSwitch: React.FC<{
     const t = useTranslateUI();
     const { currentRegionKey } = useRegion();
     const currentLayer = useCurrentLayer();
+    const satellite = useLayerStore((state) => state.satellite);
+    const setSatellite = useLayerStore((state) => state.setSatellite);
+    const supportsSatellite = hasSatelliteTiles(currentRegionKey);
     const setCurrentLayer = useSetCurrentLayer();
     const forceLayerSubOpen = useForceLayerSubOpen();
 
     // Get available layers for current region
-    const availableLayers = useMemo(() => {
-        const region = REGION_DICT[currentRegionKey];
-        const layers = region?.layers as LayerType[] | undefined;
-        if (!layers || layers.length === 0) return ['M'] as LayerType[];
-
-        // Filter and sort based on PREDEFINED_LAYER_ORDER to maintain consistent order
-        return PREDEFINED_LAYER_ORDER.filter(l => l === 'M' || layers.includes(l));
-    }, [currentRegionKey]);
+    const availableLayers = getAvailableLayers(currentRegionKey);
     const hasSubmenu = availableLayers.length > 1 || availableLayers[0] !== 'M';
     const menu = useSwitchMenu(hasSubmenu);
     const open = hasSubmenu && (menu.activeKey !== null || forceLayerSubOpen);
@@ -61,8 +56,8 @@ const LayerSwitch: React.FC<{
         [currentLayer, availableLayers],
     );
 
-    // If only M layer is available (or no layers configured), hide the switcher
-    if (!hasSubmenu) {
+    // Regions with neither extra floors nor satellite imagery need no control.
+    if (!hasSubmenu && !supportsSatellite) {
         return null;
     }
 
@@ -77,7 +72,16 @@ const LayerSwitch: React.FC<{
             )}
         >
             <div className={classNames(styles.regLabel, styles.layerLabel)}></div>
-            <PopoverTooltip
+            {supportsSatellite && (
+                <PopoverTooltip content={t('mapControls.satellite')} placement="left" disabled={isMobile || !isSidebarOpen}>
+                    <div className={classNames(styles.regItem, satellite && currentLayer === 'M' && styles.selected)}>
+                        <IconButton className={styles.mainAction} label={t('mapControls.satellite')} pressed={satellite && currentLayer === 'M'} onClick={() => setSatellite(!(satellite && currentLayer === 'M'))}>
+                            <div className={styles.icon}><SatelliteIcon /></div>
+                        </IconButton>
+                    </div>
+                </PopoverTooltip>
+            )}
+            {hasSubmenu && <PopoverTooltip
                 content={t('mapControls.layerSelect')}
                 placement="left"
                 disabled={isMobile || !isSidebarOpen}
@@ -136,7 +140,7 @@ const LayerSwitch: React.FC<{
                         </div>
                     )}
                 </div>
-            </PopoverTooltip>
+            </PopoverTooltip>}
         </div>
     );
 };

@@ -42,7 +42,6 @@ type MenuTarget = { subregionKey: string | null } & (
         kind: 'map';
         latLng: L.LatLng;
         position: { x: number; y: number };
-        shareable: boolean;
         restoreFocus: HTMLElement | null;
     });
 
@@ -120,7 +119,6 @@ const MapContextMenu = ({ map }: { map: L.Map }) => {
         const onMapContext = (event: L.LeafletMouseEvent) => {
             if (event.originalEvent.altKey) return;
             event.originalEvent.preventDefault();
-            const configuredBounds = map.options.maxBounds;
             setConfirmingComplete(false);
             setCopyState('idle');
             setTarget({
@@ -128,9 +126,6 @@ const MapContextMenu = ({ map }: { map: L.Map }) => {
                 subregionKey: resolveSubregionAtLocation(map, useRegion.getState().currentRegionKey, event.latlng),
                 latLng: event.latlng,
                 position: eventPosition(map, event.originalEvent),
-                shareable: !configuredBounds
-                    || typeof (configuredBounds as L.LatLngBounds).contains !== 'function'
-                    || (configuredBounds as L.LatLngBounds).contains(event.latlng),
                 restoreFocus: event.originalEvent.target instanceof HTMLElement
                     ? event.originalEvent.target
                     : null,
@@ -279,7 +274,7 @@ const MapContextMenu = ({ map }: { map: L.Map }) => {
                 items: [{
                     id: 'share-location',
                     label: copyLabel,
-                    disabled: target.kind !== 'map' || !target.shareable,
+                    disabled: target.kind !== 'map',
                     closeOnSelect: false,
                     onSelect: () => {
                         if (target.kind !== 'map') return;

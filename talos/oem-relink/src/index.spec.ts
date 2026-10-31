@@ -64,6 +64,23 @@ describe('oem-relink worker routes', () => {
     });
 
     it.each([
+        ['CN', 'https://satellite.opendfieldmap.cn'],
+        ['US', 'https://satellite.opendfieldmap.org'],
+    ])('preserves satellite subdomains and SPA paths for %s visitors', async (country, origin) => {
+        for (const path of ['/', '/satellite', '/satellite/0oGIf3b?r=DJ&imageId=image%2F1']) {
+            const response = await worker.fetch(new Request(`https://satellite.oem.re${path}`, {
+                headers: { 'cf-ipcountry': country },
+            }));
+            expect(response.status).toBe(302);
+            expect(response.headers.get('location')).toBe(`${origin}${path}`);
+        }
+        const rootResponse = await worker.fetch(new Request(`https://oem.re/satellite?r=VL`, {
+            headers: { 'cf-ipcountry': country },
+        }));
+        expect(rootResponse.headers.get('location')).toBe(`${origin.replace('satellite.', '')}/satellite?r=VL`);
+    });
+
+    it.each([
         ['CN', 'https://opendfieldmap.cn'],
         ['US', 'https://opendfieldmap.org'],
     ])('preserves user-center routes for %s visitors', async (country, origin) => {

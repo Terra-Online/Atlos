@@ -15,6 +15,7 @@ import { createServer } from 'node:http';
 import { distribution, writeProductionReport } from './report-production.mjs';
 import { createProductionServer, readProductionArtifact } from './lib/production-server.mjs';
 import { buildMarkerLookup } from './build-marker-lookup.mjs';
+import { buildClipIndex } from './tile-index.js';
 
 test('point lookup indexes source shards separately from moved positions and archive uniqueness', () => {
     const markers = [
@@ -1151,4 +1152,27 @@ test('performance acceptance rejects interrupted WebKit collection and invalid C
     await save();
     await assert.rejects(writeProductionReport(root), /Invalid CPU counters/);
     await assert.rejects(fs.access(path.join(root, 'summary.json')), { code: 'ENOENT' });
+});
+
+test('standard and satellite indexes retain independent coverage and publishing roots', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlos-tile-index-'));
+    try {
+        for (const source of ['clips', 'satellite']) {
+            await fs.mkdir(path.join(root, source, 'Dijiang', '3'), { recursive: true });
+            await fs.writeFile(path.join(root, source, 'Dijiang', '3', `${source === 'clips' ? 1 : -1}_4.webp`), 'fixture');
+        }
+        await fs.writeFile(path.join(root, 'satellite/index.html'), '<html>satellite entry</html>');
+        for (const source of ['clips', 'satellite']) {
+            const index = await buildClipIndex({ distDir: root, source });
+            assert.equal(index.tileFileCount, 1);
+            assert.ok(index.expectedClipFiles.every((file) => file.startsWith(`${source}/`)));
+            assert.equal(index.expectedClipFiles.includes('satellite/index.html'), source === 'satellite');
+            assert.ok(!index.tileFiles.includes('index.html'));
+            const coverage = JSON.parse(await fs.readFile(path.join(root, source, '_index/coverage/Dijiang.v1.json'), 'utf8'));
+            const x = source === 'clips' ? 1 : -1;
+            assert.deepEqual(coverage.zooms['3']['']['4'], [x, x]);
+        }
+    } finally {
+        await fs.rm(root, { recursive: true, force: true });
+    }
 });

@@ -92,7 +92,6 @@ export default defineConfig(() => ({
     ],
   },
   define: {
-    __INTEL_BUILD_TARGET__: JSON.stringify(target),
     __INTEL_DEPLOY_CHANNEL__: JSON.stringify(channel),
   },
   server: {

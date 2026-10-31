@@ -17,7 +17,7 @@ import { useUiPrefsStore } from '@/store/uiPrefs';
 import { commitPointProgress } from '@/store/history';
 import { batchCheckSelectedPoints, isLassoSelected } from '@/services/map/selection/useMapMultiSelect';
 import { getLayerByTier, getLayerTier, useLayerStore, type LayerType } from '@/store/layer';
-import { REGION_DICT } from '@/data/map';
+import { getAvailableLayers } from '@/services/map/tileCoverage';
 import useRegion from '@/store/region';
 
 interface MarkerStateHandlers {
@@ -85,8 +85,7 @@ const switchToMarkerLayer = (markerData: IMarkerData): void => {
     if (!targetLayer) return;
 
     const currentRegion = useRegion.getState().currentRegionKey;
-    const availableLayers = REGION_DICT[currentRegion]?.layers;
-    if (targetLayer !== 'M' && !availableLayers?.includes(targetLayer)) return;
+    if (!getAvailableLayers(currentRegion).includes(targetLayer)) return;
 
     const layerStore = useLayerStore.getState();
     if (layerStore.currentLayer === targetLayer) return;

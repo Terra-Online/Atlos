@@ -44,24 +44,21 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); scene.map?.remove(); host.remove(); vi.restoreAllMocks(); vi.useRealTimers(); });
 
-it('pans desktop maps only on sidebar toggles and restores bounds even when the region starts changing', () => {
+it('pans desktop maps only on sidebar toggles without detaching camera constraints', () => {
     const map = scene.map!;
-    const bounds = L.latLngBounds([-100, -100], [100, 100]);
-    map.setMaxBounds(bounds);
     const pan = vi.spyOn(map, 'panBy').mockReturnValue(map);
+    const setBounds = vi.spyOn(map, 'setMaxBounds');
     render(<MapPage />);
     expect(pan).not.toHaveBeenCalled();
     act(() => useUiPrefsStore.getState().setSidebarOpen(true));
     expect(pan).toHaveBeenLastCalledWith([-250, 0], expect.objectContaining({ animate: true }));
-    expect(map.options.maxBounds).toBeNull();
     act(() => { map.fire('talos:regionSwitchStart'); });
-    expect(map.options.maxBounds).toBe(bounds);
     act(() => useUiPrefsStore.getState().setSidebarWidth(450));
     expect(pan).toHaveBeenCalledOnce();
     act(() => useUiPrefsStore.getState().setSidebarOpen(false));
     expect(pan).toHaveBeenLastCalledWith([225, 0], expect.anything());
     act(() => { map.fire('moveend'); });
-    expect(map.options.maxBounds).toBe(bounds);
+    expect(setBounds).not.toHaveBeenCalled();
 });
 
 it.each([false, true])('does not pan a mobile map or a wide view (desktop=%s)', (desktop) => {

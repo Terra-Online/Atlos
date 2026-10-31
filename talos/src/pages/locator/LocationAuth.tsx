@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import Modal from '@/component/modal/modal';
 import profileStyles from '@/component/shared/account/profile/profile.module.scss';
-import { useUiPrefsStore } from '@/store/uiPrefs';
 import { useTranslateUI } from '@/locale';
 import { agreePolicy } from '@/services/endfield';
 import { readEFTrackerConf, saveEFTrackerConf } from '@/services/endfield';
@@ -69,7 +68,6 @@ const LocationAuth: React.FC = () => {
                     enabled: true,
                     locatorSync: true,
                 });
-                useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(true);
                 useLocatorStore.getState().setViewMode('tracking');
             }
 

@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { useAuthStore } from '@/store/auth';
-import { useUiPrefsStore } from '@/store/uiPrefs';
 import { useLocatorStore } from '@/store/locator';
 import type { EFBindingSummary, EFTrackerConf } from '@/services/endfield';
 import { deferred } from '../../../test-support/pages';
@@ -9,15 +8,15 @@ import { enableSession, disableSession } from './session';
 const api = vi.hoisted(() => ({ status: vi.fn(), cache: vi.fn(), config: null as EFTrackerConf | null }));
 vi.mock('@/services/endfield', () => ({ getEFBindingStatus: api.status, readEFTrackerConf: () => api.config, saveEFTrackerConf: (next: EFTrackerConf) => { api.config = next; } }));
 vi.mock('@/services/cache/backend', () => ({ getCachedSession: () => ({ hit: false, value: null }), setCachedSession: vi.fn(), setCachedBinding: api.cache }));
-const initial = { auth: useAuthStore.getState(), prefs: useUiPrefsStore.getState(), locator: useLocatorStore.getState() };
+const initial = { auth: useAuthStore.getState(), locator: useLocatorStore.getState() };
 const binding: EFBindingSummary = { bound: true, enabled: true, roleId: 'old-role', serverId: 1, provider: 'skport' };
 beforeEach(() => {
     vi.useFakeTimers(); api.status.mockReset(); api.cache.mockClear();
     useAuthStore.setState({ sessionUser: { uid: 'a', nickname: 'A' }, sessionVersion: 0 });
-    useUiPrefsStore.setState({ prefsLocatorSyncEnabled: false }); useLocatorStore.setState({ viewMode: 'off' });
+    useLocatorStore.setState({ viewMode: 'off' });
     api.config = { enabled: false, locatorSync: false, baseUrl: 'skport', roleId: 'old-role', serverId: 1, scope: ['balanced'] };
 });
-afterEach(() => { useAuthStore.setState(initial.auth, true); useUiPrefsStore.setState(initial.prefs, true); useLocatorStore.setState(initial.locator, true); vi.useRealTimers(); });
+afterEach(() => { useAuthStore.setState(initial.auth, true); useLocatorStore.setState(initial.locator, true); vi.useRealTimers(); });
 
 it.each(['relogin', 'account-roundtrip', 'disable'] as const)('does not enable tracking from an old status after %s', async (boundary) => {
     const pending = deferred<{ binding: EFBindingSummary }>(); api.status.mockReturnValue(pending.promise);
@@ -31,7 +30,7 @@ it.each(['relogin', 'account-roundtrip', 'disable'] as const)('does not enable t
     expect(await enable).toBeUndefined();
     expect(api.cache).not.toHaveBeenCalled();
     expect(api.config?.enabled).toBe(false);
-    expect(useUiPrefsStore.getState().prefsLocatorSyncEnabled).toBe(false);
+    expect(api.config?.locatorSync).toBe(false);
     expect(useLocatorStore.getState().viewMode).toBe('off');
 });
 

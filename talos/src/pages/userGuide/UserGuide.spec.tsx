@@ -7,6 +7,7 @@ import { GuideSpotlight } from './spotlight/spotlight';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { useUserGuideStore } from '@/store/userGuide';
 import { useUserRecordStore } from '@/store/userRecord';
+import { useMarkerStore } from '@/store/marker';
 import { MARKER_TYPE_TREE, type IMarkerData } from '@/data/marker';
 import { getDisplayedPointProgress } from '@/store/guideProgress';
 import { GuideTasks, type GuideStep } from './tasks';
@@ -31,6 +32,28 @@ const directTasks = new GuideTasks();
 const emit = (status: CallBackProps['status'], type: CallBackProps['type'] = 'tour:end', index = 0) => act(() => {
     const props = driver.props!;
     props.callback?.({ action: 'next', controlled: true, index, lifecycle: 'complete', origin: null, size: props.steps.length, status, step: props.steps[index], type });
+});
+
+it('opens the detail tutorial through the real selected-point state', async () => {
+    const point: IMarkerData = { id: 'guide-detail', type: MARKER_TYPE_TREE.boss[0].key,
+        subregId: 'VL_1', pos: [0, 0], x: 0, y: 0, z: 0, tier: 0 };
+    driver.target.mockResolvedValue(point);
+    const previous = useMarkerStore.getState();
+    useUserGuideStore.setState({ stepCompleted: { 'STEP-0_welcome': true } });
+    const view = render(<UserGuide />);
+    try {
+        await act(async () => {
+            useUiPrefsStore.getState().setIsUserGuideOpen(true);
+            await Promise.resolve();
+        });
+        const steps = driver.props!.steps as GuideStep[];
+        await act(async () => { await steps.find((step) => step.id === 'STEP-23_locator-button')!.onNext?.(directTasks); });
+        expect(useMarkerStore.getState().currentActivePoint).toEqual(point);
+        expect(steps.some((step) => step.id === 'STEP-26_detail-container')).toBe(true);
+    } finally {
+        view.unmount();
+        useMarkerStore.setState(previous, true);
+    }
 });
 
 it.each([false, true])('auto-opens only the welcome tip on mobile=%s and acknowledges it without completing detailed Help', async (mobile) => {
@@ -68,9 +91,9 @@ it('releases all temporary guide controls, including mobile headbar expansion, w
     driver.mobile = true;
     useUserGuideStore.setState({ stepCompleted: { 'MSTEP-0_welcome': true } });
     render(<UserGuide />); await act(async () => { await Promise.resolve(); });
-    act(() => { useUiPrefsStore.setState({ isUserGuideOpen: true, forceHeadbarExpanded: true, forceRegionSubOpen: true, forceLayerSubOpen: true, forceDetailOpen: true, mobileDrawerSnapIndex: 2 }); });
+    act(() => { useUiPrefsStore.setState({ isUserGuideOpen: true, forceHeadbarExpanded: true, forceRegionSubOpen: true, forceLayerSubOpen: true, mobileDrawerSnapIndex: 2 }); });
     emit('skipped');
-    expect(useUiPrefsStore.getState()).toMatchObject({ isUserGuideOpen: false, forceHeadbarExpanded: null, forceRegionSubOpen: false, forceLayerSubOpen: false, forceDetailOpen: false, mobileDrawerSnapIndex: null, desktopDrawerSnapIndex: null });
+    expect(useUiPrefsStore.getState()).toMatchObject({ isUserGuideOpen: false, forceHeadbarExpanded: null, forceRegionSubOpen: false, forceLayerSubOpen: false, mobileDrawerSnapIndex: null, desktopDrawerSnapIndex: null });
 });
 
 it.each([false, true])('preserves real progress while demonstrating completion and clearing on mobile=%s', async (mobile) => {

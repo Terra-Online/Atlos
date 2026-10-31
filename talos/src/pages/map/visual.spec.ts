@@ -16,7 +16,7 @@ it('removes the owned group after its full animation and cancels it when changin
     const map = L.map(host, { crs: L.CRS.Simple }).setView([0, 0], 0);
     try {
         const area = { bounds: [[0, 0], [10, 10]] } as IMapSubregionAreaData;
-        const config = { maxZoom: 2 } as IMapRegion;
+        const config = { coordZoom: 2 } as IMapRegion;
         const first = createHighlight(map, area, config)!;
         expect(map.hasLayer(first)).toBe(true);
         expect(map.hasLayer(first)).toBe(true);

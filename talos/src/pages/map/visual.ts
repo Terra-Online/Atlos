@@ -12,7 +12,7 @@ export const createHighlight = (map: L.Map | undefined, subregion: IMapSubregion
         points = [[[x1, y1], [x2, y1], [x2, y2], [x1, y2]]];
     }
     if (!points?.length) return null;
-    const coordinates = points.map((ring) => ring.map(([x, y]) => map.unproject([x, y], config.maxZoom)));
+    const coordinates = points.map((ring) => ring.map(([x, y]) => map.unproject([x, y], config.coordZoom)));
     const fill = L.polygon(coordinates, { color: 'transparent', fillOpacity: 0.3, className: 'subregion-highlight-fill' });
     const stroke = L.polygon(coordinates, { weight: 3, opacity: 0.9, fill: false, className: 'subregion-highlight-stroke' });
     const group = L.layerGroup([fill, stroke]).addTo(map);

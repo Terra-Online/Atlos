@@ -12,6 +12,7 @@
     "settings": "Impostazioni"
   },
   "mapControls": {
+    "satellite": "Modalità satellite",
     "layerSelect": "Selezione livello",
     "locationTracking": "Sincronizzazione posizione"
   },

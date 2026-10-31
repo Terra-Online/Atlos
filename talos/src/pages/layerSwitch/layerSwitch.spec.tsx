@@ -8,7 +8,9 @@ import useRegion from '@/store/region';
 vi.mock('@/platform/device', () => ({ useDevice: () => ({ isMobile: false }) }));
 vi.mock('@/locale', () => ({ useTranslateUI: () => (key: string) => key }));
 vi.mock('@/assets/images/UI/layer.svg?react', () => ({ default: () => null }));
-afterEach(cleanup);
+vi.mock('@/services/map/tileCoverage', async (original) => ({ ...await original<typeof import('@/services/map/tileCoverage')>(), hasSatelliteTiles: (region: string) => region === 'Dijiang' }));
+vi.mock('@/assets/images/UI/satellite.svg?react', () => ({ default: () => null }));
+afterEach(() => { cleanup(); useLayerStore.setState({ satellite: false }); });
 
 it('allows keyboard activation of the floor control and keeps floor choices outside the main button', () => {
     useLayerStore.setState({ currentLayer: 'B1' });
@@ -40,4 +42,21 @@ it('clears the menu when the selected region no longer has floors', () => {
     expect(screen.queryByRole('button', { name: 'mapControls.layerSelect' })).toBeNull();
     act(() => useRegion.getState().setCurrentRegion('Valley_4'));
     expect(screen.queryByRole('button', { name: 'Layer B1' })).toBeNull();
+});
+
+it('offers satellite mode only for covered regions, including regions without floors', () => {
+    useRegion.setState({ currentRegionKey: 'Valley_4' });
+    render(<LayerSwitch isSidebarOpen={false} />);
+    expect(screen.queryByRole('button', { name: 'mapControls.satellite' })).toBeNull();
+    act(() => useRegion.getState().setCurrentRegion('Dijiang'));
+    const satellite = screen.getByRole('button', { name: 'mapControls.satellite' });
+    expect(screen.queryByRole('button', { name: 'mapControls.layerSelect' })).toBeNull();
+    act(() => useLayerStore.setState({ currentLayer: 'B1' }));
+    fireEvent.click(satellite);
+    expect(useLayerStore.getState()).toMatchObject({ satellite: true, currentLayer: 'M' });
+    expect(satellite.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(satellite);
+    expect(useLayerStore.getState().satellite).toBe(false);
+    act(() => useRegion.getState().setCurrentRegion('Valley_4'));
+    expect(screen.queryByRole('button', { name: 'mapControls.satellite' })).toBeNull();
 });

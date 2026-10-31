@@ -6,17 +6,34 @@ import { MapCore, type IMapOptions } from '@/services/map/core/map';
 
 vi.mock('@/data/map', () => ({
     REGION_DICT: {
-        A: { maxZoom: 6, dimensions: [20000, 20000], boundsOffset: { x: 0, y: 0 }, initialOffset: { x: 0, y: 0 }, initialZoom: 4, tileSize: 256, subregions: [], layers: ['M', 'B1'] },
-        B: { maxZoom: 2, dimensions: [20000, 20000], boundsOffset: { x: 50000, y: 50000 }, initialOffset: { x: 0, y: 0 }, initialZoom: 2, tileSize: 256, subregions: [], layers: ['M', 'B1'] },
+        A: { coordZoom: 6, initialCenter: { lat: -156, lng: 156 }, initialZoom: 4, subregions: [] },
+        B: { coordZoom: 2, initialCenter: { lat: -15000, lng: 15000 }, initialZoom: 2, subregions: [] },
+        D: { coordZoom: 2, initialCenter: { lat: -500, lng: 500 }, initialZoom: 0, subregions: [] },
     }, SUBREGION_DICT: {},
 }));
-vi.mock('@/services/map/tileCoverage', () => ({ getRegionTileCoverage: () => undefined }));
+vi.mock('@/services/map/tileCoverage', async (importOriginal) => ({
+    ...await importOriginal<typeof import('@/services/map/tileCoverage')>(),
+    getRegionTileCoverage: (region: string, source = 'clips') => {
+    const zooms: Record<string, Record<string, Record<string, number[]>>> = {};
+    const reference = region === 'A' ? 6 : 2;
+    for (let z = 0; z <= (region === 'A' ? (source === 'satellite' ? 7 : 6) : 3); z++) {
+        const scale = 2 ** (z - reference);
+        const size = 200;
+        const expanded = region === 'A' && source === 'satellite';
+        const min = Math.floor((region === 'B' ? 50000 : expanded ? -2000 : 0) * scale / size);
+        const max = Math.ceil((region === 'B' ? 70000 : expanded ? 25000 : 20000) * scale / size) - 1;
+        const rows = Object.fromEntries(Array.from({ length: max - min + 1 }, (_, i) => [String(min + i), [min, max]]));
+        zooms[String(z)] = { '': rows, _b1: rows };
+    }
+    return { zooms };
+}, getAvailableLayers: (region: string) => region === 'D' ? ['M'] : ['M', 'B1'], hasSatelliteTiles: (region: string) => region === 'A' }));
 vi.mock('@/services/map/core/marker/markerLayer', () => ({ MarkerLayer: class {
     changeRegion = vi.fn(() => Promise.resolve()); updateLayerTier = vi.fn(); destroy = vi.fn();
 } }));
 vi.mock('@/services/map/core/smoothTileLayer', async () => {
     const { default: Leaflet } = await import('leaflet');
     return { SmoothTileLayer: class extends Leaflet.Layer {
+        constructor(public url: string, options: L.TileLayerOptions) { super(); Leaflet.Util.setOptions(this, options); }
         override onAdd() { return this; }
         override onRemove() { return this; }
         getContainer() { return undefined; }
@@ -30,7 +47,7 @@ function fixture(options?: IMapOptions) {
     Object.defineProperties(host, { clientWidth: { value: 800 }, clientHeight: { value: 600 } });
     document.body.appendChild(host);
     useViewState.setState({ viewStates: { A: { lat: -100, lng: 100, zoom: 6 }, B: { lat: -14000, lng: 14000, zoom: 2 } } });
-    useLayerStore.setState({ currentLayer: 'B1' });
+    useLayerStore.setState({ currentLayer: 'B1', satellite: false });
     const core = new MapCore(host, options);
     cleanups.push(() => { core.destroy(); host.remove(); });
     return core;
@@ -95,11 +112,81 @@ it('uses the URL destination only for the first view and clamps its zoom without
 });
 
 it.each([
-    { lat: -1000, lng: 1000, zoom: 2 },
     { lat: NaN, lng: 100, zoom: 2 },
+    { lat: -100, lng: 100, zoom: Infinity },
 ])('ignores an invalid initial URL view instead of requesting tiles outside the region: %j', async (view) => {
     const core = fixture({ initialView: { regionId: 'A', view } });
     await core.switchRegion('A');
     expect(core.map.getCenter().equals([-100, 100])).toBe(true);
     expect(core.map.getZoom()).toBe(6);
+});
+
+function tileUrls(core: MapCore) {
+    const urls: string[] = [];
+    core.map.eachLayer((layer) => { if ('url' in layer) urls.push(String(layer.url)); });
+    return urls;
+}
+
+it('replaces only the base tiles and restores the satellite preference after floors and unsupported regions', async () => {
+    const core = fixture();
+    await core.switchRegion('A');
+    useLayerStore.getState().setSatellite(true);
+    await core.switchLayer('M');
+    expect(tileUrls(core)).toEqual([expect.stringContaining('/satellite/A/')]);
+    core.map.eachLayer((layer) => {
+        if ('url' in layer) {
+            expect(layer.options).toMatchObject({ maxNativeZoom: 7 });
+            expect(layer.options).not.toHaveProperty('minNativeZoom');
+        }
+    });
+    expect(core.map.getMaxZoom()).toBe(8);
+    core.map.setZoom(8, { animate: false });
+    const center = core.map.getCenter();
+    const external = L.layerGroup().addTo(core.map);
+    await core.switchLayer('B1');
+    expect(core.map.getMaxZoom()).toBe(7);
+    expect(core.map.getZoom()).toBe(7);
+    expect(tileUrls(core)).toEqual([expect.stringContaining('/clips/A/'), expect.stringContaining('_b1.webp')]);
+    await core.switchLayer('M');
+    expect(core.map.getMaxZoom()).toBe(8);
+    expect(tileUrls(core)).toEqual([expect.stringContaining('/satellite/A/')]);
+    expect(core.map.getCenter().equals(center)).toBe(true);
+    expect(core.map.hasLayer(external)).toBe(true);
+    useLayerStore.getState().setCurrentLayer('M');
+    await core.switchRegion('B');
+    expect(tileUrls(core)).toEqual([expect.stringContaining('/clips/B/')]);
+    expect(useLayerStore.getState().satellite).toBe(true);
+    await core.switchRegion('A');
+    expect(tileUrls(core)).toEqual([expect.stringContaining('/satellite/A/')]);
+    useLayerStore.getState().setSatellite(false);
+    await core.switchLayer('M');
+    expect(tileUrls(core)).toEqual([expect.stringContaining('/clips/A/')]);
+});
+
+it('allows native level-three detail while preserving level-two pixel coordinates', async () => {
+    const core = fixture();
+    await core.switchRegion('D');
+    expect(core.map.getMaxZoom()).toBe(4);
+    expect(core.map.getCenter().equals([-500, 500])).toBe(true);
+    expect(core.map.options.maxBounds).toBeUndefined();
+    const layers: L.Layer[] = [];
+    core.map.eachLayer((layer) => layers.push(layer));
+    expect(layers.find((layer) => 'url' in layer)?.options).toMatchObject({ maxNativeZoom: 3 });
+});
+
+it('opens expanded satellite coverage above and to the right of the former region rectangle', async () => {
+    const view = { lat: 1000 / 64, lng: 24000 / 64, zoom: 6 };
+    const core = fixture({ initialView: { regionId: 'A', view } });
+    useLayerStore.getState().setSatellite(true);
+    await core.switchRegion('A');
+    expect(core.map.getCenter().equals([view.lat, view.lng])).toBe(true);
+    expect(core.map.options.maxBounds).toBeUndefined();
+    core.map.eachLayer((layer) => {
+        if ('url' in layer) expect(layer.options).not.toHaveProperty('bounds');
+    });
+    await core.switchLayer('B1');
+    expect(core.map.getCenter().lat).toBeLessThan(view.lat);
+    await core.switchLayer('M');
+    core.map.setView([view.lat, view.lng], view.zoom, { animate: false });
+    expect(core.map.getCenter().equals([view.lat, view.lng])).toBe(true);
 });

@@ -6,7 +6,7 @@ import { createHighlight } from '@/pages/map/visual';
 import { useMarkerStore } from '@/store/marker';
 import { useMarker } from '@/pages/map/useMarker';
 import { useTriggerBoundary, useTriggerCluster } from '@/store/uiPrefs';
-import { useCurrentLayer } from '@/store/layer';
+import { useCurrentLayer, useLayerStore } from '@/store/layer';
 import { getInitialNavigationView, registerSharedPointMapCore } from '@/services/map';
 import L from 'leaflet';
 
@@ -22,6 +22,7 @@ export function useMap(ele: HTMLDivElement | null) {
     const triggerBoundary = useTriggerBoundary();
     const triggerCluster = useTriggerCluster();
     const currentLayer = useCurrentLayer();
+    const satellite = useLayerStore((state) => state.satellite);
     const mapRef = useRef<MapCore | null>(null);
     const [LMap, setLMap] = useState<L.Map | null>(null);
     const [mapInitialized, setMapInitialized] = useState(false);
@@ -99,7 +100,7 @@ export function useMap(ele: HTMLDivElement | null) {
                 const config = REGION_DICT[regionKey];
                 const center = mapRef.current.map.unproject(
                     [centerX, centerY],
-                    config.maxZoom,
+                    config.coordZoom,
                 );
 
                 mapRef.current.setMapView({
@@ -156,7 +157,7 @@ export function useMap(ele: HTMLDivElement | null) {
     useEffect(() => {
         if (!mapRef.current || !mapInitialized) return;
         void mapRef.current.switchLayer(currentLayer);
-    }, [currentLayer, mapInitialized]);
+    }, [currentLayer, satellite, mapInitialized]);
 
     return {
         map: LMap,

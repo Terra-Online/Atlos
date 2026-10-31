@@ -6,7 +6,6 @@ import { i18nInitPromise } from '@/locale';
 import {
     useIsUserGuideOpen,
     useSetIsUserGuideOpen,
-    useSetForceDetailOpen,
     useSetForceRegionSubOpen,
     useSetForceLayerSubOpen,
     useSetForceHeadbarExpanded,
@@ -41,7 +40,6 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
     const initialGuideDeviceRef = useRef<'mobile' | 'desktop'>(isMobile ? 'mobile' : 'desktop');
     const isUserGuideOpen = useIsUserGuideOpen();
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
-    const setForceDetailOpen = useSetForceDetailOpen();
     const setForceRegionSubOpen = useSetForceRegionSubOpen();
     const setForceLayerSubOpen = useSetForceLayerSubOpen();
     const setForceHeadbarExpanded = useSetForceHeadbarExpanded();
@@ -363,7 +361,6 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
                 isTransitioningRef.current = false;
                 
                 replaceUserGuideStepCompleted(buildAllStepsCompletionMap(true));
-                setForceDetailOpen(false);
                 setForceRegionSubOpen(false);
                 setForceLayerSubOpen(false);
                 setForceHeadbarExpanded(null);
@@ -505,7 +502,6 @@ const UserGuide = ({ map, visible = true, onReady }: UserGuideProps) => {
             showIntro,
             introStep,
             isElementInViewport,
-            setForceDetailOpen,
             setForceRegionSubOpen,
             setForceLayerSubOpen,
             setForceHeadbarExpanded,

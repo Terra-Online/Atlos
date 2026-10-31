@@ -12,6 +12,7 @@
     "settings": "الإعدادات"
   },
   "mapControls": {
+    "satellite": "وضع القمر الصناعي",
     "layerSelect": "اختيار الطبقة",
     "locationTracking": "مزامنة الموقع"
   },

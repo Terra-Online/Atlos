@@ -29,6 +29,7 @@ dist-ssr
 **/config/config.r2.json
 
 talos/public/clips
+talos/public/satellite
 talos/public/files
 talos/public/points
 talos/public/seo

@@ -1,16 +1,18 @@
 import { isRegionSwitching, setRegionSwitching } from '@/services/map/regionLifecycle';
-import { REGION_DICT, type IMapRegion } from '@/data/map';
+import { REGION_DICT } from '@/data/map';
+import { TILE_SIZE } from '@/data/map/tiles';
 import L from 'leaflet';
 import { MarkerLayer } from '@/services/map/core/marker/markerLayer';
 import { IMapView } from '@/services/map/types';
-import { getTileResourceUrl } from '@/services/assets/resource';
+import { getTileResourceUrl, type TileSource } from '@/services/assets/resource';
 import useViewState from '@/store/viewState';
 import { IMarkerData } from '@/data/marker';
 import { SubregionBoundaryManager } from '@/services/map/core/boundary';
 import { getLayerTileSuffix, useLayerStore, type LayerType } from '@/store/layer';
-import { getRegionTileCoverage } from '@/services/map/tileCoverage';
+import { getAvailableLayers, getMaxTileZoom, getRegionTileCoverage, hasSatelliteTiles } from '@/services/map/tileCoverage';
 import { enableSmoothWheelZoom } from '@/services/map/core/smoothWheelZoom';
 import { SmoothTileLayer } from '@/services/map/core/smoothTileLayer';
+import { CoverageBounds } from '@/services/map/core/coverageBounds';
 
 export interface IMapOptions {
     onSwitchCurrentMarker?: (marker: IMarkerData) => void;
@@ -33,17 +35,6 @@ const getMaxZoomOffset = (regionId: string): number => {
 // Keep this switch explicit so the short zoom tail can be tuned independently.
 const ENABLE_ZOOM_INERTIA = true;
 
-const getRegionPixelBounds = (
-    config: IMapRegion,
-): [[number, number], [number, number]] => {
-    const offsetX = config.boundsOffset?.x ?? 0;
-    const offsetY = config.boundsOffset?.y ?? 0;
-    return [
-        [offsetX, offsetY],
-        [offsetX + config.dimensions[0], offsetY + config.dimensions[1]],
-    ];
-};
-
 export class MapCore {
     markerLayer!: MarkerLayer;
     map!: L.Map;
@@ -53,6 +44,8 @@ export class MapCore {
     private mainTileLayer?: L.TileLayer;
     private layerTileLayer?: L.TileLayer;
     private currentLayer: LayerType = 'M';
+    private tileSource: TileSource = 'clips';
+    private coverageBounds: CoverageBounds;
 
     private destroyed = false;
     private wheelZoom: ReturnType<typeof enableSmoothWheelZoom>;
@@ -79,8 +72,11 @@ export class MapCore {
             zoomDelta: 0.25,
         });
 
+        this.coverageBounds = new CoverageBounds(this.map);
         this.wheelZoom = enableSmoothWheelZoom(this.map, {
             enableInertia: ENABLE_ZOOM_INERTIA,
+            constrainPan: (center, zoom) => this.coverageBounds.pan(center, zoom),
+            constrainZoom: (center, zoom) => this.coverageBounds.zoom(center, zoom),
         });
 
         this.markerLayer = new MarkerLayer(
@@ -91,7 +87,7 @@ export class MapCore {
         this.boundaryManager = new SubregionBoundaryManager(this.map);
 
         this.map.on('moveend', () => {
-            if (this.currentRegionId && !isRegionSwitching(this.map)) {
+            if (this.currentRegionId && !isRegionSwitching(this.map) && !this.coverageBounds.isOverdragged()) {
                 useViewState.getState().saveViewState(this.currentRegionId, this.map);
             }
         });
@@ -182,8 +178,8 @@ export class MapCore {
                 this.requestedRegionId = null;
             }
             this.settleSupersededRegionWaiters(regionId);
-            setRegionSwitching(this.map, false);
             this.applyStoredLayer(regionId);
+            setRegionSwitching(this.map, false);
             this.map.fire('talos:regionSwitched', { regionId });
             this.settleRegionWaiters(regionId, true);
         }
@@ -198,9 +194,9 @@ export class MapCore {
         }
         let view = useViewState.getState().getViewState(regionId);
         setRegionSwitching(this.map, true);
+        this.coverageBounds.clear();
         this.map.fire('talos:regionSwitchStart', { regionId });
         this.currentRegionId = regionId;
-        this.map.setMaxBounds(null as unknown as L.LatLngBoundsExpression);
         this.mainTileLayer?.remove();
         this.layerTileLayer?.remove();
         this.boundaryManager.clear();
@@ -210,28 +206,19 @@ export class MapCore {
         // switchRegion validates this before queuing the operation.
         if (!config) throw new Error(`Region config not found for: ${regionId}`);
 
-        if (config.maxZoom === undefined) {
+        if (config.coordZoom === undefined) {
             throw new Error(
-                `Invalid region config for: ${regionId}. Missing maxZoom.`,
+                `Invalid region config for: ${regionId}. Missing coordZoom.`,
             );
         }
 
-        // Keep Leaflet's zoom constraints in sync with region config.
-        // Otherwise users can zoom beyond available tiles (blank map).
-        const maxNativeZoom = config.maxZoom;
-        const maxZoom = maxNativeZoom + getMaxZoomOffset(regionId);
-        this.map.setMaxZoom(maxZoom);
-
-        const [[minPixelX, minPixelY], [maxPixelX, maxPixelY]] =
-            getRegionPixelBounds(config);
-        const southWest = this.map.unproject([minPixelX, maxPixelY], config.maxZoom);
-        const northEast = this.map.unproject([maxPixelX, minPixelY], config.maxZoom);
-        const mapBounds = L.latLngBounds(southWest, northEast);
+        const targetLayer = this.getAvailableLayer(regionId, useLayerStore.getState().currentLayer);
+        this.tileSource = this.getTileSource(regionId, targetLayer);
+        const maxZoom = this.updateCameraLimits(targetLayer);
         const initial = this.initialView;
         this.initialView = undefined;
         if (initial?.regionId === regionId
-            && [initial.view.lat, initial.view.lng, initial.view.zoom].every(Number.isFinite)
-            && mapBounds.contains([initial.view.lat, initial.view.lng])) {
+            && [initial.view.lat, initial.view.lng, initial.view.zoom].every(Number.isFinite)) {
             view = initial.view;
         }
         if (
@@ -246,66 +233,20 @@ export class MapCore {
             });
         } else {
             if (
-                !config.dimensions ||
-                !config.initialOffset ||
-                config.maxZoom === undefined ||
+                !config.initialCenter ||
                 config.initialZoom === undefined
             ) {
                 throw new Error(
                     `Invalid region config for: ${regionId}. Missing required properties. Config: ${JSON.stringify(config)}`,
                 );
             }
-            const center = this.map.unproject(
-                [
-                    minPixelX +
-                        config.dimensions[0] / 2 +
-                        config.initialOffset.x,
-                    minPixelY +
-                        config.dimensions[1] / 2 +
-                        config.initialOffset.y,
-                ],
-                config.maxZoom,
-            );
-            if (
-                !center ||
-                center.lat === undefined ||
-                center.lng === undefined
-            ) {
-                throw new Error(
-                    `Invalid center coordinates for region: ${regionId}. Center: ${JSON.stringify(center)}`,
-                );
-            }
             const clampedZoom = Math.min(config.initialZoom, maxZoom);
-            this.map.setView([center.lat, center.lng], clampedZoom, {
+            this.map.setView([config.initialCenter.lat, config.initialCenter.lng], clampedZoom, {
                 animate: false,
             });
         }
 
-        // set map bounds to restrict panning
-        this.map.setMaxBounds(mapBounds);
-
-        const coverage = getRegionTileCoverage(regionId);
-        const tileLayer = new SmoothTileLayer(
-            getTileResourceUrl(`/clips/${regionId}/{z}/{x}_{y}.webp`),
-            {
-                tileSize: config.tileSize,
-                noWrap: true,
-                bounds: mapBounds,
-                pane: 'tilePane',
-                maxNativeZoom: config.maxZoom,
-                // Use Math.ceil so that Leaflet's internal Math.round(zoom) never
-                // exceeds the tile layer's maxZoom (which would set _tileZoom to
-                // undefined and silently skip tile loading at fractional max zoom).
-                maxZoom: Math.ceil(maxZoom),
-                // Use 1x1 transparent webp to suppress 404 console errors for missing tiles
-                errorTileUrl:
-                    'data:image/webp;base64,UklGRhYAAABXRUJQVlA4TAoAAAAvAAAAAP8B/wE=',
-            },
-            coverage,
-        ).addTo(this.map);
-
-        // Store main tile layer reference
-        this.mainTileLayer = tileLayer;
+        this.mainTileLayer = this.createTileLayer(this.tileSource).addTo(this.map);
         this.layerTileLayer = undefined;
         this.currentLayer = 'M';
 
@@ -345,74 +286,76 @@ export class MapCore {
     }
 
     private getAvailableLayer(regionId: string, layer: LayerType): LayerType {
-        const availableLayers = REGION_DICT[regionId]?.layers as
-            | LayerType[]
-            | undefined;
-        return layer === 'M' || availableLayers?.includes(layer) ? layer : 'M';
+        return getAvailableLayers(regionId).includes(layer) ? layer : 'M';
+    }
+
+    private getTileSource(regionId: string, layer: LayerType): TileSource {
+        return layer === 'M' && useLayerStore.getState().satellite && hasSatelliteTiles(regionId)
+            ? 'satellite' : 'clips';
+    }
+
+    private updateCameraLimits(layer: LayerType) {
+        const coverage = getRegionTileCoverage(this.currentRegionId, this.tileSource);
+        const suffixes = layer === 'M' ? [''] : ['', getLayerTileSuffix(layer)];
+        const maxNativeZoom = getMaxTileZoom(coverage, suffixes);
+        this.coverageBounds.setCoverage({
+            coverage,
+            suffixes,
+            tileSize: TILE_SIZE,
+            maxNativeZoom,
+        });
+        const maxZoom = maxNativeZoom + getMaxZoomOffset(this.currentRegionId);
+        // A base with fewer native levels must still display beneath a detailed floor.
+        for (const tiles of [this.mainTileLayer, this.layerTileLayer]) {
+            if (tiles) tiles.options.maxZoom = Math.ceil(maxZoom);
+        }
+        // Avoid a queued zoom animation arriving after a source/region switch.
+        if (this.map.getZoom() > maxZoom) this.map.setZoom(maxZoom, { animate: false });
+        this.map.setMaxZoom(maxZoom);
+        return maxZoom;
+    }
+
+    private createTileLayer(source: TileSource, suffix = ''): L.TileLayer {
+        const coverage = getRegionTileCoverage(this.currentRegionId, source);
+        return new SmoothTileLayer(
+            getTileResourceUrl(`${this.currentRegionId}/{z}/{x}_{y}${suffix}.webp`, source),
+            {
+                tileSize: TILE_SIZE,
+                noWrap: true,
+                pane: 'tilePane',
+                zIndex: suffix ? 2 : 1,
+                maxNativeZoom: getMaxTileZoom(coverage, [suffix]),
+                // Leaflet rounds fractional map zooms when choosing a tile level.
+                maxZoom: Math.ceil(this.map.getMaxZoom()),
+                errorTileUrl: 'data:image/webp;base64,UklGRhYAAABXRUJQVlA4TAoAAAAvAAAAAP8B/wE=',
+            },
+            coverage,
+            suffix,
+        );
     }
 
     private applyLayer(layer: LayerType) {
-        if (this.currentLayer === layer) return;
+        const source = this.getTileSource(this.currentRegionId, layer);
+        if (this.currentLayer === layer && this.tileSource === source) return;
 
-        const config = REGION_DICT[this.currentRegionId];
-        if (!config) return;
-
-        // Remove existing layer tile layer if any
-        if (this.layerTileLayer) {
-            this.map.removeLayer(this.layerTileLayer);
-            this.layerTileLayer = undefined;
+        const sourceChanged = this.tileSource !== source;
+        this.wheelZoom.cancel();
+        this.map.stop();
+        this.tileSource = source;
+        this.updateCameraLimits(layer);
+        this.layerTileLayer?.remove();
+        this.layerTileLayer = undefined;
+        if (sourceChanged) {
+            this.mainTileLayer?.remove();
+            this.mainTileLayer = this.createTileLayer(source).addTo(this.map);
         }
-
-        // Update main tile layer visual
-        if (this.mainTileLayer) {
-            const container = this.mainTileLayer.getContainer();
-            if (layer === 'M') {
-                if (container) {
-                    container.style.filter = 'brightness(1)';
-                }
-            } else {
-                if (container) {
-                    container.style.filter = 'brightness(0.5)';
-                }
-
-                // Add layer tile layer
-                const suffix = getLayerTileSuffix(layer);
-                const [[minPixelX, minPixelY], [maxPixelX, maxPixelY]] =
-                    getRegionPixelBounds(config);
-                const southWest = this.map.unproject(
-                    [minPixelX, maxPixelY],
-                    config.maxZoom,
-                );
-                const northEast = this.map.unproject(
-                    [maxPixelX, minPixelY],
-                    config.maxZoom,
-                );
-                const mapBounds = L.latLngBounds(southWest, northEast);
-                const maxZoom =
-                    config.maxZoom + getMaxZoomOffset(this.currentRegionId);
-
-                this.layerTileLayer = new SmoothTileLayer(
-                    getTileResourceUrl(
-                        `/clips/${this.currentRegionId}/{z}/{x}_{y}${suffix}.webp`,
-                    ),
-                    {
-                        tileSize: config.tileSize,
-                        noWrap: true,
-                        bounds: mapBounds,
-                        pane: 'tilePane',
-                        maxNativeZoom: config.maxZoom,
-                        maxZoom: Math.ceil(maxZoom),
-                        // Use 1x1 transparent webp to suppress 404 console errors for missing tiles
-                        errorTileUrl:
-                            'data:image/webp;base64,UklGRhYAAABXRUJQVlA4TAoAAAAvAAAAAP8B/wE=',
-                    },
-                    getRegionTileCoverage(this.currentRegionId),
-                    suffix,
-                ).addTo(this.map);
-            }
+        const container = this.mainTileLayer?.getContainer();
+        if (container) container.style.filter = layer === 'M' ? 'brightness(1)' : 'brightness(0.5)';
+        if (layer !== 'M') {
+            this.layerTileLayer = this.createTileLayer('clips', getLayerTileSuffix(layer)).addTo(this.map);
         }
-
         this.currentLayer = layer;
+        this.coverageBounds.refresh();
         this.markerLayer.updateLayerTier(layer);
         this.map.fire('talos:layerSwitched', { layer });
     }
@@ -424,6 +367,7 @@ export class MapCore {
         this.layerRequestId++;
         this.regionWaiters.splice(0).forEach((waiter) => waiter.resolve(false));
         this.wheelZoom.dispose();
+        this.coverageBounds.dispose();
         this.boundaryManager.destroy();
         this.markerLayer.destroy();
         this.map.remove();

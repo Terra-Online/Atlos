@@ -78,7 +78,7 @@ export class SubregionBoundaryManager {
     private createPolygonBoundary(polygonData: number[][][], config: IMapRegion): L.Layer[] {
         const polygonPoints = polygonData.map((polygon) => {
             return polygon.map(([x, y]) => {
-                return this.map.unproject([x, y], config.maxZoom);
+                return this.map.unproject([x, y], config.coordZoom);
             });
         });
 
@@ -100,8 +100,8 @@ export class SubregionBoundaryManager {
 
     private createRectangleBoundary(bounds: number[][], config: IMapRegion): L.Layer[] {
         const [[x1, y1], [x2, y2]] = bounds;
-        const sw = this.map.unproject([x1, y2], config.maxZoom);
-        const ne = this.map.unproject([x2, y1], config.maxZoom);
+        const sw = this.map.unproject([x1, y2], config.coordZoom);
+        const ne = this.map.unproject([x2, y1], config.coordZoom);
 
         const fillLayer = L.rectangle(L.latLngBounds(sw, ne), {
             color: 'transparent',

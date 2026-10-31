@@ -12,6 +12,7 @@
     "settings": "Paramètres"
   },
   "mapControls": {
+    "satellite": "Mode satellite",
     "layerSelect": "Sélection de couche",
     "locationTracking": "Synchro position"
   },

@@ -5,9 +5,6 @@
       "deployChannels": {
         "beta": {
           "r2Prefix": ""
-        },
-        "prod": {
-          "r2Prefix": ""
         }
       },
       "r2": {

@@ -12,6 +12,7 @@
     "settings": "環境設定"
   },
   "mapControls": {
+    "satellite": "衛星モード",
     "layerSelect": "レイヤー選択",
     "locationTracking": "位置同期"
   },

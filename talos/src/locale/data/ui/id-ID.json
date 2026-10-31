@@ -12,6 +12,7 @@
     "settings": "Preferensi"
   },
   "mapControls": {
+    "satellite": "Mode satelit",
     "layerSelect": "Pilihan lapisan",
     "locationTracking": "Sinkron Lokasi"
   },

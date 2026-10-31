@@ -28,11 +28,11 @@ afterEach(() => { cleanup(); fixture.dispose(); useMarkerStore.setState(markerSt
 const mapMenu = (latlng: L.LatLng = L.latLng(0, 0), altKey = false) => act(() => { fixture.map.fire('contextmenu', { latlng, originalEvent: new MouseEvent('contextmenu', { clientX: 40, clientY: 50, cancelable: true, altKey }) }); });
 const markerMenu = () => act(() => { fixture.map.fire(MARKER_CONTEXT_MENU_EVENT, { marker, originalEvent: new MouseEvent('contextmenu', { clientX: 40, clientY: 50, cancelable: true }) }); });
 
-it('preserves Alt native menus, rejects sharing out of map bounds and closes on camera movement', () => {
-    fixture.map.options.maxBounds = L.latLngBounds([-10, -10], [10, 10]); render(<MapContextMenu map={fixture.map} />);
+it('preserves Alt native menus, allows sharing any map position and closes on camera movement', () => {
+    render(<MapContextMenu map={fixture.map} />);
     mapMenu(L.latLng(0, 0), true); expect(screen.queryByRole('menu')).toBeNull();
     mapMenu(L.latLng(20, 20));
-    expect(screen.getByRole<HTMLButtonElement>('menuitem', { name: 'contextMenu.shareLocation' }).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('menuitem', { name: 'contextMenu.shareLocation' }).disabled).toBe(false);
     expect(screen.getByRole<HTMLButtonElement>('menuitem', { name: 'contextMenu.undo' }).disabled).toBe(true);
     act(() => { fixture.map.fire('movestart'); });
     expect(screen.getByRole('menu').hasAttribute('inert')).toBe(true);

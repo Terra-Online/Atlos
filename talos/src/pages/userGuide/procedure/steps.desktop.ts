@@ -9,7 +9,6 @@ import {
     useSetDesktopDrawerSnapIndex,
     useSetForceRegionSubOpen,
     useSetForceLayerSubOpen,
-    useSetForceDetailOpen,
 } from '@/store/uiPrefs';
 import { useMarkerStore, useSwitchFilter } from '@/store/marker';
 import { previewGuideProgress } from '@/store/guideProgress';
@@ -29,7 +28,6 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
     const setDrawerSnapIndex = useSetDesktopDrawerSnapIndex();
     const setForceRegionSubOpen = useSetForceRegionSubOpen();
     const setForceLayerSubOpen = useSetForceLayerSubOpen();
-    const setForceDetailOpen = useSetForceDetailOpen();
     const setCurrentRegion = useRegion((s) => s.setCurrentRegion);
 
     const targetSubCategory = 'boss';
@@ -325,7 +323,6 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
             disableAutoScroll: true,
             onNext: () => {
                 if (targetPoint) setCurrentActivePoint(targetPoint);
-                setForceDetailOpen(true);
             },
             delay: 300,
         },
@@ -344,7 +341,6 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
             placement: 'top',
             disableBeacon: true,
             disableAutoScroll: true,
-            onNext: () => setForceDetailOpen(false),
         },
     ], [
         t,
@@ -355,7 +351,6 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
         setCurrentActivePoint,
         setForceRegionSubOpen,
         setForceLayerSubOpen,
-        setForceDetailOpen,
         setCurrentRegion,
         map,
         firstSubCategory,

@@ -1,9 +1,10 @@
 import L from 'leaflet';
 import { REGION_DICT } from '@/data/map';
+import { TILE_SIZE } from '@/data/map/tiles';
 import useViewState from '@/store/viewState';
 import { useLayerStore, getLayerTileSuffix } from '@/store/layer';
 import { getTileResourceUrl } from '@/services/assets/resource';
-import { getRegionTileCoverage, hasTileInCoverage } from './tileCoverage';
+import { getAvailableLayers, getMaxTileZoom, getRegionTileCoverage, hasTileInCoverage, hasSatelliteTiles } from './tileCoverage';
 import type { IMapView } from './types';
 
 /** Warm only a few original-resolution tiles at the expected view center.
@@ -13,25 +14,22 @@ export function preloadMapTiles(regionId: string, view?: IMapView): () => void {
     const config = REGION_DICT[regionId];
     if (!config || typeof document === 'undefined') return () => {};
     const stored = view ?? useViewState.getState().getViewState(regionId);
-    const zoom = Math.min(config.maxZoom, Math.max(0, Math.round(stored?.zoom ?? config.initialZoom)));
-    const center = stored
-        ? L.CRS.Simple.latLngToPoint(L.latLng(stored.lat, stored.lng), zoom)
-        : L.point(
-            (config.boundsOffset?.x ?? 0) + config.dimensions[0] / 2 + config.initialOffset.x,
-            (config.boundsOffset?.y ?? 0) + config.dimensions[1] / 2 + config.initialOffset.y,
-        ).multiplyBy(2 ** (zoom - config.maxZoom));
-    const x = Math.floor(center.x / config.tileSize), y = Math.floor(center.y / config.tileSize);
-    const neighborX = center.x / config.tileSize - x < 0.5 ? -1 : 1;
-    const neighborY = center.y / config.tileSize - y < 0.5 ? -1 : 1;
-    const coverage = getRegionTileCoverage(regionId);
     const configured = useLayerStore.getState().currentLayer;
-    const layer = config.layers?.includes(configured) ? configured : 'M';
+    const layer = getAvailableLayers(regionId).includes(configured) ? configured : 'M';
+    const source = layer === 'M' && useLayerStore.getState().satellite && hasSatelliteTiles(regionId) ? 'satellite' : 'clips';
+    const coverage = getRegionTileCoverage(regionId, source);
     const suffixes = layer === 'M' ? [''] : ['', getLayerTileSuffix(layer)];
+    const zoom = Math.min(getMaxTileZoom(coverage, suffixes), Math.max(0, Math.round(stored?.zoom ?? config.initialZoom)));
+    const location = stored ?? config.initialCenter;
+    const center = L.CRS.Simple.latLngToPoint(L.latLng(location.lat, location.lng), zoom);
+    const x = Math.floor(center.x / TILE_SIZE), y = Math.floor(center.y / TILE_SIZE);
+    const neighborX = center.x / TILE_SIZE - x < 0.5 ? -1 : 1;
+    const neighborY = center.y / TILE_SIZE - y < 0.5 ? -1 : 1;
     const pending: HTMLImageElement[] = [];
     for (const suffix of suffixes) {
         for (const [dx, dy] of [[0, 0], [neighborX, 0], [0, neighborY], [neighborX, neighborY]]) {
             if (!hasTileInCoverage(coverage, zoom, x + dx, y + dy, suffix)) continue;
-            const url = getTileResourceUrl(`/clips/${regionId}/${zoom}/${x + dx}_${y + dy}${suffix}.webp`);
+            const url = getTileResourceUrl(`${regionId}/${zoom}/${x + dx}_${y + dy}${suffix}.webp`, source);
             const image = document.createElement('img');
             image.decoding = 'async';
             image.fetchPriority = 'low';
