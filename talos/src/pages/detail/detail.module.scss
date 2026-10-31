@@ -506,3 +506,10 @@
         transform: none;
     }
 }
+.noclipPreview {
+    padding: 12px 0;
+    overflow-wrap: anywhere;
+    p { margin: 6px 0; }
+    label { display: grid; gap: 6px; }
+    select { max-width: 100%; font: inherit; }
+}

@@ -69,6 +69,7 @@ export const typeCheck = async (runner, app = 'all', prepare = true) => {
         main: '.',
         intel: 'apps/intel',
         'user-hub': 'apps/user-hub',
+        minimap: 'apps/minimap',
         search: 'oem-search',
         relink: 'oem-relink',
     };

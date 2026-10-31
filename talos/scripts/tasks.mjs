@@ -27,16 +27,16 @@ import {
     verifyOutput,
 } from './release-artifact.mjs';
 const help = `Usage: pnpm <command> [options]
-  build       [--target cn|org|all] [--app main|intel|user-hub]
+  build       [--target cn|org|all] [--app main|intel|user-hub|minimap]
   deploy:all  [--skip-og] [--skip-subset]
-  deploy:cn / deploy:org [--channel prod|beta] [--app intel|user-hub]
-  run publish [--target cn|org] [--only oss|r2|server|pages|resources] [--app intel|user-hub]
+  deploy:cn / deploy:org [--channel prod|beta] [--app intel|user-hub|minimap]
+  run publish [--target cn|org] [--only oss|r2|server|pages|resources] [--app intel|user-hub|minimap]
   package     [--target cn|org] [--format archive|pages] [--skip-build]
   og          [--target cn|org|all] [--action build|publish|refresh]
   worker      search|relink check|deploy
   check [--build] / lint / lint:fix / type-check / test
-  type-check [--app main|intel|user-hub|relink|search]
-  run test    [--app main|intel|user-hub|relink|scripts]
+  type-check [--app main|intel|user-hub|minimap|relink|search]
+  run test    [--app main|intel|user-hub|minimap|relink|scripts]
   data        prepare|check|overrides|intel|locale|tile-coverage|marker-stats|marker-lookup|marker-diff|search-index|relink-preview|sync-intel|seo
   data fonts  (generate shared immutable shards for all apps)
 Common: --channel prod|beta, --dry-run, --help
@@ -153,8 +153,8 @@ export const parseTask = (argv, env = process.env) => {
         throw new Error('--app and --skip-intel cannot be combined.');
     const only = values.only || 'all';
     if (['deploy', 'publish'].includes(command) && values.app) {
-        if (!['intel', 'user-hub'].includes(values.app))
-            throw new Error('App publishing supports intel or user-hub only.');
+        if (!['intel', 'user-hub', 'minimap'].includes(values.app))
+            throw new Error('App publishing supports intel, user-hub or minimap only.');
         if (only !== 'all')
             throw new Error(
                 'App publishing requires both resources and site entrypoints; --only is not supported.',

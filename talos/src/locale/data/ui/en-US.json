@@ -34,6 +34,18 @@
     "emptyDesc": "If you confirm that any point info is missing or incorrect, please contact the administrators in the our community, or submit an <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='Report location error'>Issue</a> on our GitHub repository."
   },
   "detail": {
+    "noclip": {
+      "title": "3D preview and prerequisites",
+      "open": "Open 3D preview",
+      "conditions": "Known story prerequisites",
+      "none": "No quest prerequisite is recorded.",
+      "locks": "Additional interaction locks",
+      "unknown": "Some spawn, script or interaction conditions remain unknown; the preview applies known story conditions only.",
+      "state": "Preview state",
+      "default": "noclip defaults",
+      "or": "or",
+      "unavailable": "3D preview data is unavailable."
+    },
     "stat": {
       "world": "World",
       "main": "Main",

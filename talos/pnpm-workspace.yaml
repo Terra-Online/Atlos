@@ -1,5 +1,6 @@
 packages:
   - apps/intel
   - apps/user-hub
+  - apps/minimap
   - oem-search
   - oem-relink

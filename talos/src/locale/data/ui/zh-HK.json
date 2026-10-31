@@ -34,6 +34,18 @@
     "emptyDesc": "若您確認點位資訊缺失或有誤，請於項目社羣中聯絡管理員；或到本項目的 GitHub Repo 提交 <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='報告點位錯誤'>Issue</a>。"
   },
   "detail": {
+    "noclip": {
+      "title": "3D 預覽與前置條件",
+      "open": "開啟 3D 預覽",
+      "conditions": "已知劇情前置",
+      "none": "未記錄任務進度前置。",
+      "locks": "額外交互鎖",
+      "unknown": "部分出生、腳本或交互條件尚未還原；預覽僅套用已知劇情條件。",
+      "state": "預覽狀態",
+      "default": "noclip 預設狀態",
+      "or": "或",
+      "unavailable": "3D 預覽資料暫不可用。"
+    },
     "stat": {
       "world": "世界",
       "main": "主區域",

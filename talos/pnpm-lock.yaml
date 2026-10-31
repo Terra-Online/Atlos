@@ -231,6 +231,8 @@ importers:
 
   apps/intel: {}
 
+  apps/minimap: {}
+
   apps/user-hub: {}
 
   oem-relink:

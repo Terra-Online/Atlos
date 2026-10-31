@@ -14,10 +14,11 @@ const fixture = async (t) => {
     t.after(() => fs.rm(root, { recursive: true, force: true }));
     const source = path.join(root, 'source'), output = path.join(root, 'pages');
     const files = {
-        '.atlos-build.json': JSON.stringify({ target: 'org', channel: 'prod', apps: ['main', 'user-hub'] }),
+        '.atlos-build.json': JSON.stringify({ target: 'org', channel: 'prod', apps: ['main', 'user-hub', 'minimap'] }),
         'index.html': '<html>map entry</html>', 'assets/main.js': 'main',
         'satellite/index.html': '<html>map entry</html>', 'satellite/Dijiang/1/1_1.webp': 'tile',
         'me/index.html': '<html>user hub</html>', 'me/assets/main.js': 'hub',
+        'minimap/index.html': '<html>minimap</html>', 'minimap/assets/main.js': 'minimap',
         'sitemap.xml': 'sitemap', 'robots.txt': 'robots', 'seo/points/r2/Ab12345.html': 'point',
     };
     for (const [file, contents] of Object.entries(files)) {
@@ -34,6 +35,8 @@ test('packages the satellite SPA entry without bringing tile resources into Page
         await fs.readFile(path.join(output, 'index.html'), 'utf8'));
     assert.deepEqual(await fs.readdir(path.join(output, 'satellite')), ['index.html']);
     assert.ok(await fs.stat(path.join(output, 'me/index.html')));
+    assert.equal(await fs.readFile(path.join(output, 'minimap/index.html'), 'utf8'), '<html>minimap</html>');
+    assert.match(await fs.readFile(path.join(output, '_redirects'), 'utf8'), /\/minimap\/\* \/minimap\/ 200/);
 });
 
 test('rejects a missing satellite entry before replacing an existing package', async (t) => {

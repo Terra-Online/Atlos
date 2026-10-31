@@ -14,9 +14,9 @@ const within = (root, file) => file === root || file.startsWith(root + path.sep)
 export async function readProductionArtifact(dist) {
     const root = await realpath(path.resolve(dist));
     const info = JSON.parse(await readFile(path.join(root, '.atlos-build.json'), 'utf8'));
-    if (info.sourceOnly || !['main', 'intel', 'user-hub'].every((app) => info.apps.includes(app)))
+    if (info.sourceOnly || !['main', 'intel', 'user-hub', 'minimap'].every((app) => info.apps.includes(app)))
         throw new Error('A complete local-asset production artifact is required.');
-    for (const entry of ['index.html', 'intel/index.html', 'me/index.html']) await stat(path.join(root, entry));
+    for (const entry of ['index.html', 'intel/index.html', 'me/index.html', 'minimap/index.html']) await stat(path.join(root, entry));
     const assets = new URL(info.resources.assetsHost.replace(/\/$/, '') + '/');
     return { root, info, assets, resourceUrl(url, origin) {
         if (url.origin !== assets.origin || !url.pathname.startsWith(assets.pathname)) return null;
@@ -34,7 +34,7 @@ export async function createProductionServer({ dist, port = 0, handleRequest }) 
             if (handleRequest && await handleRequest(request, response, artifact)) return;
             if (!['GET', 'HEAD'].includes(request.method)) { response.writeHead(405); response.end(); return; }
             let relative = decodeURIComponent(url.pathname).replace(/^\/+/, '');
-            if (!path.posix.extname(relative)) relative = relative.startsWith('me/') || relative === 'me' ? 'me/index.html'
+            if (!path.posix.extname(relative)) relative = relative.startsWith('minimap/') || relative === 'minimap' ? 'minimap/index.html' : relative.startsWith('me/') || relative === 'me' ? 'me/index.html'
                 : relative === 'intel' || relative.startsWith('intel/') ? 'intel/index.html' : relative === '' ? 'index.html' : relative;
             const candidate = path.resolve(root, relative);
             if (!within(root, candidate)) throw new Error('Invalid path');

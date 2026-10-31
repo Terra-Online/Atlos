@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import useRegion from '@/store/region';
 import { REGION_DICT } from '@/data/map';
-import trackerIconUrl from '@/assets/images/UI/icon_char.png';
+import { createTrackerMarker, setTrackerBearing } from '@/services/map/locatorMarker';
 import { LOCATOR_RETURN_CURRENT_EVENT, useLocatorStore } from '@/store/locator';
 import {
     EFBackendError,
@@ -18,7 +18,7 @@ import {
     readEFTrackerConf,
     saveEFTrackerConf,
 } from '@/services/endfield';
-import styles from '@/pages/map/Locator.module.scss';
+import styles from '@/services/map/locatorMarker.module.scss';
 import { selectLocatorRecovery } from '@/pages/map/locatorRecovery';
 
 type TrackerConfig = {
@@ -49,34 +49,6 @@ const convertGamePosition = (
         mapZ: locator.mapZ,
         mode: locator.mode,
     };
-};
-
-const createTrackerMarker = (pane: string, latLng: L.LatLng): L.Marker => {
-    const icon = L.divIcon({
-        className: styles.trackerMarkerIcon,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
-        html: `
-            <div class="${styles.trackerMarkerInner} ${styles.pulsing}">
-                <img class="${styles.trackerMarkerImage}" src="${trackerIconUrl}" width="28" height="28" alt="" decoding="async" />
-            </div>
-        `,
-    });
-
-    return L.marker(latLng, {
-        icon,
-        pane,
-        keyboard: false,
-        interactive: false,
-        zIndexOffset: 900,
-    });
-};
-
-const setTrackerBearing = (marker: L.Marker, angleDeg: number): void => {
-    // Rotate only the image. An inherited custom property on the marker root
-    // unnecessarily invalidates descendant styles for every heading update.
-    const image = marker.getElement()?.querySelector<HTMLElement>(`.${styles.trackerMarkerImage}`);
-    if (image) image.style.transform = `rotate(${angleDeg}deg)`;
 };
 
 const stopTrackerPulse = (marker: L.Marker): void => {
