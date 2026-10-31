@@ -178,6 +178,20 @@ describe('authentication completion', () => {
         expect(result.current.profileError).toBeNull();
     });
 
+    it('completes logout after a same-account session refresh', async () => {
+        const { result } = renderHook(useIdCardAuthController);
+        await act(async () => {});
+        act(() => useAuthStore.getState().setSessionUser(user));
+        let resolve!: () => void;
+        mocks.logout.mockReturnValueOnce(new Promise<void>((done) => { resolve = done; }));
+        let pending!: Promise<void>;
+        act(() => { pending = result.current.handleLogout(); });
+        act(() => useAuthStore.getState().updateSessionUser({ ...user, nickname: 'Refreshed' }));
+        await act(async () => { resolve(); await pending; });
+        expect(useAuthStore.getState().sessionUser).toBeNull();
+        expect(result.current.profileOpen).toBe(false);
+    });
+
     it('completes background authentication without replacing a panel reopened in the same batch', async () => {
         const { result } = renderHook(useIdCardAuthController);
         await act(async () => {});

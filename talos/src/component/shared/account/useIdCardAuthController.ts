@@ -571,11 +571,13 @@ export const useIdCardAuthController = () => {
   }, [handleSaveProfile, isSavingProfile, profileAvatar, profileName, sessionUser]);
 
   const handleLogout = useCallback(async () => {
-    const version = useAuthStore.getState().sessionVersion;
+    const ownerVersion = useAuthStore.getState().sessionOwnerVersion;
     const signal = uiOwner.current.signal;
     try {
       await logoutUser();
-      if (useAuthStore.getState().sessionVersion !== version) return;
+      // Metadata refreshes may advance sessionVersion while this request is
+      // in flight. Only a new authentication owner should invalidate logout.
+      if (useAuthStore.getState().sessionOwnerVersion !== ownerVersion) return;
       clearSessionUser();
       if (signal.aborted) return;
       setProfileOpen(false);
@@ -585,7 +587,7 @@ export const useIdCardAuthController = () => {
       setProfileError(null);
       setAuthError(null);
     } catch (error) {
-      if (signal.aborted || useAuthStore.getState().sessionVersion !== version) return;
+      if (signal.aborted || useAuthStore.getState().sessionOwnerVersion !== ownerVersion) return;
       setProfileError(error instanceof Error ? error.message : 'Network error while logging out.');
     }
   }, [clearSessionUser]);
