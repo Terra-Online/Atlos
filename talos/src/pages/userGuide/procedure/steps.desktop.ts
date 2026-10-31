@@ -1,4 +1,3 @@
-import { Step } from 'react-joyride';
 import { useTranslateUI } from '@/locale';
 import parse from 'html-react-parser';
 import { useEffect, useMemo, useState } from 'react';
@@ -10,25 +9,15 @@ import {
     useSetDesktopDrawerSnapIndex,
     useSetForceRegionSubOpen,
     useSetForceLayerSubOpen,
-    useSetForceDetailOpen,
 } from '@/store/uiPrefs';
 import { useMarkerStore, useSwitchFilter } from '@/store/marker';
-import { applyPointProgressSilently } from '@/store/history';
+import { previewGuideProgress } from '@/store/guideProgress';
 import useRegion from '@/store/region';
-import { findFirstMarkerByType, loadAllMarkers, MARKER_TYPE_TREE, type IMarkerData, type IMarkerType } from '@/data/marker';
+import { findFirstMarkerByType, MARKER_TYPE_TREE, type IMarkerData, type IMarkerType } from '@/data/marker';
 import { DEFAULT_REGION } from '@/data/map';
 
-export type GuideStep = Step & {
-    id: string;
-    /** Intro-only step shown to first-time users before the detailed guide. */
-    intro?: boolean;
-    /** Intro tips intentionally omit the step counter and progress indicator. */
-    hideProgress?: boolean;
-    onBefore?: () => void | Promise<void>;
-    onNext?: () => void | Promise<void>;
-    delay?: number;
-    disableAutoScroll?: boolean;
-};
+import type { GuideStep } from '../tasks';
+export type { GuideStep } from '../tasks';
 
 export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
     const t = useTranslateUI();
@@ -39,7 +28,6 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
     const setDrawerSnapIndex = useSetDesktopDrawerSnapIndex();
     const setForceRegionSubOpen = useSetForceRegionSubOpen();
     const setForceLayerSubOpen = useSetForceLayerSubOpen();
-    const setForceDetailOpen = useSetForceDetailOpen();
     const setCurrentRegion = useRegion((s) => s.setCurrentRegion);
 
     const targetSubCategory = 'boss';
@@ -64,7 +52,7 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
         };
     }, [firstType, prepareTarget]);
 
-    const steps: GuideStep[] = useMemo(() => [
+    const steps = useMemo<GuideStep[]>(() => [
         {
             id: 'STEP-0_welcome',
             target: '[data-guide="help"]',
@@ -120,7 +108,7 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
             content: parse(t('guide.filterContainer')),
             placement: 'right',
             disableBeacon: true,
-            onNext: () => {
+            onNext: (tasks) => {
                 // Ensure the target subcategory is expanded
                 const isExpanded =
                     useUiPrefsStore.getState().markFilterExpanded[firstSubCategory];
@@ -129,7 +117,7 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
                 }
                 
                 // Scroll target item (inside the category) into view if needed
-                setTimeout(() => {
+                tasks.after(() => {
                     const el = document.querySelector(`[data-key="${firstType}"]`);
                     const container = document.querySelector('[class*="sidebarContent"]');
                     
@@ -178,13 +166,7 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
             placement: 'right',
             disableBeacon: true,
             disableAutoScroll: true,
-            onNext: () => {
-                void loadAllMarkers().then((markers) => {
-                    markers
-                        .filter((m) => m.type === firstType)
-                        .forEach((p) => applyPointProgressSilently({ collect: [p.id] }));
-                });
-            },
+            onNext: (tasks) => previewGuideProgress(firstType, true, tasks.signal),
         },
         {
             id: 'STEP-7_trigger-handle',
@@ -193,13 +175,9 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
             placement: 'top',
             disableBeacon: true,
             disableAutoScroll: true,
-            onNext: () => {
+            onNext: (tasks) => {
                 setDrawerSnapIndex(1);
-                void loadAllMarkers().then((markers) => {
-                    markers
-                        .filter((m) => m.type === firstType)
-                        .forEach((p) => applyPointProgressSilently({ uncollect: [p.id] }));
-                });
+                return previewGuideProgress(firstType, false, tasks.signal);
             },
             delay: 300,
         },
@@ -345,7 +323,6 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
             disableAutoScroll: true,
             onNext: () => {
                 if (targetPoint) setCurrentActivePoint(targetPoint);
-                setForceDetailOpen(true);
             },
             delay: 300,
         },
@@ -364,7 +341,6 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
             placement: 'top',
             disableBeacon: true,
             disableAutoScroll: true,
-            onNext: () => setForceDetailOpen(false),
         },
     ], [
         t,
@@ -375,7 +351,6 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
         setCurrentActivePoint,
         setForceRegionSubOpen,
         setForceLayerSubOpen,
-        setForceDetailOpen,
         setCurrentRegion,
         map,
         firstSubCategory,

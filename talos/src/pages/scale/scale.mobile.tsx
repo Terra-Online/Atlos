@@ -16,6 +16,7 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
     const wrapRef = useRef<HTMLDivElement>(null);
     const touchStartRef = useRef<number | null>(null);
     const initialZoomRef = useRef<number | null>(null);
+    const draggingWasEnabledRef = useRef(false);
     const frameRef = useRef<number | null>(null);
     const zoomFrameRef = useRef<number | null>(null);
     const pendingZoomRef = useRef<number | null>(null);
@@ -66,6 +67,7 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
         e.stopPropagation();
         cancelPendingZoom();
         pendingZoomRef.current = null;
+        if (touchStartRef.current === null) draggingWasEnabledRef.current = map?.dragging.enabled() ?? false;
         map?.dragging.disable();
         setDragging(true);
         const y = e.touches[0].clientY;
@@ -93,7 +95,8 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
         setZoomLevel(clamped);
         setUIScale(calcScale(clamped, bounds.min, bounds.max));
         setDragging(false);
-        map.dragging.enable();
+        if (draggingWasEnabledRef.current) map.dragging.enable();
+        draggingWasEnabledRef.current = false;
         touchStartRef.current = null;
         initialZoomRef.current = null;
     }, [map, bounds, snapZoom, setUIScale, cancelPendingZoom]);
@@ -134,7 +137,13 @@ const ScaleMobile = ({ map }: { map: L.Map }) => {
     useEffect(() => () => {
         if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
         cancelPendingZoom();
-    }, [cancelPendingZoom]);
+        // A responsive layout change can remove the mobile control mid-touch.
+        // Release only the dragging lock acquired by this gesture.
+        if (draggingWasEnabledRef.current) map?.dragging.enable();
+        draggingWasEnabledRef.current = false;
+        touchStartRef.current = null;
+        initialZoomRef.current = null;
+    }, [map, cancelPendingZoom]);
 
     return (
         <div className={`${styles.scaleContainerMobile} ${dragging ? styles.dragging : ''}`}>

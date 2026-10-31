@@ -26,7 +26,7 @@ const renderLabels = (
     layer: L.LayerGroup,
     labels: AnyLabel[],
     zoom: number,
-    maxZoom: number,
+    coordZoom: number,
     t: <T = string>(key: string) => T,
     regionCode: string,
     structure: RegionStructure,
@@ -63,7 +63,7 @@ const renderLabels = (
             if (label.type !== showType) continue;
 
             const [x, y] = label.point;
-            const latLng = map.unproject([x, y], maxZoom);
+            const latLng = map.unproject([x, y], coordZoom);
             const text = resolveLabelText(t, regionCode, structure, label);
 
             const marker = L.marker(latLng, {
@@ -82,7 +82,7 @@ const renderLabels = (
     return showType;
 };
 
-export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefined, maxZoom: number | null | undefined) => {
+export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefined, coordZoom: number | null | undefined) => {
     const t = useTranslate();
     // Force effects/memos to react to locale changes even if `t` is referentially stable.
     const locale = useLocale();
@@ -107,7 +107,7 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
         // Intentionally reference `locale` so the effect re-runs on language switch
         // and re-renders labels immediately (without requiring a zoom event).
         void locale;
-        if (!map || !regionCode || typeof maxZoom !== 'number' || !structure) return;
+        if (!map || !regionCode || typeof coordZoom !== 'number' || !structure) return;
 
         // Reset current label type to force re-render when dependencies change (e.g. locale, labels)
         currentLabelTypeRef.current = null;
@@ -174,7 +174,7 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
                 return;
             }
             const z = map.getZoom();
-            const newType = renderLabels(map, pane, layer, labels, z, maxZoom, t, regionCode, structure, currentLabelTypeRef.current, defer);
+            const newType = renderLabels(map, pane, layer, labels, z, coordZoom, t, regionCode, structure, currentLabelTypeRef.current, defer);
             currentLabelTypeRef.current = newType;
         };
 
@@ -223,7 +223,7 @@ export const useLabel = (map: L.Map | null, mapRegionKey: string | null | undefi
             unbind();
             map.off('talos:labelToolMounted', onToolMounted);
         };
-    }, [map, regionCode, maxZoom, t, labels, structure, showRegionLabels, locale]);
+    }, [map, regionCode, coordZoom, t, labels, structure, showRegionLabels, locale]);
 
     // Cleanup if map is destroyed
     useEffect(() => {

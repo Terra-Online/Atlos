@@ -12,6 +12,7 @@
     "settings": "Ajustes"
   },
   "mapControls": {
+    "satellite": "Modo satélite",
     "layerSelect": "Selección de capa",
     "locationTracking": "Sincronización de ubicación"
   },

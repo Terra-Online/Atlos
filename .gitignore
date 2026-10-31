@@ -29,6 +29,7 @@ dist-ssr
 **/config/config.r2.json
 
 talos/public/clips
+talos/public/satellite
 talos/public/files
 talos/public/points
 talos/public/seo
@@ -74,15 +75,7 @@ talos/.stylelintcache
 /talos/src/asset
 
 *.glyphs
-*.test.ts
 *.generated.ts
-!talos/oem-relink/src/index.test.ts
-!talos/apps/intel/src/data/importContract.test.ts
-
-
-# Performance regression coverage.
-!talos/src/store/marker.proximity.test.ts
-!talos/src/store/marker.counts.test.ts
 
 # Local-only Canvas performance harnesses, reports and captures.
 /talos/performance/
@@ -96,3 +89,15 @@ talos/.stylelintcache
 
 # Local performance reports, traces, captures, builds and history backups.
 /docs/perf/
+
+# Local-only refactor roadmap; keep it out of commits.
+/docs/roadmap.md
+
+# Local-only baseline reports and captured evidence.
+/docs/PERFORMANCE.md
+/docs/behavior-change-ledger.md
+/docs/baselines/
+
+# Local test coverage reports.
+/talos/coverage/
+/talos/test-results/

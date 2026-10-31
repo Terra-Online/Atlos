@@ -8,6 +8,8 @@ import {
     WORLD_TYPE_COUNT_MAP,
 } from '@/data/marker';
 import { SUBREGION_DICT } from '@/data/map';
+import { SUBREGION_TO_REGION_MAP } from '@/services/routing/protocol';
+import { retryLoad } from '@/lib/async/retryLoad';
 import { hasFullSupport, isUIOnly, resolveFileContentLocale, useTranslateGame } from '@/locale';
 import useRegion from '@/store/region';
 
@@ -76,7 +78,7 @@ const loadOrama = () => {
             createDb: mod.create as unknown as CreateFn,
             insertDocs: mod.insertMultiple as unknown as InsertMultipleFn<SearchDoc>,
             searchDocs: mod.search as unknown as SearchFn<SearchDoc>,
-        }));
+        })).catch((error: unknown) => { oramaPromise = null; throw error; });
     }
     return oramaPromise;
 };
@@ -114,10 +116,6 @@ const mergeHits = (primary: SearchHitDoc[], supplement: SearchHitDoc[], limit: n
     return Array.from(merged.values()).slice(0, limit);
 };
 
-interface WorkerSearchResponse {
-    hits: SearchHitDoc[];
-}
-
 export interface SearchResultGroup {
     typeKey: string;
     typeMain: string;
@@ -145,11 +143,6 @@ const PREBUILT_DOCS_BASE_PATH = `${BASE_URL.replace(/\/$/, '')}/search/docs`;
 const SEARCH_DOC_VERSIONS = typeof __SEARCH_DOC_VERSIONS__ !== 'undefined'
     ? __SEARCH_DOC_VERSIONS__
     : {};
-
-const DEFAULT_SEARCH_ENDPOINT = 'https://oem-search.cirisus.workers.dev/search';
-const REMOTE_SEARCH_ENDPOINT =
-    (import.meta.env.VITE_SEARCH_ENDPOINT as string | undefined)?.trim() || DEFAULT_SEARCH_ENDPOINT;
-const PROD_WORKER_FIRST = false;
 
 const CJK_RE = /[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/;
 
@@ -229,56 +222,6 @@ const buildSearchDoc = (value: {
         body: value.body,
         cjk: value.cjk,
     };
-};
-
-const parseWorkerSearchResponse = (value: unknown): WorkerSearchResponse | null => {
-    if (!isObjectRecord(value)) return null;
-    const hitsRaw = value.hits;
-    if (!Array.isArray(hitsRaw)) return null;
-
-    const hits: SearchHitDoc[] = [];
-    hitsRaw.forEach((item) => {
-        if (!isObjectRecord(item)) return;
-        const pointId = item.pointId;
-        const typeKey = item.typeKey;
-        const typeMain = item.typeMain;
-        const title = item.title;
-        const regionKey = item.regionKey;
-        const subregionId = item.subregionId;
-        const body = item.body;
-        const score = item.score;
-        const aliases = item.aliases;
-        const binderTokens = item.binderTokens;
-        const binderDisplay = item.binderDisplay;
-
-        if (
-            typeof pointId !== 'string' ||
-            typeof typeKey !== 'string' ||
-            typeof typeMain !== 'string' ||
-            typeof regionKey !== 'string' ||
-            typeof subregionId !== 'string' ||
-            typeof body !== 'string' ||
-            typeof score !== 'number'
-        ) {
-            return;
-        }
-
-        hits.push({
-            pointId,
-            typeKey,
-            typeMain,
-            title: typeof title === 'string' ? title : '',
-            aliases: typeof aliases === 'string' ? aliases : '',
-            regionKey,
-            subregionId,
-            body,
-            score,
-            binderTokens: typeof binderTokens === 'string' ? binderTokens : '',
-            binderDisplay: typeof binderDisplay === 'string' ? binderDisplay : '',
-        });
-    });
-
-    return { hits };
 };
 
 const parsePrebuiltDocs = (value: unknown): SearchDoc[] => {
@@ -395,6 +338,8 @@ const buildFallbackDocs = async (): Promise<SearchDoc[]> => {
     markers.forEach((marker) => {
         if (typeof marker.type !== 'string' || !marker.type.trim()) return;
         const typeKey = marker.type.trim();
+        const regionKey = SUBREGION_TO_REGION_MAP[marker.subregId];
+        if (!regionKey) return;
         const markerType = MARKER_TYPE_DICT[typeKey];
         docs.push({
             docId: `${String(marker.id)}@@${String(marker.subregId)}`,
@@ -405,7 +350,7 @@ const buildFallbackDocs = async (): Promise<SearchDoc[]> => {
             aliases: typeKey,
             binderTokens: '',
             binderDisplay: '',
-            regionKey: 'Valley_4',
+            regionKey,
             subregionId: String(marker.subregId),
             body: '',
             cjk: '',
@@ -476,7 +421,10 @@ const getPrebuiltDb = (docsLocale: string): Promise<SearchDb> => {
         }
 
         return createSearchDb(await buildFallbackDocs());
-    })();
+    })().catch((error: unknown) => {
+        prebuiltDbPromiseByLocale.delete(docsLocale);
+        throw error;
+    });
 
     prebuiltDbPromiseByLocale.set(docsLocale, promise);
     return promise;
@@ -751,6 +699,7 @@ export const useAdvancedSearch = (query: string, locale: string) => {
 
     useEffect(() => {
         let timeoutId = 0;
+        const controller = new AbortController();
         const run = async () => {
             if (!normalizedSearchQuery) {
                 setResults((current) => current.length === 0 ? current : []);
@@ -833,49 +782,6 @@ export const useAdvancedSearch = (query: string, locale: string) => {
                 return cjkMode ? mergeHits(mergedWithBinder, cjkSupplement, DOC_LIMIT * 2) : mergedWithBinder;
             };
 
-            const hasLocalDocsCache = prebuiltDocsByLocale.has(docsLocale);
-            const shouldTryRemoteFirst = PROD_WORKER_FIRST && !hasLocalDocsCache;
-
-            if (shouldTryRemoteFirst && REMOTE_SEARCH_ENDPOINT) {
-                try {
-                    const url = new URL(REMOTE_SEARCH_ENDPOINT, window.location.origin);
-                    url.searchParams.set('q', normalizedSearchQuery);
-                    url.searchParams.set('limit', String(DOC_LIMIT));
-                    url.searchParams.set('locale', docsLocale);
-
-                    const res = await fetch(url.toString(), {
-                        method: 'GET',
-                        headers: { Accept: 'application/json' },
-                        cache: 'no-store',
-                    });
-
-                    if (activeTokenRef.current !== token) return;
-
-                    if (res.ok) {
-                        const payload = parseWorkerSearchResponse(await res.json());
-                        if (payload && payload.hits.length > 0) {
-                            lastFetchKeyRef.current = fetchKey;
-                            lastDocsRef.current = payload.hits;
-                            setResults(toGroups(payload.hits, normalizedSearchQuery, currentRegionKey, currentSubregionKey, tGameRef.current));
-                            setLoading(false);
-                            return;
-                        }
-                    }
-                } catch {
-                    // Ignore remote failure and fallback to local prebuilt docs.
-                }
-            }
-
-            if (!shouldTryRemoteFirst && hasLocalDocsCache) {
-                const localDocs = await runLocalSearch();
-                if (activeTokenRef.current !== token) return;
-                lastFetchKeyRef.current = fetchKey;
-                lastDocsRef.current = localDocs;
-                setResults(toGroups(localDocs, normalizedSearchQuery, currentRegionKey, currentSubregionKey, tGameRef.current));
-                setLoading(false);
-                return;
-            }
-
             const finalDocs = await runLocalSearch();
             if (activeTokenRef.current !== token) return;
 
@@ -886,11 +792,17 @@ export const useAdvancedSearch = (query: string, locale: string) => {
         };
 
         timeoutId = window.setTimeout(() => {
-            void run();
+            void retryLoad(run, { signal: controller.signal }).catch(() => {
+                // Closing/changing this query cancels its retry sequence.
+            });
         }, SEARCH_DEBOUNCE_MS);
 
         return () => {
             window.clearTimeout(timeoutId);
+            controller.abort();
+            // Invalidate work as soon as the query/region changes, including
+            // the next debounce window and an empty query or unmount.
+            activeTokenRef.current += 1;
         };
     }, [normalizedSearchQuery, locale, currentRegionKey, currentSubregionKey]);
 

@@ -31,7 +31,8 @@
       "mission": "Misja",
       "auto": "Postęp",
       "shop": "Sklep",
-      "invstgt": "Dochodzenie"
+      "invstgt": "Dochodzenie",
+      "unknown": "Warunek odblokowania niepotwierdzony"
     },
     "label": {
       "missionSequence": "Misja",

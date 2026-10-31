@@ -12,6 +12,7 @@
     "settings": "Keutamaan"
   },
   "mapControls": {
+    "satellite": "Mod satelit",
     "layerSelect": "Pemilihan lapisan",
     "locationTracking": "Segerak Lokasi"
   },

@@ -1,3 +1,5 @@
+import { bundleReport } from './scripts/lib/bundle-report.mjs';
+import { startupProbe } from './scripts/lib/startup-probe.mjs';
 import { fontShardsPlugin } from './scripts/fonts/vite-plugin.mjs';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -65,6 +67,9 @@ const metaInfo = buildTarget === 'r2'
       };
 
 const isProd = process.env.NODE_ENV === 'production';
+// vite-plugin-inspect writes an inspection report on every build; opt in with
+// INSPECT=1 when analysing a build instead of paying that cost in production.
+const IS_INSPECT_ENABLED = process.env.INSPECT === '1';
 const getGitAssetVersion = () => {
     try {
         return execSync('git rev-parse --short=12 HEAD', {
@@ -153,8 +158,8 @@ if (isProd) {
     );
 }
 
-const getMapClipTargets = () => {
-    const clipsDir = resolve(__dirname, 'public/clips');
+const getMapClipTargets = (source = 'clips') => {
+    const clipsDir = resolve(__dirname, 'public', source);
     if (!existsSync(clipsDir)) return [];
 
     const targets = [];
@@ -172,8 +177,8 @@ const getMapClipTargets = () => {
             // Only copy directories (e.g. 0, 1, 2, 3)
             if (fs.statSync(itemPath).isDirectory()) {
                 targets.push({
-                    src: `public/clips/${mapName}/${item}`,
-                    dest: `clips/${mapName}`,
+                    src: `public/${source}/${mapName}/${item}`,
+                    dest: `${source}/${mapName}`,
                 });
             }
         }
@@ -207,26 +212,41 @@ const cleanDistClipsPlugin = () => {
             distDir = resolve(resolvedConfig.root, resolvedConfig.build.outDir);
         },
         closeBundle() {
-            const clipsDir = resolve(distDir, 'clips');
-            if (!existsSync(clipsDir)) return;
+            for (const source of ['clips', 'satellite']) {
+                const clipsDir = resolve(distDir, source);
+                if (!existsSync(clipsDir)) continue;
 
-            const entries = fs.readdirSync(clipsDir, { withFileTypes: true });
-            for (const entry of entries) {
-                const fullPath = resolve(clipsDir, entry.name);
-                if (entry.isDirectory()) {
-                    if (isExcludedClipDir(entry.name)) {
-                        fs.rmSync(fullPath, { recursive: true, force: true });
+                const entries = fs.readdirSync(clipsDir, { withFileTypes: true });
+                for (const entry of entries) {
+                    const fullPath = resolve(clipsDir, entry.name);
+                    if (entry.isDirectory()) {
+                        if (isExcludedClipDir(entry.name)) {
+                            fs.rmSync(fullPath, { recursive: true, force: true });
+                        }
+                        continue;
                     }
-                    continue;
+
+                    if (source === 'satellite' && entry.name === 'index.html') continue;
+
+                    fs.rmSync(fullPath, { force: true });
                 }
 
-                fs.rmSync(fullPath, { force: true });
+                removeScriptFiles(clipsDir);
             }
-
-            removeScriptFiles(clipsDir);
         },
     };
 };
+
+const satelliteEntryPlugin = () => ({
+    name: 'satellite-entry',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+        const entry = bundle['index.html'];
+        if (entry?.type === 'asset') {
+            this.emitFile({ type: 'asset', fileName: 'satellite/index.html', source: entry.source });
+        }
+    },
+});
 
 const cleanDistSeoPointsPlugin = () => {
     let distDir = resolve(__dirname, 'dist');
@@ -263,6 +283,8 @@ const cleanDistSeoPointsPlugin = () => {
 export default defineConfig({
     // publicDir: false, // Disabled to allow standard Vite public directory behavior
     plugins: [
+        bundleReport('main'),
+        startupProbe(),
         fontShardsPlugin(),
         react(),
         svgr(),
@@ -278,6 +300,7 @@ export default defineConfig({
                 },
             },
         }),
+        satelliteEntryPlugin(),
         // 只复制存在的目录，避免构建失败
         viteStaticCopy({
             targets: [
@@ -299,11 +322,13 @@ export default defineConfig({
                 },
             ]
                 .filter((target) => existsSync(target.src))
-                .concat(getMapClipTargets()), // 只包含存在的源路径
+                .concat(getMapClipTargets(), getMapClipTargets('satellite')), // 只包含存在的源路径
         }),
         cleanDistClipsPlugin(),
         cleanDistSeoPointsPlugin(),
-        Inspect(),
+        // Only useful while inspecting a dev or analysis build; it slows down
+        // and adds noise to production output.
+        ...(IS_INSPECT_ENABLED ? [Inspect()] : []),
     ],
     base: assetsHost,
     define: {
@@ -323,10 +348,12 @@ export default defineConfig({
     },
     esbuild: {
         loader: 'tsx',
-        include: /src\/.*\.(jsx?|tsx?)$/,
+        include: /(?:src|test-support)\/.*\.(jsx?|tsx?)$/,
         exclude: [],
     },
     optimizeDeps: {
+        // Archived SEO builds under dist/ are outputs, never dependency entries.
+        entries: ['index.html'],
         esbuildOptions: {
             loader: {
                 '.js': 'jsx',

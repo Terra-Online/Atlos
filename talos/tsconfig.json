@@ -62,6 +62,8 @@
   },
   "include": [
     "src/**/*",
+    "test-support/**/*.ts",
+    "test-support/**/*.tsx",
     "oem-relink/src/**/*",
     "src/vite-env.d.ts",
     "vite.config.js",
@@ -76,7 +78,6 @@
     "scripts",
     "src/data/marker/data/20260110",
     "src/data/marker/data/20260204",
-    "**/*.test.js",
     "**/*.spec.js"
   ]
 }

@@ -1,6 +1,8 @@
 import { useTheme } from '@main/platform/useTheme';
 import { HeadBar, HeadItem } from '@main/component/shared/siteShell/headBar/headBar';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import Modal from '@main/component/modal/modal';
+import { useRetryImport } from '@main/lib/dom/useRetryImport';
 import { cleanupTheme, initTheme, toggleTheme } from '@main/platform/theme';
 import { useTranslateUI as useTranslateMainUI } from '@main/locale';
 import { getFontRegionForLocale } from '@main/locale';
@@ -10,8 +12,7 @@ import Darkmode from '@main/assets/logos/darkmode.svg?react';
 import I18n from '@main/assets/logos/i18n.svg?react';
 import Refresh from '@main/assets/images/UI/refresh.svg?react';
 import styles from './header.module.scss';
-
-const Language = lazy(() => import('@main/component/shared/language/language'));
+const loadLanguage = () => import('@main/component/shared/language/language');
 
 type Props = {
     busy: boolean;
@@ -23,6 +24,7 @@ export default function Header({ busy, onRefresh }: Props) {
     const main = useTranslateMainUI();
     const isDark = useTheme() === 'dark';
     const [languageOpen, setLanguageOpen] = useState(false);
+    const Language = useRetryImport(loadLanguage, languageOpen)?.default;
 
     useEffect(() => {
         initTheme();
@@ -58,7 +60,7 @@ export default function Header({ busy, onRefresh }: Props) {
                 </div>
             </header>
             {languageOpen && (
-                <Suspense fallback={null}>
+                Language ? (
                     <Language
                         open
                         onClose={() => setLanguageOpen(false)}
@@ -72,7 +74,11 @@ export default function Header({ busy, onRefresh }: Props) {
                             if (region) preloadFontRegion(region);
                         }}
                     />
-                </Suspense>
+                ) : (
+                    <Modal open title={main('headbar.language')} onClose={() => setLanguageOpen(false)}>
+                        <p role='status'>{t('common.loading')}</p>
+                    </Modal>
+                )
             )}
         </>
     );

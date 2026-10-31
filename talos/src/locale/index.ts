@@ -3,6 +3,7 @@ import type { UseBoundStore, StoreApi } from 'zustand';
 import { unstable_batchedUpdates } from 'react-dom';
 import { readInitialLocale, persistLocale, deepGet, mergeCatalogs, createRequestGuard } from '@/lib/i18n/runtime';
 import LOGGER from '@/lib/logging/logger';
+import { retryLoad } from '@/lib/async/retryLoad';
 import { preloadFontRuns, switchFontRegion } from '@/locale/fontLoader';
 import useRegion from '@/store/region';
 import {
@@ -151,13 +152,16 @@ async function loadAndSet(
         | (() => void)
         | void
         | Promise<(() => void) | void>,
+    retryCatalog = false,
 ) {
     const current = beginRequest();
     const isCurrent = () => current() && valid();
     const fontRegion = getFontRegionForLocale(locale);
     // Start catalog and font work together. The UI commit still waits for
     // both, but a cold locale chunk must not delay the font manifest/request.
-    const dataPromise = loadLocaleCached(locale);
+    const dataPromise = retryCatalog
+        ? retryLoad(() => loadLocaleCached(locale), { onRetry: (error) => console.warn('Initial locale unavailable; retrying:', error) })
+        : loadLocaleCached(locale);
     const hasCatalog = Object.keys(useI18nStore.getState().data.ui).length > 0;
     const fontsPromise = hasCatalog
         ? dataPromise.then(async (data) => {
@@ -206,7 +210,7 @@ async function loadAndSet(
 
 async function init() {
     const locale = readInitialLocale();
-    await loadAndSet(locale);
+    await loadAndSet(locale, undefined, undefined, true);
 }
 
 export const useTranslate = (): (<T = string>(key: string) => T) => {

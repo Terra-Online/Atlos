@@ -38,6 +38,11 @@ const AdaptiveLinearBlur = ({
         if (!mask || !target || !fade) return;
         const property = `--scroll-fade-${side}`;
         let animation: Animation | undefined;
+        const stopAnimation = () => {
+            const previous = animation;
+            animation = undefined;
+            if (previous) { previous.onfinish = null; previous.cancel(); }
+        };
         let height = -1;
         const updateClass = () =>
             target.classList.toggle(
@@ -59,21 +64,23 @@ const AdaptiveLinearBlur = ({
             height = next;
             const current =
                 getComputedStyle(target).getPropertyValue(property) || '0px';
-            animation?.cancel();
+            stopAnimation();
             target.style.setProperty(property, `${next}px`);
             if (
                 typeof target.animate === 'function' &&
                 parseFloat(current) !== next
             ) {
                 target.classList.add(styles.maskTarget);
-                animation = target.animate(
+                const nextAnimation = target.animate(
                     [{ [property]: current }, { [property]: `${next}px` }],
                     {
                         duration: 250,
                         easing: 'ease-out',
                     },
                 );
-                animation.onfinish = () => {
+                animation = nextAnimation;
+                nextAnimation.onfinish = () => {
+                    if (animation !== nextAnimation) return;
                     animation = undefined;
                     updateClass();
                 };
@@ -87,7 +94,7 @@ const AdaptiveLinearBlur = ({
         observer.observe(fade);
         return () => {
             observer.disconnect();
-            animation?.cancel();
+            stopAnimation();
             updateRef.current = null;
             target.style.removeProperty(property);
             updateClass();

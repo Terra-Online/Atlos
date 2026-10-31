@@ -11,7 +11,8 @@ export const useIdCardHoverAngle = () => {
   const lastNormalizedAngleRef = useRef<number | null>(null);
   const rafIdRef = useRef<number | null>(null);
 
-  const normalizeAngle = useCallback((angle: number) => (angle + 360) % 360, []);
+  // Continuous rotations may cross several negative revolutions.
+  const normalizeAngle = useCallback((angle: number) => ((angle % 360) + 360) % 360, []);
 
   const setCardHoverAngle = useCallback((angle: number) => {
     const card = cardRef.current;

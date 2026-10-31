@@ -12,6 +12,7 @@
     "settings": "설정"
   },
   "mapControls": {
+    "satellite": "위성 모드",
     "layerSelect": "레이어 선택",
     "locationTracking": "위치 동기화"
   },

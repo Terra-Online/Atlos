@@ -12,6 +12,7 @@
     "settings": "การตั้งค่า"
   },
   "mapControls": {
+    "satellite": "โหมดดาวเทียม",
     "layerSelect": "เลือกเลเยอร์",
     "locationTracking": "ซิงก์ตำแหน่ง"
   },

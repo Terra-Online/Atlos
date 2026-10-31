@@ -12,6 +12,7 @@
     "settings": "Inställningar"
   },
   "mapControls": {
+    "satellite": "Satellitläge",
     "layerSelect": "Lagerval",
     "locationTracking": "Platssynk"
   },

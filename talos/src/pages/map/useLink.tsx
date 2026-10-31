@@ -47,7 +47,7 @@ interface UseLinkResult {
 export const useLink = (
     map: L.Map | null,
     mapRegionKey: string | null | undefined,
-    maxZoom: number | null | undefined
+    coordZoom: number | null | undefined
 ): UseLinkResult => {
     const tUI = useTranslateUI();
     const regionCode = useMemo(() => mapRegionKeyToLinkCode(mapRegionKey), [mapRegionKey]);
@@ -151,7 +151,7 @@ export const useLink = (
 
     // Render links on the map using imageOverlay for smooth scaling
     const renderLinks = useCallback(() => {
-        if (!map || !regionCode || typeof maxZoom !== 'number' || isRegionSwitching(map)) return;
+        if (!map || !regionCode || typeof coordZoom !== 'number' || isRegionSwitching(map)) return;
         
         // Ensure pane exists
         if (!paneRef.current) {
@@ -188,8 +188,8 @@ export const useLink = (
             const [[x1, y1], [x2, y2]] = link.bounds;
 
             // Convert pixel coordinates to lat/lng
-            const southWest = map.unproject([Math.min(x1, x2), Math.max(y1, y2)], maxZoom);
-            const northEast = map.unproject([Math.max(x1, x2), Math.min(y1, y2)], maxZoom);
+            const southWest = map.unproject([Math.min(x1, x2), Math.max(y1, y2)], coordZoom);
+            const northEast = map.unproject([Math.max(x1, x2), Math.min(y1, y2)], coordZoom);
             const bounds = L.latLngBounds(southWest, northEast);
 
             const pane = paneRef.current;
@@ -230,7 +230,7 @@ export const useLink = (
             layer.addLayer(hitArea);
             hitAreasRef.current.set(link.id, hitArea);
         }
-    }, [map, regionCode, maxZoom, links, showPopover, hidePopover]);
+    }, [map, regionCode, coordZoom, links, showPopover, hidePopover]);
 
     // Setup event listeners for popover position and region switch
     useEffect(() => {
@@ -254,7 +254,7 @@ export const useLink = (
 
     // Render links when all dependencies are ready
     useEffect(() => {
-        if (!map || !regionCode || typeof maxZoom !== 'number') return;
+        if (!map || !regionCode || typeof coordZoom !== 'number') return;
         return bindRegionLifecycle(map, () => {
             window.clearTimeout(hideTimeoutRef.current);
             window.clearTimeout(closeTimeoutRef.current);
@@ -262,7 +262,7 @@ export const useLink = (
             layerRef.current?.clearLayers();
             try { popoverRef.current?.hidePopover?.(); } catch { /* Already hidden. */ }
         }, renderLinks);
-    }, [map, regionCode, maxZoom, links, renderLinks]);
+    }, [map, regionCode, coordZoom, links, renderLinks]);
 
     // Cleanup when map is destroyed
     useEffect(() => {

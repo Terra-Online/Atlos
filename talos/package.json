@@ -1,5 +1,5 @@
 {
-  "name": "vite-react-starter",
+  "name": "atlos-talos",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -23,9 +23,11 @@
     "lint": "node ./scripts/tasks.mjs lint",
     "lint:fix": "node ./scripts/tasks.mjs lint:fix",
     "preview": "vite preview --outDir dist/r2",
-    "format": "prettier --write 'src/**/*.{js,ts,tsx,jsx,css,scss,html,md}' 'apps/*/src/**/*.{js,ts,tsx,jsx,css,scss,html,md}'"
+    "format": "prettier --write 'src/**/*.{js,ts,tsx,jsx,css,scss,html,md}' 'apps/*/src/**/*.{js,ts,tsx,jsx,css,scss,html,md}'",
+    "test:behavior": "playwright test --config playwright.config.mjs",
+    "bench:production": "node scripts/bench-production.mjs"
   },
-  "browserlists": [
+  "browserslist": [
     "defaults"
   ],
   "dependencies": {
@@ -34,10 +36,6 @@
     "@orama/orama": "^3.1.18",
     "@orama/tokenizers": "^3.1.18",
     "@smithy/node-http-handler": "4.4.7",
-    "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.2.0",
-    "@testing-library/user-event": "^13.5.0",
     "@use-gesture/react": "^10.3.1",
     "accept-language-parser": "^1.5.0",
     "ahooks": "^3.8.4",
@@ -69,7 +67,10 @@
     "@aws-sdk/client-s3": "^3.958.0",
     "@aws-sdk/lib-storage": "^3.1014.0",
     "@eslint/js": "^9.22.0",
-    "@svgr/webpack": "^5.5.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^13.5.0",
     "@types/accept-language-parser": "^1.5.8",
     "@types/d3": "^7.4.3",
     "@types/fs-extra": "^11.0.4",
@@ -78,6 +79,7 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "3.2.7",
     "ali-oss": "^6.22.0",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.22.0",
@@ -87,6 +89,7 @@
     "fs-extra": "^11.3.0",
     "globals": "^16.0.0",
     "jsdom": "^26.1.0",
+    "playwright": "1.62.1",
     "postcss": "^8.5.6",
     "prettier": "3.6.2",
     "sass": "^1.85.1",

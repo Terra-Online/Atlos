@@ -31,7 +31,8 @@
       "mission": "Misi",
       "auto": "Kemajuan",
       "shop": "Kedai",
-      "invstgt": "Siasatan"
+      "invstgt": "Siasatan",
+      "unknown": "Syarat buka kunci belum disahkan"
     },
     "label": {
       "missionSequence": "Misi",

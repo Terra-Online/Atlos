@@ -1,8 +1,10 @@
+import { useRetryImport } from '@/lib/dom/useRetryImport';
+import ErrorBoundary from '@/component/shared/ErrorBoundary';
 import { usePresence } from '@/lib/dom/usePresence';
 import { useOverlayLayer } from '@/lib/dom/useOverlayLayer';
 import { useAppDocument } from '@/platform/pictureInPicture';
 import { useFontRegion } from '@/locale/useFontRegion';
-import React, { lazy, memo, Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import classNames from 'classnames';
 import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
 import styles from '@/pages/detail/comment/comments.module.scss';
@@ -65,7 +67,7 @@ import { CommentContent } from '@/component/shared/comments/CommentContent';
 import type { CommentEditorHandle } from '@/pages/detail/comment/commentEditor';
 import { COMMENT_EMOJI_IDS, commentEmojiToken, getCommentEmojiUrl } from '@/component/shared/comments/emojiData';
 
-const CommentEditor = lazy(() => import('@/pages/detail/comment/commentEditor'));
+const loadCommentEditor = () => import('@/pages/detail/comment/commentEditor');
 
 type Props = {
     point: IMarkerData;
@@ -318,11 +320,13 @@ const CommentItem = memo(({
     );
 });
 
-const Comments = ({ point, pointName, active = true }: Props) => {
+const CommentsPanel = ({ point, pointName, active = true }: Props) => {
+    const CommentEditor = useRetryImport(loadCommentEditor, active)?.default;
     const ownerDocument = useAppDocument();
     const tUI = useTranslateUI();
     const locale = useLocale();
     const user = useAuthStore((state) => state.sessionUser);
+    const userUid = user?.uid;
     const isAuthenticated = Boolean(user);
     const [comments, setComments] = useState<UGCComment[]>([]);
     const [loading, setLoading] = useState(true);
@@ -435,8 +439,11 @@ const Comments = ({ point, pointName, active = true }: Props) => {
         clearFlag(commentIds);
     }, [clearFlag, clearVote]);
     const commentsWithSubmissions = useMemo(() => (
-        mergeCommentSubmissions(comments, submissionSnapshot)
-    ), [comments, submissionSnapshot]);
+        mergeCommentSubmissions(comments, {
+            ...submissionSnapshot,
+            comments: submissionSnapshot.comments.filter((comment) => Boolean(userUid) && comment.author?.publicUid === userUid),
+        })
+    ), [comments, submissionSnapshot, userUid]);
     const submittingCommentIds = useMemo(() => (
         new Set(submissionSnapshot.submittingIds)
     ), [submissionSnapshot]);
@@ -483,7 +490,6 @@ const Comments = ({ point, pointName, active = true }: Props) => {
 
     const hasComments = commentsWithSubmissions.length > 0;
     const inputDisabled = !active;
-    const userUid = user?.uid;
     const canEditOthers = user?.role === 'a' || user?.role === 'r';
 
     useEffect(() => {
@@ -536,11 +542,11 @@ const Comments = ({ point, pointName, active = true }: Props) => {
 
     useEffect(() => {
         const lastError = submissionSnapshot.lastError;
-        if (!lastError || lastError.id === handledSubmissionErrorRef.current) return;
+        if (!lastError || lastError.ownerUid !== userUid || lastError.id === handledSubmissionErrorRef.current) return;
 
         handledSubmissionErrorRef.current = lastError.id;
         setError(tUI('detail.comments.submitFailed'));
-    }, [submissionSnapshot.lastError, tUI]);
+    }, [submissionSnapshot.lastError, tUI, userUid]);
 
     const handleReply = useCallback((comment: UGCComment) => {
         setEditTarget(null);
@@ -778,13 +784,7 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                         </div>
                     </div>
                     <div className={styles.commentInputRow}>
-                        <Suspense fallback={(
-                            <div className={styles.commentEditorLoading} aria-hidden="true">
-                                <span className={styles.commentInputPlaceholder}>
-                                    {tUI('detail.comments.placeholder')}
-                                </span>
-                            </div>
-                        )}>
+                        {CommentEditor ? <ErrorBoundary>
                             <CommentEditor
                                 ref={inputRef}
                                 editorElementRef={inputSurfaceRef}
@@ -797,7 +797,13 @@ const Comments = ({ point, pointName, active = true }: Props) => {
                                 onSubmit={() => void handleSubmit()}
                                 onKeyDown={handleKeyDown}
                             />
-                        </Suspense>
+                        </ErrorBoundary> : (
+                            <div className={styles.commentEditorLoading} aria-hidden="true">
+                                <span className={styles.commentInputPlaceholder}>
+                                    {tUI('detail.comments.placeholder')}
+                                </span>
+                            </div>
+                        )}
                         <div
                             ref={emojiPickerRef}
                             className={styles.commentEmojiPickerRoot}
@@ -865,6 +871,15 @@ const Comments = ({ point, pointName, active = true }: Props) => {
             </div>
         </section>
     );
+};
+
+const Comments = (props: Props) => {
+    const uid = useAuthStore((state) => state.sessionUser?.uid);
+    const sessionOwnerVersion = useAuthStore((state) => state.sessionOwnerVersion);
+    // Drafts and asynchronous actions belong to one account and point. A
+    // background session refresh may update metadata without releasing this
+    // lifetime; explicit login/logout/account changes still advance the owner.
+    return <CommentsPanel key={`${props.point.id}:${uid ?? ''}:${sessionOwnerVersion}`} {...props} />;
 };
 
 export default Comments;

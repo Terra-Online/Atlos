@@ -11,12 +11,13 @@ import {
 } from '@/services/map/events/PreviewEvents';
 
 import { useMarkerStore } from '@/store/marker';
+import { getDisplayedPointProgress } from '@/store/guideProgress';
 import { getActivePoints } from '@/store/userRecord';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { commitPointProgress } from '@/store/history';
 import { batchCheckSelectedPoints, isLassoSelected } from '@/services/map/selection/useMapMultiSelect';
 import { getLayerByTier, getLayerTier, useLayerStore, type LayerType } from '@/store/layer';
-import { REGION_DICT } from '@/data/map';
+import { getAvailableLayers } from '@/services/map/tileCoverage';
 import useRegion from '@/store/region';
 
 interface MarkerStateHandlers {
@@ -84,8 +85,7 @@ const switchToMarkerLayer = (markerData: IMarkerData): void => {
     if (!targetLayer) return;
 
     const currentRegion = useRegion.getState().currentRegionKey;
-    const availableLayers = REGION_DICT[currentRegion]?.layers;
-    if (targetLayer !== 'M' && !availableLayers?.includes(targetLayer)) return;
+    if (!getAvailableLayers(currentRegion).includes(targetLayer)) return;
 
     const layerStore = useLayerStore.getState();
     if (layerStore.currentLayer === targetLayer) return;
@@ -100,7 +100,7 @@ const syncMarkerState = (layer: L.Marker, markerId: string): void => {
     const markerStore = useMarkerStore.getState();
     const selected = hasId(markerStore.selectedPoints, markerId)
         || hasId(markerStore.temporarySelectedPoints, markerId);
-    const checked = hasId(getActivePoints(), markerId);
+    const checked = hasId(getDisplayedPointProgress(), markerId);
     setMarkerState(layer, { selected, checked, completed: checked });
 };
 

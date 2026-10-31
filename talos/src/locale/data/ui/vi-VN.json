@@ -12,6 +12,7 @@
     "settings": "Cài đặt"
   },
   "mapControls": {
+    "satellite": "Chế độ vệ tinh",
     "layerSelect": "Chọn lớp",
     "locationTracking": "Đồng bộ vị trí"
   },

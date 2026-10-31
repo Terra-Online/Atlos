@@ -31,7 +31,8 @@
       "mission": "跟隨任務",
       "auto": "自動解鎖",
       "shop": "商店購買",
-      "invstgt": "報告摘要"
+      "invstgt": "報告摘要",
+      "unknown": "解鎖條件待確認"
     },
     "label": {
       "missionSequence": "任務序列",

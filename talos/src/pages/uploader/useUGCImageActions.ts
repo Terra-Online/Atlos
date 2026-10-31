@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { openOemAuthModal } from '@/component/shared/account/authEvents';
 import {
@@ -57,6 +57,12 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
     const cancelRecallConfirmation = useCallback(() => setRecallConfirmation(null), []);
     const upvoteTasksRef = useRef(new Map<string, ToggleTask>());
     const flagTasksRef = useRef(new Map<string, ToggleTask>());
+    const sessionVersion = useAuthStore((state) => state.sessionVersion);
+    const scope = useMemo(() => ({ uid: user?.uid, pointId: imageState.target?.id, sessionVersion }), [user?.uid, imageState.target?.id, sessionVersion]);
+    const currentScopeRef = useRef<typeof scope | null>(scope);
+    currentScopeRef.current = scope;
+    const isCurrent = useCallback(() => currentScopeRef.current === scope
+        && useAuthStore.getState().sessionVersion === scope.sessionVersion, [scope]);
 
     const {
         active,
@@ -85,6 +91,7 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         }
         task.timer = window.setTimeout(() => {
             task.timer = undefined;
+            if (!isCurrent()) return;
             if (task.inFlight) return;
             if (task.desired === task.lastSynced) return;
 
@@ -92,12 +99,14 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
             task.inFlight = true;
             void toggleUGCImageUpvote(imageId, sentState)
                 .then((serverImage: UGCImageActionPatch) => {
+                    if (upvoteTasksRef.current.get(imageId) !== task || !isCurrent()) return;
                     task.lastSynced = sentState;
                     if (task.desired === sentState) {
                         applyServerImage(serverImage);
                     }
                 })
                 .catch(() => {
+                    if (upvoteTasksRef.current.get(imageId) !== task || !isCurrent()) return;
                     if (task.desired !== sentState) return;
                     task.desired = task.lastSynced;
                     patchImageById(imageId, (image) => {
@@ -113,13 +122,14 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
                     });
                 })
                 .finally(() => {
+                    if (upvoteTasksRef.current.get(imageId) !== task || !isCurrent()) return;
                     task.inFlight = false;
                     if (task.desired !== task.lastSynced) {
                         scheduleUpvoteSync(imageId);
                     }
                 });
         }, TOGGLE_SYNC_DELAY_MS);
-    }, [applyServerImage, patchImageById]);
+    }, [applyServerImage, isCurrent, patchImageById]);
 
     const scheduleFlagSync = useCallback((imageId: string) => {
         const task = flagTasksRef.current.get(imageId);
@@ -129,6 +139,7 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         }
         task.timer = window.setTimeout(() => {
             task.timer = undefined;
+            if (!isCurrent()) return;
             if (task.inFlight) return;
             if (task.desired === task.lastSynced) return;
 
@@ -136,12 +147,14 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
             task.inFlight = true;
             void toggleUGCImageFlag(imageId, sentState)
                 .then((serverImage: UGCImageActionPatch) => {
+                    if (flagTasksRef.current.get(imageId) !== task || !isCurrent()) return;
                     task.lastSynced = sentState;
                     if (task.desired === sentState) {
                         applyServerImage(serverImage);
                     }
                 })
                 .catch(() => {
+                    if (flagTasksRef.current.get(imageId) !== task || !isCurrent()) return;
                     if (task.desired !== sentState) return;
                     task.desired = task.lastSynced;
                     patchImageById(imageId, (image) => ({
@@ -151,22 +164,30 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
                     }));
                 })
                 .finally(() => {
+                    if (flagTasksRef.current.get(imageId) !== task || !isCurrent()) return;
                     task.inFlight = false;
                     if (task.desired !== task.lastSynced) {
                         scheduleFlagSync(imageId);
                     }
                 });
         }, TOGGLE_SYNC_DELAY_MS);
-    }, [applyServerImage, patchImageById]);
+    }, [applyServerImage, isCurrent, patchImageById]);
 
-    useEffect(() => () => {
-        upvoteTasksRef.current.forEach((task) => {
-            if (task.timer) window.clearTimeout(task.timer);
-        });
-        flagTasksRef.current.forEach((task) => {
-            if (task.timer) window.clearTimeout(task.timer);
-        });
-    }, []);
+    useEffect(() => {
+        currentScopeRef.current = scope;
+        setActionPending(false);
+        cancelRecallConfirmation();
+        const upvotes = upvoteTasksRef.current, flags = flagTasksRef.current;
+        return () => {
+            if (currentScopeRef.current === scope) currentScopeRef.current = null;
+            // A queued action must not be sent with the next account's credentials.
+            // Removing its task also invalidates already in-flight completions.
+            for (const tasks of [upvotes, flags]) {
+                tasks.forEach((task) => { if (task.timer) window.clearTimeout(task.timer); });
+                tasks.clear();
+            }
+        };
+    }, [scope, cancelRecallConfirmation]);
 
     useEffect(() => {
         cancelRecallConfirmation();
@@ -187,7 +208,7 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
     }, [recallConfirmation]);
 
     const handleToggleUpvote = useCallback(() => {
-        if (!active) return;
+        if (!active || !isCurrent()) return;
         if (!isAuthenticated) {
             openOemAuthModal('login');
             return;
@@ -204,10 +225,10 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         const task = getToggleTask(upvoteTasksRef.current, imageId, Boolean(active.upvoted));
         task.desired = nextUpvoted;
         scheduleUpvoteSync(imageId);
-    }, [active, isAuthenticated, patchImageById, scheduleUpvoteSync]);
+    }, [active, isAuthenticated, isCurrent, patchImageById, scheduleUpvoteSync]);
 
     const handleToggleFlag = useCallback(() => {
-        if (!active || isOwnActive) return;
+        if (!active || isOwnActive || !isCurrent()) return;
         if (!isAuthenticated) {
             openOemAuthModal('login');
             return;
@@ -222,10 +243,10 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         const task = getToggleTask(flagTasksRef.current, imageId, Boolean(active.flagged));
         task.desired = nextFlagged;
         scheduleFlagSync(imageId);
-    }, [active, isAuthenticated, isOwnActive, patchImageById, scheduleFlagSync]);
+    }, [active, isAuthenticated, isCurrent, isOwnActive, patchImageById, scheduleFlagSync]);
 
     const handleToggleRecall = useCallback(async () => {
-        if (!active || actionPending || !isOwnActive) return;
+        if (!active || actionPending || !isOwnActive || !isCurrent()) return;
         if (!isAuthenticated) {
             openOemAuthModal('login');
             return;
@@ -254,6 +275,7 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         try {
             await recallUGCImage(active.id);
         } catch {
+            if (!isCurrent()) return;
             setLastSubmission(previousSubmission);
             setImages(previousImages);
             setMyImages(previousMyImages);
@@ -261,9 +283,9 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
             setSelectedImageId(previousSelectedImageId);
             setViewerOpen(previousViewerOpen);
         } finally {
-            setActionPending(false);
+            if (isCurrent()) setActionPending(false);
         }
-    }, [actionPending, active, images, isAuthenticated, isOwnActive, lastSubmission, myImages, recallConfirmation, requestedImage, selectedImageId, setImages, setLastSubmission, setMyImages, setRequestedImage, setSelectedImageId, setViewerOpen, viewerOpen]);
+    }, [actionPending, active, images, isAuthenticated, isCurrent, isOwnActive, lastSubmission, myImages, recallConfirmation, requestedImage, selectedImageId, setImages, setLastSubmission, setMyImages, setRequestedImage, setSelectedImageId, setViewerOpen, viewerOpen]);
 
     return {
         actionPending,

@@ -53,6 +53,11 @@ const SUBDOMAIN_WHITELIST: Record<string, HostRule> = {
         description: 'blog always redirects to org',
         preserveSubdomain: true,
     },
+    satellite: {
+        mode: 'geo',
+        description: 'satellite map entry uses geo redirect',
+        preserveSubdomain: true,
+    },
 };
 
 const normalizeHostname = (hostname: string): string =>

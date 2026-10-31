@@ -7,7 +7,7 @@ import { useLabel } from '@/pages/map/useLabel';
 import { useLink } from '@/pages/map/useLink';
 import { UsePreview } from '@/pages/map/usePreview';
 import { DEFAULT_REGION, REGION_DICT } from '@/data/map';
-import { isMapOverdragged, toMapBounds } from '@/services/map/core/mapOverdrag';
+import { isMapOverdragged } from '@/services/map/core/mapOverdrag';
 import { useBehaviorOverlay } from '@/pages/map/behaviorOverlay/useBehaviorOverlay';
 import MapContextMenu from '@/pages/map/MapContextMenu';
 import SupplementTooltip from '@/pages/map/behaviorOverlay/SupplementTooltip';
@@ -31,11 +31,11 @@ const Map: React.FC<MapProps> = ({ onMapReady }) => {
         }
     }, [map, onMapReady]);
 
-    const maxZoom =
-        (currentRegion ? REGION_DICT[currentRegion]?.maxZoom : undefined) ??
-        REGION_DICT[DEFAULT_REGION].maxZoom;
-    useLabel(map, currentRegion, maxZoom);
-    const { linkTooltipElement } = useLink(map, currentRegion, maxZoom);
+    const coordZoom =
+        (currentRegion ? REGION_DICT[currentRegion]?.coordZoom : undefined) ??
+        REGION_DICT[DEFAULT_REGION].coordZoom;
+    useLabel(map, currentRegion, coordZoom);
+    const { linkTooltipElement } = useLink(map, currentRegion, coordZoom);
     const { PreviewElement } = UsePreview(map);
     useBehaviorOverlay(map);
     const supplementHover = useMapSupplements(map);
@@ -51,8 +51,7 @@ const Map: React.FC<MapProps> = ({ onMapReady }) => {
 
         const update = () => {
             rafIdRef.current = null;
-            const max = toMapBounds(map.options.maxBounds);
-            setOverdrag(max ? isMapOverdragged(map, max) : false);
+            setOverdrag(isMapOverdragged(map));
         };
 
         const onDrag = () => {

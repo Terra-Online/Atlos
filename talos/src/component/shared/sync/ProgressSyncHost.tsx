@@ -39,6 +39,10 @@ type SyncNow = (
     options?: { keepalive?: boolean; forceBase?: ProgressBase; pointIds?: string[]; updatedAt?: number },
 ) => Promise<void>;
 
+const assertCurrent = (current: () => boolean): void => {
+    if (!current()) throw new DOMException('Progress synchronization cancelled', 'AbortError');
+};
+
 const pendingMutationStorageKey = (uid: string): string => `${PENDING_MUTATION_STORAGE_PREFIX}${uid}`;
 
 const readPendingMutation = (uid: string): PendingProgressMutation | null => {
@@ -99,7 +103,9 @@ const buildMutationId = (): string => (
 
 const ProgressSyncHost = () => {
     const sessionUser = useAuthStore((state) => state.sessionUser);
+    const sessionVersion = useAuthStore((state) => state.sessionVersion);
     const baseline = useProgressSyncStore((state) => state.baseline);
+    const baselineUid = useProgressSyncStore((state) => state.baselineUid);
     const conflict = useProgressSyncStore((state) => state.conflict);
     const setStatus = useProgressSyncStore((state) => state.setStatus);
     const setBaseline = useProgressSyncStore((state) => state.setBaseline);
@@ -108,28 +114,25 @@ const ProgressSyncHost = () => {
     const setConflict = useProgressSyncStore((state) => state.setConflict);
 
     const maxTimerRef = useRef<number | null>(null);
-    const inFlightRef = useRef(false);
+    const inFlightRef = useRef<object | null>(null);
+    const mountedRef = useRef(false);
+    const lifetimeRef = useRef(0);
     const rerunRequestedRef = useRef(false);
     const syncNowRef = useRef<SyncNow>(async () => {});
     const suppressLocalChangeRef = useRef(false);
     const dirtyCountRef = useRef(0);
-    const baselineRef = useRef<ProgressBase | null>(baseline);
+    const baselineRef = useRef<ProgressBase | null>(baselineUid === sessionUser?.uid ? baseline : null);
     const manifestRef = useRef<ProgressManifestPayload | null>(null);
     const knownPointIdsRef = useRef<Set<string>>(new Set());
     const sessionUidRef = useRef(sessionUser?.uid ?? null);
+    const sessionVersionRef = useRef(sessionVersion);
     const pendingMutationRef = useRef<PendingProgressMutation | null>(null);
     const [renderedConflict, setRenderedConflict] = useState<ProgressConflictState | null>(conflict);
     const [conflictOpen, setConflictOpen] = useState(Boolean(conflict));
 
     useEffect(() => {
-        baselineRef.current = baseline;
-    }, [baseline]);
-
-    useEffect(() => {
-        const uid = sessionUser?.uid ?? null;
-        sessionUidRef.current = uid;
-        pendingMutationRef.current = uid ? readPendingMutation(uid) : null;
-    }, [sessionUser?.uid]);
+        baselineRef.current = baselineUid === sessionUser?.uid ? baseline : null;
+    }, [baseline, baselineUid, sessionUser?.uid]);
 
     useEffect(() => {
         if (conflict) setRenderedConflict(conflict);
@@ -143,12 +146,60 @@ const ProgressSyncHost = () => {
         }
     }, []);
 
-    const ensureManifest = useCallback(async (): Promise<ProgressManifestPayload> => {
+    useEffect(() => {
+        mountedRef.current = true;
+        lifetimeRef.current += 1;
+        return () => {
+            mountedRef.current = false;
+            lifetimeRef.current += 1;
+            inFlightRef.current = null;
+            rerunRequestedRef.current = false;
+            clearTimers();
+        };
+    }, [clearTimers]);
+
+    useEffect(() => {
+        const uid = sessionUser?.uid ?? null;
+        if (sessionUidRef.current !== uid || sessionVersionRef.current !== sessionVersion) {
+            clearTimers();
+            inFlightRef.current = null;
+            rerunRequestedRef.current = false;
+            dirtyCountRef.current = 0;
+        }
+        if (sessionUidRef.current !== uid) {
+            setConflict(null);
+            setStatus('idle');
+        }
+        sessionUidRef.current = uid;
+        sessionVersionRef.current = sessionVersion;
+        pendingMutationRef.current = uid ? readPendingMutation(uid) : null;
+    }, [clearTimers, sessionUser?.uid, sessionVersion, setConflict, setStatus]);
+
+    const captureScope = useCallback(() => {
+        const state = useAuthStore.getState();
+        const uid = state.sessionUser?.uid ?? null;
+        const version = state.sessionVersion;
+        const lifetime = lifetimeRef.current;
+        return {
+            uid,
+            current: () => {
+                const now = useAuthStore.getState();
+                return mountedRef.current && lifetimeRef.current === lifetime
+                    && now.sessionVersion === version && (now.sessionUser?.uid ?? null) === uid;
+            },
+        };
+    }, []);
+
+    const ensureManifest = useCallback(async (current: () => boolean): Promise<ProgressManifestPayload> => {
+        assertCurrent(current);
         const markerIndex = await getProgressMarkerIndex();
+        assertCurrent(current);
         knownPointIdsRef.current = new Set(markerIndex.pointIds);
         const manifest = await getProgressManifestPayload();
+        assertCurrent(current);
         if (manifestRef.current?.markerIndexHash !== manifest.markerIndexHash) {
             await registerProgressManifest(manifest);
+            assertCurrent(current);
             manifestRef.current = manifest;
         }
         return manifest;
@@ -157,14 +208,18 @@ const ProgressSyncHost = () => {
     const withManifestRetry = useCallback(async <T,>(
         manifest: ProgressManifestPayload,
         operation: () => Promise<T>,
+        current: () => boolean,
     ): Promise<T> => {
+        assertCurrent(current);
         try {
             return await operation();
         } catch (error) {
+            assertCurrent(current);
             if (!(error instanceof ProgressSyncError) || error.code !== 'PROGRESS_MANIFEST_NOT_REGISTERED') {
                 throw error;
             }
             await registerProgressManifest(manifest);
+            assertCurrent(current);
             manifestRef.current = manifest;
             return operation();
         }
@@ -183,7 +238,7 @@ const ProgressSyncHost = () => {
             suppressLocalChangeRef.current = false;
         });
         setCounts({ localPointCount: remotePointIds.length, remotePointCount: remotePointIds.length });
-        setBaseline({ ...progress, pointIds: remotePointIds });
+        setBaseline({ ...progress, pointIds: remotePointIds }, sessionUidRef.current);
         setStatus('synced');
         setError(null);
     }, [setBaseline, setCounts, setError, setStatus]);
@@ -208,8 +263,8 @@ const ProgressSyncHost = () => {
         reason: SyncReason,
         options = {},
     ) => {
-        const uid = sessionUidRef.current;
-        if (!uid) return;
+        const { uid, current } = captureScope();
+        if (!uid || !current()) return;
         if (inFlightRef.current) {
             rerunRequestedRef.current = true;
             return;
@@ -219,27 +274,29 @@ const ProgressSyncHost = () => {
             return;
         }
 
-        inFlightRef.current = true;
+        const owner = {};
+        inFlightRef.current = owner;
         setStatus('syncing');
         setError(null);
 
         try {
-            const manifest = await ensureManifest();
-            if (sessionUidRef.current !== uid) return;
+            const manifest = await ensureManifest(current);
+            if (!current()) return;
             const localState = useUserRecordStore.getState();
             const knownPointIds = knownPointIdsRef.current;
             const localPointIds = normalizePointIds(options.pointIds ?? localState.activePoints);
             const { known: activePoints, unknown: retainedLocalPointIds } = splitByKnownPointIds(localPointIds, knownPointIds);
-            let base = options.forceBase ?? baselineRef.current;
+            let base = options.forceBase ?? (useProgressSyncStore.getState().baselineUid === uid ? baselineRef.current : null);
             const pendingMutation = pendingMutationRef.current;
 
-            if (pendingMutation && pendingMutation.uid === sessionUidRef.current) {
+            if (pendingMutation && pendingMutation.uid === uid) {
                 if (pendingMutation.payload.markerIndexHash === manifest.markerIndexHash) {
                     const pendingResponse = await withManifestRetry(
                         manifest,
                         () => syncCloudProgress(pendingMutation.payload),
+                        current,
                     );
-                    if (sessionUidRef.current !== uid) return;
+                    if (!current()) return;
                     const acknowledgedProgress = {
                         ...pendingResponse.progress,
                         pointIds: pendingMutation.pointIds,
@@ -251,7 +308,7 @@ const ProgressSyncHost = () => {
                     };
                     pendingMutationRef.current = null;
                     persistPendingMutation(pendingMutation.uid, null);
-                    setBaseline(acknowledgedProgress);
+                    setBaseline(acknowledgedProgress, uid);
                     baselineRef.current = acknowledgedProgress;
                     base = acknowledgedProgress;
                 } else {
@@ -265,14 +322,15 @@ const ProgressSyncHost = () => {
                 const { progress: remoteProgress } = await withManifestRetry(
                     manifest,
                     () => fetchCloudProgress(manifest.markerIndexHash),
+                    current,
                 );
-                if (sessionUidRef.current !== uid) return;
+                if (!current()) return;
                 const remote = { ...remoteProgress, pointIds: splitByKnownPointIds(remoteProgress.pointIds, knownPointIds).known };
-                if (!isRemoteEmpty(remote) && !arePointSetsEqual(remote.pointIds, activePoints)) {
+                if (!arePointSetsEqual(remote.pointIds, activePoints)) {
                     openConflict(activePoints, remote);
                     return;
                 }
-                setBaseline(remote);
+                setBaseline(remote, uid);
                 baselineRef.current = remote;
                 base = remote;
             }
@@ -312,7 +370,7 @@ const ProgressSyncHost = () => {
                 updatedAt: options.updatedAt ?? localState.updatedAt,
             };
             const pending: PendingProgressMutation = {
-                uid: sessionUidRef.current,
+                uid,
                 payload: syncPayload,
                 pointIds: activePoints,
             };
@@ -321,8 +379,9 @@ const ProgressSyncHost = () => {
             const response = await withManifestRetry(
                 manifest,
                 () => syncCloudProgress(syncPayload, { keepalive: options.keepalive }),
+                current,
             );
-            if (sessionUidRef.current !== uid) return;
+            if (!current()) return;
             pendingMutationRef.current = null;
             persistPendingMutation(pending.uid, null);
 
@@ -335,7 +394,7 @@ const ProgressSyncHost = () => {
                     unacknowledgedPointIds,
                 ),
             };
-            setBaseline(nextProgress);
+            setBaseline(nextProgress, uid);
             baselineRef.current = nextProgress;
             setCounts({ localPointCount: activePoints.length, remotePointCount: nextProgress.pointIds.length });
             const localStillMatches = areLocalPointsSynced(useUserRecordStore.getState().activePoints, nextProgress);
@@ -346,7 +405,7 @@ const ProgressSyncHost = () => {
             clearTimers();
             void reason;
         } catch (error) {
-            if (sessionUidRef.current !== uid) return;
+            if (!current()) return;
             if (error instanceof ProgressSyncError && error.status === 409 && error.current) {
                 const pendingAtConflict = pendingMutationRef.current;
                 pendingMutationRef.current = null;
@@ -363,7 +422,7 @@ const ProgressSyncHost = () => {
                 const remoteAcknowledgesPending = pendingAtConflict?.uid === uid
                     && arePointSetsEqual(pendingAtConflict.pointIds, remote.pointIds);
                 if (remoteMatchesLocal || remoteAcknowledgesPending) {
-                    setBaseline(remote);
+                    setBaseline(remote, uid);
                     baselineRef.current = remote;
                     setCounts({ localPointCount: local.known.length, remotePointCount: remote.pointIds.length });
                     setStatus('synced');
@@ -387,48 +446,64 @@ const ProgressSyncHost = () => {
             setStatus(typeof navigator !== 'undefined' && navigator.onLine === false ? 'offline' : 'error');
             setError(error instanceof Error ? error.message : String(error));
         } finally {
-            inFlightRef.current = false;
-            if (rerunRequestedRef.current) {
-                rerunRequestedRef.current = false;
-                queueMicrotask(() => { void syncNowRef.current('auto'); });
+            // A delegated/new-session request owns its own lock. A stale
+            // completion must neither release that lock nor queue more work.
+            if (inFlightRef.current === owner) {
+                inFlightRef.current = null;
+                if (current() && rerunRequestedRef.current) {
+                    rerunRequestedRef.current = false;
+                    queueMicrotask(() => { if (current()) void syncNowRef.current('auto'); });
+                }
             }
         }
-    }, [clearTimers, ensureManifest, openConflict, setBaseline, setCounts, setError, setStatus, withManifestRetry]);
+    }, [captureScope, clearTimers, ensureManifest, openConflict, setBaseline, setCounts, setError, setStatus, withManifestRetry]);
     syncNowRef.current = syncNow;
 
     const checkRemoteAndReconcile = useCallback(async () => {
-        if (!sessionUidRef.current) return;
+        const { uid, current } = captureScope();
+        if (!uid || !current()) return;
         if (inFlightRef.current) {
             rerunRequestedRef.current = true;
             return;
         }
-        inFlightRef.current = true;
+        const owner = {};
+        inFlightRef.current = owner;
         setStatus('checking');
         setError(null);
 
         try {
-            if (pendingMutationRef.current?.uid === sessionUidRef.current) {
-                inFlightRef.current = false;
+            if (pendingMutationRef.current?.uid === uid) {
+                inFlightRef.current = null;
                 await syncNow('startup');
                 return;
             }
-            const manifest = await ensureManifest();
+            const manifest = await ensureManifest(current);
+            if (!current()) return;
             const { progress: remoteProgress } = await withManifestRetry(
                 manifest,
                 () => fetchCloudProgress(manifest.markerIndexHash),
+                current,
             );
+            if (!current()) return;
             const knownPointIds = knownPointIdsRef.current;
             const remote = { ...remoteProgress, pointIds: splitByKnownPointIds(remoteProgress.pointIds, knownPointIds).known };
             const localStatePointIds = normalizePointIds(useUserRecordStore.getState().activePoints);
             const { known: localPointIds, unknown: retainedLocalPointIds } = splitByKnownPointIds(localStatePointIds, knownPointIds);
             setCounts({ localPointCount: localPointIds.length, remotePointCount: remote.pointIds.length });
 
+            // A previous account's baseline cannot authorize overwriting local
+            // progress. The user chooses which side to keep on first reconcile.
+            if (!baselineRef.current && !arePointSetsEqual(localPointIds, remote.pointIds)) {
+                openConflict(localPointIds, remote);
+                return;
+            }
+
             if (isRemoteEmpty(remote)) {
-                setBaseline(remote);
+                setBaseline(remote, uid);
                 baselineRef.current = remote;
                 if (localPointIds.length > 0
                     || getUnacknowledgedRetainedPointIds(retainedLocalPointIds, remote.retainedPointIds).length > 0) {
-                    inFlightRef.current = false;
+                    inFlightRef.current = null;
                     await syncNow('startup', { forceBase: remote });
                     return;
                 }
@@ -437,13 +512,13 @@ const ProgressSyncHost = () => {
             }
 
             if (arePointSetsEqual(localPointIds, remote.pointIds)) {
-                setBaseline(remote);
+                setBaseline(remote, uid);
                 baselineRef.current = remote;
                 if (
                     (remote.markerIndexHash && remote.markerIndexHash !== manifestRef.current?.markerIndexHash)
                     || getUnacknowledgedRetainedPointIds(retainedLocalPointIds, remote.retainedPointIds).length > 0
                 ) {
-                    inFlightRef.current = false;
+                    inFlightRef.current = null;
                     await syncNow('startup', { forceBase: remote });
                     return;
                 }
@@ -464,25 +539,28 @@ const ProgressSyncHost = () => {
                     || arePointSetsEqual(remote.pointIds, splitByKnownPointIds(currentBaseline.pointIds, knownPointIds).known)
                 )
             ) {
-                setBaseline(remote);
+                setBaseline(remote, uid);
                 baselineRef.current = remote;
-                inFlightRef.current = false;
+                inFlightRef.current = null;
                 await syncNow('startup', { forceBase: remote });
                 return;
             }
 
             openConflict(localPointIds, remote);
         } catch (error) {
+            if (!current()) return;
             setStatus(typeof navigator !== 'undefined' && navigator.onLine === false ? 'offline' : 'error');
             setError(error instanceof Error ? error.message : String(error));
         } finally {
-            inFlightRef.current = false;
-            if (rerunRequestedRef.current) {
-                rerunRequestedRef.current = false;
-                queueMicrotask(() => { void syncNowRef.current('auto'); });
+            if (inFlightRef.current === owner) {
+                inFlightRef.current = null;
+                if (current() && rerunRequestedRef.current) {
+                    rerunRequestedRef.current = false;
+                    queueMicrotask(() => { if (current()) void syncNowRef.current('auto'); });
+                }
             }
         }
-    }, [applyRemotePoints, ensureManifest, openConflict, setBaseline, setCounts, setError, setStatus, syncNow, withManifestRetry]);
+    }, [applyRemotePoints, captureScope, ensureManifest, openConflict, setBaseline, setCounts, setError, setStatus, syncNow, withManifestRetry]);
 
     const scheduleSync = useCallback((changedPoints: number) => {
         if (!sessionUidRef.current) return;
@@ -530,7 +608,7 @@ const ProgressSyncHost = () => {
     useEffect(() => {
         if (!sessionUser?.uid) return;
         void checkRemoteAndReconcile();
-    }, [checkRemoteAndReconcile, sessionUser?.uid]);
+    }, [checkRemoteAndReconcile, sessionUser?.uid, sessionVersion]);
 
     useEffect(() => {
         const unsubscribe = useUserRecordStore.subscribe((state, prevState) => {
@@ -595,7 +673,7 @@ const ProgressSyncHost = () => {
             return;
         }
 
-        setBaseline(remoteBase);
+        setBaseline(remoteBase, sessionUidRef.current);
         baselineRef.current = remoteBase;
         suppressLocalChangeRef.current = true;
         const resolvedPointIds = normalizePointIds([...pointIds, ...localUnknownPointIds]);

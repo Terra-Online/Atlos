@@ -31,7 +31,8 @@
       "mission": "Missione",
       "auto": "Progressione",
       "shop": "Negozio",
-      "invstgt": "Indagine"
+      "invstgt": "Indagine",
+      "unknown": "Condizione di sblocco da confermare"
     },
     "label": {
       "missionSequence": "Missione",

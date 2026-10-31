@@ -1,6 +1,5 @@
 import { useAuthStore } from '@/store/auth';
-import { useUiPrefsStore } from '@/store/uiPrefs';
-import { getEFBindingStatus, type EFRoleOption } from '@/services/endfield';
+import { type EFRoleOption } from '@/services/endfield';
 import {
     readEFTrackerConf,
     saveEFTrackerConf,
@@ -12,6 +11,7 @@ import {
     type LocatorAccountMode,
 } from '@/pages/locator/endfieldHosts';
 import { useLocatorStore } from '@/store/locator';
+import { loadBindingStatus } from './bindingStatus';
 
 export const extractToken = (raw: string): string => {
     const trimmed = raw.trim();
@@ -74,18 +74,41 @@ export const applyRole = (
         scope: current?.scope?.length ? current.scope : ['balanced'],
         trackPoints: current?.trackPoints ?? true,
         centerOnPosition: current?.centerOnPosition ?? false,
-        trail: current?.trail ?? false,
-        debug: current?.debug ?? false,
         intervalMs: current?.intervalMs,
     };
     saveEFTrackerConf(next);
-    useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(true);
     useLocatorStore.getState().setViewMode('tracking');
 };
 
-export const enableSession = async (): Promise<boolean> => {
+let activation = 0;
+let activationController: AbortController | null = null;
+
+export const enableSession = async (isOwnerCurrent: () => boolean = () => true, signal?: AbortSignal): Promise<boolean | undefined> => {
+    if (!isOwnerCurrent()) return undefined;
+    const version = useAuthStore.getState().sessionVersion;
+    const request = ++activation;
+    const isCurrent = () => request === activation && useAuthStore.getState().sessionVersion === version && isOwnerCurrent();
+    activationController?.abort();
+    const controller = new AbortController();
+    activationController = controller;
+    const abort = () => { controller.abort(); };
+    signal?.addEventListener('abort', abort, { once: true });
+    if (signal?.aborted) abort();
+    const unsubscribe = useAuthStore.subscribe((state) => {
+        if (state.sessionVersion !== version) abort();
+    });
+    const status = await loadBindingStatus(controller.signal).catch((error: unknown) => {
+        if (controller.signal.aborted || !isCurrent()) return null;
+        throw error;
+    }).finally(() => {
+        unsubscribe();
+        signal?.removeEventListener('abort', abort);
+        if (activationController === controller) activationController = null;
+    });
+    // Cancellation is distinct from an unbound account; callers must not open
+    // the binding flow after a cancelled activation finishes.
+    if (!status || !isCurrent()) return undefined;
     const current = readEFTrackerConf();
-    const status = await getEFBindingStatus();
     const sessionUser = useAuthStore.getState().sessionUser;
     if (sessionUser?.uid) {
         setCachedBinding(sessionUser.uid, status.binding);
@@ -104,15 +127,15 @@ export const enableSession = async (): Promise<boolean> => {
         scope: current?.scope?.length ? current.scope : ['balanced'],
         trackPoints: current?.trackPoints ?? true,
         centerOnPosition: current?.centerOnPosition ?? false,
-        trail: current?.trail ?? false,
-        debug: current?.debug ?? false,
     });
-    useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(true);
     useLocatorStore.getState().setViewMode('tracking');
     return true;
 };
 
 export const disableSession = (): void => {
+    ++activation;
+    activationController?.abort();
+    activationController = null;
     const current = readEFTrackerConf();
     if (current) {
         saveEFTrackerConf({
@@ -121,7 +144,6 @@ export const disableSession = (): void => {
             locatorSync: false,
         });
     }
-    useUiPrefsStore.getState().setPrefsLocatorSyncEnabled(false);
     useLocatorStore.getState().setViewMode('off');
 };
 

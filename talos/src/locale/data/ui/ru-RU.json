@@ -12,6 +12,7 @@
     "settings": "Настройки"
   },
   "mapControls": {
+    "satellite": "Спутниковый режим",
     "layerSelect": "Выбор слоя",
     "locationTracking": "Синхронизация позиции"
   },

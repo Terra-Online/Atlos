@@ -1,13 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { LAYER_ORDER } from '@/data/map/tiles';
 
-export type LayerType = 'M' | 'B1' | 'B2' | 'B3' | 'B4' | 'L1' | 'L2' | 'L3' | 'L4';
-
-const LAYER_TYPES = ['M', 'B1', 'B2', 'B3', 'B4', 'L1', 'L2', 'L3', 'L4'] as const satisfies readonly LayerType[];
+export type LayerType = (typeof LAYER_ORDER)[number];
 
 interface LayerState {
     currentLayer: LayerType;
     setCurrentLayer: (layer: LayerType) => void;
+    satellite: boolean;
+    setSatellite: (enabled: boolean) => void;
 }
 
 export const useLayerStore = create<LayerState>()(
@@ -15,6 +16,8 @@ export const useLayerStore = create<LayerState>()(
         (set) => ({
             currentLayer: 'M',
             setCurrentLayer: (layer) => set({ currentLayer: layer }),
+            satellite: false,
+            setSatellite: (satellite) => set(satellite ? { satellite, currentLayer: 'M' } : { satellite }),
         }),
         {
             name: 'atlos-layer-storage',
@@ -36,7 +39,7 @@ export const getLayerByTier = (tier: number): LayerType | null => {
     const layer = normalizedTier === 0
         ? 'M'
         : `${normalizedTier < 0 ? 'B' : 'L'}${Math.abs(normalizedTier)}`;
-    return LAYER_TYPES.includes(layer as LayerType) ? layer as LayerType : null;
+    return LAYER_ORDER.includes(layer as LayerType) ? layer as LayerType : null;
 };
 
 // Helper to convert layer type to tile suffix

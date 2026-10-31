@@ -54,6 +54,7 @@ import {
 } from '@/pages/notify/notificationRead';
 import styles from '@/pages/notify/notify.module.scss';
 import { useNearViewport } from '@/lib/dom/useNearViewport';
+import { retryLoad } from '@/lib/async/retryLoad';
 
 interface NotifyProps {
     open: boolean;
@@ -203,7 +204,10 @@ const getNotificationMarker = (
 ): Promise<IMarkerData | null> => {
     const cached = markerPromiseCache.get(markerId);
     if (cached) return cached;
-    const pending = findMarkerById(markerId);
+    const pending = findMarkerById(markerId).catch((error: unknown) => {
+        markerPromiseCache.delete(markerId);
+        throw error;
+    });
     markerPromiseCache.set(markerId, pending);
     return pending;
 };
@@ -221,11 +225,13 @@ const formatPointName = (
 
 interface NotificationMessageProps {
     item: NotificationItem;
+    active: boolean;
     onNavigate: (item: NotificationItem) => void;
 }
 
 const NotificationMessage = ({
     item,
+    active,
     onNavigate,
 }: NotificationMessageProps) => {
     const t = useTranslateUI();
@@ -288,20 +294,20 @@ const NotificationMessage = ({
             ? Math.trunc(countValue)
             : Math.max(1, item.messages.length);
 
+    useEffect(() => { setMarker(null); }, [markerId]);
     useEffect(() => {
-        let active = true;
-        setMarker(null);
-        if (!markerId)
-            return () => {
-                active = false;
-            };
-        void getNotificationMarker(markerId).then((nextMarker) => {
-            if (active) setMarker(nextMarker);
+        if (!active || !markerId) return undefined;
+        const controller = new AbortController();
+        void retryLoad(() => getNotificationMarker(markerId), {
+            signal: controller.signal,
+            onRetry: (error) => console.warn('Notification marker unavailable:', error),
+        }).then((nextMarker) => {
+            if (!controller.signal.aborted) setMarker(nextMarker);
+        }).catch((error: unknown) => {
+            if (!controller.signal.aborted) console.error('Notification marker loading stopped:', error);
         });
-        return () => {
-            active = false;
-        };
-    }, [markerId]);
+        return () => { controller.abort(); };
+    }, [active, markerId]);
 
     const canNavigate = Boolean(markerId) && !item.isMultiMsg;
     const renderSubject = (parts: React.ReactNode[]) =>
@@ -342,6 +348,7 @@ const NotificationMessage = ({
 
 interface NotificationCardProps {
     item: NotificationItem;
+    active: boolean;
     expanded: boolean;
     onToggle: (item: NotificationItem) => void;
     onRead: (item: NotificationItem) => void;
@@ -350,6 +357,7 @@ interface NotificationCardProps {
 
 const NotificationCard = ({
     item,
+    active,
     expanded,
     onToggle,
     onRead,
@@ -415,7 +423,7 @@ const NotificationCard = ({
         >
             <div className={styles.cardBody}>
                 <div className={styles.cardMessage}>
-                    <NotificationMessage item={item} onNavigate={onNavigate} />
+                    <NotificationMessage item={item} active={active} onNavigate={onNavigate} />
                 </div>
             </div>
             {item.isMultiMsg && (
@@ -432,6 +440,7 @@ const NotificationCard = ({
                                 >
                                     <NotificationMessage
                                         item={message}
+                                        active={active}
                                         onNavigate={(targetItem) =>
                                             onNavigate(targetItem, item)
                                         }
@@ -465,6 +474,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
     const { isMobile } = useDevice();
     const sessionUser = useAuthStore((state) => state.sessionUser);
     const sessionUid = sessionUser?.uid;
+    const sessionVersion = useAuthStore((state) => state.sessionVersion);
     const [activeCategory, setActiveCategory] =
         useState<NotificationCategory>('community');
     const [unread, setUnread] =
@@ -488,6 +498,13 @@ const NotifyModal: React.FC<NotifyProps> = ({
     const notificationListRef = useRef<HTMLDivElement | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
+    const isCurrentSession = useCallback((revision: number, version: number) => {
+        const current = useAuthStore.getState();
+        return sessionRevisionRef.current === revision
+            && current.sessionVersion === version
+            && current.sessionUser?.uid === sessionUid;
+    }, [sessionUid]);
+
     const publishUnread = useCallback(
         (nextUnread: NotificationUnreadCounts) => {
             setUnread(nextUnread);
@@ -499,6 +516,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
     const loadCategory = useCallback(
         async (category: NotificationCategory, append = false) => {
             if (!sessionUid) return;
+            if (!isCurrentSession(sessionRevisionRef.current, sessionVersion)) return;
             const cursor = append ? feeds[category].nextCursor : null;
             const startLiveRevision = liveRevisionRef.current;
             const startSessionRevision = sessionRevisionRef.current;
@@ -516,7 +534,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
                     cursor,
                     limit: 20,
                 });
-                if (sessionRevisionRef.current !== startSessionRevision) return;
+                if (!isCurrentSession(startSessionRevision, sessionVersion)) return;
                 const receivedLiveUpdate =
                     liveRevisionRef.current !== startLiveRevision;
                 setFeeds((current) => ({
@@ -537,7 +555,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
                 }));
                 if (!receivedLiveUpdate) publishUnread(result.unread);
             } catch {
-                if (sessionRevisionRef.current !== startSessionRevision) return;
+                if (!isCurrentSession(startSessionRevision, sessionVersion)) return;
                 setFeeds((current) => ({
                     ...current,
                     [category]: {
@@ -549,25 +567,29 @@ const NotifyModal: React.FC<NotifyProps> = ({
                 }));
             }
         },
-        [feeds, publishUnread, sessionUid],
+        [feeds, isCurrentSession, publishUnread, sessionUid, sessionVersion],
     );
 
     useEffect(() => {
         sessionRevisionRef.current += 1;
         setFeeds({ community: emptyFeed(), system: emptyFeed() });
         setExpandedIds(new Set());
+        setMarkingAll(false);
         readIdsRef.current.clear();
         liveRevisionRef.current = 0;
         if (!sessionUid) publishUnread(EMPTY_UNREAD);
-    }, [publishUnread, sessionUid]);
+        return () => { sessionRevisionRef.current += 1; };
+    }, [publishUnread, sessionUid, sessionVersion]);
 
     useEffect(() => {
         if (!sessionUid) return undefined;
         const sessionRevision = sessionRevisionRef.current;
         const batcher = createNotificationReadBatcher({
-            send: markNotificationsRead,
+            send: (category: NotificationCategory, ids: string[]) => isCurrentSession(sessionRevision, sessionVersion)
+                ? markNotificationsRead(category, ids)
+                : Promise.resolve(EMPTY_UNREAD),
             onResult: (nextUnread) => {
-                if (sessionRevisionRef.current === sessionRevision)
+                if (isCurrentSession(sessionRevision, sessionVersion))
                     publishUnread(nextUnread);
             },
         });
@@ -577,7 +599,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
             if (readBatcherRef.current === batcher)
                 readBatcherRef.current = null;
         };
-    }, [publishUnread, sessionUid]);
+    }, [isCurrentSession, publishUnread, sessionUid, sessionVersion]);
 
     useEffect(() => {
         if (!open) return;
@@ -591,7 +613,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
         );
         // Initial loads do not consume a cursor from the captured feed state.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, sessionUid]);
+    }, [open, sessionUid, sessionVersion]);
 
     useEffect(() => {
         if (!liveUpdate) return;
@@ -633,6 +655,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
                 !sessionUser ||
                 markingAll ||
                 readIdsRef.current.has(item.id)
+                || !isCurrentSession(sessionRevisionRef.current, sessionVersion)
             )
                 return;
             readIdsRef.current.add(item.id);
@@ -649,12 +672,16 @@ const NotifyModal: React.FC<NotifyProps> = ({
             }));
             const batcher = readBatcherRef.current;
             if (batcher) batcher.enqueue(category, item.id);
-            else
+            else {
+                const sessionRevision = sessionRevisionRef.current;
                 void markNotificationsRead(category, [item.id])
-                    .then(publishUnread)
+                    .then((nextUnread) => {
+                        if (isCurrentSession(sessionRevision, sessionVersion)) publishUnread(nextUnread);
+                    })
                     .catch(() => undefined);
+            }
         },
-        [markingAll, publishUnread, sessionUser],
+        [isCurrentSession, markingAll, publishUnread, sessionUser, sessionVersion],
     );
 
     const handleToggle = useCallback(
@@ -697,14 +724,20 @@ const NotifyModal: React.FC<NotifyProps> = ({
 
     const handleMarkAll = useCallback(async () => {
         if (!sessionUser || unread.total === 0 || markingAll) return;
+        const sessionRevision = sessionRevisionRef.current;
+        // The store changes before React's effects run; reject stale handlers in that window too.
+        if (!isCurrentSession(sessionRevision, sessionVersion)) return;
         setMarkingAll(true);
         try {
             await readBatcherRef.current?.flush();
+            if (!isCurrentSession(sessionRevision, sessionVersion)) return;
             await Promise.all([
                 markAllNotificationsRead('community'),
                 markAllNotificationsRead('system'),
             ]);
+            if (!isCurrentSession(sessionRevision, sessionVersion)) return;
             const nextUnread = await getNotificationUnreadCounts();
+            if (!isCurrentSession(sessionRevision, sessionVersion)) return;
             setFeeds((current) => ({
                 community: {
                     ...current.community,
@@ -725,9 +758,9 @@ const NotifyModal: React.FC<NotifyProps> = ({
         } catch {
             // Keep the current unread state when either category update fails.
         } finally {
-            setMarkingAll(false);
+            if (isCurrentSession(sessionRevision, sessionVersion)) setMarkingAll(false);
         }
-    }, [markingAll, publishUnread, sessionUser, unread.total]);
+    }, [isCurrentSession, markingAll, publishUnread, sessionUser, sessionVersion, unread.total]);
 
     const tabs = useMemo<ModalTabItem[]>(
         () => [
@@ -868,6 +901,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
                                 <NotificationCard
                                     key={item.id}
                                     item={item}
+                                    active={open}
                                     expanded={expandedIds.has(item.id)}
                                     onToggle={handleToggle}
                                     onRead={handleRead}

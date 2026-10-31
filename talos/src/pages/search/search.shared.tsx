@@ -47,7 +47,8 @@ const HighlightText = ({ text, keyword }: { text: string; keyword: string }) => 
 };
 
 const SearchShared: React.FC<SearchSharedProps> = ({ width = '100%', mobile = false }) => {
-    const { searchString, setSearchString } = useMarkerStore();
+    const searchString = useMarkerStore((s) => s.searchString);
+    const setSearchString = useMarkerStore((s) => s.setSearchString);
     const activeFilters = useMarkerStore((s) => s.filter);
     const locale = useLocale();
     const t = useTranslateUI();
@@ -143,7 +144,7 @@ const SearchShared: React.FC<SearchSharedProps> = ({ width = '100%', mobile = fa
             className={`${styles.searchContainer} ${mobile ? styles.mobile : ''}`}
             style={{ width }}
         >
-            <form className={styles.searchForm}>
+            <form className={styles.searchForm} onSubmit={(event) => event.preventDefault()}>
                 <div className={styles.searchInputWrapper} data-expanded={panelOpen ? 'true' : 'false'}>
                     <div className={styles.searchInputRow} data-has-count={hasQuery ? 'true' : 'false'}>
                         <div className={styles.searchIcon}>

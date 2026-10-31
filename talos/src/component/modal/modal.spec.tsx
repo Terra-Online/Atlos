@@ -69,6 +69,22 @@ it('positions the tab indicator in local coordinates while its dialog is scaled'
     expect(tabs.style.getPropertyValue('--modal-tab-indicator-left')).toBe('150px');
 });
 
+it('keeps disabled tabs and quick actions inert and delegates enabled tab changes to the owner', () => {
+    const change = vi.fn(), quick = vi.fn();
+    const items = [{ key: 'a', title: 'A', icon: null }, { key: 'b', title: 'B', icon: null, disabled: true }];
+    const view = render(<ModalTabs items={items} activeKey="a" onChange={change} quickAction={{ icon: null, label: 'Reset', onClick: quick, disabled: true }} />);
+    fireEvent.click(screen.getByRole('tab', { name: 'B' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Reset' }));
+    expect(change).not.toHaveBeenCalled();
+    expect(quick).not.toHaveBeenCalled();
+    view.rerender(<ModalTabs items={items.map((item) => ({ ...item, disabled: false }))} activeKey="a" onChange={change} quickAction={{ icon: null, label: 'Reset', onClick: quick, active: true }} />);
+    fireEvent.click(screen.getByRole('tab', { name: 'B' }));
+    expect(change).toHaveBeenCalledExactlyOnceWith('b');
+    expect(screen.getByRole('tab', { name: 'A' }).getAttribute('aria-selected')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: 'Reset' }));
+    expect(quick).toHaveBeenCalledOnce();
+});
+
 function renderTouchTabs() {
     function Tabs() {
         const [active, setActive] = useState('a');

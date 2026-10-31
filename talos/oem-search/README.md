@@ -76,12 +76,7 @@ pnpm type-check
 pnpm run deploy
 ```
 
-## Frontend integration
+## Main-site search
 
-In your web app environment:
-
-```bash
-VITE_SEARCH_ENDPOINT=https://<your-worker-domain>/search
-```
-
-If this variable is set, the frontend search hook will call Worker first and fallback to local Orama search when Worker fails.
+The main site loads its local prebuilt index and falls back to marker data.
+This Worker remains an independent search API; it is not called by the main site.

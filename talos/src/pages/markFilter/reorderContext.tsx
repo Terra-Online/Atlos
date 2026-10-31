@@ -26,14 +26,14 @@ export const MarkFilterDragProvider: React.FC<{ children: React.ReactNode }> = (
   const register = useCallback((id: string, getLayout: GetLayout) => {
     const m = registryRef.current;
     m.set(id, { getLayout });
-    setOrder((prev) => {
-      if (prev.includes(id)) return prev;
-      const next = [...prev, id];
-      orderRef.current = next;
-      // persist structural change
-      setTimeout(() => setPersistedOrder(next), 0);
-      return next;
-    });
+    const prev = orderRef.current;
+    if (prev.includes(id)) return;
+    const next = [...prev, id];
+    orderRef.current = next;
+    setOrder(next);
+    // Registration happens in the child's effect, outside a state updater.
+    // Commit now so a delayed structural snapshot cannot undo a finished drag.
+    setPersistedOrder(next);
   }, [setPersistedOrder]);
 
   const unregister = useCallback((id: string) => {

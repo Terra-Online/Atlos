@@ -21,7 +21,7 @@ export const collectClipFiles = async (clipsDir) => {
   const rawClipFiles = [];
   await walkFiles(clipsDir, clipsDir, rawClipFiles);
   return rawClipFiles
-    .filter((relativePath) => !relativePath.startsWith('_index/'))
+    .filter((relativePath) => relativePath !== 'index.html' && !relativePath.startsWith('_index/'))
     .sort((a, b) => a.localeCompare(b));
 };
 
@@ -118,14 +118,14 @@ const collectTileData = (clipFiles) => {
   return regionCoverage;
 };
 
-export const buildClipIndex = async ({ distDir = './dist' } = {}) => {
+export const buildClipIndex = async ({ distDir = './dist', source = 'clips' } = {}) => {
   const resolvedDist = path.resolve(distDir);
-  const clipsDir = path.resolve(resolvedDist, 'clips');
+  const clipsDir = path.resolve(resolvedDist, source);
 
   if (!(await fs.pathExists(clipsDir))) {
     return {
       generated: false,
-      reason: 'clips directory does not exist',
+      reason: `${source} directory does not exist`,
       expectedClipFiles: [],
       tileFiles: [],
       indexFiles: [],
@@ -171,8 +171,11 @@ export const buildClipIndex = async ({ distDir = './dist' } = {}) => {
   await fs.writeJson(manifestPath, manifest);
 
   const indexFiles = [manifestRelativePath, ...coverageFiles].sort((a, b) => a.localeCompare(b));
-  const expectedClipFiles = [...clipFiles, ...indexFiles]
-    .map((relativePath) => `clips/${relativePath}`)
+  // The SPA shell shares this top-level path but is not imagery. Retain it
+  // during publishing reconciliation without advertising it as a tile file.
+  const entryFiles = await fs.pathExists(path.resolve(clipsDir, 'index.html')) ? ['index.html'] : [];
+  const expectedClipFiles = [...clipFiles, ...indexFiles, ...entryFiles]
+    .map((relativePath) => `${source}/${relativePath}`)
     .sort((a, b) => a.localeCompare(b));
 
   return {
@@ -184,7 +187,7 @@ export const buildClipIndex = async ({ distDir = './dist' } = {}) => {
     expectedClipFiles,
     tileFiles: clipFiles,
     indexFiles,
-    manifestRelativePath: `clips/${manifestRelativePath}`,
+    manifestRelativePath: `${source}/${manifestRelativePath}`,
   };
 };
 

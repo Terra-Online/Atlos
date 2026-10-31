@@ -12,6 +12,7 @@
     "settings": "Einstellungen"
   },
   "mapControls": {
+    "satellite": "Satellitenmodus",
     "layerSelect": "Ebenenauswahl",
     "locationTracking": "Positionssync"
   },

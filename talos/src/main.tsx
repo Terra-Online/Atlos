@@ -11,6 +11,7 @@ import { loadRegionMarkers } from '@/data/marker';
 import { preloadMapTiles } from '@/services/map/preload';
 import { REGION_DICT } from '@/data/map';
 import { getInitialNavigationView, prepareInitialNavigation } from '@/services/map/navigation';
+import { applyMapEntry } from '@/services/routing/entry';
 
 const enforceLocalhostHost = (): boolean => {
     if (typeof window === 'undefined') return false;
@@ -24,6 +25,8 @@ const enforceLocalhostHost = (): boolean => {
 
 async function bootstrap(){
     if (enforceLocalhostHost()) return;
+
+    applyMapEntry(window.location);
 
     // Data and the expected view's original tiles should not wait for UI font
     // registration. Share queries resolve their small index before warming a
@@ -52,8 +55,9 @@ async function bootstrap(){
     // Resource downloads above have been progressing during this preparation.
     await preloadMapFonts(await resources).catch((error: unknown) => console.warn('Initial map fonts unavailable:', error));
 
-// @ts-expect-error root must be found otherwise it will definitely cannot show anything
-    createRoot(document.getElementById('root')).render(<MapPage />);
+    const rootElement = document.getElementById('root');
+    if (!rootElement) throw new Error('Root element #root was not found');
+    createRoot(rootElement).render(<MapPage />);
 
     loadDevTools();
 

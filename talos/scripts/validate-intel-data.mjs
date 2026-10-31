@@ -52,6 +52,14 @@ for (const locale of LOCALES) {
   assert(JSON.stringify(Object.keys(values.group ?? {}).sort()) === JSON.stringify(['central', 'intel', 'media']), `Intel group keys are invalid for ${locale}.`);
   for (const row of contract) {
     assert(typeof values[row.id] === 'string' && values[row.id].trim(), `Missing archive title ${row.id} for ${locale}.`);
+    const acquisition = row.acquisition;
+    if (acquisition.method === 'mission') {
+      // A few upstream missions intentionally have no display name; the key
+      // must still exist so new joins cannot silently lose localization.
+      for (const key of [acquisition.missionId, acquisition.questId, acquisition.interaction?.stageId].filter(Boolean)) {
+        assert(typeof values[key] === 'string', `Missing mission text ${key} for archive ${row.id} in ${locale}.`);
+      }
+    }
   }
 }
 assert(localeKeys.every((keys) => JSON.stringify(keys) === JSON.stringify(localeKeys[0])), 'Intel game locale key sets do not match.');

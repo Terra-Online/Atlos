@@ -42,6 +42,8 @@
   "gm02m18": "Pedang Tanpa Nama II",
   "gm02m19": "Pedang Tanpa Nama III",
   "gm02m24": "Kisah-Kisah yang Mengacau",
+  "gm02m27d5": "Lonceng Kembalinya Ingatan: Catatan Penutup",
+  "gm02m27d5_q#4": "Kumpulkan semua <span class=\"highlight\">petunjuk</span> Suiming untuk <span class=\"highlight\">Arsip</span>",
   "group": {
     "intel": "Temuan",
     "central": "File Nexus",
@@ -648,6 +650,7 @@
   "sm1l7m1": "Ancaman dari Dalam",
   "sm2l1m5": "Selalu Berlari",
   "sm2l2m3": "Pria Tua dan Ombak I",
+  "sm2l3m3": "Pelindung Mata Air III",
   "sm2l3m6": "Pencari Harta Karun yang Hilang III",
   "sm2l6m1": "Baja di Kedalaman Brankas",
   "sns_chat_nfm_0_1": "Grup Komunikasi Kamp",

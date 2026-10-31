@@ -12,6 +12,7 @@
     "settings": "Preferences"
   },
   "mapControls": {
+    "satellite": "Satellite mode",
     "layerSelect": "Layer selection",
     "locationTracking": "Location Sync"
   },

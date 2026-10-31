@@ -12,6 +12,7 @@
     "settings": "Налаштування"
   },
   "mapControls": {
+    "satellite": "Супутниковий режим",
     "layerSelect": "Вибір шару",
     "locationTracking": "Синхронізація локації"
   },

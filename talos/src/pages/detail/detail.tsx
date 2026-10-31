@@ -42,8 +42,8 @@ import {
     useSubregionMarkerCount,
 } from '@/store/marker.ts';
 import {
-    useUserRecord,
-} from '@/store/userRecord.ts';
+    useDisplayedPointProgress,
+} from '@/store/guideProgress';
 import { commitPointProgress } from '@/store/history';
 import { resolveMarkerBulkTargets } from '@/services/map/markerBulkActions';
 import classNames from 'classnames';
@@ -120,7 +120,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
     const currentPointType = currentPoint?.type;
     const isImageUploadable = Boolean(currentPoint && resolveUGCUploadTarget(currentPoint));
     const globalCollectionRate = useGlobalCollectionRate(currentPointId, isImageUploadable);
-    const pointsRecord = useUserRecord();
+    const pointsRecord = useDisplayedPointProgress();
     const currentRegion = useRegion((state) => state.currentRegionKey);
     const isCollected = currentPoint
         ? pointsRecord.includes(currentPoint.id)

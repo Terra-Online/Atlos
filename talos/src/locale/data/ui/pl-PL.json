@@ -12,6 +12,7 @@
     "settings": "Preferencje"
   },
   "mapControls": {
+    "satellite": "Tryb satelitarny",
     "layerSelect": "Wybór warstwy",
     "locationTracking": "Synchronizacja pozycji"
   },

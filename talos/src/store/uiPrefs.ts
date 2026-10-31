@@ -65,8 +65,6 @@ interface IUiPrefsStore {
   setForceRegionSubOpen: (value: boolean) => void;
   forceLayerSubOpen: boolean;
   setForceLayerSubOpen: (value: boolean) => void;
-  forceDetailOpen: boolean;
-  setForceDetailOpen: (value: boolean) => void;
   forceHeadbarExpanded: boolean | null;
   setForceHeadbarExpanded: (value: boolean | null) => void;
   isUserGuideOpen: boolean;
@@ -98,8 +96,6 @@ interface IUiPrefsStore {
   setPrefsAutoClusterEnabled: (value: boolean) => void;
   prefsHideCompletedMarkers: boolean;
   setPrefsHideCompletedMarkers: (value: boolean) => void;
-  prefsLocatorSyncEnabled: boolean;
-  setPrefsLocatorSyncEnabled: (value: boolean) => void;
 
   // Performance Mode
   prefsPerformanceModeEnabled: boolean;
@@ -177,8 +173,6 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setForceRegionSubOpen: (value) => set({ forceRegionSubOpen: value }),
       forceLayerSubOpen: false,
       setForceLayerSubOpen: (value) => set({ forceLayerSubOpen: value }),
-      forceDetailOpen: false,
-      setForceDetailOpen: (value) => set({ forceDetailOpen: value }),
       forceHeadbarExpanded: null,
       setForceHeadbarExpanded: (value) => set({ forceHeadbarExpanded: value }),
       isUserGuideOpen: false,
@@ -207,8 +201,6 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
       setPrefsAutoClusterEnabled: (value) => set({ prefsAutoClusterEnabled: value }),
       prefsHideCompletedMarkers: false,
       setPrefsHideCompletedMarkers: (value) => set({ prefsHideCompletedMarkers: value }),
-      prefsLocatorSyncEnabled: false,
-      setPrefsLocatorSyncEnabled: (value) => set({ prefsLocatorSyncEnabled: value }),
 
       // Performance Mode (default: true - performance mode enabled)
       prefsPerformanceModeEnabled: true,
@@ -246,7 +238,6 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         prefsMarkerProgressEnabled: state.prefsMarkerProgressEnabled,
         prefsAutoClusterEnabled: state.prefsAutoClusterEnabled,
         prefsHideCompletedMarkers: state.prefsHideCompletedMarkers,
-        prefsLocatorSyncEnabled: state.prefsLocatorSyncEnabled,
         prefsPerformanceModeEnabled: state.prefsPerformanceModeEnabled,
       }),
       merge: (persistedState, currentState) => {
@@ -261,7 +252,6 @@ export const useUiPrefsStore = create<IUiPrefsStore>()(
         if (persisted.prefsMarkerProgressEnabled !== undefined) merged.prefsMarkerProgressEnabled = persisted.prefsMarkerProgressEnabled;
         if (persisted.prefsAutoClusterEnabled !== undefined) merged.prefsAutoClusterEnabled = persisted.prefsAutoClusterEnabled;
         if (persisted.prefsHideCompletedMarkers !== undefined) merged.prefsHideCompletedMarkers = persisted.prefsHideCompletedMarkers;
-        if (persisted.prefsLocatorSyncEnabled !== undefined) merged.prefsLocatorSyncEnabled = persisted.prefsLocatorSyncEnabled;
         if (persisted.prefsPerformanceModeEnabled !== undefined) merged.prefsPerformanceModeEnabled = persisted.prefsPerformanceModeEnabled;
         if (typeof persisted.mapSupplementsEnabled === 'boolean') merged.mapSupplementsEnabled = persisted.mapSupplementsEnabled;
         if (persisted.theme !== undefined) merged.theme = persisted.theme;
@@ -350,8 +340,6 @@ export const useForceRegionSubOpen = (): boolean => useUiPrefsStore((s) => s.for
 export const useSetForceRegionSubOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setForceRegionSubOpen);
 export const useForceLayerSubOpen = (): boolean => useUiPrefsStore((s) => s.forceLayerSubOpen);
 export const useSetForceLayerSubOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setForceLayerSubOpen);
-export const useForceDetailOpen = (): boolean => useUiPrefsStore((s) => s.forceDetailOpen);
-export const useSetForceDetailOpen = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setForceDetailOpen);
 export const useForceHeadbarExpanded = (): boolean | null => useUiPrefsStore((s) => s.forceHeadbarExpanded);
 export const useSetForceHeadbarExpanded = (): ((value: boolean | null) => void) => useUiPrefsStore((s) => s.setForceHeadbarExpanded);
 export const useIsUserGuideOpen = (): boolean => useUiPrefsStore((s) => s.isUserGuideOpen);
@@ -372,5 +360,3 @@ export const useSetPerformanceMode = (): ((value: boolean) => void) => useUiPref
 // Hide Completed Markers hooks
 export const useHideCompletedMarkers = (): boolean => useUiPrefsStore((s) => s.prefsHideCompletedMarkers);
 export const useSetHideCompletedMarkers = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setPrefsHideCompletedMarkers);
-export const useLocatorSyncEnabled = (): boolean => useUiPrefsStore((s) => s.prefsLocatorSyncEnabled);
-export const useSetLocatorSyncEnabled = (): ((value: boolean) => void) => useUiPrefsStore((s) => s.setPrefsLocatorSyncEnabled);

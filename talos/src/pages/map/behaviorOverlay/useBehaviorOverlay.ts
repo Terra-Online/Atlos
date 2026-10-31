@@ -7,7 +7,7 @@ import { getSharedPointMapCore } from '@/services/map';
 import { useMarkerStore } from '@/store/marker';
 import useRegion from '@/store/region';
 import { useUiPrefsStore } from '@/store/uiPrefs';
-import { useUserRecordStore } from '@/store/userRecord';
+import { useDisplayedPointCollected } from '@/store/guideProgress';
 import {
     createBehaviorCanvasLayer,
     type BehaviorCanvasLayer,
@@ -98,9 +98,7 @@ const loadBehaviorOverlay = async ({
 export function useBehaviorOverlay(map: L.Map | null) {
     const currentPoint = useMarkerStore((state) => state.currentActivePoint);
     const currentRegion = useRegion((state) => state.currentRegionKey);
-    const currentPointActive = useUserRecordStore((state) =>
-        currentPoint ? state.activePoints.includes(currentPoint.id) : false,
-    );
+    const currentPointActive = useDisplayedPointCollected(currentPoint?.id);
     const progressEnabled = useUiPrefsStore(
         (state) => state.prefsMarkerProgressEnabled,
     );

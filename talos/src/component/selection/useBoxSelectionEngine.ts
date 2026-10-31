@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useAppDocument } from '@/platform/pictureInPicture';
 
 type Point = { x: number; y: number };
 type SelectionBox = { startX: number; startY: number; endX: number; endY: number };
@@ -66,6 +67,9 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
     updateBatchSize = UPDATE_BATCH_SIZE,
     selectionBoxCoordinates = 'container',
 }: BoxSelectionEngineOptions<TContainer>) => {
+    // PiP adopts the existing root. Rebind listeners and cancel the old gesture
+    // when its document changes even though both React refs stay unchanged.
+    const appDocument = useAppDocument();
     const [isSelecting, setIsSelecting] = useState(false);
     const optionsRef = useRef({ getInitialKeys, onChange, collectTargets, canStart, syncTarget });
     optionsRef.current = { getInitialKeys, onChange, collectTargets, canStart, syncTarget };
@@ -73,6 +77,8 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
+        const doc = container.ownerDocument;
+        const view = doc.defaultView ?? window;
 
         let startPoint: Point | null = null;
         let lastClientPoint: Point | null = null;
@@ -263,7 +269,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
         };
 
         const cancelSelectionUpdate = () => {
-            if (selectionUpdateRaf !== null) cancelAnimationFrame(selectionUpdateRaf);
+            if (selectionUpdateRaf !== null) view.cancelAnimationFrame(selectionUpdateRaf);
             selectionUpdateRaf = null;
             pendingSelectionClientPoint = null;
             pendingSelectionScrollContainer = null;
@@ -276,7 +282,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
                 }
                 return;
             }
-            if (selectionUpdateRaf !== null) cancelAnimationFrame(selectionUpdateRaf);
+            if (selectionUpdateRaf !== null) view.cancelAnimationFrame(selectionUpdateRaf);
             selectionUpdateRaf = null;
             if (pendingSelectionClientPoint && pendingSelectionScrollContainer) {
                 updateSelection(pendingSelectionClientPoint, pendingSelectionScrollContainer);
@@ -294,7 +300,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
             pendingSelectionClientPoint = clientPoint;
             pendingSelectionScrollContainer = scrollContainer;
             if (selectionUpdateRaf !== null) return;
-            selectionUpdateRaf = requestAnimationFrame(() => {
+            selectionUpdateRaf = view.requestAnimationFrame(() => {
                 selectionUpdateRaf = null;
                 if (pendingSelectionClientPoint && pendingSelectionScrollContainer) {
                     updateSelection(pendingSelectionClientPoint, pendingSelectionScrollContainer);
@@ -305,7 +311,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
         };
 
         const stopAutoScroll = () => {
-            if (autoScrollRaf !== null) cancelAnimationFrame(autoScrollRaf);
+            if (autoScrollRaf !== null) view.cancelAnimationFrame(autoScrollRaf);
             autoScrollRaf = null;
             autoScrollLastTimestamp = 0;
         };
@@ -323,7 +329,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
             }
             if (!autoScrollLastTimestamp) {
                 autoScrollLastTimestamp = timestamp;
-                autoScrollRaf = requestAnimationFrame(runAutoScroll);
+                autoScrollRaf = view.requestAnimationFrame(runAutoScroll);
                 return;
             }
             const deltaSeconds = Math.min(0.05, (timestamp - autoScrollLastTimestamp) / 1000);
@@ -340,7 +346,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
                 if (!immediate) cancelSelectionUpdate();
                 updateSelection(lastClientPoint, activeScrollContainer);
             }
-            autoScrollRaf = requestAnimationFrame(runAutoScroll);
+            autoScrollRaf = view.requestAnimationFrame(runAutoScroll);
         };
 
         const updateAutoScroll = () => {
@@ -353,15 +359,15 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
                 stopAutoScroll();
                 return;
             }
-            if (autoScrollRaf === null) autoScrollRaf = requestAnimationFrame(runAutoScroll);
+            if (autoScrollRaf === null) autoScrollRaf = view.requestAnimationFrame(runAutoScroll);
         };
 
         const cleanupSelection = () => {
             stopAutoScroll();
             cancelSelectionUpdate();
-            window.removeEventListener('pointermove', onPointerMove);
-            window.removeEventListener('pointerup', finishSelection);
-            window.removeEventListener('pointercancel', finishSelection);
+            view.removeEventListener('pointermove', onPointerMove);
+            view.removeEventListener('pointerup', finishSelection);
+            view.removeEventListener('pointercancel', finishSelection);
             activeScrollContainer?.removeEventListener('scroll', onScroll);
             if (
                 activePointerId !== null
@@ -371,7 +377,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
                 container.releasePointerCapture(activePointerId);
             }
             if (isDragging) {
-                document.body.style.userSelect = previousBodyUserSelect;
+                doc.body.style.userSelect = previousBodyUserSelect;
                 if (activeScrollContainer) activeScrollContainer.style.scrollBehavior = previousScrollBehavior;
             }
             startPoint = null;
@@ -416,11 +422,11 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
             });
             activateTargets = targets.filter((target) => target.mode === 'activate');
             toggleTargets = targets.filter((target) => target.mode !== 'activate');
-            previousBodyUserSelect = document.body.style.userSelect;
+            previousBodyUserSelect = doc.body.style.userSelect;
             previousScrollBehavior = scrollContainer.style.scrollBehavior;
-            window.addEventListener('pointermove', onPointerMove);
-            window.addEventListener('pointerup', finishSelection);
-            window.addEventListener('pointercancel', finishSelection);
+            view.addEventListener('pointermove', onPointerMove);
+            view.addEventListener('pointerup', finishSelection);
+            view.addEventListener('pointercancel', finishSelection);
             scrollContainer.addEventListener('scroll', onScroll, { passive: true });
         };
 
@@ -433,7 +439,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
                 const dy = currentPoint.y - startPoint.y;
                 if (dx * dx + dy * dy > DRAG_START_THRESHOLD_SQ) {
                     isDragging = true;
-                    document.body.style.userSelect = 'none';
+                    doc.body.style.userSelect = 'none';
                     activeScrollContainer.style.scrollBehavior = 'auto';
                     container.setPointerCapture(event.pointerId);
                     hasPointerCapture = true;
@@ -461,7 +467,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
             container.removeEventListener('pointerdown', onPointerDown);
             cleanupSelection();
         };
-    }, [containerRef, immediate, selectionBoxCoordinates, selectionBoxRef, updateBatchSize]);
+    }, [appDocument, containerRef, immediate, selectionBoxCoordinates, selectionBoxRef, updateBatchSize]);
 
     return { isSelecting };
 };

@@ -60,9 +60,9 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
     if (!preloadedLocales.current.has(lang)) {
       preloadedLocales.current.add(lang);
       preloadLocale(lang);
-      void prepareLocale?.(lang);
+      void Promise.resolve(prepareLocale?.(lang)).catch(() => undefined);
     }
-  }, []);
+  }, [preloadFonts, prepareLocale]);
 
   useEffect(() => {
     if (!open) return;

@@ -1,4 +1,3 @@
-import { Step } from 'react-joyride';
 import { useTranslateUI } from '@/locale';
 import parse from 'html-react-parser';
 import { useCallback, useMemo } from 'react';
@@ -12,22 +11,13 @@ import {
     useSetForceHeadbarExpanded,
 } from '@/store/uiPrefs';
 import { useMarkerStore, useSwitchFilter } from '@/store/marker';
-import { applyPointProgressSilently } from '@/store/history';
+import { previewGuideProgress } from '@/store/guideProgress';
 import useRegion from '@/store/region';
-import { loadAllMarkers, MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
+import { MARKER_TYPE_TREE, type IMarkerType } from '@/data/marker';
 import { DEFAULT_REGION } from '@/data/map';
 
-export type GuideStep = Step & {
-    id: string;
-    /** Intro-only step shown to first-time users before the detailed guide. */
-    intro?: boolean;
-    /** Intro tips intentionally omit the step counter and progress indicator. */
-    hideProgress?: boolean;
-    onBefore?: () => void | Promise<void>;
-    onNext?: () => void | Promise<void>;
-    delay?: number;
-    disableAutoScroll?: boolean;
-};
+import type { GuideStep, GuideTasks } from '../tasks';
+export type { GuideStep } from '../tasks';
 
 export const useMobileGuideSteps = (map?: L.Map) => {
     const t = useTranslateUI();
@@ -45,22 +35,19 @@ export const useMobileGuideSteps = (map?: L.Map) => {
         : Object.keys(MARKER_TYPE_TREE)[0];
     const firstType = (MARKER_TYPE_TREE[firstSubCategory]?.[0] as IMarkerType | undefined)?.key ?? '';
 
-    const waitForElement = useCallback((selector: string, timeoutMs = 1200) => {
-        return new Promise<Element | null>((resolve) => {
-            const start = Date.now();
-            const tick = () => {
-                const el = document.querySelector(selector);
-                if (el) return resolve(el);
-                if (Date.now() - start >= timeoutMs) return resolve(null);
-                setTimeout(tick, 60);
-            };
-            tick();
-        });
+    const waitForElement = useCallback(async (selector: string, tasks: GuideTasks, timeoutMs = 1200) => {
+        const start = Date.now();
+        while (!tasks.signal.aborted) {
+            const element = document.querySelector(selector);
+            if (element) return element;
+            if (Date.now() - start >= timeoutMs || !await tasks.wait(60)) break;
+        }
+        return null;
     }, []);
 
-    const scrollTypeIntoView = useCallback(async () => {
-        const el = await waitForElement(`[data-key="${firstType}"]`, 1200);
-        if (el instanceof HTMLElement) {
+    const scrollTypeIntoView = useCallback(async (tasks: GuideTasks) => {
+        const el = await waitForElement(`[data-key="${firstType}"]`, tasks);
+        if (!tasks.signal.aborted && el instanceof HTMLElement) {
             try {
                 el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
             } catch {
@@ -69,7 +56,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
         }
     }, [firstType, waitForElement]);
 
-    const steps: GuideStep[] = useMemo(() => [
+    const steps = useMemo<GuideStep[]>(() => [
         {
             id: 'MSTEP-0_welcome',
             target: '[data-guide="help"]',
@@ -241,12 +228,12 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.filterContainer')),
             placement: 'right',
             disableBeacon: true,
-            onNext: () => {
+            onNext: (tasks) => {
                 const isExpanded = useUiPrefsStore.getState().markFilterExpanded[firstSubCategory];
                 if (!isExpanded) {
                     toggleMarkFilterExpanded(firstSubCategory);
                 }
-                setTimeout(() => {
+                tasks.after(() => {
                     const targetItem = document.querySelector(`[data-key="${firstType}"]`);
                     const container =
                         document.querySelector<HTMLElement>('[class*="contentWrapper"]') ??
@@ -283,14 +270,14 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.mobile.selectorSelect')),
             placement: 'right',
             disableBeacon: true,
-            onBefore: async () => {
+            onBefore: async (tasks) => {
                 // Ensure drawer is visible and the markFilter section is expanded, then scroll to the first type.
                 setDrawerSnapIndex(1);
                 const isExpanded = useUiPrefsStore.getState().markFilterExpanded[firstSubCategory];
                 if (!isExpanded) {
                     toggleMarkFilterExpanded(firstSubCategory);
                 }
-                await scrollTypeIntoView();
+                await scrollTypeIntoView(tasks);
             },
             onNext: () => {
                 const currentFilter = useMarkerStore.getState().filter;
@@ -305,22 +292,16 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             content: parse(t('guide.selectorComplete')),
             placement: 'right',
             disableBeacon: true,
-            onBefore: async () => {
+            onBefore: async (tasks) => {
                 // Ensure drawer is visible and the markFilter section is expanded, then scroll to the first type.
                 setDrawerSnapIndex(1);
                 const isExpanded = useUiPrefsStore.getState().markFilterExpanded[firstSubCategory];
                 if (!isExpanded) {
                     toggleMarkFilterExpanded(firstSubCategory);
                 }
-                await scrollTypeIntoView();
+                await scrollTypeIntoView(tasks);
             },
-            onNext: () => {
-                void loadAllMarkers().then((markers) => {
-                    markers
-                        .filter((m) => m.type === firstType)
-                        .forEach((p) => applyPointProgressSilently({ collect: [p.id] }));
-                });
-            },
+            onNext: (tasks) => previewGuideProgress(firstType, true, tasks.signal),
         },
         {
             id: 'MSTEP-15_divider',
@@ -339,9 +320,9 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             disableAutoScroll: true,
         },
         {
-            onBefore: async () => {
+            onBefore: async (tasks) => {
                 setDrawerSnapIndex(1);
-                await scrollTypeIntoView();
+                await scrollTypeIntoView(tasks);
             },
             id: 'MSTEP-22_trigger-switch',
             target: '[class*="mobileTriggerBar"]',
@@ -349,14 +330,10 @@ export const useMobileGuideSteps = (map?: L.Map) => {
             placement: 'top',
             disableBeacon: true,
             disableAutoScroll: true,
-            onNext: () => {
+            onNext: (tasks) => {
                 // Pull down drawer to snap index 0
                 setDrawerSnapIndex(0);
-                void loadAllMarkers().then((markers) => {
-                    markers
-                        .filter((m) => m.type === firstType)
-                        .forEach((p) => applyPointProgressSilently({ uncollect: [p.id] }));
-                });
+                return previewGuideProgress(firstType, false, tasks.signal);
             },
             delay: 300,
         },

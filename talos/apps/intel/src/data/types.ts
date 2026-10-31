@@ -7,6 +7,7 @@ export type Acquisition =
   | { method: 'map'; pointId: number }
   | { method: 'mission'; missionId: string; questId?: string; interaction?: MissionInteraction; special?: MissionSpecial }
   | { method: 'auto' }
+  | { method: 'unknown' }
   | { method: 'shop'; shopGroupId: string; shopId: string; npcId?: string; pointId?: number; location: ShopLocation }
   | { method: 'invstgt'; researchId: string };
 

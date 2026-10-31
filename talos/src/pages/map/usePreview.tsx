@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRetryImport } from '@/lib/dom/useRetryImport';
+import ErrorBoundary from '@/component/shared/ErrorBoundary';
 import L from 'leaflet';
 import type { IMarkerData } from '@/data/marker';
 import { useTranslateGame } from '@/locale';
@@ -22,9 +24,7 @@ import {
 } from '@/services/map/events/PreviewEvents';
 import styles from '@/pages/map/Preview.module.scss';
 
-const RecordToolPreview = import.meta.env.DEV
-    ? lazy(() => import('@/devtools/recordTool/RecordToolPreview'))
-    : null;
+const loadRecordPreview = () => import('@/devtools/recordTool/RecordToolPreview');
 
 type HoveredMarkerState = {
     marker: IMarkerData;
@@ -332,11 +332,12 @@ const UseProductionPreview = (
 
 export const UsePreview = (map: L.Map | null): UsePreviewResult => {
     const recordToolEnabled = isRecordToolEnabled();
+    const RecordToolPreview = useRetryImport(loadRecordPreview, import.meta.env.DEV && recordToolEnabled)?.default;
     const productionPreview = UseProductionPreview(map, recordToolEnabled);
     const recordToolPreview = recordToolEnabled && RecordToolPreview ? (
-        <Suspense fallback={null}>
+        <ErrorBoundary>
             <RecordToolPreview map={map} />
-        </Suspense>
+        </ErrorBoundary>
     ) : null;
 
     return {

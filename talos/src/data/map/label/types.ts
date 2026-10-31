@@ -1,6 +1,6 @@
 export type LabelType = 'sub' | 'site';
 
-// Pixel coordinate in region maxZoom pixel space: [x, y]
+// Pixel coordinate in region coordZoom pixel space: [x, y]
 export type LabelPoint = [number, number];
 
 // Stable, language-agnostic ID.

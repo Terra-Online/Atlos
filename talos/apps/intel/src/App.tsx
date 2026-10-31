@@ -21,7 +21,7 @@ import {
   INTEL_IMPORT_PREFIXES,
   isIntelImportDebugLocation,
 } from '@intel/data/importContract';
-import { useIntelCollection } from '@intel/state/collection';
+import { getCollectedIds, useIntelCollection } from '@intel/state/collection';
 import ArchiveProgressSyncHost from '@intel/state/ArchiveProgressSyncHost';
 import VirtualIntelCard from '@intel/components/intelCard/virtualIntelCard';
 import CategoryFilter from '@intel/components/categoryFilter/categoryFilter';
@@ -235,6 +235,7 @@ function App() {
   const [selectIncompleteCategories, setSelectIncompleteCategories] = useState(false);
   const bannerSchema = useTheme() === 'dark' ? 'light' : 'dark';
   const didHandleImportRef = useRef(false);
+  const importRequestRef = useRef<ReturnType<typeof decodeIntelImportToken> | null>(null);
   const [areUiPrefsReady, setAreUiPrefsReady] = useState(() => useUiPrefsStore.persist.hasHydrated());
   const [categories, setCategories] = useState<ArchiveCategory[]>([]);
   const [query, setQuery] = useState('');
@@ -285,11 +286,15 @@ function App() {
 
   useEffect(() => {
     if (!importToken || !isReady || didHandleImportRef.current) return;
-    didHandleImportRef.current = true;
-
+    let active = true;
     const knownArchiveIds = new Set(intelArchives.map((archive) => archive.id));
-    void decodeIntelImportToken(importToken, knownArchiveIds)
+    // Reuse decoding across effect replay; only its current mounted consumer
+    // may write progress or remove the token from the current URL.
+    importRequestRef.current ??= decodeIntelImportToken(importToken, knownArchiveIds);
+    void importRequestRef.current
       .then(({ payload }) => {
+        if (!active) return;
+        didHandleImportRef.current = true;
         const importedIds = new Set([...payload.collected, ...payload.notCollected]);
         const importedCollectedIds = new Set(payload.collected);
         const importedArchives = intelArchives.filter((archive) => importedIds.has(archive.id));
@@ -297,22 +302,20 @@ function App() {
         // Keep the initial card snapshot aligned with the state written by the
         // import. This prevents the first render after import from using the
         // pre-import hydration snapshot.
-        const nextCollectedIds = new Set(collectedIds);
-        importedArchives.forEach((archive) => {
-          if (importedCollectedIds.has(archive.id)) nextCollectedIds.add(archive.id);
-          else nextCollectedIds.delete(archive.id);
-        });
-        setCollectedAtLoad(nextCollectedIds);
+        setCollectedAtLoad(getCollectedIds(intelArchives));
         setImportCount(payload.collected.length);
         setSelectIncompleteCategories(true);
         setImportStatus('success');
         clearImportTokenFromUrl();
       })
       .catch(() => {
+        if (!active) return;
+        didHandleImportRef.current = true;
         setImportStatus('error');
         clearImportTokenFromUrl();
       });
-  }, [applyCollectedState, collectedIds, importToken, isReady]);
+    return () => { active = false; };
+  }, [applyCollectedState, importToken, isReady]);
 
   useEffect(() => {
     if (!areUiPrefsReady || !isReady || collectedAtLoad || importStatus === 'pending') return;

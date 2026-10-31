@@ -12,7 +12,7 @@ import { getMarkerState, setMarkerState } from '@/services/map/core/canvas/marke
 import { ClusterLayer } from '@/services/map/core/marker/clusterLayer';
 import { deduplicateMarkersByPositionAndType } from '@/data/marker/deduplication.js';
 import { useUiPrefsStore } from '@/store/uiPrefs';
-import { getActivePoints } from '@/store/userRecord';
+import { getDisplayedPointProgress } from '@/store/guideProgress';
 import { useMarkerStore } from '@/store/marker';
 import { registerLassoHandler } from '@/services/map/selection/useMapMultiSelect';
 import { convertMapMarkerToEFGamePosition, type EFGamePosition, type RegionProfile } from '@/services/endfield';
@@ -301,7 +301,7 @@ export class MarkerLayer {
             this.proximityIndex = { key: indexKey, index };
         }
         const markerStore = useMarkerStore.getState();
-        const collected = new Set(getActivePoints());
+        const collected = new Set(getDisplayedPointProgress());
         const selected = new Set([
             ...markerStore.selectedPoints,
             ...markerStore.temporarySelectedPoints,
@@ -354,7 +354,7 @@ export class MarkerLayer {
                 try {
                     const shown = await this.ensureMarkerVisible(id, { source: 'proximity' });
                     if (shown && seq === this.proximityUpdateSeq && this.proximityPulseIds.has(id)
-                        && !getActivePoints().includes(id)) this.startMarkerPulse(id);
+                        && !getDisplayedPointProgress().includes(id)) this.startMarkerPulse(id);
                 } catch (error) {
                     LOGGER.error('Unable to reveal proximity marker', error);
                 } finally {
@@ -662,7 +662,7 @@ export class MarkerLayer {
 
         // Get hide completed markers preference
         const shouldHideCompleted = useUiPrefsStore.getState().prefsHideCompletedMarkers;
-        const completedMarkerIds = shouldHideCompleted ? new Set(getActivePoints()) : new Set();
+        const completedMarkerIds = shouldHideCompleted ? new Set(getDisplayedPointProgress()) : new Set();
 
         Object.entries(this.markerDict).forEach(([id, layer]) => {
             const markerData = this.markerDataDict[id];

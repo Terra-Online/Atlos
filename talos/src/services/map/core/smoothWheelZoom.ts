@@ -12,8 +12,6 @@ const INERTIA_MAX_STEP = 0.008;
 const INERTIA_FRICTION_PER_FRAME = 0.72;
 const INERTIA_STOP_THRESHOLD = 0.00025;
 const FRAME_DURATION = 1000 / 60;
-const TRACKPAD_OVERDRAG_MAX_PX = 96;
-const TRACKPAD_OVERDRAG_RESISTANCE = 0.65;
 const TRACKPAD_OVERDRAG_SETTLE_THRESHOLD_PX = 80;
 const TRACKPAD_OVERDRAG_SETTLE_MS = 48;
 
@@ -29,6 +27,8 @@ const CONTINUOUS_ZOOM_EVENT_DATA: ContinuousZoomEventData = {
 
 export interface SmoothWheelZoomOptions {
     enableInertia?: boolean;
+    constrainZoom?: (center: L.LatLng, zoom: number) => L.LatLng;
+    constrainPan?: (center: L.LatLng, zoom: number) => { center: L.LatLng; overdrag: number };
 }
 
 interface ContinuousZoomMap extends L.Map {
@@ -40,11 +40,6 @@ interface ContinuousZoomMap extends L.Map {
         zoom: number,
         center: L.LatLng,
     ): L.Point;
-    _limitCenter(
-        center: L.LatLng,
-        zoom: number,
-        bounds: L.LatLngBounds,
-    ): L.LatLng;
     _limitZoom(zoom: number): number;
     _move(center: L.LatLng, zoom: number, data?: ContinuousZoomEventData): this;
     _moveEnd(zoomChanged: boolean): this;
@@ -124,6 +119,8 @@ export class SmoothWheelZoom {
     private readonly map: ContinuousZoomMap;
     private readonly container: HTMLElement;
     private readonly inertiaEnabled: boolean;
+    private readonly constrainZoom?: SmoothWheelZoomOptions['constrainZoom'];
+    private readonly constrainPan?: SmoothWheelZoomOptions['constrainPan'];
     private readonly wheelInputRouter: WheelInputRouter<WheelEvent>;
     private zoomFrame: number | null = null;
     private panFrame: number | null = null;
@@ -148,6 +145,8 @@ export class SmoothWheelZoom {
         this.map = map as ContinuousZoomMap;
         this.container = map.getContainer();
         this.inertiaEnabled = options.enableInertia ?? true;
+        this.constrainPan = options.constrainPan;
+        this.constrainZoom = options.constrainZoom;
         this.wheelInputRouter = new WheelInputRouter<WheelEvent>({
             onPan: (event) => this.handleRoutedWheel('pan', event),
             onZoom: (event) => this.handleRoutedWheel('zoom', event),
@@ -417,45 +416,14 @@ export class SmoothWheelZoom {
         this.panRawCenterPoint ??= currentCenterPoint;
         this.panRawCenterPoint = this.panRawCenterPoint.add(offset);
 
-        const configuredBounds = this.map.options.maxBounds;
-        if (!configuredBounds) {
-            this.map._rawPanBy(offset);
-            return 0;
+        if (this.constrainPan) {
+            const result = this.constrainPan(this.map.unproject(this.panRawCenterPoint, zoom), zoom);
+            this.map._rawPanBy(this.map.project(result.center, zoom).subtract(currentCenterPoint));
+            return result.overdrag;
         }
 
-        const maxBounds =
-            configuredBounds instanceof L.LatLngBounds
-                ? configuredBounds
-                : L.latLngBounds(configuredBounds);
-        const rawCenter = this.map.unproject(this.panRawCenterPoint, zoom);
-        const limitedCenter = this.map._limitCenter(rawCenter, zoom, maxBounds);
-        const limitedCenterPoint = this.map.project(limitedCenter, zoom);
-        const rawOverdrag = this.panRawCenterPoint.subtract(limitedCenterPoint);
-        const visualOverdrag = L.point(
-            this.resistOverdrag(rawOverdrag.x),
-            this.resistOverdrag(rawOverdrag.y),
-        );
-        const visualCenterPoint = limitedCenterPoint.add(visualOverdrag);
-        const visualOffset = visualCenterPoint.subtract(currentCenterPoint);
-
-        if (visualOffset.x !== 0 || visualOffset.y !== 0) {
-            this.map._rawPanBy(visualOffset);
-        }
-
-        return Math.max(Math.abs(visualOverdrag.x), Math.abs(visualOverdrag.y));
-    }
-
-    private resistOverdrag(value: number) {
-        if (value === 0) return 0;
-
-        const magnitude =
-            TRACKPAD_OVERDRAG_MAX_PX *
-            (1 -
-                Math.exp(
-                    (-Math.abs(value) * TRACKPAD_OVERDRAG_RESISTANCE) /
-                        TRACKPAD_OVERDRAG_MAX_PX,
-                ));
-        return Math.sign(value) * magnitude;
+        this.map._rawPanBy(offset);
+        return 0;
     }
 
     private beginOverdragSettlement() {
@@ -498,19 +466,17 @@ export class SmoothWheelZoom {
             zoom,
         );
 
-        const configuredBounds = this.map.options.maxBounds;
-        if (configuredBounds) {
-            const maxBounds =
-                configuredBounds instanceof L.LatLngBounds
-                    ? configuredBounds
-                    : L.latLngBounds(configuredBounds);
-            center = this.map._limitCenter(center, zoom, maxBounds);
+        if (this.constrainZoom) {
+            center = this.constrainZoom(center, zoom);
         }
 
         // This is the same signal Leaflet uses during pinch zoom. GridLayer
         // keeps the current tile level and updates its transform instead of
         // rebuilding and pruning the tile grid for every fractional step.
         this.map._move(center, zoom, CONTINUOUS_ZOOM_EVENT_DATA);
+        // Once constrained, continue from the visible frame instead of retaining
+        // an unreachable mouse anchor and accumulating drift beyond the wall.
+        this.anchorLatLng = this.continuousContainerPointToLatLng(this.anchorPoint);
     }
 
     private scheduleGestureEnd() {

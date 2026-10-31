@@ -31,7 +31,8 @@
       "mission": "مهمة",
       "auto": "التقدم",
       "shop": "متجر",
-      "invstgt": "تحقيق"
+      "invstgt": "تحقيق",
+      "unknown": "شروط الفتح غير مؤكدة"
     },
     "label": {
       "missionSequence": "المهمة",

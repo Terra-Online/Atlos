@@ -1,14 +1,9 @@
 {
     "Valley_4": {
-        "dimensions": [
-            8000,
-            8000
-        ],
-        "maxZoom": 3,
-        "tileSize": 200,
-        "initialOffset": {
-            "x": -1000,
-            "y": 1000
+        "coordZoom": 3,
+        "initialCenter": {
+            "lat": -625,
+            "lng": 375
         },
         "initialZoom": 2,
         "subregions": [
@@ -18,23 +13,13 @@
             "VL_5",
             "VL_6",
             "VL_7"
-        ],
-        "layers": ["L2", "L1", "B1", "B2"]
+        ]
     },
-  "Wuling": {
-    "dimensions": [
-      17000,
-      15000
-    ],
-    "boundsOffset": {
-      "x": -2000,
-      "y": 0
-    },
-    "maxZoom": 3,
-        "tileSize": 200,
-        "initialOffset": {
-            "x": 0,
-            "y": -1000
+    "Wuling": {
+        "coordZoom": 3,
+        "initialCenter": {
+            "lat": -1110,
+            "lng": 530
         },
         "initialZoom": 2,
         "subregions": [
@@ -49,19 +34,13 @@
             "WL_9",
             "WL_10",
             "WL_16"
-        ],
-        "layers": ["L4", "L3", "L2", "L1", "B1", "B2", "B3", "B4"]
+        ]
     },
     "Dijiang": {
-        "dimensions": [
-            4000,
-            5000
-        ],
-        "maxZoom": 2,
-        "tileSize": 200,
-        "initialOffset": {
-            "x": 0,
-            "y": -500
+        "coordZoom": 2,
+        "initialCenter": {
+            "lat": -500,
+            "lng": 500
         },
         "initialZoom": 0,
         "subregions": [
@@ -69,20 +48,14 @@
         ]
     },
     "Weekraid_1": {
-        "dimensions": [
-            5700,
-            7000
-        ],
-        "maxZoom": 2,
-        "tileSize": 200,
-        "initialOffset": {
-            "x": 500,
-            "y": -1000
+        "coordZoom": 2,
+        "initialCenter": {
+            "lat": -625,
+            "lng": 838
         },
         "initialZoom": 0,
         "subregions": [
             "ES_1"
-        ],
-        "layers": ["L1", "B1", "B2", "B3"]
+        ]
     }
 }

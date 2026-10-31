@@ -57,17 +57,20 @@ const useSync = <T,>({
             task.inFlight = true;
             void send(commentId, sentState, task.lastSynced)
                 .then((actionPatch) => {
+                    if (tasksRef.current.get(commentId) !== task) return;
                     task.lastSynced = sentState;
                     if (task.desired === sentState && actionPatch) {
                         patch(commentId, (item) => applyPatch(item, actionPatch));
                     }
                 })
                 .catch(() => {
+                    if (tasksRef.current.get(commentId) !== task) return;
                     if (task.desired !== sentState) return;
                     task.desired = task.lastSynced;
                     patch(commentId, (item) => rollback(item, task.lastSynced));
                 })
                 .finally(() => {
+                    if (tasksRef.current.get(commentId) !== task) return;
                     task.inFlight = false;
                     if (task.desired !== task.lastSynced) {
                         schedule(commentId);
@@ -94,6 +97,7 @@ const useSync = <T,>({
         tasksRef.current.forEach((task) => {
             if (task.timer) window.clearTimeout(task.timer);
         });
+        tasksRef.current.clear();
     }, []);
 
     return { start, clear };

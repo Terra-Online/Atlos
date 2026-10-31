@@ -1,4 +1,6 @@
-import { lazy, Suspense, useState, useEffect, useRef, StrictMode, type CSSProperties } from 'react';
+import { useState, useEffect, useRef, StrictMode, type CSSProperties } from 'react';
+import ErrorBoundary from '@/component/shared/ErrorBoundary';
+import { useRetryImport } from '@/lib/dom/useRetryImport';
 import L from 'leaflet';
 
 
@@ -10,7 +12,6 @@ import LocatorBanner from '@/pages/locator/LocatorBanner';
 // Critical locator recovery UI: keep it in the entry bundle so policy errors cannot be blocked by a missing chunk.
 import LocationAuth from '@/pages/locator/LocationAuth';
 import EndfieldBindingHost from '@/pages/locator/EndfieldBindingHost';
-// import SupportAutoPopup from '@/component/shared/support/SupportAutoPopup';
 import { MetaHelper } from '@/pages/MetaHelper';
 
 import { useSidebarOpen, useSidebarWidth } from '@/store/uiPrefs';
@@ -21,8 +22,10 @@ import { useLocator } from '@/pages/map/useLocator';
 import { useIsUserGuideOpen } from '@/store/uiPrefs';
 import { useLocatorStore } from '@/store/locator';
 import { useUIVisibility } from '@/pages/uiOverlay/useUIVisibility';
+import { observeProgressStorage } from '@/store/userRecord';
+import { useHistoryStore } from '@/store/history';
 
-const UserGuide = lazy(() => import('@/pages/userGuide/UserGuide'));
+const loadUserGuide = () => import('@/pages/userGuide/UserGuide');
 
 declare global {
     interface Window {
@@ -34,6 +37,7 @@ declare global {
 }
 
 function MapPage() {
+    useEffect(() => observeProgressStorage(() => useHistoryStore.getState().clear()), []);
     // Use persisted sidebar open state as the single source of truth
     const isSidebarOpen = useSidebarOpen();
     const sidebarWidth = useSidebarWidth();
@@ -49,6 +53,7 @@ function MapPage() {
         toggleUI,
     } = useUIVisibility();
     const [shouldLoadUserGuide, setShouldLoadUserGuide] = useState(false);
+    const UserGuide = useRetryImport(loadUserGuide, shouldLoadUserGuide)?.default;
     const [userGuideReady, setUserGuideReady] = useState(false);
     const isUserGuideOpen = useIsUserGuideOpen();
     const locatorAuthOpen = useLocatorStore((state) => state.authOpen);
@@ -134,23 +139,7 @@ function MapPage() {
         const opening = isSidebarOpen;
         const dx = opening ? -sidebarWidth / 2 : sidebarWidth / 2;
 
-        // Temporarily remove maxBounds so the pan is not clipped.
-        // Passing invalid bounds to setMaxBounds removes the constraint and
-        // de-registers the internal _panInsideMaxBounds handler.
-        let savedBounds = mapInstance.options.maxBounds as L.LatLngBounds | undefined;
-        if (savedBounds) {
-            mapInstance.setMaxBounds(null as unknown as L.LatLngBoundsExpression);
-        }
-
-        const restoreBounds = () => {
-            mapInstance.off('moveend talos:regionSwitchStart', restoreBounds);
-            const bounds = savedBounds;
-            savedBounds = undefined;
-            if (bounds) mapInstance.setMaxBounds(bounds);
-        };
-        mapInstance.on('moveend talos:regionSwitchStart', restoreBounds);
         mapInstance.panBy([dx, 0], { animate: true, duration: 0.3, easeLinearity: 0.25 });
-        return restoreBounds;
     }, [isSidebarOpen, sidebarWidth, mapInstance, isDesktop]);
 
     // onToggle is retained for potential side effects/analytics
@@ -180,19 +169,20 @@ function MapPage() {
                     <EndfieldBindingHost />
                 </>
             )}
-            {/*<SupportAutoPopup />*/}
             <div className='app theme-transition-scope' style={{ '--sidebar-width': `${sidebarWidth}px` } as CSSProperties}>
-                {shouldLoadUserGuide && (
-                    <Suspense fallback={null}>
+                {UserGuide && (
+                    <ErrorBoundary>
                         <UserGuide
                             map={mapInstance}
                             visible={uiVisible}
                             onReady={() => setUserGuideReady(true)}
                         />
-                    </Suspense>
+                    </ErrorBoundary>
                 )}
                 {/* Map layer - always fill the entire window */}
-                <Map onMapReady={handleMapReady} />
+                <ErrorBoundary>
+                    <Map onMapReady={handleMapReady} />
+                </ErrorBoundary>
                 {/* UI layer - floats over the map */}
                 <UIOverlay
                     map={mapInstance}

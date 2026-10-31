@@ -1,9 +1,11 @@
 import { beforeEach, afterEach, expect, it, vi } from 'vitest';
 import { clearReadCache, getContributions, getOverview } from './client';
 import { useAuthStore } from '@main/store/auth';
+import { HttpRequestError } from '@main/services/http/request';
+import { isUnauthorized } from './client';
 
 const { requestJson } = vi.hoisted(() => ({ requestJson: vi.fn() }));
-vi.mock('@main/services/http/request', () => ({ requestJson }));
+vi.mock('@main/services/http/request', async (original) => ({ ...await original<typeof import('@main/services/http/request')>(), requestJson }));
 vi.mock('@hub/locale', () => ({ getCurrentLocale: () => 'en-US' }));
 vi.mock('@main/services/http/authRuntime', () => ({
     getAuthBase: () => 'http://localhost:8787',
@@ -98,4 +100,16 @@ it('does not retain failed reads and allows an explicit refresh', async () => {
     clearReadCache();
     await getOverview();
     expect(requestJson).toHaveBeenCalledTimes(3);
+});
+
+it('encodes pagination cursors without changing them and recognizes only HTTP 401 as an expired session', async () => {
+    requestJson.mockResolvedValue({ items: [], nextCursor: null });
+    await getContributions('comment', 'cursor+/ =?');
+    const path = requestJson.mock.calls[0][1] as string;
+    const query = new URLSearchParams(path.split('?')[1]);
+    expect(query.get('kind')).toBe('comment');
+    expect(query.get('cursor')).toBe('cursor+/ =?');
+    expect(isUnauthorized(new HttpRequestError('expired', 401))).toBe(true);
+    expect(isUnauthorized(new HttpRequestError('unavailable', 503))).toBe(false);
+    expect(isUnauthorized(new Error('401'))).toBe(false);
 });

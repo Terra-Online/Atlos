@@ -42,6 +42,8 @@
   "gm02m18": "Lames sans nom II",
   "gm02m19": "Lames sans nom III",
   "gm02m24": "Anthologies en folie",
+  "gm02m27d5": "Cloche du souvenir : notes a posteriori",
+  "gm02m27d5_q#4": "Rassembler tous les <span class=\"highlight\">indices</span> sur Suiming pour les <span class=\"highlight\">archives</span>",
   "group": {
     "intel": "Découvertes",
     "central": "Dossiers du Nexus",
@@ -648,6 +650,7 @@
   "sm1l7m1": "Une menace venue de l'intérieur",
   "sm2l1m5": "Course sans fin",
   "sm2l2m3": "Le vieil homme et la marée I",
+  "sm2l3m3": "Protecteur de la source III",
   "sm2l3m6": "Les aventuriers du trésor perdu III",
   "sm2l6m1": "L'alcôve d'acier souterraine",
   "sns_chat_nfm_0_1": "Groupe de communication du camp",

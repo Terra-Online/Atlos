@@ -1,5 +1,5 @@
 import { EntryButton } from '@/component/button/EntryButton';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
 import Modal, { type ModalProps } from '@/component/modal/modal';
 import PopoverTooltip from '@/component/popover/popover';
@@ -61,6 +61,9 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
     const [error, setError] = useState('');
     const [countdown, setCountdown] = useState(BIND_COUNTDOWN_SECONDS);
     const sessionUser = useAuthStore((state) => state.sessionUser);
+    const sessionVersion = useAuthStore((state) => state.sessionVersion);
+    const mountedRef = useRef(false);
+    const requestRef = useRef(0);
     const errorText = error ?? '';
     const shouldShowError = open && Boolean(errorText);
     const isErrorRemoved = !shouldShowError;
@@ -78,10 +81,21 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
         setCountdown(BIND_COUNTDOWN_SECONDS);
     }, []);
 
+    useEffect(() => {
+        mountedRef.current = true;
+        return () => { mountedRef.current = false; requestRef.current += 1; };
+    }, []);
+
+    useEffect(() => {
+        requestRef.current += 1;
+        reset();
+    }, [open, reset, sessionVersion]);
+
     const close = useCallback(() => {
+        if (loading) return;
         reset();
         onClose();
-    }, [onClose, reset]);
+    }, [loading, onClose, reset]);
 
     useEffect(() => {
         if (!open) return undefined;
@@ -100,20 +114,24 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
             applyRole(mode, role);
         }
         onBound?.(binding);
-        close();
-    }, [close, enableLocatorOnBound, onBound, sessionUser?.uid]);
+        reset();
+        onClose();
+    }, [reset, onClose, enableLocatorOnBound, onBound, sessionUser?.uid]);
 
     const loadRoles = useCallback(async (
         nextFlowId: string,
         roles: EFRoleOption[],
         mode: LocatorAccountMode,
+        isCurrent: () => boolean,
     ) => {
+        if (!isCurrent()) return;
         if (!roles.length) {
             throw new Error(t('locator.errors.noRole'));
         }
 
         if (roles.length === 1) {
             const result = await bindEFRole(nextFlowId, roles[0]);
+            if (!isCurrent()) return;
             finishBind(mode, roles[0], result.binding);
             return;
         }
@@ -126,7 +144,7 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
         setStep('role');
     }, [finishBind, t]);
 
-    const bindByToken = useCallback(async () => {
+    const bindByToken = useCallback(async (isCurrent: () => boolean) => {
         const accountToken = extractToken(tokenInput);
         if (!accountToken) {
             setError(t('locator.errors.tokenRequired'));
@@ -134,10 +152,10 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
         }
 
         const exchanged = await exchangeEFToken(accountMode, accountToken);
-        await loadRoles(exchanged.flowId, exchanged.roles, accountMode);
+        await loadRoles(exchanged.flowId, exchanged.roles, accountMode, isCurrent);
     }, [accountMode, t, loadRoles, tokenInput]);
 
-    const confirmRole = useCallback(async () => {
+    const confirmRole = useCallback(async (isCurrent: () => boolean) => {
         const role = roleOptions.find((item) => `${item.serverId}:${item.roleId}` === selectedRoleKey);
         if (!role || !flowId) {
             setError(t('locator.errors.roleRequired'));
@@ -145,24 +163,31 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
             return;
         }
         const result = await bindEFRole(flowId, role);
+        if (!isCurrent()) return;
         finishBind(accountMode, role, result.binding);
     }, [accountMode, finishBind, flowId, t, roleOptions, selectedRoleKey]);
 
     const handleBind = useCallback(async () => {
         if (loading || countdown > 0) return;
+        if (useAuthStore.getState().sessionVersion !== sessionVersion) return;
+        const request = ++requestRef.current;
+        const isCurrent = () => mountedRef.current && requestRef.current === request
+            && useAuthStore.getState().sessionVersion === sessionVersion;
         setError('');
         setLoading(true);
         try {
-            if (step === 'auth') await bindByToken();
-            else await confirmRole();
+            if (step === 'auth') await bindByToken(isCurrent);
+            else await confirmRole(isCurrent);
         } catch (err) {
+            if (!isCurrent()) return;
             setError(err instanceof Error ? err.message : t('locator.errors.bindingFailed'));
         } finally {
-            setLoading(false);
+            if (isCurrent()) setLoading(false);
         }
-    }, [bindByToken, confirmRole, countdown, t, loading, step]);
+    }, [bindByToken, confirmRole, countdown, t, loading, sessionVersion, step]);
 
     const switchMode = useCallback((mode: LocatorAccountMode) => {
+        if (loading) return;
         setAccountMode(mode);
         setError('');
         setTokenInput('');
@@ -170,7 +195,7 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
         setRoleOptions([]);
         setSelectedRoleKey('');
         setFlowId('');
-    }, []);
+    }, [loading]);
 
     const providerInfo = useMemo(() => ({
         skland: {
@@ -199,6 +224,7 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
     const tabItems: TabViewItem[] = useMemo(() => [
         {
             key: 'skland',
+            disabled: loading,
             label: t('locator.binding.chinaTab'),
             description: (
                 <ol className={styles.bindStep}>
@@ -210,6 +236,7 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
         },
         {
             key: 'skport',
+            disabled: loading,
             label: t('locator.binding.globalTab'),
             description: (
                 <ol className={styles.bindStep}>
@@ -219,7 +246,7 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
                 </ol>
             ),
         },
-    ], [providerInfo, t]);
+    ], [providerInfo, t, loading]);
 
     const bindLabelTemplate = enableLocatorOnBound
         ? t('locator.binding.bindWithCountdown')
@@ -247,6 +274,9 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
             open={open}
             size={modalSize}
             onClose={close}
+            showClose={!loading}
+            maskClosable={!loading}
+            closeOnEsc={!loading}
             title={t('locator.binding.title')}
             icon={<BindingIcon />}
             iconScale={0.86}

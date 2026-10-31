@@ -31,7 +31,8 @@
       "mission": "Mission",
       "auto": "Fortschritt",
       "shop": "Shop",
-      "invstgt": "Untersuchung"
+      "invstgt": "Untersuchung",
+      "unknown": "Freischaltbedingung unbestätigt"
     },
     "label": {
       "missionSequence": "Mission",

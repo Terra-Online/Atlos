@@ -1,4 +1,7 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRetryImport } from '@/lib/dom/useRetryImport';
+import ErrorBoundary from '@/component/shared/ErrorBoundary';
+import Modal from '@/component/modal/modal';
 import L from 'leaflet';
 import styles from '@/pages/uiOverlay/UIOverlay.module.scss';
 
@@ -45,7 +48,7 @@ import { useAnnouncementFlow } from '@/pages/uiOverlay/useAnnFlow';
 import { shouldSuppressInitialAutoOverlays } from '@/services/routing';
 import ScopeIndicator from '@/pages/scopeIndicator/ScopeIndicator';
 
-const AnnouncementModal = lazy(() => import('@/pages/announcement/announcement'));
+const loadAnnouncement = () => import('@/pages/announcement/announcement');
 
 interface UIOverlayProps {
     map?: L.Map;
@@ -71,6 +74,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [announcementOpen, setAnnouncementOpen] = useState(false);
     const [announcementMounted, setAnnouncementMounted] = useState(false);
+    const AnnouncementModal = useRetryImport(loadAnnouncement, announcementOpen)?.default;
     const {
         announcements,
         hasUnreadAnnouncement,
@@ -333,8 +337,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
             />
 
             {/* Announcement Modal */}
-            {announcementMounted && (
-                <Suspense fallback={null}>
+            {announcementMounted && AnnouncementModal && (
+                <ErrorBoundary resetKeys={[announcementOpen]}>
                     <AnnouncementModal
                         open={announcementOpen}
                         onClose={() => setAnnouncementOpen(false)}
@@ -342,7 +346,12 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                         onHasUnread={setHasUnreadAnnouncement}
                         announcements={announcements}
                     />
-                </Suspense>
+                </ErrorBoundary>
+            )}
+            {announcementOpen && !AnnouncementModal && (
+                <Modal open title={t('headbar.announcement')} onChange={setAnnouncementOpen}>
+                    <p role="status">{t('common.loading')}</p>
+                </Modal>
             )}
         </div>
     );

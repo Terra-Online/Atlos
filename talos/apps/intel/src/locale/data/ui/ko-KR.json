@@ -31,7 +31,8 @@
       "mission": "임무",
       "auto": "자동 해금",
       "shop": "상점",
-      "invstgt": "조사"
+      "invstgt": "조사",
+      "unknown": "해금 조건 미확인"
     },
     "label": {
       "missionSequence": "임무 순서",

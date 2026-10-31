@@ -200,7 +200,7 @@ function shouldIndexPoint(typeInfo, hasBody) {
 }
 
 export function markerToPixel(marker, region) {
-  const scale = 2 ** region.maxZoom;
+  const scale = 2 ** region.coordZoom;
   return {
     x: marker.pos[1] * scale,
     y: -marker.pos[0] * scale,

@@ -12,6 +12,7 @@
     "settings": "Tercihler"
   },
   "mapControls": {
+    "satellite": "Uydu modu",
     "layerSelect": "Katman seçimi",
     "locationTracking": "Konum Senkronizasyonu"
   },

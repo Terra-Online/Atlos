@@ -26,6 +26,7 @@ type CommentSubmissionTask = {
 export type CommentSubmissionError = {
     id: number;
     markerId: string;
+    ownerUid: string | undefined;
     code?: string;
 };
 
@@ -163,6 +164,7 @@ export const submitCommentOptimistic = (
             submissionErrors.set(markerId, {
                 id: nextSubmissionErrorId++,
                 markerId,
+                ownerUid: user?.uid,
                 code: error instanceof UGCClientError ? error.code : undefined,
             });
             emitSubmissionSnapshot(markerId);

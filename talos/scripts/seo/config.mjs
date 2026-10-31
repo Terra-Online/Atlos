@@ -50,7 +50,7 @@ const OG_SAMPLE_SCALE = 1.25;
 export const SAMPLE_IMAGE_WIDTH = Math.round(WORK_IMAGE_WIDTH * OG_SAMPLE_SCALE);
 export const SAMPLE_IMAGE_HEIGHT = Math.round(WORK_IMAGE_HEIGHT * OG_SAMPLE_SCALE);
 export const SAMPLE_TO_WORK_SCALE = WORK_IMAGE_WIDTH / SAMPLE_IMAGE_WIDTH;
-export const LEAFLET_TILE_SIZE = 200;
+export { TILE_SIZE as LEAFLET_TILE_SIZE } from '../../src/data/map/tiles.js';
 export const TILE_IMAGE_SIZE = 500;
 export const MARKER_RENDER_SCALE = 2.5;
 export const SITEMAP_LIMIT = 45000;
