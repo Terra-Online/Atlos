@@ -66,8 +66,9 @@ it('restores the editable draft and original comment when an edit fails without 
     // Replace the controlled source through the real editor selection.
     act(() => { editor.focus(); }); const selection = window.getSelection(); const range = document.createRange(); range.selectNodeContents(editor); selection?.removeAllRanges(); selection?.addRange(range); fireEvent(document, new Event('selectionchange'));
     fireEvent.paste(editor, { clipboardData: { getData: () => 'Edited comment' } }); await waitFor(() => expect(editor.textContent).toBe('Edited comment'));
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'detail.comments.submitEdit' })); await Promise.resolve(); });
-    expect(api.edit).toHaveBeenCalledExactlyOnceWith(own.id, 'Edited comment'); expect(screen.getByText('detail.comments.editFailed')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'detail.comments.submitEdit' }));
+    await waitFor(() => expect(api.edit).toHaveBeenCalledExactlyOnceWith(own.id, 'Edited comment'));
+    await waitFor(() => expect(screen.getByText('detail.comments.editFailed')).toBeTruthy());
     expect(document.querySelector(`[data-comment-id="${own.id}"]`)?.textContent).toContain('Original comment');
     await waitFor(() => expect(screen.getByRole('textbox').textContent).toBe('Edited comment'));
 });
