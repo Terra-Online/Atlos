@@ -1,7 +1,7 @@
 {
   "headbar": {
-    "profile": "Benutzereinstellungen",
-    "auth": "Registrieren / Anmelden",
+    "profile": "User settings",
+    "auth": "Register / Log in",
     "hideUI": "Benutzeroberfläche ausblenden",
     "notification": "Benachrichtigungen",
     "darkmode": "In den Dunkelmodus wechseln",
@@ -181,13 +181,13 @@
     }
   },
   "storage": {
-    "title": "Daten & Speicher",
-    "calculating": "Speichernutzung wird berechnet...",
-    "policy": "<p>Wir verwenden Cookies für Ihre Anmeldesitzung, LocalStorage für Einstellungen und Marker-Fortschritt und CacheStorage zum Zwischenspeichern von Schriftarten. Dies beschleunigt das Laden und ermöglicht die teilweise Offline-Nutzung. Wenn Sie den lokalen Speicher löschen, <span class=\"keyword\">kann Ihr nächster Besuch länger dauern, da Ressourcen erneut geladen werden</span>; wenn Sie den Website-Speicher deaktivieren, kann die Website <span class=\"keyword\">lokale Einstellungen und Marker-Fortschritt nicht mehr automatisch speichern</span>.</p><p>Funktionen wie Anmeldung, Marker-Beiträge und Positionssync senden bei Bedarf die entsprechenden Daten an den Server. Das Löschen des lokalen Speichers löscht weder Ihr Konto noch Ihre Daten auf dem Server.</p>",
-    "filtersAndMarkers": "Filter & Markerdaten",
-    "warning": "<p><strong>Warnung:</strong> Beim Löschen des lokalen Speichers gehen Ihr lokaler Anmeldestatus, Ihre Einstellungen und Ihr lokaler Fortschritt verloren. Beim nächsten Besuch müssen Ressourcen erneut geladen werden und Sie müssen sich erneut anmelden.</p><p>Wenn Sie sicher sind, klicken Sie bitte erneut auf die Löschen-Schaltfläche.</p>",
-    "export": "Daten exportieren",
-    "import": "Daten importieren"
+    "title": "Data & Storage",
+    "calculating": "Calculating storage usage...",
+    "policy": "<p>We use cookies to store your login session, LocalStorage for preferences and marker progress, and CacheStorage to cache fonts. This helps pages load faster and supports some offline use. If you clear local storage, <span class=\"keyword\">your next visit may take longer as resources are reloaded</span>; if you disable website storage, the website <span class=\"keyword\">will not be able to save local preferences and marker progress automatically</span>.</p><p>Features such as login, marker contributions, and location sync send the relevant data to the server as needed. Clearing local storage does not delete your account or server data.</p>",
+    "filtersAndMarkers": "Filters & Marker Data",
+    "warning": "<p><strong>Warning:</strong> Clearing storage removes your login state, preferences, and local progress. On your next visit, resources will need to reload and you will need to log in again.</p><p>To confirm, please click the delete button again.</p>",
+    "export": "Export Data",
+    "import": "Import Data"
   },
   "settings": {
     "title": "Einstellungen",
@@ -231,7 +231,7 @@
   },
   "guide": {
     "tip": "Hinweis zur Anleitung",
-    "welcome": "Willkommen bei <span class=\"keyword\">Open Endfield Map</span>.<br>Sie verwenden diese Karte zum ersten Mal. Falls Sie auf ein Problem stoßen, klicken Sie bitte oben rechts auf die Schaltfläche <span class=\"keyword\">Hilfe</span>. Dort erhalten Sie eine ausführliche Einführung in die Funktionen.</p>",
+    "welcome": "Willkommen bei <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Sie verwenden diese Karte zum ersten Mal. Falls Sie auf ein Problem stoßen, klicken Sie bitte oben rechts auf die Schaltfläche <span class=\"keyword\">Hilfe</span>. Dort erhalten Sie eine ausführliche Einführung in die Funktionen.</p>",
     "sidebarToggle": "Klicken Sie, um die <span class=\"keyword\">Seitenleiste</span> zu erweitern.<br>Die Seitenleiste enthält Ihre am häufigsten verwendeten Markierungsfilter sowie Schalter, die eng mit der Markierungsanzeige verbunden sind.",
     "search": "Sie können nach Markierungen suchen, die angezeigt werden sollen, indem Sie <span class=\"keyword\">vom Spiel unterstützte Sprachen</span> verwenden, und diese in den Suchergebnissen auswählen.",
     "filterContainer": "Markierungen desselben Typs sind in einem <span class=\"keyword\">Filter</span> gruppiert.<br>Klicken Sie, um die Liste der Markierungen dieses Typs zu erweitern.",
@@ -242,15 +242,15 @@
     "triggerSwitch": "Klicken Sie, um den Schalterstatus umzuschalten.<br><ul><li><span class=\"keyword\">Markierungs-Cluster-Modus</span> ermöglicht die zusammengefasste Anzeige dichter Markierungen;</li><li><span class=\"keyword\">Regionsgrenzenanzeige</span> hebt jede Unterregion und ihre Grenzen im aktuellen Bereich hervor.</li><li><span class=\"keyword\">Regionsname</span> zeigt die In-Game-Regionsnamen an.</li></ul>",
     "scale": "Verwenden Sie die <span class=\"keyword\">Zoomsteuerung</span>, um den Kartenzoom anzuzeigen und zu manipulieren.<br>Mausrad oder Trackpad können zum Zoomen verwendet werden. Sie können auch zoomen, indem Sie auf die Tasten <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> oder irgendwo auf die Zoomleiste klicken.",
     "filterList": "Die <span class=\"keyword\">Markierungsliste</span> zeigt die von Ihnen ausgewählten Markierungstypen; klicken Sie auf das Symbol, um die Auswahl aufzuheben.",
-    "headbar": "Funktionen für Karte, Konto und mehr finden Sie in der <span class=\"keyword\">Kopfleiste</span>.",
-    "auth": "<span class=\"keyword\">Registrieren</span> Sie sich für ein OEM-Konto oder <span class=\"keyword\">melden Sie sich an</span>, um unsere Online-Funktionen zu nutzen.",
+    "headbar": "Schalter, die sich auf die Karteneinstellungen beziehen, befinden sich in der <span class=\"keyword\">Kopfleiste</span>.",
+    "auth": "<span class=\"keyword\">Register</span> or <span class=\"keyword\">log in</span> to an OEM account to use our online features.",
     "hideUI": "<span class=\"keyword\">Website-UI ausblenden</span>, um Screenshots zu machen oder Randmarkierungen anzuzeigen.",
     "notification": "Öffne die <span class=\"keyword\">Benachrichtigungen</span>, um Interaktionen und Prüfergebnisse zu deinen Beiträgen anzuzeigen.",
     "darkMode": "Schalten Sie den aktuellen <span class=\"keyword\">Umgebungslichtmodus</span> um.",
     "language": "<span class=\"keyword\">Oberflächensprache</span> wechseln.<br>Derzeit umfassen Sprachen mit <span class=\"keyword\">vollständiger Unterstützung für die Übersetzung von Spielinhalten</span> Englisch, vereinfachtes Chinesisch, traditionelles Chinesisch, Japanisch, Koreanisch, Französisch, Deutsch, Italienisch, Russisch, Spanisch, Indonesisch, Portugiesisch, Thailändisch und Vietnamesisch.<br>Sprachen mit <span class=\"keyword\">nur Oberflächenübersetzung</span> umfassen Arabisch, Malaiisch, Polnisch, Schwedisch, Griechisch, Hindi, Ukrainisch und Türkisch.",
-    "announcement": "Sehen Sie sich aktuelle <span class=\"keyword\">Website-Ankündigungen</span> und wichtige Funktionsupdates an.",
+    "announcement": "Sehen Sie sich <span class=\"keyword\">Website-Ankündigungen</span> an. Updates zu Nutzungsbedingungen und Datenschutz finden Sie hier.",
     "help": "Starten Sie diesen <span class=\"keyword\">Leitfaden</span> neu.",
-    "settings": "Öffnen Sie die <span class=\"keyword\">Einstellungen</span>, um Benutzeroberfläche, Karte, Design, Tastenkombinationen und lokale Daten zu verwalten.",
+    "settings": "Öffnen Sie <span class=\"keyword\">Einstellungen</span>, um zu steuern, welchen lokalen Speicher die Karte verwendet, um sich Ihre Aktionen zu merken.",
     "locator": "Klicke auf <span class=\"keyword\">Positionssync</span>, um deine aktuelle Position im Spiel auf der Karte zu zeigen.<br>Nach dem Verknüpfen deines Spielkontos kannst du auch die Tracking-Konfig öffnen und die Punktverfolgung anpassen.",
     "regionSwitch": "Klicken Sie, um zwischen <span class=\"keyword\">verschiedenen Sandbox-Karten</span> (Hauptregionen) im Spiel zu wechseln.",
     "subregionSwitch": "<span class=\"keyword\">Fahren Sie mit der Maus über das Hauptregionssymbol</span>, um verfügbare Unterregionen anzuzeigen; durch Klicken auf ein Unterregionssymbol springen Sie zu dieser Unterregionsansicht.<br>Ebenso können Sie auch eine Ebene für eine Region auswählen.",
