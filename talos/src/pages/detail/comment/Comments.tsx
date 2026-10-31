@@ -875,10 +875,11 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
 
 const Comments = (props: Props) => {
     const uid = useAuthStore((state) => state.sessionUser?.uid);
-    const sessionVersion = useAuthStore((state) => state.sessionVersion);
-    // Drafts and asynchronous actions belong to one account and point. Tabs
-    // retain the same key, while account/point switches release that lifetime.
-    return <CommentsPanel key={`${props.point.id}:${uid ?? ''}:${sessionVersion}`} {...props} />;
+    const sessionOwnerVersion = useAuthStore((state) => state.sessionOwnerVersion);
+    // Drafts and asynchronous actions belong to one account and point. A
+    // background session refresh may update metadata without releasing this
+    // lifetime; explicit login/logout/account changes still advance the owner.
+    return <CommentsPanel key={`${props.point.id}:${uid ?? ''}:${sessionOwnerVersion}`} {...props} />;
 };
 
 export default Comments;

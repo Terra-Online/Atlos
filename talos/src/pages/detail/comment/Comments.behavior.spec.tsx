@@ -86,13 +86,25 @@ it('cancels an unsent vote on account changes and does not expose the previous a
     vi.useFakeTimers(); const publicComment = document.querySelector(`[data-comment-id="${original.id}"]`)!;
     const toolbarId = publicComment.querySelector('article')?.getAttribute('data-short-actions-root'); expect(toolbarId).toBe('true');
     const vote = screen.getAllByRole('button', { name: 'detail.comments.upvote' }).find((button) => !(button as HTMLButtonElement).disabled)!; fireEvent.click(vote);
-    act(() => { useAuthStore.setState({ sessionUser: { uid: 'b', nickname: 'B' } }); }); await act(async () => { await Promise.resolve(); });
+    act(() => { useAuthStore.getState().setSessionUser({ uid: 'b', nickname: 'B' }); }); await act(async () => { await Promise.resolve(); });
     expect(screen.queryByText('Private pending A')).toBeNull();
     await act(async () => { await vi.advanceTimersByTimeAsync(300); }); expect(api.vote).not.toHaveBeenCalled();
     await act(async () => { pending.resolve({ id: 'private-result', markerId: marker.id, parentId: null, depth: 0, status: 'pending_audit', snapshotId: 's' }); await pending.promise; });
     expect(screen.queryByText('Private pending A')).toBeNull();
-    act(() => { useAuthStore.setState({ sessionUser: { uid: 'a', nickname: 'A' } }); }); await act(async () => { await Promise.resolve(); });
+    act(() => { useAuthStore.getState().setSessionUser({ uid: 'a', nickname: 'A' }); }); await act(async () => { await Promise.resolve(); });
     expect(screen.getByText('Private pending A')).toBeTruthy();
+});
+
+it('preserves a same-account draft when session metadata refreshes', async () => {
+    const marker = point();
+    render(<Comments point={marker} pointName="Crate" />);
+    await type('Keep this draft');
+
+    act(() => {
+        useAuthStore.getState().updateSessionUser({ uid: 'a', nickname: 'Updated name' });
+    });
+
+    await waitFor(() => expect(screen.getByRole('textbox').textContent).toBe('Keep this draft'));
 });
 
 it.each(['relogin', 'account-roundtrip'])('releases drafts and queued votes across a batched %s even when the final uid matches', async (transition) => {

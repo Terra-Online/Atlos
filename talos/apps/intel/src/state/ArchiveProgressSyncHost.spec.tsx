@@ -9,6 +9,16 @@ import { archives, deferred } from '../fixtures';
 import ArchiveProgressSyncHost from './ArchiveProgressSyncHost';
 
 const api = vi.hoisted(() => ({ fetch: vi.fn(), sync: vi.fn(), register: vi.fn(), index: vi.fn() }));
+const archiveTypeFixture = vi.hoisted(() => ({
+    intelArchives: [
+        { id: 'nar_mission', acquisition: { method: 'mission' } },
+        { id: 'nar_auto', acquisition: { method: 'auto' } },
+        { id: 'nar_shop', acquisition: { method: 'shop' } },
+        { id: 'nar_research', acquisition: { method: 'invstgt' } },
+        { id: 'nar_media', acquisition: { method: 'auto' } },
+    ],
+}));
+vi.mock('@intel/data/types', () => archiveTypeFixture);
 vi.mock('@main/services/progress', async (original) => ({
     ...await original<typeof import('@main/services/progress')>(),
     fetchCloudArchiveProgress: api.fetch, syncCloudArchiveProgress: api.sync, registerArchiveProgressManifest: api.register,

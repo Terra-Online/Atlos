@@ -117,6 +117,7 @@ export const useIdCardAuthController = () => {
   const [resetEmail, setResetEmail] = useState<string>('');
   const sessionUser = useAuthStore((state) => state.sessionUser);
   const setSessionUser = useAuthStore((state) => state.setSessionUser);
+  const updateSessionUser = useAuthStore((state) => state.updateSessionUser);
   const clearSessionUser = useAuthStore((state) => state.clearSessionUser);
 
   const [profileOpen, setProfileOpen] = useState(false);
@@ -532,7 +533,7 @@ export const useIdCardAuthController = () => {
       // A save started by an earlier session must not restore a logged-out
       // account or overwrite a newer sign-in when its response arrives late.
       if (useAuthStore.getState().sessionVersion !== sessionVersion) return;
-      setSessionUser({
+      updateSessionUser({
         ...sessionUser,
         ...user,
         avatar: user.avatar ?? profileAvatar,
@@ -547,7 +548,7 @@ export const useIdCardAuthController = () => {
     } finally {
       setIsSavingProfile(false);
     }
-  }, [isSavingProfile, profileAvatar, profileName, sessionUser, setSessionUser]);
+  }, [isSavingProfile, profileAvatar, profileName, sessionUser, updateSessionUser]);
 
   const handleCloseProfile = useCallback(async () => {
     if (isSavingProfile) return;

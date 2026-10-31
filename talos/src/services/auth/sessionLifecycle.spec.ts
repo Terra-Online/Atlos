@@ -43,6 +43,14 @@ describe('session lifecycle', () => {
         expect(store.getState().sessionUser).toEqual(user);
     });
 
+    it('keeps the same account owner across background session refreshes', async () => {
+        store.getState().setSessionUser(user);
+        const ownerVersion = store.getState().sessionOwnerVersion;
+        await lifecycle.refreshSessionUser();
+        expect(store.getState().sessionOwnerVersion).toBe(ownerVersion);
+        expect(store.getState().sessionVersion).toBeGreaterThan(0);
+    });
+
     it('clears the user only when the session endpoint confirms no session', async () => {
         store.getState().setSessionUser(user);
         fetchSessionUserMock.mockResolvedValue(null);
