@@ -50,3 +50,47 @@ describe('Wuling locator calibration', () => {
         expect(position.mapZ).toBeCloseTo(-1795.5209, 3);
     });
 });
+
+it('rotates Dijiang world coordinates onto the existing OEM floor plan and inverts that rotation', () => {
+    const p = convertEFPosition({
+        mapId: 'base01_lv001',
+        levelId: 'base01_lv001',
+        pos: { x: 0, y: 2.41, z: -50 },
+        isOnline: true,
+    });
+    expect(p.mapX).toBeCloseTo(340.2204, 3);
+    expect(p.mapZ).toBeCloseTo(-528.2047, 3);
+    const world = convertMapMarkerToEFGamePosition(
+        { x: 340.2204, y: 2.41, z: -528.2047, subregId: 'DJ_1' },
+        'Dijiang',
+    );
+    expect(world.x).toBeCloseTo(0, 4);
+    expect(world.z).toBeCloseTo(-50, 4);
+    expect(world.y).toBe(2.41);
+});
+
+it('keeps the existing Valley, Wuling, independent scene and weekly map transforms invertible', () => {
+    for (const [scene, region, subregId] of [
+        ['map01', 'Valley_4', 'VL_1'],
+        ['map02', 'Wuling', 'WL_1'],
+        ['indie_dg005', 'Wuling', 'WL_2'],
+        ['indie_dg007', 'Wuling', 'WL_4'],
+        ['indie_dg016', 'Wuling', 'WL_16'],
+        ['dung01_wrdg001', 'Weekraid_1', 'ES_1'],
+    ]) {
+        const pos = { x: 12, y: 40, z: -70 };
+        const p = convertEFPosition({
+            mapId: scene,
+            levelId: scene,
+            pos,
+            isOnline: true,
+        });
+        const result = convertMapMarkerToEFGamePosition(
+            { x: p.mapX, y: pos.y, z: p.mapZ, subregId },
+            region,
+        );
+        expect(result.x).toBeCloseTo(pos.x, 10);
+        expect(result.z).toBeCloseTo(pos.z, 10);
+        expect(result.y).toBe(pos.y);
+    }
+});

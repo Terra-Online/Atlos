@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { minimapZoom, minimapBearing } from './view';
+import { minimapZoom, minimapBearing, targetEdge } from './view';
 
 const view = {
     altitude: 100,
@@ -10,6 +10,39 @@ const view = {
     height: 256,
     unitsPerMeter: 0.5,
 };
+
+it('pins original offscreen icons at rectangular edges and restores visible targets', () => {
+    const size = { x: 300, y: 200 };
+    const padding = { left: 28, right: 28, top: 28, bottom: 28 };
+    expect(targetEdge({ x: 500, y: 100 }, size, padding)).toEqual({
+        x: 272,
+        y: 100,
+    });
+    expect(targetEdge({ x: 150, y: 400 }, size, padding)).toEqual({
+        x: 150,
+        y: 172,
+    });
+    expect(targetEdge({ x: 20, y: 20 }, size, padding)).toBeNull();
+    expect(targetEdge({ x: 500, y: 100 }, { x: 0, y: 0 }, padding)).toBeNull();
+    expect(
+        targetEdge({ x: 500, y: 100 }, size, { ...padding, right: 60 }),
+    ).toEqual({ x: 240, y: 100 });
+    for (const point of [
+        { x: -400, y: -400 },
+        { x: 500, y: -400 },
+        { x: -400, y: 400 },
+        { x: 500, y: 400 },
+    ]) {
+        const edge = targetEdge(point, size, padding)!;
+        expect(edge.x).toBeGreaterThanOrEqual(28);
+        expect(edge.x).toBeLessThanOrEqual(272);
+        expect(edge.y).toBeGreaterThanOrEqual(28);
+        expect(edge.y).toBeLessThanOrEqual(172);
+        expect((edge.x - 150) * (point.y - 100)).toBeCloseTo(
+            (edge.y - 100) * (point.x - 150),
+        );
+    }
+});
 
 it('keeps heading independent of camera translation and fractional pixel rounding', () => {
     const direction = {

@@ -10,6 +10,9 @@ contains only the preview link, using the existing detail divider and action sty
 Point prerequisites, runtime unknowns and preset controls belong to the preview site's noclip panel.
 The main site does not load point companion partitions or control preview story state. Neither site
 claims a user's quest state or changes collection records.
+The catalog covers all configured regions, including Dijiang (DJ_1) and Weekraid_1 (ES_1).
+OEM previews start with completed quests/missions and the maximum available facility levels;
+recorded prerequisites still display a warning if that state does not satisfy them.
 
 One named preview is reused per main-site tab. Its session identifier survives a page reload. Direct
 links, blocked popups and closed preview windows retain a normal URL navigation path. Cross-window
@@ -34,6 +37,9 @@ Incoming camera samples coalesce to the latest sample per animation frame; the s
 positioned only when selected. The cursor follows headings immediately and stops its initial pulse
 after the first movement or turn. A validated `minimap-target` message can start tiles and target
 artwork while the 3D package is still loading; the camera cursor appears after the first real pose.
+When the selected target leaves the viewport, its original icon is pinned to the rectangle edge
+along its direction from the camera. It returns to its actual position once visible again; source
+coordinates and point selection never change.
 
 For local testing, run the main map, `pnpm --filter @atlos/minimap dev`, and noclip's Vite server.
 Point the two environment variables at that server and its `/oem/<release>/index.json` before starting

@@ -211,10 +211,9 @@ export const convertEFPosition = (payload: PositionResponse['data']): EFLocatorP
     let z = payload.pos.z;
 
     if (transform.rotateClockwise90) {
-        const rotatedX = x;
-        const rotatedZ = z;
-        x = rotatedX;
-        z = rotatedZ;
+        const originalX = x;
+        x = z;
+        z = -originalX;
     }
 
     return {
@@ -252,9 +251,9 @@ export const convertMapMarkerToEFGamePosition = (
     }
     const transform = REGION_TRANSFORMS[profile] ?? REGION_TRANSFORMS.default;
 
-    return {
-        x: (marker.x - transform.offsetX) / transform.scaleX,
-        y: marker.y,
-        z: (marker.z - transform.offsetZ) / transform.scaleZ,
-    };
+    const x = (marker.x - transform.offsetX) / transform.scaleX;
+    const z = (marker.z - transform.offsetZ) / transform.scaleZ;
+    return transform.rotateClockwise90
+        ? { x: -z, y: marker.y, z: x }
+        : { x, y: marker.y, z };
 };

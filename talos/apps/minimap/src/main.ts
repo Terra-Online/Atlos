@@ -27,7 +27,11 @@ import {
     type Point,
     type CameraSample,
 } from '@/services/noclip/types';
-import { minimapZoom, minimapBearing } from '@/services/noclip/view';
+import {
+    minimapZoom,
+    minimapBearing,
+    targetEdge,
+} from '@/services/noclip/view';
 
 const parameters = new URL(location.href).searchParams;
 const origin = parameters.get('previewOrigin') || '';
@@ -54,7 +58,21 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
     map.createPane('locator').style.zIndex = '900';
     const tracker = createTrackerMarker('locator', L.latLng(0, 0));
     let target: ViewportMarker | null = null,
-        targetPoint: Point | null = null;
+        targetPoint: Point | null = null,
+        targetPosition: L.LatLng | null = null;
+    let targetPadding = { left: 28, right: 28, top: 28, bottom: 28 };
+    const placeTarget = () => {
+        if (!target || !targetPosition) return;
+        const edge = targetEdge(
+            map.latLngToContainerPoint(targetPosition),
+            map.getSize(),
+            targetPadding,
+        );
+        const location = edge
+            ? map.containerPointToLatLng(L.point(edge.x, edge.y))
+            : targetPosition;
+        if (!target.getLatLng().equals(location)) target.setLatLng(location);
+    };
     let tiles: L.TileLayer[] = [],
         sceneKey = '';
     let latestCamera: Sample | null = null,
@@ -112,6 +130,7 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
                 Math.hypot(x.mapX - t.mapX, x.mapZ - t.mapZ),
                 Math.hypot(z.mapX - t.mapX, z.mapZ - t.mapZ),
             );
+            targetPosition = L.latLng(t.mapZ, t.mapX);
             targetPoint = point;
             target?.remove();
             target = null;
@@ -121,12 +140,20 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
                     if (targetPoint !== point || !marker) return;
                     const type = MARKER_TYPE_DICT[marker.type];
                     if (!type) return;
+                    const icon = createMarkerIcon(type);
+                    targetPadding = {
+                        left: 28,
+                        right: icon.art.subImage ? 60 : 28,
+                        top: icon.art.noFrame ? 28 : 40,
+                        bottom: icon.art.noFrame ? 28 : 14,
+                    };
                     target = new ViewportMarker([t.mapZ, t.mapX], {
-                        icon: createMarkerIcon(type),
+                        icon,
                         interactive: false,
                         keyboard: false,
                     }).addTo(map);
                     setMarkerState(target, { pulsing: true });
+                    placeTarget();
                 })
                 .catch((error: unknown) => {
                     console.error('Unable to load preview target icon', error);
@@ -145,6 +172,7 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
               })
             : 3;
         setContinuousView(map, L.latLng(p.mapZ, p.mapX), zoom);
+        placeTarget();
         if (!d.tracking) {
             tracker.remove();
             previousCamera = null;
