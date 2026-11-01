@@ -97,7 +97,7 @@ export default [
       }],
     },
   },
-  ...['intel', 'user-hub', 'minimap'].map((app) => ({
+  ...['intel', 'user-hub', 'world'].map((app) => ({
     files: [`apps/${app}/**/*.{ts,tsx,mts,cts}`],
     languageOptions: { parserOptions: { project: [`./apps/${app}/tsconfig.json`] } },
   })),

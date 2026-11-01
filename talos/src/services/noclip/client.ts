@@ -1,11 +1,10 @@
+import { pointPath } from './route';
 import { isCatalog, type Catalog } from './types';
 
-const catalogUrl = import.meta.env.VITE_NOCLIP_CATALOG_URL as
-    | string
-    | undefined;
+const catalogUrl = import.meta.env.VITE_WORLD_CATALOG_URL as string | undefined;
 export const viewerUrl =
-    (import.meta.env.VITE_NOCLIP_VIEWER_URL as string | undefined) ||
-    'https://oem-noclip.pages.dev/';
+    (import.meta.env.VITE_WORLD_URL as string | undefined) ||
+    'https://world.opendfieldmap.org/';
 export const enabled = Boolean(catalogUrl);
 let catalogRequest: Promise<Catalog> | undefined;
 
@@ -29,16 +28,10 @@ export const loadCatalog = (): Promise<Catalog> => {
     return catalogRequest;
 };
 
-export const previewLink = (
-    point: string,
-    release: string,
-    session = '',
-): string => {
+export const previewLink = (point: string): string => {
     const url = new URL(viewerUrl, location.href);
-    url.searchParams.set('oem', new URL(catalogUrl!, location.href).href);
-    url.searchParams.set('release', release);
-    url.searchParams.set('point', point);
-    url.searchParams.set('origin', location.origin);
-    url.searchParams.set('session', session);
+    url.pathname = pointPath(point);
+    url.search = '';
+    url.hash = '';
     return url.href;
 };

@@ -1,0 +1,23 @@
+@use '@/styles/mapSurface.scss' as surface;
+
+html,
+body,
+#root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+.world-regions {
+    --region-menu-top: 236px;
+}
+.oem-minimap {
+    @include surface.map-surface;
+    overflow: hidden;
+    .leaflet-control-container {
+        display: none;
+    }
+    .leaflet-locator-pane img {
+        transition: none;
+    }
+}

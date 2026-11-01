@@ -41,11 +41,11 @@ describe('noclip message boundaries', () => {
         ).toBe(false);
     });
     it('accepts the preview deployment and local development, not suffix or path lookalikes', () => {
-        expect(isPreviewOrigin('https://oem-noclip.pages.dev')).toBe(true);
+        expect(isPreviewOrigin('https://oem-world.pages.dev')).toBe(true);
         expect(isPreviewOrigin('http://127.0.0.1:5199')).toBe(true);
         for (const origin of [
-            'https://oem-noclip.pages.dev.attacker.test',
-            'https://oem-noclip.pages.dev/path',
+            'https://oem-world.pages.dev.attacker.test',
+            'https://oem-world.pages.dev/path',
             'null',
             'javascript:alert(1)',
         ])

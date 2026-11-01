@@ -1,0 +1,19 @@
+{
+  "name": "@atlos/world",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5176",
+    "build": "node ../../scripts/world.mjs build",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@endfield-noclip/viewer": "workspace:*",
+    "@endfield-noclip/package-format": "workspace:*"
+  },
+  "devDependencies": {
+    "@webgpu/types": "^0.1.74",
+    "typescript": "7.0.2"
+  }
+}

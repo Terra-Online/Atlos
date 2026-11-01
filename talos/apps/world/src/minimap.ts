@@ -1,6 +1,5 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import './style.scss';
 import { REGION_DICT } from '@/data/map';
 import { findMarkerById, MARKER_TYPE_DICT } from '@/data/marker';
 import { createMapTileLayer } from '@/services/map/core/tileLayer';
@@ -24,27 +23,15 @@ import {
     getLayerTileSuffix,
     useLayerStore,
 } from '@/store/layer';
-import {
-    isCameraSample,
-    isPoint,
-    isPreviewOrigin,
-    record,
-    VERSION,
-    type Point,
-    type CameraSample,
-} from '@/services/noclip/types';
+import { type Point, type CameraSample } from '@/services/noclip/types';
 import {
     minimapZoom,
     minimapBearing,
     targetEdge,
 } from '@/services/noclip/view';
 
-const parameters = new URL(location.href).searchParams;
-const origin = parameters.get('previewOrigin') || '';
-const session = parameters.get('session') || '';
-const element = document.getElementById('map')!;
-type Sample = CameraSample & { tracking: boolean; target: boolean };
-if (isPreviewOrigin(origin) && window.parent !== window) {
+export type Sample = CameraSample & { tracking: boolean; target: boolean };
+export function createMinimap(element: HTMLElement) {
     const map = prepareContinuousMap(
         L.map(element, {
             crs: L.CRS.Simple,
@@ -89,6 +76,7 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
         frame: number | null = null,
         cursorMoved = false,
         unitsPerMeter = 1;
+    let scalePoint: Point | null = null;
     const position = (point: Point, v: readonly number[]) =>
         convertEFPosition({
             mapId: point.scene,
@@ -121,11 +109,7 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
                 );
             sceneKey = key;
         }
-        if (!d.target) {
-            target?.remove();
-            target = null;
-            targetPoint = null;
-        } else if (targetPoint?.id !== point.id) {
+        if (scalePoint !== point) {
             const t = position(point, point.position),
                 x = position(point, [
                     point.position[0] + 1,
@@ -141,6 +125,14 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
                 Math.hypot(x.mapX - t.mapX, x.mapZ - t.mapZ),
                 Math.hypot(z.mapX - t.mapX, z.mapZ - t.mapZ),
             );
+            scalePoint = point;
+        }
+        if (!d.target) {
+            target?.remove();
+            target = null;
+            targetPoint = null;
+        } else if (targetPoint?.id !== point.id) {
+            const t = position(point, point.position);
             targetPosition = L.latLng(t.mapZ, t.mapX);
             targetPoint = point;
             target?.remove();
@@ -233,59 +225,24 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
             void useLayerStore.persist.rehydrate();
     };
     window.addEventListener('storage', syncLayer);
-    const receive = (event: MessageEvent<unknown>) => {
-        const d = event.data;
-        if (
-            event.origin !== origin ||
-            event.source !== window.parent ||
-            !record(d) ||
-            d.version !== VERSION ||
-            d.session !== session
-        )
-            return;
-        let sample: Sample;
-        if (d.type === 'camera' && isCameraSample(d)) {
-            sample = { ...d, tracking: true, target: d.target !== false };
-        } else if (d.type === 'minimap-target' && isPoint(d.point)) {
-            sample = {
-                point: d.point,
-                position: d.point.position,
-                forward: [0, 0, 1],
-                tracking: false,
-                target: d.target !== false,
-            };
-        } else return;
-        if (
-            !Object.prototype.hasOwnProperty.call(
-                REGION_DICT,
-                sample.point.region,
-            )
-        )
-            return;
-        latestCamera = sample;
-        schedule();
-    };
-    window.addEventListener('message', receive);
     const resize = new ResizeObserver(() => {
         map.invalidateSize({ animate: false });
         if (latestCamera) schedule();
     });
     resize.observe(element);
-    window.parent.postMessage(
-        { version: VERSION, session, type: 'minimap-ready' },
-        origin,
-    );
-    window.addEventListener(
-        'pagehide',
-        () => {
+    return {
+        update(sample: Sample) {
+            if (!Object.hasOwn(REGION_DICT, sample.point.region)) return;
+            latestCamera = sample;
+            schedule();
+        },
+        destroy() {
             stopLayer();
             window.removeEventListener('storage', syncLayer);
             targetPoint = null;
             if (frame !== null) cancelAnimationFrame(frame);
             resize.disconnect();
-            window.removeEventListener('message', receive);
             map.remove();
         },
-        { once: true },
-    );
+    };
 }

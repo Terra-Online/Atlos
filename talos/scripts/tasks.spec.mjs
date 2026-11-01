@@ -69,8 +69,6 @@ const fixture = async (t, fail = () => false) => {
                 ? 'intel'
                 : args.includes('@atlos/user-hub')
                   ? 'me'
-                  : args.includes('@atlos/minimap')
-                    ? 'minimap'
                   : '';
             const prefix = name
                 ? `/${name}`
@@ -225,7 +223,7 @@ test('full build validates frozen fonts once without generating or publishing', 
         0,
     );
     assert.equal(countScript(f.calls, 'fonts/catalog.mjs'), 1);
-    assert.equal(f.calls.filter(({ args }) => args.includes('vite')).length, 8);
+    assert.equal(f.calls.filter(({ args }) => args.includes('vite')).length, 6);
     assert.equal(f.calls.some(isRemote), false);
     assert.ok(
         f.calls
@@ -398,7 +396,7 @@ test('CI check builds all targets after preparing types only once and covers sta
     assert.equal(f.calls.filter(({ args }) => args.includes('tsc')).length, 6);
     assert.equal(
         f.calls.filter(({ args }) => args.includes('vitest')).length,
-        3,
+        4,
     );
     assert.ok(
         f.calls.some(({ args }) =>
@@ -615,7 +613,7 @@ test('standalone builds leave the complete-site artifact and receipt intact', as
     const f = await fixture(t);
     await runTask(['build', '--skip-subset'], f);
     const before = await hashFiles(path.join(f.root, 'dist/r2'));
-    for (const app of ['intel', 'user-hub', 'minimap']) {
+    for (const app of ['intel', 'user-hub']) {
         await runTask(['build', '--app', app, '--skip-subset'], f);
         assert.deepEqual(await hashFiles(path.join(f.root, 'dist/r2')), before);
         const name = app === 'user-hub' ? 'me' : app;
@@ -650,7 +648,7 @@ test('app releases on both hosts preserve other apps and retain previous hashed 
             `.release-work/${target}-prod/published`,
         );
         let previous = await hashFiles(published);
-        for (const app of ['intel', 'user-hub', 'minimap']) {
+        for (const app of ['intel', 'user-hub']) {
             f.calls.length = 0;
             await runTask(
                 ['deploy', '--target', target, '--app', app, '--skip-subset'],
@@ -1104,9 +1102,9 @@ test(
 test('frozen production preview preserves app routes, rejects missing assets and confines resource paths', async (t) => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlos-preview-'));
     t.after(() => fs.rm(root, { recursive: true, force: true }));
-    for (const [name, value] of Object.entries({ 'index.html': 'main', 'intel/index.html': 'intel', 'me/index.html': 'hub', 'minimap/index.html': 'minimap',
+    for (const [name, value] of Object.entries({ 'index.html': 'main', 'intel/index.html': 'intel', 'me/index.html': 'hub',
         'assets/runtime.js': 'export const ready = true;', '.atlos-build.json': JSON.stringify({ sourceOnly: false,
-            apps: ['main', 'intel', 'user-hub', 'minimap'], resources: { assetsHost: 'https://cdn.example.test/version' } }) })) {
+            apps: ['main', 'intel', 'user-hub'], resources: { assetsHost: 'https://cdn.example.test/version' } }) })) {
         await fs.mkdir(path.dirname(path.join(root, name)), { recursive: true });
         await fs.writeFile(path.join(root, name), value);
     }
@@ -1114,7 +1112,7 @@ test('frozen production preview preserves app routes, rejects missing assets and
     t.after(() => server.close());
     assert.equal(await (await fetch(server.origin + '/me/profile')).text(), 'hub');
     assert.equal(await (await fetch(server.origin + '/intel/')).text(), 'intel');
-    assert.equal(await (await fetch(server.origin + '/minimap/')).text(), 'minimap');
+    assert.equal((await fetch(server.origin + '/minimap/')).status, 404);
     const asset = await fetch(server.origin + '/assets/runtime.js');
     assert.equal(asset.headers.get('content-type'), 'text/javascript');
     assert.match(asset.headers.get('cache-control'), /max-age/);
@@ -1178,4 +1176,15 @@ test('standard and satellite indexes retain independent coverage and publishing 
     } finally {
         await fs.rm(root, { recursive: true, force: true });
     }
+});
+
+test('World builds independently without composing or publishing the main site', async (t) => {
+    const f = await fixture(t);
+    await runTask(['build', '--app', 'world'], f);
+    for (const command of ['deploy', 'publish'])
+        assert.throws(() => parseTask([command, '--app', 'world']), /World builds and deploys independently/);
+    assert.equal(countScript(f.calls, 'world.mjs'), 1);
+    assert.equal(countScript(f.calls, 'fonts/catalog.mjs'), 0);
+    assert.equal(f.calls.some(isRemote), false);
+    assert.ok(!f.calls.some(({args}) => args.includes('@atlos/minimap')));
 });

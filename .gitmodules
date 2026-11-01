@@ -1,0 +1,3 @@
+[submodule "talos/vendor/endfield-noclip"]
+	path = talos/vendor/endfield-noclip
+	url = https://github.com/cirisus/endfield-noclip.git

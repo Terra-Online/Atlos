@@ -369,7 +369,6 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '/minimap': { target: 'http://127.0.0.1:5176', changeOrigin: false, ws: true },
             '/intel': {
                 target: 'http://127.0.0.1:5174',
                 changeOrigin: true,

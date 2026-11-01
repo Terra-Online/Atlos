@@ -112,22 +112,12 @@ const copyUserHubApp = async () => {
   await fs.copy(source, path.resolve(outputDir, 'me'));
 };
 
-const copyMinimapApp = async () => {
-  const source = path.resolve(distDir, 'minimap');
-  if (!(await fs.pathExists(path.resolve(source, 'index.html')))) {
-    throw new Error('The complete artifact is missing the minimap build.');
-  }
-  await fs.copy(source, path.resolve(outputDir, 'minimap'));
-};
-
 const writePagesConfigFiles = async () => {
   // Pages rejects wildcard rewrites to index.html as potential redirect loops.
   // Rewrite to the app directory, keeping its assets ahead of the SPA fallback.
   // Unmatched main-site paths use Pages' built-in root SPA fallback.
-  const apps = shouldSkipIntel ? ['me', 'minimap'] : ['me', 'intel', 'minimap'];
+  const apps = shouldSkipIntel ? ['me'] : ['me', 'intel'];
   const redirects = [
-    '/minimap/regions /minimap/regions.html 200',
-    '/minimap/regions.html /minimap/regions.html 200',
     ...apps.flatMap((app) => [
     `/${app} /${app}/ 302`,
     `/${app}/assets/* /${app}/assets/:splat 200`,
@@ -160,9 +150,6 @@ const writePagesConfigFiles = async () => {
       '  Cache-Control: no-cache, no-store, must-revalidate',
       '',
       ...intelHeaders,
-      '/minimap/*',
-      '  Content-Security-Policy: frame-ancestors https://oem-noclip.pages.dev',
-      '',
       '/*/',
       '  Cache-Control: no-cache, no-store, must-revalidate',
       '',
@@ -214,7 +201,6 @@ await fs.emptyDir(outputDir);
 const rootCount = await copyRootFiles();
 const pointCount = await copySeoPointAliases();
 await copyUserHubApp();
-await copyMinimapApp();
 if (!shouldSkipIntel) await copyIntelApp();
 await writePagesConfigFiles();
 await fs.writeJson(path.join(outputDir, '.atlos-pages.json'), { target, channel });

@@ -31,10 +31,10 @@ export default function NoclipPreview({ pointId }: { pointId: string }) {
             />
             <div className={styles.detailAction} data-act='preview'>
                 <a
-                    href={previewLink(pointId, catalog.release)}
+                    href={previewLink(pointId)}
                     target='_blank'
                     onClick={(event) => {
-                        if (openPreview(pointId, catalog.release))
+                        if (openPreview(pointId))
                             event.preventDefault();
                     }}
                 >

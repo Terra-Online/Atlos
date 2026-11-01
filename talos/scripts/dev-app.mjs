@@ -26,12 +26,13 @@ const start = (label, args, env = {}) => {
 
 const name = process.argv[2];
 const app = {
+    world: { port: '5176', portKey: 'WORLD_DEV_PORT' },
     intel: { port: '5174', portKey: 'INTEL_DEV_PORT' },
     'user-hub': { port: '5175', portKey: 'USER_HUB_DEV_PORT' },
 }[name];
-if (!app) throw new Error('Expected intel or user-hub.');
+if (!app) throw new Error('Expected world, intel or user-hub.');
 
-start('map', ['dev', '--host', '0.0.0.0', '--port', '5173']);
+start('map', ['dev', '--host', '0.0.0.0', '--port', '5173'], name === 'world' ? { VITE_WORLD_URL: 'http://127.0.0.1:5176/' } : {});
 start(name, ['--filter', `@atlos/${name}`, 'dev'], { [app.portKey]: app.port });
 
 const stop = () => {

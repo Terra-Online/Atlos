@@ -3,7 +3,7 @@ import path from 'node:path';
 import { joinCdnPath, resolveDeployPrefix } from './release-channel.js';
 
 export const targets = { cn: 'oss', org: 'r2' };
-export const apps = { main: '', intel: 'intel', 'user-hub': 'me', minimap: 'minimap' };
+export const apps = { main: '', intel: 'intel', 'user-hub': 'me' };
 export const receipt = '.atlos-build.json';
 
 const isWithin = (parent, child) => {

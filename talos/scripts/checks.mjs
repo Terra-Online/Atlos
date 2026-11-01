@@ -69,7 +69,7 @@ export const typeCheck = async (runner, app = 'all', prepare = true) => {
         main: '.',
         intel: 'apps/intel',
         'user-hub': 'apps/user-hub',
-        minimap: 'apps/minimap',
+        world: 'apps/world',
         search: 'oem-search',
         relink: 'oem-relink',
     };
@@ -79,18 +79,19 @@ export const typeCheck = async (runner, app = 'all', prepare = true) => {
     for (const [name, project] of Object.entries(projects)) {
         if (app === 'all' || app === name)
             await runner.run('pnpm', [
+                ...(name === 'world' ? ['--filter', '@atlos/world'] : []),
                 'exec',
                 'tsc',
                 '--noEmit',
                 '--project',
-                project,
+                name === 'world' ? '.' : project,
             ]);
     }
 };
 
 export const test = async (runner, app = 'all') => {
     if (
-        !['all', 'main', 'intel', 'user-hub', 'scripts', 'relink'].includes(app)
+        !['all', 'main', 'intel', 'user-hub', 'scripts', 'relink', 'world'].includes(app)
     )
         throw new Error(`Unknown test app: ${app}`);
     if (app === 'all' || app === 'scripts')
@@ -107,6 +108,7 @@ export const test = async (runner, app = 'all') => {
                   : ['oem-relink']),
         ]);
     }
+    if (app === 'all' || app === 'world') await runner.run('pnpm', ['exec', 'vitest', 'run', '--config', 'apps/world/vitest.config.ts']);
     if (app === 'all' || app === 'intel')
         await runner.run('pnpm', [
             'exec',

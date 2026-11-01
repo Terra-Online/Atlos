@@ -66,7 +66,7 @@ export const isPreviewOrigin = (origin: string): boolean => {
         return (
             url.origin === origin &&
             ((url.protocol === 'https:' &&
-                url.hostname === 'oem-noclip.pages.dev') ||
+                ['world.opendfieldmap.org', 'world.oem.re', 'oem-world.pages.dev'].includes(url.hostname)) ||
                 (url.protocol === 'http:' &&
                     ['127.0.0.1', 'localhost'].includes(url.hostname)))
         );
@@ -87,3 +87,14 @@ export const isCatalog = (v: unknown): v is Catalog =>
     Object.values(v.files).every(
         (path) => /^[A-Za-z0-9_/-]+\.json$/.test(path) && !path.startsWith('/'),
     );
+
+/** Exact main-site origins allowed to control a World window. */
+export const isMapOrigin = (origin: string): boolean => {
+    try {
+        const url = new URL(origin);
+        return url.origin === origin && (
+            (url.protocol === 'https:' && ['opendfieldmap.org', 'opendfieldmap.cn', 'oem.re', 'www.opendfieldmap.org', 'www.opendfieldmap.cn', 'beta.opendfieldmap.org', 'beta.opendfieldmap.cn'].includes(url.hostname)) ||
+            (url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname))
+        );
+    } catch { return false; }
+};

@@ -1,0 +1,41 @@
+.oem-minimap {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 284px;
+    height: 220px;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+.oem-preview .dock.left {
+    top: 228px;
+    max-height: calc(100% - 228px);
+    overflow-y: auto;
+}
+
+.oem-status {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    translate: -50% 0;
+    max-width: 480px;
+}
+
+.oem-point-panel-host:empty {
+    display: none;
+}
+
+.oem-target {
+    position: absolute;
+    translate: -50% -50%;
+    color: var(--accent);
+    text-align: center;
+    text-shadow: 0 1px 3px #000;
+    pointer-events: none;
+    & span {
+        display: block;
+        font-size: 28px;
+    }
+}
