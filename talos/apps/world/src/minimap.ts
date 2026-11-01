@@ -13,6 +13,7 @@ import { createMarkerIcon } from '@/services/map/core/marker/markerIcon';
 import { MarkerPainter } from '@/services/map/core/canvas/canvasMarkerPaint';
 import { MarkerMotionPool } from '@/services/map/core/canvas/canvasMarkerMotion';
 import { scheduleMinimap } from './minimap-scheduler';
+import { MinimapZoom } from './minimap-zoom';
 import {
     createTrackerMarker,
     setTrackerBearing,
@@ -53,6 +54,7 @@ export function createMinimap(element: HTMLElement) {
     map.createPane('locator').style.zIndex = '900';
     const tileLayer = (region: string, source: TileSource, suffix: string) =>
         createMapTileLayer(region, source, suffix, 5).addTo(map);
+    const zoomBands = new MinimapZoom();
     const tracker = createTrackerMarker('locator', L.latLng(0, 0));
     let target: L.Marker | null = null,
         targetPoint: Point | null = null,
@@ -198,7 +200,7 @@ export function createMinimap(element: HTMLElement) {
                 });
         }
         const size = map.getSize();
-        const zoom = d.view
+        const idealZoom = d.view
             ? minimapZoom({
                   altitude: d.position[1] - d.view.groundY,
                   down: -forwardVector[1],
@@ -209,6 +211,10 @@ export function createMinimap(element: HTMLElement) {
                   unitsPerMeter,
               })
             : 3;
+        const zoom = zoomBands.update(
+            idealZoom,
+            `${point.scene}/${point.level}/${point.tier}`,
+        );
         const center = L.latLng(p.mapZ, p.mapX);
         // Position the pin and map from the same sample before the browser paints.
         placeTarget(center, zoom);
