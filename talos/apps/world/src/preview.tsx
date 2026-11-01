@@ -109,11 +109,31 @@ export const Preview = ({
         let armed = false;
         let failedCrossing = '';
         const crossing = new Crossing();
+        let groundSample: {
+            context: string;
+            at: number;
+            height: number | null;
+        } | null = null;
         const readMinimap = (): Sample | null => {
             const target = selected ?? preparing;
             if (!target) return null;
             const camera = viewer.camera;
-            const ground = viewer.groundHeight;
+            const context = `${target.scene}/${target.level}/${target.tier}`;
+            const now = performance.now();
+            // Position/bearing follow every display frame; terrain queries only
+            // influence zoom and need not compete with the renderer at that rate.
+            if (
+                !groundSample ||
+                groundSample.context !== context ||
+                now - groundSample.at >= 100
+            ) {
+                groundSample = {
+                    context,
+                    at: now,
+                    height: viewer.groundHeight,
+                };
+            }
+            const ground = groundSample.height;
             const sample: Sample = {
                 point: target,
                 tracking: selected !== null,

@@ -13,7 +13,7 @@ import { createMarkerIcon } from '@/services/map/core/marker/markerIcon';
 import { MarkerPainter } from '@/services/map/core/canvas/canvasMarkerPaint';
 import { MarkerMotionPool } from '@/services/map/core/canvas/canvasMarkerMotion';
 import { scheduleMinimap } from './minimap-scheduler';
-import { MinimapZoom } from './minimap-zoom';
+import { MinimapZoom, ZoomTransition } from './minimap-zoom';
 import {
     createTrackerMarker,
     setTrackerBearing,
@@ -55,6 +55,7 @@ export function createMinimap(element: HTMLElement) {
     const tileLayer = (region: string, source: TileSource, suffix: string) =>
         createMapTileLayer(region, source, suffix, 5).addTo(map);
     const zoomBands = new MinimapZoom();
+    const zoomTransition = new ZoomTransition();
     const tracker = createTrackerMarker('locator', L.latLng(0, 0));
     let target: L.Marker | null = null,
         targetPoint: Point | null = null,
@@ -211,9 +212,11 @@ export function createMinimap(element: HTMLElement) {
                   unitsPerMeter,
               })
             : 3;
-        const zoom = zoomBands.update(
-            idealZoom,
-            `${point.scene}/${point.level}/${point.tier}`,
+        const context = `${point.scene}/${point.level}/${point.tier}`;
+        const zoom = zoomTransition.update(
+            zoomBands.update(idealZoom, context),
+            context,
+            performance.now(),
         );
         const center = L.latLng(p.mapZ, p.mapX);
         // Position the pin and map from the same sample before the browser paints.
@@ -222,7 +225,7 @@ export function createMinimap(element: HTMLElement) {
         if (!d.tracking) {
             tracker.remove();
             previousCamera = null;
-            return;
+            return zoomTransition.active;
         }
         if (!map.hasLayer(tracker)) {
             tracker.addTo(map);
@@ -256,6 +259,7 @@ export function createMinimap(element: HTMLElement) {
             const bearing = minimapBearing(p, forward);
             if (bearing !== null) setTrackerBearing(tracker, bearing);
         }
+        return zoomTransition.active;
     };
     const scheduler = scheduleMinimap(draw);
     const schedule = scheduler.request;

@@ -120,12 +120,14 @@ edge feather. Offscreen targets pin their artwork center to the rectangle bounda
 The pin is computed for the next map view before Leaflet moves, using the same camera sample as
 the tiles. A small, static canvas reuses the main map artwork painter; camera movement only
 translates it, without creating the main map WebGL marker surface or a perpetual target pulse.
-Camera/ground sampling and map updates are coalesced to at most 30 Hz, with no idle polling. Hidden
-tabs pause this work and apply the latest pending sample on return. Local development proxies both
+Camera/map updates are coalesced per display frame, with no idle polling. Terrain height is
+sampled at most every 100 ms (or immediately on scene/floor changes). Hidden tabs pause this
+work and apply the latest pending sample on return. Local development proxies both
 standard and satellite imagery through the main site's resource server.
 
 Minimap zoom uses half-level bands (about 1.41× scale per step), bounded to 0–5. A 0.15-level
 hysteresis beyond the usual rounding boundary prevents height/terrain/pitch jitter from switching
-back and forth. Large changes select their destination band directly; there is no continuous zoom
-animation. Scene/floor changes reset the band, while same-map point flights retain it. Camera
-position and heading still follow continuously at the minimap sampling cadence.
+back and forth. Band changes ease over 240 ms, retargeting from the displayed scale without
+jumping. Large changes select their destination band directly rather than visiting intermediate
+bands. Scene/floor changes reset the band, while same-map point flights retain it. Position and
+heading follow each display frame independently of the lower-frequency terrain sampling.

@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { MinimapZoom } from './minimap-zoom';
+import { MinimapZoom, ZoomTransition } from './minimap-zoom';
 
 it('holds a band across boundary jitter in both directions', () => {
     const zoom = new MinimapZoom();
@@ -32,4 +32,18 @@ it('continuous ascent changes only at bands instead of every camera sample', () 
         levels.filter((level, i) => i > 0 && level !== levels[i - 1]),
     ).toHaveLength(10);
     expect(levels.every((level) => Number.isInteger(level * 2))).toBe(true);
+});
+
+it('eases between bands, retargets without a jump and finishes exactly', () => {
+    const zoom = new ZoomTransition();
+    expect(zoom.update(3, 'a', 0)).toBe(3);
+    expect(zoom.update(3.5, 'a', 10)).toBe(3);
+    expect(zoom.active).toBe(true);
+    const middle = zoom.update(3.5, 'a', 130);
+    expect(middle).toBeCloseTo(3.25);
+    expect(zoom.update(2.5, 'a', 130)).toBe(middle);
+    expect(zoom.update(2.5, 'a', 370)).toBe(2.5);
+    expect(zoom.active).toBe(false);
+    expect(zoom.update(5, 'b', 371)).toBe(5);
+    expect(zoom.active).toBe(false);
 });

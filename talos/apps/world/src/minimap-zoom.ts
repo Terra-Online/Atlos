@@ -21,3 +21,37 @@ export class MinimapZoom {
         return this.level;
     }
 }
+
+/** Short eased transitions between stable bands; retarget from the displayed scale. */
+export class ZoomTransition {
+    private from = 0;
+    private to = 0;
+    private start = 0;
+    private context: string | undefined;
+    active = false;
+
+    update(target: number, context: string, now: number): number {
+        let value = this.sample(now);
+        if (context !== this.context) {
+            this.context = context;
+            this.from = this.to = target;
+            this.active = false;
+            return target;
+        }
+        if (target !== this.to) {
+            this.from = value;
+            this.to = target;
+            this.start = now;
+        }
+        value = this.sample(now);
+        this.active = value !== this.to;
+        return value;
+    }
+
+    private sample(now: number): number {
+        const t = Math.min(1, Math.max(0, (now - this.start) / 240));
+        return t === 1
+            ? this.to
+            : this.from + (this.to - this.from) * t * t * (3 - 2 * t);
+    }
+}

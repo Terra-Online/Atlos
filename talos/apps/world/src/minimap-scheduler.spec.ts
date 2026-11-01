@@ -9,7 +9,10 @@ afterEach(() => {
 it('coalesces bursts, samples the latest value and does no idle work', () => {
     vi.useFakeTimers();
     let value = 0;
-    const draw = vi.fn(() => value);
+    const samples: number[] = [];
+    const draw = vi.fn(() => {
+        samples.push(value);
+    });
     const scheduler = scheduleMinimap(draw);
     for (let i = 0; i < 120; i++) {
         value = i;
@@ -17,9 +20,9 @@ it('coalesces bursts, samples the latest value and does no idle work', () => {
         vi.advanceTimersByTime(1000 / 120);
     }
     vi.advanceTimersByTime(100);
-    expect(draw.mock.calls.length).toBeGreaterThan(15);
-    expect(draw.mock.calls.length).toBeLessThanOrEqual(31);
-    expect(draw.mock.results.at(-1)?.value).toBe(119);
+    expect(draw.mock.calls.length).toBeGreaterThan(50);
+    expect(draw.mock.calls.length).toBeLessThanOrEqual(65);
+    expect(samples.at(-1)).toBe(119);
     const count = draw.mock.calls.length;
     vi.advanceTimersByTime(1000);
     expect(draw).toHaveBeenCalledTimes(count);
@@ -49,4 +52,17 @@ it('pauses in the background, resumes pending work and cancels teardown', () => 
     document.dispatchEvent(new Event('visibilitychange'));
     vi.advanceTimersByTime(100);
     expect(draw).toHaveBeenCalledTimes(1);
+});
+
+it('finishes a zoom transition without new camera events, then becomes idle', () => {
+    vi.useFakeTimers();
+    let frames = 0;
+    const scheduler = scheduleMinimap(() => ++frames < 15);
+    scheduler.request();
+    scheduler.request();
+    vi.advanceTimersByTime(500);
+    expect(frames).toBe(15);
+    vi.advanceTimersByTime(1000);
+    expect(frames).toBe(15);
+    scheduler.destroy();
 });
