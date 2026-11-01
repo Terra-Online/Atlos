@@ -34,6 +34,7 @@ import { connectWorld } from './bridge';
 import type { Launch } from './route';
 import { PointConditions } from './point-conditions.tsx';
 import { TargetMarker } from './target-marker.tsx';
+import { readView, writeView, displayOptions } from './view-storage';
 
 type Request =
     | { point: string }
@@ -93,6 +94,14 @@ export const Preview = ({
         const abort = new AbortController();
         const map = mapRoot.current ? createMinimap(mapRoot.current) : null;
         let framing: AbortController | null = null;
+        const saved = readView(viewer.options);
+        let resume =
+            saved?.route === location.pathname + location.search ? saved : null;
+        if (saved) {
+            viewer.setOptions(saved.options);
+            viewer.camera.fovY = saved.fovY;
+            viewer.controls.speed = saved.speed;
+        }
         let catalog: Catalog | null = null,
             selected: Point | null = null,
             preparing: Point | null = null;
@@ -352,7 +361,21 @@ export const Preview = ({
                         } else {
                             apply(target);
                         }
-                        if (!streaming && pointTarget) {
+                        if (resume && resume.release !== catalog.release)
+                            resume = null;
+                        const restoring =
+                            resume &&
+                            resume.scene === target.scene &&
+                            resume.level === target.level;
+                        if (restoring && resume) {
+                            viewer.controls.cancelFlight();
+                            viewer.camera.position = [...resume.position];
+                            viewer.camera.yaw = resume.yaw;
+                            viewer.camera.pitch = resume.pitch;
+                            viewer.camera.fovY = resume.fovY;
+                            viewer.controls.speed = resume.speed;
+                            viewer.setOptions({});
+                        } else if (!streaming && pointTarget) {
                             setStatus('Finding a clear view…');
                             framing = new AbortController();
                             await viewer.framePoint(
@@ -370,6 +393,28 @@ export const Preview = ({
                             ? { ...target, tier: request.stream.tier }
                             : target;
                         preparing = null;
+                        if (restoring && resume) {
+                            selected = {
+                                ...selected,
+                                tier: resume.tier,
+                                subregion: resume.subregion,
+                            };
+                            resume = null;
+                        } else if (resume) {
+                            // Load the public destination first to retain its target/panel,
+                            // then resume the scene reached by automatic roaming.
+                            const route = navigation?.routes.find(
+                                (r) =>
+                                    r.scene === resume?.scene &&
+                                    r.level === resume.level &&
+                                    r.subregion === resume.subregion,
+                            );
+                            if (route)
+                                desired = {
+                                    stream: { route, tier: resume.tier },
+                                };
+                            else resume = null;
+                        }
                         if (!streaming) {
                             setPoint(goal);
                             setMetadata(companion);
@@ -385,8 +430,8 @@ export const Preview = ({
                         history.replaceState(null, '', url);
                         setStatus('');
                         setArea({
-                            region: target.region,
-                            subregion: target.subregion,
+                            region: selected.region,
+                            subregion: selected.subregion,
                         });
                         minimap();
                     } catch (error) {
@@ -424,6 +469,7 @@ export const Preview = ({
             }
         };
         const request = (next: Request) => {
+            resume = null;
             framing?.abort();
             desired = next;
             void drain();
@@ -444,10 +490,61 @@ export const Preview = ({
                     );
             },
         );
+        let saveTimer: ReturnType<typeof setTimeout> | undefined;
+        const save = () => {
+            clearTimeout(saveTimer);
+            saveTimer = undefined;
+            if (
+                !selected ||
+                !catalog ||
+                busy ||
+                desired ||
+                viewer.controls.flying
+            )
+                return;
+            writeView({
+                version: 1,
+                route: location.pathname + location.search,
+                release: catalog.release,
+                scene: selected.scene,
+                level: selected.level,
+                subregion: selected.subregion,
+                tier: selected.tier,
+                position: [...viewer.camera.position],
+                yaw: viewer.camera.yaw,
+                pitch: viewer.camera.pitch,
+                fovY: viewer.camera.fovY,
+                speed: viewer.controls.speed,
+                options: displayOptions(viewer.options, viewer.options),
+            });
+        };
+        const scheduleSave = () => {
+            if (saveTimer === undefined) saveTimer = setTimeout(save, 500);
+        };
+        let stateRevision = viewer.stateRevision;
+        const stopSettings = viewer.subscribe(() => {
+            if (stateRevision !== viewer.stateRevision) {
+                stateRevision = viewer.stateRevision;
+                scheduleSave();
+            }
+        });
+        window.addEventListener('pagehide', save, { signal: abort.signal });
+        document.addEventListener(
+            'visibilitychange',
+            () => {
+                if (document.hidden) save();
+            },
+            { signal: abort.signal },
+        );
+        window.addEventListener('wheel', scheduleSave, {
+            passive: true,
+            signal: abort.signal,
+        });
         window.addEventListener('resize', minimap, { signal: abort.signal });
         const stop = viewer.subscribeCamera(() => {
             if (selected) {
                 minimap();
+                scheduleSave();
             }
         });
         const auto = window.setInterval(() => {
@@ -482,6 +579,8 @@ export const Preview = ({
         }, 150);
         void drain();
         return () => {
+            save();
+            stopSettings();
             clearInterval(auto);
             abort.abort();
             framing?.abort();

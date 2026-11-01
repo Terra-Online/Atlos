@@ -131,3 +131,15 @@ back and forth. Band changes ease over 240 ms, retargeting from the displayed sc
 jumping. Large changes select their destination band directly rather than visiting intermediate
 bands. Scene/floor changes reset the band, while same-map point flights retain it. Position and
 heading follow each display frame independently of the lower-frequency terrain sampling.
+
+World persists one latest view in `localStorage["world-view"]`, with an internal `version: 1`.
+It contains the public route, release/scene/level/floor, camera position/orientation/FOV, movement
+speed and portable display options. It is separate from shared map preferences and the renderer's
+`noclip-point-view-v3:*` algorithm cache; neither is migrated or overwritten. Scene environment
+IDs and story overrides are intentionally excluded. Matching routes/releases resume the saved
+camera after loading (including a scene reached by roaming); other links use their own target
+framing while keeping lens, speed and display preferences. Release changes invalidate only the
+saved position. Explicit incoming point/region requests take priority over restoration.
+Writes are coalesced at 500 ms, deduplicated, and flushed on page hide; transient scene loads and
+automatic flights do not overwrite the last stable view. Invalid/blocked storage is optional and
+never blocks opening World. This is one last view per origin, not a per-point history.
