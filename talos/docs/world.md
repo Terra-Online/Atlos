@@ -79,3 +79,27 @@ Scene archives, companions and baked views remain in the existing R2/CDN immutab
 Apply the renderer repository's R2 CORS configuration including the World origins when publishing
 those data. Upload and verify the complete data release before changing either app's catalog.
 The frontend receipt is independent of data publication; building and local testing do not deploy.
+
+## Automatic roaming
+
+World samples the free camera every 150 ms. OEM's existing subregion polygons resolve horizontal
+ownership; `navigation.json` supplies explicit scene/level mappings, source seamless flags and
+three-dimensional floor volumes from the same game build. Crossings must remain stable for 600 ms.
+Initial positioning and point/overview flights suppress automatic switching; roaming arms after
+one metre of user movement. Gaps retain the current context, and genuinely ambiguous overlapping
+packages do not pick a scene by nearest marker.
+
+Same-package transitions change visibility and stream around the camera without an overview flight.
+Cross-package transitions reuse the existing shared-map transforms for position and heading, keeping
+the authored Unity height, pitch projection, FOV and movement settings. A package is replaced on demand;
+this is not simultaneous rendering of both packages, so cold package loads can show a loading gap.
+The current point target and its URL remain selected, including its minimap edge icon; the condition
+panel is read-only while its source level is not active. Explicit region selection still clears it.
+
+Use `oem-navigation` in the renderer's extractor to add the optional, generation-bound navigation
+sidecar to an existing baked release. It hard-links model archives and retains all baked views.
+Authored tier volumes decide floors and independent-scene entry. For an independent scene without
+a tier volume, only its verified gameplay-point footprint (expanded by 10 m) is used as conservative
+entry evidence; other space remains unresolved. Current data was checked against AKEData and exported
+from the matching local game build, not from an unversioned remote endpoint. Older releases without
+this sidecar continue supporting manual navigation.

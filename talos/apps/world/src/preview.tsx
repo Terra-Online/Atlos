@@ -1,5 +1,17 @@
 import { useLayerStore } from '@/store/layer';
 import { getCurrentLocale, setLocale } from '@/locale';
+import {
+    isNavigation,
+    matchesNavigation,
+    type Navigation,
+} from '@endfield-noclip/package-format/navigation';
+import {
+    Crossing,
+    destinationAt,
+    destinationKey,
+    rebasePosition,
+    type Destination,
+} from './navigation';
 import { pointPath } from '@/services/noclip/route';
 import {
     isCatalog,
@@ -23,7 +35,10 @@ import type { Launch } from './route';
 import { PointConditions } from './point-conditions.tsx';
 import { TargetMarker } from './target-marker.tsx';
 
-type Request = { point: string } | { region: string; subregion: string };
+type Request =
+    | { point: string }
+    | { region: string; subregion: string }
+    | { stream: Destination };
 /** existing viewer with an OEM launch bridge and a passive, OEM-owned minimap */
 export const Preview = ({
     viewer,
@@ -88,6 +103,12 @@ export const Preview = ({
             loaded = '';
         const companions = new Map<string, Companion>();
         let pointTarget = true;
+        let goal: Point | null = null;
+        let navigation: Navigation | null = null;
+        let anchor: number[] | null = null;
+        let armed = false;
+        let failedCrossing = '';
+        const crossing = new Crossing();
         const minimap = () => {
             const target = selected ?? preparing;
             if (!target) return;
@@ -96,7 +117,7 @@ export const Preview = ({
             const sample: Sample = {
                 point: target,
                 tracking: selected !== null,
-                target: pointTarget,
+                target: goal,
                 position: selected ? [...camera.position] : target.position,
                 forward: selected ? [...camera.forward()] : [0, 0, 1],
                 ...(selected
@@ -133,6 +154,7 @@ export const Preview = ({
                 while (desired && !abort.signal.aborted) {
                     const request = desired;
                     desired = null;
+                    const before = selected;
                     try {
                         if (!catalog) {
                             const value = await read(launch.catalog);
@@ -140,11 +162,24 @@ export const Preview = ({
                                 throw new Error('OEM release mismatch');
                             }
                             catalog = value;
+                            if (catalog.navigation) {
+                                const data = await read(catalog.navigation);
+                                if (
+                                    !isNavigation(data) ||
+                                    !matchesNavigation(data, catalog)
+                                )
+                                    throw new Error(
+                                        'navigation does not match OEM release',
+                                    );
+                                navigation = data;
+                            }
                         }
                         const partition =
                                 'point' in request
                                     ? catalog.pointIndex[request.point]
-                                    : request.subregion,
+                                    : 'stream' in request
+                                      ? request.stream.route.subregion
+                                      : request.subregion,
                             file = catalog.files[partition];
                         if (!file) {
                             throw new Error('point is not in this OEM release');
@@ -164,13 +199,29 @@ export const Preview = ({
                         if (desired || abort.signal.aborted) {
                             continue;
                         }
-                        const target = companion.points.find((p) =>
-                                'point' in request
-                                    ? p.id === request.point
-                                    : p.subregion === request.subregion &&
-                                      (!request.region ||
-                                          p.region === request.region),
-                            ),
+                        const target =
+                                ('stream' in request
+                                    ? companion.points.find(
+                                          (p) =>
+                                              p.scene ===
+                                                  request.stream.route.scene &&
+                                              p.level ===
+                                                  request.stream.route.level &&
+                                              p.tier === request.stream.tier,
+                                      )
+                                    : undefined) ??
+                                companion.points.find((p) =>
+                                    'point' in request
+                                        ? p.id === request.point
+                                        : 'stream' in request
+                                          ? p.scene ===
+                                                request.stream.route.scene &&
+                                            p.level ===
+                                                request.stream.route.level
+                                          : p.subregion === request.subregion &&
+                                            (!request.region ||
+                                                p.region === request.region),
+                                ),
                             pack = target && catalog.packages[target.scene];
                         if (!target || !pack) {
                             throw new Error('point has no scene package');
@@ -181,8 +232,17 @@ export const Preview = ({
                                 target.scene &&
                             viewer.scene.pkg.manifest.generation ===
                                 pack.generation;
-                        selected = null;
-                        pointTarget = 'point' in request;
+                        const previous = selected;
+                        const streaming = 'stream' in request;
+                        if (!streaming) {
+                            selected = null;
+                            goal = 'point' in request ? target : null;
+                            pointTarget = 'point' in request;
+                            anchor = null;
+                            armed = false;
+                            failedCrossing = '';
+                            crossing.reset();
+                        }
                         preparing = target;
                         minimap();
                         setStatus('Opening scene…');
@@ -198,6 +258,7 @@ export const Preview = ({
                                 ),
                                 target.level,
                                 setStatus,
+                                { preserveCamera: streaming },
                             );
                             loaded = key;
                         }
@@ -223,15 +284,54 @@ export const Preview = ({
                             );
                         }
                         if (viewer.level !== target.level) {
-                            viewer.showLevel(target.level);
+                            viewer.showLevel(target.level, { fly: !streaming });
                         }
                         viewer.setCompanion(
                             companion.controls,
                             companion.missions,
                         );
-                        apply(target);
-                        pointTarget = 'point' in request;
-                        if (pointTarget) {
+                        if (streaming) {
+                            if (previous && previous.scene !== target.scene) {
+                                // Both position and heading pass through the shared map frame; height stays source-authored.
+                                const camera = viewer.camera;
+                                const eye = rebasePosition(
+                                    previous,
+                                    target,
+                                    camera.position,
+                                );
+                                const forward = camera.forward();
+                                const ahead = rebasePosition(
+                                    previous,
+                                    target,
+                                    camera.position.map(
+                                        (v, i) => v + forward[i],
+                                    ),
+                                );
+                                camera.position = eye;
+                                camera.yaw = Math.atan2(
+                                    ahead[0] - eye[0],
+                                    ahead[2] - eye[2],
+                                );
+                                camera.pitch = Math.atan2(
+                                    ahead[1] - eye[1],
+                                    Math.hypot(
+                                        ahead[0] - eye[0],
+                                        ahead[2] - eye[2],
+                                    ),
+                                );
+                            }
+                            setPreset('completed');
+                            viewer.resetSceneValues();
+                            viewer.setSceneValues(
+                                completedProgressionPicks(
+                                    viewer.scene?.pkg.manifest.states
+                                        .controls ?? [],
+                                ),
+                            );
+                        } else {
+                            apply(target);
+                        }
+                        if (!streaming && pointTarget) {
                             setStatus('Finding a clear view…');
                             framing = new AbortController();
                             await viewer.framePoint(
@@ -239,19 +339,23 @@ export const Preview = ({
                                 framing.signal,
                                 { baked: target.view, animate },
                             );
-                        } else {
+                        } else if (!streaming) {
                             viewer.flyToLevel(target.level);
                         }
                         if (desired || abort.signal.aborted) {
                             continue;
                         }
-                        selected = target;
+                        selected = streaming
+                            ? { ...target, tier: request.stream.tier }
+                            : target;
                         preparing = null;
-                        setPoint(pointTarget ? target : null);
-                        setMetadata(companion);
+                        if (!streaming) {
+                            setPoint(goal);
+                            setMetadata(companion);
+                        }
                         const url = new URL(location.href);
-                        url.pathname = pointTarget ? pointPath(target.id) : '/';
-                        url.search = pointTarget
+                        url.pathname = goal ? pointPath(goal.id) : '/';
+                        url.search = goal
                             ? ''
                             : new URLSearchParams({
                                   region: target.subregion,
@@ -271,9 +375,21 @@ export const Preview = ({
                                     ? error.message
                                     : String(error);
                             setStatus(message);
-                            selected = null;
+                            if ('stream' in request) {
+                                failedCrossing = destinationKey(request.stream);
+                                selected =
+                                    before &&
+                                    viewer.scene?.pkg.manifest.scene.id ===
+                                        before.scene &&
+                                    viewer.level === before.level
+                                        ? before
+                                        : null;
+                            } else {
+                                selected = null;
+                                setPoint(null);
+                                goal = null;
+                            }
                             preparing = null;
-                            setPoint(null);
                             reply('error', {
                                 message,
                                 point: 'point' in request ? request.point : '',
@@ -313,8 +429,39 @@ export const Preview = ({
                 minimap();
             }
         });
+        const auto = window.setInterval(() => {
+            if (
+                !navigation ||
+                !selected ||
+                busy ||
+                desired ||
+                viewer.controls.flying
+            ) {
+                if (viewer.controls.flying) anchor = null;
+                crossing.reset();
+                return;
+            }
+            const eye = viewer.camera.position;
+            if (!anchor) {
+                anchor = [...eye];
+                return;
+            }
+            if (!armed)
+                armed = Math.hypot(...eye.map((v, i) => v - anchor![i])) > 1;
+            if (!armed) return;
+            const next = destinationAt(navigation, selected, eye);
+            const current = `${selected.scene}/${selected.level}/${selected.subregion}/${selected.tier}`;
+            if (next && destinationKey(next) === failedCrossing) return;
+            const destination = crossing.update(
+                next,
+                current,
+                performance.now(),
+            );
+            if (destination) request({ stream: destination });
+        }, 150);
         void drain();
         return () => {
+            clearInterval(auto);
             abort.abort();
             framing?.abort();
             stop();
@@ -346,14 +493,21 @@ export const Preview = ({
                         point={point}
                         companion={metadata}
                         preset={preset}
-                        disabled={loading}
+                        disabled={
+                            loading ||
+                            viewer.scene?.pkg.manifest.scene.id !==
+                                point.scene ||
+                            viewer.level !== point.level
+                        }
                         onPreset={(id) => apply(point, id)}
                     />,
                     panelRoot,
                 )}
             <div ref={mapRoot} className='oem-minimap' aria-label='Minimap' />
             {status && <output className='panel oem-status'>{status}</output>}
-            {point && <TargetMarker viewer={viewer} point={point} />}
+            {point && viewer.scene?.pkg.manifest.scene.id === point.scene && (
+                <TargetMarker viewer={viewer} point={point} />
+            )}
         </>
     );
 };

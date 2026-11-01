@@ -30,7 +30,7 @@ import {
     targetEdge,
 } from '@/services/noclip/view';
 
-export type Sample = CameraSample & { tracking: boolean; target: boolean };
+export type Sample = CameraSample & { tracking: boolean; target: Point | null };
 export function createMinimap(element: HTMLElement) {
     const map = prepareContinuousMap(
         L.map(element, {
@@ -131,16 +131,17 @@ export function createMinimap(element: HTMLElement) {
             target?.remove();
             target = null;
             targetPoint = null;
-        } else if (targetPoint?.id !== point.id) {
-            const t = position(point, point.position);
+        } else if (targetPoint?.id !== d.target.id) {
+            const goal = d.target;
+            const t = position(goal, goal.position);
             targetPosition = L.latLng(t.mapZ, t.mapX);
-            targetPoint = point;
+            targetPoint = goal;
             target?.remove();
             target = null;
-            void findMarkerById(point.id)
+            void findMarkerById(goal.id)
                 .then((marker) => {
                     // A newer target or page teardown may arrive while its data loads.
-                    if (targetPoint !== point || !marker) return;
+                    if (targetPoint !== goal || !marker) return;
                     const type = MARKER_TYPE_DICT[marker.type];
                     if (!type) return;
                     const icon = createMarkerIcon(type);
