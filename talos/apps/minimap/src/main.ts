@@ -14,6 +14,7 @@ import {
 import { convertEFPosition } from '@/services/endfield/locatorTransform';
 import { getLayerByTier, getLayerTileSuffix } from '@/store/layer';
 import {
+    isCameraView,
     isPoint,
     isPreviewOrigin,
     record,
@@ -21,6 +22,7 @@ import {
     VERSION,
     type Point,
 } from '@/services/noclip/types';
+import { minimapZoom } from '@/services/noclip/view';
 
 const parameters = new URL(location.href).searchParams;
 const origin = parameters.get('previewOrigin') || '';
@@ -39,6 +41,7 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
         scrollWheelZoom: false,
         zoomAnimation: false,
         fadeAnimation: false,
+        zoomSnap: 0,
     });
     map.createPane('locator').style.zIndex = '900';
     const tracker = createTrackerMarker('locator', L.latLng(0, 0));
@@ -46,6 +49,7 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
         targetPoint: Point | null = null;
     let tiles: L.TileLayer[] = [],
         sceneKey = '';
+    let latestCamera: MessageEvent<unknown> | null = null;
     const position = (point: Point, v: readonly number[]) =>
         convertEFPosition({
             mapId: point.scene,
@@ -64,13 +68,15 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
             d.type !== 'camera' ||
             !isPoint(d.point) ||
             !vector(d.position) ||
-            !vector(d.forward)
+            !vector(d.forward) ||
+            (d.view !== undefined && !isCameraView(d.view))
         )
             return;
         const point = d.point,
             forwardVector = d.forward,
             region = REGION_DICT[point.region];
         if (!region) return;
+        latestCamera = event;
         const p = position(point, d.position),
             t = position(point, point.position);
         const key = `${point.region}/${point.tier}`;
@@ -91,7 +97,33 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
                 );
             sceneKey = key;
         }
-        map.setView([p.mapZ, p.mapX], 3, { animate: false });
+        let zoom = 3;
+        if (isCameraView(d.view)) {
+            const x = position(point, [
+                    d.position[0] + 1,
+                    d.position[1],
+                    d.position[2],
+                ]),
+                z = position(point, [
+                    d.position[0],
+                    d.position[1],
+                    d.position[2] + 1,
+                ]),
+                size = map.getSize();
+            zoom = minimapZoom({
+                altitude: d.position[1] - d.view.groundY,
+                down: -forwardVector[1],
+                fovY: d.view.fovY,
+                aspect: d.view.aspect,
+                width: size.x,
+                height: size.y,
+                unitsPerMeter: Math.max(
+                    Math.hypot(x.mapX - p.mapX, x.mapZ - p.mapZ),
+                    Math.hypot(z.mapX - p.mapX, z.mapZ - p.mapZ),
+                ),
+            });
+        }
+        map.setView([p.mapZ, p.mapX], zoom, { animate: false });
         if (!map.hasLayer(tracker)) {
             tracker.addTo(map);
         }
@@ -100,20 +132,22 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
             targetPoint = point;
             target?.remove();
             target = null;
-            void findMarkerById(point.id).then((marker) => {
-                // A newer target or page teardown may arrive while its data loads.
-                if (targetPoint !== point || !marker) return;
-                const type = MARKER_TYPE_DICT[marker.type];
-                if (!type) return;
-                target = new ViewportMarker([t.mapZ, t.mapX], {
-                    icon: createMarkerIcon(type),
-                    interactive: false,
-                    keyboard: false,
-                }).addTo(map);
-                setMarkerState(target, { pulsing: true });
-            }).catch((error: unknown) => {
-                console.error('Unable to load preview target icon', error);
-            });
+            void findMarkerById(point.id)
+                .then((marker) => {
+                    // A newer target or page teardown may arrive while its data loads.
+                    if (targetPoint !== point || !marker) return;
+                    const type = MARKER_TYPE_DICT[marker.type];
+                    if (!type) return;
+                    target = new ViewportMarker([t.mapZ, t.mapX], {
+                        icon: createMarkerIcon(type),
+                        interactive: false,
+                        keyboard: false,
+                    }).addTo(map);
+                    setMarkerState(target, { pulsing: true });
+                })
+                .catch((error: unknown) => {
+                    console.error('Unable to load preview target icon', error);
+                });
         }
         target?.setLatLng([t.mapZ, t.mapX]);
         const forward = position(
@@ -128,9 +162,10 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
         );
     };
     window.addEventListener('message', receive);
-    new ResizeObserver(() => map.invalidateSize({ animate: false })).observe(
-        element,
-    );
+    new ResizeObserver(() => {
+        map.invalidateSize({ animate: false });
+        if (latestCamera) receive(latestCamera);
+    }).observe(element);
     window.parent.postMessage(
         { version: VERSION, session, type: 'minimap-ready' },
         origin,

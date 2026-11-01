@@ -23,6 +23,10 @@ locks the selected floor, centers the camera and rotates its cursor using projec
 coordinates. It has no input controls or neighboring interactive markers.
 The target uses its original OEM marker artwork, frame and sub-icon through the main map's canvas
 renderer, with the existing pulse animation. It never reads collection state.
+Camera messages may also include `view: { groundY, fovY, aspect }`. The minimap uses height above the
+local ground plane, pitch, lens FOV and the scene's coordinate scale to approximate the visible area,
+with continuous zoom clamped to 0–4. Without view metadata it keeps zoom 3; invalid metadata is
+rejected. Missing or above-camera terrain uses the selected point's height. Floors remain fixed.
 
 For local testing, run the main map, `pnpm --filter @atlos/minimap dev`, and noclip's Vite server.
 Point the two environment variables at that server and its `/oem/<release>/index.json` before starting

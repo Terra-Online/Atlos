@@ -1,5 +1,21 @@
 // JSON contract v1; the producer and canonical contract live in endfield-noclip/package-format/oem.
 export const VERSION = 1;
+export interface CameraView {
+    groundY: number;
+    fovY: number;
+    aspect: number;
+}
+export const isCameraView = (v: unknown): v is CameraView =>
+    record(v) &&
+    typeof v.groundY === 'number' &&
+    Number.isFinite(v.groundY) &&
+    typeof v.fovY === 'number' &&
+    Number.isFinite(v.fovY) &&
+    v.fovY > 0 &&
+    v.fovY < Math.PI &&
+    typeof v.aspect === 'number' &&
+    Number.isFinite(v.aspect) &&
+    v.aspect > 0;
 export interface Preset {
     id: string;
     label: string;
