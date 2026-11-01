@@ -27,6 +27,11 @@ export default defineConfig(async ({ command }) => {
                 process.env.BUILD_ASSET_VERSION || '',
             ),
         },
-        server: { proxy: { '/clips': 'http://127.0.0.1:5173' } },
+        server: {
+            proxy: {
+                '/clips': 'http://127.0.0.1:5173',
+                '/assets': 'http://127.0.0.1:5173',
+            },
+        },
     };
 });

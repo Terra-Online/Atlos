@@ -21,6 +21,8 @@ tile URL, coordinate transform and locator-marker utilities as the main map, wit
 main UI or game locator. It accepts only the production preview origin or localhost development,
 locks the selected floor, centers the camera and rotates its cursor using projected forward
 coordinates. It has no input controls or neighboring interactive markers.
+The target uses its original OEM marker artwork, frame and sub-icon through the main map's canvas
+renderer, with the existing pulse animation. It never reads collection state.
 
 For local testing, run the main map, `pnpm --filter @atlos/minimap dev`, and noclip's Vite server.
 Point the two environment variables at that server and its `/oem/<release>/index.json` before starting

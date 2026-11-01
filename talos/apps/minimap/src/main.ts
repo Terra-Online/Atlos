@@ -2,7 +2,11 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './style.css';
 import { REGION_DICT } from '@/data/map';
+import { findMarkerById, MARKER_TYPE_DICT } from '@/data/marker';
 import { createMapTileLayer } from '@/services/map/core/tileLayer';
+import { createMarkerIcon } from '@/services/map/core/marker/markerIcon';
+import { ViewportMarker } from '@/services/map/core/canvas/markerViewport';
+import { setMarkerState } from '@/services/map/core/canvas/markerModel';
 import {
     createTrackerMarker,
     setTrackerBearing,
@@ -38,13 +42,8 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
     });
     map.createPane('locator').style.zIndex = '900';
     const tracker = createTrackerMarker('locator', L.latLng(0, 0));
-    const target = L.circleMarker([0, 0], {
-        interactive: false,
-        radius: 5,
-        color: '#f2c14e',
-        weight: 2,
-        fillOpacity: 0.6,
-    });
+    let target: ViewportMarker | null = null,
+        targetPoint: Point | null = null;
     let tiles: L.TileLayer[] = [],
         sceneKey = '';
     const position = (point: Point, v: readonly number[]) =>
@@ -95,10 +94,28 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
         map.setView([p.mapZ, p.mapX], 3, { animate: false });
         if (!map.hasLayer(tracker)) {
             tracker.addTo(map);
-            target.addTo(map);
         }
         tracker.setLatLng([p.mapZ, p.mapX]);
-        target.setLatLng([t.mapZ, t.mapX]);
+        if (targetPoint?.id !== point.id) {
+            targetPoint = point;
+            target?.remove();
+            target = null;
+            void findMarkerById(point.id).then((marker) => {
+                // A newer target or page teardown may arrive while its data loads.
+                if (targetPoint !== point || !marker) return;
+                const type = MARKER_TYPE_DICT[marker.type];
+                if (!type) return;
+                target = new ViewportMarker([t.mapZ, t.mapX], {
+                    icon: createMarkerIcon(type),
+                    interactive: false,
+                    keyboard: false,
+                }).addTo(map);
+                setMarkerState(target, { pulsing: true });
+            }).catch((error: unknown) => {
+                console.error('Unable to load preview target icon', error);
+            });
+        }
+        target?.setLatLng([t.mapZ, t.mapX]);
         const forward = position(
             point,
             d.position.map((v, i) => v + forwardVector[i]),
@@ -121,6 +138,7 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
     window.addEventListener(
         'pagehide',
         () => {
+            targetPoint = null;
             window.removeEventListener('message', receive);
             map.remove();
         },
