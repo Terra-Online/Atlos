@@ -10,8 +10,9 @@ import {
     setContinuousView,
 } from '@/services/map/core/continuousView';
 import { createMarkerIcon } from '@/services/map/core/marker/markerIcon';
-import { ViewportMarker } from '@/services/map/core/canvas/markerViewport';
-import { setMarkerState } from '@/services/map/core/canvas/markerModel';
+import { MarkerPainter } from '@/services/map/core/canvas/canvasMarkerPaint';
+import { MarkerMotionPool } from '@/services/map/core/canvas/canvasMarkerMotion';
+import { scheduleMinimap } from './minimap-scheduler';
 import {
     createTrackerMarker,
     setTrackerBearing,
@@ -53,10 +54,11 @@ export function createMinimap(element: HTMLElement) {
     const tileLayer = (region: string, source: TileSource, suffix: string) =>
         createMapTileLayer(region, source, suffix, 5).addTo(map);
     const tracker = createTrackerMarker('locator', L.latLng(0, 0));
-    let target: ViewportMarker | null = null,
+    let target: L.Marker | null = null,
         targetPoint: Point | null = null,
         targetPosition: L.LatLng | null = null;
     let targetOffset = L.point(0, 0);
+    let disposeArtwork: (() => void) | null = null;
     const placeTarget = (center = map.getCenter(), zoom = map.getZoom()) => {
         if (!target || !targetPosition) return;
         const half = map.getSize().divideBy(2);
@@ -76,9 +78,8 @@ export function createMinimap(element: HTMLElement) {
     };
     let tiles: L.TileLayer[] = [],
         sceneKey = '';
-    let latestCamera: Sample | null = null,
+    let readCamera: (() => Sample | null) | null = null,
         previousCamera: CameraSample | null = null,
-        frame: number | null = null,
         cursorMoved = false,
         unitsPerMeter = 1;
     let scalePoint: Point | null = null;
@@ -90,9 +91,8 @@ export function createMinimap(element: HTMLElement) {
             isOnline: true,
         });
     const draw = () => {
-        frame = null;
-        const d = latestCamera;
-        if (!d) return;
+        const d = readCamera?.();
+        if (!d || !Object.hasOwn(REGION_DICT, d.point.region)) return;
         const point = d.point,
             forwardVector = d.forward,
             region = REGION_DICT[point.region];
@@ -134,6 +134,8 @@ export function createMinimap(element: HTMLElement) {
         }
         if (!d.target) {
             target?.remove();
+            disposeArtwork?.();
+            disposeArtwork = null;
             target = null;
             targetPoint = null;
         } else if (targetPoint?.id !== d.target.id) {
@@ -142,6 +144,8 @@ export function createMinimap(element: HTMLElement) {
             targetPosition = L.latLng(t.mapZ, t.mapX);
             targetPoint = goal;
             target?.remove();
+            disposeArtwork?.();
+            disposeArtwork = null;
             target = null;
             void findMarkerById(goal.id)
                 .then((marker) => {
@@ -155,12 +159,38 @@ export function createMinimap(element: HTMLElement) {
                         icon.options.iconAnchor ?? size.divideBy(2),
                     );
                     targetOffset = size.divideBy(2).subtract(anchor);
-                    target = new ViewportMarker([t.mapZ, t.mapX], {
-                        icon,
+                    // One passive icon does not need the main map's full-viewport
+                    // WebGL surface, hit index, animation loop or font observers.
+                    const holder = document.createElement('div');
+                    const pool = new MarkerMotionPool();
+                    const motion = pool.transition(
+                        pool.initial,
+                        0,
+                        0,
+                        icon.art.noFrame,
+                        false,
+                    );
+                    const painter = new MarkerPainter(
+                        Math.ceil(Math.max(2, window.devicePixelRatio || 1)),
+                        () => paint(),
+                    );
+                    const paint = () => {
+                        const sprite = painter.sprite(icon.art, motion, 0);
+                        sprite.canvas.style.cssText = `position:absolute;left:${sprite.x}px;top:${sprite.y}px;width:${sprite.width}px;height:${sprite.height}px;`;
+                        holder.replaceChildren(sprite.canvas);
+                    };
+                    disposeArtwork = () => painter.dispose();
+                    paint();
+                    target = L.marker([t.mapZ, t.mapX], {
+                        icon: L.divIcon({
+                            className: 'oem-minimap-target',
+                            html: holder,
+                            iconSize: [0, 0],
+                            iconAnchor: [0, 0],
+                        }),
                         interactive: false,
                         keyboard: false,
                     }).addTo(map);
-                    setMarkerState(target, { pulsing: true });
                     placeTarget();
                 })
                 .catch((error: unknown) => {
@@ -180,8 +210,7 @@ export function createMinimap(element: HTMLElement) {
               })
             : 3;
         const center = L.latLng(p.mapZ, p.mapX);
-        // Canvas markers draw synchronously during the map's move event. Commit the
-        // target in the next camera frame first, so that draw never sees its old pin.
+        // Position the pin and map from the same sample before the browser paints.
         placeTarget(center, zoom);
         setContinuousView(map, center, zoom);
         if (!d.tracking) {
@@ -222,9 +251,8 @@ export function createMinimap(element: HTMLElement) {
             if (bearing !== null) setTrackerBearing(tracker, bearing);
         }
     };
-    const schedule = () => {
-        if (frame === null) frame = requestAnimationFrame(draw);
-    };
+    const scheduler = scheduleMinimap(draw);
+    const schedule = scheduler.request;
     const stopLayer = useLayerStore.subscribe((state, previous) => {
         if (state.satellite !== previous.satellite) schedule();
     });
@@ -235,20 +263,20 @@ export function createMinimap(element: HTMLElement) {
     window.addEventListener('storage', syncLayer);
     const resize = new ResizeObserver(() => {
         map.invalidateSize({ animate: false });
-        if (latestCamera) schedule();
+        if (readCamera) schedule();
     });
     resize.observe(element);
     return {
-        update(sample: Sample) {
-            if (!Object.hasOwn(REGION_DICT, sample.point.region)) return;
-            latestCamera = sample;
+        update(read: () => Sample | null) {
+            readCamera = read;
             schedule();
         },
         destroy() {
             stopLayer();
             window.removeEventListener('storage', syncLayer);
             targetPoint = null;
-            if (frame !== null) cancelAnimationFrame(frame);
+            scheduler.destroy();
+            disposeArtwork?.();
             resize.disconnect();
             map.remove();
         },

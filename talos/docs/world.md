@@ -117,6 +117,9 @@ the reading font. No new font files or external font requests are introduced.
 
 The minimap composites imagery, the original target icon and the camera cursor through one 14 px
 edge feather. Offscreen targets pin their artwork center to the rectangle boundary with no inset.
-The pin is computed for the next map view before Leaflet moves, so its synchronous canvas draw uses
-the same camera sample as the tiles. Local development proxies both standard and satellite imagery
-through the main site's resource server.
+The pin is computed for the next map view before Leaflet moves, using the same camera sample as
+the tiles. A small, static canvas reuses the main map artwork painter; camera movement only
+translates it, without creating the main map WebGL marker surface or a perpetual target pulse.
+Camera/ground sampling and map updates are coalesced to at most 30 Hz, with no idle polling. Hidden
+tabs pause this work and apply the latest pending sample on return. Local development proxies both
+standard and satellite imagery through the main site's resource server.

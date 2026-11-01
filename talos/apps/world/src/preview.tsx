@@ -109,9 +109,9 @@ export const Preview = ({
         let armed = false;
         let failedCrossing = '';
         const crossing = new Crossing();
-        const minimap = () => {
+        const readMinimap = (): Sample | null => {
             const target = selected ?? preparing;
-            if (!target) return;
+            if (!target) return null;
             const camera = viewer.camera;
             const ground = viewer.groundHeight;
             const sample: Sample = {
@@ -133,8 +133,9 @@ export const Preview = ({
                       }
                     : {}),
             };
-            map?.update(sample);
+            return sample;
         };
+        const minimap = () => map?.update(readMinimap);
         const read = async (path: string): Promise<unknown> => {
             const response = await fetch(new URL(path, launch.catalog), {
                 signal: abort.signal,
