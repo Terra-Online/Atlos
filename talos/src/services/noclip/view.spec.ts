@@ -11,36 +11,53 @@ const view = {
     unitsPerMeter: 0.5,
 };
 
-it('pins original offscreen icons at rectangular edges and restores visible targets', () => {
+it('pins the icon center on the actual rectangle edge and keeps the target bearing', () => {
     const size = { x: 300, y: 200 };
-    const padding = { left: 28, right: 28, top: 28, bottom: 28 };
-    expect(targetEdge({ x: 500, y: 100 }, size, padding)).toEqual({
-        x: 272,
-        y: 100,
-    });
-    expect(targetEdge({ x: 150, y: 400 }, size, padding)).toEqual({
-        x: 150,
-        y: 172,
-    });
-    expect(targetEdge({ x: 20, y: 20 }, size, padding)).toBeNull();
-    expect(targetEdge({ x: 500, y: 100 }, { x: 0, y: 0 }, padding)).toBeNull();
-    expect(
-        targetEdge({ x: 500, y: 100 }, size, { ...padding, right: 60 }),
-    ).toEqual({ x: 240, y: 100 });
+    expect(targetEdge({ x: 500, y: 100 }, size)).toEqual({ x: 300, y: 100 });
+    expect(targetEdge({ x: 150, y: 400 }, size)).toEqual({ x: 150, y: 200 });
+    expect(targetEdge({ x: 20, y: 20 }, size)).toBeNull();
+    expect(targetEdge({ x: 500, y: 100 }, { x: 0, y: 0 })).toBeNull();
     for (const point of [
         { x: -400, y: -400 },
         { x: 500, y: -400 },
         { x: -400, y: 400 },
         { x: 500, y: 400 },
     ]) {
-        const edge = targetEdge(point, size, padding)!;
-        expect(edge.x).toBeGreaterThanOrEqual(28);
-        expect(edge.x).toBeLessThanOrEqual(272);
-        expect(edge.y).toBeGreaterThanOrEqual(28);
-        expect(edge.y).toBeLessThanOrEqual(172);
+        const edge = targetEdge(point, size)!;
+        expect(edge.x).toBeGreaterThanOrEqual(0);
+        expect(edge.x).toBeLessThanOrEqual(300);
+        expect(edge.y).toBeGreaterThanOrEqual(0);
+        expect(edge.y).toBeLessThanOrEqual(200);
         expect((edge.x - 150) * (point.y - 100)).toBeCloseTo(
             (edge.y - 100) * (point.x - 150),
         );
+    }
+});
+
+it('crosses every edge continuously, including subpixel oscillation at the boundary', () => {
+    const size = { x: 300, y: 200 };
+    for (const boundary of [
+        { x: 0, y: 100 },
+        { x: 300, y: 100 },
+        { x: 150, y: 0 },
+        { x: 150, y: 200 },
+    ]) {
+        const normal = {
+            x: (boundary.x - 150) / 150,
+            y: (boundary.y - 100) / 100,
+        };
+        let previous = boundary;
+        for (const offset of [-0.01, 0.01, -0.005, 0.005, 0, 0.001]) {
+            const point = {
+                x: boundary.x + normal.x * offset,
+                y: boundary.y + normal.y * offset,
+            };
+            const placed = targetEdge(point, size) ?? point;
+            expect(
+                Math.hypot(placed.x - previous.x, placed.y - previous.y),
+            ).toBeLessThan(0.02);
+            previous = placed;
+        }
     }
 });
 

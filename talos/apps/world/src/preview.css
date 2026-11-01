@@ -4,8 +4,6 @@
     left: 8px;
     width: 284px;
     height: 220px;
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
     pointer-events: none;
 }
 

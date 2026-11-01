@@ -56,16 +56,21 @@ export function createMinimap(element: HTMLElement) {
     let target: ViewportMarker | null = null,
         targetPoint: Point | null = null,
         targetPosition: L.LatLng | null = null;
-    let targetPadding = { left: 28, right: 28, top: 28, bottom: 28 };
-    const placeTarget = () => {
+    let targetOffset = L.point(0, 0);
+    const placeTarget = (center = map.getCenter(), zoom = map.getZoom()) => {
         if (!target || !targetPosition) return;
-        const edge = targetEdge(
-            map.latLngToContainerPoint(targetPosition),
-            map.getSize(),
-            targetPadding,
-        );
+        const half = map.getSize().divideBy(2);
+        const origin = map.project(center, zoom).subtract(half);
+        const point = map
+            .project(targetPosition, zoom)
+            .subtract(origin)
+            .add(targetOffset);
+        const edge = targetEdge(point, map.getSize());
         const location = edge
-            ? map.containerPointToLatLng(L.point(edge.x, edge.y))
+            ? map.unproject(
+                  L.point(edge.x, edge.y).subtract(targetOffset).add(origin),
+                  zoom,
+              )
             : targetPosition;
         if (!target.getLatLng().equals(location)) target.setLatLng(location);
     };
@@ -145,12 +150,11 @@ export function createMinimap(element: HTMLElement) {
                     const type = MARKER_TYPE_DICT[marker.type];
                     if (!type) return;
                     const icon = createMarkerIcon(type);
-                    targetPadding = {
-                        left: 28,
-                        right: icon.art.subImage ? 60 : 28,
-                        top: icon.art.noFrame ? 28 : 40,
-                        bottom: icon.art.noFrame ? 28 : 14,
-                    };
+                    const size = L.point(icon.options.iconSize ?? [32, 32]);
+                    const anchor = L.point(
+                        icon.options.iconAnchor ?? size.divideBy(2),
+                    );
+                    targetOffset = size.divideBy(2).subtract(anchor);
                     target = new ViewportMarker([t.mapZ, t.mapX], {
                         icon,
                         interactive: false,
@@ -175,8 +179,11 @@ export function createMinimap(element: HTMLElement) {
                   unitsPerMeter,
               })
             : 3;
-        setContinuousView(map, L.latLng(p.mapZ, p.mapX), zoom);
-        placeTarget();
+        const center = L.latLng(p.mapZ, p.mapX);
+        // Canvas markers draw synchronously during the map's move event. Commit the
+        // target in the next camera frame first, so that draw never sees its old pin.
+        placeTarget(center, zoom);
+        setContinuousView(map, center, zoom);
         if (!d.tracking) {
             tracker.remove();
             previousCamera = null;

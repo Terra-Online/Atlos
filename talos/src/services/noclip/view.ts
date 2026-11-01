@@ -1,20 +1,19 @@
-/** Place the original offscreen icon at the rectangle edge, allowing for its artwork bounds. */
+/** Intersect the target-center ray with the viewport; crossing the edge never introduces an inset jump. */
 export const targetEdge = (
     point: { x: number; y: number },
     size: { x: number; y: number },
-    padding: { left: number; right: number; top: number; bottom: number },
 ): { x: number; y: number } | null => {
     if (
-        size.x <= 2 * Math.max(padding.left, padding.right) ||
-        size.y <= 2 * Math.max(padding.top, padding.bottom) ||
+        size.x <= 0 ||
+        size.y <= 0 ||
         (point.x >= 0 && point.x <= size.x && point.y >= 0 && point.y <= size.y)
     )
         return null;
     const dx = point.x - size.x / 2,
         dy = point.y - size.y / 2;
     const scale = Math.min(
-        (size.x / 2 - (dx > 0 ? padding.right : padding.left)) / Math.abs(dx),
-        (size.y / 2 - (dy > 0 ? padding.bottom : padding.top)) / Math.abs(dy),
+        size.x / 2 / Math.abs(dx),
+        size.y / 2 / Math.abs(dy),
     );
     return { x: size.x / 2 + dx * scale, y: size.y / 2 + dy * scale };
 };

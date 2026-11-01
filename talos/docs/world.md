@@ -114,3 +114,9 @@ light panels, section headings, compact fields, orange accents and diamond toggl
 World defines the reading and heading font roles once, using existing Atlos assets and font-shard
 loading. Dynamic game labels register glyph demand with the shared font loader; controls inherit
 the reading font. No new font files or external font requests are introduced.
+
+The minimap composites imagery, the original target icon and the camera cursor through one 14 px
+edge feather. Offscreen targets pin their artwork center to the rectangle boundary with no inset.
+The pin is computed for the next map view before Leaflet moves, so its synchronous canvas draw uses
+the same camera sample as the tiles. Local development proxies both standard and satellite imagery
+through the main site's resource server.

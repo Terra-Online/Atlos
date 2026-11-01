@@ -41,6 +41,7 @@ export default defineConfig(async ({ command, mode }) => {
         server: {
             proxy: {
                 '/clips': 'http://127.0.0.1:5173',
+                '/satellite': 'http://127.0.0.1:5173',
                 '/assets': 'http://127.0.0.1:5173',
                 '/oem': 'http://127.0.0.1:5199',
             },
