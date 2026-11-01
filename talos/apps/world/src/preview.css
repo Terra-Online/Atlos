@@ -9,22 +9,12 @@
     pointer-events: none;
 }
 
-.oem-preview .dock.left {
-    top: 228px;
-    max-height: calc(100% - 228px);
-    overflow-y: auto;
-}
-
 .oem-status {
     position: absolute;
     bottom: 80px;
     left: 50%;
     translate: -50% 0;
     max-width: 480px;
-}
-
-.oem-point-panel-host:empty {
-    display: none;
 }
 
 .oem-target {

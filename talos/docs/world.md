@@ -15,7 +15,7 @@ preparation are reused. Scene controls retain the renderer's original panels.
 `vendor/endfield-noclip` is a Git submodule pinned to an exact commit. Only its viewer and
 package-format packages participate in the pnpm workspace. The extractor, game keys and raw/exported
 game data remain outside the Atlos build. World consumes the viewer's exported host interface, not a
-copied renderer. React is deduplicated in the World bundle. World uses TypeScript 7 to match the
+copied renderer. React is deduplicated in the World bundle; type checking resolves the same Atlos React types. World uses TypeScript 7 to match the
 renderer's modern platform types without changing the main application's TypeScript version.
 
 ## Links and communication
@@ -103,3 +103,14 @@ a tier volume, only its verified gameplay-point footprint (expanded by 10 m) is 
 entry evidence; other space remains unresolved. Current data was checked against AKEData and exported
 from the matching local game build, not from an unversioned remote endpoint. Older releases without
 this sidecar continue supporting manual navigation.
+
+## Panels
+
+`src/panel.tsx` owns World panel presentation. The renderer's `PanelProvider` supplies the same
+shell to Preview, scene conditions, display settings and statistics through separate title,
+action and body slots. Collapsing a panel hides its body without unmounting controls; Reset
+remains a separate action. The styling follows OEM-SDK's `examples/basic/style.scss`: translucent
+light panels, section headings, compact fields, orange accents and diamond toggles/slider thumbs.
+World defines the reading and heading font roles once, using existing Atlos assets and font-shard
+loading. Dynamic game labels register glyph demand with the shared font loader; controls inherit
+the reading font. No new font files or external font requests are introduced.

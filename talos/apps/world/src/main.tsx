@@ -1,11 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ViewerApp } from '@endfield-noclip/viewer/host';
+import { ViewerApp, PanelProvider } from '@endfield-noclip/viewer/host';
 import '@endfield-noclip/viewer/style.css';
 import '@/styles/global.scss';
 import './style.scss';
 import './preview.css';
 import { i18nInitPromise } from '@/locale';
+import { Panel } from './panel';
 import { Preview } from './preview';
 import { readLaunch } from './route';
 
@@ -18,15 +19,17 @@ void i18nInitPromise.then(() => {
         );
         root.render(
             <StrictMode>
-                <ViewerApp
-                    overlay={(viewer, panelRoot) => (
-                        <Preview
-                            viewer={viewer}
-                            launch={launch}
-                            panelRoot={panelRoot}
-                        />
-                    )}
-                />
+                <PanelProvider component={Panel}>
+                    <ViewerApp
+                        overlay={(viewer, panelRoot) => (
+                            <Preview
+                                viewer={viewer}
+                                launch={launch}
+                                panelRoot={panelRoot}
+                            />
+                        )}
+                    />
+                </PanelProvider>
             </StrictMode>,
         );
     } catch (error) {

@@ -3,9 +3,9 @@ import type { Companion, Point } from '@endfield-noclip/package-format/oem';
 
 import type { Viewer } from '@endfield-noclip/viewer/host';
 
-import { useViewerState } from '@endfield-noclip/viewer/host';
+import { Panel, useViewerState } from '@endfield-noclip/viewer/host';
 
-/** prerequisites and story presets for the selected OEM point, using the viewer's panel styles */
+/** Prerequisites and story presets use the same host panel as the renderer controls. */
 export const PointConditions = ({
     viewer,
     point,
@@ -32,19 +32,20 @@ export const PointConditions = ({
         return values ? `${name}: ${values}` : name;
     };
     return (
-        <section
-            className='panel scene-controls oem-point-conditions'
-            aria-label='point prerequisites'
-        >
-            <header>
-                <h2>Preview</h2>
+        <Panel
+            title='Preview'
+            label='point prerequisites'
+            className='scene-controls oem-point-conditions'
+            actions={
                 <button
+                    type='button'
                     disabled={disabled}
                     onClick={() => onPreset('completed')}
                 >
                     Reset
                 </button>
-            </header>
+            }
+        >
             {point.condition ? (
                 <div className='scene-choice'>
                     <span>Known story prerequisites</span>
@@ -113,6 +114,6 @@ export const PointConditions = ({
                     ))}
                 </select>
             </label>
-        </section>
+        </Panel>
     );
 };
