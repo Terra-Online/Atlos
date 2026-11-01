@@ -4,6 +4,10 @@ import './style.css';
 import { REGION_DICT } from '@/data/map';
 import { findMarkerById, MARKER_TYPE_DICT } from '@/data/marker';
 import { createMapTileLayer } from '@/services/map/core/tileLayer';
+import {
+    prepareContinuousMap,
+    setContinuousView,
+} from '@/services/map/core/continuousView';
 import { createMarkerIcon } from '@/services/map/core/marker/markerIcon';
 import { ViewportMarker } from '@/services/map/core/canvas/markerViewport';
 import { setMarkerState } from '@/services/map/core/canvas/markerModel';
@@ -22,27 +26,29 @@ import {
     VERSION,
     type Point,
 } from '@/services/noclip/types';
-import { minimapZoom } from '@/services/noclip/view';
+import { minimapZoom, minimapBearing } from '@/services/noclip/view';
 
 const parameters = new URL(location.href).searchParams;
 const origin = parameters.get('previewOrigin') || '';
 const session = parameters.get('session') || '';
 const element = document.getElementById('map')!;
 if (isPreviewOrigin(origin) && window.parent !== window) {
-    const map = L.map(element, {
-        crs: L.CRS.Simple,
-        zoomControl: false,
-        attributionControl: false,
-        dragging: false,
-        touchZoom: false,
-        boxZoom: false,
-        keyboard: false,
-        doubleClickZoom: false,
-        scrollWheelZoom: false,
-        zoomAnimation: false,
-        fadeAnimation: false,
-        zoomSnap: 0,
-    });
+    const map = prepareContinuousMap(
+        L.map(element, {
+            crs: L.CRS.Simple,
+            zoomControl: false,
+            attributionControl: false,
+            dragging: false,
+            touchZoom: false,
+            boxZoom: false,
+            keyboard: false,
+            doubleClickZoom: false,
+            scrollWheelZoom: false,
+            zoomAnimation: false,
+            fadeAnimation: false,
+            zoomSnap: 0,
+        }),
+    );
     map.createPane('locator').style.zIndex = '900';
     const tracker = createTrackerMarker('locator', L.latLng(0, 0));
     let target: ViewportMarker | null = null,
@@ -123,7 +129,7 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
                 ),
             });
         }
-        map.setView([p.mapZ, p.mapX], zoom, { animate: false });
+        setContinuousView(map, L.latLng(p.mapZ, p.mapX), zoom);
         if (!map.hasLayer(tracker)) {
             tracker.addTo(map);
         }
@@ -150,16 +156,16 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
                 });
         }
         target?.setLatLng([t.mapZ, t.mapX]);
-        const forward = position(
-            point,
-            d.position.map((v, i) => v + forwardVector[i]),
-        );
-        const a = map.latLngToLayerPoint([p.mapZ, p.mapX]),
-            b = map.latLngToLayerPoint([forward.mapZ, forward.mapX]);
-        setTrackerBearing(
-            tracker,
-            (Math.atan2(b.y - a.y, b.x - a.x) * 180) / Math.PI + 90,
-        );
+        const horizontal = Math.hypot(forwardVector[0], forwardVector[2]);
+        if (horizontal > 1e-6) {
+            const forward = position(point, [
+                d.position[0] + forwardVector[0] / horizontal,
+                d.position[1],
+                d.position[2] + forwardVector[2] / horizontal,
+            ]);
+            const bearing = minimapBearing(p, forward);
+            if (bearing !== null) setTrackerBearing(tracker, bearing);
+        }
     };
     window.addEventListener('message', receive);
     new ResizeObserver(() => {

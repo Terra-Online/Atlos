@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { minimapZoom } from './view';
+import { minimapZoom, minimapBearing } from './view';
 
 const view = {
     altitude: 100,
@@ -10,6 +10,29 @@ const view = {
     height: 256,
     unitsPerMeter: 0.5,
 };
+
+it('keeps heading independent of camera translation and fractional pixel rounding', () => {
+    const direction = {
+        mapX: Math.sin(0.45) * 0.469,
+        mapZ: Math.cos(0.45) * 0.469,
+    };
+    for (let n = 0; n < 100; n++) {
+        const origin = { mapX: 123.456 + n * 0.025, mapZ: -789.123 + n * 0.03 };
+        const forward = {
+            mapX: origin.mapX + direction.mapX,
+            mapZ: origin.mapZ + direction.mapZ,
+        };
+        expect(minimapBearing(origin, forward)).toBeCloseTo(
+            (0.45 * 180) / Math.PI,
+            8,
+        );
+    }
+    expect(minimapBearing({ mapX: 0, mapZ: 0 }, { mapX: 0, mapZ: 1 })).toBe(0);
+    expect(minimapBearing({ mapX: 0, mapZ: 0 }, { mapX: 1, mapZ: 0 })).toBe(90);
+    expect(
+        minimapBearing({ mapX: 0, mapZ: 0 }, { mapX: 0, mapZ: 0 }),
+    ).toBeNull();
+});
 
 it('zooms out one level when altitude doubles, independent of absolute scene elevation', () => {
     expect(minimapZoom({ ...view, altitude: 200 })).toBeCloseTo(

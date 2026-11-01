@@ -1,4 +1,5 @@
 import L from 'leaflet';
+import { prepareContinuousMap, moveContinuousView, type ContinuousMap } from './continuousView';
 import {
     WHEEL_GESTURE_IDLE_MS,
     WheelInputRouter,
@@ -15,100 +16,11 @@ const FRAME_DURATION = 1000 / 60;
 const TRACKPAD_OVERDRAG_SETTLE_THRESHOLD_PX = 80;
 const TRACKPAD_OVERDRAG_SETTLE_MS = 48;
 
-interface ContinuousZoomEventData {
-    pinch: true;
-    round: false;
-}
-
-const CONTINUOUS_ZOOM_EVENT_DATA: ContinuousZoomEventData = {
-    pinch: true,
-    round: false,
-};
-
 export interface SmoothWheelZoomOptions {
     enableInertia?: boolean;
     constrainZoom?: (center: L.LatLng, zoom: number) => L.LatLng;
     constrainPan?: (center: L.LatLng, zoom: number) => { center: L.LatLng; overdrag: number };
 }
-
-interface ContinuousZoomMap extends L.Map {
-    _animatingZoom?: boolean;
-    _getMapPanePos(): L.Point;
-    _getNewPixelOrigin(center: L.LatLng, zoom: number): L.Point;
-    _latLngToNewLayerPoint(
-        latLng: L.LatLng,
-        zoom: number,
-        center: L.LatLng,
-    ): L.Point;
-    _limitZoom(zoom: number): number;
-    _move(center: L.LatLng, zoom: number, data?: ContinuousZoomEventData): this;
-    _moveEnd(zoomChanged: boolean): this;
-    _moveStart(zoomChanged: boolean, noMoveStart: boolean): this;
-    _onZoomTransitionEnd?(): void;
-    _rawPanBy(offset: L.Point): void;
-    _stop(): this;
-}
-
-interface SubpixelMarker {
-    _icon?: HTMLElement;
-    _latlng: L.LatLng;
-    _map?: ContinuousZoomMap;
-    _setPos(point: L.Point): void;
-}
-
-interface MarkerZoomAnimation {
-    center: L.LatLng;
-    zoom: number;
-}
-
-let subpixelMarkerPositioningInstalled = false;
-
-const installSubpixelPixelOrigin = (map: ContinuousZoomMap) => {
-    // Keep map coordinates and tile transforms in the same subpixel space.
-    // Leaflet's default rounding is what makes a fixed zoom anchor wander.
-    map._getNewPixelOrigin = function (center, zoom) {
-        return this.project(center, zoom)
-            .subtract(this.getSize().divideBy(2))
-            .add(this._getMapPanePos());
-    };
-
-    // Leaflet rounds the projected LatLng before subtracting the pixel
-    // origin. Markers, labels, tooltips, and cluster animations all use this
-    // conversion, so that rounding makes every overlay jump independently of
-    // the already-smooth tile layer during fractional zoom.
-    map.latLngToLayerPoint = function (latLng) {
-        return this.project(latLng, this.getZoom()).subtract(
-            this.getPixelOrigin(),
-        );
-    };
-};
-
-const installSubpixelMarkerPositioning = () => {
-    if (subpixelMarkerPositioningInstalled) return;
-    subpixelMarkerPositioningInstalled = true;
-
-    const markerPrototype = L.Marker.prototype as unknown as SubpixelMarker & {
-        _animateZoom(event: MarkerZoomAnimation): void;
-        update(): SubpixelMarker;
-    };
-
-    markerPrototype.update = function () {
-        if (this._icon && this._map) {
-            this._setPos(this._map.latLngToLayerPoint(this._latlng));
-        }
-        return this;
-    };
-    markerPrototype._animateZoom = function (event) {
-        if (!this._map) return;
-        this._setPos(
-            this._map._latLngToNewLayerPoint(
-                this._latlng,
-                event.zoom,
-                event.center,
-            ),
-        );
-    };
-};
 
 /**
  * Leaflet's built-in wheel handler debounces input and starts a fixed CSS
@@ -116,7 +28,7 @@ const installSubpixelMarkerPositioning = () => {
  * two-axis trackpad scrolling to pan, and can add a short zoom inertia tail.
  */
 export class SmoothWheelZoom {
-    private readonly map: ContinuousZoomMap;
+    private readonly map: ContinuousMap;
     private readonly container: HTMLElement;
     private readonly inertiaEnabled: boolean;
     private readonly constrainZoom?: SmoothWheelZoomOptions['constrainZoom'];
@@ -142,7 +54,7 @@ export class SmoothWheelZoom {
     private disposed = false;
 
     constructor(map: L.Map, options: SmoothWheelZoomOptions = {}) {
-        this.map = map as ContinuousZoomMap;
+        this.map = prepareContinuousMap(map);
         this.container = map.getContainer();
         this.inertiaEnabled = options.enableInertia ?? true;
         this.constrainPan = options.constrainPan;
@@ -151,9 +63,6 @@ export class SmoothWheelZoom {
             onPan: (event) => this.handleRoutedWheel('pan', event),
             onZoom: (event) => this.handleRoutedWheel('zoom', event),
         });
-
-        installSubpixelPixelOrigin(this.map);
-        installSubpixelMarkerPositioning();
 
         map.scrollWheelZoom.disable();
         this.container.addEventListener('wheel', this.handleWheel, {
@@ -473,7 +382,7 @@ export class SmoothWheelZoom {
         // This is the same signal Leaflet uses during pinch zoom. GridLayer
         // keeps the current tile level and updates its transform instead of
         // rebuilding and pruning the tile grid for every fractional step.
-        this.map._move(center, zoom, CONTINUOUS_ZOOM_EVENT_DATA);
+        moveContinuousView(this.map, center, zoom);
         // Once constrained, continue from the visible frame instead of retaining
         // an unreachable mouse anchor and accumulating drift beyond the wall.
         this.anchorLatLng = this.continuousContainerPointToLatLng(this.anchorPoint);

@@ -1,3 +1,15 @@
+/** Heading in unrounded map coordinates; a vertical look has no planar heading. */
+export const minimapBearing = (
+    origin: { mapX: number; mapZ: number },
+    forward: { mapX: number; mapZ: number },
+): number | null => {
+    const dx = forward.mapX - origin.mapX,
+        dz = forward.mapZ - origin.mapZ;
+    return Math.hypot(dx, dz) < 1e-9
+        ? null
+        : (Math.atan2(-dz, dx) * 180) / Math.PI + 90;
+};
+
 /** Approximate the perspective footprint on the local ground plane, within the minimap's tile zooms. */
 export const minimapZoom = ({
     altitude,

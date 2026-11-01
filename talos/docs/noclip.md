@@ -27,6 +27,9 @@ Camera messages may also include `view: { groundY, fovY, aspect }`. The minimap 
 local ground plane, pitch, lens FOV and the scene's coordinate scale to approximate the visible area,
 with continuous zoom clamped to 0–4. Without view metadata it keeps zoom 3; invalid metadata is
 rejected. Missing or above-camera terrain uses the selected point's height. Floors remain fixed.
+Camera following shares the main map's subpixel and continuous-view updates, retaining loaded and
+pending tiles during fractional zoom. Cursor heading comes from unrounded transformed coordinates,
+preserves the last planar heading during a vertical look, and crosses the angle wrap by the short arc.
 
 For local testing, run the main map, `pnpm --filter @atlos/minimap dev`, and noclip's Vite server.
 Point the two environment variables at that server and its `/oem/<release>/index.json` before starting
