@@ -1,14 +1,15 @@
 # 3D preview integration
 
-The main site's detail general panel reads an optional immutable companion release produced by
+The main site's detail general panel links to an optional immutable companion release produced by
 endfield-noclip. Configure `VITE_NOCLIP_CATALOG_URL` to enable it and `VITE_NOCLIP_VIEWER_URL` to select
 the viewer (default `https://oem-noclip.pages.dev/`). See `.env.noclip.example`; do not enable an
 unpublished release. Missing configuration leaves the ordinary detail unchanged.
 
-The viewer's `package-format/oem.ts` and `docs/oem-integration.md` own protocol v1. OEM only presents
-conditions and requests authored presets; it does not evaluate gameplay conditions, claim a user's
-quest state, or change collection records. Localized game labels fall back to English and then ids.
-Unknown spawn, script and interaction conditions remain visible.
+The viewer's `package-format/oem.ts` and `docs/oem-integration.md` own protocol v1. The main detail
+contains only the preview link, using the existing detail divider and action styles.
+Point prerequisites, runtime unknowns and preset controls belong to the preview site's noclip panel.
+The main site does not load point companion partitions or control preview story state. Neither site
+claims a user's quest state or changes collection records.
 
 One named preview is reused per main-site tab. Its session identifier survives a page reload. Direct
 links, blocked popups and closed preview windows retain a normal URL navigation path. Cross-window

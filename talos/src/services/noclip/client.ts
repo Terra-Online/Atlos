@@ -1,4 +1,4 @@
-import { isCatalog, isCompanion, type Catalog, type Companion } from './types';
+import { isCatalog, type Catalog } from './types';
 
 const catalogUrl = import.meta.env.VITE_NOCLIP_CATALOG_URL as
     | string
@@ -8,7 +8,6 @@ export const viewerUrl =
     'https://oem-noclip.pages.dev/';
 export const enabled = Boolean(catalogUrl);
 let catalogRequest: Promise<Catalog> | undefined;
-const requests = new Map<string, Promise<Companion>>();
 
 const json = async (url: string): Promise<unknown> => {
     const response = await fetch(url);
@@ -28,30 +27,6 @@ export const loadCatalog = (): Promise<Catalog> => {
             throw error;
         });
     return catalogRequest;
-};
-
-export const loadPoint = async (id: string) => {
-    const catalog = await loadCatalog(),
-        partition = catalog.pointIndex[id];
-    const file = catalog.files[partition];
-    if (typeof file !== 'string') return null;
-    let request = requests.get(partition);
-    if (!request) {
-        request = json(new URL(file, catalogUrl).href)
-            .then((v) => {
-                if (!isCompanion(v) || v.release !== catalog.release)
-                    throw new Error('Invalid 3D companion');
-                return v;
-            })
-            .catch((error: unknown) => {
-                requests.delete(partition);
-                throw error;
-            });
-        requests.set(partition, request);
-    }
-    const companion = await request,
-        point = companion.points.find((p) => p.id === id);
-    return point ? { catalog, companion, point } : null;
 };
 
 export const previewLink = (

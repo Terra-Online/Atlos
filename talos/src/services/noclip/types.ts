@@ -1,10 +1,5 @@
 // JSON contract v1; the producer and canonical contract live in endfield-noclip/package-format/oem.
 export const VERSION = 1;
-export interface Control {
-    id: string;
-    name: string;
-    values: { value: number; label: string }[];
-}
 export interface Preset {
     id: string;
     label: string;
@@ -22,13 +17,6 @@ export interface Point {
     locks: { kind: string; quests: string[]; games: string[] }[];
     unknown: string[];
     presets: Preset[];
-}
-export interface Companion {
-    version: number;
-    release: string;
-    controls: Control[];
-    labels?: Record<string, Record<string, string>>;
-    points: Point[];
 }
 export interface Catalog {
     format: 'oem-noclip';
@@ -110,25 +98,3 @@ export const isCatalog = (v: unknown): v is Catalog =>
     Object.values(v.files).every(
         (path) => /^[A-Za-z0-9_/-]+\.json$/.test(path) && !path.startsWith('/'),
     );
-export const isCompanion = (v: unknown): v is Companion =>
-    record(v) &&
-    v.version === VERSION &&
-    typeof v.release === 'string' &&
-    Array.isArray(v.points) &&
-    v.points.every(isPoint) &&
-    Array.isArray(v.controls) &&
-    v.controls.every(
-        (c) =>
-            record(c) &&
-            typeof c.id === 'string' &&
-            typeof c.name === 'string' &&
-            Array.isArray(c.values) &&
-            c.values.every(
-                (entry) =>
-                    record(entry) &&
-                    Number.isInteger(entry.value) &&
-                    typeof entry.label === 'string',
-            ),
-    ) &&
-    (v.labels === undefined ||
-        (record(v.labels) && Object.values(v.labels).every(dictionary)));

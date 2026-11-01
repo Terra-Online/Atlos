@@ -14,9 +14,8 @@ const session = (() => {
 let preview: Window | null = null;
 let ready = false;
 let pending: {
-    type: 'open-point' | 'apply-preset';
+    type: 'open-point';
     point: string;
-    preset?: string;
 } | null = null;
 const expectedOrigin = new URL(viewerUrl, location.href).origin;
 
@@ -42,8 +41,6 @@ window.addEventListener('message', (event: MessageEvent<unknown>) => {
         ready = true;
         flush();
     }
-    if (data.type === 'state' || data.type === 'error')
-        window.dispatchEvent(new CustomEvent('noclip-state', { detail: data }));
 });
 
 /** Open synchronously from the user's click so loading data never consumes popup activation. */
@@ -60,14 +57,4 @@ export const openPreview = (point: string, release: string): boolean => {
         flush();
     }
     return preview !== null;
-};
-
-export const applyPreviewPreset = (
-    point: string,
-    release: string,
-    preset: string,
-): void => {
-    openPreview(point, release);
-    pending = { type: 'apply-preset', point, preset };
-    flush();
 };

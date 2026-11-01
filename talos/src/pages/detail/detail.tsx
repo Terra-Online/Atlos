@@ -656,7 +656,6 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                                 </div>
                             </div>
                             <Uploader point={currentPoint} pointName={pointName} active={detailPhase === 'open' && activeTab === 'general'} />
-                            <NoclipPreview pointId={currentPoint.id} />
                             {highlightComment && (
                                 <>
                                     <div className={styles.detailDivider} data-label={tUI('detail.label.comments')}></div>
@@ -685,6 +684,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                                     </div>
                                 </>
                             )}
+                            <NoclipPreview pointId={currentPoint.id} />
                             <div className={styles.detailDivider} data-label={tUI('detail.label.url')}></div>
                             <div className={styles.detailAction} data-act="share">
                                 <PopoverTooltip

@@ -46,19 +46,20 @@ describe('preview window lifecycle', () => {
         );
     });
 
-    it('retargets an existing window before applying a preset for another point', async () => {
-        const { openPreview, applyPreviewPreset } = await import('./preview');
+    it('reuses a ready window when another point is opened', async () => {
+        const { openPreview } = await import('./preview');
         openPreview('first', 'release');
         const session = new URL(String(open.mock.calls[0][0])).searchParams.get(
             'session',
         )!;
         ready(session, popup);
         postMessage.mockClear();
-        applyPreviewPreset('second', 'release', 'story-1');
-        expect(postMessage.mock.calls.map(([message]) => message.type)).toEqual(
-            ['open-point', 'apply-preset'],
+        openPreview('second', 'release');
+        expect(open).toHaveBeenCalledTimes(1);
+        expect(postMessage).toHaveBeenCalledExactlyOnceWith(
+            { version: 1, session, type: 'open-point', point: 'second' },
+            origin,
         );
-        expect(postMessage.mock.calls[1][0].point).toBe('second');
     });
 
     it('keeps a normal-link fallback when a popup is blocked', async () => {

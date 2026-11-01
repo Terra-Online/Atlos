@@ -35,16 +35,8 @@
   },
   "detail": {
     "noclip": {
-      "title": "3D 预览与前置条件",
-      "open": "打开 3D 预览",
-      "conditions": "已知剧情前置",
-      "none": "未记录任务进度前置。",
-      "locks": "额外交互锁",
-      "unknown": "部分出生、脚本或交互条件尚未还原；预览仅应用已知剧情条件。",
-      "state": "预览状态",
-      "default": "noclip 默认状态",
-      "or": "或",
-      "unavailable": "3D 预览数据暂不可用。"
+      "title": "Preview",
+      "open": "打开 3D 预览"
     },
     "stat": {
       "world": "世界",
