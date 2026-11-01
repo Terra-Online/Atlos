@@ -11,7 +11,7 @@ import { getCachedBinding, setCachedBinding } from '@/services/cache/backend';
 import { SubregionSwitch } from '@/pages/regSwitch/regSwitch';
 import { useSwitchMenu } from '@/pages/regSwitch/useSwitchMenu';
 import PopoverTooltip from '@/component/popover/popover';
-import regSwitchStyles from '@/pages/regSwitch/regSwitch.module.scss';
+import regSwitchStyles from '@/component/regionSwitch/regionSwitch.module.scss';
 import styles from '@/pages/locator/Locator.module.scss';
 import LocateCloseIcon from '@/assets/images/UI/locateclose.svg?react';
 import LocateOpenIcon from '@/assets/images/UI/locateopen.svg?react';

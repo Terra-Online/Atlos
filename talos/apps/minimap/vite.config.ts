@@ -1,5 +1,7 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
 import { resourceConfig } from '../../scripts/release-artifact.mjs';
 import { getDeployChannel } from '../../scripts/release-channel.js';
 
@@ -19,6 +21,15 @@ export default defineConfig(async ({ command }) => {
               ).assetsHost;
     return {
         base: '/minimap/',
+        plugins: [react(), svgr()],
+        build: {
+            rollupOptions: {
+                input: {
+                    minimap: resolve(import.meta.dirname, 'index.html'),
+                    regions: resolve(import.meta.dirname, 'regions.html'),
+                },
+            },
+        },
         envDir: root,
         resolve: { alias: { '@': resolve(root, 'src') } },
         define: {

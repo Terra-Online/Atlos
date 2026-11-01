@@ -180,6 +180,7 @@ $mobile-indicator-height: 0.48rem;
         padding: 5px;
         box-shadow: 0 0 5px rgba($black-0, 0.6);
         overflow-y: auto;
+        max-height: calc(100dvh - var(--region-menu-top, 8px) - 16px);
         backdrop-filter: blur(8px);
         opacity: 1;
         transition: opacity 0.2s ease-in-out;

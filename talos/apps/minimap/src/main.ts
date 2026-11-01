@@ -1,9 +1,11 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import './style.css';
+import './style.scss';
 import { REGION_DICT } from '@/data/map';
 import { findMarkerById, MARKER_TYPE_DICT } from '@/data/marker';
 import { createMapTileLayer } from '@/services/map/core/tileLayer';
+import { resolveTileSource } from '@/services/map/tileCoverage';
+import type { TileSource } from '@/services/assets/resource';
 import {
     prepareContinuousMap,
     setContinuousView,
@@ -17,7 +19,11 @@ import {
     stopTrackerPulse,
 } from '@/services/map/locatorMarker';
 import { convertEFPosition } from '@/services/endfield/locatorTransform';
-import { getLayerByTier, getLayerTileSuffix } from '@/store/layer';
+import {
+    getLayerByTier,
+    getLayerTileSuffix,
+    useLayerStore,
+} from '@/store/layer';
 import {
     isCameraSample,
     isPoint,
@@ -37,7 +43,7 @@ const parameters = new URL(location.href).searchParams;
 const origin = parameters.get('previewOrigin') || '';
 const session = parameters.get('session') || '';
 const element = document.getElementById('map')!;
-type Sample = CameraSample & { tracking: boolean };
+type Sample = CameraSample & { tracking: boolean; target: boolean };
 if (isPreviewOrigin(origin) && window.parent !== window) {
     const map = prepareContinuousMap(
         L.map(element, {
@@ -53,9 +59,12 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
             zoomAnimation: false,
             fadeAnimation: false,
             zoomSnap: 0,
+            minZoom: 0,
         }),
     );
     map.createPane('locator').style.zIndex = '900';
+    const tileLayer = (region: string, source: TileSource, suffix: string) =>
+        createMapTileLayer(region, source, suffix, 5).addTo(map);
     const tracker = createTrackerMarker('locator', L.latLng(0, 0));
     let target: ViewportMarker | null = null,
         targetPoint: Point | null = null,
@@ -96,25 +105,27 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
             region = REGION_DICT[point.region];
         if (!region) return;
         const p = position(point, d.position);
-        const key = `${point.region}/${point.tier}`;
+        const floor = getLayerByTier(point.tier) ?? 'M';
+        const source = resolveTileSource(
+            point.region,
+            floor,
+            useLayerStore.getState().satellite,
+        );
+        const key = `${point.region}/${point.tier}/${source}`;
         if (sceneKey !== key) {
             tiles.forEach((tile) => tile.remove());
-            tiles = [
-                createMapTileLayer(point.region, 'clips', '', 4).addTo(map),
-            ];
-            const floor = getLayerByTier(point.tier);
+            tiles = [tileLayer(point.region, source, '')];
             if (floor && floor !== 'M')
                 tiles.push(
-                    createMapTileLayer(
-                        point.region,
-                        'clips',
-                        getLayerTileSuffix(floor),
-                        4,
-                    ).addTo(map),
+                    tileLayer(point.region, 'clips', getLayerTileSuffix(floor)),
                 );
             sceneKey = key;
         }
-        if (targetPoint?.id !== point.id) {
+        if (!d.target) {
+            target?.remove();
+            target = null;
+            targetPoint = null;
+        } else if (targetPoint?.id !== point.id) {
             const t = position(point, point.position),
                 x = position(point, [
                     point.position[0] + 1,
@@ -214,6 +225,14 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
     const schedule = () => {
         if (frame === null) frame = requestAnimationFrame(draw);
     };
+    const stopLayer = useLayerStore.subscribe((state, previous) => {
+        if (state.satellite !== previous.satellite) schedule();
+    });
+    const syncLayer = (event: StorageEvent) => {
+        if (event.key === 'atlos-layer-storage')
+            void useLayerStore.persist.rehydrate();
+    };
+    window.addEventListener('storage', syncLayer);
     const receive = (event: MessageEvent<unknown>) => {
         const d = event.data;
         if (
@@ -226,13 +245,14 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
             return;
         let sample: Sample;
         if (d.type === 'camera' && isCameraSample(d)) {
-            sample = { ...d, tracking: true };
+            sample = { ...d, tracking: true, target: d.target !== false };
         } else if (d.type === 'minimap-target' && isPoint(d.point)) {
             sample = {
                 point: d.point,
                 position: d.point.position,
                 forward: [0, 0, 1],
                 tracking: false,
+                target: d.target !== false,
             };
         } else return;
         if (
@@ -258,6 +278,8 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
     window.addEventListener(
         'pagehide',
         () => {
+            stopLayer();
+            window.removeEventListener('storage', syncLayer);
             targetPoint = null;
             if (frame !== null) cancelAnimationFrame(frame);
             resize.disconnect();

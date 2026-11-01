@@ -9,7 +9,7 @@ import useViewState from '@/store/viewState';
 import { IMarkerData } from '@/data/marker';
 import { SubregionBoundaryManager } from '@/services/map/core/boundary';
 import { getLayerTileSuffix, useLayerStore, type LayerType } from '@/store/layer';
-import { getAvailableLayers, getMaxTileZoom, getRegionTileCoverage, hasSatelliteTiles } from '@/services/map/tileCoverage';
+import { getAvailableLayers, getMaxTileZoom, getRegionTileCoverage, resolveTileSource } from '@/services/map/tileCoverage';
 import { enableSmoothWheelZoom } from '@/services/map/core/smoothWheelZoom';
 import { createMapTileLayer } from '@/services/map/core/tileLayer';
 import { CoverageBounds } from '@/services/map/core/coverageBounds';
@@ -290,8 +290,7 @@ export class MapCore {
     }
 
     private getTileSource(regionId: string, layer: LayerType): TileSource {
-        return layer === 'M' && useLayerStore.getState().satellite && hasSatelliteTiles(regionId)
-            ? 'satellite' : 'clips';
+        return resolveTileSource(regionId, layer, useLayerStore.getState().satellite);
     }
 
     private updateCameraLimits(layer: LayerType) {

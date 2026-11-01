@@ -70,8 +70,8 @@ export function labelFontRuns(
     ];
 }
 
-/** Region intent needs its selector names and labels, never the world catalog. */
-export function mapFontRuns(regionKey: string, t: Translate): TextRun[] {
+/** Region names and short labels used by the main map and embedded preview menu. */
+export function regionFontRuns(t: Translate): TextRun[] {
     // Navigation can open before a destination is selected. Its short labels
     // and tooltips are a small shell demand, unlike the destination's catalog.
     const navigation = Object.entries(REGION_DICT).flatMap(([key, region]) => {
@@ -85,6 +85,11 @@ export function mapFontRuns(regionKey: string, t: Translate): TextRun[] {
             ] : [];
         })].filter(value => typeof value === 'string').join('');
     }).join('');
+    return [{ faces: ['db', 'r'], text: navigation, localized: 'game' }];
+}
+
+/** Region intent needs its selector names and labels, never the world catalog. */
+export function mapFontRuns(regionKey: string, t: Translate): TextRun[] {
     const counts = REGION_TYPE_COUNT_MAP[regionKey] || {};
     const names = Object.keys(counts)
         .filter((key) => counts[key] > 0)
@@ -114,7 +119,7 @@ export function mapFontRuns(regionKey: string, t: Translate): TextRun[] {
           )
         : [];
     return [
-        { faces: ['db', 'r'], text: navigation, localized: 'game' },
+        ...regionFontRuns(t),
         {
             faces: ['db', 'm'],
             text: [...names, ...binders].join(''),

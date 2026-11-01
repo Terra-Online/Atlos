@@ -26,7 +26,9 @@ vi.mock('@/services/map/tileCoverage', async (importOriginal) => ({
         zooms[String(z)] = { '': rows, _b1: rows };
     }
     return { zooms };
-}, getAvailableLayers: (region: string) => region === 'D' ? ['M'] : ['M', 'B1'], hasSatelliteTiles: (region: string) => region === 'A' }));
+}, getAvailableLayers: (region: string) => region === 'D' ? ['M'] : ['M', 'B1'], hasSatelliteTiles: (region: string) => region === 'A',
+// A is a synthetic coverage fixture; keep source resolution at the same mocked boundary.
+resolveTileSource: (region: string, layer: string, satellite: boolean) => layer === 'M' && satellite && region === 'A' ? 'satellite' : 'clips' }));
 vi.mock('@/services/map/core/marker/markerLayer', () => ({ MarkerLayer: class {
     changeRegion = vi.fn(() => Promise.resolve()); updateLayerTier = vi.fn(); destroy = vi.fn();
 } }));

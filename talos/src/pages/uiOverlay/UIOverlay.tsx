@@ -3,7 +3,8 @@ import { useRetryImport } from '@/lib/dom/useRetryImport';
 import ErrorBoundary from '@/component/shared/ErrorBoundary';
 import Modal from '@/component/modal/modal';
 import L from 'leaflet';
-import styles from '@/pages/uiOverlay/UIOverlay.module.scss';
+import styles from '@/component/shared/uiOverlay/UIOverlay.module.scss';
+import { UIOverlayLayer } from '@/component/shared/uiOverlay/UIOverlayLayer';
 
 import LanguageModal from '@/component/shared/language/language';
 import NotifyModal from '@/pages/notify/notify';
@@ -210,10 +211,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     }, [visible]);
 
     return (
-        <div
-            data-font-region="shell"
-            className={`${styles.uiOverlay} ${isMobile ? styles.mobile : ''} ${layoutSidebarOpen ? styles.sidebarOpen : ''}`}
-        >
+        <UIOverlayLayer mobile={isMobile} sidebarOpen={layoutSidebarOpen}>
             {/* Headbar */}
             {(visible || showVisibilityControl) && (
                 <div className={styles.headbarHost}>
@@ -353,7 +351,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                     <p role="status">{t('common.loading')}</p>
                 </Modal>
             )}
-        </div>
+        </UIOverlayLayer>
     );
 };
 

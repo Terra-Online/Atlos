@@ -4,7 +4,7 @@ import { TILE_SIZE } from '@/data/map/tiles';
 import useViewState from '@/store/viewState';
 import { useLayerStore, getLayerTileSuffix } from '@/store/layer';
 import { getTileResourceUrl } from '@/services/assets/resource';
-import { getAvailableLayers, getMaxTileZoom, getRegionTileCoverage, hasTileInCoverage, hasSatelliteTiles } from './tileCoverage';
+import { getAvailableLayers, getMaxTileZoom, getRegionTileCoverage, hasTileInCoverage, resolveTileSource } from './tileCoverage';
 import type { IMapView } from './types';
 
 /** Warm only a few original-resolution tiles at the expected view center.
@@ -16,7 +16,7 @@ export function preloadMapTiles(regionId: string, view?: IMapView): () => void {
     const stored = view ?? useViewState.getState().getViewState(regionId);
     const configured = useLayerStore.getState().currentLayer;
     const layer = getAvailableLayers(regionId).includes(configured) ? configured : 'M';
-    const source = layer === 'M' && useLayerStore.getState().satellite && hasSatelliteTiles(regionId) ? 'satellite' : 'clips';
+    const source = resolveTileSource(regionId, layer, useLayerStore.getState().satellite);
     const coverage = getRegionTileCoverage(regionId, source);
     const suffixes = layer === 'M' ? [''] : ['', getLayerTileSuffix(layer)];
     const zoom = Math.min(getMaxTileZoom(coverage, suffixes), Math.max(0, Math.round(stored?.zoom ?? config.initialZoom)));

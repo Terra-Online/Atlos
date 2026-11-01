@@ -18,7 +18,7 @@ const fixture = async (t) => {
         'index.html': '<html>map entry</html>', 'assets/main.js': 'main',
         'satellite/index.html': '<html>map entry</html>', 'satellite/Dijiang/1/1_1.webp': 'tile',
         'me/index.html': '<html>user hub</html>', 'me/assets/main.js': 'hub',
-        'minimap/index.html': '<html>minimap</html>', 'minimap/assets/main.js': 'minimap',
+        'minimap/index.html': '<html>minimap</html>', 'minimap/regions.html': '<html>regions</html>', 'minimap/assets/main.js': 'minimap',
         'sitemap.xml': 'sitemap', 'robots.txt': 'robots', 'seo/points/r2/Ab12345.html': 'point',
     };
     for (const [file, contents] of Object.entries(files)) {
@@ -37,6 +37,10 @@ test('packages the satellite SPA entry without bringing tile resources into Page
     assert.ok(await fs.stat(path.join(output, 'me/index.html')));
     assert.equal(await fs.readFile(path.join(output, 'minimap/index.html'), 'utf8'), '<html>minimap</html>');
     assert.match(await fs.readFile(path.join(output, '_redirects'), 'utf8'), /\/minimap\/\* \/minimap\/ 200/);
+    assert.equal(await fs.readFile(path.join(output, 'minimap/regions.html'), 'utf8'), '<html>regions</html>');
+    const routes = await fs.readFile(path.join(output, '_redirects'), 'utf8');
+    assert.ok(routes.indexOf('/minimap/regions.html /minimap/regions.html 200') < routes.indexOf('/minimap/* /minimap/ 200'));
+
 });
 
 test('rejects a missing satellite entry before replacing an existing package', async (t) => {

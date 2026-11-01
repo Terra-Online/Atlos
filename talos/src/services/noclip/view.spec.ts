@@ -89,8 +89,8 @@ it('follows the lens, pitch and local map transform scale', () => {
 });
 
 it('keeps ground, horizon, empty-viewport and very high views within available tile zooms', () => {
-    expect(minimapZoom({ ...view, altitude: 0 })).toBe(4);
-    expect(minimapZoom({ ...view, altitude: -50 })).toBe(4);
+    expect(minimapZoom({ ...view, altitude: 0 })).toBe(5);
+    expect(minimapZoom({ ...view, altitude: -50 })).toBe(5);
     expect(minimapZoom({ ...view, altitude: 100000 })).toBe(0);
     expect(
         Number.isFinite(

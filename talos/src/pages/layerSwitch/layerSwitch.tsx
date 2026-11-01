@@ -1,6 +1,6 @@
 import IconButton from '@/component/button/IconButton';
 import React, { useMemo } from 'react';
-import styles from '@/pages/regSwitch/regSwitch.module.scss';
+import styles from '@/component/regionSwitch/regionSwitch.module.scss';
 import { useCurrentLayer, useSetCurrentLayer, useLayerStore } from '@/store/layer';
 import classNames from 'classnames';
 import LayerIcon from '@/assets/images/UI/layer.svg?react';

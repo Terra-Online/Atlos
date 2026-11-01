@@ -56,5 +56,5 @@ export const minimapZoom = ({
         Math.max(1, width) / (span * aspect),
         Math.max(1, height) / span,
     );
-    return Math.min(4, Math.max(0, Math.log2(scale)));
+    return Math.min(5, Math.max(0, Math.log2(scale * 1.5)));
 };

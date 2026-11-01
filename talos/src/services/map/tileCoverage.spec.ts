@@ -85,3 +85,11 @@ describe('tile coverage', () => {
         map.remove();
     });
 });
+
+it('shares standard/satellite source rules across the map, preload and passive minimap', async () => {
+    const { resolveTileSource } = await import('./tileCoverage');
+    expect(resolveTileSource('Dijiang', 'M', true)).toBe('satellite');
+    expect(resolveTileSource('Dijiang', 'B1', true)).toBe('clips');
+    expect(resolveTileSource('Dijiang', 'M', false)).toBe('clips');
+    expect(resolveTileSource('Wuling', 'M', true)).toBe('clips');
+});

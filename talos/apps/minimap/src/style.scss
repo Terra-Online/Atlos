@@ -1,3 +1,5 @@
+@use '@/styles/mapSurface.scss' as surface;
+
 html,
 body,
 #map {
@@ -16,3 +18,5 @@ body,
 .leaflet-locator-pane img {
     transition: none;
 }
+
+#map { @include surface.map-surface; }

@@ -28,7 +28,7 @@ The target uses its original OEM marker artwork, frame and sub-icon through the 
 renderer, with the existing pulse animation. It never reads collection state.
 Camera messages may also include `view: { groundY, fovY, aspect }`. The minimap uses height above the
 local ground plane, pitch, lens FOV and the scene's coordinate scale to approximate the visible area,
-with continuous zoom clamped to 0–4. Without view metadata it keeps zoom 3; invalid metadata is
+with continuous zoom clamped to 0–5 and 1.5× presentation magnification. Without view metadata it keeps zoom 3; invalid metadata is
 rejected. Missing or above-camera terrain uses the selected point's height. Floors remain fixed.
 Camera following shares the main map's subpixel and continuous-view updates, retaining loaded and
 pending tiles during fractional zoom. Cursor heading comes from unrounded transformed coordinates,
@@ -50,3 +50,14 @@ Production data is hosted under `https://cdn.opendfieldmap.org/noclip/releases/<
 Build the minimap for both targets as part of the normal complete artifact; a Pages upload replaces
 the project and must not contain only this app. Configure R2 read/range CORS and allow the minimap
 route to be framed by `https://oem-noclip.pages.dev`. Retain the previous release for rollback.
+
+The preview also embeds `/minimap/regions.html`, using the same shared `UIOverlayLayer`, region
+buttons, subregion menu, icons and font-region preparation as the main map. Its viewport is transparent
+and clipped to actual control/menu/tooltip rectangles; blank pixels pass pointer input through to the
+WebGPU canvas. Region navigation opens an overview and clears point targets; it does not persist a
+main-site region change. Submenus stay below the minimap and scroll within the available height.
+The passive map reuses the main map's standard/satellite preference and fallback rules; floors keep
+standard imagery. It retains minimum zoom 0, adds a 1.5× presentation scale, and permits near zoom 5.
+
+The passive map shares the main map's `mapSurface` background mask (`map-pattern.svg`), not a plain
+replacement color. Pages preserves the region HTML entry before the minimap SPA fallback.

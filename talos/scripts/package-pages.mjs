@@ -125,11 +125,15 @@ const writePagesConfigFiles = async () => {
   // Rewrite to the app directory, keeping its assets ahead of the SPA fallback.
   // Unmatched main-site paths use Pages' built-in root SPA fallback.
   const apps = shouldSkipIntel ? ['me', 'minimap'] : ['me', 'intel', 'minimap'];
-  const redirects = apps.flatMap((app) => [
+  const redirects = [
+    '/minimap/regions /minimap/regions.html 200',
+    '/minimap/regions.html /minimap/regions.html 200',
+    ...apps.flatMap((app) => [
     `/${app} /${app}/ 302`,
     `/${app}/assets/* /${app}/assets/:splat 200`,
     `/${app}/* /${app}/ 200`,
-  ]).join('\n') + '\n';
+    ]),
+  ].join('\n') + '\n';
   const intelHeaders = shouldSkipIntel
     ? []
     : [
