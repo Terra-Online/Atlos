@@ -1,7 +1,7 @@
 {
   "headbar": {
-    "profile": "Ρυθμίσεις χρήστη",
-    "auth": "Εγγραφή / Σύνδεση",
+    "profile": "User settings",
+    "auth": "Register / Log in",
     "hideUI": "Απόκρυψη UI",
     "notification": "Ειδοποιήσεις",
     "darkmode": "Σκοτεινή λειτουργία",
@@ -182,13 +182,13 @@
     }
   },
   "storage": {
-    "title": "Δεδομένα & Αποθήκευση",
-    "calculating": "Υπολογισμός χώρου αποθήκευσης...",
-    "policy": "<p>Χρησιμοποιούμε cookies για τη συνεδρία σύνδεσής σας, LocalStorage για τις προτιμήσεις και την πρόοδο των δεικτών σας, και CacheStorage για την προσωρινή αποθήκευση γραμματοσειρών. Έτσι επιταχύνεται η φόρτωση και υποστηρίζεται η μερική χρήση εκτός σύνδεσης. Αν διαγράψετε τον τοπικό χώρο αποθήκευσης, <span class=\"keyword\">η επόμενη επίσκεψή σας μπορεί να χρειαστεί περισσότερο χρόνο για να φορτώσει ξανά τους πόρους</span>· αν απενεργοποιήσετε την αποθήκευση του ιστοτόπου, ο ιστότοπος <span class=\"keyword\">δεν θα μπορεί να αποθηκεύει αυτόματα τις τοπικές προτιμήσεις και την πρόοδο των δεικτών σας</span>.</p><p>Λειτουργίες όπως η σύνδεση, οι συνεισφορές δεικτών και ο συγχρονισμός θέσης στέλνουν τα σχετικά δεδομένα στον διακομιστή όταν χρειάζεται. Η διαγραφή του τοπικού χώρου αποθήκευσης δεν διαγράφει τον λογαριασμό σας ή τα δεδομένα σας στον διακομιστή.</p>",
-    "filtersAndMarkers": "Δεδομένα Φίλτρων & Δεικτών",
-    "warning": "<p><strong>Προειδοποίηση:</strong> Η διαγραφή του τοπικού χώρου αποθήκευσης καταργεί την τοπική κατάσταση σύνδεσης, τις προτιμήσεις και την τοπική πρόοδό σας. Στην επόμενη επίσκεψη θα χρειαστεί να φορτωθούν ξανά οι πόροι και να συνδεθείτε ξανά.</p><p>Εάν είστε σίγουροι, κάντε ξανά κλικ στο κουμπί διαγραφής.</p>",
-    "export": "Εξαγωγή Δεδομένων",
-    "import": "Εισαγωγή Δεδομένων"
+    "title": "Data & Storage",
+    "calculating": "Calculating storage usage...",
+    "policy": "<p>We use cookies to store your login session, LocalStorage for preferences and marker progress, and CacheStorage to cache fonts. This helps pages load faster and supports some offline use. If you clear local storage, <span class=\"keyword\">your next visit may take longer as resources are reloaded</span>; if you disable website storage, the website <span class=\"keyword\">will not be able to save local preferences and marker progress automatically</span>.</p><p>Features such as login, marker contributions, and location sync send the relevant data to the server as needed. Clearing local storage does not delete your account or server data.</p>",
+    "filtersAndMarkers": "Filters & Marker Data",
+    "warning": "<p><strong>Warning:</strong> Clearing storage removes your login state, preferences, and local progress. On your next visit, resources will need to reload and you will need to log in again.</p><p>To confirm, please click the delete button again.</p>",
+    "export": "Export Data",
+    "import": "Import Data"
   },
   "settings": {
     "title": "Ρυθμίσεις",
@@ -232,7 +232,7 @@
   },
   "guide": {
     "tip": "Συμβουλή οδηγού",
-    "welcome": "Καλώς ήρθατε στο <span class=\"keyword\">Open Endfield Map</span>.<br>Είναι η πρώτη φορά που χρησιμοποιείτε αυτόν τον χάρτη. Αν αντιμετωπίσετε οποιοδήποτε πρόβλημα, κάντε κλικ στο κουμπί <span class=\"keyword\">Βοήθεια</span> στην επάνω δεξιά γωνία και θα σας παρέχουμε έναν αναλυτικό οδηγό λειτουργιών.</p>",
+    "welcome": "Καλώς ήρθατε στο <span class=\"keyword\">OPEN ENDFIELD MAP</span>.<br>Είναι η πρώτη φορά που χρησιμοποιείτε αυτόν τον χάρτη. Αν αντιμετωπίσετε οποιοδήποτε πρόβλημα, κάντε κλικ στο κουμπί <span class=\"keyword\">Βοήθεια</span> στην επάνω δεξιά γωνία και θα σας παρέχουμε έναν αναλυτικό οδηγό λειτουργιών.</p>",
     "sidebarToggle": "Κάντε κλικ για ανάπτυξη της <span class=\"keyword\">πλευρικής μπάρας</span>.<br>Περιλαμβάνει τα πιο συχνά χρησιμοποιούμενα φίλτρα και διακόπτες που σχετίζονται στενά με την εμφάνιση των δεικτών.",
     "search": "Μπορείτε να αναζητήσετε δείκτες χρησιμοποιώντας τις <span class=\"keyword\">υποστηριζόμενες από το παιχνίδι γλώσσες</span> και να τους επιλέξετε από τα αποτελέσματα αναζήτησης.",
     "filterContainer": "Οι δείκτες του ίδιου τύπου ομαδοποιούνται σε ένα <span class=\"keyword\">φίλτρο</span>.<br>Κάντε κλικ για ανάπτυξη της λίστας δεικτών αυτού του τύπου.",
@@ -243,15 +243,15 @@
     "triggerSwitch": "Κάντε κλικ για εναλλαγή της κατάστασης του διακόπτη.<br><ul><li>Η <span class=\"keyword\">Λειτουργία Συμπλεγμάτων</span> επιτρέπει τη συγχώνευση των πυκνών δεικτών.</li><li>Η <span class=\"keyword\">Εμφάνιση Ορίων Περιοχής</span> επισημαίνει κάθε υποπεριοχή και τα όριά της.</li><li>Το <span class=\"keyword\">Όνομα Περιοχής</span> δείχνει τα ονόματα των περιοχών εντός του παιχνιδιού.</li></ul>",
     "scale": "Χρησιμοποιήστε το <span class=\"keyword\">Στοιχείο Ελέγχου Ζουμ</span> για να διαχειριστείτε το ζουμ του χάρτη.<br>Μπορείτε επίσης να κάνετε ζουμ κάνοντας κλικ στα κουμπιά <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> ή οπουδήποτε στη γραμμή ζουμ.",
     "filterList": "Η <span class=\"keyword\">Λίστα δεικτών</span> εμφανίζει τους τύπους δεικτών που έχετε επιλέξει· κάντε κλικ στο εικονίδιο για να αναιρέσετε την επιλογή.",
-    "headbar": "Οι λειτουργίες για τον χάρτη, τον λογαριασμό και άλλες επιλογές βρίσκονται στην <span class=\"keyword\">επάνω γραμμή (headbar)</span>.",
-    "auth": "<span class=\"keyword\">Εγγραφείτε</span> ή <span class=\"keyword\">συνδεθείτε</span> σε λογαριασμό OEM για να χρησιμοποιήσετε τις διαδικτυακές λειτουργίες μας.",
+    "headbar": "Οι διακόπτες που σχετίζονται με τις ρυθμίσεις του χάρτη βρίσκονται στην <span class=\"keyword\">επάνω γραμμή (headbar)</span>.",
+    "auth": "<span class=\"keyword\">Register</span> or <span class=\"keyword\">log in</span> to an OEM account to use our online features.",
     "hideUI": "<span class=\"keyword\">Απόκρυψη UI Ιστότοπου</span> για λήψη στιγμιότυπων οθόνης ή προβολή ακριανών δεικτών.",
     "notification": "Ανοίξτε τις <span class=\"keyword\">ειδοποιήσεις</span> για να δείτε αλληλεπιδράσεις και αποτελέσματα ελέγχου σχετικά με τις συνεισφορές σας.",
     "darkMode": "Εναλλαγή της τρέχουσας <span class=\"keyword\">λειτουργίας φωτισμού περιβάλλοντος</span>.",
     "language": "Αλλαγή <span class=\"keyword\">γλώσσας διεπαφής</span>.<br>Οι γλώσσες με <span class=\"keyword\">πλήρη υποστήριξη μετάφρασης</span> περιλαμβάνουν Αγγλικά, Απλοποιημένα Κινεζικά, Παραδοσιακά Κινεζικά, Ιαπωνικά, Κορεατικά, Γαλλικά, Γερμανικά, Ιταλικά, Ρωσικά, Ισπανικά, Ινδονησιακά, Πορτογαλικά, Ταϊλανδικά και Βιετναμέζικα.<br>Οι γλώσσες <span class=\"keyword\">Μόνο για UI</span> περιλαμβάνουν Αραβικά, Μαλαϊκά, Πολωνικά, Σουηδικά, Ελληνικά, Χίντι, Ουκρανικά και Τουρκικά.",
-    "announcement": "Δείτε τις πρόσφατες <span class=\"keyword\">ανακοινώσεις του ιστότοπου</span> και σημαντικές ενημερώσεις λειτουργιών.",
+    "announcement": "Δείτε τις πρόσφατες <span class=\"keyword\">ανακοινώσεις του ιστότοπου</span>. Ενημερώσεις στους όρους και την πολιτική απορρήτου θα δημοσιεύονται επίσης εδώ.",
     "help": "Επανεκκίνηση αυτού του <span class=\"keyword\">οδηγού</span>.",
-    "settings": "Ανοίξτε τις <span class=\"keyword\">Προτιμήσεις</span> για να διαχειριστείτε τη διεπαφή, τον χάρτη, το θέμα, τις συντομεύσεις πληκτρολογίου και τα τοπικά δεδομένα.",
+    "settings": "Ανοίξτε τις <span class=\"keyword\">Προτιμήσεις</span> για να ελέγξετε ποιον τοπικό χώρο αποθήκευσης χρησιμοποιεί ο χάρτης για να θυμάται τις ενέργειές σας.",
     "locator": "Πατήστε <span class=\"keyword\">Συγχρονισμός θέσης</span> για να εμφανίσετε την τρέχουσα θέση σας στο παιχνίδι πάνω στον χάρτη.<br>Αφού συνδέσετε τον λογαριασμό παιχνιδιού, μπορείτε επίσης να ανοίξετε τις ρυθμίσεις παρακολούθησης και να προσαρμόσετε την ανίχνευση σημείων.",
     "regionSwitch": "Κάντε κλικ για εναλλαγή μεταξύ <span class=\"keyword\">διαφορετικών χαρτών sandbox</span> (κύριων περιοχών) στο παιχνίδι.",
     "subregionSwitch": "<span class=\"keyword\">Αιωρήστε τον κέρσορα πάνω από το εικονίδιο της κύριας περιοχής</span> για να εμφανίσετε τις διαθέσιμες υποπεριοχές.<br>Ομοίως, μπορείτε επίσης να επιλέξετε ένα επίπεδο (layer) για μια περιοχή.",

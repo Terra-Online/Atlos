@@ -1,7 +1,7 @@
 {
   "headbar": {
-    "profile": "用户设置",
-    "auth": "注册 / 登录",
+    "profile": "User settings",
+    "auth": "Register / Log in",
     "hideUI": "隐藏界面",
     "notification": "通知",
     "darkmode": "切换到深色模式",
@@ -182,13 +182,13 @@
     }
   },
   "storage": {
-    "title": "数据与存储",
-    "calculating": "计算存储占用中…",
-    "policy": "<p>我们使用 Cookie 储存登录会话，使用 LocalStorage 储存偏好设置与点位进度，并使用 CacheStorage 缓存字体资源；这些储存可加速加载并支持部分离线使用。若清除本地存储，<span class=\"keyword\">下次访问可能需要更长时间以重载资源</span>；关闭网站存储后，网站<span class=\"keyword\">将无法自动保存本地偏好和点位进度</span>。</p><p>登录、点位贡献和位置同步等功能会按需向服务器发送相应数据；清除本地存储不会删除您的账号或服务器数据。</p>",
-    "filtersAndMarkers": "筛选器与点位数据",
-    "warning": "<p><strong>注意：</strong>清除本地存储会丢失本地登录状态、偏好设置与本地进度；下次访问需重载资源及再次登录。</p><p>如确认，请再次点击删除按钮。</p>",
-    "export": "导出数据",
-    "import": "导入数据"
+    "title": "Data & Storage",
+    "calculating": "Calculating storage usage...",
+    "policy": "<p>We use cookies to store your login session, LocalStorage for preferences and marker progress, and CacheStorage to cache fonts. This helps pages load faster and supports some offline use. If you clear local storage, <span class=\"keyword\">your next visit may take longer as resources are reloaded</span>; if you disable website storage, the website <span class=\"keyword\">will not be able to save local preferences and marker progress automatically</span>.</p><p>Features such as login, marker contributions, and location sync send the relevant data to the server as needed. Clearing local storage does not delete your account or server data.</p>",
+    "filtersAndMarkers": "Filters & Marker Data",
+    "warning": "<p><strong>Warning:</strong> Clearing storage removes your login state, preferences, and local progress. On your next visit, resources will need to reload and you will need to log in again.</p><p>To confirm, please click the delete button again.</p>",
+    "export": "Export Data",
+    "import": "Import Data"
   },
   "settings": {
     "title": "偏好设置",
@@ -232,7 +232,7 @@
   },
   "guide": {
     "tip": "指引提示",
-    "welcome": "欢迎使用 <span class=\"keyword\">Open Endfield Map</span>。<br>这是您首次使用本地图，若您遇到任何问题，请点击右上角的<span class=\"keyword\">帮助</span>按钮，我们将为您提供详细的功能引导。</p>",
+    "welcome": "欢迎使用 <span class=\"keyword\">OPEN ENDFIELD MAP</span>。<br>这是您首次使用本地图，若您遇到任何问题，请点击右上角的<span class=\"keyword\">帮助</span>按钮，我们将为您提供详细的功能引导。</p>",
     "sidebarToggle": "点击以展开<span class=\"keyword\">侧边栏</span>。<br>侧边栏包括您最常用的点位筛选器，以及与点位显示密切相关的开关。",
     "search": "您可以用<span class=\"keyword\">游戏本体支持的语言</span>搜索需要检视的点位，并且在搜索结果中选中它们。",
     "filterContainer": "同类型的点位会归类在同一个<span class=\"keyword\">筛选器</span>中。<br>点击以展开对应类型的点位列表。",
@@ -243,15 +243,15 @@
     "triggerSwitch": "单击切换开关状态。<br><ul><li><span class=\"keyword\">点位聚合模式</span>允许将密集点位合并显示；</li><li><span class=\"keyword\">地区边界显示</span>会高亮当前区域内每一个子区域以及其边界。</li><li><span class=\"keyword\">地区名称显示</span>会显示游戏内的地区名称。</li></ul>",
     "scale": "使用<span class=\"keyword\">缩放器</span>查看与操纵地图缩放。<br>滚轮或者触控板可用于缩放。您也可以通过点击<span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span>按钮或者缩放条的任意位置缩放。",
     "filterList": "<span class=\"keyword\">点位列表</span>列出了您已经选择的点位，单击图标即可取消选择。",
-    "headbar": "地图、账号和其他功能入口位于<span class=\"keyword\">顶栏</span>。",
-    "auth": "<span class=\"keyword\">注册</span>或<span class=\"keyword\">登录</span> OEM 账号，使用我们的在线功能。",
+    "headbar": "与地图设置有关的开关位于<span class=\"keyword\">顶栏</span>。",
+    "auth": "<span class=\"keyword\">Register</span> or <span class=\"keyword\">log in</span> to an OEM account to use our online features.",
     "hideUI": "<span class=\"keyword\">隐藏网站UI</span>以截图或查看边缘点位。",
     "notification": "打开<span class=\"keyword\">消息通知</span>，查看与您的贡献相关的互动消息和审核结果。",
     "darkMode": "切换当前的<span class=\"keyword\">环境光模式</span>。",
     "language": "切换<span class=\"keyword\">界面语言</span>。<br><span class=\"keyword\">完全支持游戏内容翻译</span>的语言有英语，简体中文，繁体中文，日语，韩语，法语，德语，意大利语，俄语，西班牙语，印度尼西亚语，葡萄牙语，泰语和越南语。<br><span class=\"keyword\">仅支持界面翻译</span>的语言包括阿拉伯语，马来语，波兰语和瑞典语。",
-    "announcement": "查看近期的<span class=\"keyword\">网站公告</span>及重要功能更新。",
+    "announcement": "查看近期的<span class=\"keyword\">网站公告</span>，用户协议等更新也会在此发布。",
     "help": "再次启动此<span class=\"keyword\">引导程序</span>。",
-    "settings": "打开<span class=\"keyword\">偏好设置</span>，管理界面、地图、主题、快捷键及本地数据。",
+    "settings": "打开<span class=\"keyword\">偏好设置</span>，您可以控制地图使用哪些本地储存与优化选项来贴合您的使用体验与习惯。",
     "locator": "点击<span class=\"keyword\">位置同步</span>按钮，可以根据您的游戏内位置在地图上显示当前位置。<br>绑定游戏账号后，您还可以进入配置面板调整点位追踪范围。",
     "regionSwitch": "点击切换游戏内<span class=\"keyword\">不同的箱庭地图</span>（主区域）。",
     "subregionSwitch": "鼠标<span class=\"keyword\">悬浮于主区域图标</span>可显示可用的子区域，单击子区域图标会跳转到该子区域视图。<br>同理，您也可选择某区域的图层。",
