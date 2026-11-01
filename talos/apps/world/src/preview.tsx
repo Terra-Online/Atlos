@@ -143,6 +143,9 @@ export const Preview = ({
                 };
             }
             const ground = groundSample.height;
+            // Share the cached terrain query with adaptive movement. Below-ground
+            // cameras stay slow; scenes without terrain use the selected floor.
+            viewer.controls.groundHeight = ground ?? target.position[1];
             const sample: Sample = {
                 point: target,
                 tracking: selected !== null,
@@ -274,6 +277,7 @@ export const Preview = ({
                             crossing.reset();
                         }
                         preparing = target;
+                        viewer.controls.groundHeight = target.position[1];
                         minimap();
                         setStatus('Opening scene…');
                         const key = `${target.scene}/${pack.generation}`;
@@ -588,6 +592,7 @@ export const Preview = ({
             channel.current?.close();
             channel.current = null;
             map?.destroy();
+            viewer.controls.groundHeight = null;
             navigate.current = () => {};
         };
     }, [viewer, launch, reply, apply]);

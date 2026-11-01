@@ -143,3 +143,10 @@ saved position. Explicit incoming point/region requests take priority over resto
 Writes are coalesced at 500 ms, deduplicated, and flushed on page hide; transient scene loads and
 automatic flights do not overwrite the last stable view. Invalid/blocked storage is optional and
 never blocks opening World. This is one last view per origin, not a per-point history.
+
+Free-flight movement shares the minimap's cached ground sample (100 ms), falling back to the
+selected floor elevation where terrain is unavailable. With the default speed trim, cruise eases
+from 10 m/s within 5 m of ground to 50 m/s at 100 m clearance. Ctrl+wheel still adjusts the stored
+speed trim; ordinary cruise stays capped at 50 m/s. Hold Tab/Alt for one-fifth speed or right mouse
+for fivefold boost; slow takes priority when both are held. UI Tab focus navigation remains
+available outside flight. Automatic point/overview flight timings are unchanged.
