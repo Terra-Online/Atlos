@@ -30,6 +30,10 @@ rejected. Missing or above-camera terrain uses the selected point's height. Floo
 Camera following shares the main map's subpixel and continuous-view updates, retaining loaded and
 pending tiles during fractional zoom. Cursor heading comes from unrounded transformed coordinates,
 preserves the last planar heading during a vertical look, and crosses the angle wrap by the short arc.
+Incoming camera samples coalesce to the latest sample per animation frame; the static target is
+positioned only when selected. The cursor follows headings immediately and stops its initial pulse
+after the first movement or turn. A validated `minimap-target` message can start tiles and target
+artwork while the 3D package is still loading; the camera cursor appears after the first real pose.
 
 For local testing, run the main map, `pnpm --filter @atlos/minimap dev`, and noclip's Vite server.
 Point the two environment variables at that server and its `/oem/<release>/index.json` before starting

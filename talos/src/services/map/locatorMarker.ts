@@ -18,6 +18,13 @@ export const createTrackerMarker = (pane: string, latLng: L.LatLng): L.Marker =>
 
 const bearings = new WeakMap<L.Marker, number>();
 
+export const stopTrackerPulse = (marker: L.Marker): void => {
+    marker
+        .getElement()
+        ?.querySelector(`.${styles.trackerMarkerInner}`)
+        ?.classList.remove(styles.pulsing);
+};
+
 export const setTrackerBearing = (marker: L.Marker, angleDeg: number): void => {
     const image = marker
         .getElement()

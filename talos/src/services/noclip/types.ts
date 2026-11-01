@@ -16,11 +16,7 @@ export const isCameraView = (v: unknown): v is CameraView =>
     typeof v.aspect === 'number' &&
     Number.isFinite(v.aspect) &&
     v.aspect > 0;
-export interface Preset {
-    id: string;
-    label: string;
-    satisfies: boolean;
-}
+/** Location-only camera target; legacy messages may contain additional companion fields. */
 export interface Point {
     id: string;
     scene: string;
@@ -29,10 +25,12 @@ export interface Point {
     subregion: string;
     tier: number;
     position: [number, number, number];
-    condition: { alternatives: { control: string; mask: number }[][] } | null;
-    locks: { kind: string; quests: string[]; games: string[] }[];
-    unknown: string[];
-    presets: Preset[];
+}
+export interface CameraSample {
+    point: Point;
+    position: [number, number, number];
+    forward: [number, number, number];
+    view?: CameraView;
 }
 export interface Catalog {
     format: 'oem-noclip';
@@ -55,38 +53,13 @@ export const isPoint = (v: unknown): v is Point =>
     typeof v.region === 'string' &&
     typeof v.subregion === 'string' &&
     Number.isInteger(v.tier) &&
+    vector(v.position);
+export const isCameraSample = (v: unknown): v is CameraSample =>
+    record(v) &&
+    isPoint(v.point) &&
     vector(v.position) &&
-    Array.isArray(v.presets) &&
-    v.presets.every(
-        (p) =>
-            record(p) &&
-            typeof p.id === 'string' &&
-            typeof p.label === 'string' &&
-            typeof p.satisfies === 'boolean',
-    ) &&
-    Array.isArray(v.unknown) &&
-    v.unknown.every((u) => typeof u === 'string') &&
-    Array.isArray(v.locks) &&
-    v.locks.every(
-        (l) =>
-            record(l) &&
-            typeof l.kind === 'string' &&
-            Array.isArray(l.quests) &&
-            Array.isArray(l.games),
-    ) &&
-    (v.condition === null ||
-        (record(v.condition) &&
-            Array.isArray(v.condition.alternatives) &&
-            v.condition.alternatives.every(
-                (a) =>
-                    Array.isArray(a) &&
-                    a.every(
-                        (r) =>
-                            record(r) &&
-                            typeof r.control === 'string' &&
-                            Number.isInteger(r.mask),
-                    ),
-            )));
+    vector(v.forward) &&
+    (v.view === undefined || isCameraView(v.view));
 export const isPreviewOrigin = (origin: string): boolean => {
     try {
         const url = new URL(origin);

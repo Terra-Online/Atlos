@@ -14,17 +14,18 @@ import { setMarkerState } from '@/services/map/core/canvas/markerModel';
 import {
     createTrackerMarker,
     setTrackerBearing,
+    stopTrackerPulse,
 } from '@/services/map/locatorMarker';
 import { convertEFPosition } from '@/services/endfield/locatorTransform';
 import { getLayerByTier, getLayerTileSuffix } from '@/store/layer';
 import {
-    isCameraView,
+    isCameraSample,
     isPoint,
     isPreviewOrigin,
     record,
-    vector,
     VERSION,
     type Point,
+    type CameraSample,
 } from '@/services/noclip/types';
 import { minimapZoom, minimapBearing } from '@/services/noclip/view';
 
@@ -32,6 +33,7 @@ const parameters = new URL(location.href).searchParams;
 const origin = parameters.get('previewOrigin') || '';
 const session = parameters.get('session') || '';
 const element = document.getElementById('map')!;
+type Sample = CameraSample & { tracking: boolean };
 if (isPreviewOrigin(origin) && window.parent !== window) {
     const map = prepareContinuousMap(
         L.map(element, {
@@ -55,7 +57,11 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
         targetPoint: Point | null = null;
     let tiles: L.TileLayer[] = [],
         sceneKey = '';
-    let latestCamera: MessageEvent<unknown> | null = null;
+    let latestCamera: Sample | null = null,
+        previousCamera: CameraSample | null = null,
+        frame: number | null = null,
+        cursorMoved = false,
+        unitsPerMeter = 1;
     const position = (point: Point, v: readonly number[]) =>
         convertEFPosition({
             mapId: point.scene,
@@ -63,28 +69,15 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
             pos: { x: v[0], y: v[1], z: v[2] },
             isOnline: true,
         });
-    const receive = (event: MessageEvent<unknown>) => {
-        const d = event.data;
-        if (
-            event.origin !== origin ||
-            event.source !== window.parent ||
-            !record(d) ||
-            d.version !== VERSION ||
-            d.session !== session ||
-            d.type !== 'camera' ||
-            !isPoint(d.point) ||
-            !vector(d.position) ||
-            !vector(d.forward) ||
-            (d.view !== undefined && !isCameraView(d.view))
-        )
-            return;
+    const draw = () => {
+        frame = null;
+        const d = latestCamera;
+        if (!d) return;
         const point = d.point,
             forwardVector = d.forward,
             region = REGION_DICT[point.region];
         if (!region) return;
-        latestCamera = event;
-        const p = position(point, d.position),
-            t = position(point, point.position);
+        const p = position(point, d.position);
         const key = `${point.region}/${point.tier}`;
         if (sceneKey !== key) {
             tiles.forEach((tile) => tile.remove());
@@ -103,38 +96,22 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
                 );
             sceneKey = key;
         }
-        let zoom = 3;
-        if (isCameraView(d.view)) {
-            const x = position(point, [
-                    d.position[0] + 1,
-                    d.position[1],
-                    d.position[2],
+        if (targetPoint?.id !== point.id) {
+            const t = position(point, point.position),
+                x = position(point, [
+                    point.position[0] + 1,
+                    point.position[1],
+                    point.position[2],
                 ]),
                 z = position(point, [
-                    d.position[0],
-                    d.position[1],
-                    d.position[2] + 1,
-                ]),
-                size = map.getSize();
-            zoom = minimapZoom({
-                altitude: d.position[1] - d.view.groundY,
-                down: -forwardVector[1],
-                fovY: d.view.fovY,
-                aspect: d.view.aspect,
-                width: size.x,
-                height: size.y,
-                unitsPerMeter: Math.max(
-                    Math.hypot(x.mapX - p.mapX, x.mapZ - p.mapZ),
-                    Math.hypot(z.mapX - p.mapX, z.mapZ - p.mapZ),
-                ),
-            });
-        }
-        setContinuousView(map, L.latLng(p.mapZ, p.mapX), zoom);
-        if (!map.hasLayer(tracker)) {
-            tracker.addTo(map);
-        }
-        tracker.setLatLng([p.mapZ, p.mapX]);
-        if (targetPoint?.id !== point.id) {
+                    point.position[0],
+                    point.position[1],
+                    point.position[2] + 1,
+                ]);
+            unitsPerMeter = Math.max(
+                Math.hypot(x.mapX - t.mapX, x.mapZ - t.mapZ),
+                Math.hypot(z.mapX - t.mapX, z.mapZ - t.mapZ),
+            );
             targetPoint = point;
             target?.remove();
             target = null;
@@ -155,7 +132,46 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
                     console.error('Unable to load preview target icon', error);
                 });
         }
-        target?.setLatLng([t.mapZ, t.mapX]);
+        const size = map.getSize();
+        const zoom = d.view
+            ? minimapZoom({
+                  altitude: d.position[1] - d.view.groundY,
+                  down: -forwardVector[1],
+                  fovY: d.view.fovY,
+                  aspect: d.view.aspect,
+                  width: size.x,
+                  height: size.y,
+                  unitsPerMeter,
+              })
+            : 3;
+        setContinuousView(map, L.latLng(p.mapZ, p.mapX), zoom);
+        if (!d.tracking) {
+            tracker.remove();
+            previousCamera = null;
+            return;
+        }
+        if (!map.hasLayer(tracker)) {
+            tracker.addTo(map);
+            if (cursorMoved) stopTrackerPulse(tracker);
+        }
+        const cameraPosition = L.latLng(p.mapZ, p.mapX);
+        if (!tracker.getLatLng().equals(cameraPosition))
+            tracker.setLatLng(cameraPosition);
+        const previous = previousCamera;
+        if (
+            !cursorMoved &&
+            previous &&
+            (d.position.some(
+                (v, i) => Math.abs(v - previous.position[i]) > 1e-5,
+            ) ||
+                d.forward.some(
+                    (v, i) => Math.abs(v - previous.forward[i]) > 1e-5,
+                ))
+        ) {
+            stopTrackerPulse(tracker);
+            cursorMoved = true;
+        }
+        previousCamera = d;
         const horizontal = Math.hypot(forwardVector[0], forwardVector[2]);
         if (horizontal > 1e-6) {
             const forward = position(point, [
@@ -167,11 +183,46 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
             if (bearing !== null) setTrackerBearing(tracker, bearing);
         }
     };
+    const schedule = () => {
+        if (frame === null) frame = requestAnimationFrame(draw);
+    };
+    const receive = (event: MessageEvent<unknown>) => {
+        const d = event.data;
+        if (
+            event.origin !== origin ||
+            event.source !== window.parent ||
+            !record(d) ||
+            d.version !== VERSION ||
+            d.session !== session
+        )
+            return;
+        let sample: Sample;
+        if (d.type === 'camera' && isCameraSample(d)) {
+            sample = { ...d, tracking: true };
+        } else if (d.type === 'minimap-target' && isPoint(d.point)) {
+            sample = {
+                point: d.point,
+                position: d.point.position,
+                forward: [0, 0, 1],
+                tracking: false,
+            };
+        } else return;
+        if (
+            !Object.prototype.hasOwnProperty.call(
+                REGION_DICT,
+                sample.point.region,
+            )
+        )
+            return;
+        latestCamera = sample;
+        schedule();
+    };
     window.addEventListener('message', receive);
-    new ResizeObserver(() => {
+    const resize = new ResizeObserver(() => {
         map.invalidateSize({ animate: false });
-        if (latestCamera) receive(latestCamera);
-    }).observe(element);
+        if (latestCamera) schedule();
+    });
+    resize.observe(element);
     window.parent.postMessage(
         { version: VERSION, session, type: 'minimap-ready' },
         origin,
@@ -180,6 +231,8 @@ if (isPreviewOrigin(origin) && window.parent !== window) {
         'pagehide',
         () => {
             targetPoint = null;
+            if (frame !== null) cancelAnimationFrame(frame);
+            resize.disconnect();
             window.removeEventListener('message', receive);
             map.remove();
         },

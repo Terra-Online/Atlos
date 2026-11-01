@@ -1,6 +1,11 @@
 import L from 'leaflet';
 import { afterEach, beforeEach, expect, it } from 'vitest';
-import { createTrackerMarker, setTrackerBearing } from './locatorMarker';
+import {
+    createTrackerMarker,
+    setTrackerBearing,
+    stopTrackerPulse,
+} from './locatorMarker';
+import styles from './locatorMarker.module.scss';
 
 let host: HTMLDivElement;
 let map: L.Map;
@@ -22,6 +27,19 @@ const angle = () =>
             .querySelector('img')!
             .style.transform.match(/rotate\(([-\d.]+)deg\)/)?.[1],
     );
+
+it('can stop the initial locator pulse without changing the cursor or its heading', () => {
+    const inner = marker
+        .getElement()!
+        .querySelector(`.${styles.trackerMarkerInner}`)!;
+    expect(inner.classList.contains(styles.pulsing)).toBe(true);
+    setTrackerBearing(marker, 25);
+    stopTrackerPulse(marker);
+    stopTrackerPulse(marker);
+    expect(inner.classList.contains(styles.pulsing)).toBe(false);
+    expect(inner.querySelector('img')).not.toBeNull();
+    expect(angle()).toBeCloseTo(25);
+});
 
 it('rotates across the heading boundary by the shortest arc, in both directions', () => {
     setTrackerBearing(marker, 269);

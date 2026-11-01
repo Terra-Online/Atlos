@@ -13,3 +13,6 @@ body,
 .leaflet-control-container {
     display: none;
 }
+.leaflet-locator-pane img {
+    transition: none;
+}
