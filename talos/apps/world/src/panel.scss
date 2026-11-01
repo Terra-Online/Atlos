@@ -95,13 +95,37 @@ $section:
         cursor: pointer;
     }
     .world-panel-disclosure {
+        display: inline-flex;
         flex: 0 0 12px;
-        color: $primary-accent-4;
-        font-size: 14px;
+        width: 12px;
+        height: 12px;
         filter: drop-shadow(0 0 1px rgba($black-1, 0.5));
+    }
+    .world-panel-disclosure::before,
+    summary::before {
+        // The demo's four-point sparkle, with a fixed geometric center instead
+        // of a text glyph whose baseline and side bearings change the pivot.
+        content: '';
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        background: $primary-accent-4;
+        clip-path: polygon(
+            50% 0,
+            64% 36%,
+            100% 50%,
+            64% 64%,
+            50% 100%,
+            36% 64%,
+            0 50%,
+            36% 36%
+        );
+        transform: rotate(0deg);
+        transform-origin: 50% 50%;
         transition: transform 0.24s $presto-curve;
     }
-    .world-panel-heading[aria-expanded='true'] .world-panel-disclosure {
+    .world-panel-heading[aria-expanded='true'] .world-panel-disclosure::before,
+    details[open] > summary::before {
         transform: rotate(90deg);
     }
     .world-panel-actions {
@@ -199,8 +223,20 @@ $section:
         }
     }
     summary {
+        display: block;
         padding-block: 6px;
+        list-style: none;
         cursor: pointer;
+        &::marker {
+            content: '';
+        }
+        &::-webkit-details-marker {
+            display: none;
+        }
+        &::before {
+            margin-inline-end: 7px;
+            vertical-align: -1px;
+        }
     }
     legend {
         padding: 0;
@@ -328,7 +364,8 @@ $section:
     }
 }
 @media (prefers-reduced-motion: reduce) {
-    .world-panel-disclosure {
+    .world-panel-disclosure::before,
+    .world-panel summary::before {
         transition: none;
     }
 }

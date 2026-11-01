@@ -68,9 +68,7 @@ export function Panel({
                         <span
                             className='world-panel-disclosure'
                             aria-hidden='true'
-                        >
-                            ▸
-                        </span>
+                        />
                         <span>{title}</span>
                     </button>
                 </h2>
