@@ -177,4 +177,5 @@ retained separately for upstream work.
 Panel expansion follows the OEM-SDK demo's 240 ms height animation and easing. The body remains
 mounted, becomes non-interactive during collapse, and hides only after the animation. Retargeting
 starts at the displayed height; cancelled animations cannot hide a reopened panel. Reduced-motion
-preferences skip the height animation. The shared camera readout has no dark background layer.
+preferences skip the height animation. The shared camera readout retains its original dark backing.
+The right scrollport includes extra horizontal space for panel shadows without changing panel widths or screen positions.
