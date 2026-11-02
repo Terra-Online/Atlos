@@ -27,6 +27,7 @@ $section:
         scrollbar-width: thin;
     }
     .dock.bottom {
+        width: max-content;
         max-width: calc(100% - 660px);
     }
     .camera {
@@ -375,12 +376,16 @@ $section:
     .viewer-app.hosted-viewer .dock.right {
         width: min(336px, calc(100% - 112px));
         top: 236px;
-        max-height: calc(100% - 236px);
+        max-height: calc(100% - 336px);
     }
-    .hosted-viewer .dock.bottom {
+    .viewer-app.hosted-viewer .dock.bottom {
         max-width: calc(100% - 16px);
     }
-    .hosted-viewer .camera {
+    .viewer-app.hosted-viewer .camera {
         white-space: normal;
+
+        > p + p {
+            display: none;
+        }
     }
 }
