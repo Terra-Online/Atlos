@@ -19,6 +19,7 @@ import {
     type Catalog,
     type Companion,
     type Point,
+    type PointView,
 } from '@endfield-noclip/package-format/oem';
 import { completedProgressionPicks } from '@endfield-noclip/package-format/story';
 
@@ -54,6 +55,7 @@ export const Preview = ({
     const navigate = useRef<(request: Request) => void>(() => {});
     const [area, setArea] = useState({ region: 'Valley_4', subregion: '' });
     const channel = useRef<ReturnType<typeof connectWorld> | null>(null);
+    const [view, setView] = useState<PointView | null>(null);
     const [point, setPoint] = useState<Point | null>(null);
     const [metadata, setMetadata] = useState<Companion | null>(null);
     const [preset, setPreset] = useState('');
@@ -279,6 +281,7 @@ export const Preview = ({
                         preparing = target;
                         viewer.controls.groundHeight = target.position[1];
                         minimap();
+                        setView(null);
                         setStatus('Opening scene…');
                         const key = `${target.scene}/${pack.generation}`;
                         if (
@@ -382,11 +385,13 @@ export const Preview = ({
                         } else if (!streaming && pointTarget) {
                             setStatus('Finding a clear view…');
                             framing = new AbortController();
-                            await viewer.framePoint(
+                            const framed = await viewer.framePoint(
                                 target.position,
                                 framing.signal,
                                 { baked: target.view, animate },
                             );
+                            if (!desired && !abort.signal.aborted)
+                                setView(framed);
                         } else if (!streaming) {
                             viewer.flyToLevel(target.level);
                         }
@@ -615,6 +620,7 @@ export const Preview = ({
                 createPortal(
                     <PointConditions
                         viewer={viewer}
+                        view={view}
                         point={point}
                         companion={metadata}
                         preset={preset}

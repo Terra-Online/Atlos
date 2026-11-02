@@ -179,3 +179,10 @@ mounted, becomes non-interactive during collapse, and hides only after the anima
 starts at the displayed height; cancelled animations cannot hide a reopened panel. Reduced-motion
 preferences skip the height animation. The shared camera readout retains its original dark backing.
 The right scrollport includes extra horizontal space for panel shadows without changing panel widths or screen positions.
+
+For completed-profile point launches, a generation-bound obstruction preview can show the original
+state for 2.4 seconds after the camera flight arrives, then its authored result. The same panel offers original/result and replay.
+Only controls proven to block the selected point view are changed. Leaving the point, changing the
+preset or unmounting cancels playback; manual control edits take precedence. This displays settled
+states, not simulated destruction particles or gameplay. Missing packed destruction states remain
+explicitly unconfirmed context views.

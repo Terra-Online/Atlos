@@ -1,14 +1,20 @@
 import { conditionVisible } from '@endfield-noclip/package-format/conditions';
-import type { Companion, Point } from '@endfield-noclip/package-format/oem';
+import type {
+    Companion,
+    Point,
+    PointView,
+} from '@endfield-noclip/package-format/oem';
 
 import type { Viewer } from '@endfield-noclip/viewer/host';
 
 import { Panel, useViewerState } from '@endfield-noclip/viewer/host';
 import { useState } from 'react';
+import { InteractionPreview } from './interaction-preview';
 
 /** Prerequisites and story presets use the same host panel as the renderer controls. */
 export const PointConditions = ({
     viewer,
+    view,
     point,
     companion,
     preset,
@@ -16,6 +22,7 @@ export const PointConditions = ({
     onPreset,
 }: {
     viewer: Viewer;
+    view: PointView | null;
     point: Point;
     companion: Companion;
     preset: string;
@@ -68,6 +75,13 @@ export const PointConditions = ({
                     Turn toward the target before focusing on it.
                 </p>
             )}
+            {view?.interactions?.length ? (
+                <InteractionPreview
+                    viewer={viewer}
+                    view={view}
+                    enabled={!disabled && preset === 'completed'}
+                />
+            ) : null}
             {point.condition ? (
                 <div className='scene-choice'>
                     <span>Known story prerequisites</span>
@@ -112,10 +126,10 @@ export const PointConditions = ({
                         recorded prerequisite.
                     </p>
                 )}
-            {point.view && !point.view.clear && (
+            {view && !view.clear && (
                 <p className='muted small'>
-                    No unobstructed view was confirmed. The saved view keeps a
-                    usable inspection distance; the target marker remains
+                    No clear target view was confirmed. This view shows the
+                    surrounding enclosure or approach; the target marker remains
                     available.
                 </p>
             )}

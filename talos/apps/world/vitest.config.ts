@@ -4,7 +4,7 @@ export default defineConfig({
     resolve: { alias: { '@': resolve(import.meta.dirname, '../../src') } },
     test: {
         environment: 'jsdom',
-        include: ['apps/world/src/**/*.spec.ts'],
+        include: ['apps/world/src/**/*.spec.{ts,tsx}'],
         setupFiles: ['./vitest.setup.ts'],
     },
 });
