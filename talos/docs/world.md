@@ -150,3 +150,16 @@ from 10 m/s within 5 m of ground to 50 m/s at 100 m clearance. Ctrl+wheel still 
 speed trim; ordinary cruise stays capped at 50 m/s. Hold Tab/Alt for one-fifth speed or right mouse
 for fivefold boost; slow takes priority when both are held. UI Tab focus navigation remains
 available outside flight. Automatic point/overview flight timings are unchanged.
+
+## Photography
+
+The renderer's Photography panel uses the same World panel shell and inherited fonts. Aperture
+(f/1.4–f/32), focus distance and the depth-of-field toggle are saved in the existing `world-view`
+record alongside FOV; older records retain the defaults for these optional settings. Preview's
+“Focus on target” action sets the focus plane through the selected point and enables depth of
+field. A target behind the camera produces a message instead of changing focus. The scene must
+be active before this action is available.
+
+The v49 renderer includes physical foreground/background defocus and water depth, without adding
+scene-package downloads. Moving-object motion and after-DoF transparent classification still
+differ from the game; see the renderer's photography notes before claiming image parity.

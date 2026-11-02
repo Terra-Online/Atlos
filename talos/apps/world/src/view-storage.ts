@@ -20,6 +20,8 @@ export interface SavedView {
 const KEY = 'world-view';
 const ranges: Record<string, readonly [number, number]> = {
     exposure: [-4, 4],
+    aperture: [1.4, 32],
+    focusDistance: [0.1, 10000],
     renderScale: [0.5, 1],
     maxSse: [1, 64],
     terrainPixels: [0.5, 16],
@@ -37,7 +39,7 @@ const bounded = (value: unknown, min: number, max: number): value is number =>
 /** Only portable display preferences; environment IDs and story picks belong to a scene. */
 export function displayOptions(
     value: unknown,
-    defaults: Options,
+    defaults: Partial<Options>,
 ): Partial<Options> {
     if (!record(value)) return {};
     const entries = Object.entries(defaults).flatMap<[string, unknown]>(
@@ -79,7 +81,7 @@ export function displayOptions(
     return Object.fromEntries(entries) as Partial<Options>;
 }
 
-export function readView(defaults: Options): SavedView | null {
+export function readView(defaults: Partial<Options>): SavedView | null {
     try {
         const value: unknown = JSON.parse(localStorage.getItem(KEY) ?? 'null');
         if (

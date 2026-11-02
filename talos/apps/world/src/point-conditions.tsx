@@ -4,6 +4,7 @@ import type { Companion, Point } from '@endfield-noclip/package-format/oem';
 import type { Viewer } from '@endfield-noclip/viewer/host';
 
 import { Panel, useViewerState } from '@endfield-noclip/viewer/host';
+import { useState } from 'react';
 
 /** Prerequisites and story presets use the same host panel as the renderer controls. */
 export const PointConditions = ({
@@ -22,6 +23,7 @@ export const PointConditions = ({
     onPreset: (id: string) => void;
 }) => {
     useViewerState(viewer);
+    const [focusError, setFocusError] = useState<string | null>(null);
     const requirement = (id: string, mask: number): string => {
         const control = companion.controls.find((c) => c.id === id);
         const name = companion.labels['en-US']?.[id] ?? control?.name ?? id;
@@ -37,15 +39,35 @@ export const PointConditions = ({
             label='point prerequisites'
             className='scene-controls oem-point-conditions'
             actions={
-                <button
-                    type='button'
-                    disabled={disabled}
-                    onClick={() => onPreset('completed')}
-                >
-                    Reset
-                </button>
+                <>
+                    <button
+                        type='button'
+                        disabled={disabled}
+                        onClick={() =>
+                            setFocusError(
+                                viewer.focusAt(point.position)
+                                    ? null
+                                    : point.id,
+                            )
+                        }
+                    >
+                        Focus on target
+                    </button>
+                    <button
+                        type='button'
+                        disabled={disabled}
+                        onClick={() => onPreset('completed')}
+                    >
+                        Reset
+                    </button>
+                </>
             }
         >
+            {focusError === point.id && (
+                <p className='muted small' role='status'>
+                    Turn toward the target before focusing on it.
+                </p>
+            )}
             {point.condition ? (
                 <div className='scene-choice'>
                     <span>Known story prerequisites</span>

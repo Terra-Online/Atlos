@@ -16,8 +16,10 @@ const defaults = {
     debugView: 'lit',
     hlodTiers: [true, true, true],
     environmentPin: null,
-    environmentEnabled: {},
-} as Viewer['options'];
+    depthOfField: false,
+    aperture: 32,
+    focusDistance: 10,
+} satisfies Partial<Viewer['options']>;
 const view: SavedView = {
     version: 1,
     route: '/0vQEA7m',
@@ -92,4 +94,22 @@ it('tolerates inaccessible storage', () => {
     });
     expect(readView(defaults)).toBeNull();
     expect(() => writeView(view)).not.toThrow();
+});
+
+it('persists photography in the existing view record and rejects invalid lens values', () => {
+    const options = { depthOfField: true, aperture: 1.4, focusDistance: 12.5 };
+    writeView({ ...view, options });
+    expect(readView(defaults)?.options).toEqual(options);
+    expect(
+        displayOptions(
+            { depthOfField: 'true', aperture: 0, focusDistance: Infinity },
+            defaults,
+        ),
+    ).toEqual({});
+    expect(
+        displayOptions({ aperture: 32, focusDistance: 10000 }, defaults),
+    ).toEqual({ aperture: 32, focusDistance: 10000 });
+    expect(
+        displayOptions({ aperture: 33, focusDistance: -1 }, defaults),
+    ).toEqual({});
 });
