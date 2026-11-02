@@ -163,3 +163,18 @@ be active before this action is available.
 The v49 renderer includes physical foreground/background defocus and water depth, without adding
 scene-package downloads. Moving-object motion and after-DoF transparent classification still
 differ from the game; see the renderer's photography notes before claiming image parity.
+
+
+## Game photo filters
+
+World accepts `VITE_WORLD_FILTERS_URL` for the optional library exported by the renderer's
+`filters` command. It passes the URL directly to the shared photo picker, so point URLs stay short.
+Serve the exported JSON as game content alongside scene assets, rather than bundling it into Pages.
+The picker uses the same World panel shell as scene and photography controls; exposure, tonemapping,
+bloom and vignette switches remain in Display settings. The renderer's `feat/filters` branch is
+retained separately for upstream work.
+
+Panel expansion follows the OEM-SDK demo's 240 ms height animation and easing. The body remains
+mounted, becomes non-interactive during collapse, and hides only after the animation. Retargeting
+starts at the displayed height; cancelled animations cannot hide a reopened panel. Reduced-motion
+preferences skip the height animation. The shared camera readout has no dark background layer.

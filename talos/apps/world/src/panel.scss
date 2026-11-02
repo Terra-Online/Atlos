@@ -31,6 +31,9 @@ $section:
         max-width: calc(100% - 660px);
     }
     .camera {
+        background: transparent;
+        border: 0;
+        backdrop-filter: none;
         white-space: normal;
     }
 }
@@ -43,6 +46,8 @@ $section:
     color-scheme: light;
     pointer-events: auto;
     min-width: 0;
+    flex-shrink: 0;
+    overflow: hidden;
     border: 1px solid rgba($white-0, 0.78);
     border-radius: 6px;
     color: var(--text);
@@ -69,7 +74,7 @@ $section:
         padding: 6px 14px;
         border-bottom: 1px solid rgba($grey-2, 0.16);
     }
-    &:has(.panel-body[hidden]) .world-panel-header {
+    &:has(.world-panel-heading[aria-expanded='false']) .world-panel-header {
         border-bottom-color: transparent;
     }
     h2 {

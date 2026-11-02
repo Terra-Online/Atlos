@@ -21,6 +21,11 @@ void i18nInitPromise.then(() => {
             <StrictMode>
                 <PanelProvider component={Panel}>
                     <ViewerApp
+                        filtersUrl={
+                            import.meta.env.VITE_WORLD_FILTERS_URL as
+                                | string
+                                | undefined
+                        }
                         overlay={(viewer, panelRoot) => (
                             <Preview
                                 viewer={viewer}
