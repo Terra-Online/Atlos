@@ -35,8 +35,8 @@
   },
   "detail": {
     "noclip": {
-      "title": "Preview",
-      "open": "Open 3D preview"
+      "title": "Scene preview",
+      "open": "View location in the 3D scene"
     },
     "stat": {
       "world": "World",

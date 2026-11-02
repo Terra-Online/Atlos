@@ -35,8 +35,8 @@
   },
   "detail": {
     "noclip": {
-      "title": "Preview",
-      "open": "打开 3D 预览"
+      "title": "场景预览",
+      "open": "在3D场景中查看位置"
     },
     "stat": {
       "world": "世界",
