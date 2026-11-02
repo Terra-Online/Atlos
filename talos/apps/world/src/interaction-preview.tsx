@@ -65,7 +65,7 @@ export function InteractionPreview({
                     } else {
                         timer = setTimeout(() => {
                             if (ownsState()) apply(true);
-                        }, 2400);
+                        }, 800);
                     }
                 };
                 waitForArrival();

@@ -65,7 +65,7 @@ it('shows original then result, supports replay, and cancels/restores on leaving
         <InteractionPreview viewer={viewer} view={view} enabled />,
     );
     expect(picks).toEqual({ unrelated: 7, 'door:1': 0 });
-    act(() => vi.advanceTimersByTime(2400));
+    act(() => vi.advanceTimersByTime(800));
     expect(picks['door:1']).toBe(1);
     fireEvent.click(screen.getByRole('button', { name: 'Replay' }));
     expect(picks['door:1']).toBe(0);
@@ -102,7 +102,7 @@ it('waits for camera arrival before showing the result', () => {
     expect(picks['door:1']).toBe(0);
     flying.mockReturnValue(false);
     act(() => vi.advanceTimersByTime(100));
-    act(() => vi.advanceTimersByTime(2399));
+    act(() => vi.advanceTimersByTime(799));
     expect(picks['door:1']).toBe(0);
     act(() => vi.advanceTimersByTime(1));
     expect(picks['door:1']).toBe(1);
