@@ -34,6 +34,12 @@ then applies sprint entry requirements and recovery scheduling. Work is bounded
 and the panel reports truncated searches. The candidate model requires game
 validation.
 
+Movement discovery groups all eligible interaction faces by ground component.
+Distance/height-guided region chains receive resumable local candidate-generation
+and trajectory-validation batches. Spatially diverse takeoffs and goal-directed
+3D landing queries cover intermediate box platforms and longer drops. Partial
+candidate coverage remains explicit after a feasible route has been found.
+
 Ground and route caches include the solver dependency identity and an immutable
 movement-export content fingerprint. Route caches also bind the actual arrival,
 target, interaction volume and exclusions. Restart the development server after

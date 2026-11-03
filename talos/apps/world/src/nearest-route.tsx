@@ -85,7 +85,7 @@ export default function NearestRoute({
                 );
             if (result.diagnostics?.traversal?.truncated)
                 summary.push(
-                    'Movement search · budget reached; coverage is partial',
+                    'Movement search · candidate coverage is partial',
                 );
             if (result.route?.locomotion?.search?.truncated)
                 summary.push('Sprint scheduling · search budget reached');
