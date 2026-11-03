@@ -278,7 +278,7 @@ test(
                     approximations: ['sphere-envelope'],
                 },
             };
-            await writeFile(config, JSON.stringify({ result: fixture }));
+            await writeFile(config, JSON.stringify({ result: fixture, routeCost: 1 }));
             await writeFile(
                 join(extractor, 'packages/extractor/src/cli.ts'),
                 `
@@ -378,7 +378,7 @@ test(
             assert.equal(result.body.status, 'candidate');
             assert.match(
                 result.body.coverage,
-                /Physical collision ground tiles/,
+                /Physical collision ground/,
             );
             assert.deepEqual(result.body.coverageDetails.remaining, [
                 'interactive-prefabs',
@@ -392,6 +392,11 @@ test(
                 ),
             );
             result = await request({ x: '6.5' });
+            const secondDeadline = Date.now() + 3000;
+            while (result.body.status === 'building-ground' && Date.now() < secondDeadline) {
+                await new Promise((resolve) => setTimeout(resolve, 25));
+                result = await request({ x: '6.5' });
+            }
             assert.equal(result.body.status, 'candidate');
             assert.equal(result.body.route.points.at(-1)[0], 6.5);
             assert.equal(await readFile(config + '.runs', 'utf8'), 'run\n');

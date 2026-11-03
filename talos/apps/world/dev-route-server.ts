@@ -619,8 +619,8 @@ export function routeServer(
                         sample.data.bounds &&
                         contains(sample.data.bounds, anchor.position) &&
                         contains(sample.data.bounds, target);
+                    // Built tiles are planned in the extractor child so route polling stays responsive.
                     const attempts = [
-                        ...(built ? [built] : []),
                         ...(usePhysical ? [sample] : []),
                         indexed,
                     ];
@@ -800,11 +800,9 @@ export function routeServer(
                     }
                     for (const selected of fallback ? [] : attempts) {
                         const coverage =
-                            selected === built
-                                ? 'Physical collision ground tiles; incomplete player coverage'
-                                : selected === sample
-                                  ? 'Physical collision ground sample; incomplete player coverage'
-                                  : 'AI NavMesh base state / area 0; incomplete player coverage';
+                            selected === sample
+                                ? 'Physical collision ground sample; incomplete player coverage'
+                                : 'AI NavMesh base state / area 0; incomplete player coverage';
                         coverageAttempts.push(coverage);
                         let previousCount = -1;
                         for (const margin of [64, 128, 256]) {
