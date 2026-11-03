@@ -51,6 +51,11 @@ export const Preview = ({
     launch: Launch;
     panelRoot: HTMLElement | null;
 }) => {
+    const routePreview = useRef(
+        import.meta.env.DEV
+            ? new URL(location.href).searchParams.get('routePreview')
+            : null,
+    );
     const mapRoot = useRef<HTMLDivElement>(null);
     const navigate = useRef<(request: Request) => void>(() => {});
     const [area, setArea] = useState({ region: 'Valley_4', subregion: '' });
@@ -435,6 +440,11 @@ export const Preview = ({
                             : new URLSearchParams({
                                   region: target.subregion,
                               }).toString();
+                        if (routePreview.current)
+                            url.searchParams.set(
+                                'routePreview',
+                                routePreview.current,
+                            );
                         url.hash = '';
                         history.replaceState(null, '', url);
                         setStatus('');

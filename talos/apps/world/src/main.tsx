@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { ViewerApp, PanelProvider } from '@endfield-noclip/viewer/host';
 import '@endfield-noclip/viewer/style.css';
@@ -9,6 +9,11 @@ import { i18nInitPromise } from '@/locale';
 import { Panel } from './panel';
 import { Preview } from './preview';
 import { readLaunch } from './route';
+
+const routePreview = new URL(location.href).searchParams.get('routePreview');
+const RouteInspection = import.meta.env.DEV
+    ? lazy(() => import('./route-inspection'))
+    : null;
 
 const root = createRoot(document.getElementById('root')!);
 void i18nInitPromise.then(() => {
@@ -27,11 +32,22 @@ void i18nInitPromise.then(() => {
                                 | undefined
                         }
                         overlay={(viewer, panelRoot) => (
-                            <Preview
-                                viewer={viewer}
-                                launch={launch}
-                                panelRoot={panelRoot}
-                            />
+                            <>
+                                <Preview
+                                    viewer={viewer}
+                                    launch={launch}
+                                    panelRoot={panelRoot}
+                                />
+                                {RouteInspection && (
+                                    <Suspense fallback={null}>
+                                        <RouteInspection
+                                            viewer={viewer}
+                                            source={routePreview}
+                                            panelRoot={panelRoot}
+                                        />
+                                    </Suspense>
+                                )}
+                            </>
                         )}
                     />
                 </PanelProvider>

@@ -1,0 +1,323 @@
+import { useEffect, useRef, useState } from 'react';
+import { Panel, type Viewer } from '@endfield-noclip/viewer/host';
+import { createPortal } from 'react-dom';
+import { sampleJourney, type Route, type Vec3 } from '@oem/ganglia';
+import './route-inspection.css';
+
+type Candidate = {
+    version: 1;
+    scene: string;
+    level: string;
+    source: { buildGuid: string; contentHash: string };
+    title: string;
+    status: 'candidate';
+    overview?: { position: Vec3; yaw: number; pitch: number; fovY: number };
+    route: Extract<Route, { status: 'complete' }>;
+    markers: { label: string; position: Vec3 }[];
+};
+const dot = (a: number[], b: number[]) =>
+    a.reduce((s, v, i) => s + v * b[i], 0);
+
+/** Development-only inspection of local candidate trajectories, never a verified route result. */
+export default function RouteInspection({
+    viewer,
+    source,
+    panelRoot,
+}: {
+    viewer: Viewer;
+    source: string | null;
+    panelRoot: HTMLElement | null;
+}) {
+    const canvas = useRef<HTMLCanvasElement>(null);
+    const [data, setData] = useState<Candidate | null>(null);
+    const [error, setError] = useState('');
+    const [playing, setPlaying] = useState(false);
+    const [seconds, setSeconds] = useState(0);
+    const time = useRef(0);
+    const [visible, setVisible] = useState(true);
+    useEffect(() => {
+        if (!source) return;
+        const abort = new AbortController();
+        void (async () => {
+            const url = new URL(source, location.href);
+            if (
+                url.origin !== location.origin ||
+                !url.pathname.startsWith('/oem/')
+            )
+                throw new Error('路线预览只读取本地 /oem/ 数据');
+            const response = await fetch(url, { signal: abort.signal });
+            if (!response.ok) throw new Error('无法读取候选路线');
+            const value: Candidate = await response.json();
+            const vector = (p: number[]) =>
+                Array.isArray(p) && p.length === 3 && p.every(Number.isFinite);
+            if (
+                value.version !== 1 ||
+                value.status !== 'candidate' ||
+                !value.source ||
+                !Array.isArray(value.markers) ||
+                value.markers.some((m) => !vector(m.position)) ||
+                value.route?.status !== 'complete' ||
+                !Number.isFinite(value.route.cost) ||
+                value.route.cost <= 0 ||
+                !Array.isArray(value.route.points) ||
+                !value.route.points.length ||
+                value.route.points.some((p) => !vector(p)) ||
+                !Array.isArray(value.route.segments) ||
+                !value.route.segments.length ||
+                value.route.segments.some(
+                    (s) =>
+                        !['walk', 'jump', 'drop', 'rope', 'launch'].includes(
+                            s.mode,
+                        ) ||
+                        !Array.isArray(s.points) ||
+                        s.points.length < 2 ||
+                        s.points.some((p) => !vector(p)) ||
+                        !Array.isArray(s.times) ||
+                        s.times.length !== s.points.length ||
+                        s.times[0] !== 0 ||
+                        s.times.some(
+                            (t, i) =>
+                                !Number.isFinite(t) ||
+                                t < 0 ||
+                                (i > 0 && t < s.times[i - 1]),
+                        ),
+                )
+            )
+                throw new Error('候选路线格式错误');
+            if (!abort.signal.aborted) setData(value);
+        })().catch((e) => {
+            if (!abort.signal.aborted) setError(String(e));
+        });
+        return () => abort.abort();
+    }, [source]);
+    useEffect(() => {
+        if (!data || !canvas.current) return;
+        let frame = 0,
+            previous = performance.now(),
+            lastReadout = 0;
+        const element = canvas.current;
+        const context = element.getContext('2d');
+        if (!context) return;
+        const draw = (now: number) => {
+            const dt = Math.min((now - previous) / 1000, 0.1);
+            previous = now;
+            if (playing) time.current = (time.current + dt) % data.route.cost;
+            if (now - lastReadout > 100) {
+                setSeconds(time.current);
+                lastReadout = now;
+            }
+            const w = innerWidth,
+                h = innerHeight,
+                dpr = devicePixelRatio;
+            if (
+                element.width !== Math.round(w * dpr) ||
+                element.height !== Math.round(h * dpr)
+            ) {
+                element.width = Math.round(w * dpr);
+                element.height = Math.round(h * dpr);
+            }
+            context.setTransform(dpr, 0, 0, dpr, 0, 0);
+            context.clearRect(0, 0, w, h);
+            const manifest = viewer.scene?.pkg.manifest;
+            const matches =
+                manifest?.scene.id === data.scene &&
+                viewer.level === data.level &&
+                manifest.source.buildGuid === data.source.buildGuid &&
+                manifest.source.contentHash === data.source.contentHash;
+            if (visible && matches) {
+                const camera = viewer.camera,
+                    f = h / (2 * Math.tan(camera.fovY / 2));
+                const space = (p: Vec3) => {
+                    const delta = p.map((v, i) => v - camera.position[i]);
+                    return [
+                        dot(delta, camera.right()),
+                        dot(delta, camera.up()),
+                        dot(delta, camera.forward()),
+                    ];
+                };
+                const screen = (p: number[]) => [
+                    w / 2 + (f * p[0]) / p[2],
+                    h / 2 - (f * p[1]) / p[2],
+                ];
+                const stroke = (a: Vec3, b: Vec3) => {
+                    let p = space(a),
+                        q = space(b);
+                    // Clip in camera space so a behind-camera endpoint cannot draw across the screen.
+                    if (p[2] < 0.1 && q[2] < 0.1) return;
+                    if (p[2] < 0.1) {
+                        const t = (0.1 - p[2]) / (q[2] - p[2]);
+                        p = p.map((v, i) => v + t * (q[i] - v));
+                    }
+                    if (q[2] < 0.1) {
+                        const t = (0.1 - q[2]) / (p[2] - q[2]);
+                        q = q.map((v, i) => v + t * (p[i] - v));
+                    }
+                    const x = screen(p),
+                        y = screen(q);
+                    context.beginPath();
+                    context.moveTo(x[0], x[1]);
+                    context.lineTo(y[0], y[1]);
+                    context.lineCap = 'round';
+                    context.lineJoin = 'round';
+                    context.lineWidth = 7;
+                    context.strokeStyle = 'rgba(53, 172, 255, .12)';
+                    context.stroke();
+                    context.lineWidth = 3;
+                    context.strokeStyle = 'rgba(89, 199, 255, .6)';
+                    context.stroke();
+                    context.lineWidth = 1.25;
+                    context.strokeStyle = '#e3f8ff';
+                    context.stroke();
+                };
+                for (const segment of data.route.segments)
+                    for (let i = 1; i < segment.points.length; i++)
+                        stroke(segment.points[i - 1], segment.points[i]);
+                const mark = (p: Vec3, label: string, color: string) => {
+                    const local = space(p);
+                    if (local[2] < 0.1) return;
+                    const [x, y] = screen(local);
+                    context.beginPath();
+                    context.moveTo(x, y - 5);
+                    context.lineTo(x + 5, y);
+                    context.lineTo(x, y + 5);
+                    context.lineTo(x - 5, y);
+                    context.closePath();
+                    context.fillStyle = color;
+                    context.fill();
+                    context.lineWidth = 2;
+                    context.strokeStyle = '#18212c';
+                    context.stroke();
+                    context.font = 'bold 14px sans-serif';
+                    context.lineWidth = 4;
+                    context.strokeText(label, x + 10, y - 9);
+                    context.fillStyle = '#fff';
+                    context.fillText(label, x + 10, y - 9);
+                };
+                for (const marker of data.markers)
+                    mark(marker.position, marker.label, '#fff');
+                mark(
+                    sampleJourney(data.route, time.current).position,
+                    '',
+                    '#8bd9ff',
+                );
+            }
+            frame = requestAnimationFrame(draw);
+        };
+        frame = requestAnimationFrame(draw);
+        return () => cancelAnimationFrame(frame);
+    }, [viewer, data, playing, visible]);
+    if (!source) return null;
+    const pose = (kind: 'side' | 'top') => {
+        if (!data || viewer.scene?.pkg.manifest.scene.id !== data.scene) return;
+        if (kind === 'side' && data.overview) {
+            const v = data.overview;
+            if (
+                v.position.length === 3 &&
+                v.position.every(Number.isFinite) &&
+                [v.yaw, v.pitch, v.fovY].every(Number.isFinite) &&
+                v.fovY > 0.1 &&
+                v.fovY < 3
+            ) {
+                viewer.camera.fovY = v.fovY;
+                viewer.controls.flyTo(v);
+                viewer.setOptions({});
+                return;
+            }
+        }
+        const points = data.route.points;
+        const min = [0, 1, 2].map((i) => Math.min(...points.map((p) => p[i])));
+        const max = [0, 1, 2].map((i) => Math.max(...points.map((p) => p[i])));
+        const center = min.map((v, i) => (v + max[i]) / 2);
+        const radius = Math.hypot(...max.map((v, i) => (v - min[i]) / 2));
+        const distance =
+            (radius /
+                Math.sin(
+                    Math.min(
+                        viewer.camera.fovY,
+                        2 *
+                            Math.atan(
+                                (Math.tan(viewer.camera.fovY / 2) *
+                                    innerWidth) /
+                                    innerHeight,
+                            ),
+                    ) / 2,
+                )) *
+            1.2;
+        const offset = kind === 'side' ? [1, 0.35, 0.35] : [0.05, 1, 0.05];
+        const scale = distance / Math.hypot(...offset);
+        const position = center.map((v, i) => v + offset[i] * scale) as Vec3;
+        const delta = center.map((v, i) => v - position[i]);
+        viewer.controls.flyTo({
+            position,
+            yaw: Math.atan2(delta[0], delta[2]),
+            pitch: Math.atan2(delta[1], Math.hypot(delta[0], delta[2])),
+        });
+    };
+    return (
+        <>
+            <canvas
+                ref={canvas}
+                className='route-inspection-canvas'
+                aria-label='候选路线三维投影'
+            />
+            {panelRoot &&
+                createPortal(
+                    <Panel
+                        title='路线预览'
+                        label='候选路线预览'
+                        className='route-inspection-panel'
+                        actions={
+                            <button
+                                type='button'
+                                disabled={!data}
+                                onClick={() => setVisible(!visible)}
+                            >
+                                {visible ? '隐藏' : '显示'}
+                            </button>
+                        }
+                    >
+                        <p>{data?.title ?? '加载中…'}</p>
+                        <p className='muted small'>
+                            候选路径 · 穿透显示 · 可达性待验证
+                        </p>
+                        {error && <p role='alert'>{error}</p>}
+                        {data && (
+                            <>
+                                <div className='world-panel-actions'>
+                                    <button onClick={() => pose('side')}>
+                                        侧面全览
+                                    </button>
+                                    <button onClick={() => pose('top')}>
+                                        俯视
+                                    </button>
+                                    <button
+                                        onClick={() => setPlaying(!playing)}
+                                    >
+                                        {playing ? '暂停' : '播放'}
+                                    </button>
+                                </div>
+                                <input
+                                    aria-label='路线播放进度'
+                                    type='range'
+                                    min='0'
+                                    max={data.route.cost}
+                                    step='.01'
+                                    value={seconds}
+                                    onChange={(e) => {
+                                        time.current = Number(e.target.value);
+                                        setSeconds(time.current);
+                                    }}
+                                />
+                                <small>
+                                    {seconds.toFixed(1)} /{' '}
+                                    {data.route.cost.toFixed(1)} 秒（候选模型）
+                                    · 可自由移动相机
+                                </small>
+                            </>
+                        )}
+                    </Panel>,
+                    panelRoot,
+                )}
+        </>
+    );
+}
