@@ -3,6 +3,7 @@ import { Panel, type Viewer } from '@endfield-noclip/viewer/host';
 import { createPortal } from 'react-dom';
 import { sampleJourney, type Route, type Vec3 } from '@oem/ganglia';
 import './route-inspection.css';
+import { createRouteLines } from './route-lines-renderer';
 
 export type Candidate = {
     version: 1;
@@ -107,6 +108,30 @@ export default function RouteInspection({
         return () => abort.abort();
     }, [source]);
     useEffect(() => {
+        if (!data || !visible) return;
+        let renderer: ReturnType<typeof createRouteLines> | undefined;
+        const remove = viewer.addOverlay((frame) => {
+            const manifest = viewer.scene?.pkg.manifest;
+            if (
+                manifest?.scene.id !== data.scene ||
+                viewer.level !== data.level ||
+                manifest.source.buildGuid !== data.source.buildGuid ||
+                manifest.source.contentHash !== data.source.contentHash
+            )
+                return;
+            renderer ??= createRouteLines(
+                frame.device,
+                frame.format,
+                data.route.segments,
+            );
+            renderer.encode(frame, viewer.camera);
+        });
+        return () => {
+            remove();
+            renderer?.destroy();
+        };
+    }, [viewer, data, visible]);
+    useEffect(() => {
         if (!data || !canvas.current) return;
         let frame = 0,
             previous = performance.now(),
@@ -156,39 +181,6 @@ export default function RouteInspection({
                     w / 2 + (f * p[0]) / p[2],
                     h / 2 - (f * p[1]) / p[2],
                 ];
-                const stroke = (a: Vec3, b: Vec3) => {
-                    let p = space(a),
-                        q = space(b);
-                    // Clip in camera space so a behind-camera endpoint cannot draw across the screen.
-                    if (p[2] < 0.1 && q[2] < 0.1) return;
-                    if (p[2] < 0.1) {
-                        const t = (0.1 - p[2]) / (q[2] - p[2]);
-                        p = p.map((v, i) => v + t * (q[i] - v));
-                    }
-                    if (q[2] < 0.1) {
-                        const t = (0.1 - q[2]) / (p[2] - q[2]);
-                        q = q.map((v, i) => v + t * (p[i] - v));
-                    }
-                    const x = screen(p),
-                        y = screen(q);
-                    context.beginPath();
-                    context.moveTo(x[0], x[1]);
-                    context.lineTo(y[0], y[1]);
-                    context.lineCap = 'round';
-                    context.lineJoin = 'round';
-                    context.lineWidth = 7;
-                    context.strokeStyle = 'rgba(53, 172, 255, .12)';
-                    context.stroke();
-                    context.lineWidth = 3;
-                    context.strokeStyle = 'rgba(89, 199, 255, .6)';
-                    context.stroke();
-                    context.lineWidth = 1.25;
-                    context.strokeStyle = '#e3f8ff';
-                    context.stroke();
-                };
-                for (const segment of data.route.segments)
-                    for (let i = 1; i < segment.points.length; i++)
-                        stroke(segment.points[i - 1], segment.points[i]);
                 const mark = (p: Vec3, label: string, color: string) => {
                     const local = space(p);
                     if (local[2] < 0.1) return;
@@ -295,8 +287,8 @@ export default function RouteInspection({
                     >
                         <p>{data?.title ?? 'Nearest teleport route'}</p>
                         <p className='muted small'>
-                            Candidate path · X-ray overlay · Reachability
-                            unverified
+                            Candidate path · Occluded segments dashed ·
+                            Reachability unverified
                         </p>
                         {data?.route.locomotion && (
                             <p className='muted small'>

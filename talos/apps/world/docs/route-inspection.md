@@ -12,6 +12,25 @@ resulting planar route on the minimap. Source build mismatches, missing
 projections and disconnected ground are reported separately. Player-state
 availability remains an explicit assumption.
 
+From `talos`, `pnpm dev:world` starts the main site on 5173 and World on 5176,
+and directs the detail-page links to the local World server. Set
+`VITE_WORLD_CATALOG_URL` in the parent environment so both applications receive
+the catalog. The main site's preview and route buttons require that catalog.
+For example, with the matching package service already running on 5199,
+
+```sh
+VITE_WORLD_CATALOG_URL=http://127.0.0.1:5199/oem/RELEASE_ID/index.json \
+WORLD_ROUTING_DIRECTORY=/path/to/local-routing-data \
+WORLD_EXTRACTOR_DIRECTORY=/path/to/endfield-noclip \
+WORLD_GAME_CONFIG=/path/to/endfield.local.json \
+WORLD_EXTRACTOR_NODE="$(command -v node)" \
+NODE_OPTIONS=--max-old-space-size=8192 \
+pnpm dev:world
+```
+
+Open a point on 5173 and choose **Route from nearest teleport**. The resulting
+World URL has the form `http://127.0.0.1:5176/POINT_TOKEN?planRoute=nearest`.
+
 While a route is active, the minimap fits its projected bounds and camera with
 padding. Clearing it restores camera-follow framing. The 3D target view remains
 the existing point view until the user selects an overview.
@@ -54,13 +73,18 @@ movement-export content fingerprint. Route caches also bind the actual arrival,
 target, interaction volume and exclusions. Restart the development server after
 regenerating source exports.
 
-The inspection overlay draws supplied world-coordinate segments using the viewer
-camera, clips lines at the near plane, and uses Ganglia's `sampleJourney` for
-timed playback. All movement segments currently share a thin luminous cable
-treatment; movement-specific colours and line styles are intentionally deferred.
-The panel uses the existing host Panel component and right-hand dock. This is a
-through-wall overlay, not a depth-tested visibility or reachability proof. The
-overlay consumes the planner's candidate samples. Changing scene, level, or
+The inspection overlay projects supplied world-coordinate segments, clips them at
+the viewer's near plane, and uses Ganglia's `sampleJourney` for timed playback.
+Lines render on the GPU after tonemapping, sampling current opaque/cutout scene
+depth with its projection jitter and render scale accounted for. Visible fragments
+are solid. Occluded fragments use 5 CSS-pixel strokes and 3-pixel gaps, with phase
+continuous across path segments. A 0.15-metre view-depth tolerance avoids ground
+contact flicker. Occlusion follows the geometry currently streamed and displayed.
+All movement segments share the luminous cable colour treatment.
+The panel uses the existing host Panel component and right-hand dock. Dashed
+fragments retain visibility through geometry; reachability remains a separate
+planner/model concern. The overlay consumes the planner's candidate samples.
+Changing scene, level, or
 source build hides it.
 
 The local JSON has `version: 1`, `status: "candidate"`, `scene`, `level`,
