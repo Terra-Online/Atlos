@@ -242,8 +242,8 @@ importers:
         specifier: workspace:*
         version: link:../../vendor/endfield-noclip/packages/viewer
       '@oem/ganglia':
-        specifier: file:../../vendor/ganglia/oem-ganglia-0.1.0-alpha.18.tgz
-        version: file:vendor/ganglia/oem-ganglia-0.1.0-alpha.18.tgz
+        specifier: file:../../vendor/ganglia/oem-ganglia-0.1.0-alpha.19.tgz
+        version: file:vendor/ganglia/oem-ganglia-0.1.0-alpha.19.tgz
     devDependencies:
       '@webgpu/types':
         specifier: ^0.1.74
@@ -1760,9 +1760,9 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@oem/ganglia@file:vendor/ganglia/oem-ganglia-0.1.0-alpha.18.tgz':
-    resolution: {integrity: sha512-zJa8rzCLKz0bQLzfKw3tbBqc5SJFsJaKZFGagjxH/gxl4WXX8+eghFXMrm78BGCwBC3uYiUkw7pyRQ8kRFgfHg==, tarball: file:vendor/ganglia/oem-ganglia-0.1.0-alpha.18.tgz}
-    version: 0.1.0-alpha.18
+  '@oem/ganglia@file:vendor/ganglia/oem-ganglia-0.1.0-alpha.19.tgz':
+    resolution: {integrity: sha512-JXaXwWlsekotzVnkOXlD+WScAbwud+hbOvUvj4r/fgqSbQowkY7fqRkdDAAa3zzwT+ay39G7scLFv9W8lkZryw==, tarball: file:vendor/ganglia/oem-ganglia-0.1.0-alpha.19.tgz}
+    version: 0.1.0-alpha.19
     engines: {node: '>=22'}
 
   '@opentelemetry/api@1.9.1':
@@ -7414,7 +7414,7 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
 
-  '@oem/ganglia@file:vendor/ganglia/oem-ganglia-0.1.0-alpha.18.tgz':
+  '@oem/ganglia@file:vendor/ganglia/oem-ganglia-0.1.0-alpha.19.tgz':
     dependencies:
       '@recast-navigation/core': 0.44.0
       '@recast-navigation/generators': 0.44.0

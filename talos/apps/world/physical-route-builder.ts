@@ -31,6 +31,8 @@ type RouteRequest = {
 const hash = (value: unknown) =>
     createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
+export const physicalMargins = [24, 64, 128, 256] as const;
+
 /** Bounded, cached physical builds for local inspection. One child owns native compilation at a time. */
 export function physicalRouteBuilder(options: Options) {
     const jobs = new Map<string, Job>();
@@ -162,14 +164,17 @@ export function physicalRouteBuilder(options: Options) {
         source: Source,
         start: number[],
         target: number[],
-        request: { startBuild: boolean },
+        request: { startBuild: boolean; margin?: number },
     ) => {
         if (!configured || closed) return null;
+        const margin = request.margin ?? physicalMargins[0];
+        if (!Number.isFinite(margin) || margin < 0)
+            throw new Error('Invalid physical coverage margin');
         const bounds = [
-            Math.floor((Math.min(start[0], target[0]) - 24) / 32) * 32,
-            Math.floor((Math.min(start[2], target[2]) - 24) / 32) * 32,
-            Math.ceil((Math.max(start[0], target[0]) + 24) / 32) * 32,
-            Math.ceil((Math.max(start[2], target[2]) + 24) / 32) * 32,
+            Math.floor((Math.min(start[0], target[0]) - margin) / 32) * 32,
+            Math.floor((Math.min(start[2], target[2]) - margin) / 32) * 32,
+            Math.ceil((Math.max(start[0], target[0]) + margin) / 32) * 32,
+            Math.ceil((Math.max(start[2], target[2]) + margin) / 32) * 32,
         ];
         const tileSpan = 256 * 0.15;
         const tiles =

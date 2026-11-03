@@ -425,6 +425,8 @@ test(
                 'run\nrun\n',
             );
 
+            // Wider physical coverage must use valid source input after the failed-build case.
+            await writeFile(config, JSON.stringify({ result: fixture }));
             // Physical ground retains scene exclusions, including a wall absent from the bake output.
             await writeFile(
                 join(directory, 'map01-ground-all.json'),
@@ -469,6 +471,7 @@ test(
                 Date.now() < movementDeadline
             );
             assert.equal(result.body.category, 'movement-coverage');
+            assert.deepEqual(result.body.diagnostics.physicalMargins, [24, 64, 128, 256]);
             assert.equal(result.body.diagnostics.traversal.walls.length, 1);
             assert.equal(
                 result.body.diagnostics.traversal.walls[0].state,
@@ -478,11 +481,11 @@ test(
             assert.equal(result.body.category, 'movement-coverage');
             assert.equal(
                 await readFile(config + '.route-runs', 'utf8'),
-                'route\nroute\nroute\n',
+                'route\n'.repeat(6),
             );
             assert.equal(
                 await readFile(config + '.runs', 'utf8'),
-                'run\nrun\n',
+                'run\n'.repeat(5),
             );
             // Rebuilding movement rules in the same game build must invalidate both artifact stages.
             await writeFile(config, JSON.stringify({ result: fixture }));
@@ -516,11 +519,11 @@ test(
             assert.equal(result.body.category, 'movement-coverage');
             assert.equal(
                 await readFile(config + '.runs', 'utf8'),
-                'run\nrun\nrun\n',
+                'run\n'.repeat(9),
             );
             assert.equal(
                 await readFile(config + '.route-runs', 'utf8'),
-                'route\nroute\nroute\nroute\n',
+                'route\n'.repeat(10),
             );
             const policies = (
                 await readFile(config + '.movement-files', 'utf8')

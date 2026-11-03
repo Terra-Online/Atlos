@@ -13,13 +13,14 @@ import {
     type Surface,
     type Vec3,
 } from '@oem/ganglia';
-import { physicalRouteBuilder } from './physical-route-builder.ts';
+import { physicalMargins, physicalRouteBuilder } from './physical-route-builder.ts';
 
 type Source = { buildGuid: string; contentHash: string };
 type Bounds = { min: [number, number]; max: [number, number] };
 type Data = {
     scene: string;
     level?: string;
+    progression?: 'completed';
     source: Source;
     bounds?: Bounds;
     surfaces: Surface[];
@@ -58,6 +59,13 @@ type Candidate = {
         attempts?: unknown[];
         traversal?: unknown;
     };
+};
+type Query = {
+    pending: Promise<Answer>;
+    done: boolean;
+    progress?: boolean;
+    marginIndex: number;
+    candidate?: Candidate;
 };
 
 const finiteVector = (value: unknown): value is Vec3 =>
@@ -189,10 +197,7 @@ export function routeServer(
         string,
         Promise<InteractionCatalog | null>
     >();
-    const queries = new Map<
-        string,
-        { pending: Promise<Answer>; done: boolean; candidate?: Candidate }
-    >();
+    const queries = new Map<string, Query>();
     let removeCloseListener = () => {};
     const close = () => {
         builder.close();
@@ -354,11 +359,14 @@ export function routeServer(
                         pointId,
                     });
                     const previous = queries.get(queryKey);
+                    let marginIndex = 0;
                     if (previous) {
+                        const alreadyDone = previous.done;
                         let answer = await previous.pending;
                         const current = queries.get(queryKey);
                         if (
-                            !previous.candidate?.optimizing ||
+                            !alreadyDone ||
+                            (!previous.progress && !previous.candidate?.optimizing) ||
                             current !== previous
                         ) {
                             if (current && current !== previous)
@@ -367,18 +375,16 @@ export function routeServer(
                             return;
                         }
                         fallback = previous.candidate;
+                        marginIndex = previous.marginIndex;
                         queries.delete(queryKey);
                     }
                     let finish!: (answer: Answer) => void;
-                    const entry: {
-                        pending: Promise<Answer>;
-                        done: boolean;
-                        candidate?: Candidate;
-                    } = {
+                    const entry: Query = {
                         pending: new Promise<Answer>((resolve) => {
                             finish = resolve;
                         }),
                         done: false,
+                        marginIndex,
                     };
                     queries.set(queryKey, entry);
                     const deliver = reply;
@@ -389,7 +395,8 @@ export function routeServer(
                             typeof value === 'object' &&
                             'status' in value &&
                             value.status === 'building-ground';
-                        if (progress || status >= 500) queries.delete(queryKey);
+                        entry.progress = progress;
+                        if (status >= 500) queries.delete(queryKey);
                         finish({ value, status });
                         deliver(value, status);
                         // Identical concurrent queries share one calculation. Terminal results
@@ -512,6 +519,9 @@ export function routeServer(
                         'All teleport anchors assumed unlocked',
                         'Nearest anchor selected by 3D distance within the current level',
                         'Base scene state 0 and area 0 are assumed',
+                        ...(data.progression === 'completed'
+                            ? ['Quests and missions assumed completed; runtime wall overrides unresolved']
+                            : []),
                         goal
                             ? 'Authored interaction volume applied; runtime interaction availability remains unresolved'
                             : 'Interaction rules unresolved; endpoint uses ground projection only',
@@ -553,12 +563,25 @@ export function routeServer(
                             interaction,
                         });
                     };
+                    const expandCoverage = async () => {
+                        const nextIndex = entry.marginIndex + 1;
+                        const margin = physicalMargins[nextIndex];
+                        if (margin === undefined) return false;
+                        const next = await builder.query(scene, source, anchor.position, target, {
+                            startBuild: true,
+                            margin,
+                        });
+                        if (!next || next.status === 'failed') return false;
+                        entry.marginIndex = nextIndex;
+                        building(`Expanding physical coverage to ${margin} m · ${next.message}`);
+                        return true;
+                    };
                     const job = await builder.query(
                         scene,
                         source,
                         anchor.position,
                         target,
-                        { startBuild: false },
+                        { startBuild: false, margin: physicalMargins[entry.marginIndex] },
                     );
                     if (
                         job?.status === 'queued' ||
@@ -730,12 +753,16 @@ export function routeServer(
                                 )
                             )
                                 return;
+                            if (await expandCoverage()) return;
                             reply({
                                 status: 'unavailable',
                                 category: 'movement-coverage',
                                 message:
                                     'No route found within the current ground and movement search',
-                                diagnostics: { traversal: result.diagnostics },
+                                diagnostics: {
+                                    traversal: result.diagnostics,
+                                    physicalMargins: physicalMargins.slice(0, entry.marginIndex + 1),
+                                },
                                 assumptions,
                                 interaction,
                                 anchor: {
@@ -943,7 +970,7 @@ export function routeServer(
                                 source,
                                 anchor.position,
                                 target,
-                                { startBuild: true },
+                                { startBuild: true, margin: physicalMargins[entry.marginIndex] },
                             );
                             const optimization =
                                 next?.status === 'ready'
@@ -968,7 +995,7 @@ export function routeServer(
                         source,
                         anchor.position,
                         target,
-                        { startBuild: true },
+                        { startBuild: true, margin: physicalMargins[entry.marginIndex] },
                     );
                     if (
                         nextJob?.status === 'queued' ||
