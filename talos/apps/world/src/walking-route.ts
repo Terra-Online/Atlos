@@ -1,5 +1,5 @@
 import {
-    planGroundRoute, sampleRoute,
+    planGroundRoute, sampleJourney,
     type GroundArrival, type GroundOptions, type Route, type Surface, type Vec3,
 } from '@oem/ganglia';
 
@@ -17,8 +17,7 @@ export function planWalkingRoute(data: WalkingData, binding: string, starts: Gro
     return planGroundRoute(data.surfaces, starts, goal, data.options);
 }
 
-/** Animation follows the walking polyline after arrival; teleportation is never drawn as a flight. */
-export function walkingPosition(route: Extract<Route, { status: 'complete' }>, seconds: number, speed: number): Vec3 {
-    if (!Number.isFinite(speed) || speed <= 0) throw new Error('Invalid walking speed');
-    return sampleRoute(route.points, seconds * speed);
+/** Elapsed time starts after arrival. Movement mode and authored timing drive playback. */
+export function journeySample(route: Extract<Route, { status: 'complete' }>, seconds: number) {
+    return sampleJourney(route, seconds);
 }

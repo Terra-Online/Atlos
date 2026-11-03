@@ -186,3 +186,15 @@ Only controls proven to block the selected point view are changed. Leaving the p
 preset or unmounting cancels playback; manual control edits take precedence. This displays settled
 states, not simulated destruction particles or gameplay. Missing packed destruction states remain
 explicitly unconfirmed context views.
+
+## Ground journeys
+
+`walking-route.ts` consumes the packed `@oem/ganglia` dependency. Its source binding
+includes the selected build, scene, state and body profile. Directed rope/jump/drop/launch
+connections carry verified sample positions and times. `journeySample` returns the
+current position, movement mode and optional connection ID; playback begins after the
+selected teleport arrival and does not draw a flight from the previous position.
+
+This adapter has package integration coverage, but the world UI does not yet expose route
+selection or playback. Actual device trajectories and complete player collision coverage
+remain pending in the exporter; device pivots alone must not be supplied as valid links.
