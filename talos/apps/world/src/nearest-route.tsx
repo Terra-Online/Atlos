@@ -42,13 +42,32 @@ export default function NearestRoute({
             });
             let result;
             let response;
+            let routeSignature = '';
+            let pending = false;
             do {
                 response = await fetch(`/__routes/nearest?${query}`, {
                     signal: abort.signal,
                 });
                 result = await response.json();
-                if (result.status === 'building-ground') {
-                    setMessage(result.message || 'Building player ground…');
+                if (abort.signal.aborted) return;
+                if (response.ok && result.status === 'candidate') {
+                    const signature = JSON.stringify(result.route);
+                    if (signature !== routeSignature) {
+                        routeSignature = signature;
+                        setData(result);
+                        onRoute(result.route.points);
+                    }
+                }
+                pending =
+                    response.ok &&
+                    (result.status === 'building-ground' ||
+                        (result.status === 'candidate' && result.optimizing));
+                if (pending) {
+                    setMessage(
+                        result.optimizationMessage ||
+                            result.message ||
+                            'Comparing jump alternatives…',
+                    );
                     await new Promise<void>((resolve, reject) => {
                         const stop = () => {
                             clearTimeout(timer);
@@ -64,10 +83,7 @@ export default function NearestRoute({
                         if (abort.signal.aborted) stop();
                     });
                 }
-            } while (
-                result.status === 'building-ground' &&
-                !abort.signal.aborted
-            );
+            } while (pending && !abort.signal.aborted);
             if (abort.signal.aborted) return;
             const summary = [];
             if (result.anchor?.id)
@@ -84,9 +100,7 @@ export default function NearestRoute({
                     'Interaction endpoint · unresolved; ground projection used',
                 );
             if (result.diagnostics?.traversal?.truncated)
-                summary.push(
-                    'Movement search · candidate coverage is partial',
-                );
+                summary.push('Movement search · candidate coverage is partial');
             if (result.route?.locomotion?.search?.truncated)
                 summary.push('Sprint scheduling · search budget reached');
             const attempts = result.diagnostics?.attempts;
@@ -102,9 +116,7 @@ export default function NearestRoute({
                         'No route is available in the current data',
                 );
             if (abort.signal.aborted) return;
-            setData(result);
-            onRoute(result.route.points);
-            setMessage('');
+            setMessage(result.optimizationMessage || '');
         })().catch((error) => {
             if (!abort.signal.aborted)
                 setMessage(

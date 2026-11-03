@@ -113,7 +113,7 @@ export function physicalRouteBuilder(options: Options) {
                                         'Indexing physical obstacles…';
                                 if (progress.phase === 'jump-discovery')
                                     current.message =
-                                        'Checking jump and drop connections…';
+                                        'Comparing ground, jump and drop actions…';
                                 if (progress.phase === 'route-search')
                                     current.message =
                                         'Planning movement and sprint recovery…';

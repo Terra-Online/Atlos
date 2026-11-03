@@ -25,20 +25,29 @@ ground-projection behaviour and are reported. Changed source builds reject stale
 interaction data.
 
 With `WORLD_EXTRACTOR_DIRECTORY`, `WORLD_GAME_CONFIG` and optionally
-`WORLD_EXTRACTOR_NODE` configured, failed AI-ground queries enqueue a
+`WORLD_EXTRACTOR_NODE` configured, route queries enqueue a
 collision-derived player-ground build. Jobs are deduplicated, serialized and
-polled by the panel. Their source-bound cache records approximation and coverage
-gaps. Disconnected physical-ground queries enqueue `player-route`, which checks
-generic jump/drop candidates with collision sweeps and air-wall constraints,
-then applies sprint entry requirements and recovery scheduling. Work is bounded
-and the panel reports truncated searches. The candidate model requires game
-validation.
+polled by the panel. An available ground route appears immediately while physical
+action optimization continues. Polling retains that route and playback until a
+faster complete result arrives. Failed, unavailable or slower optimization results
+preserve the incumbent. Their source-bound cache records approximation and coverage
+gaps. Physical-ground queries enqueue `player-route` and Ganglia's `planJumpRoute`,
+which compares generic ground/jump/drop combinations with collision sweeps and
+air-wall constraints, then applies the current sprint entry and recovery policy.
+Work is bounded and the panel reports truncated searches. The candidate model
+requires game validation.
 
 Movement discovery groups all eligible interaction faces by ground component.
 Distance/height-guided region chains receive resumable local candidate-generation
 and trajectory-validation batches. Spatially diverse takeoffs and goal-directed
 3D landing queries cover intermediate box platforms and longer drops. Partial
 candidate coverage remains explicit after a feasible route has been found.
+Successful routes also receive shortcut discovery. Takeoff sampling covers exposed
+ledges before fine pullbacks; landings include surface interiors beneath platforms.
+Ground-reachable transfers and isolated intermediate surfaces retain separate work
+shares. Supported continuous ground visibility connects retained action endpoints,
+so multiple jumps can join the same selected route. Global continuous-time
+optimality and joint resource/corridor optimization remain unresolved.
 
 Ground and route caches include the solver dependency identity and an immutable
 movement-export content fingerprint. Route caches also bind the actual arrival,
@@ -70,7 +79,7 @@ connections still require in-game validation.
 
 The normal detail-button query for the supplied descent example also completes
 against the full neighbouring-cell collision build, with ground, jump and ground
-segments. Its model time is about 7.55 seconds. The search reports truncation,
+segments. Its current model time is about 6.66 seconds. The search reports truncation,
 and approximation enclosures can overblock. Current inspection assumes all
 teleports unlocked and uses base scene state 0 / area 0. Complete navigation
 coverage, movement-device connections and resource-optimal corridor selection

@@ -48,6 +48,17 @@ type InteractionCatalog = {
     points: Map<string, InteractionPoint>;
 };
 type Answer = { value: unknown; status: number };
+type Candidate = {
+    status: 'candidate';
+    route: Extract<Route, { status: 'complete' }>;
+    optimizing?: boolean;
+    optimizationMessage?: string;
+    diagnostics?: {
+        anchorCandidates?: number;
+        attempts?: unknown[];
+        traversal?: unknown;
+    };
+};
 
 const finiteVector = (value: unknown): value is Vec3 =>
     Array.isArray(value) && value.length === 3 && value.every(Number.isFinite);
@@ -180,7 +191,7 @@ export function routeServer(
     >();
     const queries = new Map<
         string,
-        { pending: Promise<Answer>; done: boolean }
+        { pending: Promise<Answer>; done: boolean; candidate?: Candidate }
     >();
     let removeCloseListener = () => {};
     const close = () => {
@@ -268,6 +279,7 @@ export function routeServer(
             server.middlewares.use('/__routes/nearest', (request, response) => {
                 let reply = (value: unknown, status = 200) =>
                     send(response, value, status);
+                let fallback: Candidate | undefined;
                 void (async () => {
                     if (!directory) {
                         reply({
@@ -343,12 +355,26 @@ export function routeServer(
                     });
                     const previous = queries.get(queryKey);
                     if (previous) {
-                        const answer = await previous.pending;
-                        reply(answer.value, answer.status);
-                        return;
+                        let answer = await previous.pending;
+                        const current = queries.get(queryKey);
+                        if (
+                            !previous.candidate?.optimizing ||
+                            current !== previous
+                        ) {
+                            if (current && current !== previous)
+                                answer = await current.pending;
+                            reply(answer.value, answer.status);
+                            return;
+                        }
+                        fallback = previous.candidate;
+                        queries.delete(queryKey);
                     }
                     let finish!: (answer: Answer) => void;
-                    const entry = {
+                    const entry: {
+                        pending: Promise<Answer>;
+                        done: boolean;
+                        candidate?: Candidate;
+                    } = {
                         pending: new Promise<Answer>((resolve) => {
                             finish = resolve;
                         }),
@@ -490,7 +516,31 @@ export function routeServer(
                             ? 'Authored interaction volume applied; runtime interaction availability remains unresolved'
                             : 'Interaction rules unresolved; endpoint uses ground projection only',
                     ];
-                    const building = (message: string) =>
+                    const retain = (
+                        message: string,
+                        optimizing: boolean,
+                        traversal?: unknown,
+                    ) => {
+                        if (!fallback) return false;
+                        const candidate = {
+                            ...fallback,
+                            optimizing,
+                            optimizationMessage: message,
+                            ...(traversal
+                                ? {
+                                      diagnostics: {
+                                          ...fallback.diagnostics,
+                                          traversal,
+                                      },
+                                  }
+                                : {}),
+                        };
+                        entry.candidate = candidate;
+                        reply(candidate);
+                        return true;
+                    };
+                    const building = (message: string) => {
+                        if (retain(message, true)) return;
                         reply({
                             status: 'building-ground',
                             message,
@@ -502,6 +552,7 @@ export function routeServer(
                             assumptions,
                             interaction,
                         });
+                    };
                     const job = await builder.query(
                         scene,
                         source,
@@ -565,10 +616,18 @@ export function routeServer(
                         selected: Data,
                         coverage: string,
                         traversal?: unknown,
-                    ) =>
-                        reply({
+                        optimization?: {
+                            status: string;
+                            message: string;
+                        } | null,
+                    ) => {
+                        if (fallback && fallback.route.cost <= route.cost) {
+                            retain('', false, traversal);
+                            return;
+                        }
+                        const candidate = {
                             version: 1,
-                            status: 'candidate',
+                            status: 'candidate' as const,
                             scene,
                             level,
                             source,
@@ -608,7 +667,15 @@ export function routeServer(
                                 id: anchor.id,
                                 position: anchor.position,
                             },
-                        });
+                            optimizing: Boolean(
+                                optimization &&
+                                    optimization.status !== 'failed',
+                            ),
+                            optimizationMessage: optimization?.message ?? '',
+                        };
+                        entry.candidate = candidate;
+                        reply(candidate);
+                    };
                     const routeRequest = {
                         scene,
                         source,
@@ -655,6 +722,14 @@ export function routeServer(
                                 result.diagnostics,
                             );
                         } else if (result.status === 'unavailable') {
+                            if (
+                                retain(
+                                    'Jump search completed without a faster covered route',
+                                    false,
+                                    result.diagnostics,
+                                )
+                            )
+                                return;
                             reply({
                                 status: 'unavailable',
                                 category: 'movement-coverage',
@@ -676,6 +751,13 @@ export function routeServer(
                         return;
                     }
                     if (motion?.status === 'failed') {
+                        if (
+                            retain(
+                                'Jump optimization could not finish; the current route is retained',
+                                false,
+                            )
+                        )
+                            return;
                         reply({
                             status: 'unavailable',
                             category: 'movement-solver-error',
@@ -689,7 +771,7 @@ export function routeServer(
                         });
                         return;
                     }
-                    for (const selected of attempts) {
+                    for (const selected of fallback ? [] : attempts) {
                         const coverage =
                             selected === built
                                 ? 'Physical collision ground tiles; incomplete player coverage'
@@ -856,7 +938,28 @@ export function routeServer(
                                 }
                             }
                             if (route.status !== 'complete') continue;
-                            publish(route, selected.data, coverage);
+                            const next = await builder.query(
+                                scene,
+                                source,
+                                anchor.position,
+                                target,
+                                { startBuild: true },
+                            );
+                            const optimization =
+                                next?.status === 'ready'
+                                    ? await builder.solve(
+                                          next,
+                                          routeRequest,
+                                          true,
+                                      )
+                                    : next;
+                            publish(
+                                route,
+                                selected.data,
+                                coverage,
+                                undefined,
+                                optimization,
+                            );
                             return;
                         }
                     }
@@ -891,6 +994,13 @@ export function routeServer(
                             return;
                         }
                     }
+                    if (
+                        retain(
+                            'Jump optimization could not finish; the current route is retained',
+                            false,
+                        )
+                    )
+                        return;
                     const best = diagnostics.toSorted(
                         (a, b) =>
                             Number(b.anchor.mapped) +
@@ -942,6 +1052,15 @@ export function routeServer(
                     server.config.logger.error(
                         `Local route inspection failed: ${error instanceof Error ? error.message : String(error)}`,
                     );
+                    if (fallback) {
+                        reply({
+                            ...fallback,
+                            optimizing: false,
+                            optimizationMessage:
+                                'Jump optimization could not finish; the current route is retained',
+                        });
+                        return;
+                    }
                     reply(
                         {
                             status: 'unavailable',

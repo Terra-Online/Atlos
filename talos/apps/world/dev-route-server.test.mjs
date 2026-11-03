@@ -213,7 +213,7 @@ test(
 
 test(
     'builds physical ground after a generic routing failure and reuses the completed job',
-    { timeout: 5000 },
+    { timeout: 8000 },
     async () => {
         const directory = await mkdtemp(join(tmpdir(), 'world-route-build-'));
         const source = { buildGuid: 'build-test', contentHash: 'hash-test' };
@@ -287,6 +287,20 @@ test(
             if (args[0] === 'player-route') {
                 const request = JSON.parse(await readFile(args[args.indexOf('--request') + 1], 'utf8'));
                 await writeFile(${JSON.stringify(config + '.route-runs')}, 'route\\n', { flag: 'a' });
+                const fixture = JSON.parse(await readFile(${JSON.stringify(config)}, 'utf8'));
+                await new Promise(resolve => setTimeout(resolve, 60));
+                if (fixture.failRoute) throw new Error('synthetic action search failure');
+                if (Number.isFinite(fixture.routeCost)) {
+                    const points = [request.arrival.position, request.target], cost = fixture.routeCost;
+                    await writeFile(args[args.indexOf('-o') + 1], JSON.stringify({
+                        scene: request.scene, source: request.source, status: 'candidate',
+                        diagnostics: { truncated: false },
+                        route: { status: 'complete', start: request.arrival.id, arrivalCost: 0, cost,
+                            length: Math.hypot(...points[0].map((v,i)=>v-points[1][i])), points,
+                            segments: [{ mode: 'walk', points, times: [0, cost] }] },
+                    }));
+                    process.exit(0);
+                }
                 await writeFile(args[args.indexOf('-o') + 1], JSON.stringify({
                     scene: request.scene, source: request.source, status: 'unavailable',
                     diagnostics: { walls: request.walls },
@@ -464,7 +478,7 @@ test(
             assert.equal(result.body.category, 'movement-coverage');
             assert.equal(
                 await readFile(config + '.route-runs', 'utf8'),
-                'route\n',
+                'route\nroute\nroute\n',
             );
             assert.equal(
                 await readFile(config + '.runs', 'utf8'),
@@ -506,7 +520,7 @@ test(
             );
             assert.equal(
                 await readFile(config + '.route-runs', 'utf8'),
-                'route\nroute\n',
+                'route\nroute\nroute\nroute\n',
             );
             const policies = (
                 await readFile(config + '.movement-files', 'utf8')
@@ -520,6 +534,86 @@ test(
                 JSON.parse(await readFile(policies[0].path, 'utf8')),
                 { source },
             );
+            // Successful ground queries now enqueue action optimization too. Keep
+            // that incumbent visible through polling, failures and slower results.
+            await writeFile(
+                join(directory, 'map01-ground-all.json'),
+                JSON.stringify({
+                    scene: 'map01',
+                    source,
+                    options,
+                    surfaces: [floor],
+                    arrivals: [anchor],
+                }),
+            );
+            for (const scenario of [
+                { name: 'faster', routeCost: 0.2 },
+                { name: 'slower', routeCost: 99 },
+                { name: 'unavailable' },
+                { name: 'failure', failRoute: true },
+            ]) {
+                httpServer.emit('close');
+                await writeFile(
+                    config,
+                    JSON.stringify({ result: fixture, ...scenario }),
+                );
+                await writeFile(
+                    join(directory, 'movement-settings-current.json'),
+                    JSON.stringify({ source, scenario: scenario.name }),
+                );
+                const buildsBefore = (await readFile(config + '.runs', 'utf8'))
+                    .trim()
+                    .split('\n').length;
+                routeServer(directory, {
+                    extractor,
+                    config,
+                    node: process.execPath,
+                }).configureServer({
+                    httpServer,
+                    middlewares: {
+                        use: (_path, handler) => {
+                            handle = handler;
+                        },
+                    },
+                    config: { logger: { error: console.error } },
+                });
+                const initial = await request();
+                assert.equal(initial.body.status, 'candidate');
+                assert.equal(initial.body.optimizing, true);
+                const baselineCost = initial.body.route.cost;
+                const concurrent = await Promise.all([
+                    request(),
+                    request(),
+                    request(),
+                ]);
+                for (const response of concurrent) {
+                    assert.equal(response.body.status, 'candidate');
+                    assert.ok(response.body.route.cost <= baselineCost);
+                }
+                let final = concurrent.at(-1);
+                const deadline = Date.now() + 3000;
+                while (final.body.optimizing && Date.now() < deadline) {
+                    await new Promise((resolve) => setTimeout(resolve, 25));
+                    final = await request();
+                    assert.equal(final.body.status, 'candidate');
+                    assert.ok(final.body.route.cost <= baselineCost);
+                }
+                assert.equal(final.body.optimizing, false);
+                assert.equal(
+                    final.body.route.cost,
+                    scenario.name === 'faster' ? 0.2 : baselineCost,
+                );
+                assert.equal(
+                    (await request()).body.route.cost,
+                    final.body.route.cost,
+                );
+                assert.equal(
+                    (await readFile(config + '.runs', 'utf8'))
+                        .trim()
+                        .split('\n').length,
+                    buildsBefore + 1,
+                );
+            }
         } finally {
             httpServer.emit('close');
             await rm(directory, { recursive: true, force: true });
