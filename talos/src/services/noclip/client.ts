@@ -28,10 +28,14 @@ export const loadCatalog = (): Promise<Catalog> => {
     return catalogRequest;
 };
 
-export const previewLink = (point: string): string => {
+export const previewLink = (
+    point: string,
+    options?: { planRoute: 'nearest' },
+): string => {
     const url = new URL(viewerUrl, location.href);
     url.pathname = pointPath(point);
     url.search = '';
     url.hash = '';
+    if (options) url.searchParams.set('planRoute', options.planRoute);
     return url.href;
 };

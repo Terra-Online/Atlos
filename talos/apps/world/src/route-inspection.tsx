@@ -4,13 +4,15 @@ import { createPortal } from 'react-dom';
 import { sampleJourney, type Route, type Vec3 } from '@oem/ganglia';
 import './route-inspection.css';
 
-type Candidate = {
+export type Candidate = {
     version: 1;
     scene: string;
     level: string;
     source: { buildGuid: string; contentHash: string };
     title: string;
     status: 'candidate';
+    coverage?: string;
+    assumptions?: string[];
     overview?: { position: Vec3; yaw: number; pitch: number; fovY: number };
     route: Extract<Route, { status: 'complete' }>;
     markers: { label: string; position: Vec3 }[];
@@ -23,10 +25,16 @@ export default function RouteInspection({
     viewer,
     source,
     panelRoot,
+    candidate,
+    message,
+    details,
 }: {
     viewer: Viewer;
     source: string | null;
     panelRoot: HTMLElement | null;
+    candidate?: Candidate | null;
+    message?: string;
+    details?: string[];
 }) {
     const canvas = useRef<HTMLCanvasElement>(null);
     const [data, setData] = useState<Candidate | null>(null);
@@ -36,6 +44,14 @@ export default function RouteInspection({
     const time = useRef(0);
     const [visible, setVisible] = useState(true);
     useEffect(() => {
+        if (candidate !== undefined) {
+            setData(candidate);
+            time.current = 0;
+            setSeconds(0);
+            setPlaying(false);
+        }
+    }, [candidate]);
+    useEffect(() => {
         if (!source) return;
         const abort = new AbortController();
         void (async () => {
@@ -44,9 +60,9 @@ export default function RouteInspection({
                 url.origin !== location.origin ||
                 !url.pathname.startsWith('/oem/')
             )
-                throw new Error('路线预览只读取本地 /oem/ 数据');
+                throw new Error('Route preview only reads local /oem/ data');
             const response = await fetch(url, { signal: abort.signal });
-            if (!response.ok) throw new Error('无法读取候选路线');
+            if (!response.ok) throw new Error('Unable to load candidate route');
             const value: Candidate = await response.json();
             const vector = (p: number[]) =>
                 Array.isArray(p) && p.length === 3 && p.every(Number.isFinite);
@@ -83,7 +99,7 @@ export default function RouteInspection({
                         ),
                 )
             )
-                throw new Error('候选路线格式错误');
+                throw new Error('Invalid candidate route format');
             if (!abort.signal.aborted) setData(value);
         })().catch((e) => {
             if (!abort.signal.aborted) setError(String(e));
@@ -101,7 +117,8 @@ export default function RouteInspection({
         const draw = (now: number) => {
             const dt = Math.min((now - previous) / 1000, 0.1);
             previous = now;
-            if (playing) time.current = (time.current + dt) % data.route.cost;
+            if (playing && data.route.cost > 0)
+                time.current = (time.current + dt) % data.route.cost;
             if (now - lastReadout > 100) {
                 setSeconds(time.current);
                 lastReadout = now;
@@ -206,7 +223,7 @@ export default function RouteInspection({
         frame = requestAnimationFrame(draw);
         return () => cancelAnimationFrame(frame);
     }, [viewer, data, playing, visible]);
-    if (!source) return null;
+    if (!source && !candidate && !message) return null;
     const pose = (kind: 'side' | 'top') => {
         if (!data || viewer.scene?.pkg.manifest.scene.id !== data.scene) return;
         if (kind === 'side' && data.overview) {
@@ -258,13 +275,13 @@ export default function RouteInspection({
             <canvas
                 ref={canvas}
                 className='route-inspection-canvas'
-                aria-label='候选路线三维投影'
+                aria-label='Candidate route projection'
             />
             {panelRoot &&
                 createPortal(
                     <Panel
-                        title='路线预览'
-                        label='候选路线预览'
+                        title='Route preview'
+                        label='Candidate route preview'
                         className='route-inspection-panel'
                         actions={
                             <button
@@ -272,32 +289,66 @@ export default function RouteInspection({
                                 disabled={!data}
                                 onClick={() => setVisible(!visible)}
                             >
-                                {visible ? '隐藏' : '显示'}
+                                {visible ? 'Hide' : 'Show'}
                             </button>
                         }
                     >
-                        <p>{data?.title ?? '加载中…'}</p>
+                        <p>{data?.title ?? 'Nearest teleport route'}</p>
                         <p className='muted small'>
-                            候选路径 · 穿透显示 · 可达性待验证
+                            Candidate path · X-ray overlay · Reachability
+                            unverified
                         </p>
+                        {data?.route.locomotion && (
+                            <p className='muted small'>
+                                Sprint energy · Start{' '}
+                                {data.route.locomotion.initial.toFixed(1)} · End{' '}
+                                {data.route.locomotion.final.toFixed(1)} · Min{' '}
+                                {data.route.locomotion.minimum.toFixed(1)}
+                            </p>
+                        )}
+                        {message && <p role='status'>{message}</p>}
+                        {Boolean(
+                            details?.length ||
+                                data?.coverage ||
+                                data?.assumptions?.length,
+                        ) && (
+                            <details>
+                                <summary>Details</summary>
+                                {details?.map((value) => (
+                                    <p className='muted small' key={value}>
+                                        {value}
+                                    </p>
+                                ))}
+                                {data?.coverage && (
+                                    <p className='muted small'>
+                                        {data.coverage}
+                                    </p>
+                                )}
+                                {data?.assumptions?.map((value) => (
+                                    <p className='muted small' key={value}>
+                                        {value}
+                                    </p>
+                                ))}
+                            </details>
+                        )}
                         {error && <p role='alert'>{error}</p>}
                         {data && (
                             <>
                                 <div className='world-panel-actions'>
                                     <button onClick={() => pose('side')}>
-                                        侧面全览
+                                        Side overview
                                     </button>
                                     <button onClick={() => pose('top')}>
-                                        俯视
+                                        Top view
                                     </button>
                                     <button
                                         onClick={() => setPlaying(!playing)}
                                     >
-                                        {playing ? '暂停' : '播放'}
+                                        {playing ? 'Pause' : 'Play'}
                                     </button>
                                 </div>
                                 <input
-                                    aria-label='路线播放进度'
+                                    aria-label='Route playback position'
                                     type='range'
                                     min='0'
                                     max={data.route.cost}
@@ -310,8 +361,8 @@ export default function RouteInspection({
                                 />
                                 <small>
                                     {seconds.toFixed(1)} /{' '}
-                                    {data.route.cost.toFixed(1)} 秒（候选模型）
-                                    · 可自由移动相机
+                                    {data.route.cost.toFixed(1)} s (candidate
+                                    model) · Free camera
                                 </small>
                             </>
                         )}

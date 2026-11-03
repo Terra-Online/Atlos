@@ -19,7 +19,7 @@ import {
     setTrackerBearing,
     stopTrackerPulse,
 } from '@/services/map/locatorMarker';
-import { convertEFPosition } from '@/services/endfield/locatorTransform';
+import { mapPosition } from './navigation';
 import {
     getLayerByTier,
     getLayerTileSuffix,
@@ -52,6 +52,32 @@ export function createMinimap(element: HTMLElement) {
         }),
     );
     map.createPane('locator').style.zIndex = '900';
+    const routePane = map.createPane('route');
+    routePane.style.zIndex = '550';
+    routePane.style.pointerEvents = 'none';
+    const routeLine = L.polyline([], {
+        pane: 'route',
+        color: '#a6e6ff',
+        weight: 2,
+        opacity: 0.95,
+        interactive: false,
+        smoothFactor: 0,
+    });
+    let routePoint: Pick<Point, 'scene' | 'level' | 'region'> | null = null;
+    let routeBounds: L.LatLngBounds | null = null;
+    const showRoute = (point: Point | null) => {
+        const visible = !!(
+            point &&
+            routePoint &&
+            routeBounds &&
+            point.scene === routePoint.scene &&
+            point.level === routePoint.level &&
+            point.region === routePoint.region
+        );
+        if (visible && !map.hasLayer(routeLine)) routeLine.addTo(map);
+        if (!visible && map.hasLayer(routeLine)) routeLine.remove();
+        return visible;
+    };
     const tileLayer = (region: string, source: TileSource, suffix: string) =>
         createMapTileLayer(region, source, suffix, 5).addTo(map);
     const zoomBands = new MinimapZoom();
@@ -86,16 +112,14 @@ export function createMinimap(element: HTMLElement) {
         cursorMoved = false,
         unitsPerMeter = 1;
     let scalePoint: Point | null = null;
-    const position = (point: Point, v: readonly number[]) =>
-        convertEFPosition({
-            mapId: point.scene,
-            levelId: point.level,
-            pos: { x: v[0], y: v[1], z: v[2] },
-            isOnline: true,
-        });
+    const position = mapPosition;
     const draw = () => {
         const d = readCamera?.();
-        if (!d || !Object.hasOwn(REGION_DICT, d.point.region)) return;
+        if (!d || !Object.hasOwn(REGION_DICT, d.point.region)) {
+            showRoute(null);
+            return;
+        }
+        const routeVisible = showRoute(d.point);
         const point = d.point,
             forwardVector = d.forward,
             region = REGION_DICT[point.region];
@@ -201,7 +225,21 @@ export function createMinimap(element: HTMLElement) {
                 });
         }
         const size = map.getSize();
-        const idealZoom = d.view
+        const cameraPosition = L.latLng(p.mapZ, p.mapX);
+        let center = cameraPosition;
+        let routeZoom = 5;
+        if (routeVisible && routeBounds) {
+            const bounds = L.latLngBounds(
+                routeBounds.getSouthWest(),
+                routeBounds.getNorthEast(),
+            ).extend(cameraPosition);
+            const fitted = map.getBoundsZoom(bounds, false, L.point(48, 48));
+            if (Number.isFinite(fitted)) {
+                center = bounds.getCenter();
+                routeZoom = Math.max(0, Math.min(5, fitted));
+            }
+        }
+        const cameraZoom = d.view
             ? minimapZoom({
                   altitude: d.position[1] - d.view.groundY,
                   down: -forwardVector[1],
@@ -212,13 +250,17 @@ export function createMinimap(element: HTMLElement) {
                   unitsPerMeter,
               })
             : 3;
+        const idealZoom = Math.min(cameraZoom, routeZoom);
         const context = `${point.scene}/${point.level}/${point.tier}`;
-        const zoom = zoomTransition.update(
-            zoomBands.update(idealZoom, context),
-            context,
-            performance.now(),
+        // Zoom bands and their transition must not crop an active route.
+        const zoom = Math.min(
+            zoomTransition.update(
+                zoomBands.update(idealZoom, context),
+                context,
+                performance.now(),
+            ),
+            routeZoom,
         );
-        const center = L.latLng(p.mapZ, p.mapX);
         // Position the pin and map from the same sample before the browser paints.
         placeTarget(center, zoom);
         setContinuousView(map, center, zoom);
@@ -231,7 +273,6 @@ export function createMinimap(element: HTMLElement) {
             tracker.addTo(map);
             if (cursorMoved) stopTrackerPulse(tracker);
         }
-        const cameraPosition = L.latLng(p.mapZ, p.mapX);
         if (!tracker.getLatLng().equals(cameraPosition))
             tracker.setLatLng(cameraPosition);
         const previous = previousCamera;
@@ -277,6 +318,37 @@ export function createMinimap(element: HTMLElement) {
     });
     resize.observe(element);
     return {
+        /** Display a world-space route with its planar extent and camera in view. */
+        setRoute(
+            route: {
+                point: Point;
+                points: readonly (readonly number[])[];
+            } | null,
+        ) {
+            const locations =
+                route?.points.map((point) => {
+                    if (point.length !== 3 || !point.every(Number.isFinite))
+                        throw new Error('Invalid minimap route position');
+                    const location = position(route.point, point);
+                    if (
+                        !Number.isFinite(location.mapX) ||
+                        !Number.isFinite(location.mapZ)
+                    )
+                        throw new Error('Invalid projected route position');
+                    return L.latLng(location.mapZ, location.mapX);
+                }) ?? [];
+            routeBounds = locations.length ? L.latLngBounds(locations) : null;
+            routePoint = route
+                ? {
+                      scene: route.point.scene,
+                      level: route.point.level,
+                      region: route.point.region,
+                  }
+                : null;
+            routeLine.setLatLngs(locations);
+            showRoute(readCamera?.()?.point ?? null);
+            schedule();
+        },
         update(read: () => Sample | null) {
             readCamera = read;
             schedule();

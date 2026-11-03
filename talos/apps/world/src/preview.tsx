@@ -23,7 +23,14 @@ import {
 } from '@endfield-noclip/package-format/oem';
 import { completedProgressionPicks } from '@endfield-noclip/package-format/story';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+    lazy,
+    Suspense,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 
 import { httpSource, type Viewer } from '@endfield-noclip/viewer/host';
@@ -36,6 +43,10 @@ import type { Launch } from './route';
 import { PointConditions } from './point-conditions.tsx';
 import { TargetMarker } from './target-marker.tsx';
 import { readView, writeView, displayOptions } from './view-storage';
+
+const NearestRoute = import.meta.env.DEV
+    ? lazy(() => import('./nearest-route'))
+    : null;
 
 type Request =
     | { point: string }
@@ -56,6 +67,11 @@ export const Preview = ({
             ? new URL(location.href).searchParams.get('routePreview')
             : null,
     );
+    const planRoute = useRef(
+        import.meta.env.DEV &&
+            new URL(location.href).searchParams.get('planRoute') === 'nearest',
+    );
+    const minimapRef = useRef<ReturnType<typeof createMinimap> | null>(null);
     const mapRoot = useRef<HTMLDivElement>(null);
     const navigate = useRef<(request: Request) => void>(() => {});
     const [area, setArea] = useState({ region: 'Valley_4', subregion: '' });
@@ -66,6 +82,14 @@ export const Preview = ({
     const [preset, setPreset] = useState('');
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState('Opening OEM preview…');
+    const applyRoute = useCallback(
+        (points: [number, number, number][] | null) => {
+            minimapRef.current?.setRoute(
+                points && point ? { point, points } : null,
+            );
+        },
+        [point],
+    );
     const reply = useCallback((type: string, payload: object = {}) => {
         channel.current?.send(type, payload);
     }, []);
@@ -100,6 +124,7 @@ export const Preview = ({
     useEffect(() => {
         const abort = new AbortController();
         const map = mapRoot.current ? createMinimap(mapRoot.current) : null;
+        minimapRef.current = map;
         let framing: AbortController | null = null;
         const saved = readView(viewer.options);
         let resume =
@@ -445,6 +470,8 @@ export const Preview = ({
                                 'routePreview',
                                 routePreview.current,
                             );
+                        if (planRoute.current)
+                            url.searchParams.set('planRoute', 'nearest');
                         url.hash = '';
                         history.replaceState(null, '', url);
                         setStatus('');
@@ -606,6 +633,7 @@ export const Preview = ({
             stop();
             channel.current?.close();
             channel.current = null;
+            if (minimapRef.current === map) minimapRef.current = null;
             map?.destroy();
             viewer.controls.groundHeight = null;
             navigate.current = () => {};
@@ -644,6 +672,16 @@ export const Preview = ({
                     />,
                     panelRoot,
                 )}
+            {NearestRoute && planRoute.current && point && !loading && (
+                <Suspense fallback={null}>
+                    <NearestRoute
+                        viewer={viewer}
+                        point={point}
+                        panelRoot={panelRoot}
+                        onRoute={applyRoute}
+                    />
+                </Suspense>
+            )}
             <div ref={mapRoot} className='oem-minimap' aria-label='Minimap' />
             {status && <output className='panel oem-status'>{status}</output>}
             {point && viewer.scene?.pkg.manifest.scene.id === point.scene && (
