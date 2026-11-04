@@ -33,10 +33,13 @@ const hash = (value: unknown) =>
 
 export const physicalMargins = [24, 64, 128, 256] as const;
 
-/** Bounded, cached physical builds for local inspection. One child owns native compilation at a time. */
+/** One foreground build/ground solve and one background action solve can progress
+ * independently. A long shortcut search cannot hold up the next walking query.
+ */
 export function physicalRouteBuilder(options: Options) {
     const jobs = new Map<string, Job>();
     let queue = Promise.resolve();
+    let optimization = Promise.resolve();
     let closed = false;
     const configured = Boolean(
         options.directory && options.extractor && options.config,
@@ -68,8 +71,8 @@ export function physicalRouteBuilder(options: Options) {
         });
         return movement;
     };
-    const enqueue = (current: Job, args: string[]) => {
-        queue = queue.then(
+    const enqueue = (current: Job, args: string[], background = false): void => {
+        const pending = (background ? optimization : queue).then(
             () =>
                 new Promise<void>((done) => {
                     if (closed) {
@@ -110,6 +113,20 @@ export function physicalRouteBuilder(options: Options) {
                                     current.message = `Reading collision sources · ${JSON.stringify(progress.cell)}`;
                                 if (progress.phase === 'ground')
                                     current.message = 'Physical ground ready';
+                                if (progress.phase === 'ground-route') {
+                                    current.message =
+                                        'Walking route ready · Comparing action alternatives…';
+                                    void readFile(current.output, 'utf8')
+                                        .then((bytes) => {
+                                            const result = JSON.parse(bytes);
+                                            if (
+                                                current.status === 'building' &&
+                                                result.status === 'candidate'
+                                            )
+                                                current.result = result;
+                                        })
+                                        .catch(() => {});
+                                }
                                 if (progress.phase === 'collision-index')
                                     current.message =
                                         'Indexing physical obstacles…';
@@ -147,7 +164,10 @@ export function physicalRouteBuilder(options: Options) {
                                         .find((line) =>
                                             line.startsWith('Error:'),
                                         ) || 'Physical route job failed';
-                                await unlink(current.output).catch(() => {});
+                                if (!current.result)
+                                    await unlink(current.output).catch(
+                                        () => {},
+                                    );
                             }
                         })()
                             .catch((failure) => {
@@ -158,6 +178,8 @@ export function physicalRouteBuilder(options: Options) {
                     });
                 }),
         );
+        if (background) optimization = pending;
+        else queue = pending;
     };
     const query = async (
         scene: string,
@@ -261,15 +283,16 @@ export function physicalRouteBuilder(options: Options) {
         ground: Job,
         request: RouteRequest,
         startSolve: boolean,
+        groundOnly = false,
     ) => {
         if (!configured || closed || ground.status !== 'ready') return null;
         const settings = await movementFile();
         // Traversals depend on endpoints, interaction volumes and exclusions, even when ground tiles are shared.
         const key = hash({
-            stage: 'route',
+            stage: groundOnly ? 'walking-route' : 'route',
             ground: ground.output,
             request,
-            policy: 3,
+            policy: 6,
             movement: settings.fingerprint,
             solver: options.solver,
         });
@@ -299,10 +322,12 @@ export function physicalRouteBuilder(options: Options) {
                 result.source?.contentHash === request.source.contentHash &&
                 ['candidate', 'unavailable'].includes(result.status)
             ) {
-                job.status = 'ready';
                 job.result = result;
-                job.message = 'Physical route data ready';
-                return job;
+                if (result.optimizing !== true) {
+                    job.status = 'ready';
+                    job.message = 'Physical route data ready';
+                    return job;
+                }
             }
         } catch {
             /* Rebuild missing or incomplete query artifacts. */
@@ -311,7 +336,7 @@ export function physicalRouteBuilder(options: Options) {
         try {
             await writeFile(temporary, JSON.stringify(request));
             await rename(temporary, input);
-            enqueue(job, [
+            const args = [
                 'player-route',
                 '--ground',
                 ground.output,
@@ -323,7 +348,12 @@ export function physicalRouteBuilder(options: Options) {
                 input,
                 '-o',
                 output,
-            ]);
+            ];
+            enqueue(
+                job,
+                groundOnly ? [...args, '--ground-only'] : args,
+                !groundOnly,
+            );
         } catch (error) {
             job.status = 'failed';
             job.message = String(error);

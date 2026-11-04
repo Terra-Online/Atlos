@@ -49,6 +49,13 @@ type InteractionCatalog = {
     points: Map<string, InteractionPoint>;
 };
 type Answer = { value: unknown; status: number };
+type Result = {
+    scene: string;
+    source: Source;
+    status: string;
+    route?: Route;
+    diagnostics?: unknown;
+};
 type Candidate = {
     status: 'candidate';
     route: Extract<Route, { status: 'complete' }>;
@@ -520,7 +527,7 @@ export function routeServer(
                         'Nearest anchor selected by 3D distance within the current level',
                         'Base scene state 0 and area 0 are assumed',
                         ...(data.progression === 'completed'
-                            ? ['Quests and missions assumed completed; runtime wall overrides unresolved']
+                            ? ['All level tasks assumed completed; resolved script walls use their terminal-stage snapshot']
                             : []),
                         goal
                             ? 'Authored interaction volume applied; runtime interaction availability remains unresolved'
@@ -645,7 +652,11 @@ export function routeServer(
                         } | null,
                     ) => {
                         if (fallback && fallback.route.cost <= route.cost) {
-                            retain('', false, traversal);
+                            retain(
+                                optimization?.message ?? '',
+                                Boolean(optimization && optimization.status !== 'failed'),
+                                traversal,
+                            );
                             return;
                         }
                         const candidate = {
@@ -707,14 +718,49 @@ export function routeServer(
                         interaction: goal?.interaction,
                         walls: data.options.walls,
                     };
-                    const motion =
+                    const walking =
                         job?.status === 'ready'
-                            ? await builder.solve(job, routeRequest, false)
+                            ? await builder.solve(job, routeRequest, false, true)
+                            : null;
+                    if (
+                        walking?.status === 'queued' ||
+                        walking?.status === 'building'
+                    ) {
+                        building(walking.message);
+                        return;
+                    }
+                    const walked = walking?.result as Result | undefined;
+                    if (
+                        walking?.status === 'ready' &&
+                        walked?.status === 'unavailable' &&
+                        await expandCoverage()
+                    ) return;
+                    const motion =
+                        job?.status === 'ready' && walking?.status === 'ready'
+                            ? await builder.solve(job, routeRequest, true)
                             : null;
                     if (
                         motion?.status === 'queued' ||
                         motion?.status === 'building'
                     ) {
+                        const provisional = (motion.result ?? walked) as Result | undefined;
+                        if (
+                            built &&
+                            provisional?.scene === scene &&
+                            provisional.source &&
+                            sameSource(source, provisional.source) &&
+                            provisional.status === 'candidate' &&
+                            provisional.route?.status === 'complete'
+                        ) {
+                            publish(
+                                provisional.route,
+                                built.data,
+                                'Physical collision ground · Walking route',
+                                provisional.diagnostics,
+                                { status: 'building', message: motion.message },
+                            );
+                            return;
+                        }
                         building(motion.message);
                         return;
                     }
@@ -777,7 +823,8 @@ export function routeServer(
                             );
                         return;
                     }
-                    if (motion?.status === 'failed') {
+                    const failed = walking?.status === 'failed' ? walking : motion;
+                    if (failed?.status === 'failed') {
                         if (
                             retain(
                                 'Jump optimization could not finish; the current route is retained',
@@ -788,7 +835,7 @@ export function routeServer(
                         reply({
                             status: 'unavailable',
                             category: 'movement-solver-error',
-                            message: motion.message,
+                            message: failed.message,
                             assumptions,
                             interaction,
                             anchor: {
@@ -976,6 +1023,7 @@ export function routeServer(
                                           next,
                                           routeRequest,
                                           true,
+                                          true,
                                       )
                                     : next;
                             publish(
@@ -1012,6 +1060,7 @@ export function routeServer(
                         const solving = await builder.solve(
                             nextJob,
                             routeRequest,
+                            true,
                             true,
                         );
                         if (solving) {

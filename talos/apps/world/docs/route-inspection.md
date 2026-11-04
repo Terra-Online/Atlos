@@ -151,3 +151,60 @@ Keep that product policy visible in the query and result applicability.
 
 These are planning changes. Implementation and real-game walking validation are
 the next milestones.
+
+## Alpha.22 implementation and acceptance
+
+The physical builder preserves consecutive controller-sized steps through local
+support connections. Tile passages retain directed entry and exit intervals,
+shared by search and tracing. The packed dependency and cache identity use alpha.22.
+
+The default validation snapshot assumes all level tasks completed. The air-wall
+exporter records an owning-script terminal-stage interpretation where its stage
+domain and event effects resolve consistently. The ground importer applies that
+result for the explicit completed progression. Other states remain unknown and
+blocked. Regenerate the bound ground exports and restart the local service when
+changing this snapshot.
+Empty mission rise/down lists carry no activation reason. Their initial false
+state allows completed down conditions to resolve without a spurious unknown
+rise condition.
+Unowned unconditional walls use their authored default switch for this planning
+snapshot. Runtime overrides belong in a separately supplied snapshot.
+
+`player-route` atomically publishes a walking candidate before airborne indexing
+and optional optimization. Polling displays it and retains its optimization state.
+Interrupted provisional outputs remain resumable. A restart preserves their
+provisional status until completed work replaces them.
+Foreground physical builds and `--ground-only` queries share one queue, while
+full action optimization uses an independent background queue. Walking failure
+triggers bounded ground coverage expansion before action discovery. A complete
+walking baseline limits optional shortcut discovery to 512 candidates. Unresolved
+reachability retains the existing 8000-candidate budget and explicit truncation.
+
+The fixed four-region population contains 71 elevated targets. The independent
+high-resolution reference confirms 31 walking-positive cases. Alpha.22 at the
+existing resolution completes all 31, including all 13 measured step-profile
+cases. Alpha.21 at that resolution completes 27/31 and 10/13 respectively. Both
+comparisons use the corrected completed-task snapshot. The other 40 candidates
+remain unclassified within the selected inputs and bounds.
+
+The normal entry for `100yS9e` shows a physical-ground route consisting entirely
+of walking, with model duration about 21.97 seconds. The selected script wall is
+inactive in the completed-task terminal-stage snapshot. Browser inspection
+confirms route rendering and playback controls. In-game execution remains a
+separate acceptance step.
+
+The additional examples `0loYRkm` and `14lAI8l` both return walking candidates.
+Physical walking checks give model durations of 33.02 and 30.39 seconds, while
+the current authored-navmesh incumbents have durations of 30.36 and 30.16 seconds.
+With physical ground cached and walking-query caches absent, the foreground
+commands took about 7.9 and 8.4 seconds. An HTTP run first returned candidates
+after about 0.54 and 4.00 seconds. Background shortcut work still takes tens of
+seconds and remains visibly separate from the available candidate. Stage timings
+are available in the command result's `diagnostics.timingMs`.
+
+`0165dV6` was blocked by an unconditional default-off wall retaining unknown
+state. After the generic default-state correction, the physical walking baseline
+is 31.87 model seconds. Optional comparison selects 30.77 seconds with three
+jumps. With physical ground cached, the full command takes about 33.7 seconds,
+including 7.7 seconds for walking and 24.0 seconds for shortcut comparison. The
+normal page displays the completed candidate and playback controls.

@@ -242,8 +242,8 @@ importers:
         specifier: workspace:*
         version: link:../../vendor/endfield-noclip/packages/viewer
       '@oem/ganglia':
-        specifier: file:../../vendor/ganglia/oem-ganglia-0.1.0-alpha.21.tgz
-        version: file:vendor/ganglia/oem-ganglia-0.1.0-alpha.21.tgz
+        specifier: file:../../vendor/ganglia/oem-ganglia-0.1.0-alpha.22.tgz
+        version: file:vendor/ganglia/oem-ganglia-0.1.0-alpha.22.tgz
     devDependencies:
       '@webgpu/types':
         specifier: ^0.1.74
@@ -1760,9 +1760,9 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@oem/ganglia@file:vendor/ganglia/oem-ganglia-0.1.0-alpha.21.tgz':
-    resolution: {integrity: sha512-mMvbqJVAMUpBydoC/5ehre7tvIdToANREr5yTct4/pzeEllKR9wBUfXJwDygyl0Gl7inooorrrAnXtDSXHaz7w==, tarball: file:vendor/ganglia/oem-ganglia-0.1.0-alpha.21.tgz}
-    version: 0.1.0-alpha.21
+  '@oem/ganglia@file:vendor/ganglia/oem-ganglia-0.1.0-alpha.22.tgz':
+    resolution: {integrity: sha512-59lGwizwH5rpCqX5F8rLyIMvaKRPNhk8N5kkU13x4CWlMZ4v7CZvVZyHseU8U4qBe6n5cC25uzNu+0wd7t/AEA==, tarball: file:vendor/ganglia/oem-ganglia-0.1.0-alpha.22.tgz}
+    version: 0.1.0-alpha.22
     engines: {node: '>=22'}
 
   '@opentelemetry/api@1.9.1':
@@ -1894,9 +1894,6 @@ packages:
 
   '@recast-navigation/core@0.44.0':
     resolution: {integrity: sha512-N4YO9JBXrGFf3LkrhXmABa7pEwLHvq/gq6o7pLKKu5A4JAp+A5y/9424ps3cVpO1m7ibh3zlXmeewTut9LeXQw==}
-
-  '@recast-navigation/generators@0.44.0':
-    resolution: {integrity: sha512-i2N/sCfuq7IJcSuMmHuX2Uer6oonr9PzFZTrPpwS/e2t+ZpVLHb3DHFY9evKrL2X8diO7sDUDBOpTfW/4Nwucw==}
 
   '@recast-navigation/wasm@0.44.0':
     resolution: {integrity: sha512-VNv7xv50cFCdsGd2LdQWZqtLcWXB7nyi4Ilq9t5GMn3GEfCmJEbbeZWSXX5Mgdc4yj71QueTv15V7hPDAQ9gaw==}
@@ -7414,10 +7411,9 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
 
-  '@oem/ganglia@file:vendor/ganglia/oem-ganglia-0.1.0-alpha.21.tgz':
+  '@oem/ganglia@file:vendor/ganglia/oem-ganglia-0.1.0-alpha.22.tgz':
     dependencies:
       '@recast-navigation/core': 0.44.0
-      '@recast-navigation/generators': 0.44.0
 
   '@opentelemetry/api@1.9.1': {}
 
@@ -7519,11 +7515,6 @@ snapshots:
 
   '@recast-navigation/core@0.44.0':
     dependencies:
-      '@recast-navigation/wasm': 0.44.0
-
-  '@recast-navigation/generators@0.44.0':
-    dependencies:
-      '@recast-navigation/core': 0.44.0
       '@recast-navigation/wasm': 0.44.0
 
   '@recast-navigation/wasm@0.44.0': {}
