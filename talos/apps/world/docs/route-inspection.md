@@ -108,3 +108,46 @@ and approximation enclosures can overblock. Current inspection assumes all
 teleports unlocked and uses base scene state 0 / area 0. Complete navigation
 coverage, movement-device connections and resource-optimal corridor selection
 remain open.
+
+## Ground topology planning prerequisite
+
+The 2026-11-04 investigation of point `3500030845` (`100yS9e`, `map01_lv006`)
+found two completed local physical solves with `groundStatus=no-verified-route`
+and truncated movement discovery. Their ground builds contain 48,313 and 151,122
+detail triangles. A larger cached build contains 609,196 triangles. The normal
+`?planRoute=nearest` flow subsequently returned `physical-build-failed` with
+`groundFailure=disconnected-ground` and message `Physical route job failed`.
+The child failure cause and the exact real-scene ground break remain unresolved.
+
+Ganglia's `docs/ground-topology.md` records the evidence, a generic multi-riser
+staircase false negative and the proposed G0–G5 implementation sequence. The
+architecture now places layered ground support, explicit directed passages and
+local connectivity refinement before broad airborne feasibility discovery.
+The staircase diagnostic succeeds at finer horizontal resolution, establishing
+build-stage sensitivity. Real-scene diagnosis must also trace collision coverage,
+exported adjacency, controller behavior and exclusion state.
+
+The integration work is planned in this order.
+
+1. The noclip exporter preserves source-bound support regions, detail heights,
+   directed passage domains and their validation evidence from the revised
+   Ganglia build interface. Tile and passage assets can be reused across goals.
+2. Ganglia uses the same passage contract for ground search, tracing, path
+   reconstruction and exposed-boundary discovery. The reference validation
+   includes stairs, ramps, overlapping supports, one-way steps and blocked controls.
+3. Atlos binds the new artifact schema and solver identity, loads required regional
+   dependencies and distinguishes missing input, uncertain ground topology,
+   search truncation and execution failure. Coverage expansion follows evidence
+   of a route leaving the loaded region. Uncertain internal passages trigger
+   source diagnosis or local refinement.
+4. The normal point entry presents the first feasible route and its evidence while
+   optional action optimization proceeds. Ground, airborne and device actions
+   share the established state and resource contracts.
+
+Nearest-anchor inspection currently solves one anchor selected by 3D distance.
+Its candidate count describes the eligible pool. A general best-arrival query
+needs an explicit eligible start set forwarded to Ganglia's multi-source interface.
+Keep that product policy visible in the query and result applicability.
+
+These are planning changes. Implementation and real-game walking validation are
+the next milestones.
