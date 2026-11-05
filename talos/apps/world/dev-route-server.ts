@@ -697,8 +697,11 @@ export function routeServer(
                                 : {}),
                             assumptions: [
                                 ...assumptions,
-                                ...(route.segments.some(segment => segment.mode === 'rope' || segment.mode === 'launch')
-                                    ? ['Device availability follows enabled authored settings; device motion timing is model-based']
+                                ...(route.segments.some(segment => segment.mode === 'rope')
+                                    ? ['All vertical ropes assumed enabled and unlocked; device motion timing is model-based']
+                                    : []),
+                                ...(route.segments.some(segment => segment.mode === 'launch')
+                                    ? ['Launch availability follows enabled authored settings; device motion timing is model-based']
                                     : []),
                             ],
                             interaction,

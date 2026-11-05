@@ -341,7 +341,7 @@ export function physicalRouteBuilder(options: Options) {
             stage: groundOnly ? 'walking-route' : 'route',
             ground: ground.output,
             request,
-            policy: 7,
+            policy: 8,
             devices: devices?.fingerprint,
             movement: settings.fingerprint,
             solver: options.solver,

@@ -238,12 +238,13 @@ and completed shortcut comparison at 42.3 seconds, selecting 30.77 model seconds
 
 The physical action stage reads an optional `<scene>-traversal-devices.json`
 beside the route data. It copies the input to an immutable fingerprinted file and
-includes that fingerprint in cache policy 7. Restart the service after replacing
+includes that fingerprint in cache policy 8. Restart the service after replacing
 the selected device snapshot. Walking feasibility remains independent of devices.
 If walking fails, the action stage tries covered devices and airborne actions
 before expanding the physical build rectangle.
 
-The extractor imports enabled reciprocal vertical ropes and ordinary fixed-target
+The extractor assumes all exported reciprocal vertical ropes enabled and unlocked,
+and imports ordinary enabled fixed-target
 bounce devices using effective interaction triggers, supported feet, timed paths
 and collision/wall checks. Completed mission gates use the existing all-tasks-done
 default. Power, unknown overrides and unsupported device models retain unresolved
@@ -257,3 +258,13 @@ at 0.74 seconds and the full cold query completed at 39.36 seconds. A separate
 physical rope case from `300020256` to `300020282` completes with walk/rope/walk
 in 5.93 model seconds. In-game execution and the device motion timing remain
 independent validation requirements.
+
+The all-enabled policy is independent of the rope's authored state and progression
+gate. It retains physical support, interaction and collision checks. Normal entry
+for point `10100023101`, token `0PdYvB2`, returns walk/rope/walk through pair
+`10100023065` / `10100023064`, taking 5.97 model seconds.
+
+Alpha.23 shares preparation between ground, device and jump stages. On one fixed
+profiled physical input, full command time falls from 58.39 to 23.76 seconds and
+action search from 33.18 to 11.22, with the same search budget and returned model
+cost. First physical construction and optional shortcut work still add latency.
