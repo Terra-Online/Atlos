@@ -305,3 +305,29 @@ export const coarseCorridors = (
     }
     return proposals;
 };
+
+/** Spread discovery directions across alternative approaches before refining them. */
+export const coarseWaypoints = (corridors: Corridor[]): Vec3[] => {
+    const paths = corridors.map((entry) => entry.coarse.path.slice(1, -1));
+    const points: Vec3[] = [],
+        seen = new Set<string>();
+    for (
+        let index = 0;
+        index < Math.max(0, ...paths.map((path) => path.length));
+        index++
+    ) {
+        for (const path of paths) {
+            const point = path[index];
+            if (!point) continue;
+            const key = JSON.stringify(point);
+            if (seen.has(key)) continue;
+            seen.add(key);
+            points.push([...point]);
+        }
+    }
+    if (points.length <= 128) return points;
+    return Array.from(
+        { length: 128 },
+        (_, index) => points[Math.round((index * (points.length - 1)) / 127)],
+    );
+};

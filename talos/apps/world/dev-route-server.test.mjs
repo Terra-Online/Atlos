@@ -287,6 +287,7 @@ test(
                 `
             import { readFile, writeFile } from 'node:fs/promises';
             const args = process.argv.slice(2);
+            if (args.includes('--identity')) {console.log(JSON.stringify({generator:'fixture-generator'}));process.exit(0);}
             if (args[0] === 'player-route') {
                 const request = JSON.parse(await readFile(args[args.indexOf('--request') + 1], 'utf8'));
                 await writeFile(${JSON.stringify(config + '.route-runs')}, 'route\\n', { flag: 'a' });
@@ -479,6 +480,10 @@ test(
                 Date.now() < movementDeadline
             );
             assert.equal(result.body.category, 'movement-coverage');
+            assert.match(
+                result.body.log,
+                /^\/__routes\/log\?path=player-routes/,
+            );
             assert.deepEqual(
                 result.body.diagnostics.physicalMargins,
                 [24, 64, 128, 256],
@@ -499,7 +504,9 @@ test(
                 await readFile(config + '.runs', 'utf8'),
                 'run\n'.repeat(5),
             );
-            const previousRouteRuns = (await readFile(config + '.route-runs', 'utf8')).length;
+            const previousRouteRuns = (
+                await readFile(config + '.route-runs', 'utf8')
+            ).length;
             // Rebuilding movement rules in the same game build must invalidate both artifact stages.
             await writeFile(config, JSON.stringify({ result: fixture }));
             await writeFile(
@@ -535,7 +542,8 @@ test(
                 'run\n'.repeat(9),
             );
             assert.ok(
-                (await readFile(config + '.route-runs', 'utf8')).length > previousRouteRuns,
+                (await readFile(config + '.route-runs', 'utf8')).length >
+                    previousRouteRuns,
             );
             const policies = (
                 await readFile(config + '.movement-files', 'utf8')

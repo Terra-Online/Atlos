@@ -1,4 +1,5 @@
-import { spawn, type ChildProcess } from 'node:child_process';
+import { execFile, spawn, type ChildProcess } from 'node:child_process';
+import { promisify } from 'node:util';
 import { createHash, randomUUID } from 'node:crypto';
 import {
     appendFile,
@@ -37,6 +38,7 @@ type RouteRequest = {
     target: Vec3;
     interaction?: InteractionGoal;
     walls: Wall[];
+    waypoints?: Vec3[];
 };
 const hash = (value: unknown) =>
     createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -69,6 +71,31 @@ export function physicalRouteBuilder(options: Options) {
         options.directory && options.extractor && options.config,
     );
     let movement: Promise<{ fingerprint: string; path: string }> | undefined;
+    let generator: Promise<string> | undefined;
+    const generatorIdentity = () => {
+        generator ??= promisify(execFile)(
+            options.node || process.execPath,
+            [
+                resolve(options.extractor!, 'packages/extractor/src/cli.ts'),
+                'player-ground',
+                '--identity',
+            ],
+            { cwd: options.extractor },
+        )
+            .then(({ stdout }) => {
+                const result = JSON.parse(stdout);
+                if (typeof result.generator !== 'string' || !result.generator)
+                    throw new Error(
+                        'Missing physical ground generator identity',
+                    );
+                return result.generator;
+            })
+            .catch((error) => {
+                generator = undefined;
+                throw error;
+            });
+        return generator;
+    };
     const movementFile = () => {
         movement ??= (async () => {
             const bytes = await readFile(
@@ -134,11 +161,11 @@ export function physicalRouteBuilder(options: Options) {
         ) => {
             const line =
                 JSON.stringify({
+                    ...detail,
                     time: new Date().toISOString(),
                     run: runId,
                     elapsedMs: Math.round(performance.now() - queuedAt),
                     event,
-                    ...detail,
                 }) + '\n';
             writes = writes
                 .then(() => appendFile(log, line))
@@ -202,11 +229,14 @@ export function physicalRouteBuilder(options: Options) {
                     for (const line of lines) {
                         try {
                             const progress = JSON.parse(line);
-                            record('progress', progress);
+                            record('progress', {
+                                ...progress,
+                                durationMs: progress.elapsedMs,
+                            });
                             if (progress.phase === 'collision-inputs')
                                 current.message = 'Reading collision sources…';
                             if (progress.phase === 'ground-tile')
-                                current.message = `Preparing route terrain (${progress.completed}/${progress.total})`;
+                                current.message = `${progress.cached ? 'Reusing' : 'Preparing'} route terrain (${progress.completed}/${progress.total})`;
                             if (progress.phase === 'ground')
                                 current.message = 'Physical ground ready';
                             if (progress.phase === 'ground-search')
@@ -217,6 +247,8 @@ export function physicalRouteBuilder(options: Options) {
                                     'Checking ropes and launch devices…';
                             if (progress.phase === 'goal-refinement')
                                 current.message = 'Refining target access…';
+                            if (progress.phase === 'direction-search')
+                                current.message = `Exploring route regions (${progress.completed}/${progress.total})`;
                             if (progress.phase === 'ground-route') {
                                 current.message =
                                     'Walking route ready. Comparing alternatives…';
@@ -350,6 +382,7 @@ export function physicalRouteBuilder(options: Options) {
             };
         }
         const settings = await movementFile();
+        const buildIdentity = await generatorIdentity();
         const key = hash({
             scene,
             source,
@@ -359,7 +392,7 @@ export function physicalRouteBuilder(options: Options) {
             policy: 4,
             tiles: corridor?.tiles,
             movement: settings.fingerprint,
-            solver: options.solver,
+            generator: buildIdentity,
         });
         let job = jobs.get(key);
         if (!job) {
@@ -420,14 +453,16 @@ export function physicalRouteBuilder(options: Options) {
                     collision,
                     '--input-cache',
                     resolve(options.directory!, 'collision-cache'),
+                    '--tile-cache',
+                    resolve(options.directory!, 'ground-tile-cache'),
                     '--config',
                     options.config!,
                     ...(corridor
                         ? [
-                              '--tiles',
-                              corridor.tiles
-                                  .map((tile) => `${tile.x},${tile.z}`)
-                                  .join(';'),
+                              '--tiles=' +
+                                  corridor.tiles
+                                      .map((tile) => `${tile.x},${tile.z}`)
+                                      .join(';'),
                           ]
                         : []),
                 ],
@@ -512,7 +547,7 @@ export function physicalRouteBuilder(options: Options) {
                       : 'route',
             ground: ground.output,
             request,
-            policy: 10,
+            policy: 11,
             devices: devices?.fingerprint,
             movement: settings.fingerprint,
             solver: options.solver,

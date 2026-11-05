@@ -301,3 +301,16 @@ read-only and uncached. Logs survive browser reload and server restart.
 Route preview keeps the route name, current progress, time and playback/view
 controls. Technical verification, occlusion, stamina and model descriptions are
 omitted from the panel; diagnostic data remains in the retained artifacts.
+
+
+The v62 preview uses the matching v62 renderer and release catalog. Physical-ground
+cache identity follows the installed extractor's geometry generator, separately from
+the route solver version. Overlapping queries and widened proposals share padded
+tile meshes through `ground-tile-cache`; request-specific clipping and seams are
+rebuilt. Progress says **Reusing route terrain** for hits and retains per-tile cache
+and duration fields in the task log. Geometry, body, voxel/step or source changes
+invalidate reuse. Walking, device and jump stages still use separate child jobs;
+their repeated graph preparation remains a distinct cost from native mesh building.
+
+Task elapsed time is retained independently of each stage's duration. Negative
+tile coordinates use the explicit `--tiles=<coordinates>` form.

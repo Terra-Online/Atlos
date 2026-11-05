@@ -19,7 +19,11 @@ import {
     physicalRouteBuilder,
 } from './physical-route-builder.ts';
 
-import { coarseCorridors, type Corridor } from './coarse-route.ts';
+import {
+    coarseCorridors,
+    coarseWaypoints,
+    type Corridor,
+} from './coarse-route.ts';
 
 type Source = { buildGuid: string; contentHash: string };
 type Bounds = { min: [number, number]; max: [number, number] };
@@ -457,6 +461,12 @@ export function routeServer(
                     queries.set(queryKey, entry);
                     const deliver = reply;
                     reply = (value, status = 200) => {
+                        if (
+                            entry.log &&
+                            value !== null &&
+                            typeof value === 'object'
+                        )
+                            value = { ...value, log: entry.log };
                         entry.done = true;
                         const progress =
                             value !== null &&
@@ -840,6 +850,9 @@ export function routeServer(
                         target: goal?.position ?? target,
                         interaction: goal?.interaction,
                         walls: data.options.walls,
+                        waypoints: entry.corridors
+                            ? coarseWaypoints(entry.corridors)
+                            : undefined,
                     };
                     const walking =
                         job?.status === 'ready'
