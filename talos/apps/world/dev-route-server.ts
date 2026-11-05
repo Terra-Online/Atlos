@@ -728,7 +728,7 @@ export function routeServer(
                     };
                     const walking =
                         job?.status === 'ready'
-                            ? await builder.solve(job, routeRequest, false, true)
+                            ? await builder.solve(job, routeRequest, false, 'walking')
                             : null;
                     if (
                         walking?.status === 'queued' ||
@@ -738,6 +738,13 @@ export function routeServer(
                         return;
                     }
                     const walked = walking?.result as Result | undefined;
+                    const device = job?.status === 'ready' && walked?.status === 'unavailable'
+                        ? await builder.solve(job, routeRequest, true, 'devices') : null;
+                    if (device?.status === 'queued' || device?.status === 'building') {
+                        building(device.message);
+                        return;
+                    }
+                    const known = (device?.result ?? walked) as Result | undefined;
                     const motion =
                         job?.status === 'ready' && walking?.status === 'ready'
                             ? await builder.solve(job, routeRequest, true)
@@ -746,7 +753,7 @@ export function routeServer(
                         motion?.status === 'queued' ||
                         motion?.status === 'building'
                     ) {
-                        const provisional = (motion.result ?? walked) as Result | undefined;
+                        const provisional = (motion.result ?? known) as Result | undefined;
                         if (
                             built &&
                             provisional?.scene === scene &&
@@ -758,7 +765,7 @@ export function routeServer(
                             publish(
                                 provisional.route,
                                 built.data,
-                                'Physical collision ground · Walking route',
+                                'Physical collision ground · Known movement route',
                                 provisional.diagnostics,
                                 { status: 'building', message: motion.message },
                             );
@@ -1026,7 +1033,7 @@ export function routeServer(
                                           next,
                                           routeRequest,
                                           true,
-                                          true,
+                                          'walking',
                                       )
                                     : next;
                             publish(
@@ -1064,7 +1071,7 @@ export function routeServer(
                             nextJob,
                             routeRequest,
                             true,
-                            true,
+                            'walking',
                         );
                         if (solving) {
                             building(solving.message);

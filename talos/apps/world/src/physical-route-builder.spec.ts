@@ -81,7 +81,7 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
         );
         if (!next) throw new Error('Next ground job was not created');
         await expect.poll(() => next.status).toBe('ready');
-        const walking = await builder.solve(next, request, true, true);
+        const walking = await builder.solve(next, request, true, 'walking');
         if (!walking)
             throw new Error('Foreground walking stage was not created');
         await expect.poll(() => walking.status).toBe('ready');
@@ -106,6 +106,90 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
         expect(resumed.result).toMatchObject({ optimizing: true });
         await expect.poll(() => resumed.status).toBe('ready');
         expect(resumed.result).toMatchObject({ optimizing: false });
+    } finally {
+        builder.close();
+        await rm(directory, { recursive: true, force: true });
+    }
+});
+
+test('runs a queued known-device query before further ground construction', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'world-device-priority-'));
+    await mkdir(join(directory, 'packages/extractor/src'), { recursive: true });
+    await writeFile(join(directory, 'movement-settings-current.json'), '{}');
+    await writeFile(join(directory, 'map01-traversal-devices.json'), '{}');
+    await writeFile(
+        join(directory, 'packages/extractor/src/cli.ts'),
+        `
+        import {writeFile} from 'node:fs/promises';
+        const output = process.argv[process.argv.indexOf('-o') + 1];
+        const source = {buildGuid:'build',contentHash:'content'};
+        if (process.argv[2] === 'player-ground') {
+            await new Promise(resolve => setTimeout(resolve, 300));
+            await writeFile(output, JSON.stringify({source,surfaces:[]}));
+        } else {
+            await writeFile(output, JSON.stringify({source,scene:'map01',status:'candidate',optimizing:false,
+                devicesOnly:process.argv.includes('--devices-only')}));
+        }
+    `,
+    );
+    const builder = physicalRouteBuilder({
+        directory,
+        extractor: directory,
+        config: 'fixture',
+        node: process.execPath,
+    });
+    const source = { buildGuid: 'build', contentHash: 'content' };
+    try {
+        const ready = await builder.query(
+            'map01',
+            source,
+            [0, 0, 0],
+            [1, 0, 1],
+            { startBuild: true },
+        );
+        if (!ready) throw new Error('missing ground job');
+        await expect.poll(() => ready.status).toBe('ready');
+        const active = await builder.query(
+            'map01',
+            source,
+            [100, 0, 100],
+            [101, 0, 101],
+            { startBuild: true },
+        );
+        if (!active) throw new Error('missing active build');
+        await expect.poll(() => active.status).toBe('building');
+        const queued = await builder.query(
+            'map01',
+            source,
+            [200, 0, 200],
+            [201, 0, 201],
+            { startBuild: true },
+        );
+        if (!queued) throw new Error('missing queued build');
+        const route = await builder.solve(
+            ready,
+            {
+                scene: 'map01',
+                source,
+                arrival: {
+                    id: 'start',
+                    position: [0, 0, 0],
+                    cost: 0,
+                    state: 'available',
+                },
+                target: [1, 0, 1],
+                walls: [],
+            },
+            true,
+            'devices',
+        );
+        if (!route) throw new Error('missing device query');
+        await expect.poll(() => route.status).toBe('ready');
+        expect(route.result).toMatchObject({
+            devicesOnly: true,
+            optimizing: false,
+        });
+        expect(queued.status).not.toBe('ready');
     } finally {
         builder.close();
         await rm(directory, { recursive: true, force: true });

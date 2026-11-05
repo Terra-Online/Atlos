@@ -268,3 +268,11 @@ Alpha.23 shares preparation between ground, device and jump stages. On one fixed
 profiled physical input, full command time falls from 58.39 to 23.76 seconds and
 action search from 33.18 to 11.22, with the same search budget and returned model
 cost. First physical construction and optional shortcut work still add latency.
+
+Walking failure now triggers a foreground `--devices-only` query over ready
+physical ground. It returns known-device feasibility before entering the background
+jump queue. Queued walking/device queries precede further queued ground builds,
+with one active foreground job and one background optimizer. This preserves the
+existing concurrency limit. `10100023101` returns walk/rope/walk after 13.54 seconds
+in the observed cached-ground normal query. The independent small rope command
+finishes its known-action stage in 1.45 seconds, without free jump discovery.
