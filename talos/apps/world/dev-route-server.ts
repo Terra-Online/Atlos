@@ -527,7 +527,7 @@ export function routeServer(
                         'Nearest anchor selected by 3D distance within the current level',
                         'Base scene state 0 and area 0 are assumed',
                         ...(data.progression === 'completed'
-                            ? ['All level tasks assumed completed; resolved script walls use their terminal-stage snapshot']
+                            ? ['All level tasks assumed completed; resolved wall controls use the selected completed-world snapshot']
                             : []),
                         goal
                             ? 'Authored interaction volume applied; runtime interaction availability remains unresolved'
@@ -695,7 +695,12 @@ export function routeServer(
                             ...(traversal
                                 ? { motionValidation: 'model-based' }
                                 : {}),
-                            assumptions,
+                            assumptions: [
+                                ...assumptions,
+                                ...(route.segments.some(segment => segment.mode === 'rope' || segment.mode === 'launch')
+                                    ? ['Device availability follows enabled authored settings; device motion timing is model-based']
+                                    : []),
+                            ],
                             interaction,
                             anchor: {
                                 id: anchor.id,
@@ -730,11 +735,6 @@ export function routeServer(
                         return;
                     }
                     const walked = walking?.result as Result | undefined;
-                    if (
-                        walking?.status === 'ready' &&
-                        walked?.status === 'unavailable' &&
-                        await expandCoverage()
-                    ) return;
                     const motion =
                         job?.status === 'ready' && walking?.status === 'ready'
                             ? await builder.solve(job, routeRequest, true)
@@ -787,7 +787,7 @@ export function routeServer(
                             publish(
                                 result.route,
                                 built.data,
-                                'Physical collision ground with model-based jumps and drops',
+                                'Physical collision ground with model-based device, jump and drop actions',
                                 result.diagnostics,
                             );
                         } else if (result.status === 'unavailable') {

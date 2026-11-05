@@ -233,3 +233,27 @@ optional shortcut comparison. The selected stage and authored base switch remain
 planning assumptions. Actual save state and in-game execution have not been read.
 The final normal-entry API check for `0165dV6` returned a candidate at 1.95 seconds
 and completed shortcut comparison at 42.3 seconds, selecting 30.77 model seconds.
+
+## Fixed movement devices
+
+The physical action stage reads an optional `<scene>-traversal-devices.json`
+beside the route data. It copies the input to an immutable fingerprinted file and
+includes that fingerprint in cache policy 7. Restart the service after replacing
+the selected device snapshot. Walking feasibility remains independent of devices.
+If walking fails, the action stage tries covered devices and airborne actions
+before expanding the physical build rectangle.
+
+The extractor imports enabled reciprocal vertical ropes and ordinary fixed-target
+bounce devices using effective interaction triggers, supported feet, timed paths
+and collision/wall checks. Completed mission gates use the existing all-tasks-done
+default. Power, unknown overrides and unsupported device models retain unresolved
+outcomes. Device candidates can be published while shortcut comparison continues.
+
+Point `3500070545`, token `0UCMfry`, is a real nearest-anchor validation case. The
+normal API returns walking, a small jump, walking, launch device `3500031283`, then
+walking to the point's interaction volume. The route takes 22.16 model seconds,
+against a physical walking baseline of 27.64 seconds. The first candidate arrived
+at 0.74 seconds and the full cold query completed at 39.36 seconds. A separate
+physical rope case from `300020256` to `300020282` completes with walk/rope/walk
+in 5.93 model seconds. In-game execution and the device motion timing remain
+independent validation requirements.

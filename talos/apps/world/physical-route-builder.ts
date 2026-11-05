@@ -132,7 +132,7 @@ export function physicalRouteBuilder(options: Options) {
                                         'Indexing physical obstacles…';
                                 if (progress.phase === 'jump-discovery')
                                     current.message =
-                                        'Comparing ground, jump and drop actions…';
+                                        'Comparing ground, device, jump and drop actions…';
                                 if (progress.phase === 'route-search')
                                     current.message =
                                         'Planning movement and sprint recovery…';
@@ -279,6 +279,52 @@ export function physicalRouteBuilder(options: Options) {
         }
         return job;
     };
+    const deviceInputs = new Map<
+        string,
+        Promise<{ path: string; fingerprint: string } | undefined>
+    >();
+    const deviceFile = (scene: string) => {
+        let pending = deviceInputs.get(scene);
+        if (!pending) {
+            pending = (async () => {
+                const source = resolve(
+                    options.directory!,
+                    `${scene}-traversal-devices.json`,
+                );
+                let bytes;
+                try {
+                    bytes = await readFile(source);
+                } catch (error) {
+                    if (
+                        error instanceof Error &&
+                        'code' in error &&
+                        error.code === 'ENOENT'
+                    )
+                        return undefined;
+                    throw error;
+                }
+                const fingerprint = createHash('sha256')
+                    .update(bytes)
+                    .digest('hex');
+                const directory = resolve(options.directory!, 'devices');
+                await mkdir(directory, { recursive: true });
+                const path = resolve(directory, `${fingerprint}.json`);
+                const temporary = `${path}.${randomUUID()}.tmp`;
+                try {
+                    await writeFile(temporary, bytes);
+                    await rename(temporary, path);
+                } finally {
+                    await unlink(temporary).catch(() => {});
+                }
+                return { path, fingerprint };
+            })().catch((error) => {
+                deviceInputs.delete(scene);
+                throw error;
+            });
+            deviceInputs.set(scene, pending);
+        }
+        return pending;
+    };
     const solve = async (
         ground: Job,
         request: RouteRequest,
@@ -287,12 +333,16 @@ export function physicalRouteBuilder(options: Options) {
     ) => {
         if (!configured || closed || ground.status !== 'ready') return null;
         const settings = await movementFile();
+        const devices = groundOnly
+            ? undefined
+            : await deviceFile(request.scene);
         // Traversals depend on endpoints, interaction volumes and exclusions, even when ground tiles are shared.
         const key = hash({
             stage: groundOnly ? 'walking-route' : 'route',
             ground: ground.output,
             request,
-            policy: 6,
+            policy: 7,
+            devices: devices?.fingerprint,
             movement: settings.fingerprint,
             solver: options.solver,
         });
@@ -348,6 +398,7 @@ export function physicalRouteBuilder(options: Options) {
                 input,
                 '-o',
                 output,
+                ...(devices ? ['--devices', devices.path] : []),
             ];
             enqueue(
                 job,
