@@ -701,3 +701,130 @@ test('serves retained task logs while rejecting paths outside the task directori
         await rm(directory, { recursive: true, force: true });
     }
 });
+
+test(
+    'an unmapped nearest landing falls back without widening the same ground',
+    { timeout: 10000 },
+    async () => {
+        const directory = await mkdtemp(
+            join(tmpdir(), 'world-arrival-fallback-'),
+        );
+        const httpServer = new EventEmitter();
+        const source = { buildGuid: 'fixture', contentHash: 'fixture' };
+        const extractor = join(directory, 'extractor');
+        const config = join(directory, 'config.json');
+        try {
+            const arrivals = [
+                { id: 'bad', position: [5, 2, 1], cost: 0, state: 'unknown' },
+                { id: 'good', position: [1, 0, 1], cost: 0, state: 'unknown' },
+            ];
+            const data = {
+                scene: 'map01',
+                source,
+                surfaces: [],
+                arrivals,
+                options: {
+                    speed: 5,
+                    maxVertical: 0.5,
+                    walls: [],
+                    profile: { radius: 0.35, height: 1.66 },
+                },
+            };
+            await writeFile(
+                join(directory, 'map01-ground-all.json'),
+                JSON.stringify(data),
+            );
+            await writeFile(
+                join(directory, 'travel-points.json'),
+                JSON.stringify({
+                    source,
+                    points: arrivals.map((a) => ({
+                        ...a,
+                        scene: 'map01',
+                        level: 'map01_lv001',
+                    })),
+                }),
+            );
+            await writeFile(
+                join(directory, 'movement-settings-current.json'),
+                '{}',
+            );
+            await writeFile(config, JSON.stringify(data));
+            await mkdir(join(extractor, 'packages/extractor/src'), {
+                recursive: true,
+            });
+            await writeFile(
+                join(extractor, 'packages/extractor/src/cli.ts'),
+                `
+            import {readFile,writeFile,appendFile} from 'node:fs/promises';
+            const args=process.argv.slice(2), get=k=>args[args.indexOf(k)+1];
+            if(args.includes('--identity')) {console.log(JSON.stringify({generator:'fixture'}));process.exit(0);}
+            const output=get('-o');
+            if(args[0]==='player-ground') {
+                await appendFile(${JSON.stringify(config + '.builds')},'build\\n');
+                const data=JSON.parse(await readFile(get('--config'),'utf8'));
+                const b=args.find(a=>a.startsWith('--bounds=')).slice(9).split(',').map(Number);
+                await writeFile(output,JSON.stringify({...data,build:{bounds:{min:b.slice(0,2),max:b.slice(2)}},surfaces:[{id:'floor',vertices:[[0,0,0],[8,0,0],[8,0,4],[0,0,4]]}]}));
+            } else {
+                const r=JSON.parse(await readFile(get('--request'),'utf8'));
+                const points=[r.arrival.position,r.target];
+                await writeFile(output,JSON.stringify({scene:r.scene,source:r.source,...(r.arrival.id==='bad'
+                    ? {status:'unavailable',reason:'arrival-unmapped'}
+                    : {status:'candidate',route:{status:'complete',start:r.arrival.id,cost:1,arrivalCost:0,length:5,points,segments:[{mode:'walk',points,times:[0,1]}]}})}));
+            }
+        `,
+            );
+            let handle;
+            routeServer(directory, {
+                extractor,
+                config,
+                node: process.execPath,
+            }).configureServer({
+                httpServer,
+                middlewares: {
+                    use: (_path, handler) => {
+                        handle = handler;
+                    },
+                },
+                config: { logger: { error: console.error } },
+            });
+            const query = new URLSearchParams({
+                scene: 'map01',
+                level: 'map01_lv001',
+                x: '6',
+                y: '0',
+                z: '1',
+                ...source,
+            });
+            const request = () =>
+                new Promise((resolve) =>
+                    handle(
+                        { method: 'GET', url: '/?' + query },
+                        {
+                            setHeader() {},
+                            end(body) {
+                                resolve(JSON.parse(body));
+                            },
+                        },
+                    ),
+                );
+            let result;
+            const deadline = Date.now() + 7000;
+            do {
+                result = await request();
+                if (
+                    result.status === 'candidate' ||
+                    result.status === 'unavailable'
+                )
+                    break;
+                await new Promise((resolve) => setTimeout(resolve, 25));
+            } while (Date.now() < deadline);
+            assert.equal(result.status, 'candidate');
+            assert.equal(result.route.start, 'good');
+            assert.equal(await readFile(config + '.builds', 'utf8'), 'build\n');
+        } finally {
+            httpServer.emit('close');
+            await rm(directory, { recursive: true, force: true });
+        }
+    },
+);

@@ -25,6 +25,12 @@ import {
     type Corridor,
 } from './coarse-route.ts';
 
+import {
+    travelArrivals,
+    type TravelPoint,
+    type TravelArrival,
+} from './travel-arrivals.ts';
+
 type Source = { buildGuid: string; contentHash: string };
 type Bounds = { min: [number, number]; max: [number, number] };
 type Data = {
@@ -42,7 +48,7 @@ type Data = {
     selection?: unknown;
 };
 type IndexedData = { data: Data; bounds: Float64Array };
-type Anchor = { id: string; level: string; position: Vec3 };
+
 type InteractionPoint = {
     id: string;
     level: string;
@@ -83,6 +89,7 @@ type Query = {
     done: boolean;
     progress?: boolean;
     marginIndex: number;
+    anchorIndex: number;
     log?: string;
     corridors?: Corridor[];
     candidate?: Candidate;
@@ -211,7 +218,7 @@ export function routeServer(
     const cache = new Map<string, Promise<IndexedData>>();
     const builder = physicalRouteBuilder({ ...build, directory });
     let builtCache = new WeakMap<object, IndexedData>();
-    let travel: Promise<{ source: Source; points: Anchor[] }> | undefined;
+    let travel: Promise<{ source: Source; points: TravelPoint[] }> | undefined;
     let physical: Promise<IndexedData | null> | undefined;
     const interactionCache = new Map<
         string,
@@ -456,6 +463,7 @@ export function routeServer(
                         }),
                         done: false,
                         marginIndex,
+                        anchorIndex: previous?.anchorIndex ?? 0,
                         corridors: previous?.corridors,
                     };
                     queries.set(queryKey, entry);
@@ -560,25 +568,15 @@ export function routeServer(
                         });
                         return;
                     }
-                    const levels = new Map(
-                        anchors.points.map((p) => [p.id, p.level]),
+                    const candidates = travelArrivals(
+                        anchors.points,
+                        data.arrivals,
+                        scene,
+                        level,
+                        data.progression === 'fully-enabled',
+                        target,
                     );
-                    const candidates = data.arrivals.filter(
-                        (a) =>
-                            levels.get(a.id) === level &&
-                            finiteVector(a.position),
-                    );
-                    let anchor: GroundArrival | undefined,
-                        closest = Infinity;
-                    for (const candidate of candidates) {
-                        const distance = Math.hypot(
-                            ...candidate.position.map((v, i) => v - target[i]),
-                        );
-                        if (distance < closest) {
-                            closest = distance;
-                            anchor = candidate;
-                        }
-                    }
+                    const anchor = candidates[entry.anchorIndex];
                     if (!anchor) {
                         reply({
                             status: 'unavailable',
@@ -588,7 +586,7 @@ export function routeServer(
                         });
                         return;
                     }
-                    const arrival: GroundArrival = {
+                    const arrival: TravelArrival = {
                         ...anchor,
                         position: [...anchor.position],
                         state: 'available',
@@ -615,7 +613,7 @@ export function routeServer(
                     };
                     const assumptions = [
                         'All teleport anchors assumed unlocked',
-                        'Nearest anchor selected by 3D distance within the current level',
+                        'Same-level anchors tried by distance, including industrial bases',
                         'Base scene state 0 and area 0 are assumed',
                         ...(data.progression === 'fully-enabled'
                             ? [
@@ -668,6 +666,15 @@ export function routeServer(
                             assumptions,
                             interaction,
                         });
+                    };
+                    const nextAnchor = () => {
+                        if (entry.anchorIndex + 1 >= candidates.length)
+                            return false;
+                        entry.anchorIndex++;
+                        entry.marginIndex = 0;
+                        entry.corridors = undefined;
+                        building('Trying another teleport landing…');
+                        return true;
                     };
                     const expandCoverage = async () => {
                         const nextIndex = entry.marginIndex + 1;
@@ -932,6 +939,7 @@ export function routeServer(
                             status: string;
                             route?: Route;
                             diagnostics?: unknown;
+                            reason?: string;
                         };
                         if (
                             !result ||
@@ -960,12 +968,20 @@ export function routeServer(
                                 )
                             )
                                 return;
-                            if (await expandCoverage()) return;
+                            const arrivalFailed =
+                                result.reason === 'arrival-unmapped' ||
+                                result.reason === 'arrival-unavailable';
+                            if (!arrivalFailed && (await expandCoverage()))
+                                return;
+                            if (nextAnchor()) return;
                             reply({
                                 status: 'unavailable',
-                                category: 'movement-coverage',
-                                message:
-                                    'No route found within the current ground and movement search',
+                                category: arrivalFailed
+                                    ? 'projection-anchor'
+                                    : 'movement-coverage',
+                                message: arrivalFailed
+                                    ? 'Teleport landing could not be placed on supported ground'
+                                    : 'No route found within the current ground and movement search',
                                 diagnostics: {
                                     traversal: result.diagnostics,
                                     physicalMargins: physicalMargins.slice(
@@ -997,6 +1013,7 @@ export function routeServer(
                             )
                         )
                             return;
+                        if (nextAnchor()) return;
                         reply({
                             status: 'unavailable',
                             category: 'movement-solver-error',
@@ -1250,6 +1267,7 @@ export function routeServer(
                         )
                     )
                         return;
+                    if (nextJob?.status === 'failed' && nextAnchor()) return;
                     const best = diagnostics.toSorted(
                         (a, b) =>
                             Number(b.anchor.mapped) +

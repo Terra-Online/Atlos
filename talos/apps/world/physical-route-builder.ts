@@ -10,7 +10,8 @@ import {
     writeFile,
 } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
-import type { GroundArrival, InteractionGoal, Vec3, Wall } from '@oem/ganglia';
+import type { InteractionGoal, Vec3, Wall } from '@oem/ganglia';
+import type { TravelArrival } from './travel-arrivals.ts';
 import type { Corridor } from './coarse-route.ts';
 
 type Source = { buildGuid: string; contentHash: string };
@@ -34,7 +35,7 @@ type RouteRequest = {
     point?: string | null;
     scene: string;
     source: Source;
-    arrival: GroundArrival;
+    arrival: TravelArrival;
     target: Vec3;
     interaction?: InteractionGoal;
     walls: Wall[];
@@ -547,7 +548,7 @@ export function physicalRouteBuilder(options: Options) {
                       : 'route',
             ground: ground.output,
             request,
-            policy: 11,
+            policy: 12,
             devices: devices?.fingerprint,
             movement: settings.fingerprint,
             solver: options.solver,

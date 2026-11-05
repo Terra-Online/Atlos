@@ -195,6 +195,14 @@ connections carry verified sample positions and times. `journeySample` returns t
 current position, movement mode and optional connection ID; playback begins after the
 selected teleport arrival and does not draw a flight from the previous position.
 
-This adapter has package integration coverage, but the world UI does not yet expose route
-selection or playback. Actual device trajectories and complete player collision coverage
-remain pending in the exporter; device pivots alone must not be supplied as valid links.
+The local preview plans physical routes through the configured extractor and retains each job's
+progress log. Fully enabled planning reads all same-level travel points from the source-bound
+catalog, including industrial-base centres absent from older AI-ground arrival exports. Base
+centres carry explicit vertical projection bounds; the importer resolves them to physical support.
+An unmapped landing tries the next distance-ranked origin without widening the same region. Other
+origin failures can fall back after their bounded coverage attempts. This is a feasibility fallback,
+not a claim that all origins have been compared for the globally fastest journey.
+
+Route-result identity changes independently of physical-tile identity. Updating arrival semantics
+invalidates failed route results while retaining compatible physical terrain. The model still depends
+on the exported collision coverage and device motion model; the preview is not a game execution proof.
