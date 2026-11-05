@@ -159,16 +159,24 @@ support connections. Tile passages retain directed entry and exit intervals,
 shared by search and tracing. The packed dependency and cache identity use alpha.22.
 
 The default validation snapshot assumes all level tasks completed. The air-wall
-exporter records an owning-script terminal-stage interpretation where its stage
-domain and event effects resolve consistently. The ground importer applies that
+exporter records a completed control interpretation where the selected stage
+and event effects resolve consistently. The ground importer applies that
 result for the explicit completed progression. Other states remain unknown and
 blocked. Regenerate the bound ground exports and restart the local service when
 changing this snapshot.
 Empty mission rise/down lists carry no activation reason. Their initial false
 state allows completed down conditions to resolve without a spurious unknown
 rise condition.
-Unowned unconditional walls use their authored default switch for this planning
-snapshot. Runtime overrides belong in a separately supplied snapshot.
+The `wall-controls-v2` export also scans group-id controllers, including scripts
+outside the stored owner. The level-script check type can have a zero owner and
+still receive runtime writes. The authored switch is used as a base state after
+that scan. Level briefs supply stage limits and parameterized global references.
+The completed snapshot selects the declared maximum stage, with a contiguous
+stage-domain fallback. Completion-disabled encounter and fog-nest modules clear
+their referenced walls, with independent script writers still checked. Known
+mission and stage guards prune paths. Unresolved guards preserve possible effects
+without asserting that a write executes. Conflicting controller effects remain
+unknown. Dynamic properties and trigger state require additional snapshot input.
 
 `player-route` atomically publishes a walking candidate before airborne indexing
 and optional optimization. Polling displays it and retains its optimization state.
@@ -202,9 +210,26 @@ after about 0.54 and 4.00 seconds. Background shortcut work still takes tens of
 seconds and remains visibly separate from the available candidate. Stage timings
 are available in the command result's `diagnostics.timingMs`.
 
-`0165dV6` was blocked by an unconditional default-off wall retaining unknown
-state. After the generic default-state correction, the physical walking baseline
+`0165dV6` was blocked by a default-off level-script wall retaining unknown
+state. After the controller scan permits its base state, the physical walking baseline
 is 31.87 model seconds. Optional comparison selects 30.77 seconds with three
 jumps. With physical ground cached, the full command takes about 33.7 seconds,
 including 7.7 seconds for walking and 24.0 seconds for shortcut comparison. The
 normal page displays the completed candidate and playback controls.
+
+The subsequent control audit covers 504 walls. The completed snapshot selects
+347 inactive, 43 active and 114 unknown, reducing the earlier 196 unknowns by 82.
+Map01 has 112 inactive, 16 active and 30 unknown. Map02 has 235 inactive, 27 active
+and 84 unknown. The remaining controls depend on dynamic properties, callbacks,
+trigger occupancy, owner activation or incomplete client input. Wall purpose
+alone supplies no permanent-boundary classification or activation state.
+
+The three elevated examples retain complete physical walking baselines under
+these exclusions. The fixed reference-positive population also retains 31/31
+complete walking routes, including all 13 measured step-profile cases.
+A focused cached-ground check took 3.6, 7.0 and 7.3 seconds for
+`0loYRkm`, `14lAI8l` and `0165dV6`. These timings exclude ground construction and
+optional shortcut comparison. The selected stage and authored base switch remain
+planning assumptions. Actual save state and in-game execution have not been read.
+The final normal-entry API check for `0165dV6` returned a candidate at 1.95 seconds
+and completed shortcut comparison at 42.3 seconds, selecting 30.77 model seconds.
