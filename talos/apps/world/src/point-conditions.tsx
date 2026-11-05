@@ -140,9 +140,7 @@ export const PointConditions = ({
                     disabled={disabled}
                     onChange={(event) => onPreset(event.currentTarget.value)}
                 >
-                    <option value='completed'>
-                        Completed tasks and facilities
-                    </option>
+                    <option value='completed'>Fully enabled</option>
                     {point.presets.map((p) => (
                         <option key={p.id} value={p.id}>
                             {p.id === 'default' ? 'Viewer defaults' : p.label}

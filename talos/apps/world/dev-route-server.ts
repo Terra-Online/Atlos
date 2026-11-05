@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 import type { ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
 import {
@@ -13,14 +13,20 @@ import {
     type Surface,
     type Vec3,
 } from '@oem/ganglia';
-import { physicalMargins, physicalRouteBuilder } from './physical-route-builder.ts';
+import {
+    physicalMargins,
+    physicalTileSpan,
+    physicalRouteBuilder,
+} from './physical-route-builder.ts';
+
+import { coarseCorridors, type Corridor } from './coarse-route.ts';
 
 type Source = { buildGuid: string; contentHash: string };
 type Bounds = { min: [number, number]; max: [number, number] };
 type Data = {
     scene: string;
     level?: string;
-    progression?: 'completed';
+    progression?: 'completed' | 'fully-enabled';
     source: Source;
     bounds?: Bounds;
     surfaces: Surface[];
@@ -57,6 +63,7 @@ type Result = {
     diagnostics?: unknown;
 };
 type Candidate = {
+    log?: string;
     status: 'candidate';
     route: Extract<Route, { status: 'complete' }>;
     optimizing?: boolean;
@@ -72,6 +79,8 @@ type Query = {
     done: boolean;
     progress?: boolean;
     marginIndex: number;
+    log?: string;
+    corridors?: Corridor[];
     candidate?: Candidate;
 };
 
@@ -206,8 +215,8 @@ export function routeServer(
     >();
     const queries = new Map<string, Query>();
     let removeCloseListener = () => {};
-    const close = () => {
-        builder.close();
+    const close = async () => {
+        const drained = builder.close();
         cache.clear();
         interactionCache.clear();
         queries.clear();
@@ -215,6 +224,7 @@ export function routeServer(
         travel = undefined;
         physical = undefined;
         removeCloseListener();
+        await drained;
     };
     const read = async (name: string) =>
         JSON.parse(await readFile(resolve(directory!, name), 'utf8'));
@@ -288,6 +298,55 @@ export function routeServer(
             removeCloseListener = () => {
                 server.httpServer?.removeListener('close', close);
             };
+            const serveLog = async (name: string, response: ServerResponse) => {
+                try {
+                    if (!directory)
+                        throw new Error('Route data is not configured');
+                    const text = await readFile(
+                        resolve(directory, name),
+                        'utf8',
+                    );
+                    response.setHeader(
+                        'Content-Type',
+                        'text/plain; charset=utf-8',
+                    );
+                    response.setHeader('Cache-Control', 'no-store');
+                    response.end(text);
+                } catch {
+                    response.statusCode = 404;
+                    response.end('Log is not available yet');
+                }
+            };
+            const logUrl = (file: string | undefined) =>
+                file && directory
+                    ? `/__routes/log?path=${encodeURIComponent(relative(directory, file))}`
+                    : undefined;
+            server.middlewares.use('/__routes/logs', (request, response) => {
+                if (request.method !== 'GET') {
+                    response.statusCode = 405;
+                    response.end();
+                    return;
+                }
+                void serveLog('route-jobs.jsonl', response);
+            });
+            server.middlewares.use('/__routes/log', (request, response) => {
+                const name = new URL(
+                    request.url ?? '',
+                    'http://localhost',
+                ).searchParams.get('path');
+                if (
+                    request.method !== 'GET' ||
+                    !name ||
+                    !/^player-(?:ground|routes)\/[a-zA-Z0-9_-]+\.json\.progress\.jsonl$/.test(
+                        name,
+                    )
+                ) {
+                    response.statusCode = 404;
+                    response.end();
+                    return;
+                }
+                void serveLog(name, response);
+            });
             server.middlewares.use('/__routes/nearest', (request, response) => {
                 let reply = (value: unknown, status = 200) =>
                     send(response, value, status);
@@ -373,7 +432,8 @@ export function routeServer(
                         const current = queries.get(queryKey);
                         if (
                             !alreadyDone ||
-                            (!previous.progress && !previous.candidate?.optimizing) ||
+                            (!previous.progress &&
+                                !previous.candidate?.optimizing) ||
                             current !== previous
                         ) {
                             if (current && current !== previous)
@@ -392,6 +452,7 @@ export function routeServer(
                         }),
                         done: false,
                         marginIndex,
+                        corridors: previous?.corridors,
                     };
                     queries.set(queryKey, entry);
                     const deliver = reply;
@@ -522,13 +583,39 @@ export function routeServer(
                         position: [...anchor.position],
                         state: 'available',
                     };
+                    const corridorAt = (index = entry.marginIndex) => {
+                        if (
+                            Math.hypot(
+                                ...arrival.position.map(
+                                    (v, i) => v - target[i],
+                                ),
+                            ) <=
+                            physicalTileSpan * 2
+                        )
+                            return undefined;
+                        entry.corridors ??= coarseCorridors(
+                            data,
+                            arrival.position,
+                            goal?.position ?? target,
+                            physicalTileSpan,
+                        );
+                        return entry.corridors[
+                            Math.min(index, entry.corridors.length - 1)
+                        ];
+                    };
                     const assumptions = [
                         'All teleport anchors assumed unlocked',
                         'Nearest anchor selected by 3D distance within the current level',
                         'Base scene state 0 and area 0 are assumed',
-                        ...(data.progression === 'completed'
-                            ? ['All level tasks assumed completed; resolved wall controls use the selected completed-world snapshot']
-                            : []),
+                        ...(data.progression === 'fully-enabled'
+                            ? [
+                                  'All traversal devices enabled and powered; controllable passage barriers open',
+                              ]
+                            : data.progression === 'completed'
+                              ? [
+                                    'All level tasks assumed completed; resolved wall controls use the selected completed-world snapshot',
+                                ]
+                              : []),
                         goal
                             ? 'Authored interaction volume applied; runtime interaction availability remains unresolved'
                             : 'Interaction rules unresolved; endpoint uses ground projection only',
@@ -541,6 +628,7 @@ export function routeServer(
                         if (!fallback) return false;
                         const candidate = {
                             ...fallback,
+                            log: entry.log ?? fallback.log,
                             optimizing,
                             optimizationMessage: message,
                             ...(traversal
@@ -560,6 +648,7 @@ export function routeServer(
                         if (retain(message, true)) return;
                         reply({
                             status: 'building-ground',
+                            log: entry.log,
                             message,
                             retryAfter: 1000,
                             anchor: {
@@ -574,13 +663,21 @@ export function routeServer(
                         const nextIndex = entry.marginIndex + 1;
                         const margin = physicalMargins[nextIndex];
                         if (margin === undefined) return false;
-                        const next = await builder.query(scene, source, anchor.position, target, {
-                            startBuild: true,
-                            margin,
-                        });
+                        const next = await builder.query(
+                            scene,
+                            source,
+                            anchor.position,
+                            target,
+                            {
+                                startBuild: true,
+                                margin,
+                                corridor: corridorAt(nextIndex),
+                            },
+                        );
                         if (!next || next.status === 'failed') return false;
+                        if (next.log) entry.log = logUrl(next.log);
                         entry.marginIndex = nextIndex;
-                        building(`Expanding physical coverage to ${margin} m · ${next.message}`);
+                        building('Loading a wider route area…');
                         return true;
                     };
                     const job = await builder.query(
@@ -588,8 +685,13 @@ export function routeServer(
                         source,
                         anchor.position,
                         target,
-                        { startBuild: false, margin: physicalMargins[entry.marginIndex] },
+                        {
+                            startBuild: false,
+                            margin: physicalMargins[entry.marginIndex],
+                            corridor: corridorAt(),
+                        },
                     );
+                    if (job?.log) entry.log = logUrl(job.log);
                     if (
                         job?.status === 'queued' ||
                         job?.status === 'building'
@@ -654,7 +756,10 @@ export function routeServer(
                         if (fallback && fallback.route.cost <= route.cost) {
                             retain(
                                 optimization?.message ?? '',
-                                Boolean(optimization && optimization.status !== 'failed'),
+                                Boolean(
+                                    optimization &&
+                                        optimization.status !== 'failed',
+                                ),
                                 traversal,
                             );
                             return;
@@ -665,7 +770,8 @@ export function routeServer(
                             scene,
                             level,
                             source,
-                            title: `${anchor.id} → target`,
+                            title: 'Teleport → Target',
+                            log: entry.log,
                             diagnostics: {
                                 anchorCandidates: candidates.length,
                                 attempts: diagnostics,
@@ -697,11 +803,19 @@ export function routeServer(
                                 : {}),
                             assumptions: [
                                 ...assumptions,
-                                ...(route.segments.some(segment => segment.mode === 'rope')
-                                    ? ['All vertical ropes assumed enabled and unlocked; device motion timing is model-based']
+                                ...(route.segments.some(
+                                    (segment) => segment.mode === 'rope',
+                                )
+                                    ? [
+                                          'All vertical ropes assumed enabled and unlocked; device motion timing is model-based',
+                                      ]
                                     : []),
-                                ...(route.segments.some(segment => segment.mode === 'launch')
-                                    ? ['Launch availability follows enabled authored settings; device motion timing is model-based']
+                                ...(route.segments.some(
+                                    (segment) => segment.mode === 'launch',
+                                )
+                                    ? [
+                                          'All launch devices assumed enabled and powered; motion timing is model-based',
+                                      ]
                                     : []),
                             ],
                             interaction,
@@ -719,6 +833,7 @@ export function routeServer(
                         reply(candidate);
                     };
                     const routeRequest = {
+                        point: pointId,
                         scene,
                         source,
                         arrival,
@@ -728,8 +843,14 @@ export function routeServer(
                     };
                     const walking =
                         job?.status === 'ready'
-                            ? await builder.solve(job, routeRequest, false, 'walking')
+                            ? await builder.solve(
+                                  job,
+                                  routeRequest,
+                                  false,
+                                  'walking',
+                              )
                             : null;
+                    if (walking?.log) entry.log = logUrl(walking.log);
                     if (
                         walking?.status === 'queued' ||
                         walking?.status === 'building'
@@ -738,22 +859,39 @@ export function routeServer(
                         return;
                     }
                     const walked = walking?.result as Result | undefined;
-                    const device = job?.status === 'ready' && walked?.status === 'unavailable'
-                        ? await builder.solve(job, routeRequest, true, 'devices') : null;
-                    if (device?.status === 'queued' || device?.status === 'building') {
+                    const device =
+                        job?.status === 'ready' &&
+                        walked?.status === 'unavailable'
+                            ? await builder.solve(
+                                  job,
+                                  routeRequest,
+                                  true,
+                                  'devices',
+                              )
+                            : null;
+                    if (device?.log) entry.log = logUrl(device.log);
+                    if (
+                        device?.status === 'queued' ||
+                        device?.status === 'building'
+                    ) {
                         building(device.message);
                         return;
                     }
-                    const known = (device?.result ?? walked) as Result | undefined;
+                    const known = (device?.result ?? walked) as
+                        | Result
+                        | undefined;
                     const motion =
                         job?.status === 'ready' && walking?.status === 'ready'
                             ? await builder.solve(job, routeRequest, true)
                             : null;
+                    if (motion?.log) entry.log = logUrl(motion.log);
                     if (
                         motion?.status === 'queued' ||
                         motion?.status === 'building'
                     ) {
-                        const provisional = (motion.result ?? known) as Result | undefined;
+                        const provisional = (motion.result ?? known) as
+                            | Result
+                            | undefined;
                         if (
                             built &&
                             provisional?.scene === scene &&
@@ -817,7 +955,10 @@ export function routeServer(
                                     'No route found within the current ground and movement search',
                                 diagnostics: {
                                     traversal: result.diagnostics,
-                                    physicalMargins: physicalMargins.slice(0, entry.marginIndex + 1),
+                                    physicalMargins: physicalMargins.slice(
+                                        0,
+                                        entry.marginIndex + 1,
+                                    ),
                                 },
                                 assumptions,
                                 interaction,
@@ -833,7 +974,8 @@ export function routeServer(
                             );
                         return;
                     }
-                    const failed = walking?.status === 'failed' ? walking : motion;
+                    const failed =
+                        walking?.status === 'failed' ? walking : motion;
                     if (failed?.status === 'failed') {
                         if (
                             retain(
@@ -845,6 +987,7 @@ export function routeServer(
                         reply({
                             status: 'unavailable',
                             category: 'movement-solver-error',
+                            log: entry.log,
                             message: failed.message,
                             assumptions,
                             interaction,
@@ -1025,7 +1168,11 @@ export function routeServer(
                                 source,
                                 anchor.position,
                                 target,
-                                { startBuild: true, margin: physicalMargins[entry.marginIndex] },
+                                {
+                                    startBuild: true,
+                                    margin: physicalMargins[entry.marginIndex],
+                                    corridor: corridorAt(),
+                                },
                             );
                             const optimization =
                                 next?.status === 'ready'
@@ -1051,8 +1198,13 @@ export function routeServer(
                         source,
                         anchor.position,
                         target,
-                        { startBuild: true, margin: physicalMargins[entry.marginIndex] },
+                        {
+                            startBuild: true,
+                            margin: physicalMargins[entry.marginIndex],
+                            corridor: corridorAt(),
+                        },
                     );
+                    if (nextJob?.log) entry.log = logUrl(nextJob.log);
                     if (
                         nextJob?.status === 'queued' ||
                         nextJob?.status === 'building'

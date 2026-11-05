@@ -24,7 +24,6 @@ WORLD_ROUTING_DIRECTORY=/path/to/local-routing-data \
 WORLD_EXTRACTOR_DIRECTORY=/path/to/endfield-noclip \
 WORLD_GAME_CONFIG=/path/to/endfield.local.json \
 WORLD_EXTRACTOR_NODE="$(command -v node)" \
-NODE_OPTIONS=--max-old-space-size=8192 \
 pnpm dev:world
 ```
 
@@ -276,3 +275,29 @@ with one active foreground job and one background optimizer. This preserves the
 existing concurrency limit. `10100023101` returns walk/rope/walk after 13.54 seconds
 in the observed cached-ground normal query. The independent small rope command
 finishes its known-action stage in 1.45 seconds, without free jump discovery.
+
+
+Long queries first prepare potential directions from navigation regions grouped by
+physical tile and height. Alternative directions and wider halos select sparse
+physical tiles before detailed ground and action search. These optimistic relations
+are proposals only; missing tiles and an exhausted search do not prove a target
+unreachable. Full physical collision remains available inside the selected build
+bounds, including air outside the ground corridor. Current proposals can still miss
+winding approaches, and large refinements can exceed the process memory limit.
+
+The default preview and routing snapshot fully enables supported ropes, launch
+facilities and electrical power, and opens controllable passage barriers. Fixed
+structure, boundaries, body clearance and motion checks still apply. This is an
+explicit unrestricted planning assumption rather than a recovered saved-game state.
+
+Every physical build and route stage appends a `.progress.jsonl` file beside its
+result. Records retain a run identifier, input and source binding, queue and phase
+times, per-tile progress, stderr, process exit and final status. Repeated runs append
+to the same artifact log; cache reuse is recorded too. The `route-jobs.jsonl` index
+links route point identifiers to these files. **Task log** in Route preview opens
+the latest stage; `/__routes/logs` opens the index. Both endpoints are local,
+read-only and uncached. Logs survive browser reload and server restart.
+
+Route preview keeps the route name, current progress, time and playback/view
+controls. Technical verification, occlusion, stamina and model descriptions are
+omitted from the panel; diagnostic data remains in the retained artifacts.

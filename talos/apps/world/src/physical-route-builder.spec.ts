@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, test } from 'vitest';
@@ -44,6 +44,7 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
     );
     const source = { buildGuid: 'build', contentHash: 'content' };
     const request = {
+        point: 'fixture-point',
         scene: 'map01',
         source,
         arrival: {
@@ -87,7 +88,7 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
         await expect.poll(() => walking.status).toBe('ready');
         expect(walking.result).toMatchObject({ optimizing: false });
         expect(route.status).toBe('building');
-        builder.close();
+        await builder.close();
         await expect.poll(() => route.status).toBe('failed');
 
         builder = physicalRouteBuilder(options);
@@ -106,8 +107,32 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
         expect(resumed.result).toMatchObject({ optimizing: true });
         await expect.poll(() => resumed.status).toBe('ready');
         expect(resumed.result).toMatchObject({ optimizing: false });
+        if (!resumed.log) throw new Error('Task log was not retained');
+        await expect
+            .poll(async () =>
+                (await readFile(resumed.log!, 'utf8')).includes(
+                    '"event":"finished"',
+                ),
+            )
+            .toBe(true);
+        const records = (await readFile(resumed.log, 'utf8'))
+            .trim()
+            .split('\n')
+            .map((line) => JSON.parse(line));
+        expect(
+            records.some(
+                (row) =>
+                    row.event === 'progress' && row.phase === 'ground-route',
+            ),
+        ).toBe(true);
+        expect(new Set(records.map((row) => row.run)).size).toBeGreaterThan(1);
+        const index = await readFile(
+            join(options.directory, 'route-jobs.jsonl'),
+            'utf8',
+        );
+        expect(index).toContain('fixture-point');
     } finally {
-        builder.close();
+        await builder.close();
         await rm(directory, { recursive: true, force: true });
     }
 });
@@ -191,7 +216,7 @@ test('runs a queued known-device query before further ground construction', asyn
         });
         expect(queued.status).not.toBe('ready');
     } finally {
-        builder.close();
+        await builder.close();
         await rm(directory, { recursive: true, force: true });
     }
 });

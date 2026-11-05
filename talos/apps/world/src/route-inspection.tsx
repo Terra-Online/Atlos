@@ -12,6 +12,7 @@ export type Candidate = {
     source: { buildGuid: string; contentHash: string };
     title: string;
     status: 'candidate';
+    log?: string;
     coverage?: string;
     assumptions?: string[];
     overview?: { position: Vec3; yaw: number; pitch: number; fovY: number };
@@ -28,14 +29,14 @@ export default function RouteInspection({
     panelRoot,
     candidate,
     message,
-    details,
+    log,
 }: {
     viewer: Viewer;
     source: string | null;
     panelRoot: HTMLElement | null;
     candidate?: Candidate | null;
     message?: string;
-    details?: string[];
+    log?: string | null;
 }) {
     const canvas = useRef<HTMLCanvasElement>(null);
     const [data, setData] = useState<Candidate | null>(null);
@@ -267,62 +268,37 @@ export default function RouteInspection({
             <canvas
                 ref={canvas}
                 className='route-inspection-canvas'
-                aria-label='Candidate route projection'
+                aria-label='Route projection'
             />
             {panelRoot &&
                 createPortal(
                     <Panel
                         title='Route preview'
-                        label='Candidate route preview'
+                        label='Route preview'
                         className='route-inspection-panel'
                         actions={
-                            <button
-                                type='button'
-                                disabled={!data}
-                                onClick={() => setVisible(!visible)}
-                            >
-                                {visible ? 'Hide' : 'Show'}
-                            </button>
+                            <>
+                                {(log ?? data?.log) && (
+                                    <a
+                                        href={log ?? data?.log}
+                                        target='_blank'
+                                        rel='noreferrer'
+                                    >
+                                        Task log
+                                    </a>
+                                )}
+                                <button
+                                    type='button'
+                                    disabled={!data}
+                                    onClick={() => setVisible(!visible)}
+                                >
+                                    {visible ? 'Hide' : 'Show'}
+                                </button>
+                            </>
                         }
                     >
                         <p>{data?.title ?? 'Nearest teleport route'}</p>
-                        <p className='muted small'>
-                            Candidate path · Occluded segments dashed ·
-                            Reachability unverified
-                        </p>
-                        {data?.route.locomotion && (
-                            <p className='muted small'>
-                                Sprint energy · Start{' '}
-                                {data.route.locomotion.initial.toFixed(1)} · End{' '}
-                                {data.route.locomotion.final.toFixed(1)} · Min{' '}
-                                {data.route.locomotion.minimum.toFixed(1)}
-                            </p>
-                        )}
                         {message && <p role='status'>{message}</p>}
-                        {Boolean(
-                            details?.length ||
-                                data?.coverage ||
-                                data?.assumptions?.length,
-                        ) && (
-                            <details>
-                                <summary>Details</summary>
-                                {details?.map((value) => (
-                                    <p className='muted small' key={value}>
-                                        {value}
-                                    </p>
-                                ))}
-                                {data?.coverage && (
-                                    <p className='muted small'>
-                                        {data.coverage}
-                                    </p>
-                                )}
-                                {data?.assumptions?.map((value) => (
-                                    <p className='muted small' key={value}>
-                                        {value}
-                                    </p>
-                                ))}
-                            </details>
-                        )}
                         {error && <p role='alert'>{error}</p>}
                         {data && (
                             <>
@@ -353,8 +329,7 @@ export default function RouteInspection({
                                 />
                                 <small>
                                     {seconds.toFixed(1)} /{' '}
-                                    {data.route.cost.toFixed(1)} s (candidate
-                                    model) · Free camera
+                                    {data.route.cost.toFixed(1)} s
                                 </small>
                             </>
                         )}

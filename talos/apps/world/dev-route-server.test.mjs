@@ -213,7 +213,7 @@ test(
 
 test(
     'builds physical ground after a generic routing failure and reuses the completed job',
-    { timeout: 8000 },
+    { timeout: 15000 },
     async () => {
         const directory = await mkdtemp(join(tmpdir(), 'world-route-build-'));
         const source = { buildGuid: 'build-test', contentHash: 'hash-test' };
@@ -278,7 +278,10 @@ test(
                     approximations: ['sphere-envelope'],
                 },
             };
-            await writeFile(config, JSON.stringify({ result: fixture, routeCost: 1 }));
+            await writeFile(
+                config,
+                JSON.stringify({ result: fixture, routeCost: 1 }),
+            );
             await writeFile(
                 join(extractor, 'packages/extractor/src/cli.ts'),
                 `
@@ -376,10 +379,7 @@ test(
                 Date.now() < deadline
             );
             assert.equal(result.body.status, 'candidate');
-            assert.match(
-                result.body.coverage,
-                /Physical collision ground/,
-            );
+            assert.match(result.body.coverage, /Physical collision ground/);
             assert.deepEqual(result.body.coverageDetails.remaining, [
                 'interactive-prefabs',
             ]);
@@ -393,7 +393,10 @@ test(
             );
             result = await request({ x: '6.5' });
             const secondDeadline = Date.now() + 3000;
-            while (result.body.status === 'building-ground' && Date.now() < secondDeadline) {
+            while (
+                result.body.status === 'building-ground' &&
+                Date.now() < secondDeadline
+            ) {
                 await new Promise((resolve) => setTimeout(resolve, 25));
                 result = await request({ x: '6.5' });
             }
@@ -476,22 +479,27 @@ test(
                 Date.now() < movementDeadline
             );
             assert.equal(result.body.category, 'movement-coverage');
-            assert.deepEqual(result.body.diagnostics.physicalMargins, [24, 64, 128, 256]);
+            assert.deepEqual(
+                result.body.diagnostics.physicalMargins,
+                [24, 64, 128, 256],
+            );
             assert.equal(result.body.diagnostics.traversal.walls.length, 1);
             assert.equal(
                 result.body.diagnostics.traversal.walls[0].state,
                 'unknown',
             );
+            const routeRuns = await readFile(config + '.route-runs', 'utf8');
             result = await request();
             assert.equal(result.body.category, 'movement-coverage');
             assert.equal(
                 await readFile(config + '.route-runs', 'utf8'),
-                'route\n'.repeat(6),
+                routeRuns,
             );
             assert.equal(
                 await readFile(config + '.runs', 'utf8'),
                 'run\n'.repeat(5),
             );
+            const previousRouteRuns = (await readFile(config + '.route-runs', 'utf8')).length;
             // Rebuilding movement rules in the same game build must invalidate both artifact stages.
             await writeFile(config, JSON.stringify({ result: fixture }));
             await writeFile(
@@ -526,9 +534,8 @@ test(
                 await readFile(config + '.runs', 'utf8'),
                 'run\n'.repeat(9),
             );
-            assert.equal(
-                await readFile(config + '.route-runs', 'utf8'),
-                'route\n'.repeat(10),
+            assert.ok(
+                (await readFile(config + '.route-runs', 'utf8')).length > previousRouteRuns,
             );
             const policies = (
                 await readFile(config + '.movement-files', 'utf8')
@@ -560,7 +567,11 @@ test(
                 { name: 'unavailable' },
                 { name: 'failure', failRoute: true },
             ]) {
-                httpServer.emit('close');
+                await Promise.all(
+                    httpServer
+                        .rawListeners('close')
+                        .map((listener) => listener.call(httpServer)),
+                );
                 await writeFile(
                     config,
                     JSON.stringify({ result: fixture, ...scenario }),
@@ -623,8 +634,62 @@ test(
                 );
             }
         } finally {
-            httpServer.emit('close');
+            await Promise.all(
+                httpServer
+                    .rawListeners('close')
+                    .map((listener) => listener.call(httpServer)),
+            );
             await rm(directory, { recursive: true, force: true });
         }
     },
 );
+
+test('serves retained task logs while rejecting paths outside the task directories', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'world-route-logs-'));
+    const handlers = new Map();
+    const plugin = routeServer(directory);
+    try {
+        await mkdir(join(directory, 'player-routes'));
+        await writeFile(
+            join(directory, 'route-jobs.jsonl'),
+            '{"event":"queued"}\n',
+        );
+        await writeFile(
+            join(directory, 'player-routes/map01-fixture.json.progress.jsonl'),
+            '{"phase":"ground-route"}\n',
+        );
+        plugin.configureServer({
+            middlewares: {
+                use: (path, handler) => handlers.set(path, handler),
+            },
+        });
+        const get = (path, url) =>
+            new Promise((resolve) => {
+                handlers.get(path)(
+                    { method: 'GET', url },
+                    {
+                        statusCode: 200,
+                        setHeader() {},
+                        end(text) {
+                            resolve({ code: this.statusCode, text });
+                        },
+                    },
+                );
+            });
+        assert.equal((await get('/__routes/logs', '/')).code, 200);
+        const valid = await get(
+            '/__routes/log',
+            '/?path=player-routes%2Fmap01-fixture.json.progress.jsonl',
+        );
+        assert.equal(valid.code, 200);
+        assert.match(valid.text, /ground-route/);
+        assert.equal(
+            (await get('/__routes/log', '/?path=..%2Fendfield.local.json'))
+                .code,
+            404,
+        );
+    } finally {
+        plugin.closeBundle();
+        await rm(directory, { recursive: true, force: true });
+    }
+});

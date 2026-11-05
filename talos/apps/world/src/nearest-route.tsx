@@ -16,7 +16,7 @@ export default function NearestRoute({
     panelRoot: HTMLElement | null;
     onRoute: (points: Vec3[] | null) => void;
 }) {
-    const [details, setDetails] = useState<string[]>([]);
+    const [log, setLog] = useState<string | null>(null);
     const [data, setData] = useState<Candidate | null>(null);
     const [message, setMessage] = useState(
         'Calculating route from the nearest teleport…',
@@ -24,7 +24,7 @@ export default function NearestRoute({
     useEffect(() => {
         const abort = new AbortController();
         setData(null);
-        setDetails([]);
+        setLog(null);
         onRoute(null);
         setMessage('Calculating route from the nearest teleport…');
         void (async () => {
@@ -50,6 +50,7 @@ export default function NearestRoute({
                 });
                 result = await response.json();
                 if (abort.signal.aborted) return;
+                setLog(result.log ?? null);
                 if (response.ok && result.status === 'candidate') {
                     const signature = JSON.stringify(result.route);
                     if (signature !== routeSignature) {
@@ -85,38 +86,13 @@ export default function NearestRoute({
                 }
             } while (pending && !abort.signal.aborted);
             if (abort.signal.aborted) return;
-            const summary = [];
-            if (result.anchor?.id)
-                summary.push(`Nearest anchor · ${result.anchor.id}`);
-            if (result.category) summary.push(`Result · ${result.category}`);
-            if (result.status !== 'candidate' && result.coverage)
-                summary.push(result.coverage);
-            if (result.interaction?.status === 'source-derived')
-                summary.push(
-                    `Interaction endpoint · ${result.interaction.template} · source-derived volume`,
-                );
-            else
-                summary.push(
-                    'Interaction endpoint · unresolved; ground projection used',
-                );
-            if (result.diagnostics?.traversal?.truncated)
-                summary.push('Movement search · candidate coverage is partial');
-            if (result.route?.locomotion?.search?.truncated)
-                summary.push('Sprint scheduling · search budget reached');
-            const attempts = result.diagnostics?.attempts;
-            const last = Array.isArray(attempts) ? attempts.at(-1) : null;
-            if (last)
-                summary.push(
-                    `Ground projection · Anchor ${last.anchor.mapped ? 'found' : 'missing'} · Target ${last.target.mapped ? 'found' : 'missing'} · ${last.surfaces} polygons checked`,
-                );
-            setDetails(summary);
             if (!response.ok || result.status !== 'candidate')
                 throw new Error(
                     result.message ||
                         'No route is available in the current data',
                 );
             if (abort.signal.aborted) return;
-            setMessage(result.optimizationMessage || '');
+            setMessage('');
         })().catch((error) => {
             if (!abort.signal.aborted)
                 setMessage(
@@ -135,7 +111,7 @@ export default function NearestRoute({
             panelRoot={panelRoot}
             candidate={data}
             message={message}
-            details={details}
+            log={log}
         />
     );
 }

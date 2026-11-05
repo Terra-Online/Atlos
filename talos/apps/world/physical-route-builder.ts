@@ -1,8 +1,16 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import {
+    appendFile,
+    mkdir,
+    readFile,
+    rename,
+    unlink,
+    writeFile,
+} from 'node:fs/promises';
+import { relative, resolve } from 'node:path';
 import type { GroundArrival, InteractionGoal, Vec3, Wall } from '@oem/ganglia';
+import type { Corridor } from './coarse-route.ts';
 
 type Source = { buildGuid: string; contentHash: string };
 type Options = {
@@ -17,10 +25,12 @@ type Job = {
     message: string;
     output: string;
     collision: string;
+    log?: string;
     child?: ChildProcess;
     result?: unknown;
 };
 type RouteRequest = {
+    point?: string | null;
     scene: string;
     source: Source;
     arrival: GroundArrival;
@@ -31,6 +41,7 @@ type RouteRequest = {
 const hash = (value: unknown) =>
     createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
+export const physicalTileSpan = 256 * 0.15;
 export const physicalMargins = [24, 64, 128, 256] as const;
 
 /** Ground construction and known-action queries share a foreground lane.
@@ -41,12 +52,13 @@ export function physicalRouteBuilder(options: Options) {
     const jobs = new Map<string, Job>();
     const foreground: { run: () => Promise<void>; query: boolean }[] = [];
     let foregroundRunning = false;
+    let foregroundTask: Promise<void> | undefined;
     const drain = () => {
         if (foregroundRunning || !foreground.length) return;
         const query = foreground.findIndex((entry) => entry.query);
         const [next] = foreground.splice(query < 0 ? 0 : query, 1);
         foregroundRunning = true;
-        void next.run().finally(() => {
+        foregroundTask = next.run().finally(() => {
             foregroundRunning = false;
             drain();
         });
@@ -83,13 +95,77 @@ export function physicalRouteBuilder(options: Options) {
         });
         return movement;
     };
+    const cacheLog = async (job: Job, context: Record<string, unknown>) => {
+        job.log = `${job.output}.progress.jsonl`;
+        const entry = {
+            time: new Date().toISOString(),
+            run: randomUUID(),
+            event: 'cache-hit',
+            ...context,
+            log: relative(options.directory!, job.log),
+            output: relative(options.directory!, job.output),
+        };
+        await Promise.all([
+            appendFile(job.log, JSON.stringify(entry) + '\n'),
+            appendFile(
+                resolve(options.directory!, 'route-jobs.jsonl'),
+                JSON.stringify(entry) + '\n',
+            ),
+        ]).catch((failure) =>
+            console.error('Unable to retain cached route log', failure),
+        );
+    };
     const enqueue = (
         current: Job,
         args: string[],
-        background = false,
+        {
+            background,
+            context,
+        }: { background: boolean; context: Record<string, unknown> },
     ): void => {
-        const run = () =>
-            new Promise<void>((done) => {
+        const runId = randomUUID();
+        const queuedAt = performance.now();
+        const log = `${current.output}.progress.jsonl`;
+        current.log = log;
+        let writes = Promise.resolve();
+        const record = (
+            event: string,
+            detail: Record<string, unknown> = {},
+        ) => {
+            const line =
+                JSON.stringify({
+                    time: new Date().toISOString(),
+                    run: runId,
+                    elapsedMs: Math.round(performance.now() - queuedAt),
+                    event,
+                    ...detail,
+                }) + '\n';
+            writes = writes
+                .then(() => appendFile(log, line))
+                .catch((failure) => {
+                    console.error('Unable to save route progress', failure);
+                });
+        };
+        record('queued', { ...context, command: args, output: current.output });
+        writes = writes
+            .then(() =>
+                appendFile(
+                    resolve(options.directory!, 'route-jobs.jsonl'),
+                    JSON.stringify({
+                        time: new Date().toISOString(),
+                        run: runId,
+                        ...context,
+                        log: relative(options.directory!, log),
+                        output: relative(options.directory!, current.output),
+                    }) + '\n',
+                ),
+            )
+            .catch((failure) =>
+                console.error('Unable to index route progress', failure),
+            );
+        const run = async () => {
+            await writes;
+            await new Promise<void>((done) => {
                 if (closed) {
                     current.status = 'failed';
                     current.message = 'Route server restarted';
@@ -97,6 +173,7 @@ export function physicalRouteBuilder(options: Options) {
                     return;
                 }
                 current.status = 'building';
+                record('started');
                 const child = spawn(
                     options.node || process.execPath,
                     [
@@ -115,6 +192,7 @@ export function physicalRouteBuilder(options: Options) {
                 let error = '',
                     pending = '';
                 child.stderr?.on('data', (bytes) => {
+                    record('stderr', { text: String(bytes) });
                     error = (error + String(bytes)).slice(-12000);
                 });
                 child.stdout?.on('data', (bytes) => {
@@ -124,13 +202,24 @@ export function physicalRouteBuilder(options: Options) {
                     for (const line of lines) {
                         try {
                             const progress = JSON.parse(line);
+                            record('progress', progress);
                             if (progress.phase === 'collision-inputs')
-                                current.message = `Reading collision sources · ${JSON.stringify(progress.cell)}`;
+                                current.message = 'Reading collision sources…';
+                            if (progress.phase === 'ground-tile')
+                                current.message = `Preparing route terrain (${progress.completed}/${progress.total})`;
                             if (progress.phase === 'ground')
                                 current.message = 'Physical ground ready';
+                            if (progress.phase === 'ground-search')
+                                current.message =
+                                    'Searching connected terrain…';
+                            if (progress.phase === 'device-links')
+                                current.message =
+                                    'Checking ropes and launch devices…';
+                            if (progress.phase === 'goal-refinement')
+                                current.message = 'Refining target access…';
                             if (progress.phase === 'ground-route') {
                                 current.message =
-                                    'Walking route ready · Comparing action alternatives…';
+                                    'Walking route ready. Comparing alternatives…';
                                 void readFile(current.output, 'utf8')
                                     .then((bytes) => {
                                         const result = JSON.parse(bytes);
@@ -152,17 +241,18 @@ export function physicalRouteBuilder(options: Options) {
                                 current.message =
                                     'Planning movement and sprint recovery…';
                         } catch {
-                            /* Other extractor diagnostics are not progress events. */
+                            record('stdout', { text: line });
                         }
                     }
                 });
                 child.once('error', (failure) => {
                     current.status = 'failed';
                     current.message = failure.message;
-                    delete current.child;
-                    done();
+                    record('process-error', { message: failure.message });
                 });
-                child.once('exit', (code) => {
+                child.once('close', (code, signal) => {
+                    record('process-exit', { code, signal });
+                    if (pending) record('stdout', { text: pending });
                     void (async () => {
                         delete current.child;
                         if (code === 0) {
@@ -173,12 +263,26 @@ export function physicalRouteBuilder(options: Options) {
                             current.message = 'Physical route data ready';
                         } else {
                             current.status = 'failed';
+                            const detail = error
+                                .split('\n')
+                                .find((line) =>
+                                    /^(?:[A-Za-z]*Error|FATAL ERROR):/.test(
+                                        line,
+                                    ),
+                                );
                             current.message =
-                                error
-                                    .split('\n')
-                                    .find((line) =>
-                                        line.startsWith('Error:'),
-                                    ) || 'Physical route job failed';
+                                /heap out of memory|reached heap limit/i.test(
+                                    error,
+                                )
+                                    ? 'Route calculation exceeded its memory limit'
+                                    : detail ||
+                                      (signal
+                                          ? `Physical route job terminated (${signal})`
+                                          : `Physical route job exited (${code})`);
+                            await writeFile(
+                                `${current.output}.error.log`,
+                                error || current.message,
+                            ).catch(() => {});
                             if (!current.result)
                                 await unlink(current.output).catch(() => {});
                         }
@@ -193,6 +297,12 @@ export function physicalRouteBuilder(options: Options) {
                 current.status = 'failed';
                 current.message = String(failure);
             });
+            record('finished', {
+                status: current.status,
+                message: current.message,
+            });
+            await writes;
+        };
         if (background) optimization = optimization.then(run);
         else {
             foreground.push({ run, query: args[0] === 'player-route' });
@@ -204,22 +314,32 @@ export function physicalRouteBuilder(options: Options) {
         source: Source,
         start: number[],
         target: number[],
-        request: { startBuild: boolean; margin?: number },
+        request: { startBuild: boolean; margin?: number; corridor?: Corridor },
     ) => {
         if (!configured || closed) return null;
         const margin = request.margin ?? physicalMargins[0];
         if (!Number.isFinite(margin) || margin < 0)
             throw new Error('Invalid physical coverage margin');
-        const bounds = [
-            Math.floor((Math.min(start[0], target[0]) - margin) / 32) * 32,
-            Math.floor((Math.min(start[2], target[2]) - margin) / 32) * 32,
-            Math.ceil((Math.max(start[0], target[0]) + margin) / 32) * 32,
-            Math.ceil((Math.max(start[2], target[2]) + margin) / 32) * 32,
-        ];
-        const tileSpan = 256 * 0.15;
+        const corridor = request.corridor;
+        const bounds = corridor
+            ? [
+                  Math.floor(corridor.bounds.min[0] / 32) * 32,
+                  Math.floor(corridor.bounds.min[1] / 32) * 32,
+                  Math.ceil(corridor.bounds.max[0] / 32) * 32,
+                  Math.ceil(corridor.bounds.max[1] / 32) * 32,
+              ]
+            : [
+                  Math.floor((Math.min(start[0], target[0]) - margin) / 32) *
+                      32,
+                  Math.floor((Math.min(start[2], target[2]) - margin) / 32) *
+                      32,
+                  Math.ceil((Math.max(start[0], target[0]) + margin) / 32) * 32,
+                  Math.ceil((Math.max(start[2], target[2]) + margin) / 32) * 32,
+              ];
         const tiles =
-            (Math.ceil((bounds[2] - bounds[0]) / tileSpan) + 2) *
-            (Math.ceil((bounds[3] - bounds[1]) / tileSpan) + 2);
+            corridor?.tiles.length ??
+            (Math.ceil((bounds[2] - bounds[0]) / physicalTileSpan) + 2) *
+                (Math.ceil((bounds[3] - bounds[1]) / physicalTileSpan) + 2);
         if (!bounds.every(Number.isSafeInteger) || tiles > 512) {
             return {
                 status: 'failed' as const,
@@ -236,7 +356,8 @@ export function physicalRouteBuilder(options: Options) {
             bounds,
             state: 0,
             area: 0,
-            policy: 3,
+            policy: 4,
+            tiles: corridor?.tiles,
             movement: settings.fingerprint,
             solver: options.solver,
         });
@@ -270,30 +391,58 @@ export function physicalRouteBuilder(options: Options) {
                     job.status = 'ready';
                     job.result = result;
                     job.message = 'Physical ground ready';
+                    await cacheLog(job, {
+                        stage: 'ground',
+                        scene,
+                        source,
+                        bounds,
+                    });
                     return job;
                 }
             } catch {
                 /* No completed cache is available yet. */
             }
-            enqueue(job, [
-                'player-ground',
-                scene,
-                `--bounds=${bounds.join(',')}`,
-                '--scene-state',
-                '0',
-                '--area',
-                '0',
-                '--movement-settings',
-                settings.path,
-                '-o',
-                output,
-                '--collision-output',
-                collision,
-                '--input-cache',
-                resolve(options.directory!, 'collision-cache'),
-                '--config',
-                options.config!,
-            ]);
+            enqueue(
+                job,
+                [
+                    'player-ground',
+                    scene,
+                    `--bounds=${bounds.join(',')}`,
+                    '--scene-state',
+                    '0',
+                    '--area',
+                    '0',
+                    '--movement-settings',
+                    settings.path,
+                    '-o',
+                    output,
+                    '--collision-output',
+                    collision,
+                    '--input-cache',
+                    resolve(options.directory!, 'collision-cache'),
+                    '--config',
+                    options.config!,
+                    ...(corridor
+                        ? [
+                              '--tiles',
+                              corridor.tiles
+                                  .map((tile) => `${tile.x},${tile.z}`)
+                                  .join(';'),
+                          ]
+                        : []),
+                ],
+                {
+                    background: false,
+                    context: {
+                        stage: 'ground',
+                        scene,
+                        source,
+                        bounds,
+                        coarse: corridor?.coarse,
+                        tiles: corridor?.tiles,
+                    },
+                },
+            );
         }
         return job;
     };
@@ -363,7 +512,7 @@ export function physicalRouteBuilder(options: Options) {
                       : 'route',
             ground: ground.output,
             request,
-            policy: 8,
+            policy: 10,
             devices: devices?.fingerprint,
             movement: settings.fingerprint,
             solver: options.solver,
@@ -398,6 +547,12 @@ export function physicalRouteBuilder(options: Options) {
                 if (result.optimizing !== true) {
                     job.status = 'ready';
                     job.message = 'Physical route data ready';
+                    await cacheLog(job, {
+                        stage,
+                        scene: request.scene,
+                        point: request.point,
+                        source: request.source,
+                    });
                     return job;
                 }
             }
@@ -432,7 +587,17 @@ export function physicalRouteBuilder(options: Options) {
                               ? '--ground-only'
                               : '--devices-only',
                       ],
-                stage === 'all',
+                {
+                    background: stage === 'all',
+                    context: {
+                        stage,
+                        scene: request.scene,
+                        point: request.point,
+                        source: request.source,
+                        from: request.arrival.position,
+                        target: request.target,
+                    },
+                },
             );
         } catch (error) {
             job.status = 'failed';
@@ -444,9 +609,11 @@ export function physicalRouteBuilder(options: Options) {
     return {
         query,
         solve,
-        close() {
+        async close() {
             closed = true;
             for (const job of jobs.values()) job.child?.kill('SIGTERM');
+            while (foregroundRunning) await foregroundTask;
+            await optimization;
             jobs.clear();
         },
     };

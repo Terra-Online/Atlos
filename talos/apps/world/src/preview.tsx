@@ -21,7 +21,7 @@ import {
     type Point,
     type PointView,
 } from '@endfield-noclip/package-format/oem';
-import { completedProgressionPicks } from '@endfield-noclip/package-format/story';
+import { openTraversalPicks } from '@endfield-noclip/package-format/story';
 
 import {
     lazy,
@@ -98,7 +98,7 @@ export const Preview = ({
             let id: string, picks: Record<string, number>;
             if (presetId === undefined || presetId === 'completed') {
                 id = 'completed';
-                picks = completedProgressionPicks(
+                picks = openTraversalPicks(
                     viewer.scene?.pkg.manifest.states.controls ?? [],
                 );
             } else {
@@ -390,7 +390,7 @@ export const Preview = ({
                             setPreset('completed');
                             viewer.resetSceneValues();
                             viewer.setSceneValues(
-                                completedProgressionPicks(
+                                openTraversalPicks(
                                     viewer.scene?.pkg.manifest.states
                                         .controls ?? [],
                                 ),
