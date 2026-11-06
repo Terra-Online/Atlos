@@ -90,6 +90,8 @@ type Query = {
     progress?: boolean;
     marginIndex: number;
     anchorIndex: number;
+    attemptIndex: number;
+    excludedAnchors: Set<number>;
     log?: string;
     corridors?: Corridor[];
     candidate?: Candidate;
@@ -464,6 +466,8 @@ export function routeServer(
                         done: false,
                         marginIndex,
                         anchorIndex: previous?.anchorIndex ?? 0,
+                        attemptIndex: previous?.attemptIndex ?? 0,
+                        excludedAnchors: previous?.excludedAnchors ?? new Set(),
                         corridors: previous?.corridors,
                     };
                     queries.set(queryKey, entry);
@@ -667,35 +671,45 @@ export function routeServer(
                             interaction,
                         });
                     };
-                    const nextAnchor = () => {
-                        if (entry.anchorIndex + 1 >= candidates.length)
-                            return false;
-                        entry.anchorIndex++;
-                        entry.marginIndex = 0;
-                        entry.corridors = undefined;
-                        building('Trying another teleport landing…');
-                        return true;
-                    };
-                    const expandCoverage = async () => {
-                        const nextIndex = entry.marginIndex + 1;
-                        const margin = physicalMargins[nextIndex];
-                        if (margin === undefined) return false;
-                        const next = await builder.query(
-                            scene,
-                            source,
-                            anchor.position,
-                            target,
-                            {
-                                startBuild: true,
-                                margin,
-                                corridor: corridorAt(nextIndex),
-                            },
+                    // Interleave origins and wider approaches. A nearby but disconnected
+                    // landing must not consume every coverage expansion before another
+                    // already-unlocked teleport gets its first attempt. Deferred wider
+                    // approaches remain in the schedule, including the nearest origin's.
+                    const schedule = candidates
+                        .flatMap((_, anchorIndex) =>
+                            physicalMargins.map((_, marginIndex) => ({
+                                anchorIndex,
+                                marginIndex,
+                            })),
+                        )
+                        .sort(
+                            (a, b) =>
+                                a.anchorIndex +
+                                    a.marginIndex -
+                                    b.anchorIndex -
+                                    b.marginIndex ||
+                                a.marginIndex - b.marginIndex,
                         );
-                        if (!next || next.status === 'failed') return false;
-                        if (next.log) entry.log = logUrl(next.log);
-                        entry.marginIndex = nextIndex;
-                        building('Loading a wider route area…');
-                        return true;
+                    const nextAttempt = (excludeAnchor = false) => {
+                        if (excludeAnchor)
+                            entry.excludedAnchors.add(entry.anchorIndex);
+                        while (++entry.attemptIndex < schedule.length) {
+                            const next = schedule[entry.attemptIndex];
+                            if (entry.excludedAnchors.has(next.anchorIndex))
+                                continue;
+                            const changed =
+                                next.anchorIndex !== entry.anchorIndex;
+                            entry.anchorIndex = next.anchorIndex;
+                            entry.marginIndex = next.marginIndex;
+                            if (changed) entry.corridors = undefined;
+                            building(
+                                changed
+                                    ? 'Trying another teleport approach…'
+                                    : 'Loading a wider route area…',
+                            );
+                            return true;
+                        }
+                        return false;
                     };
                     const job = await builder.query(
                         scene,
@@ -972,9 +986,7 @@ export function routeServer(
                             const arrivalFailed =
                                 result.reason === 'arrival-unmapped' ||
                                 result.reason === 'arrival-unavailable';
-                            if (!arrivalFailed && (await expandCoverage()))
-                                return;
-                            if (nextAnchor()) return;
+                            if (nextAttempt(arrivalFailed)) return;
                             reply({
                                 status: 'unavailable',
                                 category: arrivalFailed
@@ -1014,7 +1026,7 @@ export function routeServer(
                             )
                         )
                             return;
-                        if (nextAnchor()) return;
+                        if (nextAttempt(true)) return;
                         reply({
                             status: 'unavailable',
                             category: 'movement-solver-error',
@@ -1268,7 +1280,8 @@ export function routeServer(
                         )
                     )
                         return;
-                    if (nextJob?.status === 'failed' && nextAnchor()) return;
+                    if (nextJob?.status === 'failed' && nextAttempt(true))
+                        return;
                     const best = diagnostics.toSorted(
                         (a, b) =>
                             Number(b.anchor.mapped) +

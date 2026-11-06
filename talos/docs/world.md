@@ -222,3 +222,35 @@ Four existing physical replay costs remain 32.5137026, 56.8194175, 8.1988517 and
 loading a wider corridor and experimenting with local coarse-point transfers did
 not establish a complete physical route. Those transfer/priority experiments
 were not enabled. Task logs retain the separate build and search results.
+
+### Progressive origin and corridor scheduling (2026-11-06)
+
+Physical route attempts now interleave distance-ranked teleport origins with wider
+approaches. The order begins with origin 0 / coverage 0, origin 1 / coverage 0,
+origin 0 / coverage 1, then continues by the sum of origin and coverage indices.
+This keeps a disconnected nearby origin from consuming all four coverage rounds
+before another origin gets a first attempt. Deferred coverage rounds remain
+available. Unmapped/unavailable landings and failed origin jobs are excluded from
+later rounds as before. Complete incumbents retain the existing comparison policy.
+
+This scheduling change applies to every query; it does not add point-specific
+waypoints, movement edges, costs or collision exceptions. Ground generation and
+physical route cache identities are unchanged, so already built tiles and solved
+jobs remain reusable. It establishes first feasibility, not globally fastest
+selection across every teleport and corridor.
+
+The previously unresolved `0bzZEM3` now completes through the normal nearest-route
+endpoint and viewer with a 50.8116844-second model route. It starts from the second
+nearest same-level teleport, uses five swept jumps and supported walking, then
+approaches the target through the building's rear side. The successful physical
+command took 65.73 seconds, including 44.52 seconds of search; these are command
+timings, not the whole multi-attempt task latency. A retained HTTP query returned
+the completed result in 43.7 ms. The first origin remains unresolved within its
+initial corridor rather than being classified as physically unreachable.
+
+The normal endpoint replays for `10YLgUg` and `17nac6U` retain their original
+successful model costs of 8.1988517 and 22.6338346 seconds. Six server integration
+tests cover the existing behavior, unmapped-origin skipping, disconnected-origin
+interleaving, and revisiting deferred wider coverage after other origins fail.
+Local interface-graph and step-trace experiments did not establish a better
+solution and are not part of the shipped planner.
