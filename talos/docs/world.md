@@ -206,3 +206,19 @@ not a claim that all origins have been compared for the globally fastest journey
 Route-result identity changes independently of physical-tile identity. Updating arrival semantics
 invalidates failed route results while retaining compatible physical terrain. The model still depends
 on the exported collision coverage and device motion model; the preview is not a game execution proof.
+
+
+### Corridor discovery corrections (2026-11-06)
+
+Physical requests now receive direction samples only from the corridor used for
+that request's tiles. Alternative corridors remain separate retries; their missing
+supports must not be projected onto the currently loaded corridor. Ganglia alpha.30
+groups duplicate direction goals by directed ground connectivity and advances
+bounded frontier batches beyond rejected pairs. This is not yet a regional
+entry/exit graph or a guarantee of global optimality.
+
+Four existing physical replay costs remain 32.5137026, 56.8194175, 8.1988517 and
+22.6338346 seconds. The distant rear-approach case `0bzZEM3` remains unresolved;
+loading a wider corridor and experimenting with local coarse-point transfers did
+not establish a complete physical route. Those transfer/priority experiments
+were not enabled. Task logs retain the separate build and search results.

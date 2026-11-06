@@ -849,6 +849,7 @@ export function routeServer(
                         entry.candidate = candidate;
                         reply(candidate);
                     };
+                    const direction = corridorAt();
                     const routeRequest = {
                         point: pointId,
                         scene,
@@ -857,8 +858,8 @@ export function routeServer(
                         target: goal?.position ?? target,
                         interaction: goal?.interaction,
                         walls: data.options.walls,
-                        waypoints: entry.corridors
-                            ? coarseWaypoints(entry.corridors)
+                        waypoints: direction
+                            ? coarseWaypoints([direction])
                             : undefined,
                     };
                     const walking =
