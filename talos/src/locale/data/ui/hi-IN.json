@@ -1,7 +1,7 @@
 {
   "headbar": {
-    "profile": "उपयोगकर्ता सेटिंग्स",
-    "auth": "रजिस्टर / लॉग इन",
+    "profile": "User settings",
+    "auth": "Register / Log in",
     "hideUI": "UI छिपाएं",
     "notification": "सूचनाएँ",
     "darkmode": "डार्क मोड",
@@ -182,13 +182,13 @@
     }
   },
   "storage": {
-    "title": "डेटा और संग्रहण",
-    "calculating": "संग्रहण उपयोग की गणना हो रही है...",
-    "policy": "<p>हम लॉगिन सत्र के लिए Cookie, प्राथमिकताओं और मार्कर की प्रगति के लिए LocalStorage, और फ़ॉन्ट कैश करने के लिए CacheStorage का उपयोग करते हैं। इससे पेज तेज़ी से लोड होते हैं और कुछ सुविधाएं ऑफ़लाइन भी उपलब्ध रहती हैं। स्थानीय संग्रहण साफ़ करने पर <span class=\"keyword\">अगली बार संसाधनों को फिर से लोड करने में अधिक समय लग सकता है</span>। वेबसाइट का संग्रहण बंद करने पर वेबसाइट <span class=\"keyword\">स्थानीय प्राथमिकताओं और मार्कर की प्रगति को अपने आप सेव नहीं कर पाएगी</span>।</p><p>लॉगिन, मार्कर योगदान और स्थान सिंक जैसी सुविधाएं ज़रूरत के अनुसार संबंधित डेटा सर्वर पर भेजती हैं। स्थानीय संग्रहण साफ़ करने से आपका खाता या सर्वर पर मौजूद डेटा नहीं मिटता।</p>",
-    "filtersAndMarkers": "फ़िल्टर और मार्कर डेटा",
-    "warning": "<p><strong>चेतावनी:</strong> स्थानीय संग्रहण साफ़ करने से स्थानीय लॉगिन स्थिति, प्राथमिकताएं और स्थानीय प्रगति खो जाएंगी। अगली बार आपको संसाधन फिर से लोड करने और दोबारा लॉगिन करने की ज़रूरत होगी।</p><p>पुष्टि करने के लिए कृपया हटाने वाले बटन पर फिर से क्लिक करें।</p>",
-    "export": "डेटा निर्यात करें",
-    "import": "डेटा आयात करें"
+    "title": "Data & Storage",
+    "calculating": "Calculating storage usage...",
+    "policy": "<p>We use cookies to store your login session, LocalStorage for preferences and marker progress, and CacheStorage to cache fonts. This helps pages load faster and supports some offline use. If you clear local storage, <span class=\"keyword\">your next visit may take longer as resources are reloaded</span>; if you disable website storage, the website <span class=\"keyword\">will not be able to save local preferences and marker progress automatically</span>.</p><p>Features such as login, marker contributions, and location sync send the relevant data to the server as needed. Clearing local storage does not delete your account or server data.</p>",
+    "filtersAndMarkers": "Filters & Marker Data",
+    "warning": "<p><strong>Warning:</strong> Clearing storage removes your login state, preferences, and local progress. On your next visit, resources will need to reload and you will need to log in again.</p><p>To confirm, please click the delete button again.</p>",
+    "export": "Export Data",
+    "import": "Import Data"
   },
   "settings": {
     "title": "सेटिंग्स",
@@ -232,7 +232,7 @@
   },
   "guide": {
     "tip": "गाइड सुझाव",
-    "welcome": "<span class=\"keyword\">Open Endfield Map</span> में आपका स्वागत है।<br>आप पहली बार इस मानचित्र का उपयोग कर रहे हैं। यदि आपको कोई समस्या आती है, तो कृपया ऊपर दाईं ओर स्थित <span class=\"keyword\">सहायता</span> बटन पर क्लिक करें। हम आपको सुविधाओं के बारे में विस्तृत मार्गदर्शन प्रदान करेंगे।</p>",
+    "welcome": "<span class=\"keyword\">OPEN ENDFIELD MAP</span> में आपका स्वागत है।<br>आप पहली बार इस मानचित्र का उपयोग कर रहे हैं। यदि आपको कोई समस्या आती है, तो कृपया ऊपर दाईं ओर स्थित <span class=\"keyword\">सहायता</span> बटन पर क्लिक करें। हम आपको सुविधाओं के बारे में विस्तृत मार्गदर्शन प्रदान करेंगे।</p>",
     "sidebarToggle": "<span class=\"keyword\">साइडबार</span> का विस्तार करने के लिए क्लिक करें।<br>साइडबार में आपके सबसे अधिक उपयोग किए जाने वाले मार्कर फ़िल्टर और मार्कर डिस्प्ले से निकटता से संबंधित स्विच शामिल हैं।",
     "search": "आप देखने के लिए मार्करों की खोज कर सकते हैं <span class=\"keyword\">गेम द्वारा समर्थित भाषाओं</span> का उपयोग करके और उन्हें खोज परिणामों में चुन सकते हैं।",
     "filterContainer": "एक ही प्रकार के मार्करों को एक <span class=\"keyword\">फ़िल्टर</span> में समूहीकृत किया गया है।<br>उस प्रकार के मार्करों की सूची का विस्तार करने के लिए क्लिक करें।",
@@ -243,15 +243,15 @@
     "triggerSwitch": "स्विच स्थिति को टॉगल करने के लिए क्लिक करें।<br><ul><li><span class=\"keyword\">मार्कर क्लस्टरिंग मोड</span> घने मार्करों को विलय करके प्रदर्शित करने की अनुमति देता है;</li><li><span class=\"keyword\">क्षेत्र सीमा प्रदर्शन</span> वर्तमान क्षेत्र के भीतर प्रत्येक उप-क्षेत्र और उसकी सीमाओं को हाइलाइट करता है।</li><li><span class=\"keyword\">क्षेत्र का नाम</span> इन-गेम क्षेत्र के नाम दिखाता है।</li></ul>",
     "scale": "मानचित्र ज़ूम को देखने और हेरफेर करने के लिए <span class=\"keyword\">ज़ूम नियंत्रण</span> का उपयोग करें।<br>स्क्रॉल व्हील या ट्रैकपैड का उपयोग ज़ूम करने के लिए किया जा सकता है। आप <span class=\"keyboard sym\">+</span>/<span class=\"keyboard sym\">-</span> बटन या ज़ूम बार पर कहीं भी क्लिक करके भी ज़ूम कर सकते हैं।",
     "filterList": "<span class=\"keyword\">मार्कर सूची</span> आपके चुने हुए मार्कर प्रकार दिखाती है; चयन हटाने के लिए आइकन पर क्लिक करें।",
-    "headbar": "मानचित्र, खाते और अन्य सुविधाओं के विकल्प <span class=\"keyword\">हेडर बार</span> में हैं।",
-    "auth": "हमारी ऑनलाइन सुविधाओं का उपयोग करने के लिए OEM खाते में <span class=\"keyword\">रजिस्टर करें</span> या <span class=\"keyword\">लॉग इन करें</span>।",
+    "headbar": "मानचित्र सेटिंग्स से संबंधित स्विच <span class=\"keyword\">हेडर बार</span> में स्थित हैं।",
+    "auth": "<span class=\"keyword\">Register</span> or <span class=\"keyword\">log in</span> to an OEM account to use our online features.",
     "hideUI": "स्क्रीनशॉट लेने या किनारे के मार्करों को देखने के लिए <span class=\"keyword\">वेबसाइट UI छिपाएँ</span>।",
     "notification": "अपने योगदान से संबंधित इंटरैक्शन और समीक्षा परिणाम देखने के लिए <span class=\"keyword\">सूचनाएँ</span> खोलें।",
     "darkMode": "वर्तमान <span class=\"keyword\">परिवेश प्रकाश मोड</span> को टॉगल करें।",
     "language": "<span class=\"keyword\">इंटरफ़ेस भाषा</span> बदलें।<br><span class=\"keyword\">पूर्ण गेम सामग्री अनुवाद समर्थन</span> वाली भाषाओं में अंग्रेजी, सरलीकृत चीनी, पारंपरिक चीनी, जापानी, कोरियाई, फ्रेंच, जर्मन, इतालवी, रूसी, स्पेनिश, इंडोनेशियाई, पुर्तगाली, थाई और वियतनामी शामिल हैं।<br><span class=\"keyword\">केवल-UI भाषाएँ</span> (केवल इंटरफ़ेस अनुवाद) में अरबी, मलय, पोलिश, स्वीडिश, यूनानी, हिंदी, यूक्रेनी और तुर्की शामिल हैं।",
-    "announcement": "हाल की <span class=\"keyword\">वेबसाइट घोषणाएं</span> और सुविधाओं के महत्वपूर्ण अपडेट देखें।",
+    "announcement": "हालिया <span class=\"keyword\">वेबसाइट घोषणाएँ</span> देखें। सेवा की शर्तों और गोपनीयता नीति के अपडेट भी यहाँ पोस्ट किए जाएँगे।",
     "help": "इस <span class=\"keyword\">गाइड</span> को पुनः आरंभ करें।",
-    "settings": "इंटरफ़ेस, मानचित्र, थीम, कीबोर्ड शॉर्टकट और स्थानीय डेटा प्रबंधित करने के लिए <span class=\"keyword\">प्राथमिकताएं</span> खोलें।",
+    "settings": "यह नियंत्रित करने के लिए कि मानचित्र आपके कार्यों को याद रखने के लिए किस स्थानीय संग्रहण का उपयोग करता है, <span class=\"keyword\">प्राथमिकताएं</span> खोलें।",
     "locator": "<span class=\"keyword\">Location Sync</span> पर क्लिक करें ताकि मैप पर आपकी मौजूदा इन-गेम स्थिति दिखे।<br>गेम अकाउंट लिंक करने के बाद, आप tracking config खोलकर point tracking भी बदल सकते हैं।",
     "regionSwitch": "गेम में <span class=\"keyword\">विभिन्न सैंडबॉक्स मैप्स</span> (मुख्य क्षेत्रों) के बीच स्विच करने के लिए क्लिक करें।",
     "subregionSwitch": "उपलब्ध उप-क्षेत्रों को दिखाने के लिए <span class=\"keyword\">मुख्य क्षेत्र आइकन पर होवर करें</span>; एक उप-क्षेत्र आइकन पर क्लिक करने से वह उप-क्षेत्र दृश्य में आ जाएगा।<br>इसी तरह, आप किसी क्षेत्र के लिए एक लेयर भी चुन सकते हैं।",
