@@ -389,3 +389,40 @@ model costs and discovery limits. Two results contain additional valid unused
 actions. Movement and device input snapshots were copied for the replay because
 preview startup atomically rewrites identical immutable files. Metadata-only
 interruptions were rerun against those copied inputs.
+
+## Round occupancy and decoded ground lifetime
+
+`0mmXi4a` included the nearer teleport in its candidate list. A conservative
+capsule envelope had been filled as an AABB, blocking every exit from the
+arrival's support face even though the body lay outside the rounded solid.
+Alpha.55 supports continuous capsule/sphere exclusion queries. The importer
+refines known round-envelope occupancy after conservative ground connectivity
+fails, retaining the original triangles, source binding and discovery limits.
+Completed ground graphs keep their existing candidate ordering. An unconditional
+refinement experiment changed bounded shortcut coverage and made one retained
+route slower, so that experiment is not the integrated policy.
+
+Normal HTTP entry now selects the nearer teleport and returns an 11.524-second
+model route, replacing the 39.942-second far-anchor route. This is a travel-time
+improvement; it does not establish faster cold solving. Capsule axes and length
+conventions remain unresolved and their sphere envelopes remain conservative.
+
+A separate `Failed to fetch` report coincided with the World development server
+aborting at its roughly 4 GB V8 heap limit. Its job table retained every decoded
+physical ground region. The builder now retains one current decoded ground
+region; task metadata, route results, disk artifacts and logs remain available.
+Revisiting another completed region reads its existing artifact without invoking
+the ground builder. Returned ready snapshots retain their own mesh while a
+concurrent request switches the current region. Finished task records include
+`serverMemory` in bytes, separately from solver-worker memory reports.
+
+`0DPyejn` loads and its HTTP route requests respond again after restart. Its
+physical route remains unresolved after multiple anchor and coverage attempts;
+restoring the service does not establish reachability for that goal.
+
+The final policy was replayed against 38 frozen successful requests. All remain
+complete with identical route geometry, movement timing and discovery limits.
+The strict comparator records 37 exact route objects and 36 exact action sets:
+one selected route renumbers its connection references, and two action sets differ.
+No selected-route cost increases. SDK tests, extractor route/occupancy tests,
+server/worker tests, builder scheduling tests and focused type checks pass.

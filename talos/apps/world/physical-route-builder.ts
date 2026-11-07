@@ -103,6 +103,16 @@ export const physicalApproaches = (
  */
 export function physicalRouteBuilder(options: Options) {
     const jobs = new Map<string, Job>();
+    let retainedGround: Job | undefined;
+    const groundLoads = new WeakMap<Job, Promise<unknown>>();
+    const retainGround = (job: Job, result: unknown) => {
+        // Ground artifacts already live on disk. Polling reuses the current
+        // region; visiting another region releases the previous decoded mesh.
+        if (retainedGround && retainedGround !== job)
+            delete retainedGround.result;
+        retainedGround = job;
+        job.result = result;
+    };
     const workerOptions = {
         extractor: options.extractor ?? '',
         node: options.node || process.execPath,
@@ -403,9 +413,12 @@ export function physicalRouteBuilder(options: Options) {
                         void (async () => {
                             delete current.child;
                             if (code === 0) {
-                                current.result = JSON.parse(
+                                const result = JSON.parse(
                                     await readFile(current.output, 'utf8'),
                                 );
+                                if (args[0] === 'player-ground')
+                                    retainGround(current, result);
+                                else current.result = result;
                                 current.status = 'ready';
                                 current.message = 'Physical route data ready';
                             } else {
@@ -455,6 +468,7 @@ export function physicalRouteBuilder(options: Options) {
             record('finished', {
                 status: current.status,
                 message: current.message,
+                serverMemory: process.memoryUsage(),
             });
             await writes;
         };
@@ -526,16 +540,16 @@ export function physicalRouteBuilder(options: Options) {
                     result.source?.contentHash === source.contentHash &&
                     Array.isArray(result.surfaces)
                 ) {
-                    job.status = 'ready';
-                    job.result = result;
-                    job.message = 'Physical ground ready';
                     await cacheLog(job, {
                         stage: 'ground',
                         scene,
                         source,
                         bounds,
                     });
-                    return job;
+                    job.status = 'ready';
+                    retainGround(job, result);
+                    job.message = 'Physical ground ready';
+                    return { ...job, result };
                 }
             } catch {
                 /* No completed cache is available yet. */
@@ -584,7 +598,30 @@ export function physicalRouteBuilder(options: Options) {
                 },
             );
         }
-        return job;
+        if (job.status === 'ready' && !job.result) {
+            let pending = groundLoads.get(job);
+            if (!pending) {
+                const current = job;
+                pending = readFile(current.output, 'utf8')
+                    .then((bytes) => {
+                        const result = JSON.parse(bytes);
+                        if (
+                            result.source?.buildGuid !== source.buildGuid ||
+                            result.source?.contentHash !== source.contentHash ||
+                            !Array.isArray(result.surfaces)
+                        )
+                            throw new Error('Invalid retained physical ground');
+                        retainGround(current, result);
+                        return result;
+                    })
+                    .finally(() => groundLoads.delete(current));
+                groundLoads.set(current, pending);
+            }
+            // Keep this response's mesh alive even if a concurrent request
+            // switches the retained region before this continuation resumes.
+            return { ...job, result: await pending };
+        }
+        return job.status === 'ready' ? { ...job } : job;
     };
     const deviceInputs = new Map<
         string,
@@ -652,7 +689,7 @@ export function physicalRouteBuilder(options: Options) {
                       : 'route',
             ground: ground.output,
             request,
-            policy: stage === 'walking' ? 12 : 13,
+            policy: stage === 'walking' ? 14 : 15,
             devices: devices?.fingerprint,
             movement: settings.fingerprint,
             solver: options.solver,
@@ -756,6 +793,7 @@ export function physicalRouteBuilder(options: Options) {
             while (foregroundRunning) await foregroundTask;
             await optimization;
             jobs.clear();
+            retainedGround = undefined;
         },
     };
 }

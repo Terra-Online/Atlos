@@ -11,7 +11,7 @@
   "dependencies": {
     "@endfield-noclip/package-format": "workspace:*",
     "@endfield-noclip/viewer": "workspace:*",
-    "@oem/ganglia": "file:../../vendor/ganglia/oem-ganglia-0.1.0-alpha.54.tgz"
+    "@oem/ganglia": "file:../../vendor/ganglia/oem-ganglia-0.1.0-alpha.55.tgz"
   },
   "devDependencies": {
     "@webgpu/types": "^0.1.74",

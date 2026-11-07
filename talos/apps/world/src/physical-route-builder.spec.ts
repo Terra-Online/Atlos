@@ -84,6 +84,26 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
         );
         if (!next) throw new Error('Next ground job was not created');
         await expect.poll(() => next.status).toBe('ready');
+        expect(ground.result).toBeUndefined();
+        const restored = await builder.query(
+            'map01',
+            source,
+            [0, 0, 0],
+            [1, 0, 1],
+            { startBuild: false },
+        );
+        expect(restored).toMatchObject({
+            output: ground.output,
+            status: 'ready',
+        });
+        expect(restored?.result).toMatchObject({ source, surfaces: [] });
+        expect(next.result).toBeUndefined();
+        await builder.query('map01', source, [100, 0, 100], [101, 0, 101], {
+            startBuild: false,
+        });
+        expect(next.result).toMatchObject({ source, surfaces: [] });
+        expect(ground.result).toBeUndefined();
+        expect(restored?.result).toMatchObject({ source, surfaces: [] });
         const walking = await builder.solve(next, request, true, 'walking');
         if (!walking)
             throw new Error('Foreground walking stage was not created');
