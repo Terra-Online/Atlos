@@ -14,6 +14,7 @@ import {
     type Vec3,
 } from '@oem/ganglia';
 import {
+    physicalApproaches,
     physicalMargins,
     physicalTileSpan,
     physicalRouteBuilder,
@@ -92,6 +93,7 @@ type Query = {
     anchorIndex: number;
     attemptIndex: number;
     excludedAnchors: Set<number>;
+    approachCounts: Map<number, number>;
     log?: string;
     corridors?: Corridor[];
     candidate?: Candidate;
@@ -468,6 +470,7 @@ export function routeServer(
                         anchorIndex: previous?.anchorIndex ?? 0,
                         attemptIndex: previous?.attemptIndex ?? 0,
                         excludedAnchors: previous?.excludedAnchors ?? new Set(),
+                        approachCounts: previous?.approachCounts ?? new Map(),
                         corridors: previous?.corridors,
                     };
                     queries.set(queryKey, entry);
@@ -595,52 +598,22 @@ export function routeServer(
                         position: [...anchor.position],
                         state: 'available',
                     };
-                    const localFirst = (position: Vec3) =>
-                        Math.hypot(
-                            position[0] - target[0],
-                            position[2] - target[2],
-                        ) <=
-                            physicalTileSpan * 2 &&
-                        Math.hypot(
-                            ...position.map(
-                                (value, axis) => value - target[axis],
-                            ),
-                        ) >
-                            physicalTileSpan * 2;
-                    const localApproach = localFirst(arrival.position);
-                    const marginAt = () =>
-                        physicalMargins[
-                            Math.max(
-                                0,
-                                entry.marginIndex - Number(localApproach),
-                            )
-                        ];
-                    const corridorAt = (index = entry.marginIndex) => {
-                        // Loading is tiled in XZ. Try nearby stacked supports locally
-                        // before coarse directions, retaining every previous fallback.
-                        if (localApproach && index === 0) return undefined;
-                        if (
-                            Math.hypot(
-                                ...arrival.position.map(
-                                    (v, i) => v - target[i],
-                                ),
-                            ) <=
-                            physicalTileSpan * 2
-                        )
-                            return undefined;
-                        entry.corridors ??= coarseCorridors(
-                            data,
-                            arrival.position,
-                            goal?.position ?? target,
-                            physicalTileSpan,
-                        );
-                        return entry.corridors[
-                            Math.min(
-                                index - Number(localApproach),
-                                entry.corridors.length - 1,
-                            )
-                        ];
-                    };
+                    entry.corridors ??= coarseCorridors(
+                        data,
+                        arrival.position,
+                        goal?.position ?? target,
+                        physicalTileSpan,
+                    );
+                    const approaches = physicalApproaches(
+                        arrival.position,
+                        target,
+                        entry.corridors,
+                    );
+                    const approach = approaches[entry.marginIndex];
+                    entry.approachCounts.set(
+                        entry.anchorIndex,
+                        approaches.length,
+                    );
                     const assumptions = [
                         'All teleport anchors assumed unlocked',
                         'Same-level anchors tried by distance, including industrial bases',
@@ -702,13 +675,9 @@ export function routeServer(
                     // already-unlocked teleport gets its first attempt. Deferred wider
                     // approaches remain in the schedule, including the nearest origin's.
                     const schedule = candidates
-                        .flatMap((candidate, anchorIndex) =>
+                        .flatMap((_, anchorIndex) =>
                             Array.from(
-                                {
-                                    length:
-                                        physicalMargins.length +
-                                        Number(localFirst(candidate.position)),
-                                },
+                                { length: physicalMargins.length * 2 },
                                 (_, marginIndex) => ({
                                     anchorIndex,
                                     marginIndex,
@@ -730,6 +699,12 @@ export function routeServer(
                             const next = schedule[entry.attemptIndex];
                             if (entry.excludedAnchors.has(next.anchorIndex))
                                 continue;
+                            if (
+                                next.marginIndex >=
+                                (entry.approachCounts.get(next.anchorIndex) ??
+                                    Infinity)
+                            )
+                                continue;
                             const changed =
                                 next.anchorIndex !== entry.anchorIndex;
                             entry.anchorIndex = next.anchorIndex;
@@ -744,6 +719,15 @@ export function routeServer(
                         }
                         return false;
                     };
+                    if (!approach) {
+                        if (nextAttempt()) return;
+                        reply({
+                            status: 'unavailable',
+                            category: 'no-route',
+                            message: 'No physical route found',
+                        });
+                        return;
+                    }
                     const job = await builder.query(
                         scene,
                         source,
@@ -751,8 +735,8 @@ export function routeServer(
                         target,
                         {
                             startBuild: false,
-                            margin: marginAt(),
-                            corridor: corridorAt(),
+                            margin: approach.margin,
+                            corridor: approach.corridor,
                         },
                     );
                     if (job?.log) entry.log = logUrl(job.log);
@@ -896,7 +880,7 @@ export function routeServer(
                         entry.candidate = candidate;
                         reply(candidate);
                     };
-                    const direction = corridorAt();
+                    const direction = approach.corridor;
                     const routeRequest = {
                         point: pointId,
                         scene,
@@ -1246,8 +1230,8 @@ export function routeServer(
                                 target,
                                 {
                                     startBuild: true,
-                                    margin: marginAt(),
-                                    corridor: corridorAt(),
+                                    margin: approach.margin,
+                                    corridor: approach.corridor,
                                 },
                             );
                             const optimization =
@@ -1276,8 +1260,8 @@ export function routeServer(
                         target,
                         {
                             startBuild: true,
-                            margin: marginAt(),
-                            corridor: corridorAt(),
+                            margin: approach.margin,
+                            corridor: approach.corridor,
                         },
                     );
                     if (nextJob?.log) entry.log = logUrl(nextJob.log);

@@ -5,6 +5,54 @@ import { join } from 'node:path';
 import { EventEmitter } from 'node:events';
 import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { routeServer } from './dev-route-server.ts';
+import { physicalApproaches } from './physical-route-builder.ts';
+
+test('ranks local and corridor coverage by tile cost for every endpoint geometry', () => {
+    const corridor = {
+        kind: 'corridor-proposal',
+        bounds: { min: [-38.4, -38.4], max: [76.8, 76.8] },
+        tiles: Array.from({ length: 9 }, (_, index) => ({
+            x: (index % 3) - 1,
+            z: Math.floor(index / 3) - 1,
+        })),
+        coarse: {
+            regions: 1,
+            edges: 0,
+            path: [
+                [0, 0, 0],
+                [1, 0, 1],
+            ],
+            halo: 1,
+        },
+    };
+    for (const elevation of [0, 10, 100, 1000]) {
+        const approaches = physicalApproaches(
+            [0, elevation, 0],
+            [1, 0, 1],
+            [corridor],
+        );
+        assert.equal(approaches[0].corridor, undefined);
+        assert.ok(
+            approaches.some((approach) => approach.corridor === corridor),
+        );
+    }
+    const longCorridor = {
+        ...corridor,
+        bounds: { min: [-38.4, -38.4], max: [1036.8, 1036.8] },
+        tiles: Array.from({ length: 81 }, (_, index) => ({
+            x: Math.floor(index / 3),
+            z: Math.floor(index / 3) + (index % 3) - 1,
+        })),
+    };
+    const far = physicalApproaches([0, 0, 0], [1000, 0, 1000], [longCorridor]);
+    assert.equal(far[0].corridor, longCorridor);
+    assert.deepEqual(
+        far
+            .filter((approach) => !approach.corridor)
+            .map((approach) => approach.margin),
+        [24, 64, 128, 256],
+    );
+});
 test(
     'preserves bounded nearby grounding, supports floating targets and reports distinct failures',
     { timeout: 3000 },
@@ -471,7 +519,8 @@ test(
             });
             result = await request();
             assert.equal(result.body.status, 'building-ground');
-            const movementDeadline = Date.now() + 3000;
+            // Both rectangular and corridor proposals now run before coverage exhaustion.
+            const movementDeadline = Date.now() + 7000;
             do {
                 await new Promise((resolve) => setTimeout(resolve, 25));
                 result = await request();
@@ -502,7 +551,7 @@ test(
             );
             assert.equal(
                 await readFile(config + '.runs', 'utf8'),
-                'run\n'.repeat(5),
+                'run\n'.repeat(9),
             );
             const previousRouteRuns = (
                 await readFile(config + '.route-runs', 'utf8')
@@ -528,7 +577,7 @@ test(
             });
             result = await request();
             assert.equal(result.body.status, 'building-ground');
-            const revisedDeadline = Date.now() + 3000;
+            const revisedDeadline = Date.now() + 7000;
             do {
                 await new Promise((resolve) => setTimeout(resolve, 25));
                 result = await request();
@@ -539,7 +588,7 @@ test(
             assert.equal(result.body.category, 'movement-coverage');
             assert.equal(
                 await readFile(config + '.runs', 'utf8'),
-                'run\n'.repeat(9),
+                'run\n'.repeat(17),
             );
             assert.ok(
                 (await readFile(config + '.route-runs', 'utf8')).length >

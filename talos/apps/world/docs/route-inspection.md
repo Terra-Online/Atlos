@@ -336,19 +336,37 @@ The physical geometry generator identity is unchanged, so existing tile meshes
 remain reusable. Full route results still bind the new solver version. No larger
 worker-retention limit or additional simultaneous full search is enabled.
 
-## Nearby vertical approaches
+## Coverage proposals
 
-Coverage uses XZ tiles. When endpoints are within two tile spans horizontally but
-farther apart in 3D, the service first tries the ordinary local rectangle without
-coarse waypoints. If that attempt fails, all four original coarse/wider attempts
-remain scheduled, interleaved with other anchors. Large vertical separation can
-therefore use a direct descent before exploring a winding coarse approach.
+Every query compares the ordinary endpoint rectangle and the coarse corridor
+proposals by their physical tile count. Rectangles count the tile columns and rows
+intersecting their rounded build bounds. Corridors count their explicit selected
+tiles. Endpoint height and distance do not select a planning mode. Equal counts
+retain the rectangle first. Failed searches retain both kinds of wider proposals,
+interleaved with other teleport origins. Exhausting both proposal families can
+require more attempts than the previous four-choice schedule.
 
-The v74 normal-entry regression for `0mpNfFm` had selected a 34.402-second detour,
-while the retained physical reference had a 6.659-second descent. The added local
-attempt returns walk/jump/walk in 6.454 model seconds with the current collision
-input. Its full solver stage took 8.409 wall seconds with preparation retained from
-the preceding foreground stages. This excludes ground construction and those
-foreground stages. Of the 38 frozen successful input bindings, this descent is the
-only one whose recorded arrival/target pair triggers the new initial attempt.
-The SDK and its search budgets are unchanged by this integration fix.
+The v74 normal-entry regression for `0mpNfFm` had selected a 34.402-second detour.
+The tile-ranked local attempt retains the current 6.454-second walk/jump/walk route.
+These are model travel seconds. Normal-entry verification reused disk artifacts
+and does not establish cold query latency.
+
+## Device chain investigation
+
+The multi-storey `0T264e6` failure is reproduced with valid start and goal support.
+Removing coarse waypoints still fails. Increasing the region proposal share and
+rebuilding the local access structure at 0.05-metre cells also fail. These remain
+isolated experiments, with no SDK search-budget change in the preview.
+
+Its device export includes the three nearby fixed launchers. The device importer
+rejects their action construction under one combined support/clearance outcome.
+An instrumented run distinguishes one aim position 0.700 metres above collision
+support, another aim without nearby support, and a third with supported endpoints
+whose swept trajectory fails. The current importer requires support within 0.5
+metres of the aim and uses only its first validated entry sample. Export presence
+therefore does not imply that a usable device action was constructed.
+
+A separate frontier experiment rejects geometrically unreachable takeoffs before
+landing enumeration, using the same rejection formerly applied during validation.
+It expands more reachable supports but still fails this query. It remains outside
+the default SDK pending route and performance regression validation.

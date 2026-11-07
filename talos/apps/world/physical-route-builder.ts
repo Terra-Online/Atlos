@@ -48,6 +48,55 @@ const hash = (value: unknown) =>
 export const physicalTileSpan = 256 * 0.15;
 export const physicalMargins = [24, 64, 128, 256] as const;
 
+type Approach = { margin: number; corridor?: Corridor };
+
+const coverage = (start: number[], target: number[], approach: Approach) => {
+    const { margin, corridor } = approach;
+    const min = corridor?.bounds.min ?? [
+        Math.min(start[0], target[0]) - margin,
+        Math.min(start[2], target[2]) - margin,
+    ];
+    const max = corridor?.bounds.max ?? [
+        Math.max(start[0], target[0]) + margin,
+        Math.max(start[2], target[2]) + margin,
+    ];
+    const bounds = [
+        Math.floor(min[0] / 32) * 32,
+        Math.floor(min[1] / 32) * 32,
+        Math.ceil(max[0] / 32) * 32,
+        Math.ceil(max[1] / 32) * 32,
+    ];
+    const tiles =
+        corridor?.tiles.length ??
+        (Math.ceil(bounds[2] / physicalTileSpan) -
+            Math.floor(bounds[0] / physicalTileSpan)) *
+            (Math.ceil(bounds[3] / physicalTileSpan) -
+                Math.floor(bounds[1] / physicalTileSpan));
+    return { bounds, tiles };
+};
+
+/** Rank both coverage proposals by the same tile estimate used by the builder.
+ * A failed attempt advances to another proposal without classifying the route
+ * by endpoint distance or elevation. All original widening choices remain.
+ */
+export const physicalApproaches = (
+    start: number[],
+    target: number[],
+    corridors: Corridor[],
+): Approach[] =>
+    [
+        ...physicalMargins.map((margin) => ({ margin })),
+        ...corridors.map((corridor, index) => ({
+            margin: physicalMargins[
+                Math.min(index, physicalMargins.length - 1)
+            ],
+            corridor,
+        })),
+    ].sort(
+        (a, b) =>
+            coverage(start, target, a).tiles - coverage(start, target, b).tiles,
+    );
+
 /** Ground construction and known-action queries share a foreground lane.
  * Queries over ready ground precede further queued builds. Jump optimization
  * uses an independent lane, so it cannot hold up a device feasibility result.
@@ -425,25 +474,7 @@ export function physicalRouteBuilder(options: Options) {
         if (!Number.isFinite(margin) || margin < 0)
             throw new Error('Invalid physical coverage margin');
         const corridor = request.corridor;
-        const bounds = corridor
-            ? [
-                  Math.floor(corridor.bounds.min[0] / 32) * 32,
-                  Math.floor(corridor.bounds.min[1] / 32) * 32,
-                  Math.ceil(corridor.bounds.max[0] / 32) * 32,
-                  Math.ceil(corridor.bounds.max[1] / 32) * 32,
-              ]
-            : [
-                  Math.floor((Math.min(start[0], target[0]) - margin) / 32) *
-                      32,
-                  Math.floor((Math.min(start[2], target[2]) - margin) / 32) *
-                      32,
-                  Math.ceil((Math.max(start[0], target[0]) + margin) / 32) * 32,
-                  Math.ceil((Math.max(start[2], target[2]) + margin) / 32) * 32,
-              ];
-        const tiles =
-            corridor?.tiles.length ??
-            (Math.ceil((bounds[2] - bounds[0]) / physicalTileSpan) + 2) *
-                (Math.ceil((bounds[3] - bounds[1]) / physicalTileSpan) + 2);
+        const { bounds, tiles } = coverage(start, target, { margin, corridor });
         if (!bounds.every(Number.isSafeInteger) || tiles > 512) {
             return {
                 status: 'failed' as const,
