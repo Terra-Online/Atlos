@@ -23,7 +23,7 @@ export function InteractionPreview({
             );
             return (
                 control &&
-                control.derived === null &&
+                control.source.kind !== 'derived' &&
                 control.values.some((v) => v.value === item.before) &&
                 control.values.some((v) => v.value === item.after)
             );

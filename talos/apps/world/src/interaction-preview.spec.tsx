@@ -35,7 +35,7 @@ function fixture() {
                         controls: [
                             {
                                 id: 'door:1',
-                                derived: null,
+                                source: { kind: 'user' },
                                 values: [{ value: 0 }, { value: 1 }],
                             },
                         ],
