@@ -288,3 +288,17 @@ approach example was 53.197 / 32.983 seconds. This is an intermediate 18.4 perce
 command reduction, well short of the requested 90 percent reduction. Worker reuse
 and completed HTTP results are excluded from these figures. Ten historical cost
 gaps already present in the baseline remain a separate route-quality backlog.
+
+The next alpha.47 integration preserves all 38 exact route/connection/limit checks
+and reduces that fixed population to 417.453 seconds total and 140.154 seconds
+search. It shares one filtered graph/SCC, updates current-query distance labels
+incrementally and avoids a complete weighted edge copy. The rear approach query
+takes 29.731 seconds against 53.197 seconds in the alpha.31 baseline. These figures
+still exclude parent queueing, Node startup and physical tile extraction/build.
+Peak RSS did not uniformly decrease; runtime cache limits have not been raised.
+The ten-percent remaining-time target is still open.
+
+The extractor's physical ground generator identity is unchanged by this runtime
+upgrade, so retained tile meshes remain reusable. Route output identities still
+advance with the solver release. The installed integration passes 11 server/worker
+tests, the focused server type check and the World production build.
