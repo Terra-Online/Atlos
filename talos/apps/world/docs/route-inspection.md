@@ -351,22 +351,41 @@ The tile-ranked local attempt retains the current 6.454-second walk/jump/walk ro
 These are model travel seconds. Normal-entry verification reused disk artifacts
 and does not establish cold query latency.
 
-## Device chain investigation
+## Device chain recovery
 
-The multi-storey `0T264e6` failure is reproduced with valid start and goal support.
-Removing coarse waypoints still fails. Increasing the region proposal share and
-rebuilding the local access structure at 0.05-metre cells also fail. These remain
-isolated experiments, with no SDK search-budget change in the preview.
+The multi-storey `0T264e6` failure had valid start and goal support. Its export
+already included the three nearby fixed launchers. Their importer rejected all
+three under one combined support/clearance outcome. One aim was 0.700 metres above
+collision support, another had no nearby support, and the third had supported
+endpoints but needed another legal entry witness for its swept arc.
 
-Its device export includes the three nearby fixed launchers. The device importer
-rejects their action construction under one combined support/clearance outcome.
-An instrumented run distinguishes one aim position 0.700 metres above collision
-support, another aim without nearby support, and a third with supported endpoints
-whose swept trajectory fails. The current importer requires support within 0.5
-metres of the aim and uses only its first validated entry sample. Export presence
-therefore does not imply that a usable device action was constructed.
+Alpha.54 retains the fixed launch velocity through an airborne aim until a
+supported, completely collision-checked landing. It restores these three actions.
+A failed primary search then derives causal entry goals from the known-action
+relations. An entry qualifies only if it already connects to the actual target.
+Upstream entries cover downstream entries. Each remaining entry receives a
+bounded discovery query, with its additional budget recorded in diagnostics.
+This additional phase preserves completed primary searches.
 
-A separate frontier experiment rejects geometrically unreachable takeoffs before
-landing enumeration, using the same rejection formerly applied during validation.
-It expands more reachable supports but still fails this query. It remains outside
-the default SDK pending route and performance regression validation.
+Normal HTTP entry now returns a 31.666-second model route for `0T264e6`, including
+two launch actions. The full-action task took 35.211 wall seconds with ground,
+collision and device preparation reused from preceding stages. Ground construction
+and foreground stages are excluded. The latest HTTP read reused that completed
+result. A separate fresh CLI process took 47.798 seconds with retained ground files.
+These measurements do not meet the cold-query latency target.
+
+The earlier local descent `0mpNfFm` remains 6.454 model seconds through normal HTTP
+entry after this integration. Removing coarse waypoints, increasing regional
+proposal work and rebuilding the access structure at 0.05-metre cells had not
+resolved the multi-storey case by themselves.
+
+A separate frontier experiment rejects unreachable takeoffs before landing
+enumeration using the same rejection formerly applied during validation. It remains
+outside the default SDK pending independent performance and route validation.
+
+The retained 38 successful requests were replayed with their original content
+hashes after integration. All 38 remain complete with identical selected routes,
+model costs and discovery limits. Two results contain additional valid unused
+actions. Movement and device input snapshots were copied for the replay because
+preview startup atomically rewrites identical immutable files. Metadata-only
+interruptions were rerun against those copied inputs.

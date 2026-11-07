@@ -357,6 +357,8 @@ export function physicalRouteBuilder(options: Options) {
                                     current.message = 'Refining target access…';
                                 if (progress.phase === 'direction-search')
                                     current.message = `Exploring route regions (${progress.completed}/${progress.total})`;
+                                if (progress.phase === 'device-entry-search')
+                                    current.message = `Finding device approaches (${progress.completed}/${progress.total})`;
                                 if (progress.phase === 'ground-route') {
                                     current.message =
                                         'Walking route ready. Comparing alternatives…';
@@ -650,7 +652,7 @@ export function physicalRouteBuilder(options: Options) {
                       : 'route',
             ground: ground.output,
             request,
-            policy: 12,
+            policy: stage === 'walking' ? 12 : 13,
             devices: devices?.fingerprint,
             movement: settings.fingerprint,
             solver: options.solver,
