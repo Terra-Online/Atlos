@@ -254,3 +254,37 @@ tests cover the existing behavior, unmapped-origin skipping, disconnected-origin
 interleaving, and revisiting deferred wider coverage after other origins fail.
 Local interface-graph and step-trace experiments did not establish a better
 solution and are not part of the shipped planner.
+
+### Prepared solver workers
+
+The physical builder keeps up to two serial solver workers, alongside the existing
+foreground/build and optimization queues. A free worker with matching physical input
+paths is preferred, so optimization can continue from a completed foreground device
+check without immediately rebuilding the same region. Foreground work can use the
+other worker while optimization runs. Older configured extractors without the worker
+entry continue through their one-shot CLI.
+
+Workers retain preparation, not route results: each invocation still runs the solver
+and writes a new result. The extractor validates input file generations and retains
+at most one region plus one target refinement per worker. An idle worker exits after
+60 seconds. Before an idle worker switches to different physical input paths, the
+host retires its process so the previous region's expanded heap is released.
+Server shutdown terminates running and idle workers. A crashed worker
+fails its current job and is recreated for subsequent work. Task logs include the
+worker PID, process reuse, prepared-stage reuse and reported memory. The extractor's
+serialized-input limit is not an upper bound on expanded heap memory.
+
+Fresh-process first-query time is the primary performance gate. Same-region
+new-goal and repeated-input timings are auxiliary and must be reported separately.
+Completed-result HTTP cache hits do not measure solver performance.
+
+### Cold first-query validation
+
+The integrated alpha.39 solver preserves complete route, discovered connection and
+candidate-limit objects for all 38 fixed alpha.31 successes. Every solve used a new
+Node process with retained physical input files. Aggregate command time was
+554.891 / 452.624 seconds; search time was 202.690 / 152.695 seconds. The rear
+approach example was 53.197 / 32.983 seconds. This is an intermediate 18.4 percent
+command reduction, well short of the requested 90 percent reduction. Worker reuse
+and completed HTTP results are excluded from these figures. Ten historical cost
+gaps already present in the baseline remain a separate route-quality backlog.

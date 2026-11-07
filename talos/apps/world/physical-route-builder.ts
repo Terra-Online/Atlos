@@ -1,4 +1,4 @@
-import { execFile, spawn, type ChildProcess } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createHash, randomUUID } from 'node:crypto';
 import {
@@ -13,6 +13,7 @@ import { relative, resolve } from 'node:path';
 import type { InteractionGoal, Vec3, Wall } from '@oem/ganglia';
 import type { TravelArrival } from './travel-arrivals.ts';
 import type { Corridor } from './coarse-route.ts';
+import { createRouteWorker } from './route-worker.ts';
 
 type Source = { buildGuid: string; contentHash: string };
 type Options = {
@@ -28,7 +29,7 @@ type Job = {
     output: string;
     collision: string;
     log?: string;
-    child?: ChildProcess;
+    child?: { kill: (signal?: NodeJS.Signals) => boolean };
     result?: unknown;
 };
 type RouteRequest = {
@@ -53,6 +54,54 @@ export const physicalMargins = [24, 64, 128, 256] as const;
  */
 export function physicalRouteBuilder(options: Options) {
     const jobs = new Map<string, Job>();
+    const workerOptions = {
+        extractor: options.extractor ?? '',
+        node: options.node || process.execPath,
+    };
+    const solverWorkers = [
+        createRouteWorker(workerOptions),
+        createRouteWorker(workerOptions),
+    ];
+    const busyWorkers = new Set<(typeof solverWorkers)[number]>();
+    const workerRegions = new Map<(typeof solverWorkers)[number], string>();
+    const workerUses = new Map<(typeof solverWorkers)[number], number>();
+    let workerUse = 0;
+    const startSolver = async (args: string[]) => {
+        const region = hash(
+            ['--ground', '--collision', '--movement-settings'].map(
+                (flag) => args[args.indexOf(flag) + 1],
+            ),
+        );
+        // A completed foreground device check can hand its prepared region to
+        // optimization; the other worker remains available for foreground work.
+        const worker =
+            solverWorkers.find(
+                (entry) =>
+                    !busyWorkers.has(entry) &&
+                    workerRegions.get(entry) === region,
+            ) ??
+            solverWorkers
+                .filter((entry) => !busyWorkers.has(entry))
+                .sort(
+                    (a, b) =>
+                        (workerUses.get(a) ?? 0) - (workerUses.get(b) ?? 0),
+                )[0];
+        if (!worker) throw new Error('Both route solver lanes are occupied');
+        // A different region cannot reuse preparation. Release its whole heap
+        // rather than making old large graphs survive into another decoding pass.
+        if (workerRegions.get(worker) !== region) worker.discard();
+        busyWorkers.add(worker);
+        try {
+            const task = await worker.start(args);
+            workerRegions.set(worker, region);
+            workerUses.set(worker, ++workerUse);
+            task.once('close', () => busyWorkers.delete(worker));
+            return task;
+        } catch (error) {
+            busyWorkers.delete(worker);
+            throw error;
+        }
+    };
     const foreground: { run: () => Promise<void>; query: boolean }[] = [];
     let foregroundRunning = false;
     let foregroundTask: Promise<void> | undefined;
@@ -202,129 +251,151 @@ export function physicalRouteBuilder(options: Options) {
                 }
                 current.status = 'building';
                 record('started');
-                const child = spawn(
-                    options.node || process.execPath,
-                    [
-                        resolve(
-                            options.extractor!,
-                            'packages/extractor/src/cli.ts',
-                        ),
-                        ...args,
-                    ],
-                    {
-                        cwd: options.extractor,
-                        stdio: ['ignore', 'pipe', 'pipe'],
-                    },
-                );
-                current.child = child;
-                let error = '',
-                    pending = '';
-                child.stderr?.on('data', (bytes) => {
-                    record('stderr', { text: String(bytes) });
-                    error = (error + String(bytes)).slice(-12000);
-                });
-                child.stdout?.on('data', (bytes) => {
-                    pending += String(bytes);
-                    const lines = pending.split('\n');
-                    pending = lines.pop() || '';
-                    for (const line of lines) {
-                        try {
-                            const progress = JSON.parse(line);
-                            record('progress', {
-                                ...progress,
-                                durationMs: progress.elapsedMs,
-                            });
-                            if (progress.phase === 'collision-inputs')
-                                current.message = 'Reading collision sources…';
-                            if (progress.phase === 'ground-tile')
-                                current.message = `${progress.cached ? 'Reusing' : 'Preparing'} route terrain (${progress.completed}/${progress.total})`;
-                            if (progress.phase === 'ground')
-                                current.message = 'Physical ground ready';
-                            if (progress.phase === 'ground-search')
-                                current.message =
-                                    'Searching connected terrain…';
-                            if (progress.phase === 'device-links')
-                                current.message =
-                                    'Checking ropes and launch devices…';
-                            if (progress.phase === 'goal-refinement')
-                                current.message = 'Refining target access…';
-                            if (progress.phase === 'direction-search')
-                                current.message = `Exploring route regions (${progress.completed}/${progress.total})`;
-                            if (progress.phase === 'ground-route') {
-                                current.message =
-                                    'Walking route ready. Comparing alternatives…';
-                                void readFile(current.output, 'utf8')
-                                    .then((bytes) => {
-                                        const result = JSON.parse(bytes);
-                                        if (
-                                            current.status === 'building' &&
-                                            result.status === 'candidate'
-                                        )
-                                            current.result = result;
-                                    })
-                                    .catch(() => {});
+                const launch = async () => {
+                    const child =
+                        args[0] === 'player-route'
+                            ? await startSolver(args)
+                            : spawn(
+                                  options.node || process.execPath,
+                                  [
+                                      resolve(
+                                          options.extractor!,
+                                          'packages/extractor/src/cli.ts',
+                                      ),
+                                      ...args,
+                                  ],
+                                  {
+                                      cwd: options.extractor,
+                                      stdio: ['ignore', 'pipe', 'pipe'],
+                                  },
+                              );
+                    current.child = child;
+                    record('solver-started', {
+                        pid: child.pid,
+                        reusedProcess: 'reused' in child && child.reused,
+                    });
+                    let error = '',
+                        pending = '';
+                    child.stderr?.on('data', (bytes) => {
+                        record('stderr', { text: String(bytes) });
+                        error = (error + String(bytes)).slice(-12000);
+                    });
+                    child.stdout?.on('data', (bytes) => {
+                        pending += String(bytes);
+                        const lines = pending.split('\n');
+                        pending = lines.pop() || '';
+                        for (const line of lines) {
+                            try {
+                                const progress = JSON.parse(line);
+                                record('progress', {
+                                    ...progress,
+                                    durationMs: progress.elapsedMs,
+                                });
+                                if (progress.phase === 'collision-inputs')
+                                    current.message =
+                                        'Reading collision sources…';
+                                if (progress.phase === 'ground-tile')
+                                    current.message = `${progress.cached ? 'Reusing' : 'Preparing'} route terrain (${progress.completed}/${progress.total})`;
+                                if (progress.phase === 'ground')
+                                    current.message = 'Physical ground ready';
+                                if (progress.phase === 'ground-search')
+                                    current.message =
+                                        'Searching connected terrain…';
+                                if (progress.phase === 'device-links')
+                                    current.message =
+                                        'Checking ropes and launch devices…';
+                                if (progress.phase === 'goal-refinement')
+                                    current.message = 'Refining target access…';
+                                if (progress.phase === 'direction-search')
+                                    current.message = `Exploring route regions (${progress.completed}/${progress.total})`;
+                                if (progress.phase === 'ground-route') {
+                                    current.message =
+                                        'Walking route ready. Comparing alternatives…';
+                                    void readFile(current.output, 'utf8')
+                                        .then((bytes) => {
+                                            const result = JSON.parse(bytes);
+                                            if (
+                                                current.status === 'building' &&
+                                                result.status === 'candidate'
+                                            )
+                                                current.result = result;
+                                        })
+                                        .catch(() => {});
+                                }
+                                if (progress.phase === 'collision-index')
+                                    current.message =
+                                        'Indexing physical obstacles…';
+                                if (progress.phase === 'jump-discovery')
+                                    current.message =
+                                        'Comparing ground, device, jump and drop actions…';
+                                if (progress.phase === 'route-search')
+                                    current.message =
+                                        'Planning movement and sprint recovery…';
+                            } catch {
+                                record('stdout', { text: line });
                             }
-                            if (progress.phase === 'collision-index')
-                                current.message =
-                                    'Indexing physical obstacles…';
-                            if (progress.phase === 'jump-discovery')
-                                current.message =
-                                    'Comparing ground, device, jump and drop actions…';
-                            if (progress.phase === 'route-search')
-                                current.message =
-                                    'Planning movement and sprint recovery…';
-                        } catch {
-                            record('stdout', { text: line });
                         }
-                    }
-                });
-                child.once('error', (failure) => {
-                    current.status = 'failed';
-                    current.message = failure.message;
-                    record('process-error', { message: failure.message });
-                });
-                child.once('close', (code, signal) => {
-                    record('process-exit', { code, signal });
-                    if (pending) record('stdout', { text: pending });
-                    void (async () => {
-                        delete current.child;
-                        if (code === 0) {
-                            current.result = JSON.parse(
-                                await readFile(current.output, 'utf8'),
-                            );
-                            current.status = 'ready';
-                            current.message = 'Physical route data ready';
-                        } else {
-                            current.status = 'failed';
-                            const detail = error
-                                .split('\n')
-                                .find((line) =>
-                                    /^(?:[A-Za-z]*Error|FATAL ERROR):/.test(
-                                        line,
-                                    ),
+                    });
+                    child.once('error', (failure) => {
+                        current.status = 'failed';
+                        current.message = failure.message;
+                        record('process-error', { message: failure.message });
+                    });
+                    child.once('close', (code, signal) => {
+                        record(
+                            'reused' in child
+                                ? 'solver-finished'
+                                : 'process-exit',
+                            { code, signal },
+                        );
+                        if (pending) record('stdout', { text: pending });
+                        void (async () => {
+                            delete current.child;
+                            if (code === 0) {
+                                current.result = JSON.parse(
+                                    await readFile(current.output, 'utf8'),
                                 );
-                            current.message =
-                                /heap out of memory|reached heap limit/i.test(
-                                    error,
-                                )
-                                    ? 'Route calculation exceeded its memory limit'
-                                    : detail ||
-                                      (signal
-                                          ? `Physical route job terminated (${signal})`
-                                          : `Physical route job exited (${code})`);
-                            await writeFile(
-                                `${current.output}.error.log`,
-                                error || current.message,
-                            ).catch(() => {});
-                            if (!current.result)
-                                await unlink(current.output).catch(() => {});
-                        }
-                    })()
-                        .catch((failure) => {
-                            current.status = 'failed';
-                            current.message = String(failure);
-                        })
-                        .finally(done);
+                                current.status = 'ready';
+                                current.message = 'Physical route data ready';
+                            } else {
+                                current.status = 'failed';
+                                const detail = error
+                                    .split('\n')
+                                    .find((line) =>
+                                        /^(?:[A-Za-z]*Error|FATAL ERROR):/.test(
+                                            line,
+                                        ),
+                                    );
+                                current.message =
+                                    /heap out of memory|reached heap limit/i.test(
+                                        error,
+                                    )
+                                        ? 'Route calculation exceeded its memory limit'
+                                        : detail ||
+                                          (signal
+                                              ? `Physical route job terminated (${signal})`
+                                              : `Physical route job exited (${code})`);
+                                await writeFile(
+                                    `${current.output}.error.log`,
+                                    error || current.message,
+                                ).catch(() => {});
+                                if (!current.result)
+                                    await unlink(current.output).catch(
+                                        () => {},
+                                    );
+                            }
+                        })()
+                            .catch((failure) => {
+                                current.status = 'failed';
+                                current.message = String(failure);
+                            })
+                            .finally(done);
+                    });
+                };
+                void launch().catch((failure) => {
+                    current.status = 'failed';
+                    current.message = String(failure);
+                    done();
                 });
             }).catch((failure) => {
                 current.status = 'failed';
@@ -647,6 +718,7 @@ export function physicalRouteBuilder(options: Options) {
         solve,
         async close() {
             closed = true;
+            for (const worker of solverWorkers) worker.close();
             for (const job of jobs.values()) job.child?.kill('SIGTERM');
             while (foregroundRunning) await foregroundTask;
             await optimization;
