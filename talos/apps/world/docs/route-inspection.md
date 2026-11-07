@@ -314,3 +314,24 @@ their repeated graph preparation remains a distinct cost from native mesh buildi
 
 Task elapsed time is retained independently of each stage's duration. Negative
 tile coordinates use the explicit `--tiles=<coordinates>` form.
+
+## Cold query performance
+
+The alpha.53 integration reduces temporary spatial lookup and jump-duration work,
+skips empty landing streams and carries unchanged goal probes between phases of
+one query. Required input reads overlap, and a device stage admitting no new edges
+uses its walking result. Foreground walking/device jobs and background optimization
+retain their existing scheduling. A combined progressive-call experiment did not
+improve measured rear-approach latency and is not enabled.
+
+All 38 fixed successful requests retained identical complete routes, actions and
+candidate limits in separate fresh processes. Aggregate command time was
+417.453 / 398.647 seconds and search time 140.154 / 129.342 seconds for alpha.47 /
+alpha.53. These are 4.5 and 7.7 percent reductions, excluding native terrain builds,
+HTTP polling and other origin attempts. Eight individual timings rose by 12–475 ms;
+the largest RSS peak was 3.09 / 3.21 GiB. The requested 90 percent command reduction
+remains unmet. Historical route-quality gaps are unchanged by this performance gate.
+
+The physical geometry generator identity is unchanged, so existing tile meshes
+remain reusable. Full route results still bind the new solver version. No larger
+worker-retention limit or additional simultaneous full search is enabled.
