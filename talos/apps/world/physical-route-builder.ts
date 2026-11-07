@@ -689,7 +689,7 @@ export function physicalRouteBuilder(options: Options) {
                       : 'route',
             ground: ground.output,
             request,
-            policy: stage === 'walking' ? 14 : 15,
+            policy: stage === 'walking' ? 14 : 16,
             devices: devices?.fingerprint,
             movement: settings.fingerprint,
             solver: options.solver,
