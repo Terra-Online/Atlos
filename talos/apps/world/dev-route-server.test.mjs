@@ -702,13 +702,23 @@ test('serves retained task logs while rejecting paths outside the task directori
     }
 });
 
-for (const scenario of ['unmapped', 'disconnected', 'wider'])
+for (const scenario of [
+    'unmapped',
+    'disconnected',
+    'wider',
+    'vertical',
+    'vertical-fallback',
+])
     test(
         scenario === 'unmapped'
             ? 'an unmapped nearest landing falls back without widening the same ground'
             : scenario === 'disconnected'
               ? 'a mapped but disconnected landing tries another origin before widening'
-              : 'deferred wider approaches remain available after other origins fail',
+              : scenario === 'wider'
+                ? 'deferred wider approaches remain available after other origins fail'
+                : scenario === 'vertical'
+                  ? 'nearby stacked endpoints try local XZ coverage before coarse directions'
+                  : 'stacked endpoint local failure retains the coarse corridor fallback',
         { timeout: 10000 },
         async () => {
             const directory = await mkdtemp(
@@ -719,20 +729,30 @@ for (const scenario of ['unmapped', 'disconnected', 'wider'])
             const extractor = join(directory, 'extractor');
             const config = join(directory, 'config.json');
             try {
-                const arrivals = [
-                    {
-                        id: 'bad',
-                        position: [5, 2, 1],
-                        cost: 0,
-                        state: 'unknown',
-                    },
-                    {
-                        id: 'good',
-                        position: [1, 0, 1],
-                        cost: 0,
-                        state: 'unknown',
-                    },
-                ];
+                const vertical = scenario.startsWith('vertical');
+                const arrivals = vertical
+                    ? [
+                          {
+                              id: 'good',
+                              position: [5, 100, 1],
+                              cost: 0,
+                              state: 'unknown',
+                          },
+                      ]
+                    : [
+                          {
+                              id: 'bad',
+                              position: [5, 2, 1],
+                              cost: 0,
+                              state: 'unknown',
+                          },
+                          {
+                              id: 'good',
+                              position: [1, 0, 1],
+                              cost: 0,
+                              state: 'unknown',
+                          },
+                      ];
                 const data = {
                     scene: 'map01',
                     source,
@@ -779,14 +799,16 @@ for (const scenario of ['unmapped', 'disconnected', 'wider'])
                 await appendFile(${JSON.stringify(config + '.builds')},'build\\n');
                 const data=JSON.parse(await readFile(get('--config'),'utf8'));
                 const b=args.find(a=>a.startsWith('--bounds=')).slice(9).split(',').map(Number);
-                await writeFile(output,JSON.stringify({...data,build:{bounds:{min:b.slice(0,2),max:b.slice(2)}},surfaces:[{id:'floor',vertices:[[0,0,0],[8,0,0],[8,0,4],[0,0,4]]}]}));
+                const tiled=args.some(a=>a.startsWith('--tiles='));
+                await appendFile(${JSON.stringify(config + '.coverage')},JSON.stringify({tiled,bounds:b})+'\\n');
+                await writeFile(output,JSON.stringify({...data,tiled,build:{bounds:{min:b.slice(0,2),max:b.slice(2)}},surfaces:[{id:'floor',vertices:[[0,0,0],[8,0,0],[8,0,4],[0,0,4]]}]}));
             } else {
                 const r=JSON.parse(await readFile(get('--request'),'utf8'));
                 const ground=JSON.parse(await readFile(get('--ground'),'utf8'));
                 const width=ground.build.bounds.max[0]-ground.build.bounds.min[0];
                 const scenario=${JSON.stringify(scenario)};
                 await appendFile(${JSON.stringify(config + '.attempts')},JSON.stringify({id:r.arrival.id,width})+'\\n');
-                const failure=scenario==='wider' ? width<128 : r.arrival.id==='bad';
+                const failure=scenario==='wider' ? width<128 : scenario==='vertical-fallback' ? !ground.tiled : r.arrival.id==='bad';
                 const points=[r.arrival.position,r.target];
                 await writeFile(output,JSON.stringify({scene:r.scene,source:r.source,...(failure
                     ? {status:'unavailable',reason:scenario==='unmapped'?'arrival-unmapped':'no-verified-route'}
@@ -846,7 +868,11 @@ for (const scenario of ['unmapped', 'disconnected', 'wider'])
                 );
                 assert.equal(
                     await readFile(config + '.builds', 'utf8'),
-                    'build\n'.repeat(scenario === 'wider' ? 2 : 1),
+                    'build\n'.repeat(
+                        scenario === 'wider' || scenario === 'vertical-fallback'
+                            ? 2
+                            : 1,
+                    ),
                 );
                 const attempts = (await readFile(config + '.attempts', 'utf8'))
                     .trim()
@@ -860,12 +886,30 @@ for (const scenario of ['unmapped', 'disconnected', 'wider'])
                 );
                 assert.deepEqual(
                     order.map((attempt) => attempt.id),
-                    scenario === 'wider'
-                        ? ['bad', 'good', 'bad']
-                        : ['bad', 'good'],
+                    scenario === 'vertical'
+                        ? ['good']
+                        : scenario === 'vertical-fallback'
+                          ? ['good', 'good']
+                          : scenario === 'wider'
+                            ? ['bad', 'good', 'bad']
+                            : ['bad', 'good'],
                 );
                 if (scenario === 'wider')
                     assert.ok(order[2].width > order[0].width);
+                if (vertical) {
+                    const coverage = (
+                        await readFile(config + '.coverage', 'utf8')
+                    )
+                        .trim()
+                        .split('\n')
+                        .map((line) => JSON.parse(line));
+                    assert.deepEqual(coverage[0], {
+                        tiled: false,
+                        bounds: [-32, -32, 32, 32],
+                    });
+                    if (scenario === 'vertical-fallback')
+                        assert.equal(coverage[1].tiled, true);
+                }
             } finally {
                 httpServer.emit('close');
                 await rm(directory, { recursive: true, force: true });

@@ -335,3 +335,20 @@ remains unmet. Historical route-quality gaps are unchanged by this performance g
 The physical geometry generator identity is unchanged, so existing tile meshes
 remain reusable. Full route results still bind the new solver version. No larger
 worker-retention limit or additional simultaneous full search is enabled.
+
+## Nearby vertical approaches
+
+Coverage uses XZ tiles. When endpoints are within two tile spans horizontally but
+farther apart in 3D, the service first tries the ordinary local rectangle without
+coarse waypoints. If that attempt fails, all four original coarse/wider attempts
+remain scheduled, interleaved with other anchors. Large vertical separation can
+therefore use a direct descent before exploring a winding coarse approach.
+
+The v74 normal-entry regression for `0mpNfFm` had selected a 34.402-second detour,
+while the retained physical reference had a 6.659-second descent. The added local
+attempt returns walk/jump/walk in 6.454 model seconds with the current collision
+input. Its full solver stage took 8.409 wall seconds with preparation retained from
+the preceding foreground stages. This excludes ground construction and those
+foreground stages. Of the 38 frozen successful input bindings, this descent is the
+only one whose recorded arrival/target pair triggers the new initial attempt.
+The SDK and its search budgets are unchanged by this integration fix.

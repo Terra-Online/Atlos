@@ -595,7 +595,30 @@ export function routeServer(
                         position: [...anchor.position],
                         state: 'available',
                     };
+                    const localFirst = (position: Vec3) =>
+                        Math.hypot(
+                            position[0] - target[0],
+                            position[2] - target[2],
+                        ) <=
+                            physicalTileSpan * 2 &&
+                        Math.hypot(
+                            ...position.map(
+                                (value, axis) => value - target[axis],
+                            ),
+                        ) >
+                            physicalTileSpan * 2;
+                    const localApproach = localFirst(arrival.position);
+                    const marginAt = () =>
+                        physicalMargins[
+                            Math.max(
+                                0,
+                                entry.marginIndex - Number(localApproach),
+                            )
+                        ];
                     const corridorAt = (index = entry.marginIndex) => {
+                        // Loading is tiled in XZ. Try nearby stacked supports locally
+                        // before coarse directions, retaining every previous fallback.
+                        if (localApproach && index === 0) return undefined;
                         if (
                             Math.hypot(
                                 ...arrival.position.map(
@@ -612,7 +635,10 @@ export function routeServer(
                             physicalTileSpan,
                         );
                         return entry.corridors[
-                            Math.min(index, entry.corridors.length - 1)
+                            Math.min(
+                                index - Number(localApproach),
+                                entry.corridors.length - 1,
+                            )
                         ];
                     };
                     const assumptions = [
@@ -676,11 +702,18 @@ export function routeServer(
                     // already-unlocked teleport gets its first attempt. Deferred wider
                     // approaches remain in the schedule, including the nearest origin's.
                     const schedule = candidates
-                        .flatMap((_, anchorIndex) =>
-                            physicalMargins.map((_, marginIndex) => ({
-                                anchorIndex,
-                                marginIndex,
-                            })),
+                        .flatMap((candidate, anchorIndex) =>
+                            Array.from(
+                                {
+                                    length:
+                                        physicalMargins.length +
+                                        Number(localFirst(candidate.position)),
+                                },
+                                (_, marginIndex) => ({
+                                    anchorIndex,
+                                    marginIndex,
+                                }),
+                            ),
                         )
                         .sort(
                             (a, b) =>
@@ -718,7 +751,7 @@ export function routeServer(
                         target,
                         {
                             startBuild: false,
-                            margin: physicalMargins[entry.marginIndex],
+                            margin: marginAt(),
                             corridor: corridorAt(),
                         },
                     );
@@ -1213,7 +1246,7 @@ export function routeServer(
                                 target,
                                 {
                                     startBuild: true,
-                                    margin: physicalMargins[entry.marginIndex],
+                                    margin: marginAt(),
                                     corridor: corridorAt(),
                                 },
                             );
@@ -1243,7 +1276,7 @@ export function routeServer(
                         target,
                         {
                             startBuild: true,
-                            margin: physicalMargins[entry.marginIndex],
+                            margin: marginAt(),
                             corridor: corridorAt(),
                         },
                     );
