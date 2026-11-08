@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
 import type { ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
@@ -31,6 +31,11 @@ import {
     type TravelPoint,
     type TravelArrival,
 } from './travel-arrivals.ts';
+import {
+    movingCatalog,
+    nearbyMovingBounds,
+    type MovingCatalog,
+} from './src/moving-bounds.ts';
 
 type Source = { buildGuid: string; contentHash: string };
 type Bounds = { min: [number, number]; max: [number, number] };
@@ -229,12 +234,14 @@ export function routeServer(
         Promise<InteractionCatalog | null>
     >();
     const queries = new Map<string, Query>();
+    let moving: { identity: string; data: MovingCatalog } | undefined;
     let removeCloseListener = () => {};
     const close = async () => {
         const drained = builder.close();
         cache.clear();
         interactionCache.clear();
         queries.clear();
+        moving = undefined;
         builtCache = new WeakMap();
         travel = undefined;
         physical = undefined;
@@ -336,6 +343,114 @@ export function routeServer(
                 file && directory
                     ? `/__routes/log?path=${encodeURIComponent(relative(directory, file))}`
                     : undefined;
+            server.middlewares.use(
+                '/__routes/moving-bounds',
+                (request, response) => {
+                    if (request.method !== 'GET') {
+                        response.setHeader('Allow', 'GET');
+                        send(
+                            response,
+                            { message: 'Only GET requests are supported' },
+                            405,
+                        );
+                        return;
+                    }
+                    void (async () => {
+                        if (!directory) {
+                            send(
+                                response,
+                                {
+                                    message:
+                                        'Moving support data is not configured',
+                                },
+                                503,
+                            );
+                            return;
+                        }
+                        const params = new URL(
+                            request.url ?? '',
+                            'http://localhost',
+                        ).searchParams;
+                        const scene = params.get('scene') ?? '',
+                            level = params.get('level') ?? '';
+                        const source = {
+                            buildGuid: params.get('buildGuid') ?? '',
+                            contentHash: params.get('contentHash') ?? '',
+                        };
+                        const coordinates = ['x', 'y', 'z'].map((key) =>
+                            params.get(key),
+                        );
+                        const position = coordinates.map(Number);
+                        if (
+                            !/^map\d+$/.test(scene) ||
+                            !level.startsWith(scene + '_') ||
+                            level.length > 100 ||
+                            !source.buildGuid ||
+                            !source.contentHash ||
+                            coordinates.some(
+                                (v) => v === null || v.trim() === '',
+                            ) ||
+                            !finiteVector(position)
+                        ) {
+                            send(
+                                response,
+                                { message: 'Invalid moving support request' },
+                                400,
+                            );
+                            return;
+                        }
+                        const path = resolve(
+                            directory,
+                            scene + '-traversal-devices.json',
+                        );
+                        const info = await stat(path, { bigint: true });
+                        const identity = [
+                            path,
+                            info.dev,
+                            info.ino,
+                            info.size,
+                            info.mtimeNs,
+                            info.ctimeNs,
+                        ].join('/');
+                        if (moving?.identity !== identity) {
+                            const data = movingCatalog(
+                                await read(scene + '-traversal-devices.json'),
+                                scene,
+                            );
+                            moving = { identity, data };
+                        }
+                        if (!sameSource(moving.data.source, source)) {
+                            send(
+                                response,
+                                {
+                                    message:
+                                        'Moving support data does not match the loaded scene build',
+                                },
+                                409,
+                            );
+                            return;
+                        }
+                        send(
+                            response,
+                            nearbyMovingBounds(moving.data, level, position),
+                        );
+                    })().catch((error: unknown) => {
+                        const missing =
+                            error instanceof Error &&
+                            'code' in error &&
+                            error.code === 'ENOENT';
+                        send(
+                            response,
+                            {
+                                message: missing
+                                    ? 'Moving support export is unavailable'
+                                    : 'Unable to read valid moving support bounds',
+                            },
+                            missing ? 404 : 422,
+                        );
+                    });
+                },
+            );
             server.middlewares.use('/__routes/logs', (request, response) => {
                 if (request.method !== 'GET') {
                     response.statusCode = 405;

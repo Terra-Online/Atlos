@@ -1,0 +1,27 @@
+.moving-bounds-panel label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.moving-bounds-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+}
+.moving-bounds-legend span::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 8px;
+    margin-right: 6px;
+    border: 2px solid;
+}
+.moving-bounds-legend .moving-bounds-initial::before {
+    border-color: #0dd9f2;
+}
+.moving-bounds-legend .moving-bounds-terminal::before {
+    border-color: #ff7a14;
+}
+.moving-bounds-panel select {
+    width: 100%;
+}

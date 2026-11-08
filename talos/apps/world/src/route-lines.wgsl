@@ -1,6 +1,7 @@
 struct Settings {
     viewport: vec4f,
     depthOffset: vec4f,
+    color: vec4f,
 }
 @group(0) @binding(0) var<uniform> settings: Settings;
 @group(0) @binding(1) var sceneDepth: texture_depth_2d;
@@ -20,7 +21,7 @@ struct Vertex {
     let segmentLength = length(delta);
     let direction = delta / max(segmentLength, 0.000001);
     let normal = vec2f(-direction.y, direction.x);
-    let halfWidth = 3.5;
+    let halfWidth = settings.color.w;
     let offset = (direction * corner.x + normal * corner.y) * halfWidth;
     let xy = mix(a.xy, b.xy, t) + offset * vec2f(2,-2) * settings.viewport.z / settings.viewport.xy;
     var out: Vertex;
@@ -32,7 +33,7 @@ struct Vertex {
 }
 
 @fragment fn fs(input: Vertex) -> @location(0) vec4f {
-    let radius = length(vec2f(max(max(-input.local.x, input.local.x - input.length), 0), input.local.y));
+    let radius = length(vec2f(max(max(-input.local.x, input.local.x - input.length), 0), input.local.y)) * 3.5 / settings.color.w;
     if radius > 3.5 { discard; }
     let size = vec2i(textureDimensions(sceneDepth));
     let uv = input.position.xy / settings.viewport.xy + settings.depthOffset.xy;
@@ -46,5 +47,5 @@ struct Vertex {
     let outer = 0.6 * (1 - smoothstep(1.0, 1.6, radius));
     let core = 1 - smoothstep(0.35, 0.85, radius);
     let alpha = 1 - (1 - glow) * (1 - outer) * (1 - core);
-    return vec4f(mix(vec3f(0.35, 0.78, 1), vec3f(0.89, 0.97, 1), core), alpha);
+    return vec4f(mix(settings.color.rgb, vec3f(0.89, 0.97, 1), core), alpha);
 }

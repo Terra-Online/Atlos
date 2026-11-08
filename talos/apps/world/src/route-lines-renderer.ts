@@ -8,6 +8,7 @@ export function createRouteLines(
     device: GPUDevice,
     format: GPUTextureFormat,
     segments: Segment[],
+    style = { color: [0.35, 0.78, 1], halfWidth: 3.5 },
 ) {
     const module = device.createShaderModule({
         label: 'Route depth and dashes',
@@ -61,7 +62,7 @@ export function createRouteLines(
     });
     const uniforms = device.createBuffer({
         label: 'Route viewport',
-        size: 32,
+        size: 48,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
     let depth: GPUTextureView | undefined, group: GPUBindGroup;
@@ -89,6 +90,8 @@ export function createRouteLines(
                     -frame.jitter[1] * 0.5,
                     0.15,
                     DASH_PERIOD,
+                    ...style.color,
+                    style.halfWidth,
                 ]),
             );
             if (depth !== frame.depth) {

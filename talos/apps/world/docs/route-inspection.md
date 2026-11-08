@@ -86,6 +86,15 @@ planner/model concern. The overlay consumes the planner's candidate samples.
 Changing scene, level, or
 source build hides it.
 
+The development-only **Moving devices** panel draws each nearby device's initial
+box in cyan and terminal box in orange. It uses the exported solid-collider world
+bounds, independently of route playback. The current level and a 200-metre camera
+neighborhood limit the overlay. The device selector isolates one pair of boxes.
+Closed paths may have coincident endpoints. A seesaw's terminal box denotes its
+tilt limit. These diagrams retain the phase-free navigation assumption.
+The endpoint service checks the loaded source build and reports missing exports.
+Changing selection or disabling the overlay releases its GPU buffers.
+
 The local JSON has `version: 1`, `status: "candidate"`, `scene`, `level`,
 `source: { buildGuid, contentHash }`, `title`, `markers: [{ label, position }]`,
 and a Ganglia complete-shaped `route` containing supplied segments and times.
