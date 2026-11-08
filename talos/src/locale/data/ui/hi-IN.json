@@ -34,10 +34,6 @@
     "emptyDesc": "यदि आप पुष्टि करते हैं कि कोई भी बिंदु जानकारी गायब या गलत है, तो कृपया हमारे समुदाय में व्यवस्थापकों से संपर्क करें, या हमारे GitHub रिपॉजिटरी पर एक <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='स्थान त्रुटि की रिपोर्ट करें'>Issue</a> सबमिट करें।"
   },
   "detail": {
-    "noclip": {
-      "title": "दृश्य का पूर्वावलोकन",
-      "open": "3D दृश्य में स्थान देखें"
-    },
     "stat": {
       "world": "विश्व",
       "main": "मुख्य",

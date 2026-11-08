@@ -18,6 +18,9 @@ const readJson = (file) => fs.readJson(path.resolve(file));
 const TYPE_MAP = await readJson(path.resolve(ROOT, 'src/data/marker/type.json'));
 const REGION_MAP = await readJson(path.resolve(ROOT, 'src/data/map/region.json'));
 const contract = decodeArchiveContract(await readJson(path.resolve(GENERATED, 'archive_contract.json')));
+const archiveVersion = await readJson(path.resolve(GENERATED, 'archive_version.json'));
+assert(typeof archiveVersion.gameVersion === 'string' && archiveVersion.gameVersion.trim(), 'Missing Intel archive game version.');
+assert(typeof archiveVersion.gameBuild === 'string' && archiveVersion.gameBuild.trim(), 'Missing Intel archive game build.');
 
 const markerById = new Map();
 const effectiveMarkers = await loadEffectiveMarkers({

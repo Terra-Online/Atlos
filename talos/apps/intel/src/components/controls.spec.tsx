@@ -2,11 +2,12 @@ import { useRef, useState } from 'react';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { installPointerCapture, setRect, setScrollMetrics } from '../../../../test-support/browser';
-import { archives, deferred, flush } from '../fixtures';
+import { archives } from '../fixtures';
 import CategoryFilter from './categoryFilter/categoryFilter';
 import ArchiveSummary from './archiveSummary/archiveSummary';
 import IntelSidebarBrand from './intelSidebarBrand/intelSidebarBrand';
 import BoxSelection from './boxSelection/boxSelection';
+import archiveVersion from '../data/generated/archive_version.json';
 
 vi.mock('@intel/data/types', async () => ({ intelArchives: (await import('../fixtures')).archives }));
 vi.mock('@intel/locale', async () => {
@@ -39,34 +40,15 @@ it('keeps category selection controlled, names completion progress, and supports
     expect(screen.getByText('Complete 2/2').getAttribute('data-complete')).toBe('true');
 });
 
-it('renders the local archive count while version discovery runs and aborts it on unmount', async () => {
-    const response = deferred<Response>();
-    const fetch = vi.fn<typeof globalThis.fetch>().mockReturnValue(response.promise);
+it('renders the local archive count and content version without a network lookup', () => {
+    const fetch = vi.fn<typeof globalThis.fetch>();
     vi.stubGlobal('fetch', fetch);
     const view = render(<><ArchiveSummary /><IntelSidebarBrand /></>);
     expect(view.container.querySelector('p')?.textContent).toBe(`${archives.length} archives`);
+    expect(screen.getByRole('tooltip').textContent).toBe(`${archiveVersion.gameVersion} (${archiveVersion.gameBuild})`);
     expect(screen.getByAltText('sidebar.alt.supportedBy').getAttribute('draggable')).toBe('false');
-    const signal = (fetch.mock.calls[0][1] as RequestInit).signal!;
+    expect(fetch).not.toHaveBeenCalled();
     view.unmount();
-    expect(signal.aborted).toBe(true);
-    await flush(() => response.reject(new DOMException('Aborted', 'AbortError')));
-});
-
-it('validates the SDK manifest origin and includes both version and build in its tooltip', async () => {
-    const fetch = vi.fn<typeof globalThis.fetch>()
-        .mockResolvedValueOnce(new Response(JSON.stringify({ manifest: { path: '/manifests/stable.json' } })))
-        .mockResolvedValueOnce(new Response(JSON.stringify({ gameVersion: '1_5_3', gameBuild: 'build-123' })));
-    vi.stubGlobal('fetch', fetch);
-    let view!: ReturnType<typeof render>;
-    await flush(() => { view = render(<ArchiveSummary />); });
-    expect(screen.getByRole('tooltip').textContent).toBe('1.5.3 (build-123)');
-    expect((fetch.mock.calls[1][0] as URL).href).toBe('https://data.opendfieldmap.org/manifests/stable.json');
-    cleanup();
-    fetch.mockReset().mockResolvedValueOnce(new Response(JSON.stringify({ manifest: { path: 'https://untrusted.example/a.json' } })));
-    await flush(() => { view = render(<ArchiveSummary />); });
-    expect(fetch).toHaveBeenCalledOnce();
-    expect(screen.queryByRole('tooltip')).toBeNull();
-    expect(view.container.querySelector('p')?.textContent).toBe(`${archives.length} archives`);
 });
 
 it('toggles intersected categories from the initial selection and flushes before the selection fade', async () => {
