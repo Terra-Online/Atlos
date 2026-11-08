@@ -8,10 +8,10 @@ import {
 import { afterEach, expect, it, vi } from 'vitest';
 import type { Viewer } from '@endfield-noclip/viewer/host';
 import type { PhotoFilter } from '@endfield-noclip/package-format/photo-filters';
-import { PanelProvider } from '../../../vendor/endfield-noclip/packages/viewer/src/ui/panel';
-import { PhotoFiltersPanel } from '../../../vendor/endfield-noclip/packages/viewer/src/ui/photo-filters';
-import { SettingsPanel } from '../../../vendor/endfield-noclip/packages/viewer/src/ui/settings-panel';
-import { DEFAULT_OPTIONS } from '../../../vendor/endfield-noclip/packages/viewer/src/viewer/options';
+import { PanelProvider } from '../../../.cache/noclip/packages/viewer/src/ui/panel';
+import { PhotoFiltersPanel } from '../../../.cache/noclip/packages/viewer/src/ui/photo-filters';
+import { SettingsPanel } from '../../../.cache/noclip/packages/viewer/src/ui/settings-panel';
+import { DEFAULT_OPTIONS } from '../../../.cache/noclip/packages/viewer/src/viewer/options';
 import { Panel } from './panel';
 
 vi.mock('@/locale/fontLoader', () => ({

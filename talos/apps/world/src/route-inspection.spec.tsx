@@ -6,7 +6,7 @@ import { createRouteLines } from './route-lines-renderer';
 
 vi.mock('@endfield-noclip/viewer/host', async () => {
     const { Panel } = await import(
-        '../../../vendor/endfield-noclip/packages/viewer/src/ui/panel'
+        '../../../.cache/noclip/packages/viewer/src/ui/panel'
     );
     return { Panel };
 });

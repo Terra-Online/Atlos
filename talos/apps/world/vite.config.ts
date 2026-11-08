@@ -35,7 +35,7 @@ export default defineConfig(async ({ command, mode }) => {
             react(),
             svgr(),
             routeServer(env.WORLD_ROUTING_DIRECTORY, {
-                extractor: env.WORLD_EXTRACTOR_DIRECTORY,
+                extractor: resolve(root, '.cache/noclip'),
                 config: env.WORLD_GAME_CONFIG,
                 node: env.WORLD_EXTRACTOR_NODE,
                 solver: worldPackage.dependencies['@opendfieldmap/ganglia'],

@@ -28,7 +28,8 @@
     "bench:production": "node scripts/bench-production.mjs",
     "dev:world": "node ./scripts/dev-app.mjs world",
     "world:build": "node ./scripts/world.mjs build",
-    "world:deploy": "node ./scripts/world.mjs deploy"
+    "world:deploy": "node ./scripts/world.mjs deploy",
+    "noclip:prepare": "node ./scripts/noclip.mjs prepare"
   },
   "browserslist": [
     "defaults"

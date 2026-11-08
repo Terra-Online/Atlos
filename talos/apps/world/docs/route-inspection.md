@@ -21,7 +21,6 @@ For example, with the matching package service already running on 5199,
 ```sh
 VITE_WORLD_CATALOG_URL=http://127.0.0.1:5199/oem/RELEASE_ID/index.json \
 WORLD_ROUTING_DIRECTORY=/path/to/local-routing-data \
-WORLD_EXTRACTOR_DIRECTORY=/path/to/endfield-noclip \
 WORLD_GAME_CONFIG=/path/to/endfield.local.json \
 WORLD_EXTRACTOR_NODE="$(command -v node)" \
 pnpm dev:world
@@ -42,7 +41,7 @@ constraints apply to standing endpoints when resolved. Missing rules retain
 ground-projection behaviour and are reported. Changed source builds reject stale
 interaction data.
 
-With `WORLD_EXTRACTOR_DIRECTORY`, `WORLD_GAME_CONFIG` and optionally
+With the generated extractor in `.cache/noclip`, `WORLD_GAME_CONFIG` and optionally
 `WORLD_EXTRACTOR_NODE` configured, route queries enqueue a
 collision-derived player-ground build. Jobs are deduplicated, serialized and
 polled by the panel. An available ground route appears immediately while physical

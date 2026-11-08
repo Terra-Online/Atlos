@@ -1,0 +1,2816 @@
+diff --git a/packages/formats/src/endfield/collision-heightfield.test.ts b/packages/formats/src/endfield/collision-heightfield.test.ts
+new file mode 100644
+index 00000000..237606af
+--- /dev/null
++++ b/packages/formats/src/endfield/collision-heightfield.test.ts
+@@ -0,0 +1,60 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++
++import { readCollisionHeightfield } from './collision-heightfield.ts';
++
++const samples = (values: number[]) => {
++	const bytes = new Uint8Array(values.length * 2),
++		view = new DataView(bytes.buffer);
++	values.forEach((v, i) => view.setUint16(i * 2, v, true));
++	return bytes;
++};
++
++test('preserves collision heights, rectangular axes, upward winding and alternating diagonals', () => {
++	const mesh = readCollisionHeightfield(samples([0, 32766, 0, 8192, 0, 16383]), {
++		width: 3,
++		height: 2,
++		scale: [2, 100, 3],
++	});
++	assert.deepEqual(mesh.vertices[1], [2, 100, 0]);
++	assert.deepEqual(mesh.vertices[5], [4, 50, 3]);
++	assert.deepEqual(mesh.triangles, [
++		[0, 3, 4],
++		[0, 4, 1],
++		[1, 4, 2],
++		[2, 4, 5],
++	]);
++	for (const face of mesh.triangles) {
++		const [a, b, c] = face.map((i) => mesh.vertices[i]);
++		assert.ok((b[2] - a[2]) * (c[0] - a[0]) - (b[0] - a[0]) * (c[2] - a[2]) > 0);
++	}
++});
++
++test('holes remove complete incident quads, including triangles without the hole vertex', () => {
++	const baseline = [1, 2, 3, 4];
++	for (let corner = 0; corner < 4; corner++) {
++		const values = [...baseline];
++		values[corner] |= 0x8000;
++		const mesh = readCollisionHeightfield(samples(values), { width: 2, height: 2, scale: [1, 32766, 1] });
++		assert.equal(mesh.triangles.length, 0);
++		assert.equal(mesh.vertices[corner][1], baseline[corner]);
++	}
++	const mesh = readCollisionHeightfield(samples([0x8001, 2, 3, 4, 5, 6]), {
++		width: 3,
++		height: 2,
++		scale: [1, 1, 1],
++	});
++	assert.deepEqual(mesh.triangles, [
++		[1, 4, 2],
++		[2, 4, 5],
++	]);
++});
++
++test('rejects unsupported scales and incomplete sample data without filling the gaps', () => {
++	const bytes = samples([0, 1, 2, 3]);
++	const options = { width: 2, height: 2, scale: [1, 1, 1] as const };
++	assert.throws(() => readCollisionHeightfield(bytes.subarray(1), options));
++	assert.throws(() => readCollisionHeightfield(bytes, { ...options, width: 1 }));
++	assert.throws(() => readCollisionHeightfield(bytes, { ...options, scale: [1, 0, 1] }));
++	assert.throws(() => readCollisionHeightfield(bytes, { ...options, scale: [1, Number.NaN, 1] }));
++});
+diff --git a/packages/formats/src/endfield/collision-heightfield.ts b/packages/formats/src/endfield/collision-heightfield.ts
+new file mode 100644
+index 00000000..cce8a7e0
+--- /dev/null
++++ b/packages/formats/src/endfield/collision-heightfield.ts
+@@ -0,0 +1,72 @@
++import { FormatError } from '../binary/binary-reader.ts';
++import { TERRAIN_HEIGHT_HOLE } from '../hg/terrain.ts';
++import type { CollisionMesh } from '../unity/collision-mesh.ts';
++
++/**
++ * @param bytes little-endian RG16 base-level samples from an ECS terrain collider's texture
++ * @param options dimensions and collider scale, in local Unity coordinates
++ * @returns upward triangles; a hole at any quad corner removes both triangles
++ * @throws {FormatError} for inconsistent dimensions or unsupported scale
++ */
++export const readCollisionHeightfield = (
++	bytes: Uint8Array,
++	options: { width: number; height: number; scale: readonly [number, number, number] },
++): CollisionMesh => {
++	const { width, height, scale } = options;
++	if (
++		!Number.isSafeInteger(width) ||
++		!Number.isSafeInteger(height) ||
++		width < 2 ||
++		height < 2 ||
++		width * height * 2 !== bytes.length ||
++		scale.length !== 3 ||
++		scale.some((v) => !Number.isFinite(v) || v <= 0) ||
++		scale[0] < 1e-8 ||
++		scale[2] < 1e-8 ||
++		scale[1] / 32766 < 1.5259021823865737e-9
++	) {
++		throw new FormatError('invalid collision heightfield');
++	}
++	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
++	const vertices: CollisionMesh['vertices'] = [],
++		triangles: CollisionMesh['triangles'] = [];
++	const holes = new Uint8Array(width * height);
++	let minY = Infinity,
++		maxY = -Infinity;
++	for (let z = 0; z < height; z++) {
++		for (let x = 0; x < width; x++) {
++			const i = z * width + x,
++				sample = view.getUint16(i * 2, true);
++			holes[i] = (sample & TERRAIN_HEIGHT_HOLE) !== 0 ? 1 : 0;
++			// collision height normalization differs from the rendered terrain's /32768.
++			const y = (sample & (TERRAIN_HEIGHT_HOLE - 1)) * (scale[1] / 32766);
++			vertices.push([x * scale[0], y, z * scale[2]]);
++			minY = Math.min(minY, y);
++			maxY = Math.max(maxY, y);
++		}
++	}
++	for (let z = 0; z < height - 1; z++) {
++		for (let x = 0; x < width - 1; x++) {
++			const a = z * width + x,
++				b = a + 1,
++				c = a + width,
++				d = c + 1;
++			if (holes[a] || holes[b] || holes[c] || holes[d]) {
++				continue;
++			}
++			// alternating diagonals preserve the collision surface on nonplanar quads.
++			if ((x + z) % 2 === 0) {
++				triangles.push([a, c, d], [a, d, b]);
++			} else {
++				triangles.push([a, c, b], [b, c, d]);
++			}
++		}
++	}
++	return {
++		vertices,
++		triangles,
++		faceRemap: null,
++		materials: null,
++		bounds: { min: [0, minY, 0], max: [(width - 1) * scale[0], maxY, (height - 1) * scale[2]] },
++	};
++};
+diff --git a/packages/formats/src/endfield/dynamic-scene.test.ts b/packages/formats/src/endfield/dynamic-scene.test.ts
+index e3484c08..c7ebc428 100644
+--- a/packages/formats/src/endfield/dynamic-scene.test.ts
++++ b/packages/formats/src/endfield/dynamic-scene.test.ts
+@@ -342,3 +342,128 @@ test('reads the sludge core a sludge patch belongs to', () => {
+ 	assert.equal(entities[2].erosionCore, null);
+ 	assert.equal(entities[0].sludgeCore, null);
+ });
++
++const buildConveyors = (): Uint8Array => {
++	const w = new Writer();
++	const root = w.reserve(4),
++		rootFields = w.table(5, [3]);
++	w.link(root, rootFields.get(3)! - 4);
++	const grids = w.reserve(12);
++	w.view.setUint32(grids, 2, true);
++	w.link(rootFields.get(3)!, grids);
++	const grid = w.table(42, [0, 5, 33, 38, 39, 40]);
++	w.link(grids + 4, grid.get(0)! - 4);
++	w.view.setUint32(grid.get(0)!, GRID, true);
++	const types = [
++		DynamicData.ConveyorBeltComp,
++		DynamicData.ConveyorBeltBoxComp,
++		DynamicData.ConveyorBeltBoxComp,
++		DynamicData.ConveyorBeltGroupComp,
++	];
++	w.link(
++		grid.get(5)!,
++		w.structs(
++			16,
++			types.map((type, i) => ref(type, i === 2 ? 1 : 0).slice(0, 4)),
++		),
++	);
++	w.link(
++		grid.get(33)!,
++		w.structs(
++			84,
++			types.map((_, i) => [10 + i, 0].concat(ref(1, i, 1))),
++		),
++	);
++	const groupId = 0x100000005n;
++	const belts = w.structs(16, [[]]);
++	w.view.setBigUint64(belts + 4, groupId, true);
++	w.view.setUint8(belts + 12, 1);
++	w.link(grid.get(38)!, belts);
++	const boxes = w.structs(16, [[], []]);
++	for (let i = 0; i < 2; i++) {
++		const at = boxes + 4 + i * 16;
++		w.view.setBigUint64(at, groupId, true);
++		w.view.setInt32(at + 8, i === 0 ? -7 : 123456, true);
++		w.view.setFloat32(at + 12, i === 0 ? -0.25 : 1.5, true);
++	}
++	w.link(grid.get(39)!, boxes);
++	const group = w.structs(40, [[]]);
++	w.view.setFloat32(group + 4, -1.5, true);
++	w.view.setFloat32(group + 8, 12, true);
++	w.view.setInt32(group + 12, 28, true);
++	w.view.setInt32(group + 16, 3, true);
++	ref(DynamicData.ConveyorPath, 1, 1).forEach((word, i) => w.view.setInt32(group + 20 + i * 4, word, true));
++	w.view.setUint32(group + 28, GRID + 1, true);
++	w.link(grid.get(40)!, group);
++	const pathGrid = w.table(42, [0, 41]);
++	w.link(grids + 8, pathGrid.get(0)! - 4);
++	w.view.setUint32(pathGrid.get(0)!, GRID + 1, true);
++	const paths = w.structs(84, [[], []]);
++	const at = paths + 4 + 84;
++	w.view.setUint32(at, 1, true);
++	for (let offset = 4; offset <= 80; offset += 4) {
++		if (offset !== 72) {
++			w.view.setFloat32(at + offset, offset / 4, true);
++		}
++	}
++	w.view.setUint8(at + 72, 1);
++	w.link(pathGrid.get(41)!, paths);
++	return w.finish();
++};
++
++test('preserves conveyor identity, signed speed, box offsets and cross-grid path rows', () => {
++	const conveyors = readDynamicEntities(buildConveyors()).map((entity) => entity.conveyor);
++	assert.deepEqual(conveyors.slice(0, 3), [
++		{ kind: 'belt', group: 0x100000005n, entry: true, exit: false },
++		{ kind: 'box', group: 0x100000005n, fixedProgress: -7, lateralOffset: -0.25 },
++		{ kind: 'box', group: 0x100000005n, fixedProgress: 123456, lateralOffset: 1.5 },
++	]);
++	assert.deepEqual(conveyors[3], {
++		kind: 'group',
++		speed: -1.5,
++		length: 12,
++		level: 28,
++		spline: 3,
++		paths: [
++			{
++				type: 1,
++				start: [1, 2, 3],
++				end: [4, 5, 6],
++				width: 7,
++				length: 8,
++				radius: 9,
++				center: [10, 11, 12],
++				startAngle: 13,
++				endAngle: 14,
++				rotation: [15, 16, 17],
++				clockwise: true,
++				startProgress: 19,
++				endProgress: 20,
++			},
++		],
++	});
++	assert.ok(readDynamicEntities(build()).every((entity) => entity.conveyor === undefined));
++});
++
++test('rejects malformed conveyor references, flags and non-finite geometry', () => {
++	for (const [slot, offset, value, expected] of [
++		[38, 8, 2, /conveyor boolean/],
++		[40, 20, DynamicData.Model, /conveyor path reference/],
++		[40, 32, -1, /conveyor path reference/],
++		[40, 28, 2, /ConveyorPath.*outside/],
++	] as const) {
++		const bytes = buildConveyors(),
++			fb = new FlatBuffer(bytes);
++		const grid = fb.tableAt(fb.vector(fb.root(), 3).start, 0),
++			rows = fb.vector(grid, slot);
++		const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
++		view.setInt32(rows.start + offset, value, true);
++		assert.throws(() => readDynamicEntities(bytes), expected);
++	}
++	const bytes = buildConveyors(),
++		fb = new FlatBuffer(bytes);
++	const grid = fb.tableAt(fb.vector(fb.root(), 3).start, 1),
++		paths = fb.vector(grid, 41);
++	new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).setFloat32(paths.start + 84 + 4, NaN, true);
++	assert.throws(() => readDynamicEntities(bytes), /non-finite conveyor/);
++});
+diff --git a/packages/formats/src/endfield/dynamic-scene.ts b/packages/formats/src/endfield/dynamic-scene.ts
+index bc516315..21bf8c7b 100644
+--- a/packages/formats/src/endfield/dynamic-scene.ts
++++ b/packages/formats/src/endfield/dynamic-scene.ts
+@@ -58,6 +58,10 @@ export const DynamicData = {
+ 	ResourceComp: 30,
+ 	ErosionRootComp: 34,
+ 	ModelViewStateControllerNewComp: 35,
++	ConveyorBeltComp: 36,
++	ConveyorBeltBoxComp: 37,
++	ConveyorBeltGroupComp: 38,
++	ConveyorPath: 39,
+ 	SludgeComp: 42,
+ 	ExtraSceneComp: 44,
+ 	MapVarControlComp: 51,
+@@ -142,6 +146,29 @@ export interface DynamicViewState {
+ 	oldVersion: boolean;
+ }
+ 
++/** an authored conveyor segment; distances and angles retain their source units */
++export interface ConveyorPath {
++	type: number;
++	start: [number, number, number];
++	end: [number, number, number];
++	width: number;
++	length: number;
++	radius: number;
++	center: [number, number, number];
++	startAngle: number;
++	endAngle: number;
++	rotation: [number, number, number];
++	clockwise: boolean;
++	startProgress: number;
++	endProgress: number;
++}
++
++/** conveyor authoring, before runtime progress, loading and motion rules are applied */
++export type Conveyor =
++	| { kind: 'belt'; group: bigint; entry: boolean; exit: boolean }
++	| { kind: 'box'; group: bigint; fixedProgress: number; lateralOffset: number }
++	| { kind: 'group'; speed: number; length: number; level: number; spline: number; paths: ConveyorPath[] };
++
+ /** a DynamicStreaming entity */
+ export interface DynamicEntity {
+ 	/** grid unique id */
+@@ -168,6 +195,8 @@ export interface DynamicEntity {
+ 	erosionCore: ErosionCoreLink | null;
+ 	/** the erosion sludge core whose sludge this entity is, `null` for other entities */
+ 	sludgeCore: SludgeCoreLink | null;
++	/** absent on entities without a conveyor component; not a sampled world-space trajectory */
++	conveyor?: Conveyor;
+ }
+ 
+ /** the blight core an erosion root belongs to */
+@@ -214,6 +243,10 @@ const Slot = {
+ 	RootComp: 33,
+ 	ErosionRootComp: 36,
+ 	ModelViewStateControllerNewComp: 37,
++	ConveyorBeltComp: 38,
++	ConveyorBeltBoxComp: 39,
++	ConveyorBeltGroupComp: 40,
++	ConveyorPath: 41,
+ 	SludgeComp: 44,
+ 	ExtraSceneComp: 46,
+ 	MapVarControlComp: 52,
+@@ -236,6 +269,10 @@ const Width = {
+ 	ExtraSceneComp: 40,
+ 	ErosionRootComp: 48,
+ 	ModelViewStateControllerNewComp: 36,
++	ConveyorBeltComp: 16,
++	ConveyorBeltBoxComp: 16,
++	ConveyorBeltGroupComp: 40,
++	ConveyorPath: 84,
+ 	SludgeComp: 264,
+ } as const;
+ 
+@@ -289,6 +326,21 @@ export const readDynamicEntities = (bytes: Uint8Array): DynamicEntity[] => {
+ 		}
+ 		return vector.start + index * width;
+ 	};
++	const finite = (at: number): number => {
++		const value = fb.f32(at);
++		if (!Number.isFinite(value)) {
++			throw new FormatError('non-finite conveyor parameter');
++		}
++		return value;
++	};
++	const vector3 = (at: number): [number, number, number] => [finite(at), finite(at + 4), finite(at + 8)];
++	const flag = (at: number): boolean => {
++		const value = fb.u8(at);
++		if (value > 1) {
++			throw new FormatError('invalid conveyor boolean');
++		}
++		return value === 1;
++	};
+ 	/** reads a variable component: the variable it reads, and its load gate when it controls loading */
+ 	const variableComp = (
+ 		kind: 'globalVar' | 'mapVar',
+@@ -441,6 +493,80 @@ export const readDynamicEntities = (bytes: Uint8Array): DynamicEntity[] => {
+ 						entity.uid = fb.u64(id);
+ 						break;
+ 					}
++					case DynamicData.ConveyorBeltComp: {
++						const s = rowIn(
++							fb.u32(di + 8),
++							Slot.ConveyorBeltComp,
++							index,
++							Width.ConveyorBeltComp,
++							'ConveyorBeltComp',
++						);
++						entity.conveyor = { kind: 'belt', group: fb.u64(s), entry: flag(s + 8), exit: flag(s + 9) };
++						break;
++					}
++					case DynamicData.ConveyorBeltBoxComp: {
++						const s = rowIn(
++							fb.u32(di + 8),
++							Slot.ConveyorBeltBoxComp,
++							index,
++							Width.ConveyorBeltBoxComp,
++							'ConveyorBeltBoxComp',
++						);
++						entity.conveyor = {
++							kind: 'box',
++							group: fb.u64(s),
++							fixedProgress: fb.i32(s + 8),
++							lateralOffset: finite(s + 12),
++						};
++						break;
++					}
++					case DynamicData.ConveyorBeltGroupComp: {
++						const s = rowIn(
++							fb.u32(di + 8),
++							Slot.ConveyorBeltGroupComp,
++							index,
++							Width.ConveyorBeltGroupComp,
++							'ConveyorBeltGroupComp',
++						);
++						const reference = dataRef(s + 16);
++						if (reference.count < 0 || (reference.count > 0 && reference.type !== DynamicData.ConveyorPath)) {
++							throw new FormatError('invalid conveyor path reference');
++						}
++						const paths: ConveyorPath[] = [];
++						for (let path = 0; path < reference.count; path++) {
++							const p = rowIn(
++								reference.grid,
++								Slot.ConveyorPath,
++								reference.index + path,
++								Width.ConveyorPath,
++								'ConveyorPath',
++							);
++							paths.push({
++								type: fb.u32(p),
++								start: vector3(p + 4),
++								end: vector3(p + 16),
++								width: finite(p + 28),
++								length: finite(p + 32),
++								radius: finite(p + 36),
++								center: vector3(p + 40),
++								startAngle: finite(p + 52),
++								endAngle: finite(p + 56),
++								rotation: vector3(p + 60),
++								clockwise: flag(p + 72),
++								startProgress: finite(p + 76),
++								endProgress: finite(p + 80),
++							});
++						}
++						entity.conveyor = {
++							kind: 'group',
++							speed: finite(s),
++							length: finite(s + 4),
++							level: fb.i32(s + 8),
++							spline: fb.i32(s + 12),
++							paths,
++						};
++						break;
++					}
+ 					case DynamicData.ExtraSceneComp: {
+ 						const s = rowIn(
+ 							fb.u32(di + 8),
+diff --git a/packages/formats/src/endfield/ecs-collider.test.ts b/packages/formats/src/endfield/ecs-collider.test.ts
+new file mode 100644
+index 00000000..a49398db
+--- /dev/null
++++ b/packages/formats/src/endfield/ecs-collider.test.ts
+@@ -0,0 +1,127 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++
++import { readEcsCollider } from './ecs-collider.ts';
++
++const fixture = (kind: number) => {
++	const bytes: number[] = [];
++	const word = (value: number, float = false) => {
++		const b = new Uint8Array(4),
++			view = new DataView(b.buffer);
++		if (float) {
++			view.setFloat32(0, value, true);
++		} else {
++			view.setUint32(0, value, true);
++		}
++		bytes.push(...b);
++	};
++	const floats = (...values: number[]) => values.forEach((v) => word(v, true));
++	const words = (...values: number[]) => values.forEach((v) => word(v));
++	floats(10, 20, 30, 0, 0, 0, 1);
++	words(kind, 6, 7);
++	return { floats, words, bytes: () => Uint8Array.from(bytes) };
++};
++
++test('retains actor transform and distinguishes enabled, trigger and disabled primitives', () => {
++	const f = fixture(1);
++	f.floats(2, 3, 4);
++	f.words(123, 456, 3 | (9 << 2), 789);
++	const actor = readEcsCollider(f.bytes());
++	assert.deepEqual(actor.position, [10, 20, 30]);
++	assert.equal(actor.layer, 6);
++	assert.deepEqual(actor.shapes[0], {
++		kind: 'box',
++		position: [0, 0, 0],
++		rotation: [0, 0, 0, 1],
++		halfExtents: [2, 3, 4],
++		options: 123,
++		tag: 456,
++		flags: 39,
++		enabled: true,
++		trigger: true,
++		surface: 9,
++		extra: 789,
++	});
++	const disabled = f.bytes();
++	new DataView(disabled.buffer).setUint32(60, 0, true);
++	assert.equal(readEcsCollider(disabled).shapes[0].enabled, false);
++});
++
++test('preserves compound mesh ordering and local poses across all shape sections', () => {
++	const f = fixture(5);
++	f.words(1, 1, 1, 1, 1, 1);
++	f.words(11, 12, 13);
++	f.floats(1, 2, 3);
++	f.words(14);
++	f.floats(1, 2, 3, 0, 0, 0, 1);
++	f.words(21, 22, 1);
++	f.floats(2, 3, 4);
++	f.words(23);
++	f.floats(4, 5, 6, 0, 0, 0, 1);
++	f.words(31, 32, 1);
++	f.floats(0.5, 2);
++	f.words(33);
++	f.floats(7, 8, 9);
++	f.words(41, 42, 3);
++	f.floats(0.75);
++	f.words(43);
++	for (const scale of [1, -1]) {
++		f.floats(3, 4, 5, 0, 0, 0, 1);
++		f.words(51, 52, 1, 30);
++		f.floats(scale, 2, 3);
++		f.words(53);
++	}
++	const actor = readEcsCollider(f.bytes());
++	assert.equal(actor.meshCount, 3);
++	assert.deepEqual(actor.complex, { mesh: 0, options: 11, tag: 12, flags: 13, scale: [1, 2, 3], extra: 14 });
++	assert.deepEqual(
++		actor.shapes.map((s) => s.kind),
++		['box', 'capsule', 'sphere', 'mesh', 'mesh'],
++	);
++	assert.deepEqual(actor.shapes[1], {
++		kind: 'capsule',
++		position: [4, 5, 6],
++		rotation: [0, 0, 0, 1],
++		options: 31,
++		tag: 32,
++		flags: 1,
++		enabled: true,
++		trigger: false,
++		surface: 0,
++		radius: 0.5,
++		cylinderLength: 2,
++		extra: 33,
++	});
++	assert.deepEqual(
++		actor.shapes.filter((s) => s.kind === 'mesh').map((s) => [s.mesh, s.convex, s.scale[0]]),
++		[
++			[1, false, 1],
++			[2, true, -1],
++		],
++	);
++});
++
++test('separates terrain inputs and refuses truncated, unsupported or malformed collider data', () => {
++	const f = fixture(6);
++	f.words(0, 0, 1);
++	f.floats(1, 256, 1);
++	assert.deepEqual(readEcsCollider(f.bytes()).terrain?.scale, [1, 256, 1]);
++	for (let n = 0; n < f.bytes().length; n++) {
++		assert.throws(() => readEcsCollider(f.bytes().subarray(0, n)));
++	}
++	assert.throws(() => readEcsCollider(Uint8Array.from([...f.bytes(), 0])), /trailing/);
++	for (const [offset, value] of [
++		[28, 99],
++		[32, 32],
++		[0, 0x7f800000],
++		[24, 0],
++		[52, 0xbf800000],
++	]) {
++		const b = f.bytes();
++		new DataView(b.buffer).setUint32(offset, value, true);
++		assert.throws(() => readEcsCollider(b));
++	}
++	const compound = fixture(5);
++	compound.words(0, 0xffffffff, 0, 0, 0, 0);
++	assert.throws(() => readEcsCollider(compound.bytes()), /counts/);
++});
+diff --git a/packages/formats/src/endfield/ecs-collider.ts b/packages/formats/src/endfield/ecs-collider.ts
+new file mode 100644
+index 00000000..10c756ec
+--- /dev/null
++++ b/packages/formats/src/endfield/ecs-collider.ts
+@@ -0,0 +1,215 @@
++import { BinaryReader, FormatError } from '../binary/binary-reader.ts';
++
++type Vec3 = [number, number, number];
++type Quaternion = [number, number, number, number];
++type Pose = { position: Vec3; rotation: Quaternion };
++type Filter = {
++	options: number;
++	tag: number;
++	flags: number;
++	enabled: boolean;
++	trigger: boolean;
++	surface: number;
++	extra: number;
++};
++type Geometry =
++	| { kind: 'box'; halfExtents: Vec3 }
++	| { kind: 'capsule'; radius: number; cylinderLength: number }
++	| { kind: 'sphere'; radius: number }
++	| { kind: 'mesh'; mesh: number; convex: boolean; cookingOptions: number; scale: Vec3 };
++
++/** shape poses are relative to the actor; mesh indices address the separately bound asset list */
++export type ColliderShape = Pose & Filter & Geometry;
++
++/** decoded actor input; layer/option policy and active world state remain the importer's responsibility */
++export interface EcsCollider extends Pose {
++	kind: number;
++	headerFlags: number;
++	layer: number;
++	tag: number;
++	shapes: ColliderShape[];
++	complex: { mesh: number; options: number; tag: number; flags: number; scale: Vec3; extra: number } | null;
++	terrain: {
++		options: number;
++		tag: number;
++		flags: number;
++		enabled: boolean;
++		surface: number;
++		scale: Vec3;
++	} | null;
++	meshCount: number;
++}
++
++const identity = (): Pose => ({ position: [0, 0, 0], rotation: [0, 0, 0, 1] });
++
++/**
++ * @param bytes streamed ECS collider blob, excluding the separate asset bindings
++ * @returns actor pose and all primitive/mesh inputs, retaining disabled and trigger shapes
++ * @throws {FormatError} for unsupported kinds, invalid dimensions, counts or incomplete records
++ */
++export const readEcsCollider = (bytes: Uint8Array): EcsCollider => {
++	const r = new BinaryReader(bytes, { littleEndian: true });
++	const scalar = () => {
++		const value = r.f32();
++		if (!Number.isFinite(value)) {
++			throw new FormatError('nonfinite collider coordinate');
++		}
++		return value;
++	};
++	const vector = (): Vec3 => [scalar(), scalar(), scalar()];
++	const dimensions = (): Vec3 => {
++		const values = vector();
++		if (values.some((v) => v < 0)) {
++			throw new FormatError('negative collider dimensions');
++		}
++		return values;
++	};
++	const positive = () => {
++		const value = scalar();
++		if (value < 0) {
++			throw new FormatError('negative collider dimension');
++		}
++		return value;
++	};
++	const pose = (): Pose => {
++		const position = vector(),
++			rotation: Quaternion = [scalar(), scalar(), scalar(), scalar()];
++		if (Math.abs(Math.hypot(...rotation) - 1) > 1e-3) {
++			throw new FormatError('invalid collider rotation');
++		}
++		return { position, rotation };
++	};
++	const filter = () => {
++		const options = r.u32(),
++			tag = r.u32(),
++			flags = r.u32();
++		return {
++			options,
++			tag,
++			flags,
++			enabled: (flags & 1) !== 0,
++			trigger: (flags & 2) !== 0,
++			surface: (flags >>> 2) & 255,
++		};
++	};
++	const actor = pose(),
++		kind = r.u16(),
++		headerFlags = r.u16(),
++		layer = r.u32(),
++		actorTag = r.u32();
++	if (layer > 31) {
++		throw new FormatError('invalid collider layer');
++	}
++	const result: EcsCollider = {
++		...actor,
++		kind,
++		headerFlags,
++		layer,
++		tag: actorTag,
++		shapes: [],
++		complex: null,
++		terrain: null,
++		meshCount: 0,
++	};
++	const push = (shape: Pose & Omit<Filter, 'extra'> & Geometry) => {
++		result.shapes.push({ ...shape, extra: r.u32() });
++	};
++	switch (kind) {
++		case 1: {
++			const halfExtents = dimensions();
++			push({ ...identity(), ...filter(), kind: 'box', halfExtents });
++			break;
++		}
++		case 2: {
++			const radius = positive(),
++				cylinderLength = positive();
++			push({ ...identity(), ...filter(), kind: 'capsule', radius, cylinderLength });
++			break;
++		}
++		case 3: {
++			const radius = positive();
++			push({ ...identity(), ...filter(), kind: 'sphere', radius });
++			break;
++		}
++		case 4: {
++			const scale = vector(),
++				packed = r.u32();
++			push({
++				...identity(),
++				...filter(),
++				kind: 'mesh',
++				mesh: 0,
++				scale,
++				convex: (packed & 1) !== 0,
++				cookingOptions: packed >>> 1,
++			});
++			result.meshCount = 1;
++			break;
++		}
++		case 5: {
++			const counts = Array.from({ length: 6 }, () => r.u32());
++			const [complex, boxes, capsules, spheres, triangles, convexes] = counts;
++			const size = complex * 28 + boxes * 56 + capsules * 52 + spheres * 32 + (triangles + convexes) * 60;
++			if (complex > 1 || size !== r.remaining) {
++				throw new FormatError('invalid compound collider counts');
++			}
++			let mesh = 0;
++			if (complex === 1) {
++				const options = r.u32(),
++					tag = r.u32(),
++					flags = r.u32(),
++					scale = vector(),
++					extra = r.u32();
++				result.complex = { mesh: mesh++, options, tag, flags, scale, extra };
++			}
++			for (let i = 0; i < boxes; i++) {
++				const transform = pose(),
++					flags = filter(),
++					halfExtents = dimensions();
++				push({ ...transform, ...flags, kind: 'box', halfExtents });
++			}
++			for (let i = 0; i < capsules; i++) {
++				const transform = pose(),
++					flags = filter(),
++					radius = positive(),
++					cylinderLength = positive();
++				push({ ...transform, ...flags, kind: 'capsule', radius, cylinderLength });
++			}
++			for (let i = 0; i < spheres; i++) {
++				const position = vector(),
++					flags = filter(),
++					radius = positive();
++				push({ ...identity(), position, ...flags, kind: 'sphere', radius });
++			}
++			for (let i = 0; i < triangles + convexes; i++) {
++				const transform = pose(),
++					flags = filter(),
++					cookingOptions = r.u32(),
++					scale = vector();
++				push({
++					...transform,
++					...flags,
++					kind: 'mesh',
++					mesh: mesh++,
++					convex: i >= triangles,
++					cookingOptions,
++					scale,
++				});
++			}
++			result.meshCount = mesh;
++			break;
++		}
++		case 6: {
++			const { options, tag, flags, enabled, surface } = filter();
++			result.terrain = { options, tag, flags, enabled, surface, scale: dimensions() };
++			break;
++		}
++		default: {
++			throw new FormatError(`unsupported ECS collider kind ${kind}`);
++		}
++	}
++	if (r.remaining !== 0) {
++		throw new FormatError('unexpected collider trailing bytes');
++	}
++	return result;
++};
+diff --git a/packages/formats/src/endfield/memory-pack.test.ts b/packages/formats/src/endfield/memory-pack.test.ts
+index 4f1300f8..0abdd25c 100644
+--- a/packages/formats/src/endfield/memory-pack.test.ts
++++ b/packages/formats/src/endfield/memory-pack.test.ts
+@@ -225,3 +225,77 @@ test('reads compressed integers as IL2CPP metadata writes them', () => {
+ 	assert.equal(reader.compressedI32(), -0x80000000);
+ 	assert.throws(() => reader.byte(), FormatError);
+ });
++
++test('reads an unmanaged pair of Vector3 values inside a wrapper list without tuple headers', () => {
++	const types: FakeType[] = [
++		{ name: 'Vector3', valueType: true },
++		{ name: 'ValueTuple' },
++		{ name: 'List' },
++		{ name: 'Root' },
++	];
++	const pair: Il2CppTypeRef = {
++		kind: 'generic',
++		definition: 1,
++		args: [def(types, 'Vector3'), def(types, 'Vector3')],
++	};
++	types.push({
++		name: 'RootForMemoryPack',
++		wraps: def(types, 'Root'),
++		members: [
++			['pairs', { kind: 'generic', definition: 2, args: [pair] }],
++			['tail', prim('int')],
++		],
++	});
++	const encoded = new Uint8Array(1 + 4 + 24 + 4),
++		view = new DataView(encoded.buffer);
++	encoded[0] = 2;
++	view.setInt32(1, 1, true);
++	for (let i = 0; i < 6; i++) {
++		view.setFloat32(5 + i * 4, i + 0.5, true);
++	}
++	view.setInt32(29, 42, true);
++	const reader = new MemoryPackReader(new MemoryPackSchema(fakeRuntime(types)), () => undefined);
++	assert.deepEqual(reader.decode(encoded, 'RootForMemoryPack'), {
++		$type: 'RootForMemoryPack',
++		pairs: [
++			[
++				[0.5, 1.5, 2.5],
++				[3.5, 4.5, 5.5],
++			],
++		],
++		tail: 42,
++	});
++	assert.throws(() => reader.decode(encoded.subarray(0, 28), 'RootForMemoryPack'), FormatError);
++});
++
++test('reads path hashes and spline knots as schema-sized raw structs', () => {
++	const types: FakeType[] = [
++		{ name: 'StringPathHash', valueType: true, fields: [['hash', prim('long'), 0]] },
++		{
++			name: 'BezierKnot',
++			valueType: true,
++			fields: [
++				['x', prim('float'), 0],
++				['y', prim('float'), 4],
++			],
++		},
++		{ name: 'Container' },
++	];
++	types.push({
++		name: 'ContainerForMemoryPack',
++		wraps: def(types, 'Container'),
++		members: [
++			['path', def(types, 'StringPathHash')],
++			['knot', def(types, 'BezierKnot')],
++		],
++	});
++	const reader = new MemoryPackReader(new MemoryPackSchema(fakeRuntime(types)), () => null);
++	assert.deepEqual(
++		reader.decode(bytes([2, 1], [123n, 8], [0x3f800000, 4], [0x40000000, 4]), 'ContainerForMemoryPack'),
++		{
++			$type: 'ContainerForMemoryPack',
++			path: { $type: 'StringPathHash', hash: '123' },
++			knot: { $type: 'BezierKnot', x: 1, y: 2 },
++		},
++	);
++});
+diff --git a/packages/formats/src/endfield/memory-pack.ts b/packages/formats/src/endfield/memory-pack.ts
+index b7e4ec99..2f3f981b 100644
+--- a/packages/formats/src/endfield/memory-pack.ts
++++ b/packages/formats/src/endfield/memory-pack.ts
+@@ -82,6 +82,8 @@ const VECTORS = new Map<string, [string, number]>([
+ 
+ /** structs serialized raw rather than through their wrapper (besides `*Ptr`) */
+ const RAW_STRUCTS = new Set([
++	'StringPathHash',
++	'BezierKnot',
+ 	'GameplayTag',
+ 	'CameraControlStateInitialParam',
+ 	'PosRot',
+@@ -443,6 +445,19 @@ export class MemoryPackReader {
+ 		if (type.kind === 'generic') {
+ 			const [first, second] = type.args;
+ 			switch (base) {
++				case 'ValueTuple': {
++					// Unity writes this unmanaged pair as two adjacent Vector3 values, without an object header.
++					// Other tuple layouts may reorder fields or add padding and need separate validation.
++					if (
++						type.args.length !== 2 ||
++						!type.args.every(
++							(arg) => arg.kind === 'definition' && runtime.definitionName(arg.definition) === 'Vector3',
++						)
++					) {
++						throw new FormatError(`unsupported tuple layout ${name}`);
++					}
++					return [this.#value(first, false), this.#value(second, false)];
++				}
+ 				case 'List': {
+ 					return this.#list(() => this.#value(first, true));
+ 				}
+diff --git a/packages/formats/src/hg/spark-buffer.test.ts b/packages/formats/src/hg/spark-buffer.test.ts
+index 58a5cc22..4f0c2d95 100644
+--- a/packages/formats/src/hg/spark-buffer.test.ts
++++ b/packages/formats/src/hg/spark-buffer.test.ts
+@@ -1,7 +1,7 @@
+ import assert from 'node:assert/strict';
+ import { test } from 'node:test';
+ 
+-import { parseSparkTable, SparkType } from './spark-buffer.ts';
++import { parseSparkBean, parseSparkTable, SparkType } from './spark-buffer.ts';
+ 
+ /** little byte-buffer builder with natural alignment */
+ class Buffer {
+@@ -308,3 +308,79 @@ test('decodes bool, byte, float and double fields with natural alignment', () =>
+ test('rejects unsupported field types', () => {
+ 	assert.throws(() => parseSparkTable(buildBeanTable(42)), /unsupported spark type 42 in LevelDescData\.id/);
+ });
++
++test('reads byte-sized booleans before aligned fields and rejects invalid values', () => {
++	const b = new Buffer();
++	const header = [b.u32(12), b.u32(0), b.u32(0)];
++	b.u32(1);
++	b.u8(SparkType.Bean);
++	b.u32(1);
++	b.cString('Filter');
++	b.u32(2);
++	b.cString('enabled');
++	b.u8(SparkType.Bool);
++	b.cString('order');
++	b.u8(SparkType.Int);
++	b.patch(header[1], b.pos);
++	b.u8(SparkType.Map);
++	b.cString('Filters');
++	b.u8(SparkType.Int);
++	b.u8(SparkType.Bean);
++	b.u32(1);
++	b.align(4);
++	const bean = b.pos;
++	b.u8(1);
++	b.u32(17);
++	b.patch(header[2], b.pos);
++	b.u32(1);
++	const slot = b.u32(0);
++	b.u32(1);
++	b.patch(slot, b.pos);
++	b.u32(5);
++	b.u32(bean);
++	assert.deepEqual(parseSparkTable(new Uint8Array(b.bytes)).entries, [[5, { enabled: true, order: 17 }]]);
++	b.bytes[bean] = 0;
++	assert.deepEqual(parseSparkTable(new Uint8Array(b.bytes)).entries, [[5, { enabled: false, order: 17 }]]);
++	b.bytes[bean] = 2;
++	assert.throws(() => parseSparkTable(new Uint8Array(b.bytes)), /invalid spark boolean/);
++});
++
++test('decodes a direct bean root with nested fields and keeps root contracts strict', () => {
++	const b = new Buffer();
++	const header = [b.u32(12), b.u32(0), b.u32(0)];
++	b.u32(2);
++	b.u8(SparkType.Bean);
++	b.u32(0xaaaa);
++	b.cString('Settings');
++	b.u32(2);
++	b.cString('capacity');
++	b.u8(SparkType.Int);
++	b.cString('nested');
++	b.u8(SparkType.Bean);
++	b.u32(0xbbbb);
++	b.u8(SparkType.Bean);
++	b.u32(0xbbbb);
++	b.cString('Nested');
++	b.u32(1);
++	b.cString('rate');
++	b.u8(SparkType.Float);
++	b.patch(header[1], b.pos);
++	b.u8(SparkType.Bean);
++	b.cString('Settings');
++	b.u32(0xaaaa);
++	b.align(4);
++	const nested = b.pos;
++	b.f32(0.5);
++	b.patch(header[2], b.pos);
++	b.u32(8);
++	b.u32(nested);
++	const bytes = new Uint8Array(b.bytes);
++	assert.deepEqual(parseSparkBean(bytes), {
++		name: 'Settings',
++		value: { capacity: 8, nested: { rate: 0.5 } },
++	});
++	assert.throws(() => parseSparkTable(bytes), /expected spark map root/);
++	assert.throws(() => parseSparkBean(buildBeanTable()), /expected spark bean root/);
++	b.patch(header[1] + 4, 0xffffffff);
++	assert.throws(() => parseSparkBean(new Uint8Array(b.bytes)), /spark|bounds|range/i);
++});
+diff --git a/packages/formats/src/hg/spark-buffer.ts b/packages/formats/src/hg/spark-buffer.ts
+index 02786b06..b88ae30d 100644
+--- a/packages/formats/src/hg/spark-buffer.ts
++++ b/packages/formats/src/hg/spark-buffer.ts
+@@ -12,6 +12,7 @@ import { ByteView } from '../binary/byte-view.ts';
+ //   type ref: u8 type, then [pad4, u32 typeHash] for beans and enums, the element's type ref for arrays, or
+ //             the key's and the value's type refs for maps
+ //   root:  u8 0x0a (map), cstring name, key type ref, value type ref
++//          or u8 0x08 (bean), cstring name, pad4, u32 bean type hash
+ //   data:  u32 slotCount, slotCount × (u32 entriesOffset, u32 entryCount); entries are `key ‖ value` packed
+ //          with natural alignment. bools and bytes are u8, enums i32, floats f32, doubles f64. strings, beans,
+ //          arrays and maps are stored as u32 absolute offsets (0xFFFFFFFF = null); a bean's fields follow the
+@@ -75,14 +76,43 @@ export interface SparkTable {
+ 	entries: [key: number | bigint | string, value: SparkValue][];
+ }
+ 
++type Document =
++	| ({ kind: 'map' } & SparkTable)
++	| { kind: 'bean'; name: string; value: { [field: string]: SparkValue } };
++
+ /**
+  * decodes a SparkBuffer map table
+  *
+  * @param bytes the table file
+  * @returns the table's entries as plain values
+- * @throws {FormatError} on unsupported types or framing errors
++ * @throws {FormatError} on a non-map root, unsupported types or framing errors
+  */
+ export const parseSparkTable = (bytes: Uint8Array): SparkTable => {
++	const document = parseSparkDocument(bytes);
++	if (document.kind !== 'map') {
++		throw new FormatError('expected spark map root');
++	}
++	return { name: document.name, entries: document.entries };
++};
++
++/**
++ * decodes a SparkBuffer configuration with a single bean at its root
++ *
++ * @param bytes the configuration file
++ * @returns the root name and fields as plain values
++ * @throws {FormatError} on a non-bean root, unsupported types or framing errors
++ */
++export const parseSparkBean = (
++	bytes: Uint8Array,
++): { name: string; value: { [field: string]: SparkValue } } => {
++	const document = parseSparkDocument(bytes);
++	if (document.kind !== 'bean') {
++		throw new FormatError('expected spark bean root');
++	}
++	return { name: document.name, value: document.value };
++};
++
++const parseSparkDocument = (bytes: Uint8Array): Document => {
+ 	const view = new ByteView(bytes, 'spark');
+ 	const u32 = (at: number): number => view.u32(at);
+ 	const u8 = (at: number): number => view.u8(at);
+@@ -157,18 +187,20 @@ export const parseSparkTable = (bytes: Uint8Array): SparkTable => {
+ 
+ 	const rootAt = u32(4);
+ 	const rootKind = u8(rootAt);
+-	if (rootKind !== SparkType.Map) {
++	if (rootKind !== SparkType.Map && rootKind !== SparkType.Bean) {
+ 		throw new FormatError(`unsupported spark root kind ${rootKind}`);
+ 	}
+ 	const [name, afterName] = cString(rootAt + 1);
+-	const [keyRef, afterKeyRef] = readRef(afterName, `${name} key`);
+-	const [valueRef] = readRef(afterKeyRef, `${name} value`);
+ 
+ 	/** reads a value of type `ref` packed at or after `pos`; returns it and the position after it */
+ 	const read = (ref: TypeRef, pos: number): [SparkValue, number] => {
+ 		switch (ref.type) {
+ 			case SparkType.Bool: {
+-				return [u8(pos) !== 0, pos + 1];
++				const value = u8(pos);
++				if (value > 1) {
++					throw new FormatError(`invalid spark boolean ${value}`);
++				}
++				return [value !== 0, pos + 1];
+ 			}
+ 			case SparkType.Byte: {
+ 				return [u8(pos), pos + 1];
+@@ -281,7 +313,12 @@ export const parseSparkTable = (bytes: Uint8Array): SparkTable => {
+ 		return entries;
+ 	};
+ 
+-	return { name, entries: readMap(keyRef, valueRef, u32(8), name) };
++	if (rootKind === SparkType.Bean) {
++		return { kind: 'bean', name, value: readBean(u32(align(afterName, 4)), u32(8)) };
++	}
++	const [keyRef, afterKeyRef] = readRef(afterName, `${name} key`);
++	const [valueRef] = readRef(afterKeyRef, `${name} value`);
++	return { kind: 'map', name, entries: readMap(keyRef, valueRef, u32(8), name) };
+ };
+ 
+ const align = (at: number, to: number): number => Math.ceil(at / to) * to;
+diff --git a/packages/formats/src/unity/collision-mesh.test.ts b/packages/formats/src/unity/collision-mesh.test.ts
+new file mode 100644
+index 00000000..6f592994
+--- /dev/null
++++ b/packages/formats/src/unity/collision-mesh.test.ts
+@@ -0,0 +1,94 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++
++import { readCollisionMesh } from './collision-mesh.ts';
++
++const fixture = (width: number, tree = { quantized: true, nodes: 0 }) => {
++	const bytes: number[] = [];
++	const raw = (s: string) => bytes.push(...new TextEncoder().encode(s));
++	const u32 = (n: number) => {
++		const b = new Uint8Array(4);
++		new DataView(b.buffer).setUint32(0, n, true);
++		bytes.push(...b);
++	};
++	const f32 = (n: number) => {
++		const b = new Uint8Array(4);
++		new DataView(b.buffer).setFloat32(0, n, true);
++		bytes.push(...b);
++	};
++	raw('NXS');
++	bytes.push(1);
++	raw('MESH');
++	u32(15);
++	u32(1);
++	u32(2 | (width === 1 ? 4 : width === 2 ? 8 : 0));
++	u32(3);
++	u32(1);
++	[0, 0, 0, 1, 0, 0, 0, 0, 1].forEach(f32);
++	const indices = bytes.length;
++	for (const n of [0, 1, 2]) {
++		bytes.push(n, ...Array<number>(width - 1).fill(0));
++	}
++	u32(0);
++	bytes.push(0); // original face 0, stored in one byte
++	raw('BV4 ');
++	u32(3);
++	[0, 0, 0, 2].forEach(f32);
++	u32(0);
++	[1, 1, 1, 1, 1, 1].forEach(f32);
++	const quantization = bytes.length;
++	u32(Number(tree.quantized));
++	u32(tree.nodes);
++	bytes.push(...Array<number>(tree.nodes * (tree.quantized ? 16 : 28)).fill(0));
++	f32(0.001);
++	[0, 0, 0, 1, 0, 1].forEach(f32);
++	u32(1);
++	bytes.push(0);
++	return { bytes: Uint8Array.from(bytes), indices, quantization };
++};
++
++test('reads all triangle index widths without confusing cooked order with original faces', () => {
++	for (const width of [1, 2, 4]) {
++		const mesh = readCollisionMesh(fixture(width).bytes);
++		assert.deepEqual(mesh.triangles, [[0, 1, 2]]);
++		assert.deepEqual(mesh.vertices, [
++			[0, 0, 0],
++			[1, 0, 0],
++			[0, 0, 1],
++		]);
++		assert.deepEqual(mesh.faceRemap, [0]);
++		assert.deepEqual(mesh.bounds, { min: [0, 0, 0], max: [1, 0, 1] });
++	}
++});
++
++test('reads nonquantized leaf-only cooks and both BV4 node widths without moving the geometry tail', () => {
++	for (const quantized of [false, true]) {
++		for (const nodes of [0, 4]) {
++			const { bytes, quantization } = fixture(1, { quantized, nodes });
++			const mesh = readCollisionMesh(bytes);
++			assert.deepEqual(mesh.triangles, [[0, 1, 2]]);
++			assert.deepEqual(mesh.bounds, { min: [0, 0, 0], max: [1, 0, 1] });
++			const invalid = bytes.slice();
++			new DataView(invalid.buffer).setUint32(quantization, 2, true);
++			assert.throws(() => readCollisionMesh(invalid), /quantization flag/);
++			assert.throws(
++				() => readCollisionMesh(bytes.subarray(0, quantization + 8 + nodes * (quantized ? 16 : 28) - 1)),
++				/exceeds/,
++			);
++		}
++	}
++});
++
++test('rejects unsupported formats, invalid indices, nonfinite vertices and truncated tails', () => {
++	const { bytes, indices } = fixture(1);
++	for (const offset of [3, 8, 12, 16, indices]) {
++		const broken = bytes.slice();
++		broken[offset] = 255;
++		assert.throws(() => readCollisionMesh(broken));
++	}
++	const nonfinite = bytes.slice();
++	new DataView(nonfinite.buffer).setFloat32(28, Infinity, true);
++	assert.throws(() => readCollisionMesh(nonfinite), /nonfinite/);
++	assert.throws(() => readCollisionMesh(bytes.subarray(0, bytes.length - 1)), /exceeds/);
++	assert.throws(() => readCollisionMesh(Uint8Array.from([...bytes, 0])), /trailing/);
++});
+diff --git a/packages/formats/src/unity/collision-mesh.ts b/packages/formats/src/unity/collision-mesh.ts
+new file mode 100644
+index 00000000..45faace1
+--- /dev/null
++++ b/packages/formats/src/unity/collision-mesh.ts
+@@ -0,0 +1,107 @@
++import { BinaryReader, FormatError } from '../binary/binary-reader.ts';
++
++// cooked triangle layout: NVIDIA PhysX, TriangleMeshBuilder::save and GuMeshData.h (BSD-3-Clause).
++// https://github.com/NVIDIAGameWorks/PhysX/tree/4.1/physx/source/physxcooking/src/mesh
++// this decoder reads geometry, not the acceleration structure's runtime pointers.
++
++/** collision-only mesh in local coordinates; triangle order is the cooked order */
++export interface CollisionMesh {
++	vertices: [number, number, number][];
++	triangles: [number, number, number][];
++	/** original triangle indices, when the cook retained a remap */
++	faceRemap: number[] | null;
++	/** optional material indices, in cooked triangle order */
++	materials: number[] | null;
++	bounds: { min: [number, number, number]; max: [number, number, number] };
++}
++
++/**
++ * @param bytes Unity m_BakedTriangleCollisionMesh bytes
++ * @returns decoded local collision geometry, with no claim about scene placement or player collision masks
++ * @throws {FormatError} for unsupported cooking formats, truncated data or invalid geometry
++ */
++export const readCollisionMesh = (bytes: Uint8Array): CollisionMesh => {
++	const r = new BinaryReader(bytes, { littleEndian: true });
++	if (r.utf8(3) !== 'NXS' || r.u8() !== 1 || r.utf8(4) !== 'MESH' || r.u32() !== 15 || r.u32() !== 1) {
++		throw new FormatError('unsupported cooked collision mesh');
++	}
++	const flags = r.u32();
++	if ((flags & ~31) !== 0 || (flags & 12) === 12) {
++		throw new FormatError('unsupported collision mesh flags');
++	}
++	const vertexCount = r.u32(),
++		triangleCount = r.u32();
++	const width = flags & 4 ? 1 : flags & 8 ? 2 : 4;
++	if (!vertexCount || !triangleCount || vertexCount * 12 + triangleCount * 3 * width > r.remaining) {
++		throw new FormatError('invalid collision mesh counts');
++	}
++	const scalar = () => {
++		const value = r.f32();
++		if (!Number.isFinite(value)) {
++			throw new FormatError('nonfinite collision mesh value');
++		}
++		return value;
++	};
++	const vector = (): [number, number, number] => [scalar(), scalar(), scalar()];
++	const index = (size: number) => (size === 1 ? r.u8() : size === 2 ? r.u16() : r.u32());
++	const vertices = Array.from({ length: vertexCount }, vector);
++	const triangles = Array.from({ length: triangleCount }, (): [number, number, number] => {
++		const face: [number, number, number] = [index(width), index(width), index(width)];
++		if (face.some((i) => i >= vertexCount)) {
++			throw new FormatError('invalid collision triangle index');
++		}
++		return face;
++	});
++	const materials = flags & 1 ? Array.from({ length: triangleCount }, () => r.u16()) : null;
++	let faceRemap: number[] | null = null;
++	if (flags & 2) {
++		const max = r.u32(),
++			remapWidth = max <= 255 ? 1 : max <= 65535 ? 2 : 4;
++		faceRemap = Array.from({ length: triangleCount }, () => {
++			const value = index(remapWidth);
++			if (value > max) {
++				throw new FormatError('invalid collision face remap');
++			}
++			return value;
++		});
++	}
++	if (flags & 16) {
++		r.skip(triangleCount * 12);
++	}
++	if (r.utf8(4) !== 'BV4 ' || r.u32() !== 3) {
++		throw new FormatError('unsupported collision acceleration structure');
++	}
++	for (let i = 0; i < 4; i++) {
++		scalar();
++	}
++	r.u32(); // tree root descriptor
++	for (let i = 0; i < 6; i++) {
++		scalar();
++	}
++	const quantized = r.u32();
++	if (quantized > 1) {
++		throw new FormatError('invalid collision tree quantization flag');
++	}
++	// PhysX BV4 v3 stores a 12-byte quantized or 24-byte float AABB plus a child descriptor.
++	// tiny leaf-only cooks can have no nodes and leave the tree nonquantized.
++	r.skip(r.u32() * (quantized ? 16 : 28));
++	if (scalar() < 0) {
++		throw new FormatError('negative collision epsilon');
++	}
++	const bounds = { min: vector(), max: vector() };
++	if (
++		bounds.min.some((v, i) => v > bounds.max[i]) ||
++		vertices.some((v) => v.some((x, i) => x < bounds.min[i] - 1e-4 || x > bounds.max[i] + 1e-4))
++	) {
++		throw new FormatError('invalid collision mesh bounds');
++	}
++	const extra = r.u32();
++	if (extra !== 0 && extra !== triangleCount) {
++		throw new FormatError('invalid collision edge flag count');
++	}
++	r.skip(extra);
++	if (r.remaining !== 0) {
++		throw new FormatError('trailing collision mesh data');
++	}
++	return { vertices, triangles, faceRemap, materials, bounds };
++};
+diff --git a/packages/formats/src/unity/convex-mesh.test.ts b/packages/formats/src/unity/convex-mesh.test.ts
+new file mode 100644
+index 00000000..5df8fed7
+--- /dev/null
++++ b/packages/formats/src/unity/convex-mesh.test.ts
+@@ -0,0 +1,222 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++
++import { readConvexMesh } from './convex-mesh.ts';
++
++const fixture = (shape?: {
++	vertices?: number[][];
++	faces?: number[][];
++	planes?: number[][];
++	supportMap?: boolean;
++}) => {
++	const bytes: number[] = [];
++	const raw = (s: string) => bytes.push(...new TextEncoder().encode(s));
++	const u32 = (n: number) => {
++		const b = new Uint8Array(4);
++		new DataView(b.buffer).setUint32(0, n, true);
++		bytes.push(...b);
++	};
++	const f32 = (n: number) => {
++		const b = new Uint8Array(4);
++		new DataView(b.buffer).setFloat32(0, n, true);
++		bytes.push(...b);
++	};
++	raw('NXS');
++	bytes.push(1);
++	raw('CVXM');
++	u32(13);
++	u32(0);
++	raw('ICE');
++	bytes.push(1);
++	raw('CLHL');
++	u32(9);
++	const norm = 1 / Math.sqrt(3);
++	const vertices = shape?.vertices ?? [
++		[0, 0, 0],
++		[1, 0, 0],
++		[0, 1, 0],
++		[0, 0, 1],
++	];
++	const faces = shape?.faces ?? [
++		[0, 2, 1],
++		[0, 1, 3],
++		[0, 3, 2],
++		[1, 2, 3],
++	];
++	const planes = shape?.planes ?? [
++		[0, 0, -1, 0],
++		[0, -1, 0, 0],
++		[-1, 0, 0, 0],
++		[norm, norm, norm, -norm],
++	];
++	const indexCount = faces.reduce((count, face) => count + face.length, 0);
++	[vertices.length, indexCount / 2, faces.length, indexCount].forEach(u32);
++	vertices.flat().forEach(f32);
++	const polygonOffset = bytes.length;
++	let offset = 0;
++	planes.forEach((p, i) => {
++		p.forEach(f32);
++		bytes.push(offset & 255, offset >>> 8, faces[i].length, 0);
++		offset += faces[i].length;
++	});
++	const indexOffset = bytes.length;
++	bytes.push(...faces.flat());
++	const edges = new Map<string, number[]>();
++	for (const [index, face] of faces.entries()) {
++		for (let i = 0; i < face.length; i++) {
++			const a = face[i],
++				b = face[(i + 1) % face.length],
++				key = `${Math.min(a, b)}/${Math.max(a, b)}`;
++			edges.set(key, [...(edges.get(key) ?? []), index]);
++		}
++	}
++	bytes.push(...[...edges.values()].flat());
++	vertices.forEach((_, index) => {
++		bytes.push(...faces.flatMap((face, i) => (face.includes(index) ? [i] : [])).slice(0, 3));
++	});
++	f32(0);
++	[0, 1, 2].map((axis) => Math.min(...vertices.map((v) => v[axis]))).forEach(f32);
++	[0, 1, 2].map((axis) => Math.max(...vertices.map((v) => v[axis]))).forEach(f32);
++	Array<number>(13).fill(1).forEach(f32);
++	const supportOffset = bytes.length;
++	if (shape?.supportMap) {
++		f32(1);
++		for (const [tag, version] of [
++			['SUPM', 0],
++			['GAUS', 0],
++		] as const) {
++			raw('ICE');
++			bytes.push(1);
++			raw(tag);
++			u32(version);
++		}
++		u32(2);
++		u32(24);
++		bytes.push(...Array<number>(48).fill(0));
++		raw('ICE');
++		bytes.push(1);
++		raw('VALE');
++		u32(2);
++		u32(vertices.length);
++		u32(indexCount);
++		const neighbours = vertices.map((_, vertex) => {
++			const adjacent = new Set<number>();
++			for (const face of faces) {
++				const index = face.indexOf(vertex);
++				if (index < 0) {
++					continue;
++				}
++				adjacent.add(face[(index + 1) % face.length]);
++				adjacent.add(face[(index + face.length - 1) % face.length]);
++			}
++			return Array.from(adjacent);
++		});
++		u32(Math.max(...neighbours.map((list) => list.length)));
++		bytes.push(...neighbours.map((list) => list.length), ...neighbours.flat());
++	} else {
++		f32(-1);
++	}
++	[0.1, 0.1, 0.1, 0.1].forEach(f32);
++	return { bytes: Uint8Array.from(bytes), indexOffset, polygonOffset, supportOffset };
++};
++
++test('preserves a closed outward tetrahedron without inventing original triangle indices', () => {
++	const hull = readConvexMesh(fixture().bytes);
++	assert.deepEqual(hull.triangles, [
++		[0, 2, 1],
++		[0, 1, 3],
++		[0, 3, 2],
++		[1, 2, 3],
++	]);
++	assert.equal(hull.faceRemap, null);
++	assert.deepEqual(hull.bounds, { min: [0, 0, 0], max: [1, 1, 1] });
++});
++
++test('rejects unsupported, open, inverted, nonfinite and truncated hull data', () => {
++	const { bytes, indexOffset } = fixture();
++	for (const offset of [3, 8, 24, indexOffset]) {
++		const invalid = bytes.slice();
++		invalid[offset] = 255;
++		assert.throws(() => readConvexMesh(invalid));
++	}
++	const inverted = bytes.slice();
++	inverted[indexOffset + 1] = 1;
++	inverted[indexOffset + 2] = 2;
++	assert.throws(() => readConvexMesh(inverted), /winding/);
++	const open = bytes.slice();
++	open.set(open.subarray(92, 108), 152);
++	open.set(open.subarray(indexOffset, indexOffset + 3), indexOffset + 9);
++	assert.throws(() => readConvexMesh(open), /not closed/);
++	const nonfinite = bytes.slice();
++	new DataView(nonfinite.buffer).setFloat32(44, NaN, true);
++	assert.throws(() => readConvexMesh(nonfinite), /nonfinite/);
++	assert.throws(() => readConvexMesh(bytes.subarray(0, bytes.length - 1)), /exceeds/);
++	assert.throws(() => readConvexMesh(Uint8Array.from([...bytes, 0])), /trailing/);
++});
++
++test('preserves mildly noncoplanar cooked polygon vertices while rejecting a corrupt plane', () => {
++	const { bytes, polygonOffset } = fixture({
++		vertices: [
++			[0, 0, 0],
++			[1, 0, 0],
++			[1, 1, 0],
++			[0, 1, 0],
++			[0, 0, 1],
++			[1, 0, 1],
++			[1, 1.002, 1],
++			[0, 1, 1],
++		],
++		faces: [
++			[0, 3, 2, 1],
++			[0, 1, 5, 4],
++			[0, 4, 7, 3],
++			[1, 2, 6, 5],
++			[3, 7, 6, 2],
++			[4, 5, 6, 7],
++		],
++		planes: [
++			[0, 0, -1, 0],
++			[0, -1, 0, 0],
++			[-1, 0, 0, 0],
++			[1, 0, 0, -1],
++			[0, 1, 0, -1],
++			[0, 0, 1, -1],
++		],
++	});
++	const hull = readConvexMesh(bytes);
++	assert.equal(hull.vertices.length, 8);
++	assert.equal(hull.triangles.length, 12);
++	assert.equal(hull.vertices[6][1], Math.fround(1.002));
++	assert.deepEqual(hull.triangles.slice(8, 10), [
++		[3, 7, 6],
++		[3, 6, 2],
++	]);
++	const corrupt = bytes.slice();
++	new DataView(corrupt.buffer).setFloat32(polygonOffset + 4 * 20 + 12, -0.5, true);
++	assert.throws(() => readConvexMesh(corrupt), /supporting plane/);
++});
++
++test('decodes optional Gauss support maps without changing the closed hull geometry', () => {
++	const { bytes } = fixture({ supportMap: true });
++	assert.deepEqual(readConvexMesh(bytes), readConvexMesh(fixture().bytes));
++});
++
++test('rejects malformed optional support-map headers, sample indices, counts and adjacency', () => {
++	const { bytes, supportOffset } = fixture({ supportMap: true });
++	for (const [offset, value] of [
++		[supportOffset + 4, 0],
++		[supportOffset + 4 + 24 + 8, 255],
++		[supportOffset + 4 + 24 + 4, 25],
++		[supportOffset + 4 + 24 + 8 + 48 + 12, 5],
++		[supportOffset + 4 + 24 + 8 + 48 + 12 + 8 + 4, 0],
++		[supportOffset + 4 + 24 + 8 + 48 + 12 + 8 + 4 + 4, 255],
++	]) {
++		const invalid = bytes.slice();
++		invalid[offset] = value;
++		assert.throws(() => readConvexMesh(invalid), /support/);
++	}
++	const selfAdjacent = bytes.slice();
++	selfAdjacent[supportOffset + 4 + 24 + 8 + 48 + 12 + 8 + 4 + 4] = 0;
++	assert.throws(() => readConvexMesh(selfAdjacent), /adjacency/);
++	assert.throws(() => readConvexMesh(bytes.subarray(0, bytes.length - 20)), /exceeds/);
++});
+diff --git a/packages/formats/src/unity/convex-mesh.ts b/packages/formats/src/unity/convex-mesh.ts
+new file mode 100644
+index 00000000..64de336c
+--- /dev/null
++++ b/packages/formats/src/unity/convex-mesh.ts
+@@ -0,0 +1,197 @@
++import { BinaryReader, FormatError } from '../binary/binary-reader.ts';
++
++import type { CollisionMesh } from './collision-mesh.ts';
++
++// layout reference: NVIDIA PhysX ConvexMeshBuilder::save / ConvexHullBuilder::save /
++// BigConvexDataBuilder::save (BSD-3-Clause).
++// https://github.com/NVIDIAGameWorks/PhysX/tree/4.1/physx/source/physxcooking/src/convex
++
++/**
++ * @param bytes Unity m_BakedConvexCollisionMesh bytes
++ * @returns a triangulated local convex hull; triangles face outward and have no original-triangle remap
++ * @throws {FormatError} for unsupported cooks, malformed hulls or incomplete payloads
++ */
++export const readConvexMesh = (bytes: Uint8Array): CollisionMesh => {
++	const r = new BinaryReader(bytes, { littleEndian: true });
++	if (
++		r.utf8(3) !== 'NXS' ||
++		r.u8() !== 1 ||
++		r.utf8(4) !== 'CVXM' ||
++		r.u32() !== 13 ||
++		r.u32() !== 0 ||
++		r.utf8(3) !== 'ICE' ||
++		r.u8() !== 1 ||
++		r.utf8(4) !== 'CLHL' ||
++		r.u32() !== 9
++	) {
++		throw new FormatError('unsupported cooked convex mesh');
++	}
++	const vertexCount = r.u32(),
++		edgeCount = r.u32(),
++		polygonCount = r.u32(),
++		indexCount = r.u32();
++	if (
++		vertexCount < 4 ||
++		vertexCount > 255 ||
++		polygonCount < 4 ||
++		polygonCount > 255 ||
++		edgeCount > 32767 ||
++		vertexCount - edgeCount + polygonCount !== 2 ||
++		indexCount !== edgeCount * 2
++	) {
++		throw new FormatError('invalid or unsupported convex hull counts');
++	}
++	const scalar = () => {
++		const n = r.f32();
++		if (!Number.isFinite(n)) {
++			throw new FormatError('nonfinite convex hull value');
++		}
++		return n;
++	};
++	const vector = (): [number, number, number] => [scalar(), scalar(), scalar()];
++	const vertices = Array.from({ length: vertexCount }, vector);
++	const polygons = Array.from({ length: polygonCount }, () => {
++		const normal = vector(),
++			distance = scalar(),
++			offset = r.u16(),
++			count = r.u8(),
++			minIndex = r.u8();
++		if (
++			count < 3 ||
++			offset + count > indexCount ||
++			minIndex >= vertexCount ||
++			Math.abs(Math.hypot(...normal) - 1) > 1e-4
++		) {
++			throw new FormatError('invalid convex polygon');
++		}
++		return { normal, distance, offset, count };
++	});
++	const indices = r.bytesView(indexCount);
++	if (indices.some((i) => i >= vertexCount)) {
++		throw new FormatError('invalid convex vertex index');
++	}
++	const adjacent = r.bytesView(edgeCount * 2 + vertexCount * 3);
++	if (adjacent.some((i) => i >= polygonCount)) {
++		throw new FormatError('invalid convex face index');
++	}
++	scalar(); // reserved geometry epsilon
++	const bounds = { min: vector(), max: vector() };
++	if (
++		bounds.min.some((v, i) => v > bounds.max[i]) ||
++		vertices.some((v) => v.some((x, i) => x < bounds.min[i] - 1e-4 || x > bounds.max[i] + 1e-4))
++	) {
++		throw new FormatError('invalid convex bounds');
++	}
++	for (let i = 0; i < 13; i++) {
++		scalar();
++	} // mass, inertia and centre of mass
++	let supportAdjacency: { counts: number[]; vertices: Uint8Array } | null = null;
++	const supportFlag = scalar();
++	if (supportFlag === 1) {
++		// Large hulls optionally carry Gauss-map hill-climbing seeds and vertex
++		// adjacency. They accelerate support queries without changing hull geometry.
++		const header = (tag: string, version: number) => {
++			if (r.utf8(3) !== 'ICE' || r.u8() !== 1 || r.utf8(4) !== tag || r.u32() !== version) {
++				throw new FormatError('unsupported convex support-map header');
++			}
++		};
++		header('SUPM', 0);
++		header('GAUS', 0);
++		const subdivision = r.u32(),
++			sampleCount = r.u32();
++		if (subdivision < 2 || sampleCount > 65535 || sampleCount !== 6 * subdivision * subdivision) {
++			throw new FormatError('invalid convex support-map sample count');
++		}
++		if (r.bytesView(sampleCount * 2).some((index) => index >= vertexCount)) {
++			throw new FormatError('invalid convex support-map vertex index');
++		}
++		header('VALE', 2);
++		const supportVertices = r.u32(),
++			adjacencyCount = r.u32(),
++			maximumValency = r.u32();
++		if (supportVertices !== vertexCount || adjacencyCount !== edgeCount * 2 || maximumValency > 65535) {
++			throw new FormatError('invalid convex support-map adjacency counts');
++		}
++		const counts = Array.from({ length: vertexCount }, () => (maximumValency <= 255 ? r.u8() : r.u16()));
++		if (
++			counts.some((count) => count < 1 || count >= vertexCount) ||
++			Math.max(...counts) !== maximumValency ||
++			counts.reduce((sum, count) => sum + count, 0) !== adjacencyCount
++		) {
++			throw new FormatError('invalid convex support-map valencies');
++		}
++		const adjacentVertices = r.bytesView(adjacencyCount);
++		if (adjacentVertices.some((index) => index >= vertexCount)) {
++			throw new FormatError('invalid convex support-map adjacent vertex');
++		}
++		supportAdjacency = { counts, vertices: adjacentVertices };
++	} else if (supportFlag !== -1) {
++		throw new FormatError('unsupported convex support map');
++	}
++	for (let i = 0; i < 4; i++) {
++		if (scalar() < 0) {
++			throw new FormatError('invalid convex internal bounds');
++		}
++	}
++	if (r.remaining !== 0) {
++		throw new FormatError('trailing convex mesh data');
++	}
++	const triangles: CollisionMesh['triangles'] = [];
++	// Cooked faces can retain slightly noncoplanar vertices after polygon merging.
++	// Use the size-scaled tolerance from PhysX checkHullPolygons, while also bounding
++	// the face's own vertices rather than assuming an exact supporting plane.
++	const tolerance = Math.max(
++		0.02,
++		0.02 * [0, 1, 2].reduce((sum, axis) => sum + Math.max(...vertices.map((v) => Math.abs(v[axis]))), 0),
++	);
++	const edges = new Map<string, number>();
++	for (const p of polygons) {
++		const face = Array.from(indices.subarray(p.offset, p.offset + p.count));
++		if (
++			new Set(face).size !== face.length ||
++			vertices.some((v) => v.reduce((n, x, i) => n + x * p.normal[i], p.distance) > tolerance) ||
++			face.some((i) => Math.abs(vertices[i].reduce((n, x, j) => n + x * p.normal[j], p.distance)) > tolerance)
++		) {
++			throw new FormatError('invalid convex supporting plane');
++		}
++		for (let i = 1; i < face.length - 1; i++) {
++			const a = vertices[face[0]],
++				b = vertices[face[i]],
++				c = vertices[face[i + 1]];
++			const u = b.map((v, j) => v - a[j]),
++				v = c.map((x, j) => x - a[j]);
++			const dot =
++				(u[1] * v[2] - u[2] * v[1]) * p.normal[0] +
++				(u[2] * v[0] - u[0] * v[2]) * p.normal[1] +
++				(u[0] * v[1] - u[1] * v[0]) * p.normal[2];
++			if (dot <= 0) {
++				throw new FormatError('invalid convex face winding');
++			}
++			triangles.push([face[0], face[i], face[i + 1]]);
++		}
++		for (let i = 0; i < face.length; i++) {
++			const key = `${face[i]}/${face[(i + 1) % face.length]}`;
++			edges.set(key, (edges.get(key) ?? 0) + 1);
++		}
++	}
++	if (
++		edges.size !== indexCount ||
++		[...edges].some(([key, count]) => count !== 1 || edges.get(key.split('/').toReversed().join('/')) !== 1)
++	) {
++		throw new FormatError('convex hull is not closed');
++	}
++	if (supportAdjacency) {
++		let offset = 0;
++		for (const [vertex, count] of supportAdjacency.counts.entries()) {
++			const neighbours = supportAdjacency.vertices.subarray(offset, offset + count);
++			if (
++				new Set(neighbours).size !== count ||
++				neighbours.some((index) => !edges.has(`${vertex}/${index}`))
++			) {
++				throw new FormatError('convex support-map adjacency does not match hull edges');
++			}
++			offset += count;
++		}
++	}
++	return { vertices, triangles, bounds, faceRemap: null, materials: null };
++};
+diff --git a/packages/formats/src/unity/navmesh.test.ts b/packages/formats/src/unity/navmesh.test.ts
+new file mode 100644
+index 00000000..a86f76c6
+--- /dev/null
++++ b/packages/formats/src/unity/navmesh.test.ts
+@@ -0,0 +1,35 @@
++import assert from 'node:assert/strict';
++import { it } from 'node:test';
++
++import { readNavTile } from './navmesh.ts';
++
++const fixture = (): Uint8Array => {
++	const bytes = new Uint8Array(72 + 36 + 32 + 12);
++	const view = new DataView(bytes.buffer);
++	view.setUint32(0, 0x444e4156, true);
++	view.setUint32(4, 16, true);
++	view.setUint32(20, 1, true);
++	view.setUint32(24, 3, true);
++	view.setUint32(28, 1, true);
++	view.setFloat32(84, 1, true);
++	view.setFloat32(104, 1, true);
++	view.setUint16(110, 1, true);
++	view.setUint16(112, 2, true);
++	view.setUint8(136, 3);
++	view.setUint8(137, 3);
++	return bytes;
++};
++it('keeps area metadata separate from polygon vertex count', () => {
++	const tile = readNavTile(fixture());
++	assert.deepEqual(tile.polygons[0].vertices, [0, 1, 2]);
++	assert.equal(tile.polygons[0].area, 3);
++});
++it('rejects truncated data, unsupported versions and invalid indices', () => {
++	assert.throws(() => readNavTile(fixture().subarray(0, 100)));
++	const version = fixture();
++	version[4] = 17;
++	assert.throws(() => readNavTile(version));
++	const index = fixture();
++	index[108] = 10;
++	assert.throws(() => readNavTile(index));
++});
+diff --git a/packages/formats/src/unity/navmesh.ts b/packages/formats/src/unity/navmesh.ts
+new file mode 100644
+index 00000000..5dbe61ba
+--- /dev/null
++++ b/packages/formats/src/unity/navmesh.ts
+@@ -0,0 +1,73 @@
++import { BinaryReader, FormatError } from '../binary/binary-reader.ts';
++
++/** decoded Unity version-16 navigation tile; coordinates are local to its NavMeshData */
++export interface NavTile {
++	x: number;
++	z: number;
++	vertices: [number, number, number][];
++	polygons: { vertices: number[]; neighbours: number[]; flags: number; area: number; type: number }[];
++}
++
++/**
++ * @param bytes m_MeshData from a Unity NavMeshData tile
++ * @returns polygon topology; external neighbour flags remain encoded, never guessed as links
++ * @throws {FormatError} for unsupported versions, sizes or invalid topology
++ */
++export const readNavTile = (bytes: Uint8Array): NavTile => {
++	const r = new BinaryReader(bytes, { littleEndian: true });
++	if (r.u32() !== 0x444e4156 || r.u32() !== 16) {
++		throw new FormatError('unsupported navigation tile');
++	}
++	const x = r.i32(),
++		z = r.i32();
++	r.u32();
++	const counts = Array.from({ length: 6 }, () => r.u32());
++	const [polygons, vertices, details, detailVertices, detailTriangles, bounds] = counts;
++	const expected =
++		72 +
++		vertices * 12 +
++		polygons * 32 +
++		details * 12 +
++		detailVertices * 12 +
++		detailTriangles * 8 +
++		bounds * 16;
++	if (expected !== bytes.length || vertices > 65535 || details !== polygons) {
++		throw new FormatError('invalid navigation tile size');
++	}
++	for (let i = 0; i < 7; i++) {
++		if (!Number.isFinite(r.f32())) {
++			throw new FormatError('invalid navigation tile bounds');
++		}
++	}
++	const points: NavTile['vertices'] = Array.from({ length: vertices }, () => [r.f32(), r.f32(), r.f32()]);
++	if (points.some((p) => !p.every(Number.isFinite))) {
++		throw new FormatError('invalid navigation vertex');
++	}
++	const faces: NavTile['polygons'] = [];
++	for (let i = 0; i < polygons; i++) {
++		const indices = Array.from({ length: 6 }, () => r.u16());
++		const neighbours = Array.from({ length: 6 }, () => r.u16());
++		const flags = r.u32(),
++			count = r.u8(),
++			area = r.u8(),
++			type = r.u16();
++		if (
++			count < 3 ||
++			count > 6 ||
++			indices.slice(0, count).some((v) => v >= vertices) ||
++			neighbours.slice(0, count).some((n) => !(n & 0x8000) && n > polygons)
++		) {
++			throw new FormatError(
++				`invalid navigation polygon ${i}: count=${count} indices=${indices.join(',')} neighbours=${neighbours.join(',')} total=${polygons}/${vertices}`,
++			);
++		}
++		faces.push({
++			vertices: indices.slice(0, count),
++			neighbours: neighbours.slice(0, count),
++			flags,
++			area,
++			type,
++		});
++	}
++	return { x, z, vertices: points, polygons: faces };
++};
+diff --git a/packages/package-format/src/materials.ts b/packages/package-format/src/materials.ts
+index 446e15f8..5744e168 100644
+--- a/packages/package-format/src/materials.ts
++++ b/packages/package-format/src/materials.ts
+@@ -17,6 +17,8 @@ export interface ReadyMaterial {
+ 	status: 'ready';
+ 	/** the faces the game culls */
+ 	cull: MaterialCull;
++	/** authored draw queue, including the after-depth-of-field range; absent in earlier packages */
++	renderQueue?: number;
+ 	/** what the material draws, interpreted by the extractor */
+ 	surface: MaterialSurface;
+ }
+diff --git a/packages/package-format/src/navigation.test.ts b/packages/package-format/src/navigation.test.ts
+new file mode 100644
+index 00000000..b275f914
+--- /dev/null
++++ b/packages/package-format/src/navigation.test.ts
+@@ -0,0 +1,61 @@
++import { strict as assert } from 'node:assert';
++import { it } from 'node:test';
++
++import { containsVolume, type Volume } from './navigation.ts';
++const box: Volume = {
++	kind: 'box',
++	position: [10, 20, 30],
++	rotation: [0, 90, 0],
++	size: [4, 6, 10],
++	radius: 1,
++	points: [],
++};
++it('uses rotated three-dimensional bounds, including exact edges', () => {
++	assert.equal(containsVolume(box, [14.9, 20, 30]), true);
++	assert.equal(containsVolume(box, [10, 23, 30]), true);
++	assert.equal(containsVolume(box, [10, 23.1, 30]), false);
++	assert.equal(containsVolume(box, [10, 20, 32.1]), false);
++});
++it('tests the closed polygon rather than its rectangle and respects its height band', () => {
++	const prism: Volume = {
++		...box,
++		kind: 'polygon',
++		rotation: [0, 0, 0],
++		points: [
++			[0, 0],
++			[8, 0],
++			[0, 8],
++		],
++	};
++	assert.equal(containsVolume(prism, [11, 20, 31]), true);
++	assert.equal(containsVolume(prism, [17, 20, 37]), false);
++	assert.equal(containsVolume(prism, [11, 24, 31]), false);
++});
++it('uses spherical distance rather than box extents', () => {
++	assert.equal(containsVolume({ ...box, kind: 'sphere', radius: 2 }, [11, 21, 31]), true);
++	assert.equal(containsVolume({ ...box, kind: 'sphere', radius: 2 }, [12, 22, 32]), false);
++});
++it('rejects invalid navigation geometry and mismatched release generations', async () => {
++	const { isNavigation, matchesNavigation } = await import('./navigation.ts');
++	const data = {
++		version: 1 as const,
++		release: 'r',
++		source: { buildGuid: 'b', contentHash: 'h' },
++		generations: { scene: 'g' },
++		routes: [],
++	};
++	const catalog = {
++		format: 'oem-noclip' as const,
++		version: 1 as const,
++		release: 'r',
++		source: data.source,
++		packages: { scene: { generation: 'g', path: 'packages/scene/', version: 27 } },
++		files: {},
++		pointIndex: {},
++	};
++	assert.equal(isNavigation(data), true);
++	assert.equal(matchesNavigation(data, catalog), true);
++	assert.equal(matchesNavigation({ ...data, generations: { scene: 'old' } }, catalog), false);
++	assert.equal(matchesNavigation({ ...data, release: 'old' }, catalog), false);
++	assert.equal(isNavigation({ ...data, routes: [{ scene: 'scene' }] }), false);
++});
+diff --git a/packages/package-format/src/navigation.ts b/packages/package-format/src/navigation.ts
+new file mode 100644
+index 00000000..5c94d082
+--- /dev/null
++++ b/packages/package-format/src/navigation.ts
+@@ -0,0 +1,128 @@
++import type { PackageManifest } from './manifest.ts';
++import type { Catalog } from './oem.ts';
++import type { Vec3 } from './values.ts';
++
++/** Source-authored map volumes; coordinates remain in each package's Unity frame. */
++export interface Volume {
++	kind: 'box' | 'sphere' | 'polygon';
++	position: Vec3;
++	rotation: Vec3;
++	size: Vec3;
++	radius: number;
++	points: [number, number][];
++}
++
++/** A route joins OEM subregions to an explicit scene/level, never an ID-prefix guess. */
++export interface Route {
++	scene: string;
++	level: string;
++	region: string;
++	subregion: string;
++	seamless: boolean;
++	bounds: { min: Vec3; max: Vec3 } | null;
++	volumes: { tier: number; priority: number; shapes: Volume[] }[];
++}
++
++/** Small immutable routing companion, bound to the exact package generations. */
++export interface Navigation {
++	version: 1;
++	release: string;
++	source: PackageManifest['source'];
++	generations: Record<string, string>;
++	routes: Route[];
++}
++
++const object = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object';
++const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
++const vec = (v: unknown): v is Vec3 => Array.isArray(v) && v.length === 3 && v.every(finite);
++const volume = (v: unknown): boolean =>
++	object(v) &&
++	['box', 'sphere', 'polygon'].includes(String(v.kind)) &&
++	vec(v.position) &&
++	vec(v.rotation) &&
++	vec(v.size) &&
++	finite(v.radius) &&
++	Array.isArray(v.points) &&
++	v.points.every((p: unknown) => Array.isArray(p) && p.length === 2 && p.every(finite));
++
++/** @param value decoded JSON @returns whether the navigation companion has valid geometry */
++export const isNavigation = (value: unknown): value is Navigation =>
++	object(value) &&
++	value.version === 1 &&
++	typeof value.release === 'string' &&
++	object(value.source) &&
++	typeof value.source.buildGuid === 'string' &&
++	typeof value.source.contentHash === 'string' &&
++	object(value.generations) &&
++	Object.values(value.generations).every((v) => typeof v === 'string') &&
++	Array.isArray(value.routes) &&
++	value.routes.every(
++		(r: unknown) =>
++			object(r) &&
++			['scene', 'level', 'region', 'subregion'].every((k) => typeof r[k] === 'string') &&
++			typeof r.seamless === 'boolean' &&
++			(r.bounds === null || (object(r.bounds) && vec(r.bounds.min) && vec(r.bounds.max))) &&
++			Array.isArray(r.volumes) &&
++			r.volumes.every(
++				(v: unknown) =>
++					object(v) &&
++					Number.isInteger(v.tier) &&
++					finite(v.priority) &&
++					Array.isArray(v.shapes) &&
++					v.shapes.every(volume),
++			),
++	);
++
++/**
++ * @param shape source-authored volume @param point Unity world position @returns whether it contains the
++ *   point
++ */
++export const containsVolume = (shape: Volume, point: readonly number[]): boolean => {
++	let [x, y, z] = point.map((v, i) => v - shape.position[i]);
++	const [rx, ry, rz] = shape.rotation.map((v) => (v * Math.PI) / 180);
++	// Undo Unity's ZXY Euler order, including tilted boxes and prisms.
++	[x, z] = [x * Math.cos(ry) - z * Math.sin(ry), x * Math.sin(ry) + z * Math.cos(ry)];
++	[y, z] = [y * Math.cos(rx) + z * Math.sin(rx), -y * Math.sin(rx) + z * Math.cos(rx)];
++	[x, y] = [x * Math.cos(rz) + y * Math.sin(rz), -x * Math.sin(rz) + y * Math.cos(rz)];
++	if (shape.kind === 'sphere') {
++		return Math.hypot(x, y, z) <= shape.radius;
++	}
++	if (shape.kind === 'box') {
++		return [x, y, z].every((v, i) => Math.abs(v) <= Math.abs(shape.size[i]) / 2);
++	}
++	if (Math.abs(y) > Math.abs(shape.size[1]) / 2) {
++		return false;
++	}
++	let inside = false;
++	for (let i = 0, j = shape.points.length - 1; i < shape.points.length; j = i++) {
++		const [ax, az] = shape.points[j],
++			[bx, bz] = shape.points[i];
++		if (
++			Math.abs((x - ax) * (bz - az) - (z - az) * (bx - ax)) < 1e-7 &&
++			x >= Math.min(ax, bx) &&
++			x <= Math.max(ax, bx) &&
++			z >= Math.min(az, bz) &&
++			z <= Math.max(az, bz)
++		) {
++			return true;
++		}
++		if (az > z !== bz > z && x < ((bx - ax) * (z - az)) / (bz - az) + ax) {
++			inside = !inside;
++		}
++	}
++	return inside;
++};
++
++/**
++ * @param data navigation companion @param catalog release catalog @returns whether all source and generation
++ *   bindings match
++ */
++export const matchesNavigation = (data: Navigation, catalog: Catalog): boolean =>
++	data.release === catalog.release &&
++	data.source.buildGuid === catalog.source.buildGuid &&
++	data.source.contentHash === catalog.source.contentHash &&
++	Object.keys(data.generations).length === Object.keys(catalog.packages).length &&
++	Object.entries(catalog.packages).every(([scene, p]) => data.generations[scene] === p.generation) &&
++	data.routes.every(
++		(r) => Object.hasOwn(catalog.packages, r.scene) && Object.hasOwn(catalog.files, r.subregion),
++	);
+diff --git a/packages/package-format/src/oem.test.ts b/packages/package-format/src/oem.test.ts
+new file mode 100644
+index 00000000..12c63475
+--- /dev/null
++++ b/packages/package-format/src/oem.test.ts
+@@ -0,0 +1,133 @@
++import assert from 'node:assert/strict';
++import { it } from 'node:test';
++
++import { companionStates, pointPicks, type CompanionControl, isCompanion, isPointView } from './oem.ts';
++import type { StatesInfo } from './states.ts';
++
++it('appends companion controls while retaining package references and rejects unknown picked IDs', () => {
++	const mission = {
++		id: 'base',
++		name: 'Original',
++		category: 'main' as const,
++		chapter: null,
++		episode: null,
++		levelId: null,
++	};
++	const extra: CompanionControl = {
++		id: 'quest:extra',
++		kind: 'quest',
++		name: 'Extra',
++		category: 'story',
++		levelTags: [],
++		source: { kind: 'user' },
++		story: { role: 'quest', mission: 'extra', step: 1 },
++		values: [{ value: 3, label: 'Done' }],
++		default: 3,
++		assumption: '',
++		drivers: [],
++		place: null,
++	};
++	const base: StatesInfo = {
++		categories: [{ id: 'story', title: 'Story', note: null }],
++		controls: [
++			{ ...extra, id: 'quest:base', category: 0, levels: [0], story: { role: 'quest', mission: 0, step: 1 } },
++		],
++		missions: [mission],
++		mainStory: [0],
++		conditionalSets: [{ alternatives: [[{ control: 0, mask: 8 }]] }],
++		groups: [{ level: 0, condition: 0 }],
++		streamAreas: null,
++	};
++	const merged = companionStates(base, {
++		controls: [extra],
++		missions: [
++			{ ...mission, name: 'Replacement' },
++			{ ...mission, id: 'extra' },
++		],
++	});
++	assert.equal(merged.controls[0], base.controls[0]);
++	assert.equal(merged.conditionalSets, base.conditionalSets);
++	assert.deepEqual(merged.controls[1].story, { role: 'quest', mission: 1, step: 1 });
++	assert.equal(merged.controls[1].category, 0);
++	assert.equal(merged.missions[0].name, 'Original');
++	assert.deepEqual(pointPicks(merged.controls, { 'quest:extra': 3 }), new Map([[1, 3]]));
++	assert.throws(() => pointPicks(merged.controls, { missing: 3 }), /unknown companion control/);
++});
++
++it('accepts versioned clear and fallback views but rejects malformed camera values or old bindings', () => {
++	const view = {
++		key: 'noclip-point-view-v3:' + 'a'.repeat(64),
++		position: [1, 2, 3],
++		yaw: 0,
++		pitch: -0.3,
++		clear: true,
++	};
++	assert.equal(isPointView(view), true);
++	assert.equal(isPointView({ ...view, key: 'noclip-point-view-v4:' + 'a'.repeat(64) }), true);
++	assert.equal(isPointView({ ...view, clear: false }), true);
++	for (const value of [
++		{ ...view, position: [1, 2] },
++		{ ...view, position: [1, 2, NaN] },
++		{ ...view, pitch: 3 },
++		{ ...view, key: 'noclip-point-view-v1:' + 'a'.repeat(64) },
++		{ ...view, clear: undefined },
++	]) {
++		assert.equal(isPointView(value), false);
++	}
++});
++
++it('validates obstruction replay metadata without accepting arbitrary state values', () => {
++	const view = {
++		key: 'noclip-point-view-v5:' + 'b'.repeat(64),
++		position: [0, 3, -10],
++		yaw: 0,
++		pitch: 0,
++		clear: true,
++	};
++	const interaction = { control: 'door:1', label: 'Door', before: 0, after: 1 };
++	assert.equal(isPointView({ ...view, interactions: [interaction] }), true);
++	for (const invalid of [
++		{ ...interaction, after: 32 },
++		{ ...interaction, before: -1 },
++		{ ...interaction, after: 0 },
++		{ ...interaction, label: null },
++	]) {
++		assert.equal(isPointView({ ...view, interactions: [invalid] }), false);
++	}
++});
++
++it('accepts companion story controls with user sources and rejects derived or camera controls', () => {
++	const control = {
++		id: 'quest:test',
++		kind: 'quest',
++		name: 'Test',
++		category: 'story',
++		levelTags: [],
++		story: null,
++		default: 0,
++		assumption: '',
++		drivers: [],
++		place: null,
++		source: { kind: 'user' },
++		values: [{ value: 0, label: 'Not started' }],
++	};
++	const companion = {
++		version: 1,
++		release: 'test',
++		controls: [control],
++		missions: [],
++		labels: {},
++		points: [],
++	};
++	assert.equal(isCompanion(companion), true);
++	for (const field of ['category', 'levelTags', 'story', 'default', 'assumption', 'drivers', 'place']) {
++		assert.equal(isCompanion({ ...companion, controls: [{ ...control, [field]: undefined }] }), false);
++	}
++	for (const source of [
++		undefined,
++		{ kind: 'derived', condition: 0 },
++		{ kind: 'camera', test: { kind: 'area', area: 1 } },
++	]) {
++		assert.equal(isCompanion({ ...companion, controls: [{ ...control, source }] }), false);
++	}
++});
+diff --git a/packages/package-format/src/oem.ts b/packages/package-format/src/oem.ts
+new file mode 100644
+index 00000000..19fa7e18
+--- /dev/null
++++ b/packages/package-format/src/oem.ts
+@@ -0,0 +1,312 @@
++import type { PackageManifest } from './manifest.ts';
++import type { ControlDriver, MissionInfo, SceneControl, StatesInfo } from './states.ts';
++import type { Vec3 } from './values.ts';
++
++/** version of the static companion data and cross-window message contract */
++export const OEM_VERSION = 1;
++
++/** Stable IDs keep companion data independent of package table ordering. */
++export interface PointCondition {
++	alternatives: { control: string; mask: number }[][];
++}
++export interface CompanionControl extends Omit<SceneControl, 'category' | 'story' | 'levels' | 'source'> {
++	category: string;
++	levelTags: number[];
++	source: { kind: 'user' };
++	story: { role: 'quest' | 'mission'; mission: string; step: number | null } | null;
++}
++
++/** Append companion-only story controls without changing any package index. */
++export const companionStates = (
++	base: StatesInfo,
++	companion: Pick<Companion, 'controls' | 'missions'>,
++): StatesInfo => {
++	const missions = [...base.missions];
++	for (const mission of companion.missions) {
++		if (!missions.some((entry) => entry.id === mission.id)) {
++			missions.push(mission);
++		}
++	}
++	const categories = [...base.categories];
++	const controls = [...base.controls];
++	for (const extra of companion.controls) {
++		if (controls.some((control) => control.id === extra.id)) {
++			continue;
++		}
++		let category = categories.findIndex((entry) => entry.id === extra.category);
++		if (category < 0) {
++			category = categories.length;
++			categories.push({
++				id: extra.category,
++				title: extra.category === 'story' ? 'Quests and missions' : extra.category,
++				note: null,
++			});
++		}
++		const { levelTags: _tags, story, ...rest } = extra;
++		const mission = story === null ? -1 : missions.findIndex((entry) => entry.id === story.mission);
++		if (story !== null && mission < 0) {
++			throw new Error(`missing companion mission ${story.mission}`);
++		}
++		controls.push({ ...rest, category, levels: [], story: story === null ? null : { ...story, mission } });
++	}
++	return { ...base, missions, categories, controls };
++};
++
++/** Convert wire IDs to the package's indexes; unknown picks are rejected. */
++export const pointPicks = (
++	controls: readonly SceneControl[],
++	picks: Readonly<Record<string, number>>,
++): Map<number, number> => {
++	const result = new Map<number, number>();
++	for (const [id, value] of Object.entries(picks)) {
++		const index = controls.findIndex((control) => control.id === id);
++		if (index < 0) {
++			throw new Error(`unknown companion control ${id}`);
++		}
++		result.set(index, value);
++	}
++	return result;
++};
++
++export const pointValues = (
++	controls: readonly SceneControl[],
++	values: readonly number[],
++): Record<string, number> =>
++	Object.fromEntries(controls.map((control, index) => [control.id, values[index]]));
++
++/** one immutable OEM preview release; all paths are relative to this catalog */
++export interface Catalog {
++	format: 'oem-noclip';
++	version: typeof OEM_VERSION;
++	release: string;
++	source: PackageManifest['source'];
++	packages: Record<string, { path: string; generation: string; version: number }>;
++	files: Record<string, string>;
++	pointIndex: Record<string, string>;
++	/** source-authored routing and floor volumes, relative to this catalog */
++	navigation?: string;
++	framing?: { version: 3 | 4 | 5 | 6 | 7; profile: 'completed'; points: number };
++}
++
++/** an authored, validated selection of scene values */
++export interface Preset {
++	id: string;
++	label: string;
++	picks: Record<string, number>;
++	satisfies: boolean;
++}
++
++/** A completed-profile camera pose bound to scene generation and effective visibility. */
++export interface PointView {
++	key: string;
++	position: Vec3;
++	yaw: number;
++	pitch: number;
++	clear: boolean;
++	/** Only source-backed controls proven to obstruct this view before interaction. */
++	interactions?: { control: string; label: string; before: number; after: number }[];
++}
++
++/** point metadata, separate from map marker tuples and renderer archives */
++export interface Point {
++	id: string;
++	scene: string;
++	level: string;
++	region: string;
++	subregion: string;
++	tier: number;
++	position: Vec3;
++	condition: PointCondition | null;
++	locks: { kind: string; quests: string[]; games: string[] }[];
++	drivers: ControlDriver[];
++	unknown: string[];
++	presets: Preset[];
++	view?: PointView;
++	source: { path: string; kind: string; createState: number | null };
++}
++
++/** one subregion's lightweight metadata; controls include point-only quest states */
++export interface Companion {
++	version: typeof OEM_VERSION;
++	release: string;
++	controls: CompanionControl[];
++	missions: MissionInfo[];
++	labels: Record<string, Record<string, string>>;
++	points: Point[];
++}
++
++const object = (value: unknown): value is Record<string, unknown> =>
++	value !== null && typeof value === 'object' && !Array.isArray(value);
++const dictionary = (value: unknown): value is Record<string, string> =>
++	object(value) && Object.values(value).every((v) => typeof v === 'string');
++const numbers = (value: unknown): value is Record<string, number> =>
++	object(value) && Object.values(value).every((v) => Number.isInteger(v) && Number(v) >= 0 && Number(v) < 32);
++const strings = (value: unknown): value is string[] =>
++	Array.isArray(value) && value.every((v) => typeof v === 'string');
++const relative = (value: string): boolean =>
++	!value.startsWith('/') && !value.includes('..') && /^[A-Za-z0-9_./-]+$/.test(value);
++/** @param value decoded pose @returns whether its framing key and camera values are valid */
++export const isPointView = (value: unknown): value is PointView =>
++	object(value) &&
++	typeof value.key === 'string' &&
++	/^noclip-point-view-v[34567]:[a-f0-9]{64}$/.test(value.key) &&
++	Array.isArray(value.position) &&
++	value.position.length === 3 &&
++	value.position.every((v) => typeof v === 'number' && Number.isFinite(v)) &&
++	typeof value.yaw === 'number' &&
++	Number.isFinite(value.yaw) &&
++	typeof value.pitch === 'number' &&
++	Number.isFinite(value.pitch) &&
++	Math.abs(value.pitch) <= Math.PI / 2 &&
++	typeof value.clear === 'boolean' &&
++	(value.interactions === undefined ||
++		(Array.isArray(value.interactions) &&
++			value.interactions.length <= 1 &&
++			value.interactions.every(
++				(item) =>
++					object(item) &&
++					typeof item.control === 'string' &&
++					typeof item.label === 'string' &&
++					Number.isInteger(item.before) &&
++					Number(item.before) >= 0 &&
++					Number(item.before) < 32 &&
++					Number.isInteger(item.after) &&
++					Number(item.after) >= 0 &&
++					Number(item.after) < 32 &&
++					item.before !== item.after,
++			)));
++
++const validPoint = (value: unknown): value is Point => {
++	if (
++		!object(value) ||
++		!['id', 'scene', 'level', 'region', 'subregion'].every((key) => typeof value[key] === 'string') ||
++		!Number.isInteger(value.tier) ||
++		!Array.isArray(value.position) ||
++		value.position.length !== 3 ||
++		!value.position.every((v) => typeof v === 'number' && Number.isFinite(v)) ||
++		!strings(value.unknown) ||
++		(value.view !== undefined && !isPointView(value.view))
++	) {
++		return false;
++	}
++	if (
++		value.condition !== null &&
++		(!object(value.condition) ||
++			!Array.isArray(value.condition.alternatives) ||
++			!value.condition.alternatives.every(
++				(alt) =>
++					Array.isArray(alt) &&
++					alt.every((r) => object(r) && typeof r.control === 'string' && Number.isInteger(r.mask)),
++			))
++	) {
++		return false;
++	}
++	return (
++		Array.isArray(value.presets) &&
++		value.presets.length > 0 &&
++		value.presets.every(
++			(p) =>
++				object(p) &&
++				typeof p.id === 'string' &&
++				typeof p.label === 'string' &&
++				typeof p.satisfies === 'boolean' &&
++				numbers(p.picks),
++		) &&
++		Array.isArray(value.locks) &&
++		value.locks.every(
++			(lock) => object(lock) && typeof lock.kind === 'string' && strings(lock.quests) && strings(lock.games),
++		)
++	);
++};
++
++/** only OEM origins can own a preview or supply its embedded minimap */
++export const isOEMOrigin = (value: string): boolean => {
++	try {
++		const url = new URL(value);
++		return (
++			url.origin === value &&
++			((url.protocol === 'https:' && /^(beta\.)?opendfieldmap\.(cn|org)$/.test(url.hostname)) ||
++				(url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname)))
++		);
++	} catch {
++		return false;
++	}
++};
++
++/** @param value decoded JSON @returns whether its top-level release contract is recognized */
++export const isCatalog = (value: unknown): value is Catalog => {
++	return (
++		object(value) &&
++		value.format === 'oem-noclip' &&
++		value.version === OEM_VERSION &&
++		typeof value.release === 'string' &&
++		object(value.source) &&
++		typeof value.source.buildGuid === 'string' &&
++		typeof value.source.contentHash === 'string' &&
++		object(value.packages) &&
++		Object.values(value.packages).every(
++			(p) =>
++				object(p) &&
++				typeof p.path === 'string' &&
++				relative(p.path) &&
++				typeof p.generation === 'string' &&
++				Number.isInteger(p.version),
++		) &&
++		dictionary(value.files) &&
++		Object.values(value.files).every(relative) &&
++		dictionary(value.pointIndex) &&
++		(value.navigation === undefined ||
++			(typeof value.navigation === 'string' && relative(value.navigation))) &&
++		(value.framing === undefined ||
++			(object(value.framing) &&
++				[3, 4, 5, 6, 7].includes(Number(value.framing.version)) &&
++				value.framing.profile === 'completed' &&
++				Number.isInteger(value.framing.points)))
++	);
++};
++
++/** @param value decoded JSON @returns whether its companion envelope is recognized */
++export const isCompanion = (value: unknown): value is Companion =>
++	object(value) &&
++	value.version === OEM_VERSION &&
++	typeof value.release === 'string' &&
++	Array.isArray(value.controls) &&
++	value.controls.every(
++		(c) =>
++			object(c) &&
++			['quest', 'mission'].includes(String(c.kind)) &&
++			typeof c.id === 'string' &&
++			typeof c.name === 'string' &&
++			object(c.source) &&
++			c.source.kind === 'user' &&
++			typeof c.category === 'string' &&
++			Array.isArray(c.levelTags) &&
++			c.levelTags.every(Number.isInteger) &&
++			(c.story === null ||
++				(object(c.story) &&
++					['quest', 'mission'].includes(String(c.story.role)) &&
++					typeof c.story.mission === 'string' &&
++					(c.story.step === null || (typeof c.story.step === 'number' && Number.isFinite(c.story.step))))) &&
++			typeof c.assumption === 'string' &&
++			Array.isArray(c.drivers) &&
++			(c.place === null || object(c.place)) &&
++			Number.isInteger(c.default) &&
++			Number(c.default) >= 0 &&
++			Number(c.default) < 32 &&
++			Array.isArray(c.values) &&
++			c.values.every(
++				(v) =>
++					object(v) &&
++					Number.isInteger(v.value) &&
++					Number(v.value) >= 0 &&
++					Number(v.value) < 32 &&
++					typeof v.label === 'string',
++			) &&
++			c.values.some((v) => object(v) && v.value === c.default),
++	) &&
++	Array.isArray(value.missions) &&
++	value.missions.every((m) => object(m) && typeof m.id === 'string') &&
++	object(value.labels) &&
++	Object.values(value.labels).every(dictionary) &&
++	Array.isArray(value.points) &&
++	value.points.every(validPoint);
+diff --git a/packages/package-format/src/photo-filters.ts b/packages/package-format/src/photo-filters.ts
+new file mode 100644
+index 00000000..b5839188
+--- /dev/null
++++ b/packages/package-format/src/photo-filters.ts
+@@ -0,0 +1,74 @@
++import type { BloomSettings, ColorGradingConfig, VignetteSettings } from './environment.ts';
++import type { ParticleSystemInfo } from './particles.ts';
++import type { TextureSampler } from './textures.ts';
++
++/** a separately exported photo library; scene package versions are unchanged */
++export interface PhotoFilters {
++	/** separate from the scene package contract */
++	format: 'endfield-noclip.photo-filters';
++	/** incompatible photo-library changes increment this version */
++	version: 4;
++	/** table order, with names resolved from the install */
++	filters: PhotoFilter[];
++}
++
++/** one authored photo look; game content is supplied by the local extractor */
++export interface PhotoFilter {
++	/** the install's snapshot filter id */
++	id: string;
++	/** localized display name, falling back to id */
++	name: string;
++	/** unsupported parts are reported even when the colour look can be previewed */
++	unsupported: string[];
++	/** replaces the scene's grading when present */
++	grading: ColorGradingConfig | null;
++	/** only the SRP fields whose override flag is set */
++	vignette: Partial<VignetteSettings> | null;
++	/** only overridden high-quality bloom parameters; absent in older exports */
++	bloom?: Partial<
++		Pick<
++			BloomSettings,
++			| 'resolutionHighQuality'
++			| 'thresholdHighQuality'
++			| 'intensityHighQuality'
++			| 'scatterHighQuality'
++			| 'tint'
++			| 'blendMode'
++		>
++	> | null;
++	/** stationary effects spawned at the camera when this look is first selected */
++	effects?: PhotoEffect[];
++	/** external colour cube; absent when the authored look has no lookup */
++	lut: {
++		/** WebGPU sampling format, without automatic sRGB decoding */
++		format: 'bc7-rgba-unorm';
++		/** cube edge; the strip is size² × size, red along x, green along y, blue across slices */
++		size: number;
++		/** base64 of the GPU-ready top mip, without a container */
++		data: string;
++		/** authored blend weight in display-colour space, 0–1 */
++		contribution: number;
++	} | null;
++}
++
++/** a simple additive, view-aligned particle emitter, evaluated by the shared particle kernel */
++export interface PhotoEffect {
++	/** prefab renderer name, for deterministic random seeds */
++	name: string;
++	/** emitter-to-prefab transform, column-major */
++	matrix: number[];
++	/** current scene particle settings; only free motion without gravity or clamping is supported */
++	particles: ParticleSystemInfo;
++	/** linear HDR tint including intensity; alpha includes the material's opacity */
++	tint: [number, number, number, number];
++	/** cancels post exposure for emission, as the source material requests */
++	ignorePostExposure: boolean;
++	/** mip chain passed to WebGPU without transcoding; each level is base64 encoded */
++	texture: {
++		width: number;
++		height: number;
++		format: 'bc7-rgba-unorm' | 'bc7-rgba-unorm-srgb';
++		sampler: TextureSampler;
++		levels: string[];
++	};
++}
+diff --git a/packages/package-format/src/story.test.ts b/packages/package-format/src/story.test.ts
+index 5733e4ec..5262bedc 100644
+--- a/packages/package-format/src/story.test.ts
++++ b/packages/package-format/src/story.test.ts
+@@ -2,7 +2,13 @@ import assert from 'node:assert/strict';
+ import { it } from 'node:test';
+ 
+ import type { SceneControl } from './states.ts';
+-import { storyPointPicks, storyPoints } from './story.ts';
++import {
++	completedProgressionPicks,
++	completedProgressionPicksByIndex,
++	openTraversalPicks,
++	storyPointPicks,
++	storyPoints,
++} from './story.ts';
+ 
+ /** the fixture's missions, by index: e1m1 and e1m2 */
+ const E1M1 = 0;
+@@ -38,6 +44,67 @@ const CONTROLS = [
+ ];
+ const MISSIONS = [E1M1, E1M2];
+ 
++it('completes quests at their completed state and maximizes facilities without overriding derived or runtime gates', () => {
++	const quest = {
++		...control('quest', 'a', E1M1, 1),
++		default: 0,
++		values: [0, 2, 3, 5].map((value) => ({ value, label: String(value) })),
++	};
++	const facility: SceneControl = {
++		...quest,
++		kind: 'facility',
++		story: null,
++		id: 'facility:a',
++		default: 0,
++		values: [0, 2, 7].map((value) => ({ value, label: String(value) })),
++	};
++	const controls: SceneControl[] = [
++		quest,
++		{ ...quest, id: 'quest:already-completed', default: 3 },
++		{ ...quest, kind: 'storyState', id: 'storyState:a' },
++		{ ...quest, id: 'quest:camera', source: { kind: 'camera', test: { kind: 'near', reaches: [] } } },
++		facility,
++		{
++			...facility,
++			id: 'facility:derived',
++			source: { kind: 'derived' as const, condition: 0, rule: ['test gate'] },
++		},
++		{ ...facility, kind: 'area' as const, id: 'area:1' },
++		{ ...facility, kind: 'controlNexus' as const, id: 'controlNexus:a' },
++		{ ...facility, kind: 'cabinLevel' as const, id: 'cabinLevel:a' },
++		{
++			...facility,
++			kind: 'cabin' as const,
++			id: 'cabin:a',
++			values: [
++				{ value: 0, label: 'empty' },
++				{ value: 1, label: 'built' },
++			],
++		},
++	];
++	const before = structuredClone(controls);
++	assert.deepEqual(
++		completedProgressionPicksByIndex(controls),
++		new Map([
++			[0, 3],
++			[2, 3],
++			[4, 7],
++			[7, 7],
++			[8, 7],
++			[9, 1],
++		]),
++	);
++	assert.deepEqual(completedProgressionPicks(controls), {
++		'quest:a': 3,
++		'storyState:a': 3,
++		'facility:a': 7,
++		'controlNexus:a': 7,
++		'cabinLevel:a': 7,
++		'cabin:a': 1,
++	});
++	assert.deepEqual(controls, before);
++});
++
+ it('a story point completes what came before it and leaves what follows unstarted', () => {
+ 	assert.deepEqual(
+ 		storyPointPicks(CONTROLS, MISSIONS, { mission: 0, step: 5 }),
+@@ -88,3 +155,24 @@ it('lists a point per mission start and per step quest controls sit at, once per
+ 		],
+ 	);
+ });
++
++it('opens traversal doors without destroying supports or overriding derived gates', () => {
++	const door: SceneControl = {
++		...control('quest', 'a', E1M1, 1),
++		kind: 'door',
++		story: null,
++		id: 'door:a',
++		default: 0,
++		values: [
++			{ value: 0, label: 'closed' },
++			{ value: 1, label: 'open' },
++		],
++	};
++	const controls: SceneControl[] = [
++		door,
++		{ ...door, kind: 'activation', id: 'activation:a' },
++		{ ...door, kind: 'destruction', id: 'destruction:a' },
++		{ ...door, id: 'door:derived', source: { kind: 'derived' as const, condition: 0, rule: ['test gate'] } },
++	];
++	assert.deepEqual(openTraversalPicks(controls), { 'door:a': 1, 'activation:a': 1 });
++});
+diff --git a/packages/package-format/src/story.ts b/packages/package-format/src/story.ts
+index f4bbf3bf..7ea5be7d 100644
+--- a/packages/package-format/src/story.ts
++++ b/packages/package-format/src/story.ts
+@@ -11,6 +11,70 @@ const NONE = 0;
+ const PROCESSING = 2;
+ const COMPLETED = 3;
+ 
++/**
++ * @param controls the merged scene and companion controls
++ * @returns overrides beyond scene defaults for completed quests and maximum facilities; derived gates keep
++ *   their formulas
++ */
++export const completedProgressionPicks = (controls: readonly SceneControl[]): Record<string, number> => {
++	const progression = new Set([
++		'controlNexus',
++		'cabin',
++		'cabinLevel',
++		'settlement',
++		'poi',
++		'factoryRegion',
++		'facility',
++		'doodadGroups',
++	]);
++	const picks: Record<string, number> = {};
++	for (const control of controls) {
++		if (control.source.kind !== 'user') {
++			continue;
++		}
++		let value: number | undefined;
++		if (control.story !== null || control.kind === 'quest' || control.kind === 'mission') {
++			value = COMPLETED;
++		} else if (progression.has(control.kind)) {
++			value = control.values.at(-1)?.value;
++		}
++		if (value !== undefined && value !== control.default && control.values.some((v) => v.value === value)) {
++			picks[control.id] = value;
++		}
++	}
++	return picks;
++};
++
++/** Completed progression indexed for the scene's numeric state evaluator. */
++export const completedProgressionPicksByIndex = (controls: readonly SceneControl[]): Map<number, number> => {
++	const byId = completedProgressionPicks(controls);
++	return new Map(
++		controls.flatMap((control, index) => {
++			const value = byId[control.id];
++			return value === undefined ? [] : [[index, value] as const];
++		}),
++	);
++};
++
++/**
++ * @param controls the scene's merged controls
++ * @returns completed facilities with controllable traversal doors open and activations enabled
++ */
++export const openTraversalPicks = (controls: readonly SceneControl[]): Record<string, number> => {
++	const picks = completedProgressionPicks(controls);
++	for (const control of controls) {
++		if (
++			control.source.kind === 'user' &&
++			(control.kind === 'door' || control.kind === 'activation') &&
++			control.default !== 1 &&
++			control.values.some((value) => value.value === 1)
++		) {
++			picks[control.id] = 1;
++		}
++	}
++	return picks;
++};
++
+ /**
+  * @param controls a package's controls
+  * @param missions `StatesInfo.missions` indices in story order

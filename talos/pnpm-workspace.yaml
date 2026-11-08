@@ -4,5 +4,7 @@ packages:
   - apps/world
   - oem-search
   - oem-relink
-  - vendor/endfield-noclip/packages/viewer
-  - vendor/endfield-noclip/packages/package-format
+  - .cache/noclip/packages/viewer
+  - .cache/noclip/packages/package-format
+  - .cache/noclip/packages/formats
+  - .cache/noclip/packages/extractor

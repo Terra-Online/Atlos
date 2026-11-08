@@ -1,0 +1,1548 @@
+diff --git a/docs/architecture.md b/docs/architecture.md
+index b641cf39..d5dfef80 100644
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -31,8 +31,14 @@ shows in game, with unchecked facts marked as such. how our code implements any
+ [package-format.md](package-format.md), and what it lacks in [status.md](status.md). links run from
+ those pages to game-data, never the reverse.
+ 
++[ground navigation extraction](navigation.md) documents the experimental routing data exports and
++their limits.
++
+ ## data flow
+ 
++the optional [OEM integration](oem-integration.md) exports companion point metadata and connects an
++independent preview to OEM without changing the ordinary archive or marker formats.
++
+ ```
+ install (Endfield_Data)                      local, read-only
+   │  VFS catalogs + chunks → HG bundles → Unity SerializedFiles, world data, tables
+diff --git a/docs/extraction.md b/docs/extraction.md
+index c257f882..b868e1b4 100644
+--- a/docs/extraction.md
++++ b/docs/extraction.md
+@@ -24,12 +24,13 @@ pnpm extract --help
+ ```
+ 
+ `cli.ts` loads every file in `commands/` as a subcommand exporting `summary`, `usage` and
+-`run(args)`, so a new command is a new file there; shared argument helpers live outside that
+-directory, in `cli-args.ts`. run a command without arguments or with `--help` / `-h` for its usage,
+-which works without a config or install. every command takes `--config <file>` (default
+-`endfield.local.json` in the working directory) and, except for `init`, opens the install through
+-`withContext` in `context.ts`, which mounts the VFS, builds the world index and creates the asset
+-resolver on first use.
++`run(args)`, so a new command is a new file there. shared argument helpers live in `cli-args.ts`,
++outside `commands/`, because every file in that directory is treated as a command. each command
++exports its usage text; run it without arguments or with `--help` / `-h` for details. help works
++without a config or install, including `world find --help`. commands that read the install take
++`--config <file>` (default `endfield.local.json` in the working directory) and open the install
++through `withContext` in `context.ts`, which mounts the VFS, builds the world index and creates the
++asset resolver on first use.
+ 
+ | command    | what it does                                                                                                                                                                                                                                                                                                                                                              |
+ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+@@ -110,6 +111,21 @@ with `--class`, it selects objects of that class in matching SerializedFiles. `-
+ `selection` object of sorted area ids and chunk file names to the variants object, without trailing
+ text.
+ 
++### OEM companion releases
++
++`pnpm extract oem --atlos /path/to/Atlos/talos --packages out --output out/releases` exports point
++metadata from the same local install as the complete packages. it resolves placements and NPC
++proxies by their authored ids, retains prerequisite expressions and interaction-lock evidence, and
++labels supplemental quest states. generated content stays outside git. the MemoryPack reader also
++handles unmanaged pairs of Unity Vector3 values used by Dijiang's specific level data. it reads the
++adjacent values without an object header, following the
++[MemoryPack unmanaged format](https://github.com/Cysharp/MemoryPack#binary-wire-format-specification);
++other tuple layouts remain explicit errors until their field layout is verified.
++
++`pnpm extract oem-check out/releases/<release-id>` verifies every archive size, package generation
++and source fingerprint, point index and preview preset before publication. presets use the existing
++scene evaluator and story ordering; unknown runtime conditions remain explicit.
++
+ ## local config and keys
+ 
+ `endfield.local.json` holds the install path (`gameData`, the `Endfield_Data` directory) and the key
+@@ -212,6 +228,19 @@ booleans. code: [serialized-file.ts](../packages/formats/src/unity/serialized-fi
+ [values.ts](../packages/formats/src/unity/values.ts),
+ [plain-object.ts](../packages/formats/src/unity/plain-object.ts).
+ 
++## photo library
++
++`pnpm extract filters --config endfield.local.json -o out/photo-filters.json` reads
++`SnapshotFilterTable` and its referenced prefabs from the local install. names come from the
++install's English text table. it reuses the asset resolver, environment-phase, TypeTree and texture
++decoders, retaining BC7 blocks without transcoding. SRP vignette and high-quality bloom overrides
++retain their individual override flags. referenced camera effects reuse prefab, particle and
++material decoding to export supported additive billboards and their sprite mip chains. unsupported
++components, materials and particle modules are reported per filter. missing references and
++unsupported LUT formats fail the export. the output is separate from scene packages, so adding a
++library does not require re-packing maps. usage and remaining differences are in
++[photo filters](viewer/post-processing.md#photo-filters).
++
+ ## decoders
+ 
+ `formats` modules validate layouts while decoding and throw on a mismatch. the linked game-data
+@@ -240,6 +269,18 @@ mesh any swaying material draws is converted with the strongest of their sways,
+ weights in position W and grows its bounds
+ ([swaying geometry](package-format.md#geometry-blob-mesh-efgm)).
+ 
++**collision mesh.** `asset collision <object> [-o file.json]` reads the cooked triangle bytes with
++[collision-mesh.ts](../packages/formats/src/unity/collision-mesh.ts), separately from render
++geometry. the supported layout is little-endian PhysX mesh version 15 with a quantized BV4 version 3
++tree. triangle indices, optional material indices and original-face remaps are retained. bounds,
++finite coordinates, counts and the complete payload framing are checked. GPU and other unsupported
++cooks fail explicitly. `convex-mesh.ts` additionally handles version-13 convex cooks with a
++version-9 hull and no support map or GPU data. it validates the supporting planes, outward winding
++and closed edge topology before triangulating convex faces. JSON output is build-bound local Unity
++geometry, without a world transform, collision-layer interpretation or claim of player passage.
++streaming collider placement and capsule sweeps must still be resolved before this geometry can
++validate movement links.
++
+ **skin pose.** [skin-pose.ts](../packages/formats/src/unity/skin-pose.ts) bakes linear blend
+ skinning into a new static mesh: positions, normals, tangents and bounds move into the space of the
+ supplied pose (bone matrix × bind pose per bone). it throws on missing influences, bad bone indices
+@@ -680,3 +721,23 @@ to entities and chunk files, and `assets.json` says why an asset didn't convert.
+   ([asset conversion](#asset-conversion-and-workers)).
+ - LevelData with populated blackbox settings isn't read ([MemoryPack data](#memorypack-data)).
+ - texture formats without a WebGPU equivalent aren't convertible ([texture](#asset-classes)).
++
++`pnpm extract oem-views out/releases/<base> -o out/releases --cache out/framing/<base>` computes
++every point's completed-profile view without WebGPU, sharing CPU decode jobs with the browser
++workers. checkpoint files support resuming. the command writes a new immutable release, linking
++archives from the immutable input on the same filesystem and writing its catalog last; never bake
++into the input release. validate the result with `oem-check` before changing the OEM catalog URL.
++see [offline framing](oem-precompute.md) for coverage, distance and network details.
++
++### destructible interactives
++
++placements with a destructible component receive an independent `destruction:<id>` control: intact
++(0, the default) or destroyed (1). intact geometry keeps its authored rest pose and all existing
++visibility requirements; destruction hides it. explicit `reward_entities` references replace the
++generic created-during-play gate on those rewards, showing them only after their unique parent is
++destroyed. ambiguous parent references are left unresolved. this models settled visibility only, not
++damage, debris, physics or explosion effects.
++
++`traversal-devices <scene> -o <file>` exports build-bound rope pairing and movement-device parameter
++scopes; see [movement devices](navigation.md#movement-devices). its candidate connections still
++require grounded endpoints, active state and motion validation.
+diff --git a/docs/extraction/scene-controls.md b/docs/extraction/scene-controls.md
+index 940349aa..a6a9c82a 100644
+--- a/docs/extraction/scene-controls.md
++++ b/docs/extraction/scene-controls.md
+@@ -32,6 +32,7 @@ the package side of [the selectors](../game-data/scene-states.md#the-selectors-a
+ | growth chamber level       | `cabinLevel:<entity id>`, the table's levels       | level 1                                                           |
+ | Dijiang region wall        | `controlNexus:<level id>`                          | level 1                                                           |
+ | door                       | `door:<interactive id>`, closed / open             | closed; a cabin's follows its slot                                |
++| destructible interactive   | `destruction:<interactive id>`, intact / destroyed | intact; reward entities show after destruction                    |
+ | telescopic bridge          | `bridge:<interactive id>`, retracted / extended    | retracted                                                         |
+ | tree harvest state         | `harvest:<level tag>`, standing / felled           | standing                                                          |
+ | script group               | `script:<entity id>`                               | the stored default, or its scripts' quest checks on activation    |
+diff --git a/docs/game-data/interaction.md b/docs/game-data/interaction.md
+new file mode 100644
+index 00000000..b75e4269
+--- /dev/null
++++ b/docs/game-data/interaction.md
+@@ -0,0 +1,80 @@
++# interaction authoring
++
++interactive templates carry a `TriggerObserverComponentData` property list. the trigger's
++`shape`, `radius`, `center` and `size` are separate from directional-check parameters
++`interactive_direction_check`, `check_area_offset`, `check_area_radius`,
++`check_area_height`, `check_angle`, `check_angle_offset` and `player_direction_check`.
++these inputs must retain the entity's transform and their source template identity.
++
++## checked template inputs
++
++the following base-template values match both AKEData's authored JSON and a current-install
++template decode. paths are `Json/Interactive/InteractiveData/data_<template>.json` in AKEData,
++and `Data/Json/Interactive/InteractiveData/data_<template>.json` in the install. radii and offsets
++are in metres, angles are authored degree values. displayed decimals below are rounded from
++single-precision values. all checked templates have shape code 2 and player-direction check disabled.
++
++| template | trigger radius | trigger center y | interactive direction check | check radius / height | check angle |
++| --- | ---: | ---: | --- | --- | ---: |
++| `int_collection_common` | 1.5 | 0 | disabled | 10 / 5 | 360 |
++| `int_collection_piece` | 1.43 | 0 | disabled | 10 / 5 | 360 |
++| `int_collection_coin` | 1.59 | 0.75 | disabled | 10 / 5 | 360 |
++| `int_collection_trstar` | 2 | 0 | enabled | 2 / 2 | 360 |
++| `int_system_world_energy_point` | 1 | 0 | disabled | 10 / 5 | 360 |
++| `int_trchest_common` | 3 | 0 | enabled | 3 / 3 | 180 |
++| `int_trchest_wrdg` | 1.5 | 0 | disabled | 1.5 / 1.5 | 180 |
++| `int_trchest_bubble` | 1.59 | 0.75 | disabled | 10 / 5 | 360 |
++| `int_rope_port` | 2.2 | 0.7 | disabled | 10 / 5 | 360 |
++| `int_campfire_v2` | 2.5 | 0 | disabled | 10 / 5 | 360 |
++| `int_jumpmachine` | 1 | 0 | disabled | 10 / 5 | 360 |
++| `int_jumpmachine_vertical` | 0.9 | 0 | disabled | 10 / 5 | 360 |
++| `int_accelerate_buff` | 1.6 | 0.75 | disabled | 10 / 5 | 360 |
++
++all listed trigger-center x/z, check-area offsets and check-angle offsets are zero.
++when interactive-direction checking is disabled, its authored check radius/height/angle
++remain recorded independently and must not be substituted for the trigger volume.
++
++the checked equip, supplybox and lock chest bases share the common chest's radius and
++direction gate. the wrdg and bubble bases carry their own values shown above. box
++triggers also occur, including mission_beacon with size (3, 3, 3) and lifter_v2 with
++size approximately (1.43, 2, 1.88). a stored radius field on those boxes is kept separate
++from the effective box dimensions.
++
++## placed authoring
++
++placed values can differ from the table above. in the checked install, a common-collection
++placement supplies a trigger-component radius of 0.5 instead of the base template's 1.5;
++a chest placement supplies radius 2 instead of base radius 3. the route regression's
++world-energy-point placement supplies radius 2 instead of its base radius 1.
++
++placed rules retain the base properties and every selected override scope. direct component
++values resolve in base, selected variant, placement order. a selected variant replaces matching
++base keys, while placement component properties overwrite or add keys. parameters whose
++types cannot be decoded and referenced/global expressions remain unresolved. later scripts,
++saved state and gameplay availability require their own state snapshot.
++
++## normal-channel goal model
++
++the supported navigation model uses separate normal-channel runtime probe constants. it represents
++the interaction probe at 0.4 m above
++the player root with a 0.5 m probe radius. that probe is independent of the player's physical
++navigation capsule. a sphere trigger retains its local center and expands by the probe radius
++after the trigger radius is multiplied by the largest positive entity scale. a foot-coordinate
++goal therefore uses the transformed sphere center shifted down by 0.4 m.
++
++when directional checking is enabled, its unscaled center and dimensions remain an independent
++constraint. the model intersects the primary sphere with the direction-check radius plus 0.5 m
++and its absolute vertical-difference limit. an authored 180-degree full angle supplies a
++90-degree horizontal half-angle, rotated by entity yaw and the authored angle offset. a
++360-degree check retains its distance/height constraints without a facing sector.
++
++sphere triggers with directional checking disabled support arbitrary entity rotations and positive
++nonuniform scales. their local centers use the complete authored transform, while the player-probe
++offset remains world-up. directional gates retain an upright-transform requirement, including
++360-degree gates, until their tilted height frame is represented. the current direction model supports
++coincident primary/direction centers and horizontal full angles up to 180 degrees or exactly 360 degrees. other shapes,
++separate centers, player-facing requirements and incompatible expressions remain unresolved.
++NPC interaction inputs and the various plant/resource families still require their own templates
++and instance properties. hint/outline distances from `InteractiveHintConfig` remain presentation
++inputs. line-of-sight checks, active interaction state and unlock conditions are evaluated separately
++before claiming that an endpoint can perform the interaction.
+diff --git a/docs/game-data/post-processing.md b/docs/game-data/post-processing.md
+index fad04436..d0babc98 100644
+--- a/docs/game-data/post-processing.md
++++ b/docs/game-data/post-processing.md
+@@ -124,7 +124,20 @@ variant, and what selects it and what the extra fields do isn't read.
+ mixer, shadows/midtones/highlights, lift/gamma/gain, split toning, colour curves); each sub-section
+ that's off reads as its neutral default. the game bakes grading and curve into a LogC LUT, with its
+ HG-specific contrast and its modified-ACES curve (the only tonemapper the game ships besides none;
+-every profile sets `tonemappingMode` 5). no shipped profile enables the external lookup texture.
++every profile sets `tonemappingMode` 5). no shipped scene profile enables the external lookup texture.
++
++### photo filters
++
++`SnapshotFilterTable` identifies each photo filter's volume prefab and, optionally, an additional
++camera effect. the prefab can carry both an environment phase and an SRP post-processing profile.
++the phase's active colour-grading section replaces the scene's grading; inactive lighting and fog
++sections leave the scene alone. SRP parameters apply only when their override flag is set.
++
++the checked install has 15 filters, each referencing a linear-sampled BC7 lookup texture: a 32³
++colour cube stored as a 1024×32 strip. red varies along each slice, green along its rows and blue
++across slices. these are external display-colour lookups rather than the internal HDR LogC LUT. Warm
++and Pale also carry vignette, bloom and character-volume settings; Black and Gold references an
++additional camera effect. item unlocks control availability in the game, not the LUT data.
+ 
+ ## open
+ 
+@@ -132,3 +145,23 @@ every profile sets `tonemappingMode` 5). no shipped profile enables the external
+ - the flare component's own settings, which apply while the environment's flare is off.
+ - unverified: at Origin Lodespring's overview the game's flare seems not to be occluded by the
+   crystal mountain behind the sun, as if the mountain weren't in its depth buffer.
++
++## photographic depth of field
++
++photography overrides the ordinary camera's depth-of-field defaults. its physical lens fits a 24 mm
++sensor height to the display aspect ratio, with aperture controls spanning f/1.4–f/32. the
++photography configuration requests full resolution, foreground and background radius limits of 10 at
++the 1440-pixel reference height, and a temporal factor of 0.3. quality settings may further limit
++the radius.
++
++physical defocus uses a signed thin-lens circle of confusion: foreground radii are negative and
++background radii positive. the closest of scene and water depth supplies the optical distance.
++foreground coverage is filtered separately from colour; background sampling rejects focused
++neighbours to limit silhouette bleeding. temporal filtering clips reprojected colour against the
++current neighbourhood and rejects opposite-sign focus history. the effect precedes motion blur,
++after-DoF transparencies, lens flare and temporal antialiasing. see the
++[viewer implementation and remaining differences](../viewer/post-processing.md#photography).
++
++post-focus transparency is selected by authored render queues 3660–3740 inclusive. it uses the
++forward transparent shader passes and runs after depth of field, before lens flare and TAA; being
++transparent alone does not select this stage.
+diff --git a/docs/navigation.md b/docs/navigation.md
+new file mode 100644
+index 00000000..b539893c
+--- /dev/null
++++ b/docs/navigation.md
+@@ -0,0 +1,738 @@
++# ground navigation extraction
++
++Ganglia alpha.22 builds consecutive ordinary steps through local support-span
++connections and preserves directed tile-passage intervals. Physical routing
++publishes an atomic walking candidate before optional airborne optimization.
++
++`player-route --ground-only` ends after walking feasibility, before airborne
++collision indexing. Full queries keep a provisional result with `optimizing`
++until action comparison finishes. Stage costs are exported in
++`diagnostics.timingMs`. Interactive shortcut comparison uses a 512-candidate
++budget when a complete walking baseline exists, while unresolved reachability
++retains the 8000-candidate budget. Search truncation remains explicit.
++
++Ground routing can recover a continuous clear support corridor when obstacle
++checks block its polygon representatives. Every reconstructed segment must pass
++the same exclusions before the candidate is accepted.
++
++The selected default planning snapshot assumes all level tasks completed.
++`air-walls` records a source-bound control interpretation with model
++`wall-controls-v2`. it scans the scene's level scripts and other-level references
++to wall groups. owned slots and group-id writes are both included, with controller
++identity, stage interpretation and resulting state retained in each record.
++the level brief supplies the declared maximum stage and parameterized global
++wall references. the completed snapshot selects that stage, falling back to an
++explicit contiguous stage domain when the brief does not supply one. this is a
++planning assumption. a script resolves only when its reachable writes consistently
++establish or preserve the selected state. known completed-mission, stage and boolean
++guards prune paths. unresolved guards keep effects possible without establishing
++that a write executes. conflicting writers and undecoded inputs remain unknown.
++other-level activation requires its own snapshot before changing a wall's base
++state. `groundData` applies these records only with explicit
++`progression: 'completed'`. re-export walls and ground datasets after changing
++this policy.
++
++Completed-world mission conditions treat empty rise/down lists as having no
++activation reason. This preserves their initialized false result and allows a
++resolved completed down condition to disable its wall.
++the level-script check type can be controlled through a group id even when its
++stored owner is zero. its default switch is a base state, and is used only after
++the explicit controller scan. legacy level-script exports without that scan
++remain unknown. completion-disabled encounter and fog-nest modules supply an
++inactive state for their explicit wall references in this completed snapshot.
++independent script writes are still checked. repeating and unsupported modules
++remain unknown. unresolved computed targets are recorded and keep scene wall
++states unknown, since the affected group cannot be excluded. dynamic
++properties, player-trigger state and server-only controls still need snapshot
++input. an authored-default assumption does not establish live runtime state.
++
++the current two-scene audit covers 504 walls. the selected snapshot resolves 347
++inactive and 43 active, with 114 unknown, down from 196 before module and brief
++resolution. map01 has 112 inactive, 16 active and 30 unknown. map02 has 235 inactive,
++27 active and 84 unknown. the remaining controls include dynamic properties,
++trigger occupancy, event callbacks, owner activation, conflicting writers, three
++owners without client action graphs and one invalid mission reference. wall usage
++tags supply no independent permanent-boundary classification. the three additional
++elevated route examples retain complete walking routes with these exclusions.
++the fixed reference-positive population also retains 31/31 complete walking
++routes, including all 13 measured step-profile cases.
++
++`interaction-points <scene> -o <file>` exports placed trigger rules, retaining source build,
++template paths, transforms and override provenance. direct values resolve in base, selected
++variant and placement order. supported sphere/direction rules produce an explicit standing
++goal volume for Ganglia. unresolved shapes, transforms and referenced parameters remain
++separate from resolved authoring. see [interaction authoring](game-data/interaction.md).
++
++navigation for region switching remains distinct from walkable topology. `navmesh <scene> -o <file>`
++exports version-16 Unity navigation tile vertices, polygon indices, neighbour codes and metadata,
++plus the source asset transform and build settings. `--limit` is diagnostic and marks partial output.
++state-dependent assets remain separate: consumers must select a consistent scene state before
++building connectivity. unsupported binary versions, sizes and indices fail instead of falling back
++to visible render meshes. detail-surface height reconstruction, off-mesh links and player clearance
++validation are not implemented by this topology export.
++
++`air-walls <scene> -o <file>` uses the existing metadata-driven MemoryPack decoder on current LevelData.
++it exports every authored wall's bounds, polyline, collision-height range, usage, navigation-obstacle
++flag, push distance, default switch, script/group/slot identity and condition data. visibility/effects
++are not the reachability criterion. exported state is `unknown`: a routing consumer must block it
++until its state resolver proves it inactive. Ganglia narrows these bounds using the exported XZ polyline and height range, expanded by player
++radius/height and push distance. runtime state evaluation and other collision constraints remain
++necessary before claiming complete player routing.
++
++version 2 of this export also includes `hazards`: conservative bounds of ordinary and temporary
++reset zones. payload references are resolved independently of range slots; temporary zones can have
++no specific payload. the importer blocks these volumes even on otherwise connected navigation
++faces. default-off flags and condition records are retained without assuming that a scripted zone
++is inactive. the current client directly enables unaddressed zones without conditions, bypassing
++the addressed-area default switch. these export as `active`; addressed or conditional zones
++retain `unknown`. upright polygon zones include a world XZ footprint checked against the authored
++bounds. Ganglia uses the filled prism, including concave outlines, rather than its enclosing box.
++tilted/offset polygons and other shapes retain conservative bounds; their exact shape and state
++resolution remain pending. version 1 exclusions are rejected because they omit these hazards.
++
++the same export includes `steam` hazards from placed steam-blocker components. template, selected
++variant and component-scoped placement parameters define each nozzle's maximum forward jet envelope.
++upright jets retain their rotated XZ footprint; pitched jets retain conservative world bounds.
++the exporter keeps the maximum authored length, without shortening it at an intervening collider.
++continuous authored placements are active. later-created, parameter-controlled or
++script-referenced placements retain unresolved lifecycle state and its source evidence. progression
++unlock conditions are retained separately from jet geometry. the `fully-enabled` routing preset
++preserves both active and unresolved steam exclusions, so opening facilities never clears a jet.
++ground paths, airborne sweeps and device transfers use the same exclusions.
++
++`movement-settings -o <file>` exports current player settings and modifiers, world settings, and
++AI navigation settings as separate, build-bound asset records. it intentionally reports unresolved
++motion validation. `characters` follows each character template's managed component references to
++export its capsule proxy and movement overrides; unused reference records are ignored. current
++extraction resolves 34 templates with five distinct capsule sizes. selecting a character does not
++yet resolve runtime collider overrides or active movement modifiers.
++
++the default planning capsule is the most common size in that build's character templates, exported
++as `defaultProfile`. equal counts prefer larger radius, then height. `walk-routes --movement-settings
++<file>` uses it when the request omits `profile`; explicit dimensions still override it. the movement
++export must match the navigation build, and the resolved dimensions are embedded in Atlos's bound
++dataset. Ganglia does not hardcode Endfield character sizes.
++
++a jump-height limit alone cannot establish a valid directed connection: the
++trajectory, player capsule, landing slope/support, swept collisions and reset zones must all pass.
++AI link limits are not player movement limits. descending and ascending connections must be verified
++independently; no implicit reverse jump or unlimited downward drop is added.
++
++`travel-points -o <file>` exports camp teleport landing positions from the current installation,
++resolving scene ownership through level configuration. positions of map icons are not substituted for
++landing positions. unmapped levels are reported separately. availability is unknown until supplied
++by the caller's player state or explicit planning assumptions. all eight authored industrial-base areas, including the two main areas, are also exported using the horizontal centre of their
++maximum authored expansion bounds. their vertical centre is only a projection seed, never a claimed
++ground height. factory regions are player-accessible; absence from an AI navigation bake is missing
++coverage, never a player exclusion. buildings, holes, air walls and other physical constraints still
++apply inside those regions. these records are marked approximate and carry their source vertical bounds for ground projection; zero-valued
++factory-region origins are not used.
++
++these exports include build GUID/content hash and contain local game-derived data; keep outputs
++outside git. Ganglia owns graph search, multi-origin selection and route sampling. Atlos consumes its
++packed package. camera headings and baked views belong to this repository's extractor.
++
++## verification and remaining work
++
++current map01 extraction decoded all 1,085 assets / 499,357 polygons. current wall export found 158
++map01 and 346 map02 walls. eleven map02 walls have the navigation-obstacle flag disabled, so an AI
++navmesh alone cannot be treated as proof of player passage. map travel data yielded 131 mapped camps
++and one unmapped test-level entry, plus eight industrial-base centre seeds. these counts are extraction evidence, not runtime-state validation.
++the reset-volume export additionally found 108 map01 and 292 map02 volumes (including two temporary
++zones without payloads). full exports completed with the current metadata layout. player movement
++has not yet been reproduced or validated against a collision scene.
++
++for point 3500030763, the tested local area had no state-prefixed navigation assets within 180 m of
++the target. an initial graph found a long corridor, but it included area 3, whose player passage semantics
++have not been established. restricting the selection to area 0 produces only a short local route;
++it does not verify the distant eastern approach. the three valley base centres also failed vertical
++projection onto this ordinary-area/base-asset selection. neither result establishes a shortest continuous
++route: partial portals, detail heights, funnel/string-pulling and movement-specific links remain
++unimplemented. no false gap bridges or floor snaps are introduced to hide those missing connections.
++
++algorithm reference: [Detour query API](https://github.com/recastnavigation/recastnavigation/blob/main/Detour/Include/DetourNavMeshQuery.h)
++separates polygon path search from straight-path extraction. Ganglia currently uses heap-based
++Dijkstra because arbitrary entry/travel costs do not always admit a Euclidean A* lower bound.
++
++
++## reproducible route export
++
++install the checked-in Ganglia alpha archive with the workspace dependencies. then run:
++
++```sh
++pnpm extract navmesh map01 -o /tmp/navigation.json --config endfield.local.json
++pnpm extract air-walls map01 -o /tmp/walls.json --config endfield.local.json
++pnpm extract travel-points -o /tmp/travel.json --config endfield.local.json
++pnpm extract movement-settings -o /tmp/movement.json --config endfield.local.json
++pnpm extract walk-routes --navigation /tmp/navigation.json --walls /tmp/walls.json \
++  --travel-points /tmp/travel.json --movement-settings /tmp/movement.json --request /tmp/request.json \
++  -o /tmp/routes.json --data /tmp/ground-data.json
++pnpm extract oem-views out/releases/INPUT_RELEASE -o out/releases --cache out/framing \
++  --arrival-routes /tmp/routes.json --rebuild
++```
++
++the request contains `release`, a nonempty `state` identifier, explicit `assets` names and `areas`
++whitelist, `profile: {radius, height}`, `speed`, `maxVertical`, `arrivals` and `targets`. each arrival is
++`{id, position, cost, state}`; omit position only when its id resolves in the matching travel export.
++locked/unknown arrivals are excluded. target records are `{id, position}`. all coordinates are Unity
++world metres, costs are seconds. the state identifier records the caller's chosen snapshot; it does
++not automatically resolve game progress. no area other than the whitelist is admitted, and imported
++polygon neighbour codes must allow a shared edge. requested dimensions cannot exceed baked clearance.
++
++optional `progression: "completed"` explicitly evaluates mission-controlled air walls with quest and
++mission state 3, matching the OEM viewer's completed-progress default. the current client tests rise
++reasons first, then down reasons, then the default switch. any/all reason combinations and equality
++inversion follow those source checks. empty lists carry no activation reason.
++script controls follow the completed snapshot described above. unsupported or
++malformed conditions remain unresolved and blocked. runtime wall overrides require snapshot input.
++this setting does not disable reset volumes. the client enables unaddressed unconditional function
++areas directly, including reset zones whose addressed-area `defaultOff` field is true.
++
++navigation, wall and optional teleport exports must share source identity. `walk-routes` emits a
++binding hash over the selected dataset and request, successful routes for `oem-views`, and separate
++unresolved outcomes. the data output can be supplied to Atlos's `planWalkingRoute`; it is local input,
++not automatically uploaded or attached to the public catalog. Atlos's wrapper rejects stale bindings
++and exposes timed playback positions. Atlos's development route panel opens from point detail,
++retains the point camera, draws the candidate route and shows its planar minimap projection.
++
++full map import retains gaps in AI coverage, state variants and dynamic obstacles. matching partial
++edges and authored directed chunk seams are imported within verified step limits. player ground is
++handled by the separate physical pipeline below. base centre seeds remain approximate; do not enlarge vertical tolerance to silently
++jump onto another floor. publication and all-point route baking have not been performed.
++
++## collision-based player mesh
++
++Ganglia provides an offline `@opendfieldmap/ganglia/build` entry point. it accepts world-space
++collision triangles and an explicit player profile, slope, step and voxel resolution,
++returning the existing surface contract with sampled detail heights. factory floors do
++not require AI NavMesh coverage. ordinary connections use the smaller upward/downward
++step allowance; larger drops and jumps remain separate directed transitions.
++
++`player-ground <scene> --bounds <minX,minZ,maxX,maxZ> --scene-state <n> --area <n>
++--movement-settings <file> -o <ground> --collision-output <geometry> --config <config>`
++collects selected global and neighbouring streamed collision inputs. source-bound per-cell
++caches are optional with `--input-cache`. the player's collidable/walkable layer masks,
++body, slope and ordinary step limits come from the matching movement export. actor and
++local shape poses, mesh scale, terrain holes, boxes and sphere envelopes feed the world
++geometry. capsules currently use conservative axis-independent sphere envelopes. complex
++shapes and absent cells remain explicit coverage gaps. collision-only meshes with an
++empty cooked payload can retain their authored local bounds as conservative obstacle
++enclosures in this selected-solid pipeline. those enclosures carry unknown world-volume
++exclusions and remain non-walkable. they can substantially overblock. malformed nonempty
++cooks still fail decoding.
++
++the alpha.13 packed builder constructs padded tiles, clips their cores and connects
++directed seams. near-boundary Float32 vertices snap to exact core planes while retaining
++detail-plane heights. a real VL2 build produced 69,963 surfaces and 7,114 validated seams,
++but its test arrival remains disconnected. native build failures abort the result.
++
++`player-route --ground <file> --collision <file> --movement-settings <file> --request <file>
++-o <result>` accepts a matching scene/source, arrival, target, optional interaction volume
++and wall exclusions. Ganglia's `planJumpRoute` compares bounded ground, jump and drop
++action combinations, including intermediate platforms, with physical support, capsule
++sweeps and air-wall checks. a successful ground route remains an incumbent while jump
++alternatives are searched. only a faster complete, resource-timed result replaces it.
++arcs exceeding the ordinary-run air speed require paid sprint entry. the full route then
++receives acceleration and resource scheduling. results retain source, coverage, model and
++truncation diagnostics. sampled discovery and prior corridor selection can miss valid routes.
++
++shortcut discovery covers exposed ledges before spending its budget on fine pullbacks.
++landings include continuous surface interiors, including large floors below a platform.
++ground-reachable transfers and isolated intermediate surfaces retain separate sampling
++and connection shares. slower, directly ground-visible airborne transfers are discarded.
++retained movement edges enter the same directed graph, with continuous supported ground
++visibility between action endpoints. limits bound candidate work and retained edges,
++while successive jumps have no separate fixed hop-count cutoff. the graph and candidate
++set remain approximations to globally fastest continuous motion.
++
++the feasibility stage passes the complete interaction goal to Ganglia. unresolved queries
++first propose region chains using broad cheap boundary-pair coverage and separately
++bounded physical arc validation. landing witnesses include diagonal boundary pullbacks,
++continuous surface interiors and intersections with the optimistic flight envelope.
++each still needs corrected support, actual timing and complete swept-body checks.
++verified action frontiers expand from reached ground and backward into goal-connected
++surfaces. charged work is balanced between both sides. bounded passes reuse standing support, ledge
++approaches, air openings and trajectories while increasing coverage. source-height and
++goal-height landing queries preserve intermediate steps. recursive spatial scheduling
++visits coarse regions before body-scale offsets. the remaining frontier and shortcut
++work share a bounded query budget. the initial region proposal has separate bounded
++seed, pair and physical arc limits. continuous ground transfers are reused for the
++current target. overlapping patches
++can participate through proven supported ground approaches even without a shared
++navigation edge. immutable graph, wall checks and spatial hierarchies are prepared
++once. eligibility views prune spatial branches for each action frontier without
++sorting the same geometry again. query-specific endpoints and movement edges remain isolated between planning passes.
++action edges retain their validated support faces so a later projection cannot change graph attachment.
++
++source air acceleration and no-input deceleration bound early, late and braking control
++primitives. collision-checked air openings also allow outward-and-returning jumps below
++an overhang. supported walk-offs follow the rounded capsule's contact with triangle edges
++before free fall. bounded cubic air controls also permit turning back beneath a low
++roof after leaving its edge, with continuous entry velocity and full curved-body checks.
++the collision index retains the selected build extent, including empty air beyond
++walkable surface extrema. curved sweep envelopes refine near contacts, and indexed air-wall queries
++reuse their validated records with per-interval inflation. complete collision coverage and
++the game's live air-control response remain independent validation requirements.
++
++the packed normal command produced a three-segment candidate for the supplied descent
++example with one sprint-required jump. that verifies the package/command pipeline. complete
++collision coverage, game air-control behaviour and device state still require validation.
++
++## movement devices
++
++`traversal-devices <scene> -o <file>` exports placed `int_rope_port*`, `int_jumpmachine*`
++and `int_accelerate_buff` families. the output retains build identity, placement transforms,
++creation/progression conditions and separate template, variant and placement parameter scopes.
++these scopes are not flattened into an assumed runtime state. automatic-spawn references are
++counted separately; selected devices retain whether they are referenced by that list.
++
++rope pairs require reciprocal authored `target` references in the same level, with distinct
++heights. no proximity matching is used. each pair names ascent by rope and descent by drop,
++following the requested traversal rule; ground attachment, unlock state, trajectory and
++landing validation are separate from this catalogue. pivots and rope render anchors are
++not automatically player stand positions.
++
++launch device parameters retain height, free-jump/input controls and collision flags when
++authored; acceleration parameters retain their own duration/cooldown scopes. an acceleration
++buff is a timed movement state, not a permanent increase to all walking speeds. jump/launch
++segments will need time-based motion and collision policy; constant-speed ground sampling
++cannot be used as their physical animation. unknown parameters remain typed source values.
++
++regression references supplied by the user: [camp](https://oem.re/0jBW2ZB) to
++[target](https://oem.re/0mpNfFm), with a direct southward descent. this is a directed
++player traversal example, not permission to connect every cliff or add the reverse jump.
++
++current full-scene exports read 221 map01 files and 367 map02 files: 218 reciprocal rope
++pairs (60 / 158), 158 launch devices (59 / 99), and 40 acceleration devices (9 / 31).
++all selected rope endpoints have reciprocal targets. map02 has 32 automatic-spawn
++references; none name a selected movement device in this install. these are authored
++input counts, not proof that every device is unlocked or that its landing is safe.
++
++`player-route --devices <traversal-export>` now imports fixed device macro-actions
++from that matching scene/build. the selected snapshot assumes all exported
++vertical ropes enabled and unlocked, regardless of authored enable/lock flags or
++progression gates. motion parameters, reciprocal references, interaction geometry,
++support and collision still require validation. launch devices combine completed
++mission/quest gates with authored enabled/unlocked states. power and unresolved
++motion overrides require their own input. the pure `--ground-only` stage still
++measures walking alone.
++
++reciprocal vertical ropes provide directed ascent actions with approach, a timed
++startup pause, upward travel and a supported exit. entry candidates use the shared
++effective interaction-trigger resolver. the standing capsule, full polyline and
++active/unknown wall exclusions are checked. endpoint projection stays within body
++radius. travel uses the configured speed and startup duration. this finite entry/exit
++sampling is a model of the complete macro-action, pending in-game motion validation.
++
++ordinary fixed-target bounce devices use their own target and height, with a
++minimum three-metre apex margin above the target in the supported height-limited
++model. the matching movement gravity, falling gravity and apex interval supply
++flight timing. neutral input supplies a fixed trajectory. the imported jump-machine
++component override can disable air input without disabling the device. both support
++ends and the swept capsule are checked even when the device allows collision bypass.
++free-direction, electric, vertical-only and other unsupported device models retain
++explicit unresolved outcomes. no reverse launch edge is inferred.
++
++the actions enter Ganglia's existing connection interface and participate in
++reachability, resource timing, shortcut comparison and timed replay. a feasible
++device route is published before optional jump optimization. diagnostics retain
++the device id, selected snapshot, accepted trajectories and rejected device reasons.
++
++validation on the current build includes a physical rope route from point
++300020256 to 300020282, with walking before and after ascent through the reciprocal
++pair. walking alone has no verified route in that rectangle; the device route takes
++5.93 model seconds. the normal Atlos nearest-arrival query for point 3500070545
++selects device 3500031283 and a small jump, totaling 22.16 model seconds. its physical
++walking baseline takes 27.64 seconds. the initial normal query returned a candidate
++at 0.74 seconds and completed physical construction/action comparison at 39.36
++seconds. these are computed candidates, with in-game operation still unverified.
++
++the all-enabled rope policy admits a normal nearest-anchor route for point
++10100023101 through pair 10100023065 / 10100023064. its timed sequence is
++walk/rope/walk, at 5.97 model seconds. the exported maps contain 218 reciprocal
++pairs; 93 lacked explicit enabled flags on both endpoints under the earlier policy.
++
++Ganglia alpha.23 shares prepared topology, normalized portals, ground visibility
++and projection between walking, device checks and action search. bounds hierarchy
++construction uses median partitions. the fixed profiled input above drops from
++58.39 to 23.76 command seconds, with action search dropping from 33.18 to 11.22.
++the returned route remains 22.39 model seconds with the same discovery limits.
++`diagnostics.timingMs.devices` now reports device admission separately. these
++single-run comparisons reuse physical ground and retain CPU profiling overhead.
++
++`player-route --devices-only` ends after ground and known-device feasibility,
++before free jump/drop discovery. it preserves supported trajectories and emits a
++completed candidate or an explicit unavailable result. Atlos runs this stage in
++the foreground when walking fails, publishes a feasible device route immediately,
++and continues optional action optimization independently. queries over ready ground
++precede additional queued physical builds.
++
++the small physical rope input above completes this stage in 1.45 command seconds,
++without a jump-search phase. a normal query for 10100023101 with physical ground
++cached returns its 5.97-model-second walk/rope/walk route after 13.54 seconds,
++including scene loading and foreground preparation. larger first builds and active
++foreground work can still add waiting time.
++
++## streamed collision inputs
++
++`collision-inputs <scene> <x> <z> --scene-state <n> --area <n> -o <file>` exports
++ECS collider actors for an explicit chunk selection. actor poses are in Unity world
++coordinates; compound shape poses are local to the actor. primitive dimensions already
++belong to collision geometry, so renderer scale must not be applied again. mesh shapes
++retain their own scale and ordered asset bindings, separately from the render mesh.
++
++use `<scene> global` instead of `<scene> <x> <z>` to export the global chunks for the
++same explicit state/area selection. a cell export does not implicitly include them:
++consumers must combine global and intersecting cell inputs for their selected active
++states. the current map01 default global chunk contains 19 collider actors.
++
++`--layers <uint32>` selects an explicit actor-layer mask (all 32 layers by default).
++the mask is retained in `selection.layerMask`; excluded actors retain their poses,
++filters and asset bindings in `excludedActors`, without loading their geometry. use a
++matching movement export to determine the mask for the requested player mode. this
++does not infer runtime state or settle per-shape query options. malformed included
++geometry still fails, with its asset identity in the diagnostic. an empty cooked mesh
++is not silently replaced with render geometry.
++
++box, capsule, sphere, single mesh, compound and terrain records are decoded. enabled,
++trigger, surface and raw option fields are retained independently: a trigger is not a
++solid obstruction, and an absent AI polygon does not invalidate a collision floor.
++compound complex-mesh inputs remain separate from regular shapes; their query policy
++must be resolved before baking. malformed counts, missing bindings and unsupported cooked
++geometry fail the export.
++
++the `geometries` table contains deduplicated local triangle/convex meshes and collision
++heightfields. each actor's `shapeGeometry` array parallels its shapes (`null` for primitives);
++`complexGeometry` and `terrainGeometry` remain separate. mesh geometry still needs its
++shape scale and actor/local poses applied. terrain geometry already includes its collider
++scale and needs only the actor pose, never a second scale or renderer transform.
++
++collision heightfields read RG16 base-level samples, normalize the low 15 bits by 32766,
++and alternate quad diagonals. this differs from rendered terrain's 32768 normalization.
++a hole bit at any of a quad's four corners removes both triangles, including the triangle
++without that corner. no flat ground is inserted at holes or missing data.
++
++one current cell sample decoded 134 actors with 1,008 shapes (869 mesh and 139 box),
++four complex-mesh records and four terrain records. this verifies record framing, not
++world navigation. its four 65 × 65 heightfields produce 31,092 triangles and omit 838 hole
++quads. the exported coverage is explicitly incomplete: global chunks, Mono
++colliders, interactive prefabs, foliage and player layer/option
++policy still need integration. do not interpret this cell catalogue as a complete collision
++world or use missing coverage to authorize a jump/drop.
++
++a separate placement probe expanded the sample's regular shapes to 434,065 world-space
++triangles using 106 cooked meshes. the original preview target's vertical ray intersects
++an upward-facing surface near its marker height. this is a local placement cross-check;
++complex-mesh collision policy and complete world coverage still require separate validation.
++
++the southward descent example now has selected-layer collision inputs from both intersecting
++cells: 349 actor records, 273 after duplicate placements are merged, produce 874,000 regular
++shape/terrain triangles. a bounded build places the teleport and target on different connected
++surfaces. initial candidate arcs collide with the platform railing; moving takeoff behind the
++edge and using the reset zone's polygon admits geometric candidates. these are motion-model
++trials, not validated game routes: air-control dynamics, complete scene collision and landing
++state still require verification. no directed connection or view cache is published from them.
++
++## continuous ground queries and sustained sprint
++
++Ganglia alpha.7 prepares reusable topology and a support BVH with `createGroundPlanner`.
++`walk-routes` shares this preparation across target queries. Ground runs are traced through
++open 3D portals, with reconstructed support heights and wall checks. Coplanar centre and
++portal detours collapse, while terrain height breaks and required obstacle turns remain.
++Takeoff and landing split the ground runs. This is bounded any-angle simplification of
++selected corridors, with no proof of globally shortest continuous paths.
++
++A request may supply `locomotion: {speed, sprintSpeed, sprintAcceleration, stamina?}`.
++With a matching movement export, its default movement asset supplies run/sprint speeds
++and sprint acceleration. Sprint activation and natural recovery require an explicit resource policy; absence of a per-frame drain does not establish free activation.
++An explicit stamina policy contains capacity, initial, sprintDrain, recoveryRate,
++recoveryDelay and reserve, with an optional activationCost. Ganglia carries resource and recovery state
++through the whole journey and compares sprinting now with saving an activation for
++a later ground run;
++it does not infer costs from the separate evasive dash resource. Custom gameplay states
++and movement modifiers remain caller-owned. The scheduler is feasible, not globally
++optimal across every route and resource allocation.
++
++The development-only Atlos route inspection panel now consumes these continuous results,
++uses the shared host panel and displays English labels. The descent example remains a
++candidate: physical ground projection differs slightly from exact collision support,
++and complete collision coverage, air control and landing validation remain unresolved.
++Its preview has been refreshed independently of the point-view cache.
++
++
++The movement export now reads the current `GlobalConst` root-bean configuration using
++shared Spark decoding. `sustainedSprint` contains build-bound speed, acceleration and
++maximum-capacity activation/recovery inputs. The planning seed starts full, as requested.
++Regional movement/resource buffs are not applied. Normalized energy is measured in
++activation charges. Recovery during sprint and movement is explicit in the exported
++policy. Sustained gait pays one entry charge; a new activation pays again after a gait
++interruption. A `sprintThrough` whitelist preserves gait only for supported modes.
++Allocation search compares run-level choices with nondominated resource labels, capped
++at 256 with an explicit truncation flag. Interior activation-time optimization and
++resource-optimal selection across all spatial corridors remain unresolved.
++
++## fully enabled traversal and sparse physical construction
++
++`groundData` accepts `progression: 'fully-enabled'` as an explicit planning assumption.
++controllable air walls are open, including mission gates and walls with an owned or
++recovered script controller. uncontrolled boundary defaults remain in force, and
++fixed reset exclusions remain blocked. unknown reset zones with an explicit runtime
++condition or disabled default are inactive in this unrestricted snapshot. this policy is separate from inferring
++the actual completed-game state. `openTraversalPicks` applies the corresponding viewer
++preset to doors and activations while retaining derived controls and physical supports.
++
++`player-route` now assumes all supported rope and fixed-target launch devices are
++enabled, unlocked and powered. ordinary and electric fixed-target devices share the
++same supported-endpoint and swept-trajectory checks. unsupported motion controls,
++unknown geometry and blocked trajectories do not become executable connections.
++
++local goal-access refinement uses the same selected collision and body at finer
++horizontal resolution. it adds only wholly missing support components. combining
++partial detail meshes can invalidate portal ownership, so overlapping components are
++excluded until a stitched replacement is available. restored narrow tops still need
++stationary clearance and complete motion validation. the ordinary three-box example
++returns a 33.80-second launch-and-jump route, against its earlier 51.19-second rope
++detour. the matching cached-ground command takes 66.80 seconds rather than 173.71;
++these are model and single-run computation measurements, not in-game observations.
++
++`player-ground --tiles <x,z;x,z>` selects physical tiles on the existing global grid.
++the complete collision selection and rectangular collision scope remain available,
++while only the proposed corridor receives detailed ground construction. unselected
++tiles remain unmapped. per-tile progress includes completed and total counts. this
++supports coarse direction proposals before fine support, collision and action work.
++
++physical route progress announces ground search, device validation and local access
++refinement before those stages start, allowing the parent to retain their elapsed
++time even when a child exits before writing its final result.
++
++
++## physical tile reuse and profiling
++
++`player-ground --tile-cache <directory>` retains padded native support meshes. Keys
++bind the collision source, exact ordered float64 vertices and indices, physical
++profile, voxel/step settings, padded bounds and installed generator files/dependencies.
++Changing these inputs misses the cache. Corrupt entries are rebuilt. Core clipping
++and directed seams are recomputed for every request, including differently clipped
++outer bounds. The decoded-source `--input-cache` remains a separate cache.
++
++`player-ground --identity` reports the installed geometry generator fingerprint.
++The development host uses this instead of the routing SDK release as its ground
++artifact identity: runtime-only search updates can reuse ground, while geometry
++changes still invalidate it. Route result caches retain their solver binding.
++
++A profiled ten-tile replay containing 125,025 support faces took 7.57 seconds without
++tile reuse, and 1.00 and 0.88 seconds on two warm-cache passes. Mesh, portal and tile
++outputs had identical content hashes. This measures ground construction only; input
++loading, graph preparation and movement discovery still contribute to a route job.
++
++`player-route` reuses the prepared ground projector during goal refinement and
++releases an obsolete planner before allocating its replacement. Coarse direction
++samples guide bounded action discovery without becoming route segments; only
++validated partial actions are retained for the final start-to-goal query. The
++three-box replay returns a 33.07-second model route with current unrestricted
++facilities, compared with 33.80 seconds in the earlier replay. Complex unresolved
++queries remain incomplete rather than being treated as proof of unreachability.
++
++negative global tile coordinates are passed as `--tiles=<x,z;...>` by the development
++host so Node does not interpret the coordinate list as another command-line option.
++
++the broad shortcut pass retains its complete existing comparison budget. a bounded
++local pass uses spare total-query candidates afterward, compares both its independent
++route and the merged action graph, and cannot replace a faster complete incumbent.
++
++
++### arrival projection regression check
++
++physical arrival placement permits ordinary downward settling up to the movement setting's step-down
++distance plus one vertical voxel. upward placement retains the existing 0.5 m bound. this tolerance
++applies only to the authored arrival, not ordinary floor matching, jumps or interaction endpoints.
++factory-centre seeds instead use their exported vertical volume; they must resolve to physical support
++inside it. exclusions still apply after projection. the route diagnostics retain requested and grounded
++positions. an unmapped arrival is an origin failure, not evidence that a wider collision region is needed.
++
++rechecking the two reported formerly reachable cases on current physical tiles restored complete
++routes of 8.20 and 22.63 model seconds without rebuilding wider terrain. the latter is not a shortest-path
++claim: a separate wider candidate comparison found a 15.24-second descent, so optimization coverage
++remains distinct from reachability. the historical 13.44-second result used an earlier support mesh.
++
++
++### physical search timing
++
++fixed-size vector arithmetic in SDK alpha.29 retains identical capsule collision results while
++reducing action search allocation. the existing candidate budgets and sampling are preserved.
++with identical route and action output, one retained real-scene solve fell from 57.83 to 24.78 seconds.
++
++an experimental wider comparison found a 15.24-second descent in 38.53 seconds of solver time,
++but changed another point's candidate ordering and slightly worsened its route. that budget change
++is not enabled. future broader comparison must preserve the established incumbent independently.
++
++## solver integration
++
++alpha.31 retains geometric goal-distance estimates during repeated searches of the
++same immutable prepared graph. a changed target set invalidates those estimates;
++new action speeds still update the time lower bound. movement sampling, collision
++validation and route costs retain the alpha.30 rules. the v69 preview integration
++uses the same extractor route commands and source-bound physical inputs as before.
++
++## persistent local route workers
++
++`packages/extractor/src/route-worker.ts` is an IPC entry point for hosts retaining a route process.
++it accepts `{ id, args }`, with the same argument list as `player-route` after the command name. one
++request runs at a time. the worker emits `ready` with protocol `version: 1`, ordered `progress`
++messages carrying the request id, then `done` or `error`. results retain the ordinary atomic
++output-file contract. `done` also reports node's memory usage. failed requests clear preparations
++and do not terminate the worker. disconnecting its IPC owner releases the process.
++
++each process retains one ground/collision/movement input region, one base ground planner, one
++collision world, one device interpretation and at most one target refinement. input identities
++include resolved paths, device/inode, size, nanosecond modification and change times. changes
++between preparation and decoding fail the request. a new region drops the preceding region before
++decoding; an input change or worker failure invalidates all its derived preparations. changed
++exclusions rebuild ground planners, while changed goals replace only the target refinement.
++connections supplied by a query do not become defaults in the prepared planners.
++
++the retention ceiling is 512 MiB of serialized region inputs. larger inputs still compute without
++retained preparations. this limits retained input scope, not node heap or RSS: decoded numbers,
++graph structures and collision indices require additional memory. hosts should bound worker count
++and retire idle processes. `diagnostics.prepareReuse` reports preparation hits, while `timingMs`
++still charges each request's actual work. neither full route results nor discovered movement actions
++are cached by this worker; a warmed request still performs route search. the ordinary one-shot CLI
++uses the same solver with preparation reuse disabled.
++
++## first-query preparation
++
++Ganglia alpha.39 builds collision indices with exact median partitions and reuses
++that index to select local refinement triangles. refinement candidates retain all
++heights and original input triangle order; the native mesh and motion checks have
++the same inputs. coarse and refined planners share owned geometric primitives,
++while global portal ownership and traversal order are rebuilt for each planner.
++the one-shot CLI releases its obsolete coarse planner before allocating a full
++replacement. worker retention remains explicit and separate from this lifetime.
++
++fresh-process first-query time is the primary performance gate, with retained
++physical input files and no prepared process state. same-region workers remain an
++auxiliary reuse path. performance comparisons must preserve complete route,
++connection and limit objects across the fixed input population; completed-result
++cache hits do not count as solver speedups. the current work does not complete
++regional entry/exit contraction or establish a globally shortest route.
++
++38 fixed successful requests were replayed in separate fresh Node processes. complete
++route, connection and candidate-limit objects matched the alpha.31 baseline for all
++38. aggregate command time was 554.891 / 452.624 seconds; search was 202.690 / 152.695
++seconds. this is an 18.4 percent command reduction, not the requested 90 percent.
++these are local fixed-input measurements rather than population latency percentiles.
++783 repository tests passed on Node 26, with the final release-lifetime adjustment
++also covered by the 17 focused route/cache/refinement tests. the lint command
++completed with warnings, including the cache's internal typed-slot assertions.
++
++## reducing repeated graph work
++
++alpha.47 shares the validated, wall-filtered ground graph and SCC computation
++between exact routing and action discovery. distance fields advance from newly
++improved endpoints when validated actions extend the graph, restarting for changed
++roots, removed/changed actions or different ground. these labels belong to one
++query and are not kept by the route worker for the next request. the original
++edge graph and its forward adjacency are reused without a full weighted edge copy.
++ground tracing addresses polygon boundaries by face ID and edge ordinal, retaining
++the same portal and neighbour order without global serialized edge keys.
++
++all 38 fixed requests again returned identical routes, connections and limits in
++fresh processes. aggregate command time was 554.891 / 417.453 seconds, a 24.8 percent
++reduction from alpha.31; search time was 202.690 / 140.154 seconds. incremental
++distance fields expanded 1,960,025 nodes, against 5,953,562 for the corresponding
++complete passes. per-search diagnostics report resets, expansions, outgoing-edge
++visits and reachable label counts. 188 SDK tests passed. peak RSS did not uniformly
++decrease, and the requested 90 percent command-time reduction remains unmet.
++
++783 repository tests passed with the installed alpha.47 package. the lint command
++completed with the existing viewer warning and internal cache slot assertions.
++`player-ground --identity` is byte-identical before and after the alpha.39-to-alpha.47
++runtime upgrade, so this change does not invalidate the retained physical tile
++meshes; route results still bind the new solver release.
++
++## candidate lookup and serial work
++
++Ganglia alpha.53 reduces nearest-query wrapper allocation, packs bounds-tree construction scratch,
++skips empty landing streams and estimates jump duration without building trajectory phases for
++rejected candidates. nearest ties and budget prefixes retain the old order; admitted actions still
++need the same support and swept-body proofs. unchanged coarse-direction goal probes pass directly
++into the final phase within one solve, without a cross-query route cache.
++
++the extractor reads independent required inputs concurrently and keeps the walking result if device
++validation admits no new edges. source, profile, device and request validation remain in place.
++foreground walking/device jobs and background full search retain their existing scheduling. a tested
++combined progressive call did not improve the rear query's wall time, so that scheduling experiment
++is excluded.
++
++38 fresh-process requests retained identical complete routes, discovered actions and candidate
++limits. command time was 417.453 / 398.647 seconds for alpha.47 / alpha.53; search was 140.154 /
++129.342 seconds. this is a 4.5 percent command and 7.7 percent search reduction from alpha.47, or
++28.2 percent command reduction from alpha.31. eight single-run timings rose by 12–475 ms, and the
++largest RSS peak was 3.09 / 3.21 GiB. these measurements do not establish uniform per-point speedups
++or the requested 90 percent command reduction. the SDK's 190 tests passed.
++
++783 repository tests passed with alpha.53 installed. lint completed with the
++existing viewer and cache assertion warnings. the geometry generator identity is
++byte-identical to alpha.47; physical tile meshes do not need rebuilding for this
++runtime upgrade. route results still bind the new solver identity.
++
++## phase-free moving supports
++
++`traversal-devices` also exports source-bound `movingSupports` and explicit
++`unsupportedMovingSupports` records. the catalogue reads solid prefab colliders,
++curve paths, local floor offsets, conveyor lanes and water-volume bindings once
++offline. moving stones, moving lotus platforms, water floaters, elevators and
++conveyor-carried boxes use the same support and transport representation.
++prefabs whose moving subtree cannot be identified remain unsupported.
++
++each exported support also retains `endpoints.initial` and `endpoints.terminal`,
++world-axis-aligned boxes enclosing the solid collider vertices at the path's first
++and last poses. these boxes are illustration metadata. navigation continues to
++use the separate support surfaces, transfers and collision checks. closed paths
++can have coincident endpoint boxes. a seesaw's boxes show its authored initial
++board pose and positive tilt limit, without implying a timed terminal state.
++conveyor ownership resolves its numeric level through the scene's level config.
++
++`poses` retains whole-support boxes at the sampled collider poses. `surfacePoses`
++is parallel to the raw support faces and retains every contributing body and
++pose interval when faces coincide. transfers reference their own endpoint poses.
++ordinary moving supports keep a fixed orientation, so boxes interpolate along
++each sampled translation segment. seesaw faces instead reference the discrete
++tilt sample that won their upper-envelope interval. these references let a route
++select boxes at its actual boarding, alighting or support contact. the authored
++first and last boxes remain separate illustration metadata.
++
++selected route exports can include `supportBoxes` at actual boarding, alighting
++or borrowed-support poses. baked support faces retain raw source candidates.
++the annotator resolves selected connection contacts and moving-only walking
++intervals, then selects one feasible pose per conveyor borrow. overlapping
++conveyor instances do not produce multiple boxes for one contact. continuous
++lift samples coalesce into boarding and alighting poses. a route ending on a
++support records a final use pose. legacy catalogues without pose provenance omit
++these optional diagrams. annotation preparation and execution have separate
++`timingMs` fields and are included in command time.
++
++the current fully-enabled model uses the upper envelope of a swept support
++without enumerating motion phase. endpoint caps permit ordinary jumping on and
++off. transport retains authored speed where available, while static collision
++and active exclusions still constrain the complete passenger trajectory.
++different poses of the same device do not become permanent ceilings for each
++other. query preparation checks local clearance and preserves the ordinary
++terrain graph alongside the additions.
++
++the support-query overlay shares the static collision world's body-padded query
++scope. its clearance-baked meshes retain their own build cores. a ground query
++near a core edge can therefore inspect its complete body footprint without
++throwing against a narrower auxiliary index. raw moving-roof hits still require
++a matching clearance-baked support projection. queries beyond the static world's
++scope continue to fail explicitly.
++
++seesaws use the piecewise upper envelope of a board rotating about its local x
++axis. this retains the low pivot and independently raised ends. the resulting
++surface is an optimistic phase-free support abstraction. tilt and waiting time
++are not calibrated and no angular ride duration is invented. phase scheduling,
++boarding cues and measured gameplay timing remain separate follow-up work.
++
++preparation reports `moving-supports`, `timingMs.moving` and per-transfer rejection
++evidence. a changed device catalogue invalidates both moving preparation and
++target refinement, including changes that retain the same number of faces.
+diff --git a/docs/oem-integration.md b/docs/oem-integration.md
+new file mode 100644
+index 00000000..254de7f1
+--- /dev/null
++++ b/docs/oem-integration.md
+@@ -0,0 +1,179 @@
++# OEM integration
++
++the ordinary package/level viewer remains available. OEM adds an opt-in static companion release, an
++explicit point launch and a cross-window bridge to the Atlos-owned World app. no game account,
++collection record or locator credential is transferred.
++
++the main OEM detail contains only a link, reusing its existing divider and action styles. the point
++prerequisite panel and preset selector live in the preview's right dock, using the viewer's existing
++panel, heading and scene-choice styles. both inherit their host application's typography.
++
++## generate a release
++
++use packages and metadata from the same local install. pack all seven complete scenes first:
++`map01`, `map02`, `indie_dg005`, `indie_dg007`, `indie_dg016`, `base01_lv001` and `dung01_wrdg001`.
++the last two cover Dijiang and Valley's Aberrants; `base01` and `dung01` are logical map ids, not
++streaming scenes. then run:
++
++```sh
++pnpm extract oem --config endfield.local.json --atlos /path/to/Atlos/talos --packages out --output out/releases
++pnpm extract oem-check out/releases/<release-id>
++```
++
++the command rejects incompatible package versions, source fingerprints, partial packages, ambiguous
++placements and unresolved point ids. NPC proxies resolve their level through NpcProxyTable, not a
++coordinate search or identifier prefix. output lives under a content-derived release id; the catalog
++is written last. publish only directories holding a complete `index.json`. after an incompatible
++package-format change, repack all seven scenes and export a new release before switching the main
++site's catalog URL. an older release keeps its original package version; changing its catalog's
++version fields cannot upgrade its archives. partitions and their region membership come from OEM's
++`src/data/map/region.json`, including DJ_1 and ES_1. point placement still comes from the game's
++exact entity id and LevelConfig scene path.
++
++OEM exports use the current package's generic controls, terrain layout and interpreted material
++surfaces. companion story controls carry their category, user source and story role; point framing
++evaluates camera controls at the target as well as its stream areas. prerequisite presets follow the
++extractor's main-story order; framing uses the renderer's opaque material looks and leaves played
++particles out of static occlusion. rebuilding after a package version change regenerates companions
++and view bindings with the new scene generations.
++
++the release contains a catalog, one companion JSON per OEM subregion and the referenced package
++archives. it excludes debug output. generated releases and game-derived metadata stay outside git.
++rerunning the same release into an occupied destination fails rather than overwriting it.
++
++## companion contract v1
++
++The v98 scene format indexes controls, missions, categories and levels numerically and exposes
++binary geometry and texture tables. The OEM companion contract continues to name point conditions
++and preset picks by stable control ID. Export and viewer boundaries translate those IDs into the
++current scene's indices; callers can still read `sceneValues` and `scenePicks` by ID and set values
++with a record. Internal panels use `sceneValuesByIndex` and `scenePicksByIndex`. A new scene
++generation requires a fresh companion export and invalidates cached point framing. Photo libraries
++are exported separately from map packages and must be regenerated when their particle schema
++changes.
++
++`package-format/oem.ts` defines the JSON contract. the catalog binds a release, game source
++fingerprint, scene package generation/version/path, partition files and a point-to-partition index.
++each partition contains points, supplemental quest/mission controls, mission ordering and localized
++labels with English fallback. points retain authored Unity coordinates, scene and level, OEM
++region/subregion/tier, prerequisite alternatives, interaction locks, script-driver evidence,
++unknowns and validated presets.
++
++conditions use the existing disjunction-of-conjunctions mask encoding and evaluator. presets use the
++existing story-point ordering: they never set an unplaceable quest independently or treat a script
++driver as a sufficient collection prerequisite. defaults are preferred when already satisfying;
++other valid presets are ordered by number of changed controls, stably in source order. unresolved
++runtime locks and spawn scripts remain unknown even after a known quest prerequisite is satisfied.
++this is an authored preview, not the state of a logged-in player.
++
++the viewer merges supplemental controls into the package's original controls without changing its
++visibility formulas. OEM previews initially set quests and missions to completed and facilities,
++Control Nexus and cabin slots to their maximum available levels, keeping derived gates automatic.
++manual story presets remain selectable; the panel reports when the selected state does not satisfy
++the point's recorded prerequisite. selecting another point restores completed progression and
++replaces companion controls; rendering options remain. target markers locate points whose gameplay
++model is not represented. authored world positions can differ from manually positioned OEM facility
++icons; the preview keeps the authored coordinates rather than moving the scene target to match the
++icon.
++
++all default-profile point views can be baked with `oem-views` after exporting a base release
++([offline framing](oem-precompute.md)). the new immutable release embeds a generation- and
++visibility-bound pose per point; a matching pose avoids framing-only geometry reads on the frontend.
++first entry and cross-scene loads immediately use south 10 m / up 6 m while the final pose resolves.
++same-scene point changes retain the flight animation and retarget it when the pose becomes
++available.
++
++framing tries sixteen headings and several elevations at a minimum horizontal distance of 10 m. it
++checks nearby opaque triangles and terrain; small geometry containing the target is not treated as
++an occluder, and underground points remain beneath their cave's terrain roof. no-candidate cases
++keep the 10 m / 6 m fallback and carry an explicit unconfirmed-view flag. this is best effort:
++transparent or alpha-tested surfaces, missing meshes and authored points inside solid geometry do
++not provide a visibility guarantee. the target marker remains available.
++
++manual scene values or missing/stale baked bindings use the same local framing kernel. checked local
++poses persist up to 512 entries, keyed by framing version, package generation, level, target and
++visibility groups. decoded nearby geometry is reused up to 64 MiB per opened package. cancellation
++never applies a stale pose. results obtained before required terrain pages arrive are not persisted.
++
++## World host
++
++Atlos owns the World application, OEM navigation, condition panel, minimap and region overlay.
++`@endfield-noclip/viewer/host` exports `ViewerApp`, `Viewer`, `httpSource` and `useViewerState`;
++`@endfield-noclip/viewer/style.css` supplies the existing renderer panel styles. pass an `overlay`
++render function to `ViewerApp` to receive the initialized viewer and its right-hand panel portal.
++the host owns navigation in that mode; package/level URL handling and their panels remain available
++in the ordinary standalone app. the host must use the same React instance as the renderer.
++
++the host facade lives in `viewer/viewer.ts`; scene controls remain owned by `SceneState`, GPU passes
++by `Renderer` and package residency by `openScene`. companion controls replace only the supplemental
++control union through `SceneState`, so its visibility consumers stay connected after an OEM point
++change. overlays encode after tonemapping and receive transient output and reversed-Z depth views;
++they must not retain those views across frames. camera subscriptions cover both control movement and
++immediate pose changes.
++
++World uses a fixed source revision and a separately pinned data catalog. package generation/source
++validation and the precomputed pose binding remain required. the host shares the existing package
++format conditions and story evaluator rather than implementing another condition engine.
++
++## local verification
++
++`NOCLIP_RELEASES` can override the local release root (default `out/releases`); Vite dev and preview
++serve it at `/oem/`. set OEM's `VITE_WORLD_URL` and `VITE_WORLD_CATALOG_URL` to the local viewer and
++immutable catalog before starting OEM. World owns its own local development server and directly
++composes the OEM map UI.
++
++desktop WebGPU and the existing keyboard/mouse controls are the initial acceptance platform. the
++ordinary GPU-start error remains visible in unsupported browsers. no touch-flight or WebGL fallback
++is added.
++
++## deployment
++
++World is an independently deployed Pages application owned by Atlos (`apps/world`), with the title
++`World - Open Endfield Map`. its frontend is built and deployed separately from the OEM main site.
++scene archives and companions remain immutable data releases on R2. this repository's ordinary
++viewer remains a development tool; it does not own World domains or frontend deployment.
++
++upload and verify a complete data release before updating World's catalog configuration. frontend
++source pins and data release ids are independent: new renderer builds must still validate package
++versions, generations and source fingerprints. no build or offline export publishes automatically.
++
++## camera-driven level changes
++
++the host can call `showLevel(id, { fly: false })` to change level visibility while keeping the free
++camera and controls. `load(source, level, progress, { preserveCamera: true })` similarly replaces a
++package without setting its overview pose. the host owns cross-scene coordinate registration, route
++validation and overlap rules. `controls.flying` suppresses automatic routing during point and
++overview flights. the ordinary standalone calls retain their existing flight behavior.
++
++`oem-navigation <baked-release> -o <releases> --config <config>` adds `navigation.json` to a new
++immutable release, hard-linking the existing model archives and retaining every baked point pose. it
++reads `MapRegionTable` from the same game build, exports tier volumes and explicit scene/level
++routes plus the source `isSeamless` flag, and binds all package generations. unsupported shapes fail
++export; `oem-check` verifies the binding. independent scenes without tier volumes use a conservative
++verified gameplay-point footprint expanded by 10 m, rather than their much larger decorative content
++bounds. outside that footprint there is no automatic-entry evidence; no floor heights are invented.
++navigation is optional for older manual-only releases. rebaking also preserves and rebinds an
++existing navigation companion.
++
++## hosted panel presentation
++
++`Panel`, `PanelProvider` and `PanelProps` are part of the viewer host interface. scene conditions,
++display settings and statistics use separate title, action and body slots. a host can provide its
++own panel shell around the same controls; without a provider the standalone viewer uses its existing
++panel styling with explicit headings. keep the body mounted when collapsing it, so control filters
++and disclosure state survive. renderer bindings, values and scene logic stay in the existing
++controls.
++
++### adaptive free flight
++
++World can supply `viewer.controls.groundHeight` from its existing low-frequency ground sample. with
++a finite elevation, ordinary movement eases from 10 m/s within 5 m of the ground to 50 m/s at 100 m
++clearance. `controls.speed` remains the persisted Ctrl+wheel trim (40 is neutral); normal adaptive
++speed is capped at 50 m/s after that trim. `null` keeps standalone fixed-speed behavior. the
++existing velocity smoothing also eases changes in the sampled ground elevation. this does not change
++automatic point/overview flight timing or rendering.
++
++hold Tab or Alt for one-fifth speed, or right mouse for fivefold boost. slow takes priority when
++both are held; releasing it restores the other held modifier. Tab is captured only during flight
++(pointer lock, drag look, or held movement keys), preserving ordinary UI focus navigation. blur,
++pointer cancellation and leaving pointer lock clear the modifiers.
+diff --git a/docs/oem-precompute.md b/docs/oem-precompute.md
+new file mode 100644
+index 00000000..37f79965
+--- /dev/null
++++ b/docs/oem-precompute.md
+@@ -0,0 +1,113 @@
++# offline OEM framing
++
++`oem-views` computes the completed-quests / maximum-facilities view for every point and embeds the
++poses in a new immutable companion release. the browser consumes a pose only when the framing
++version, package generation, level, target coordinates and effective visibility match its key.
++manual state changes and unavailable bindings retain local calculation and its persistent cache.
++
++```sh
++pnpm extract oem-views out/releases/<base-release> -o out/releases --cache out/framing/<base-release>
++pnpm extract oem-check out/releases/<baked-release>
++```
++
++the input is an already verified OEM release. the exporter reads its actual converted geometry and
++height pages, and shares pure decode jobs and candidate selection with the viewer. it needs Node,
++not WebGPU, textures or an account. points are grouped by scene and tile to reuse decoding. only the
++scene's active progression and target streaming areas participate. checkpoint JSON is written
++atomically every 100 points and after each partition; restarting rechecks the versioned keys.
++`--scenes map01,map02` and `--subregions WL_1,WL_2` restrict a run to checkpoint preparation without
++publishing a partial catalog. `--points <id>,<id>` prepares individual regression cases in the
++same checkpoint format. disjoint scene/partition runs can run in parallel; finish with the
++unrestricted command to assemble complete coverage.
++
++publication requires the output and input to share a filesystem: immutable archives are hard-linked,
++not modified or copied into another set of model bytes. the release hash includes all pose data.
++companions and the catalog receive the new release id; the catalog is written last. old releases
++remain intact. generated packages, checkpoints and game-derived companion data stay outside git.
++
++## framing contract
++
++algorithm v7 compares sixteen headings and several elevations while retaining at least 10 m horizontal
++viewing distance. at the first feasible elevation it ranks clear candidates by nearby occlusion
++across a 5 by 3 inspection-frustum grid (5 m forward depth). fewer blocked samples win;
++oblique headings break ties. all rays share a per-point triangle spatial index. this avoids choosing a wall-hugging view just because the point
++itself is visible, without changing the user's lens. v3/v4/v5/v6 catalogs remain readable, but their pose
++keys cannot satisfy v7 requests; rebake to restore the zero-computation path.
++it focuses above the target floor, handles cave points beneath the terrain and
++ignores small geometry enclosing the collectible itself. all-candidate failures compare 32 headings at 10/16/22 m and three elevations, using a
++5 by 3 target-neighbourhood grid to favour an enclosure's opening and reject foreground walls.
++these context views keep `clear: false`: a useful entrance view does not prove the collectible visible.
++
++for an occluded point, the same pass can check a single source-backed obstruction control: a door
++opening, a destructible object, or an independent script group hidden by an extracted switch/combat driver. it requires a
++blocked sight line through that group's geometry before interaction and a clear inspection bundle
++afterwards. unrelated nearby controls, quest-derived gates, unknown triggers and multi-step puzzles
++are not overridden. the bound pose carries the proven control and its before/after values; package
++generation and visibility keys still apply. standalone destructible objects with no packed state
++remain context-only; this does not reconstruct break animations, debris, explosions or gameplay.
++transparent surfaces, unavailable geometry and points embedded in solid objects remain limitations.
++
++`oem-check` validates complete per-point coverage, finite poses, package generations, exact
++visibility keys and the 10 m distance. the point panel retains the unconfirmed-view hint.
++first-entry camera placement is immediate; continuous same-scene navigation keeps animated flight.
++
++## actual v27 output and frontend cost
++
++the completed-profile release contains 11,396 poses across 19 partitions and seven scenes. all poses
++satisfy the distance requirement; 1,388 have unconfirmed visibility and use the explicit fallback.
++the views add 2,581,008 bytes to the JSON companions, or 743,526 bytes with gzip compared with the
++equivalent unbaked companions. gzip savings require the static host to serve content encoding. the
++model archives are unchanged by baking.
++
++poses travel in the companion partition the frontend already needs: no extra pose request and no
++all-region startup download. matching poses skip framing-only mesh reads and decoding. ordinary
++renderer streaming remains necessary; some geometry bytes would otherwise overlap with its cache.
++the earlier synthetic five-number encoding estimate (about 199 kB gzip) excluded binding hashes,
++status and full coordinate precision and is not the shipped payload size.
++
++only the default completed profile is baked. including all 65,142 authored presets plus a completed
++view per point would mean 76,538 combinations before deduplication, about 6.7 times the default
++coverage. there is no need to multiply first-launch data by those manual combinations.
++
++a local Dijiang pilot checked 12 points in 1,711 ms, reading 211 ranges / 4,161,835 stored bytes,
++with geometry reuse and no terrain. that pilot is not a large-map runtime forecast. the full run
++used checkpoints, parallel partitions and recomputation after distance requirements changed, so its
++combined wall time is not a clean cold-run benchmark. v27 particle changes require fresh scene
++archives; new generations invalidate old pose bindings automatically.
++
++interaction framing checks the complete original obstruction against a conservative camera frustum
++with at least 3 m lens clearance, trying 10, 16 and 22 m target distances. the same pose must see the
++target after the state change. destructible placements retain intact/destroyed visibility and explicit
++`reward_entities` gates; unrelated nearby boxes are not removed. debris, damage and intermediate
++physics are not simulated. ambiguous reward owners remain unresolved.
++
++clear interior views also check nearby obstruction controls. an entrance view takes precedence only
++when its complete original obstruction fits, the revealed target is visible, and surrounding wall/ceiling
++samples show more open space at the camera than the original interior pose. an already open exterior
++view is retained on ties, so a nearby door alone does not pull the camera into another room.
++
++## arrival-route constraints
++
++`--arrival-routes <file>` accepts `{ release, routes: [{ id, status: "complete", points: [[x,y,z], ...] }] }`
++from a routing producer. the release must match the exact input catalog; duplicate/unknown point ids,
++non-finite positions and routes ending more than one metre from their target fail export. this is a
++trusted routing input: the exporter does not infer or certify player reachability from a polyline.
++
++arrival heading generation belongs to the extractor. it measures the final 24 m of route arc length
++and tries views 30/45 degrees either side of the direction back toward the arrival path, from beyond
++the destination. the longer window avoids a tiny final polygon edge reversing the apparent approach.
++the ordinary viewer geometry kernel checks those candidates and ranks final-approach visibility
++samples at 2/4/8/12/18/24 m as a tie-breaker, replacing the fixed compass preference; when none is clear it retains existing
++framing and interaction handling. input-route content hashes and the arrival algorithm version isolate offline checkpoints, including
++when reusing the same cache directory with changed routing inputs. input availability and state
++assumptions remain the routing producer's responsibility.
++
++`--rebuild` recomputes selected points even when checkpoint keys match. with no point/scene/partition
++filter it rebuilds the whole release; with a filter it remains checkpoint-only. final assembly still
++uses the existing immutable release writer and `oem-check`. no option publishes remotely.
++
++local experiments rebuilt point 3500030763 and validated assembly of a local 11,396-view release,
++with other matching views reused. the early 133.7-degree candidate used an area-3 corridor whose
++player passage semantics remain unverified; it is not an accepted route or final visual result.
++ordinary-area-only routing has so far established only a short local approach. no all-point routing
++bake, in-game traversal validation or browser screenshot comparison has been completed.
+diff --git a/docs/package-format.md b/docs/package-format.md
+index bf161508..162e6bb2 100644
+--- a/docs/package-format.md
++++ b/docs/package-format.md
+@@ -522,6 +522,9 @@ material is ready or an `UnconvertedEntry`, as in the [asset tables](#asset-tabl
+ 
+ ### materials
+ 
++ready material records optionally retain the authored `renderQueue`. its absence in older version-49
++packages means the queue is unknown; readers must not infer it from material names.
++
+ each material is its cull mode and its `surface`: the extractor's interpretation of its serialized
+ state ([material and shader](game-data/assets.md#material-and-shader), decoded as
+ [extraction.md](extraction.md#asset-classes) describes) into what it draws
+diff --git a/docs/status.md b/docs/status.md
+index 9027039c..0ba1c081 100644
+--- a/docs/status.md
++++ b/docs/status.md
+@@ -40,6 +40,14 @@ packs or renders correctly.
+ 
+ ## lighting and post-processing
+ 
++- photographic depth of field and authored post-focus transparency are available; moving-object
++  reprojection, per-particle transparency sorting and packed intermediate precision still differ
++  ([photography](viewer/post-processing.md#photography))
++- photo filters: exported colour LUTs, vignette and high-quality bloom overrides render, along with
++  Black and Gold's additive sprite particles. particle noise and character-specific lighting volumes
++  remain unsupported. external-LUT colour-space parity still needs an in-game comparison
++  ([photo filters](viewer/post-processing.md#photo-filters))
++
+ - baked GI ([irradiance](game-data/irradiance.md), [ambient](game-data/lighting.md#ambient)):
+   brightness is unchecked against in-game shots; the native scalar on all diffuse ambient, the
+   specular ambient's scale (taken as `indirectSpecularFactor`) and the volume's default SH aren't
+@@ -580,3 +588,77 @@ packs or renders correctly.
+   [progressions](game-data/scene-states.md#progressions))
+ - weather/time state ids
+ - runtime: BC texture support in Safari, the texture-array layer limit on Apple GPUs
++
++## ground routes and arrival framing
++
++- `interaction-points` exports effective per-placement trigger ranges and directional gates.
++  supported normal-channel sphere goals carry source identity and explicit unsupported cases
++  ([interaction authoring](game-data/interaction.md)). map01/map02 exports cover 13,202 authored
++  interactives, with 11,286 effective trigger records and 10,507 supported standing-goal volumes.
++  runtime availability, script changes and interaction visibility remain separate conditions.
++
++- navigation topology, current air-wall geometry and teleport/base seeds can be exported and fed to
++  the Ganglia alpha package; route-bound camera candidates and forced cache rebuilding are available
++  ([navigation](navigation.md), [precompute](oem-precompute.md#arrival-route-constraints))
++- dynamic-state selection, complete player area coverage and missing industrial ground remain
++  unresolved. matching partial portals and authored directed seams are imported; the example point's
++  distant arrival and full visual acceptance are still unverified
++- version 2 exclusions also block reset-zone bounds, including payload-free temporary zones; current
++  full-map extraction found 400 volumes. upright unoffset polygon zones now export bounds-checked
++  filled footprints; other exact trigger shapes and activation remain unresolved
++- movement settings and 34 character capsule proxies can be exported separately from AI bake
++  settings. directed jumps/drops still need player collision geometry, capsule/modifier resolution
++  and trajectory/landing validation; they are not inferred from AI jump heights or admitted by
++  vertical endpoint projection
++- the most common capsule is the default when importing matching movement settings; explicit
++  dimensions can override it. factory regions are player-accessible and require physical ground
++  coverage where AI navigation omits them; the AI exclusion is not a player barrier
++- cooked collision decoding passed 107 triangle-mesh assets / 43,900 triangles in the example cell,
++  with bounds matching the asset records within 0.000006 m. its remaining convex asset now decodes
++  to a closed, outward-facing hull of 8 vertices / 12 triangles; collider transforms, primitive
++  shapes, filtering and full-scene coverage are not yet validated
++
++- player ground build: Ganglia alpha.13 supplies padded collision-to-surface tiles with profile
++  clearance, detail heights, slope and directed step seams. `player-ground` collects selected
++  physical inputs independently of factory AI exclusions. complex shapes, capsule axis
++  interpretation and complete prefab/state coverage remain gaps. real VL2 tile seams validate, while
++  its tested arrival route remains unresolved.
++
++- movement devices: `traversal-devices` exports authored rope targets, launch/acceleration parameter
++  scopes and unresolved state. reciprocal rope pairs are explicit; the exporter does not convert
++  device pivots into ground or grant traversal without validation.
++
++  current exports contain 218 reciprocal rope pairs, 158 launch devices and 40 acceleration devices
++  across map01/map02; all selected rope endpoints pair by authored reference.
++
++- directed movement API: the packed Ganglia dependency accepts grounded rope/jump/drop/launch
++  connections with sample times, and exposes timed journey sampling. unknown connections and
++  air-wall intersections remain blocked. `player-route` now generates model-based jump/drop
++  candidates with sprint entry/resource constraints. successful ground routes also receive shortcut
++  search, including surface-interior landings and isolated intermediate platforms. a common directed
++  action graph selects the retained ground/jump/drop combinations, and complete incumbents are
++  replaced only by faster timed routes. the installed package's descent example passes the normal
++  CLI. sampled search can miss valid connections, and movement-device state and in-game dynamics
++  remain unresolved. view caches have not been rebuilt.
++
++- streamed collision inputs now decode actor/local shape poses, compound mesh ordering, primitive
++  dimensions, enabled/trigger flags and separate terrain bindings. the new `collision-inputs`
++  command requires an explicit cell/state/area and reports incomplete world coverage. 134 real
++  sample actors / 1,008 shapes decode. cooked triangle/convex geometry and RG16 collision
++  heightfields are now included, with collision-specific height normalization, alternating diagonals
++  and complete hole-quad removal. four real heightfields yield 31,092 triangles and omit 838 hole
++  quads. world geometry assembly and source player layer masks now feed `player-ground`. coverage
++  and state selection remain incomplete. the same command accepts `global` to include global chunk
++  inputs separately (19 actors in the map01 default global chunk); neither selection claims complete
++  collision coverage. explicit layer masks retain excluded actor metadata without forcing unrelated
++  geometry cooks. the southward descent example now has bounded physical ground and continuous
++  capsule-sweep trials. the package checks full linearly swept body volume; game motion, complete
++  collision coverage and landing states remain unresolved. jump/drop links passing the explicit
++  model are exposed as candidates with that limitation retained.
++
++- Ganglia alpha.7 removes ground centre/portal zigzags through portal-constrained visibility tracing
++  and retains terrain height changes. Reusable planner preparation supports arbitrary endpoint
++  queries. Sustained sprint speed/acceleration and optional explicit stamina policies affect
++  playback and arrival comparisons. Global continuous shortest-path optimality, resource-optimal
++  corridor search and full player dynamics remain open. The English development route panel uses the
++  existing host component.
+diff --git a/docs/viewer/frame.md b/docs/viewer/frame.md
+index 166b0639..98324215 100644
+--- a/docs/viewer/frame.md
++++ b/docs/viewer/frame.md
+@@ -38,6 +38,12 @@ passes up to the lens flare run at the render size, the canvas's device-pixel si
+ what each post pass computes is in [post-processing](post-processing.md) and
+ [sky and fog](sky-and-fog.md).
+ 
++hosts can register `Viewer.addOverlay` callbacks after tonemapping. each callback receives the
++output target and size, the current opaque/cutout reversed-Z depth view and its NDC projection
++jitter, and the device/encoder for that frame. targets are transient; host renderers own their
++buffers and pipelines. registration and removal invalidate the frame. depth sampling must account
++for jitter and the difference between render and output size.
++
+ - **depth.** reversed-Z `depth32float`, cleared to 0 and tested with `greater`, with an infinite far
+   plane and a 0.25 m near plane; logarithmic depth is avoided because writing fragment depth
+   disables early-Z and, on tile-based GPUs, hidden-surface removal. where the GPU has the
+diff --git a/docs/viewer/post-processing.md b/docs/viewer/post-processing.md
+index 39e04994..57daf806 100644
+--- a/docs/viewer/post-processing.md
++++ b/docs/viewer/post-processing.md
+@@ -73,3 +73,91 @@ grading.
+ without the colour curves, which the package doesn't carry. where the game bakes grading and curve
+ into a LogC LUT, the viewer evaluates them per pixel. it also offers Khronos PBR Neutral and a
+ clamp, for separating lighting errors from grading.
++
++display settings contains exposure compensation, automatic exposure, tonemapping, bloom and vignette.
++the filters panel selects an exported game photo look and its LUT contribution. both use the existing
++renderer options and the host's shared panel chrome.
++
++## photography
++
++[`render/depth-of-field.ts`](../../packages/viewer/src/render/depth-of-field.ts) adds optional
++physical defocus before lens flare and temporal antialiasing. the photography panel controls
++aperture (f/1.4–f/32) and focus-plane distance in metres; the existing lens controls still determine
++focal length. `Viewer.focusAt` focuses on a world point along the camera's forward axis, rejecting
++points behind the near plane. this changes photography settings, not the environment profile.
++
++photography uses a full-resolution circular filter, with separate foreground coverage and background
++filtering. the 24 mm sensor height agrees with the focal-length readout at any aspect ratio.
++foreground and background radius limits are 10 pixels at a 1440-pixel render height; the temporal
++shaping input is 0.3. the shared scene water-depth pass prevents focusing through water to its bed.
++camera-relative reprojection includes the current and previous antialiasing jitter. camera cuts,
++lens edits, resizing and disabling the effect invalidate history; disabling it releases its render
++targets. the lens effect itself needs no new scene resources.
++
++materials with an authored queue from 3660 through 3740 draw after focus blur and before lens flares
++and TAA, including when focus blur is disabled. these layers leave the ordinary transparent pass;
++they use the same fogged HDR premultiplied blending as ordinary transparency, retaining additive
++emission. instances sort by authored sorting layer and order, then queue and descending camera
++distance. particle instances currently share their emitter's sorting distance. multiply and
++refraction retain their own blend modes. scene depth stays read-only, and refraction samples a
++separate copy made after focus blur. unsupported materials keep their diagnostic appearance.
++
++the packer retains `renderQueue` in ready material records. no material name or shader-name
++heuristic substitutes for the queue.
++
++current limits: reprojection accounts for camera motion, not moving-object motion. the viewer uses
++half-float intermediates throughout, so rounding differs from packed colour intermediates.
++validation is against recovered code and data plus GPU execution; it does not establish
++pixel-identical output. these limits are independent of the existing differences in scene content,
++lighting and other post effects.
++
++the bottom camera readout shows focal length in millimetres and the selected f-number. it marks
++depth of field as off when disabled, and uses the same sensor-height conversion as the blur pass.
++
++### photo filters
++
++`pnpm extract filters --config endfield.local.json -o out/photo-filters.json` exports an optional
++photo library from the same install. open the viewer with
++`?package=map02&filters=/packages/photo-filters.json` to load its picker. `none` restores the
++scene's grading. the LUT contribution slider multiplies the authored lookup contribution only; it
++does not fade grading, bloom, vignette or particle effects. filters remain selected when changing
++levels.
++
++hosts can supply the optional `filtersUrl` prop on `ViewerApp`. this library URL takes precedence
++over the `filters` query parameter.
++
++the final pass samples the exported colour strip after grading and tonemapping, in sRGB display
++space, interpolating adjacent blue slices. this follows URP's external-LUT convention; a pixel
++comparison with the game's photo mode remains outstanding. the linear BC7 format does not cause an
++automatic sRGB decode. only the selected LUT is allocated; changing contribution reuses it. debug
++material views bypass the post chain as before.
++
++active grading sections replace scene grading after spatial volume blending. supported vignette and
++high-quality bloom parameters keep the scene's non-overridden values, including bloom tint. the
++scene's bloom and vignette toggles still apply. Warm and Pale now use their authored bloom
++overrides; their character-only lighting volume needs a character shading path and remains
++unsupported.
++
++Black and Gold also exports its additive particle emitter and BC7 sprite atlas. the viewer reuses
++the scene particle evaluator for emission, lifetime curves, size, rotation, colour and atlas frames.
++the effect is anchored at the camera's first selection pose; switching away and back resumes that
++anchor rather than making the particles follow the camera. its clock is the viewer's rendered-frame
++animation time; the Animate switch pauses it with the scene. it draws depth-tested HDR billboards
++before temporal AA, bloom and grading, cancelling post exposure when the source material requests
++it. only selected emitters allocate textures and buffers; animation reuses scene selection unless
++visible scene particles need updating too. the shared evaluator's 1024-particle cap still applies.
++Unity's noise module is not evaluated and remains in the filter's partial-support notice. this path
++accepts only simple additive, view-aligned billboards without gravity, speed limits, bursts, pivot
++offsets or extra motion modules; other materials and emitters are reported by the extractor.
++
++the underlying scene renderer's existing grading, bloom and vignette differences still apply.
++
++the library uses the separate `endfield-noclip.photo-filters` contract, version 4, in
++`package-format/photo-filters.ts`. its JSON contains names, grading, vignette and optional bloom
++overrides, optional particle emitters and texture mips, unsupported-feature notes and base64
++GPU-ready LUT blocks. version 4 uses the v98 discriminated particle curve and gradient unions,
++emission bounds, per-emitter delay and resolved scale. older libraries are rejected and must be
++re-exported. the loader checks supported particle layouts and bounds texture dimensions, mip sizes
++and samplers before GPU allocation. it does not alter scene archives or their package version.
++extracted libraries are game content and remain outside git; a static host must serve the exported
++JSON separately. the viewer never reads game files or imports decoders.

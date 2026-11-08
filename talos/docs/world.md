@@ -12,11 +12,13 @@ there are no auxiliary iframes. Main-site region selection is never changed by t
 The same map resource helpers, coordinate transforms, floor handling, background texture and font
 preparation are reused. Scene controls retain the renderer's original panels.
 
-`vendor/endfield-noclip` is a Git submodule pinned to an exact commit. Only its viewer and
-package-format packages participate in the pnpm workspace. The extractor, game keys and raw/exported
-game data remain outside the Atlos build. World consumes the viewer's exported host interface, not a
-copied renderer. React is deduplicated in the World bundle; type checking resolves the same Atlos React types. World uses TypeScript 7 to match the
-renderer's modern platform types without changing the main application's TypeScript version.
+The renderer and extractor are generated from the pinned upstream archive and local patches in
+`integrations/noclip`. `pnpm noclip:prepare` materializes `.cache/noclip`; that ignored directory is a
+build input, not another Git checkout. Edit the integration patches, never the generated source.
+All four generated packages join the pnpm workspace. Game keys and exported game content stay
+outside the Atlos build and repository. See [the integration workflow](../integrations/noclip/README.md).
+World consumes the viewer's host interface. React is deduplicated in the World bundle; type checking
+resolves the same Atlos React types. World uses TypeScript 7 to match the renderer's platform types.
 
 ## Links and communication
 
@@ -39,8 +41,8 @@ or a closed opener works independently. The initial hello contains only the prot
 ## Local work
 
 ```sh
-git submodule update --init talos/vendor/endfield-noclip
 cd talos
+pnpm noclip:prepare
 pnpm install --frozen-lockfile
 ```
 
@@ -59,9 +61,10 @@ pnpm build --app world
 The independent build writes `dist/world` and a receipt with the renderer pin, catalog and file
 hashes. Main-site full builds exclude World. Its build checks the source pin and uses an immutable
 catalog; local HTTP-catalog artifacts are reviewable but cannot be deployed by the release command.
-To update the renderer, validate and commit its source repository, update the submodule checkout,
-and commit the new pin with the Atlos integration. Local unpublished pins require the matching local
-repository; publish that renderer commit before a future remote checkout or CI build can fetch it.
+To update the renderer, update the archive and patches together against the latest upstream commit,
+prepare the source and validate the complete World and extractor pipeline. Keep only the current
+source archive, patches and Ganglia artifact. Repack incompatible maps instead of retaining old-format
+compatibility code. The upstream noclip checkout remains unmodified.
 
 ## Deployment
 

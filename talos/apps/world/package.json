@@ -11,7 +11,7 @@
   "dependencies": {
     "@endfield-noclip/package-format": "workspace:*",
     "@endfield-noclip/viewer": "workspace:*",
-    "@opendfieldmap/ganglia": "file:../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.58.tgz"
+    "@opendfieldmap/ganglia": "file:../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.59.tgz"
   },
   "devDependencies": {
     "@webgpu/types": "^0.1.74",
