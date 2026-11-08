@@ -8,7 +8,6 @@ const scripts = {
     'marker-diff': 'build-marker-version-new.mjs',
     'search-index': 'build-search-index.mjs',
     'relink-preview': 'build-relink-preview.mjs',
-    'sync-intel': 'sync-intel-data.mjs',
     seo: 'build-seo-pages.mjs',
 };
 

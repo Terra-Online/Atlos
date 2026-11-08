@@ -100,8 +100,8 @@ Use `oem-navigation` in the renderer's extractor to add the optional, generation
 sidecar to an existing baked release. It hard-links model archives and retains all baked views.
 Authored tier volumes decide floors and independent-scene entry. For an independent scene without
 a tier volume, only its verified gameplay-point footprint (expanded by 10 m) is used as conservative
-entry evidence; other space remains unresolved. Current data was checked against AKEData and exported
-from the matching local game build, not from an unversioned remote endpoint. Older releases without
+entry evidence; other space remains unresolved. The sidecar is supplied as a processed artifact
+for the matching baked release. Older releases without
 this sidecar continue supporting manual navigation.
 
 ## Panels

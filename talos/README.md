@@ -85,11 +85,13 @@ offline packages, target configuration and command migration.
 
 ## Data tools
 
+Game content is supplied as processed artifacts. The commands below validate
+and build frontend data from those artifacts.
+
 ```sh
 pnpm data prepare
 pnpm data check
 pnpm data tile-coverage
-pnpm data sync-intel
 pnpm data fonts --app intel
 pnpm og --target org
 pnpm worker search check
