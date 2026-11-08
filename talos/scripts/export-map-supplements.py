@@ -1,6 +1,6 @@
 """Export projected unreal-wall centerlines using the existing endfield-bots tools.
 
-python3 scripts/export-map-supplements.py --source /path/to/AKEData \
+python3 scripts/export-map-supplements.py --source /path/to/AKEDataMining/data \
     --tools /path/to/endfield-bots/scene
 """
 import argparse
@@ -36,7 +36,7 @@ def rotate(rotation, point):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--source', type=Path, required=True)
+    parser.add_argument('--source', type=Path, default=Path(__file__).resolve().parents[4] / 'EF Repos/AKEDataMining/data')
     parser.add_argument('--tools', type=Path, required=True)
     parser.add_argument('--output', type=Path, default=Path(__file__).resolve().parents[1] / 'src/data/marker/supplements/data')
     args = parser.parse_args()

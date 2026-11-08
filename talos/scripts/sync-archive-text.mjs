@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const akeData = path.resolve(
   process.argv.slice(2).find((arg) => !arg.startsWith('--'))
-    ?? '/Users/canvas/_Code/Preview Repos/AKEData',
+    ?? path.resolve(root, '../../../EF Repos/AKEDataMining/data'),
 );
 const checkOnly = process.argv.includes('--check');
 const tableDir = path.join(akeData, 'TableCfg');
