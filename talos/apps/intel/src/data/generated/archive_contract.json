@@ -3536,6 +3536,14 @@
           "method": "map",
           "pointId": 36100190036
         }
+      },
+      {
+        "id": "nar_collection_map02_16019_1",
+        "icon": "prts_c37m3_branch",
+        "acquisition": {
+          "method": "mission",
+          "missionId": "c37m3"
+        }
       }
     ],
     "document": [
