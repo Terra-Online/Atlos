@@ -8,18 +8,18 @@ import useRegion from '@/store/region';
 vi.mock('@/platform/device', () => ({ useDevice: () => ({ isMobile: false }) }));
 vi.mock('@/locale', () => ({ useTranslateUI: () => (key: string) => key }));
 vi.mock('@/assets/images/UI/layer.svg?react', () => ({ default: () => null }));
-vi.mock('@/services/map/tileCoverage', async (original) => ({ ...await original<typeof import('@/services/map/tileCoverage')>(), hasSatelliteTiles: (region: string) => region === 'Dijiang' }));
-vi.mock('@/assets/images/UI/satellite.svg?react', () => ({ default: () => null }));
+vi.mock('@/services/map/tileCoverage', async (original) => ({ ...await original<typeof import('@/services/map/tileCoverage')>(), hasSatelliteTiles: (region: string) => region === 'Dijiang' || region === 'Valley_4' }));
+vi.mock('@/assets/logos/_Satellite.svg?react', () => ({ default: () => null }));
 afterEach(() => { cleanup(); useLayerStore.setState({ satellite: false }); });
 
 it('allows keyboard activation of the floor control and keeps floor choices outside the main button', () => {
-    useLayerStore.setState({ currentLayer: 'B1' });
+    useLayerStore.setState({ currentLayer: 'B1', satellite: true });
     render(<LayerSwitch isSidebarOpen={false} />);
     const main = screen.getByRole('button', { name: 'mapControls.layerSelect' });
     expect(screen.queryByRole('button', { name: 'Layer B1' })).toBeNull();
     act(() => main.focus());
     userEvent.keyboard('{Enter}');
-    expect(useLayerStore.getState().currentLayer).toBe('M');
+    expect(useLayerStore.getState()).toMatchObject({ currentLayer: 'M', satellite: false });
     const basement = screen.getByRole('button', { name: 'Layer B1' });
     expect(main.contains(basement)).toBe(false);
     act(() => basement.focus());
@@ -34,6 +34,35 @@ it('allows keyboard activation of the floor control and keeps floor choices outs
     expect(screen.queryByRole('button', { name: 'Layer B1' })).toBeNull();
 });
 
+it('returns to standard imagery when the main floor button is clicked in satellite mode', () => {
+    useRegion.setState({ currentRegionKey: 'Valley_4' });
+    useLayerStore.setState({ currentLayer: 'M', satellite: true });
+    render(<LayerSwitch isSidebarOpen={false} />);
+    const satellite = screen.getByRole('button', { name: 'mapControls.satellite' });
+    const main = screen.getByRole('button', { name: 'mapControls.layerSelect' });
+    expect(satellite.getAttribute('aria-pressed')).toBe('true');
+    expect(main.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(main);
+    expect(useLayerStore.getState()).toMatchObject({ currentLayer: 'M', satellite: false });
+    expect(satellite.getAttribute('aria-pressed')).toBe('false');
+    expect(main.getAttribute('aria-pressed')).toBe('true');
+    expect(screen.queryByRole('button', { name: 'Layer B1' })).not.toBeNull();
+});
+
+it('keeps standard mode active on floors and when satellite imagery is unavailable', () => {
+    useRegion.setState({ currentRegionKey: 'Valley_4' });
+    useLayerStore.setState({ currentLayer: 'B1', satellite: true });
+    render(<LayerSwitch isSidebarOpen={false} />);
+    const main = screen.getByRole('button', { name: 'mapControls.layerSelect' });
+    expect(main.getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: 'mapControls.satellite' }).getAttribute('aria-pressed')).toBe('false');
+    act(() => {
+        useRegion.getState().setCurrentRegion('Wuling');
+        useLayerStore.setState({ currentLayer: 'M' });
+    });
+    expect(main.getAttribute('aria-pressed')).toBe('true');
+});
+
 it('clears the menu when the selected region no longer has floors', () => {
     render(<LayerSwitch isSidebarOpen={false} />);
     fireEvent.click(screen.getByRole('button', { name: 'mapControls.layerSelect' }));
@@ -45,7 +74,7 @@ it('clears the menu when the selected region no longer has floors', () => {
 });
 
 it('offers satellite mode only for covered regions, including regions without floors', () => {
-    useRegion.setState({ currentRegionKey: 'Valley_4' });
+    useRegion.setState({ currentRegionKey: 'Wuling' });
     render(<LayerSwitch isSidebarOpen={false} />);
     expect(screen.queryByRole('button', { name: 'mapControls.satellite' })).toBeNull();
     act(() => useRegion.getState().setCurrentRegion('Dijiang'));
@@ -57,6 +86,6 @@ it('offers satellite mode only for covered regions, including regions without fl
     expect(satellite.getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(satellite);
     expect(useLayerStore.getState().satellite).toBe(false);
-    act(() => useRegion.getState().setCurrentRegion('Valley_4'));
+    act(() => useRegion.getState().setCurrentRegion('Wuling'));
     expect(screen.queryByRole('button', { name: 'mapControls.satellite' })).toBeNull();
 });
