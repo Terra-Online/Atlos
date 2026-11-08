@@ -241,9 +241,9 @@ importers:
       '@endfield-noclip/viewer':
         specifier: workspace:*
         version: link:../../vendor/endfield-noclip/packages/viewer
-      '@oem/ganglia':
-        specifier: file:../../vendor/ganglia/oem-ganglia-0.1.0-alpha.55.tgz
-        version: file:vendor/ganglia/oem-ganglia-0.1.0-alpha.55.tgz
+      '@opendfieldmap/ganglia':
+        specifier: file:../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.58.tgz
+        version: file:vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.58.tgz
     devDependencies:
       '@webgpu/types':
         specifier: ^0.1.74
@@ -1760,9 +1760,9 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@oem/ganglia@file:vendor/ganglia/oem-ganglia-0.1.0-alpha.55.tgz':
-    resolution: {integrity: sha512-JzMQtf162yPTCPiicQtLUusSofLbN/db3PoirQ2B8qPXUl2J292XC3tzUzpTa1PsorfEYpxq2+3gNhAdRl7ASA==, tarball: file:vendor/ganglia/oem-ganglia-0.1.0-alpha.55.tgz}
-    version: 0.1.0-alpha.55
+  '@opendfieldmap/ganglia@file:vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.58.tgz':
+    resolution: {integrity: sha512-PklbyNVPzsD8xd35DEs5Ht4m5pzFXa/DpiDvUkDHP0BoTQTOtI7ydGEfb87pSZvw09kNB+TPcE53xk3sQ3qLPw==, tarball: file:vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.58.tgz}
+    version: 0.1.0-alpha.58
     engines: {node: '>=22'}
 
   '@opentelemetry/api@1.9.1':
@@ -7411,7 +7411,7 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
 
-  '@oem/ganglia@file:vendor/ganglia/oem-ganglia-0.1.0-alpha.55.tgz':
+  '@opendfieldmap/ganglia@file:vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.58.tgz':
     dependencies:
       '@recast-navigation/core': 0.44.0
 

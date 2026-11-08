@@ -47,9 +47,6 @@ import { readView, writeView, displayOptions } from './view-storage';
 const NearestRoute = import.meta.env.DEV
     ? lazy(() => import('./nearest-route'))
     : null;
-const MovingBoundsPreview = import.meta.env.DEV
-    ? lazy(() => import('./moving-bounds-preview'))
-    : null;
 
 type Request =
     | { point: string }
@@ -685,18 +682,6 @@ export const Preview = ({
                     />
                 </Suspense>
             )}
-            {MovingBoundsPreview &&
-                point &&
-                /^map\d+$/.test(point.scene) &&
-                !loading && (
-                    <Suspense fallback={null}>
-                        <MovingBoundsPreview
-                            viewer={viewer}
-                            point={point}
-                            panelRoot={panelRoot}
-                        />
-                    </Suspense>
-                )}
             <div ref={mapRoot} className='oem-minimap' aria-label='Minimap' />
             {status && <output className='panel oem-status'>{status}</output>}
             {point && viewer.scene?.pkg.manifest.scene.id === point.scene && (

@@ -1,4 +1,4 @@
-import { routeFrom, type Surface, type Vec3 } from '@oem/ganglia';
+import { routeFrom, type Surface, type Vec3 } from '@opendfieldmap/ganglia';
 
 type Data = {
     surfaces: Surface[];

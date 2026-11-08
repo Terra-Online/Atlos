@@ -86,14 +86,13 @@ planner/model concern. The overlay consumes the planner's candidate samples.
 Changing scene, level, or
 source build hides it.
 
-The development-only **Moving devices** panel draws each nearby device's initial
-box in cyan and terminal box in orange. It uses the exported solid-collider world
-bounds, independently of route playback. The current level and a 200-metre camera
-neighborhood limit the overlay. The device selector isolates one pair of boxes.
-Closed paths may have coincident endpoints. A seesaw's terminal box denotes its
-tilt limit. These diagrams retain the phase-free navigation assumption.
-The endpoint service checks the loaded source build and reports missing exports.
-Changing selection or disabling the overlay releases its GPU buffers.
+The route overlay draws optional `supportBoxes` at the selected route's actual
+device contacts. Boarding and borrowed conveyor poses are cyan; alighting poses
+are orange. A conveyor borrow selects one feasible box at the used position.
+Lift trips retain boarding and alighting boxes, coalescing internal ride samples.
+Source pose provenance supplies translated bounds or a seesaw's sampled tilt pose.
+The existing route Hide control removes these diagrams and releases their GPU
+buffers. Catalogue endpoints do not generate route annotations on their own.
 
 The local JSON has `version: 1`, `status: "candidate"`, `scene`, `level`,
 `source: { buildGuid, contentHash }`, `title`, `markers: [{ label, position }]`,
@@ -435,3 +434,38 @@ The strict comparator records 37 exact route objects and 36 exact action sets:
 one selected route renumbers its connection references, and two action sets differ.
 No selected-route cost increases. SDK tests, extractor route/occupancy tests,
 server/worker tests, builder scheduling tests and focused type checks pass.
+
+## Moving-support verification
+
+The local catalogue now includes phase-free swept supports for moving platforms,
+lotus leaves, conveyor boxes and seesaws, with independent endpoint diagrams.
+Static collision, body clearance and steam exclusions remain active.
+
+The remote `16Btp0f` query returned a complete 38.862-second model route after
+79.63 HTTP wall seconds. Every sampled walking point had original static support,
+so this case provides no evidence of necessary lotus use. A separate arbitrary
+goal on a lotus terminal cap has no static support within four vertical metres.
+Its fresh-process solve took 25.12 seconds with retained physical inputs and
+returned a 33.170-second model route. Of 583 walking samples, 74 were supported
+only by the new moving surfaces at both 0.15-metre and 0.5-metre tolerances.
+These cover two sweep strips of 37.95 and 9.69 metres. No walking sample lacked
+support. This validates the selected phase-free envelope model. Motion phase,
+waiting and seesaw angular timing remain open.
+
+The `map02_lv009` remote case `02lUaTb` also returns a complete route from its
+retained anchor, 184.83 metres from the goal. A fresh process took 51.90 seconds
+and selected a 55.686-second model route with two ziplines and seven jumps.
+All 1,116 walking samples have static support and none touch the moving envelope.
+The six research-only coarse waypoints in the old request were removed for this
+run. Its former out-of-memory exit therefore supplies no comparable speed baseline.
+
+The high-ascent `0YnbG6f` query originally failed during moving-support preparation
+because its auxiliary support index exposed a narrower scope than static collision.
+The overlay now retains the body-padded static query scope and still requires
+clearance-baked support. The same small region completes device preparation in
+12.61 seconds and a full solve in 52.51 seconds, but returns unavailable.
+Larger coverage attempts also exposed a native vertical-domain limit and a JSON
+string-size limit. Reachability for this point remains unresolved.
+
+The alpha.56 frozen replay retains all 38 successful candidates and their selected
+costs. GPU rendering of the endpoint overlay still requires manual inspection.

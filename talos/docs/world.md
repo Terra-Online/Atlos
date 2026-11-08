@@ -189,7 +189,7 @@ explicitly unconfirmed context views.
 
 ## Ground journeys
 
-`walking-route.ts` consumes the packed `@oem/ganglia` dependency. Its source binding
+`walking-route.ts` consumes the packed `@opendfieldmap/ganglia` dependency. Its source binding
 includes the selected build, scene, state and body profile. Directed rope/jump/drop/launch
 connections carry verified sample positions and times. `journeySample` returns the
 current position, movement mode and optional connection ID; playback begins after the

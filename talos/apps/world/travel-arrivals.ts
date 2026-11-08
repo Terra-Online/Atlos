@@ -1,4 +1,4 @@
-import type { GroundArrival, Vec3 } from '@oem/ganglia';
+import type { GroundArrival, Vec3 } from '@opendfieldmap/ganglia';
 
 export type TravelPoint = {
     id: string;

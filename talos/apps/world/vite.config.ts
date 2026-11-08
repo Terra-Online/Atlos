@@ -38,7 +38,7 @@ export default defineConfig(async ({ command, mode }) => {
                 extractor: env.WORLD_EXTRACTOR_DIRECTORY,
                 config: env.WORLD_GAME_CONFIG,
                 node: env.WORLD_EXTRACTOR_NODE,
-                solver: worldPackage.dependencies['@oem/ganglia'],
+                solver: worldPackage.dependencies['@opendfieldmap/ganglia'],
             }),
         ],
         resolve: {

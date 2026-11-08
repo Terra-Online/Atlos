@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Panel, type Viewer } from '@endfield-noclip/viewer/host';
 import { createPortal } from 'react-dom';
-import { sampleJourney, type Route, type Vec3 } from '@oem/ganglia';
+import { sampleJourney, type Route, type Vec3 } from '@opendfieldmap/ganglia';
 import './route-inspection.css';
 import { createRouteLines } from './route-lines-renderer';
+import { boxSegments, supportBoxes, type SupportBox } from './moving-bounds';
 
 export type Candidate = {
     version: 1;
@@ -17,6 +18,7 @@ export type Candidate = {
     assumptions?: string[];
     overview?: { position: Vec3; yaw: number; pitch: number; fovY: number };
     route: Extract<Route, { status: 'complete' }>;
+    supportBoxes?: SupportBox[];
     markers: { label: string; position: Vec3 }[];
 };
 const dot = (a: number[], b: number[]) =>
@@ -110,7 +112,14 @@ export default function RouteInspection({
     }, [source]);
     useEffect(() => {
         if (!data || !visible) return;
-        let renderer: ReturnType<typeof createRouteLines> | undefined;
+        let renderers: ReturnType<typeof createRouteLines>[] | undefined;
+        const boxes = supportBoxes(data.supportBoxes);
+        const boarding = boxes
+            .filter((box) => box.role !== 'leave')
+            .flatMap(boxSegments);
+        const leaving = boxes
+            .filter((box) => box.role === 'leave')
+            .flatMap(boxSegments);
         const remove = viewer.addOverlay((frame) => {
             const manifest = viewer.scene?.pkg.manifest;
             if (
@@ -120,16 +129,39 @@ export default function RouteInspection({
                 manifest.source.contentHash !== data.source.contentHash
             )
                 return;
-            renderer ??= createRouteLines(
-                frame.device,
-                frame.format,
-                data.route.segments,
-            );
-            renderer.encode(frame, viewer.camera);
+            renderers ??= [
+                createRouteLines(
+                    frame.device,
+                    frame.format,
+                    data.route.segments,
+                ),
+                ...(boarding.length
+                    ? [
+                          createRouteLines(
+                              frame.device,
+                              frame.format,
+                              boarding,
+                              { color: [0.05, 0.85, 0.95], halfWidth: 2 },
+                          ),
+                      ]
+                    : []),
+                ...(leaving.length
+                    ? [
+                          createRouteLines(
+                              frame.device,
+                              frame.format,
+                              leaving,
+                              { color: [1, 0.48, 0.08], halfWidth: 2 },
+                          ),
+                      ]
+                    : []),
+            ];
+            for (const renderer of renderers)
+                renderer.encode(frame, viewer.camera);
         });
         return () => {
             remove();
-            renderer?.destroy();
+            renderers?.forEach((renderer) => renderer.destroy());
         };
     }, [viewer, data, visible]);
     useEffect(() => {

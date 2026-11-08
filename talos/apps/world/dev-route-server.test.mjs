@@ -328,7 +328,19 @@ test(
             };
             await writeFile(
                 config,
-                JSON.stringify({ result: fixture, routeCost: 1 }),
+                JSON.stringify({
+                    result: fixture,
+                    routeCost: 1,
+                    supportBoxes: [
+                        {
+                            device: 'borrowed-box',
+                            family: 'conveyor',
+                            role: 'use',
+                            min: [2, 0, 0],
+                            max: [4, 2, 2],
+                        },
+                    ],
+                }),
             );
             await writeFile(
                 join(extractor, 'packages/extractor/src/cli.ts'),
@@ -347,6 +359,7 @@ test(
                     await writeFile(args[args.indexOf('-o') + 1], JSON.stringify({
                         scene: request.scene, source: request.source, status: 'candidate',
                         diagnostics: { truncated: false },
+                        supportBoxes: fixture.supportBoxes,
                         route: { status: 'complete', start: request.arrival.id, arrivalCost: 0, cost,
                             length: Math.hypot(...points[0].map((v,i)=>v-points[1][i])), points,
                             segments: [{ mode: 'walk', points, times: [0, cost] }] },
@@ -429,6 +442,15 @@ test(
             );
             assert.equal(result.body.status, 'candidate');
             assert.match(result.body.coverage, /Physical collision ground/);
+            assert.deepEqual(result.body.supportBoxes, [
+                {
+                    device: 'borrowed-box',
+                    family: 'conveyor',
+                    role: 'use',
+                    min: [2, 0, 0],
+                    max: [4, 2, 2],
+                },
+            ]);
             assert.deepEqual(result.body.coverageDetails.remaining, [
                 'interactive-prefabs',
             ]);

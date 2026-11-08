@@ -1,5 +1,5 @@
 import type { OverlayFrame, Viewer } from '@endfield-noclip/viewer/host';
-import type { Segment } from '@oem/ganglia';
+import type { Segment } from '@opendfieldmap/ganglia';
 import shader from './route-lines.wgsl?raw';
 import { DASH_PERIOD, projectLines } from './route-lines';
 

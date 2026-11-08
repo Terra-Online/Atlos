@@ -6,7 +6,7 @@ import {
     type Route,
     type Surface,
     type Vec3,
-} from '@oem/ganglia';
+} from '@opendfieldmap/ganglia';
 
 /** Exported by noclip walk-routes; binding includes source, scene, selected state and profile. */
 export interface WalkingData {

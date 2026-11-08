@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { expect, test } from 'vitest';
-import type { Surface } from '@oem/ganglia';
+import type { Surface } from '@opendfieldmap/ganglia';
 import { coarseCorridors } from '../coarse-route';
 
 const floor = (x: number, z: number): Surface => ({

@@ -1,5 +1,5 @@
 import type { Viewer } from '@endfield-noclip/viewer/host';
-import type { Segment } from '@oem/ganglia';
+import type { Segment } from '@opendfieldmap/ganglia';
 
 export const DASH_PERIOD = 8;
 

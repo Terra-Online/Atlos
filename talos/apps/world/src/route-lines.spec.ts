@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DASH_PERIOD, projectLines } from './route-lines';
-import type { Segment } from '@oem/ganglia';
+import type { Segment } from '@opendfieldmap/ganglia';
 
 const camera: Parameters<typeof projectLines>[1] = {
     position: [0, 0, 0],

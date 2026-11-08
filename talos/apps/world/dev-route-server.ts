@@ -1,7 +1,9 @@
-import { readFile, stat } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
 import type { ServerResponse } from 'node:http';
+import { isDeepStrictEqual } from 'node:util';
 import type { Plugin } from 'vite';
+import { supportBoxes, type SupportBox } from './src/moving-bounds.ts';
 import {
     createGroundPlanner,
     projectGoal,
@@ -12,7 +14,7 @@ import {
     type Route,
     type Surface,
     type Vec3,
-} from '@oem/ganglia';
+} from '@opendfieldmap/ganglia';
 import {
     physicalApproaches,
     physicalMargins,
@@ -31,11 +33,6 @@ import {
     type TravelPoint,
     type TravelArrival,
 } from './travel-arrivals.ts';
-import {
-    movingCatalog,
-    nearbyMovingBounds,
-    type MovingCatalog,
-} from './src/moving-bounds.ts';
 
 type Source = { buildGuid: string; contentHash: string };
 type Bounds = { min: [number, number]; max: [number, number] };
@@ -76,12 +73,14 @@ type Result = {
     source: Source;
     status: string;
     route?: Route;
+    supportBoxes?: unknown;
     diagnostics?: unknown;
 };
 type Candidate = {
     log?: string;
     status: 'candidate';
     route: Extract<Route, { status: 'complete' }>;
+    supportBoxes?: SupportBox[];
     optimizing?: boolean;
     optimizationMessage?: string;
     diagnostics?: {
@@ -234,14 +233,12 @@ export function routeServer(
         Promise<InteractionCatalog | null>
     >();
     const queries = new Map<string, Query>();
-    let moving: { identity: string; data: MovingCatalog } | undefined;
     let removeCloseListener = () => {};
     const close = async () => {
         const drained = builder.close();
         cache.clear();
         interactionCache.clear();
         queries.clear();
-        moving = undefined;
         builtCache = new WeakMap();
         travel = undefined;
         physical = undefined;
@@ -343,114 +340,6 @@ export function routeServer(
                 file && directory
                     ? `/__routes/log?path=${encodeURIComponent(relative(directory, file))}`
                     : undefined;
-            server.middlewares.use(
-                '/__routes/moving-bounds',
-                (request, response) => {
-                    if (request.method !== 'GET') {
-                        response.setHeader('Allow', 'GET');
-                        send(
-                            response,
-                            { message: 'Only GET requests are supported' },
-                            405,
-                        );
-                        return;
-                    }
-                    void (async () => {
-                        if (!directory) {
-                            send(
-                                response,
-                                {
-                                    message:
-                                        'Moving support data is not configured',
-                                },
-                                503,
-                            );
-                            return;
-                        }
-                        const params = new URL(
-                            request.url ?? '',
-                            'http://localhost',
-                        ).searchParams;
-                        const scene = params.get('scene') ?? '',
-                            level = params.get('level') ?? '';
-                        const source = {
-                            buildGuid: params.get('buildGuid') ?? '',
-                            contentHash: params.get('contentHash') ?? '',
-                        };
-                        const coordinates = ['x', 'y', 'z'].map((key) =>
-                            params.get(key),
-                        );
-                        const position = coordinates.map(Number);
-                        if (
-                            !/^map\d+$/.test(scene) ||
-                            !level.startsWith(scene + '_') ||
-                            level.length > 100 ||
-                            !source.buildGuid ||
-                            !source.contentHash ||
-                            coordinates.some(
-                                (v) => v === null || v.trim() === '',
-                            ) ||
-                            !finiteVector(position)
-                        ) {
-                            send(
-                                response,
-                                { message: 'Invalid moving support request' },
-                                400,
-                            );
-                            return;
-                        }
-                        const path = resolve(
-                            directory,
-                            scene + '-traversal-devices.json',
-                        );
-                        const info = await stat(path, { bigint: true });
-                        const identity = [
-                            path,
-                            info.dev,
-                            info.ino,
-                            info.size,
-                            info.mtimeNs,
-                            info.ctimeNs,
-                        ].join('/');
-                        if (moving?.identity !== identity) {
-                            const data = movingCatalog(
-                                await read(scene + '-traversal-devices.json'),
-                                scene,
-                            );
-                            moving = { identity, data };
-                        }
-                        if (!sameSource(moving.data.source, source)) {
-                            send(
-                                response,
-                                {
-                                    message:
-                                        'Moving support data does not match the loaded scene build',
-                                },
-                                409,
-                            );
-                            return;
-                        }
-                        send(
-                            response,
-                            nearbyMovingBounds(moving.data, level, position),
-                        );
-                    })().catch((error: unknown) => {
-                        const missing =
-                            error instanceof Error &&
-                            'code' in error &&
-                            error.code === 'ENOENT';
-                        send(
-                            response,
-                            {
-                                message: missing
-                                    ? 'Moving support export is unavailable'
-                                    : 'Unable to read valid moving support bounds',
-                            },
-                            missing ? 404 : 422,
-                        );
-                    });
-                },
-            );
             server.middlewares.use('/__routes/logs', (request, response) => {
                 if (request.method !== 'GET') {
                     response.statusCode = 405;
@@ -915,8 +804,19 @@ export function routeServer(
                             status: string;
                             message: string;
                         } | null,
+                        boxes?: unknown,
                     ) => {
+                        const contacts = supportBoxes(boxes);
                         if (fallback && fallback.route.cost <= route.cost) {
+                            if (
+                                contacts.length &&
+                                isDeepStrictEqual(fallback.route, route)
+                            ) {
+                                fallback = {
+                                    ...fallback,
+                                    supportBoxes: contacts,
+                                };
+                            }
                             retain(
                                 optimization?.message ?? '',
                                 Boolean(
@@ -941,6 +841,9 @@ export function routeServer(
                                 traversal,
                             },
                             route,
+                            ...(contacts.length
+                                ? { supportBoxes: contacts }
+                                : {}),
                             grounding: {
                                 requestedTarget: target,
                                 groundTarget: route.points.at(-1),
@@ -1073,6 +976,7 @@ export function routeServer(
                                 'Physical collision ground · Known movement route',
                                 provisional.diagnostics,
                                 { status: 'building', message: motion.message },
+                                provisional.supportBoxes,
                             );
                             return;
                         }
@@ -1080,12 +984,7 @@ export function routeServer(
                         return;
                     }
                     if (motion?.status === 'ready' && built) {
-                        const result = motion.result as {
-                            scene: string;
-                            source: Source;
-                            status: string;
-                            route?: Route;
-                            diagnostics?: unknown;
+                        const result = motion.result as Result & {
                             reason?: string;
                         };
                         if (
@@ -1105,6 +1004,8 @@ export function routeServer(
                                 built.data,
                                 'Physical collision ground with model-based device, jump and drop actions',
                                 result.diagnostics,
+                                undefined,
+                                result.supportBoxes,
                             );
                         } else if (result.status === 'unavailable') {
                             if (

@@ -10,7 +10,7 @@ import {
     writeFile,
 } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
-import type { InteractionGoal, Vec3, Wall } from '@oem/ganglia';
+import type { InteractionGoal, Vec3, Wall } from '@opendfieldmap/ganglia';
 import type { TravelArrival } from './travel-arrivals.ts';
 import type { Corridor } from './coarse-route.ts';
 import { createRouteWorker } from './route-worker.ts';
@@ -689,7 +689,7 @@ export function physicalRouteBuilder(options: Options) {
                       : 'route',
             ground: ground.output,
             request,
-            policy: stage === 'walking' ? 14 : 16,
+            policy: stage === 'walking' ? 14 : 17,
             devices: devices?.fingerprint,
             movement: settings.fingerprint,
             solver: options.solver,

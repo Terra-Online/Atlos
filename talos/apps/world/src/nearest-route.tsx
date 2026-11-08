@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Viewer } from '@endfield-noclip/viewer/host';
 import type { Point } from '@endfield-noclip/package-format/oem';
-import type { Vec3 } from '@oem/ganglia';
+import type { Vec3 } from '@opendfieldmap/ganglia';
 import RouteInspection, { type Candidate } from './route-inspection';
 
 /** Query the development planner after the normal point view has opened. */
@@ -52,7 +52,10 @@ export default function NearestRoute({
                 if (abort.signal.aborted) return;
                 setLog(result.log ?? null);
                 if (response.ok && result.status === 'candidate') {
-                    const signature = JSON.stringify(result.route);
+                    const signature = JSON.stringify([
+                        result.route,
+                        result.supportBoxes,
+                    ]);
                     if (signature !== routeSignature) {
                         routeSignature = signature;
                         setData(result);

@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { expect, test } from 'vitest';
 import { travelArrivals, type TravelPoint } from '../travel-arrivals';
-import type { GroundArrival } from '@oem/ganglia';
+import type { GroundArrival } from '@opendfieldmap/ganglia';
 
 test('fully enabled previews include new base centres with their source height bounds', () => {
     const points: TravelPoint[] = [
