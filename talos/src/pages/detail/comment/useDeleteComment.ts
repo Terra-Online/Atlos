@@ -4,8 +4,9 @@ import {
     invalidateUGCCommentCache,
     deleteUGCComment,
     type UGCComment,
+    type UGCCommentNode,
 } from '@/services/ugc/client';
-import { collectIds, removeTree } from './commentsTree';
+import { hideComment } from './commentsTree';
 import {
     removeCommentSubmission,
     restoreCommentSubmission,
@@ -13,12 +14,12 @@ import {
 
 type Args = {
     markerId: string;
-    comments: UGCComment[];
+    comments: UGCCommentNode[];
     busyIds: Set<string>;
     replyTarget: UGCComment | null;
     requireAuth: () => boolean;
     setBusy: (commentId: string, pending: boolean) => void;
-    setComments: Dispatch<SetStateAction<UGCComment[]>>;
+    setComments: Dispatch<SetStateAction<UGCCommentNode[]>>;
     setReply: Dispatch<SetStateAction<UGCComment | null>>;
     clearSync: (commentIds: Set<string>) => void;
 };
@@ -40,24 +41,11 @@ export const useDeleteComment = ({
             const accountVersion = useAuthStore.getState().sessionVersion;
             const previousComments = comments;
             const previousReplyTarget = replyTarget;
-            const displayRemovedIds = new Set(collectIds(comment));
-            const removedSubmissions = [...displayRemovedIds]
-                .map((commentId) =>
-                    removeCommentSubmission(markerId, commentId),
-                )
-                .filter((item): item is UGCComment => Boolean(item));
-            const removal = removeTree(comments, comment.id);
-            const removedIds = new Set([
-                ...removal.removedIds,
-                ...displayRemovedIds,
-            ]);
-
-            setComments(removal.comments);
-            setReply((current) =>
-                current && removedIds.has(current.id) ? null : current,
-            );
+            const removedSubmission = removeCommentSubmission(markerId, comment.id);
+            setComments(hideComment(comments, comment.id));
+            setReply((current) => current?.id === comment.id ? null : current);
             invalidateUGCCommentCache(markerId);
-            clearSync(removedIds);
+            clearSync(new Set([comment.id]));
             setBusy(comment.id, true);
             void deleteUGCComment(comment.id)
                 .then(() => invalidateUGCCommentCache(markerId))
@@ -67,9 +55,7 @@ export const useDeleteComment = ({
                         accountVersion
                     )
                         return;
-                    removedSubmissions.forEach((submission) =>
-                        restoreCommentSubmission(markerId, submission),
-                    );
+                    if (removedSubmission) restoreCommentSubmission(markerId, removedSubmission);
                     setComments(previousComments);
                     setReply(previousReplyTarget);
                 })

@@ -68,6 +68,7 @@
       "delete": "Delete"
     },
     "comments": {
+            "unavailable": "ความคิดเห็นนี้ไม่พร้อมใช้งาน",
       "copyLink": "คัดลอกลิงก์ความคิดเห็น",
       "emojiPicker": "เลือกอีโมจิ",
       "spoilerHidden": "คลิกเพื่อดูเนื้อหาสปอยล์",

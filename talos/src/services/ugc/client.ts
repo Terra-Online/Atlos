@@ -47,6 +47,7 @@ export type UGCCommentAuthor = {
 };
 
 export type UGCComment = {
+    type: 'comment';
     id: string;
     // Unsaved optimistic content has no server snapshot yet.
     snapshotId?: string;
@@ -68,13 +69,25 @@ export type UGCComment = {
     flagged?: boolean;
     status?: UGCSubmissionStatus;
     replyCount: number;
-    replies: UGCComment[];
+    replies: UGCCommentNode[];
 };
+
+export type UGCCommentPlaceholder = {
+    type: 'placeholder';
+    id: string;
+    markerId: string;
+    parentId: string | null;
+    depth: number;
+    replyCount: number;
+    replies: UGCCommentNode[];
+};
+
+export type UGCCommentNode = UGCComment | UGCCommentPlaceholder;
 
 export type UGCCommentContext = {
     targetId: string;
-    path: UGCComment[];
-    replies: UGCComment[];
+    path: UGCCommentNode[];
+    replies: UGCCommentNode[];
     repliesTruncated: boolean;
 };
 
@@ -127,7 +140,7 @@ type ImageCacheEntry = {
 
 type CommentCacheEntry = {
     expiresAt: number;
-    comments: UGCComment[];
+    comments: UGCCommentNode[];
 };
 
 type SubmissionCacheEntry = {
@@ -207,7 +220,7 @@ export const peekPublicUGCImages = (markerId: string): UGCImage[] | null => {
     return cached.images;
 };
 
-export const peekUGCComments = (markerId: string): UGCComment[] | null => {
+export const peekUGCComments = (markerId: string): UGCCommentNode[] | null => {
     syncCommentAccount();
     const cached = commentCache.get(markerId);
     if (!cached || cached.expiresAt <= Date.now()) {
@@ -243,7 +256,7 @@ export async function listPublicUGCImages(markerId: string): Promise<UGCImage[]>
     return listPublicUGCImagesByMarkerIds([markerId]).then((grouped) => grouped[markerId] ?? []);
 }
 
-export async function listUGCComments(markerId: string): Promise<UGCComment[]> {
+export async function listUGCComments(markerId: string): Promise<UGCCommentNode[]> {
     return listUGCCommentsByMarkerIds([markerId]).then((grouped) => grouped[markerId] ?? []);
 }
 
@@ -255,7 +268,7 @@ export async function listPublicUGCImagesByMarkerIds(markerIds: string[]): Promi
     return listByMarkerIds(markerIds, peekPublicUGCImages, queuePublicImages);
 }
 
-export async function listUGCCommentsByMarkerIds(markerIds: string[]): Promise<Record<string, UGCComment[]>> {
+export async function listUGCCommentsByMarkerIds(markerIds: string[]): Promise<Record<string, UGCCommentNode[]>> {
     syncCommentAccount();
     return listByMarkerIds(markerIds, peekUGCComments, queueComments);
 }
@@ -729,10 +742,10 @@ function createCommentQueue(version: number) {
                 'SESSION_CHANGED',
             );
     };
-    return createMarkerQueue<UGCComment>({
+    return createMarkerQueue<UGCCommentNode>({
         read: async (ids) => {
             assertCurrent();
-            const payload = await readMarkerBatch<UGCComment>(
+            const payload = await readMarkerBatch<UGCCommentNode>(
                 `/comments?markerIds=${encodeURIComponent(ids.join(','))}&limit=20&replyLimit=10&scope=${batchScope}`,
             );
             assertCurrent();

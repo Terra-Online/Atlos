@@ -68,6 +68,7 @@
       "delete": "Delete"
     },
     "comments": {
+            "unavailable": "Komen ini tidak tersedia.",
       "copyLink": "Salin pautan komen",
       "emojiPicker": "Pilih emoji",
       "spoilerHidden": "Klik untuk melihat spoiler",

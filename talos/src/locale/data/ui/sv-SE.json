@@ -68,6 +68,7 @@
       "delete": "Delete"
     },
     "comments": {
+            "unavailable": "Den här kommentaren är inte tillgänglig.",
       "copyLink": "Kopiera kommentarlänk",
       "emojiPicker": "Välj en emoji",
       "spoilerHidden": "Klicka för att visa spoilern",

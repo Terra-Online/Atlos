@@ -22,7 +22,7 @@ afterEach(() => {
     vi.unstubAllGlobals();
 });
 const point = { id: 'marker-1', type: 'test' } as IMarkerData;
-const parent: UGCComment = {
+const parent: UGCComment = { type: 'comment',
     id: 'parent',
     snapshotId: 'public-A',
     markerId: 'marker-1',

@@ -68,6 +68,7 @@
       "delete": "Delete"
     },
     "comments": {
+            "unavailable": "Este comentario no está disponible.",
       "copyLink": "Copiar enlace del comentario",
       "emojiPicker": "Elegir un emoji",
       "spoilerHidden": "Haz clic para ver el contenido con spoilers",

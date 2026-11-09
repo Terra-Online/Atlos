@@ -68,6 +68,7 @@
       "delete": "刪除"
     },
     "comments": {
+            "unavailable": "此留言已無法查看。",
       "copyLink": "複製留言連結",
       "emojiPicker": "選擇表情符號",
       "spoilerHidden": "點擊以查看劇透內容",

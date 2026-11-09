@@ -68,6 +68,7 @@
       "delete": "Delete"
     },
     "comments": {
+            "unavailable": "Этот комментарий недоступен.",
       "copyLink": "Копировать ссылку на комментарий",
       "emojiPicker": "Выбрать эмодзи",
       "spoilerHidden": "Нажмите, чтобы увидеть спойлер",

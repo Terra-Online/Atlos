@@ -23,7 +23,7 @@ const auth = useAuthStore.getState(), markers = useMarkerStore.getState();
 const scrollTo = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollTo');
 let serial = 0;
 const point = (): IMarkerData => ({ id: `comment-ui-${++serial}`, type: 'crate_ii', subregId: 'VL_1', pos: [0, 0], x: 0, y: 0, z: 0, tier: 0 });
-const comment = (markerId: string, own = false): UGCComment => ({ id: `comment-${markerId}`, markerId, snapshotId: 'original-snapshot', content: 'Original comment', parentId: null, depth: 0, replies: [], score: 2, replyCount: 0, viewerVote: 0, status: 'active', createdAt: '2026-10-27T00:00:00Z', author: { publicUid: own ? 'a' : 'other', nickname: own ? 'A' : 'Other' } });
+const comment = (markerId: string, own = false): UGCComment => ({ type: 'comment', id: `comment-${markerId}`, markerId, snapshotId: 'original-snapshot', content: 'Original comment', parentId: null, depth: 0, replies: [], score: 2, replyCount: 0, viewerVote: 0, status: 'active', createdAt: '2026-10-27T00:00:00Z', author: { publicUid: own ? 'a' : 'other', nickname: own ? 'A' : 'Other' } });
 beforeEach(() => {
     vi.clearAllMocks(); installResizeObserver(); useAuthStore.setState({ sessionUser: { uid: 'a', nickname: 'A' } }); useMarkerStore.setState({ commentOpenRequest: null }); api.list.mockResolvedValue([]); api.vote.mockRejectedValue(new Error('offline')); api.flag.mockResolvedValue({ flagged: true });
     Object.defineProperty(HTMLElement.prototype, 'scrollTo', { configurable: true, value: () => {} });

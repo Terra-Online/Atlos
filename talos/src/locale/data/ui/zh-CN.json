@@ -68,6 +68,7 @@
       "delete": "删除"
     },
     "comments": {
+            "unavailable": "此评论已不可用。",
       "copyLink": "复制评论链接",
       "emojiPicker": "选择表情",
       "spoilerHidden": "点击以查看剧透内容",

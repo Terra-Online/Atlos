@@ -6,6 +6,7 @@ import {
     submitUGCComment,
     UGCClientError,
     type UGCComment,
+    type UGCCommentNode,
 } from '@/services/ugc/client';
 import {
     LOCAL_PENDING_COMMENT_PREFIX,
@@ -79,15 +80,15 @@ export const getCommentSubmissionSnapshot = (markerId: string): CommentSubmissio
 };
 
 export const mergeCommentSubmissions = (
-    comments: UGCComment[],
+    comments: UGCCommentNode[],
     snapshot: CommentSubmissionSnapshot,
-): UGCComment[] => (
+): UGCCommentNode[] => (
     snapshot.comments.reduce((current, comment) => (
         hasComment(current, comment.id) ? current : appendItem(current, comment)
     ), comments)
 );
 
-export const syncCommentSubmissions = (markerId: string, serverComments: UGCComment[]): void => {
+export const syncCommentSubmissions = (markerId: string, serverComments: UGCCommentNode[]): void => {
     const tasks = submissionTasks.get(markerId);
     if (!tasks?.length) return;
 
@@ -235,7 +236,7 @@ const removeSubmissionTask = (markerId: string, localId: string): void => {
     }
 };
 
-const hasComment = (comments: UGCComment[], commentId: string): boolean => (
+const hasComment = (comments: UGCCommentNode[], commentId: string): boolean => (
     comments.some((comment) => (
         comment.id === commentId || hasComment(comment.replies, commentId)
     ))

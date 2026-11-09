@@ -68,6 +68,7 @@
       "delete": "Delete"
     },
     "comments": {
+            "unavailable": "Bu yorum kullanılamıyor.",
       "copyLink": "Yorum bağlantısını kopyala",
       "emojiPicker": "Emoji seç",
       "spoilerHidden": "Spoiler içeriğini görmek için tıklayın",

@@ -68,6 +68,7 @@
       "delete": "Delete"
     },
     "comments": {
+            "unavailable": "Цей коментар недоступний.",
       "copyLink": "Копіювати посилання на коментар",
       "emojiPicker": "Вибрати емодзі",
       "spoilerHidden": "Натисніть, щоб побачити спойлер",

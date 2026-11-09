@@ -1,6 +1,6 @@
 import { useEffect, useState, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import { useMarkerStore } from '@/store/marker';
-import { getUGCCommentById, type UGCComment } from '@/services/ugc/client';
+import { getUGCCommentById, type UGCCommentNode } from '@/services/ugc/client';
 import { flatList, isVisible } from '@/pages/detail/comment/commentsTree';
 import { mergeCommentContext } from '@/pages/detail/comment/commentContext';
 
@@ -8,8 +8,8 @@ type Options = {
     markerId: string;
     active: boolean;
     loading: boolean;
-    comments: UGCComment[];
-    setComments: Dispatch<SetStateAction<UGCComment[]>>;
+    comments: UGCCommentNode[];
+    setComments: Dispatch<SetStateAction<UGCCommentNode[]>>;
     listRef: RefObject<HTMLDivElement | null>;
 };
 
@@ -36,7 +36,7 @@ export function useCommentLink({ markerId, active, loading, comments, setComment
         };
         const target = flatList(comments).find(comment => comment.id === request.commentId);
         if (target) {
-            if (!isVisible(target.status)) {
+            if (target.type === 'comment' && !isVisible(target.status)) {
                 finish();
                 return;
             }

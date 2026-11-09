@@ -68,6 +68,7 @@
       "delete": "Delete"
     },
     "comments": {
+            "unavailable": "このコメントは表示できません。",
       "copyLink": "コメントのリンクをコピー",
       "emojiPicker": "絵文字を選択",
       "spoilerHidden": "クリックしてネタバレを表示",

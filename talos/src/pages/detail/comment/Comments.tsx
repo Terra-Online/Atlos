@@ -8,6 +8,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState, useSync
 import classNames from 'classnames';
 import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
 import styles from '@/pages/detail/comment/comments.module.scss';
+import CommentPlaceholder from './CommentPlaceholder';
 import { openOemAuthModal } from '@/component/shared/account/authEvents';
 import { useAuthStore } from '@/store/auth';
 import { useLocale, useTranslateUI } from '@/locale';
@@ -21,6 +22,7 @@ import {
     UGCClientError,
     listUGCComments,
     type UGCComment,
+    type UGCCommentNode,
     type UGCCommentVoteValue,
 } from '@/services/ugc/client';
 import ActionBar, { type ActionBarItem } from '@/component/actionBar/ActionBar';
@@ -328,7 +330,7 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
     const userUid = user?.uid;
     const ownerVersion = useAuthStore((state) => state.sessionOwnerVersion);
     const isAuthenticated = Boolean(user);
-    const [comments, setComments] = useState<UGCComment[]>([]);
+    const [comments, setComments] = useState<UGCCommentNode[]>([]);
     const [loading, setLoading] = useState(true);
     const [inputValue, setInputValue] = useState('');
     const [editTarget, setEditTarget] = useState<UGCComment | null>(null);
@@ -803,7 +805,9 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
                 onScroll={updateBlur}
             >
                 {displayComments.map(({ comment, displayDepth }) => (
-                    <CommentItem
+                    comment.type === 'placeholder' ? (
+                        <CommentPlaceholder key={comment.id} comment={comment} displayDepth={displayDepth} highlighted={highlightedId === comment.id} />
+                    ) : <CommentItem
                         point={point}
                         highlighted={highlightedId === comment.id}
                         key={comment.id}

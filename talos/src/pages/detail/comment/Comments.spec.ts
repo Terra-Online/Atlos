@@ -53,7 +53,7 @@ import { restoreCommentSubmission, getCommentSubmissionSnapshot } from './commen
 import { registerOverlay } from '@/lib/dom/overlay';
 
 const point = { id: '1', type: 'test', subregId: 'sub' } as IMarkerData;
-const comment: UGCComment = { id: 'reply', markerId: '1', content: 'A shareable comment', parentId: null, depth: 0, createdAt: '', score: 0, replyCount: 0, replies: [], status: 'active' };
+const comment: UGCComment = { type: 'comment', id: 'reply', markerId: '1', content: 'A shareable comment', parentId: null, depth: 0, createdAt: '', score: 0, replyCount: 0, replies: [], status: 'active' };
 let writeText: ReturnType<typeof vi.fn>;
 beforeEach(() => {
     useAuthStore.getState().clearSessionUser();
@@ -867,3 +867,19 @@ it.each(['navigate', 'unmount'] as const)(
         expect(getCommentSubmissionSnapshot(point.id)).toBe(before);
     },
 );
+
+it('renders and highlights a hidden link target without author metadata or interaction controls, keeping its public reply nested', async () => {
+    vi.mocked(client.listUGCComments).mockResolvedValue([]);
+    vi.spyOn(client, 'getUGCCommentById').mockResolvedValue({ targetId: 'hidden', path: [{
+        type: 'placeholder', id: 'hidden', markerId: point.id, parentId: null, depth: 0, replyCount: 1, replies: [],
+    }], replies: [{ ...comment, id: 'child', parentId: 'hidden', depth: 1, content: 'Public reply beneath unavailable comment' }], repliesTruncated: false });
+    useMarkerStore.setState({ commentOpenRequest: { markerId: point.id, commentId: 'hidden' } });
+    render(createElement(Comments, { point, pointName: 'Marker', active: true }));
+    const placeholder = await screen.findByText('detail.comments.unavailable');
+    const node = placeholder.closest('[data-comment-id]');
+    await waitFor(() => expect(node?.getAttribute('data-highlighted')).toBe('true'));
+    expect(node?.querySelector('button')).toBeNull();
+    expect(node?.querySelector('[data-avt]')).toBeNull();
+    const reply = screen.getByText('Public reply beneath unavailable comment').closest('[data-comment-id]') as HTMLElement;
+    expect(reply.style.getPropertyValue('--comment-display-depth')).toBe('1');
+});
