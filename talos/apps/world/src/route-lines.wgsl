@@ -11,9 +11,10 @@ struct Vertex {
     @location(0) local: vec2f,
     @location(1) @interpolate(flat) length: f32,
     @location(2) @interpolate(flat) phase: f32,
+    @location(3) @interpolate(flat) color: vec3f,
 }
 
-@vertex fn vs(@builtin(vertex_index) index: u32, @location(0) a: vec4f, @location(1) b: vec4f) -> Vertex {
+@vertex fn vs(@builtin(vertex_index) index: u32, @location(0) a: vec4f, @location(1) b: vec4f, @location(2) color: vec4f) -> Vertex {
     let corners = array<vec2f, 6>(vec2f(-1,-1), vec2f(1,-1), vec2f(-1,1), vec2f(-1,1), vec2f(1,-1), vec2f(1,1));
     let corner = corners[index];
     let t = (corner.x + 1) * 0.5;
@@ -29,6 +30,7 @@ struct Vertex {
     out.local = vec2f(t * segmentLength + corner.x * halfWidth, corner.y * halfWidth);
     out.length = segmentLength;
     out.phase = a.w;
+    out.color = color.rgb;
     return out;
 }
 
@@ -47,5 +49,5 @@ struct Vertex {
     let outer = 0.6 * (1 - smoothstep(1.0, 1.6, radius));
     let core = 1 - smoothstep(0.35, 0.85, radius);
     let alpha = 1 - (1 - glow) * (1 - outer) * (1 - core);
-    return vec4f(mix(settings.color.rgb, vec3f(0.89, 0.97, 1), core), alpha);
+    return vec4f(mix(input.color, vec3f(1), core * 0.3), alpha);
 }

@@ -1,14 +1,14 @@
 import type { OverlayFrame, Viewer } from '@endfield-noclip/viewer/host';
 import type { Segment } from '@opendfieldmap/ganglia';
 import shader from './route-lines.wgsl?raw';
-import { DASH_PERIOD, projectLines } from './route-lines';
+import { DASH_PERIOD, projectLines, routeStyle } from './route-lines';
 
 /** Own the route's GPU resources for one viewer. Dispose after unregistering its overlay. */
 export function createRouteLines(
     device: GPUDevice,
     format: GPUTextureFormat,
     segments: Segment[],
-    style = { color: [0.35, 0.78, 1], halfWidth: 3.5 },
+    style: { color?: number[]; halfWidth: number } = { halfWidth: 3.5 },
 ) {
     const module = device.createShaderModule({
         label: 'Route depth and dashes',
@@ -22,11 +22,12 @@ export function createRouteLines(
             entryPoint: 'vs',
             buffers: [
                 {
-                    arrayStride: 32,
+                    arrayStride: 48,
                     stepMode: 'instance',
                     attributes: [
                         { shaderLocation: 0, offset: 0, format: 'float32x4' },
                         { shaderLocation: 1, offset: 16, format: 'float32x4' },
+                        { shaderLocation: 2, offset: 32, format: 'float32x4' },
                     ],
                 },
             ],
@@ -57,7 +58,7 @@ export function createRouteLines(
     );
     const vertices = device.createBuffer({
         label: 'Route segments',
-        size: Math.max(32, count * 32),
+        size: Math.max(48, count * 48),
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
     const uniforms = device.createBuffer({
@@ -75,6 +76,7 @@ export function createRouteLines(
                 frame.width,
                 frame.height,
                 ratio,
+                (segment) => style.color ?? routeStyle(segment).color,
             );
             if (!projected.length) return;
             device.queue.writeBuffer(vertices, 0, projected);
@@ -90,7 +92,7 @@ export function createRouteLines(
                     -frame.jitter[1] * 0.5,
                     0.15,
                     DASH_PERIOD,
-                    ...style.color,
+                    0, 0, 0,
                     style.halfWidth,
                 ]),
             );
@@ -113,7 +115,7 @@ export function createRouteLines(
             pass.setPipeline(pipeline);
             pass.setBindGroup(0, group);
             pass.setVertexBuffer(0, vertices);
-            pass.draw(6, projected.length / 8);
+            pass.draw(6, projected.length / 12);
             pass.end();
         },
         destroy() {

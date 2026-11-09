@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { sampleJourney, type Route, type Vec3 } from '@opendfieldmap/ganglia';
 import './route-inspection.css';
 import { createRouteLines } from './route-lines-renderer';
+import { routeStyle } from './route-lines';
 import { boxSegments, supportBoxes, type SupportBox } from './moving-bounds';
 
 export type Candidate = {
@@ -334,6 +335,20 @@ export default function RouteInspection({
                         {error && <p role='alert'>{error}</p>}
                         {data && (
                             <>
+                                {data.route.locomotion?.dashes !== undefined && (
+                                    <p>
+                                        Dash × {data.route.locomotion.dashes} · Remaining stamina{' '}
+                                        {data.route.locomotion.final.toFixed(2)}
+                                    </p>
+                                )}
+                                <ul className='route-legend' aria-label='Route actions'>
+                                    {[...new Set(data.route.segments.map(routeStyle))].map((style) => (
+                                        <li key={style.label}>
+                                            <span aria-hidden='true' style={{ backgroundColor: `rgb(${style.color.map(value => Math.round(value * 255)).join(',')})` }} />
+                                            {style.label}
+                                        </li>
+                                    ))}
+                                </ul>
                                 {data.route.boosts?.map((boost) => (
                                     <p key={boost.id}>
                                         Vortex {boost.id} · {boost.multiplier}× ·{' '}

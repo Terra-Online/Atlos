@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DASH_PERIOD, projectLines } from './route-lines';
+import { DASH_PERIOD, projectLines, routeStyle, ROUTE_STYLES } from './route-lines';
 import type { Segment } from '@opendfieldmap/ganglia';
 
 const camera: Parameters<typeof projectLines>[1] = {
@@ -72,4 +72,20 @@ describe('route line projection', () => {
             ).length,
         ).toBe(0);
     });
+});
+
+it('retains action colours and dash phase when segments are clipped or hidden', () => {
+    const segments: Segment[] = [
+        { ...run([[-2, 0, 10], [0, 0, 10]]), gait: 'dash' },
+        { ...run([[0, 0, -3], [1, 0, -2]]), mode: 'jump' },
+        { ...run([[0, 0, 10], [2, 0, 10]]), mode: 'drop' },
+    ];
+    const output = projectLines(segments, camera, 200, 100, 1, segment => routeStyle(segment).color);
+    expect(output.length).toBe(24);
+    expect(Array.from(output.slice(8, 11))).toEqual(ROUTE_STYLES.dash.color.map(Math.fround));
+    expect(Array.from(output.slice(20, 23))).toEqual(ROUTE_STYLES.flight.color.map(Math.fround));
+    expect(output[15]).toBeCloseTo(output[7] % DASH_PERIOD);
+    expect(routeStyle({ ...segments[0], gait: 'sprint' })).toBe(ROUTE_STYLES.sprint);
+    expect(routeStyle({ ...segments[0], mode: 'rope', connection: 'moving-ride/lift/0' })).toBe(ROUTE_STYLES.transport);
+    expect(routeStyle({ ...segments[0], mode: 'rope', connection: 'rope/lower/upper' })).toBe(ROUTE_STYLES.rope);
 });

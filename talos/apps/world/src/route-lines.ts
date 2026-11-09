@@ -3,6 +3,29 @@ import type { Segment } from '@opendfieldmap/ganglia';
 
 export const DASH_PERIOD = 8;
 
+export const ROUTE_STYLES = {
+    run: { label: 'Run', color: [0.2, 0.65, 1] },
+    sprint: { label: 'Sprint (sustained)', color: [1, 0.8, 0.15] },
+    dash: { label: 'Dash', color: [1, 0.4, 0.05] },
+    flight: { label: 'Jump / fall', color: [0.73, 0.45, 1] },
+    rope: { label: 'Rope', color: [0.3, 0.9, 0.4] },
+    launch: { label: 'Launch device', color: [1, 0.35, 0.65] },
+    transport: { label: 'Moving support', color: [0.1, 0.85, 0.8] },
+};
+
+export function routeStyle(segment: Segment) {
+    if (segment.mode === 'walk') {
+        if (segment.gait === 'dash') return ROUTE_STYLES.dash;
+        return segment.gait === 'sprint' ? ROUTE_STYLES.sprint : ROUTE_STYLES.run;
+    }
+    if (segment.mode === 'jump' || segment.mode === 'drop') return ROUTE_STYLES.flight;
+    if (segment.mode === 'launch') return ROUTE_STYLES.launch;
+    // Moving platforms share the rope traversal mode, with a source-owned ID.
+    if (segment.connection?.includes('moving-ride/') || segment.connection?.includes('moving-join/'))
+        return ROUTE_STYLES.transport;
+    return ROUTE_STYLES.rope;
+}
+
 /** Project continuous runs into output NDC and a shared CSS-pixel dash phase. */
 export function projectLines(
     segments: Segment[],
@@ -13,12 +36,14 @@ export function projectLines(
     width: number,
     height: number,
     pixelRatio: number,
+    color?: (segment: Segment) => number[],
 ): Float32Array {
     const count = segments.reduce(
         (sum, segment) => sum + segment.points.length - 1,
         0,
     );
-    const result = new Float32Array(Math.max(0, count) * 8);
+    const stride = color ? 12 : 8;
+    const result = new Float32Array(Math.max(0, count) * stride);
     const right = camera.right(),
         up = camera.up(),
         forward = camera.forward();
@@ -58,7 +83,8 @@ export function projectLines(
                 ) / pixelRatio;
             if (length < 1e-6) continue;
             result.set([...start, phase, ...end, phase + length], cursor);
-            cursor += 8;
+            if (color) result.set([...color(segment), 1], cursor + 8);
+            cursor += stride;
             phase = (phase + length) % DASH_PERIOD;
         }
     return result.subarray(0, cursor);

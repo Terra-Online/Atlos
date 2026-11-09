@@ -527,3 +527,37 @@ stopped at the user's request after basic acceptance. The local-start result
 establishes the pictured device combination. Candidate searches retain explicit
 truncation diagnostics, and these runs do not establish global route optimality.
 `0qUgnis` was closed by the user during this work.
+
+## Ground dash scheduling in alpha.62
+
+Ground dash is distinct from held sprint. The fixed-corridor label DP compares
+spending or saving a charge at spatial intervals, carrying recovery and cooldown
+through ground, air and device actions. Travel time is primary, with lower final
+stamina preferred for equal-time results. Limits retain explicit truncation.
+Dash continues across collinear navigation seams and ends at turns or air entry.
+Results retain pulse count and model parameters. Stamina need not reach exactly
+zero when remaining distance, cooldown or recovery prevents another useful pulse.
+
+The default pulse uses an **approximate 3 m / 0.3 s ground motion model**. The
+configuration fields `_dashSkillDistance` and `_dashDuration` provide this scale,
+but ordinary dash uses character animation motion. Its actual displacement curve
+has not been verified. The 0.8 s ordinary input interval and existing normalized
+charge/recovery policy are source backed. Special 0.3 s chained inputs are omitted
+from this model. Request locomotion can supply a different explicit dash policy.
+Regenerate movement settings when updating an existing local routing installation.
+
+Route overlays distinguish run (blue), held sprint (yellow), dash (orange),
+jump/fall (purple), rope (green), launch devices (pink), and moving supports (cyan).
+The legend lists actions present in the current route. The preview reports dash
+count and remaining stamina. Existing depth-aware rendering and playback are retained.
+
+Validation on 2026-11-09 passed 220 Ganglia tests, 26 affected extractor tests,
+44 World tests and World type checking. The route shader compiled and its pipeline
+passed WebGPU validation in a headless browser. Real-map visual acceptance of the
+new colors and ordinary dash displacement remains pending.
+
+The retained `0kkQ3em` ordinary teleport request was rerun through the installed
+alpha.62 extractor with regenerated movement settings. It collected the target
+in 7.323 model seconds, using 8 dash activations and ending with 0.392 normalized
+charges. The 256-label limit was reached, so this is a feasible bounded result.
+The same package with the previous no-dash settings reproduced 7.572 seconds.

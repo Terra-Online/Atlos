@@ -874,6 +874,9 @@ export function routeServer(
                                 : {}),
                             assumptions: [
                                 ...assumptions,
+                                ...(route.locomotion?.dashes
+                                    ? ['Ground dash uses an approximate configured distance/duration model and a conservative input interval']
+                                    : []),
                                 ...(route.boosts?.length
                                     ? ['Vortex pickup, expiry and airborne continuation use the declared movement model']
                                     : []),

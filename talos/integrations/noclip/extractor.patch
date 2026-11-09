@@ -6,7 +6,7 @@ index fa7c03a9..79f3c9be 100644
  		"@mary-ext/array-fns": "^0.1.0",
  		"@mary-ext/czar": "^0.1.2",
  		"@mary-ext/ds-queue": "^0.1.0",
-+		"@opendfieldmap/ganglia": "file:../../../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.61.tgz",
++		"@opendfieldmap/ganglia": "file:../../../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.62.tgz",
  		"meshoptimizer": "1.3.0"
  	}
  }
@@ -759,7 +759,7 @@ new file mode 100644
 index 00000000..e7774c92
 --- /dev/null
 +++ b/packages/extractor/src/commands/movement-settings.ts
-@@ -0,0 +1,133 @@
+@@ -0,0 +1,142 @@
 +/* oxlint-disable no-await-in-loop -- keep only one decoded asset at a time */
 +import { writeFile } from 'node:fs/promises';
 +import { parseArgs } from 'node:util';
@@ -854,6 +854,15 @@ index 00000000..e7774c92
 +			sprintAcceleration: positive(numberField(settings, '_sprintAcceleration'), '_sprintAcceleration'),
 +			// held sprint intent survives ordinary air transitions without a fresh input activation.
 +			sprintThrough: ['jump', 'drop'],
++			// Approximate ground pulse using configured distance/duration. Ordinary dash
++			// uses animation motion, whose speed curve is not represented by this model.
++			dash: {
++				speed: positive(numberField(settings, '_dashSkillDistance'), '_dashSkillDistance') /
++					positive(numberField(settings, '_dashDuration'), '_dashDuration'),
++				duration: positive(numberField(settings, '_dashDuration'), '_dashDuration'),
++				cooldown: positive(numberField(settings, '_dashInputCd'), '_dashInputCd'),
++				cost: 1,
++			},
 +			stamina: {
 +				capacity,
 +				initial: capacity,
@@ -8503,7 +8512,7 @@ new file mode 100644
 index 00000000..785654b5
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-data.test.ts
-@@ -0,0 +1,296 @@
+@@ -0,0 +1,298 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
@@ -8724,12 +8733,14 @@ index 00000000..785654b5
 +		speed: 3,
 +		sprintSpeed: 6,
 +		sprintAcceleration: 20,
++		dash: { speed: 10, duration: .3, cooldown: .8, cost: 1 },
 +		stamina: { capacity: 10, initial: 5, sprintDrain: 2, recoveryRate: 1, recoveryDelay: 1, reserve: 1 },
 +	};
 +	const imported = groundData(navigation, walls, { ...request, locomotion }, { movement }).options.locomotion;
 +	assert.equal(imported?.stamina?.initial, 5);
 +	assert.equal(imported?.stamina?.activationCost, 0);
 +	assert.equal(imported?.stamina?.sprintDrain, 2);
++	assert.deepEqual(imported?.dash, locomotion.dash);
 +});
 +
 +test('resolves only explicit completed mission gates and retains reset exclusions', () => {
@@ -8805,7 +8816,7 @@ new file mode 100644
 index 00000000..d9562ef2
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-data.ts
-@@ -0,0 +1,362 @@
+@@ -0,0 +1,367 @@
 +import { isObject } from '@endfield-noclip/formats/unity/values';
 +
 +import type { GroundArrival, GroundOptions, LocomotionOptions, Surface, Vec3, Wall } from '@opendfieldmap/ganglia';
@@ -9120,6 +9131,11 @@ index 00000000..d9562ef2
 +			sprintSpeed: number(policy.sprintSpeed),
 +			sprintAcceleration: number(policy.sprintAcceleration),
 +		};
++		if (policy.dash !== undefined) {
++			const dash = object(policy.dash);
++			locomotion.dash = { speed: number(dash.speed), duration: number(dash.duration),
++				cooldown: number(dash.cooldown), cost: number(dash.cost) };
++		}
 +		if (policy.sprintThrough !== undefined) {
 +			locomotion.sprintThrough = list(policy.sprintThrough).map((mode) => {
 +				if (mode !== 'jump' && mode !== 'drop' && mode !== 'rope' && mode !== 'launch') {
