@@ -334,6 +334,18 @@ export default function RouteInspection({
                         {error && <p role='alert'>{error}</p>}
                         {data && (
                             <>
+                                {data.route.boosts?.map((boost) => (
+                                    <p key={boost.id}>
+                                        Vortex {boost.id} · {boost.multiplier}× ·{' '}
+                                        {boost.elapsed.toFixed(2)} / {boost.duration.toFixed(1)} s
+                                    </p>
+                                ))}
+                                {data.route.segments.some((segment) => segment.boostExpiry !== undefined) && (
+                                    <p>The vortex buff expires during the final jump.</p>
+                                )}
+                                {data.route.goalHit && (
+                                    <p>Route ends when the airborne target is collected.</p>
+                                )}
                                 <div className='world-panel-actions'>
                                     <button onClick={() => pose('side')}>
                                         Side overview

@@ -24,7 +24,7 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
     await writeFile(
         join(directory, 'packages/extractor/src/cli.ts'),
         `
-        import { writeFile, rename } from 'node:fs/promises';
+        import { access, writeFile, rename } from 'node:fs/promises';
         if (process.argv.includes('--identity')) {console.log(JSON.stringify({generator:'fixture-generator'}));process.exit(0);}
         const output = process.argv[process.argv.indexOf('-o') + 1];
         const source = { buildGuid: 'build', contentHash: 'content' };
@@ -38,7 +38,11 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
             await save({ source, scene: 'map01', status: 'candidate', optimizing: !process.argv.includes('--ground-only') });
             console.log(JSON.stringify({ phase: 'ground-route', elapsedMs: 1 }));
             if (!process.argv.includes('--ground-only')) {
-                await new Promise(resolve => setTimeout(resolve, 700));
+                // The test owns completion so machine load cannot finish the interrupted run.
+                while (true) {
+                    try { await access(output + '.release'); break; }
+                    catch { await new Promise(resolve => setTimeout(resolve, 20)); }
+                }
                 await save({ source, scene: 'map01', status: 'candidate', optimizing: false });
             }
         }
@@ -127,6 +131,7 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
         if (!resumed) throw new Error('Provisional route was not resumed');
         expect(resumed.status).not.toBe('ready');
         expect(resumed.result).toMatchObject({ optimizing: true });
+        await writeFile(resumed.output + '.release', '');
         await expect.poll(() => resumed.status).toBe('ready');
         expect(resumed.result).toMatchObject({ optimizing: false });
         if (!resumed.log) throw new Error('Task log was not retained');

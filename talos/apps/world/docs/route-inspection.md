@@ -486,3 +486,44 @@ Candidate coverage is bounded and unsupported geometry is reported. A trial uses
 one pose per source; coordinated multi-box placement remains follow-up work.
 Focused synthetic correctness checks cover this model. Real-map route and
 browser acceptance remains pending.
+
+## Airborne collection and vortex boosts
+
+Collection templates (`int_collection_coin*`) can complete their interaction during a jump or drop.
+The route ends at its first collection event, following the user-confirmed objective.
+Collision checks cover the trajectory up to collection. Subsequent landing is outside this goal.
+The imported interaction volume supplies the goal dimensions.
+
+`int_accelerate_buff` now supplies a source-derived pickup trigger and duration to Ganglia.
+The current movement adapter applies the verified `buff_common_speedup` ground/air multiplier of 2.2.
+`accelerate_buff[0]` is the buff duration. `ccs_duration` controls the camera effect.
+A candidate must reach the trigger with ordinary movement. Its final jump may continue after expiry
+using the ordinary air-speed cap and explicit overspeed deceleration, with the changed trajectory
+collision checked again. Earlier expiry remains outside this bounded candidate family.
+The preview reports the actual vortex ID and consumed duration, and the route retains boost evidence.
+Stamina continues across the pickup. The current bounded candidate family uses one vortex pickup.
+
+The jump model also imports the sprint launch speed and its initial-speed ceiling,
+then decays overspeed using the input-held air deceleration. The default settings
+are 9 m/s launch, 6.5 m/s sustained air speed and 5 m/s² overspeed deceleration.
+Vortex scaling applies to both launch and sustained horizontal speed.
+
+### alpha.61 verification
+
+The 2026-11-09 implementation uses source build `2954fa80-23c1-1579-2b22-4ecfd6d70418`
+and content `23821a7611be5c0478dc4695d96fd74a`. Ganglia passed 215 tests, the generated
+extractor passed 21 traversal/route tests, and World passed 43 tests, type checking
+and a local-catalogue production build. The provisional-cache test now holds its
+fixture worker until explicitly released, preserving interruption assertions under load.
+
+| Point | Verified entry | Selected model time | Evidence |
+| --- | --- | --- | --- |
+| `0kkQ3em` | Retained ordinary teleport request, installed package | 7.572 s | Stops at airborne collection |
+| `19Nzh29` | Ordinary nearest-teleport API and browser preview | 8.941 s | Uses vortex `23400083308`, then jumps from the high platform. The final 0.095 s follows the expired-buff speed model |
+| `02gcZm4` | Supported start at the pictured rope's lower endpoint | 8.069 s | Uses rope `22800010018/22800010016`, the roof approach and vortex `22800010116`; 1.268 s of boost is used through collection |
+
+The `02gcZm4` full teleport approach remains unverified. Its extended search was
+stopped at the user's request after basic acceptance. The local-start result
+establishes the pictured device combination. Candidate searches retain explicit
+truncation diagnostics, and these runs do not establish global route optimality.
+`0qUgnis` was closed by the user during this work.

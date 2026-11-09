@@ -543,9 +543,14 @@ export function routeServer(
                                 (value, axis) => value - target[axis],
                             ),
                         ) <= 1e-3;
-                    const goal = matchingTransform
+                    const normalizedGoal = matchingTransform
                         ? pointRules.navigationGoal
                         : null;
+                    // Collection triggers can be entered during flight. Preserve
+                    // their source-derived volume and finish at the collection event.
+                    const goal = normalizedGoal && pointRules?.template?.startsWith('int_collection_coin')
+                        ? { ...normalizedGoal, interaction: { ...normalizedGoal.interaction, airborne: true } }
+                        : normalizedGoal;
                     if (
                         goal &&
                         (!finiteVector(goal.position) || !goal.interaction)
@@ -869,6 +874,9 @@ export function routeServer(
                                 : {}),
                             assumptions: [
                                 ...assumptions,
+                                ...(route.boosts?.length
+                                    ? ['Vortex pickup, expiry and airborne continuation use the declared movement model']
+                                    : []),
                                 ...(route.segments.some(
                                     (segment) => segment.mode === 'rope',
                                 )

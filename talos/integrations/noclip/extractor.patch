@@ -6,7 +6,7 @@ index fa7c03a9..79f3c9be 100644
  		"@mary-ext/array-fns": "^0.1.0",
  		"@mary-ext/czar": "^0.1.2",
  		"@mary-ext/ds-queue": "^0.1.0",
-+		"@opendfieldmap/ganglia": "file:../../../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.59.tgz",
++		"@opendfieldmap/ganglia": "file:../../../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.61.tgz",
  		"meshoptimizer": "1.3.0"
  	}
  }
@@ -2548,7 +2548,7 @@ new file mode 100644
 index 00000000..cae27cc2
 --- /dev/null
 +++ b/packages/extractor/src/commands/player-route.test.ts
-@@ -0,0 +1,678 @@
+@@ -0,0 +1,681 @@
 +import assert from 'node:assert/strict';
 +import { fork } from 'node:child_process';
 +import { once } from 'node:events';
@@ -2615,6 +2615,9 @@ index 00000000..cae27cc2
 +					_maxFallingSpeed: 10,
 +					_apexTime: 0,
 +					_inAirMaxHorizontalSpeedSprint: 2,
++					_startHorizontalSpeedSprint: 2,
++					_inAirMaxInitHorizontalSpeed: 12.5,
++					_inAirDecelerationWithInputSprint: 5,
 +					_inAirMaxHorizontalSpeedRun: 1,
 +					_inAirAcceleration: 60,
 +					_inAirDecelerationNoInputSprint: 10,
@@ -3232,7 +3235,7 @@ new file mode 100644
 index 00000000..66875eb8
 --- /dev/null
 +++ b/packages/extractor/src/commands/player-route.ts
-@@ -0,0 +1,814 @@
+@@ -0,0 +1,820 @@
 +import { readFile, rename, rm, writeFile } from 'node:fs/promises';
 +import { resolve } from 'node:path';
 +import { isDeepStrictEqual, parseArgs } from 'node:util';
@@ -3248,6 +3251,7 @@ index 00000000..66875eb8
 +	type GroundArrival,
 +	type GroundConnection,
 +	type GroundOptions,
++	type SpeedBoost,
 +	type InteractionGoal,
 +	type LocomotionOptions,
 +	type Route,
@@ -3595,7 +3599,7 @@ index 00000000..66875eb8
 +		groundPlanner = preparedGround.value;
 +	}
 +	let candidates = groundPlanner.project(goal, { maxVertical: 0.5, interaction: request.interaction });
-+	if (!candidates.length && !movingTarget && !followingTarget) {
++	if (!candidates.length && !request.interaction?.airborne && !movingTarget && !followingTarget) {
 +		await emit({ status: 'unavailable', reason: 'target-region-unmapped' });
 +		return;
 +	}
@@ -3647,6 +3651,8 @@ index 00000000..66875eb8
 +		maxFallingSpeed: numberField(settings, '_maxFallingSpeed'),
 +		apexTime: numberField(settings, '_apexTime'),
 +		maxHorizontalSpeed: numberField(settings, '_inAirMaxHorizontalSpeedSprint'),
++		startHorizontalSpeed: Math.min(numberField(settings, '_startHorizontalSpeedSprint'), numberField(settings, '_inAirMaxInitHorizontalSpeed')),
++		airOverspeedDeceleration: numberField(settings, '_inAirDecelerationWithInputSprint'),
 +		airAcceleration: numberField(settings, '_inAirAcceleration'),
 +		airDeceleration: numberField(settings, '_inAirDecelerationNoInputSprint'),
 +	};
@@ -3690,7 +3696,7 @@ index 00000000..66875eb8
 +	if (!maximumDuration || !Number.isFinite(maxDrop)) {
 +		throw new Error('invalid collision vertical extent');
 +	}
-+	const maxHorizontalDistance = maximumDuration * model.maxHorizontalSpeed;
++	const maxHorizontalDistance = maximumDuration * Math.max(model.maxHorizontalSpeed, model.startHorizontalSpeed);
 +	diagnostics.model = { ...model, runAirSpeed };
 +	progress({ phase: 'collision-index', triangles: collision.indices.length / 3 });
 +	// The complete body and curved-arc chord inflation must remain in the indexed world.
@@ -3734,6 +3740,7 @@ index 00000000..66875eb8
 +
 +	timing.collision = performance.now() - indexStart;
 +	let knownRoute = walking;
++	let boosts: SpeedBoost[] = [];
 +	let knownConnections = options.connections ?? [];
 +	if (deviceInput) {
 +		progress({ phase: 'device-links' });
@@ -3752,6 +3759,7 @@ index 00000000..66875eb8
 +		);
 +		prepareReuse.devices = preparedDevices.reused;
 +		const devices = preparedDevices.value;
++		boosts = devices.boosts;
 +		options.connections = [...(options.connections ?? []), ...devices.connections];
 +		diagnostics.devices = devices;
 +		if (
@@ -4001,7 +4009,7 @@ index 00000000..66875eb8
 +			goal = mapped?.position ?? goal;
 +		}
 +		candidates = groundPlanner!.project(goal, { maxVertical: 0.5, interaction: request.interaction });
-+		if (!candidates.length && !followingTarget) {
++		if (!candidates.length && !request.interaction?.airborne && !followingTarget) {
 +			await emit({ status: 'unavailable', reason: 'target-region-unmapped' });
 +			return;
 +		}
@@ -4010,6 +4018,7 @@ index 00000000..66875eb8
 +	const searchStart = performance.now();
 +	const result = planJumpRoute(surfaces, world, [arrival], goal, {
 +		...options,
++		boosts,
 +		groundPlanner,
 +		interaction: request.interaction,
 +		runAirSpeed,
@@ -15189,7 +15198,7 @@ new file mode 100644
 index 00000000..b7091945
 --- /dev/null
 +++ b/packages/extractor/src/game/traversal-links.test.ts
-@@ -0,0 +1,243 @@
+@@ -0,0 +1,260 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
@@ -15433,12 +15442,29 @@ index 00000000..b7091945
 +		0,
 +	);
 +});
++
++
++test('acceleration devices retain source trigger and buff duration independently of camera timing', () => {
++	const entry = device('1', 'int_accelerate_buff', [0, 0, 0]);
++	const duration = parameter('accelerate_buff', 3);
++	duration.value.type = 6;
++	const raw = template('TriggerObserverComponentData', [duration, parameter('ccs_duration', 20)]);
++	const input = { version: 1, scene: 'scene', source, devices: [entry], templates: { int_accelerate_buff: raw } };
++	const result = deviceConnections(input, setup([floor('floor', 0, 0)]));
++	assert.equal(result.boosts.length, 1);
++	assert.equal(result.boosts[0].duration, 3);
++	assert.equal(result.boosts[0].multiplier, 2.2);
++	assert.equal(result.boosts[0].id, '1');
++	assert.ok(result.boosts[0].interaction.radius > 0);
++	entry.placement.properties.push(parameter('accelerate_buff', -1));
++	assert.equal(deviceConnections(input, setup([floor('floor', 0, 0)])).boosts.length, 0);
++});
 diff --git a/packages/extractor/src/game/traversal-links.ts b/packages/extractor/src/game/traversal-links.ts
 new file mode 100644
 index 00000000..9874f65e
 --- /dev/null
 +++ b/packages/extractor/src/game/traversal-links.ts
-@@ -0,0 +1,528 @@
+@@ -0,0 +1,547 @@
 +import { trsMatrix, transformPoint, unityEulerQuaternion } from '@endfield-noclip/formats/unity/transform';
 +import type { TypeTreeObject } from '@endfield-noclip/formats/unity/type-tree';
 +import { isObject, numberField } from '@endfield-noclip/formats/unity/values';
@@ -15449,6 +15475,7 @@ index 00000000..9874f65e
 +	jumpConnection,
 +	jumpDuration,
 +	type GroundConnection,
++	type SpeedBoost,
 +	type Surface,
 +	type Vec3,
 +	type Wall,
@@ -15507,7 +15534,7 @@ index 00000000..9874f65e
 +	if (value.type === 3 && bits.length === 1) {
 +		return Number(bits[0]);
 +	}
-+	if (value.type === 5 && bits.length === 1) {
++	if ((value.type === 5 || value.type === 6) && bits.length === 1) {
 +		return float(bits[0]);
 +	}
 +	if (value.type === 11 && bits.length === 3) {
@@ -15768,6 +15795,7 @@ index 00000000..9874f65e
 +		).navigationGoal;
 +	};
 +	const connections: GroundConnection[] = [];
++	const boosts: SpeedBoost[] = [];
 +	const outcomes: { id: string; mode: string; reason: string }[] = [];
 +	const inside = (p: Vec3) =>
 +		!world.bounds ||
@@ -15839,6 +15867,22 @@ index 00000000..9874f65e
 +			);
 +		});
 +	};
++	// InteractiveLogicAccelerateBuff.ReqAddBuff supplies accelerate_buff[0]
++	// as buff_common_speedup's duration. Its speed_multiplier is +1.2 on
++	// the ground/air scalar base 1, capped at 2.2. ccs_duration controls the camera.
++	for (const device of input.devices) {
++		if (device.kind !== 'accelerate' || !inside(device.position)) continue;
++		const values = effective(device, input.templates[device.template], 'TriggerObserverComponentData');
++		const duration = values?.get('accelerate_buff');
++		const goal = entry(device);
++		if (typeof duration !== 'number' || !Number.isFinite(duration) || duration <= 0 || !goal) {
++			outcomes.push({ id: device.id, mode: 'accelerate', reason: 'device-model-unresolved' });
++			continue;
++		}
++		boosts.push({ id: device.id, position: goal.position, interaction: goal.interaction,
++			duration, multiplier: 2.2 });
++		outcomes.push({ id: device.id, mode: 'accelerate', reason: 'trigger-retained' });
++	}
 +	const byId = new Map(input.devices.map((d) => [d.id, d]));
 +	for (const pair of ropePairs(input.devices).pairs) {
 +		const lower = byId.get(pair.bottom)!,
@@ -15962,6 +16006,7 @@ index 00000000..9874f65e
 +	}
 +	return {
 +		connections,
++		boosts,
 +		outcomes,
 +		snapshot: 'all-devices-enabled-and-powered',
 +		motionValidation: 'model-based',
