@@ -34,6 +34,10 @@
     "emptyDesc": "若您確認點位資訊缺失或有誤，請於項目社羣中聯絡管理員；或到本項目的 GitHub Repo 提交 <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='報告點位錯誤'>Issue</a>。"
   },
   "detail": {
+    "noclip": {
+      "title": "場景預覽",
+      "open": "在3D場景中查看位置"
+    },
     "stat": {
       "world": "世界",
       "main": "主區域",

@@ -12,6 +12,7 @@ import Comments, { CommentExcerpt } from '@/pages/detail/comment/Comments';
 import { flatList } from '@/pages/detail/comment/commentsTree';
 import { useAutoTrans } from '@/pages/detail/comment/useAutoTrans';
 import { useGlobalCollectionRate } from '@/pages/detail/useGlobalCollectionRate';
+import NoclipPreview from '@/pages/detail/NoclipPreview';
 
 import parse from 'html-react-parser';
 import { getItemIconUrl, getFileContentUrl, fetchArchiveFile } from '@/services/assets/resource';
@@ -683,6 +684,7 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                                     </div>
                                 </>
                             )}
+                            <NoclipPreview pointId={currentPoint.id} />
                             <div className={styles.detailDivider} data-label={tUI('detail.label.url')}></div>
                             <div className={styles.detailAction} data-act="share">
                                 <PopoverTooltip
