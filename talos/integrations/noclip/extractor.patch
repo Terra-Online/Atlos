@@ -2545,10 +2545,10 @@ index 00000000..22332a0a
 +};
 diff --git a/packages/extractor/src/commands/player-route.test.ts b/packages/extractor/src/commands/player-route.test.ts
 new file mode 100644
-index 00000000..ee812f5f
+index 00000000..cae27cc2
 --- /dev/null
 +++ b/packages/extractor/src/commands/player-route.test.ts
-@@ -0,0 +1,606 @@
+@@ -0,0 +1,678 @@
 +import assert from 'node:assert/strict';
 +import { fork } from 'node:child_process';
 +import { once } from 'node:events';
@@ -2559,6 +2559,7 @@ index 00000000..ee812f5f
 +
 +import type { Wall } from '@opendfieldmap/ganglia';
 +
++import type { FollowingSupport } from '../game/following-supports.ts';
 +import { sweepSupports, type SweptSupport } from '../game/swept-supports.ts';
 +import { createRouteCache } from '../route-cache.ts';
 +
@@ -2642,6 +2643,7 @@ index 00000000..ee812f5f
 +		devices: [];
 +		templates: {};
 +		movingSupports: SweptSupport[];
++		followingSupports?: FollowingSupport[];
 +	},
 +) => {
 +	const directory = await mkdtemp(join(tmpdir(), 'player-route-'));
@@ -3155,12 +3157,82 @@ index 00000000..ee812f5f
 +		await rm(directory, { recursive: true, force: true });
 +	}
 +});
++
++const followingFixture = () => {
++	const data = fixture({ min: [0, 0], max: [10, 10] });
++	Object.assign(data.ground.build!, { cellSize: 0.1, cellHeight: 0.05 });
++	Object.assign(data.movement.assets[0].settings, {
++		_stepOffset: 0.4,
++		_inAirMaxHorizontalSpeedSprint: 4,
++		_inAirMaxHorizontalSpeedRun: 4,
++	});
++	data.ground.surfaces.push({
++		id: 'upper',
++		vertices: [
++			[7, 1.6, 4],
++			[7, 1.6, 6],
++			[9, 1.6, 6],
++			[9, 1.6, 4],
++		],
++	});
++	data.collision.positions.push(7, 1.6, 4, 7, 1.6, 6, 9, 1.6, 6, 9, 1.6, 4);
++	data.collision.indices.push(4, 5, 6, 4, 6, 7);
++	data.request.target = [8, 1.6, 5];
++	const box: FollowingSupport = {
++		id: 'following',
++		level: 'level',
++		model: 'fixture',
++		geometryKind: 'box',
++		initialState: 0,
++		assumption: 'placement-within-activity-range',
++		spawn: [2, 0, 5],
++		bodies: [
++			Array.from({ length: 8 }, (_, bits): [number, number, number] => [
++				2 + (bits & 1 ? 0.8 : -0.8),
++				bits & 2 ? 0.8 : 0,
++				5 + (bits & 4 ? 0.8 : -0.8),
++			]),
++		],
++		maxDistance: 65,
++	};
++	const devices = {
++		version: 1,
++		scene: 'scene',
++		source,
++		devices: [] as [],
++		templates: {},
++		movingSupports: [],
++		followingSupports: [box],
++	};
++	return { data, devices };
++};
++
++test('device-only fallback exports one assumed placement without control operations', async () => {
++	const { data, devices } = followingFixture();
++	const result = await execute(data, {}, 'devices', devices);
++	assert.equal(result.status, 'candidate', JSON.stringify(result.diagnostics.followingSupports));
++	assert.equal(result.supportBoxes[0].family, 'following-box');
++	assert.equal(result.operations, undefined);
++	assert.equal(result.diagnostics.followingSupports.assumption, 'placement-within-activity-range');
++	assert.ok(result.diagnostics.timingMs.following >= 0);
++});
++
++test('full fallback runs after ordinary jumps fail and preserves an already complete baseline', async () => {
++	const { data, devices } = followingFixture();
++	const result = await execute(data, {}, 'all', devices);
++	assert.equal(result.status, 'candidate', JSON.stringify(result.diagnostics.followingSupports));
++	assert.equal(result.supportBoxes[0].family, 'following-box');
++	const existing = await execute(data, { target: [3, 0, 2] }, 'devices', devices);
++	assert.equal(existing.status, 'candidate');
++	assert.equal(existing.operations, undefined);
++	assert.equal(existing.diagnostics.followingSupports, undefined);
++});
 diff --git a/packages/extractor/src/commands/player-route.ts b/packages/extractor/src/commands/player-route.ts
 new file mode 100644
-index 00000000..26f44cdb
+index 00000000..66875eb8
 --- /dev/null
 +++ b/packages/extractor/src/commands/player-route.ts
-@@ -0,0 +1,741 @@
+@@ -0,0 +1,814 @@
 +import { readFile, rename, rm, writeFile } from 'node:fs/promises';
 +import { resolve } from 'node:path';
 +import { isDeepStrictEqual, parseArgs } from 'node:util';
@@ -3187,9 +3259,10 @@ index 00000000..26f44cdb
 +import { createCollisionWorld } from '@opendfieldmap/ganglia/collision';
 +
 +import { walkableCollisionIndices, type CollisionRecord } from '../game/collision-ground.ts';
++import { planFollowingRoute } from '../game/following-route.ts';
 +import { refineGoalGround } from '../game/ground-refinement.ts';
 +import { movingGround } from '../game/moving-ground.ts';
-+import { createMovingRouteAnnotator } from '../game/moving-route.ts';
++import { type SupportBox, createMovingRouteAnnotator } from '../game/moving-route.ts';
 +import { roundExclusions } from '../game/round-exclusions.ts';
 +import { deviceConnections } from '../game/traversal-links.ts';
 +import type { RouteCache } from '../route-cache.ts';
@@ -3423,6 +3496,7 @@ index 00000000..26f44cdb
 +			route?: Route;
 +			connections?: GroundConnection[];
 +			groundedTarget?: Vec3;
++			supportBoxes?: SupportBox[];
 +		},
 +		optimizing = false,
 +	) => {
@@ -3430,8 +3504,12 @@ index 00000000..26f44cdb
 +			diagnostics.collisionQueries = collisionQueryStats();
 +		}
 +		const annotationStart = performance.now();
-+		const supportBoxes =
-+			result.route && annotateMovingRoute ? annotateMovingRoute(result.route, result.connections ?? []) : [];
++		const supportBoxes = [
++			...(result.supportBoxes ?? []),
++			...(result.route && annotateMovingRoute
++				? annotateMovingRoute(result.route, result.connections ?? [])
++				: []),
++		];
 +		if (result.route && annotateMovingRoute) {
 +			timing.annotations = (timing.annotations ?? 0) + performance.now() - annotationStart;
 +		}
@@ -3493,13 +3571,14 @@ index 00000000..26f44cdb
 +	const arrival = { ...request.arrival, position: supportedStart.position };
 +	diagnostics.arrival = { requested: request.arrival.position, grounded: arrival.position };
 +	const target = request.interaction ? null : targetSupport(ground.surfaces, request.target);
++	const followingTarget = Boolean(deviceInput?.followingSupports?.length);
 +	const movingTarget = Boolean(
 +		deviceInput?.movingSupports?.length &&
 +		ground.build?.bounds &&
 +		ground.build.cellSize &&
 +		ground.build.cellHeight,
 +	);
-+	if (!request.interaction && !target && !movingTarget) {
++	if (!request.interaction && !target && !movingTarget && !followingTarget) {
 +		await emit({ status: 'unavailable', reason: 'target-unmapped' });
 +		return;
 +	}
@@ -3516,7 +3595,7 @@ index 00000000..26f44cdb
 +		groundPlanner = preparedGround.value;
 +	}
 +	let candidates = groundPlanner.project(goal, { maxVertical: 0.5, interaction: request.interaction });
-+	if (!candidates.length && !movingTarget) {
++	if (!candidates.length && !movingTarget && !followingTarget) {
 +		await emit({ status: 'unavailable', reason: 'target-region-unmapped' });
 +		return;
 +	}
@@ -3794,6 +3873,50 @@ index 00000000..26f44cdb
 +			}
 +		}
 +	}
++	const followingFallback = async () => {
++		if (!deviceInput?.followingSupports?.length) {
++			return null;
++		}
++		progress({ phase: 'following-supports', devices: deviceInput.followingSupports.length });
++		const followingStart = performance.now();
++		if (!ground.build?.bounds || !ground.build.cellSize || !ground.build.cellHeight) {
++			diagnostics.followingSupports = { reason: 'bounded-ground-build-required' };
++			return null;
++		}
++		const following = await planFollowingRoute(
++			deviceInput.followingSupports,
++			geometry,
++			world,
++			[arrival],
++			goal,
++			{
++				surfaces,
++				build: {
++					profile,
++					maxSlope,
++					stepUp: numberField(settings, '_stepOffset'),
++					stepDown: numberField(settings, '_stepDownOffset'),
++					cellSize: ground.build.cellSize,
++					cellHeight: ground.build.cellHeight,
++					bounds: ground.build.bounds,
++				},
++				jump: {
++					...options,
++					interaction: request.interaction,
++					runAirSpeed,
++					maxSlope,
++					maxDrop,
++					maxHorizontalDistance,
++					...limits,
++					model,
++				},
++				onProgress: progress,
++			},
++		);
++		diagnostics.followingSupports = following.diagnostics;
++		timing.following = performance.now() - followingStart;
++		return following.route.status === 'complete' ? following : null;
++	};
 +	if (values['devices-only']) {
 +		if (knownRoute.status === 'complete') {
 +			await emit({
@@ -3803,7 +3926,18 @@ index 00000000..26f44cdb
 +				groundedTarget: knownRoute.points.at(-1),
 +			});
 +		} else {
-+			await emit({ status: 'unavailable', reason: knownRoute.status });
++			const following = await followingFallback();
++			if (following) {
++				await emit({
++					status: 'candidate',
++					route: following.route,
++					connections: following.connections,
++					supportBoxes: following.supportBoxes,
++					groundedTarget: following.route.status === 'complete' ? following.route.points.at(-1) : undefined,
++				});
++			} else {
++				await emit({ status: 'unavailable', reason: knownRoute.status });
++			}
 +		}
 +		return;
 +	}
@@ -3860,14 +3994,14 @@ index 00000000..26f44cdb
 +	if (movingTarget) {
 +		if (!request.interaction) {
 +			const mapped = targetSupport(surfaces, request.target);
-+			if (!mapped) {
++			if (!mapped && !followingTarget) {
 +				await emit({ status: 'unavailable', reason: 'target-unmapped' });
 +				return;
 +			}
-+			goal = mapped.position;
++			goal = mapped?.position ?? goal;
 +		}
 +		candidates = groundPlanner!.project(goal, { maxVertical: 0.5, interaction: request.interaction });
-+		if (!candidates.length) {
++		if (!candidates.length && !followingTarget) {
 +			await emit({ status: 'unavailable', reason: 'target-region-unmapped' });
 +			return;
 +		}
@@ -3899,7 +4033,18 @@ index 00000000..26f44cdb
 +	if (route.status === 'complete') {
 +		await emit({ status: 'candidate', route, connections, groundedTarget: route.points.at(-1) });
 +	} else {
-+		await emit({ status: 'unavailable', reason: route.status, connections });
++		const following = await followingFallback();
++		if (following) {
++			await emit({
++				status: 'candidate',
++				route: following.route,
++				connections: following.connections,
++				supportBoxes: following.supportBoxes,
++				groundedTarget: following.route.status === 'complete' ? following.route.points.at(-1) : undefined,
++			});
++		} else {
++			await emit({ status: 'unavailable', reason: route.status, connections });
++		}
 +	}
 +};
 diff --git a/packages/extractor/src/commands/travel-points.ts b/packages/extractor/src/commands/travel-points.ts
@@ -4077,10 +4222,10 @@ index 00000000..9308bd7f
 +};
 diff --git a/packages/extractor/src/commands/traversal-devices.ts b/packages/extractor/src/commands/traversal-devices.ts
 new file mode 100644
-index 00000000..8fe41ad4
+index 00000000..1f108779
 --- /dev/null
 +++ b/packages/extractor/src/commands/traversal-devices.ts
-@@ -0,0 +1,154 @@
+@@ -0,0 +1,155 @@
 +/* oxlint-disable no-await-in-loop -- decode and release level files, caching each small template once */
 +import { writeFile } from 'node:fs/promises';
 +import { parseArgs } from 'node:util';
@@ -4225,6 +4370,7 @@ index 00000000..8fe41ad4
 +				devices,
 +				conveyors,
 +				movingSupports: moving.supports,
++				followingSupports: moving.following,
 +				unsupportedMovingSupports: moving.unsupported,
 +				templates: Object.fromEntries(templates),
 +				ropes,
@@ -6733,6 +6879,1614 @@ index 00000000..577efbce
 +		actors,
 +		excludedActors,
 +		geometries: Object.fromEntries(geometries),
++	};
++};
+diff --git a/packages/extractor/src/game/following-route.test.ts b/packages/extractor/src/game/following-route.test.ts
+new file mode 100644
+index 00000000..aaa23b3c
+--- /dev/null
++++ b/packages/extractor/src/game/following-route.test.ts
+@@ -0,0 +1,310 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++
++import type { GroundArrival, JumpRouteOptions, Surface, Vec3 } from '@opendfieldmap/ganglia';
++import { createCollisionWorld } from '@opendfieldmap/ganglia/collision';
++
++import { planFollowingRoute } from './following-route.ts';
++import type { FollowingSupport } from './following-supports.ts';
++
++const floor = (id: string, x0: number, x1: number, y: number, z0 = -6, z1 = 6): Surface => ({
++	id,
++	vertices: [
++		[x0, y, z0],
++		[x0, y, z1],
++		[x1, y, z1],
++		[x1, y, z0],
++	],
++});
++const geometry = (surfaces: Surface[]) => ({
++	positions: surfaces.flatMap((surface) => surface.vertices).flat(),
++	indices: surfaces.flatMap((_, i) => [i * 4, i * 4 + 1, i * 4 + 2, i * 4, i * 4 + 2, i * 4 + 3]),
++});
++const cuboid = (x: number, y: number, z: number): Vec3[] =>
++	Array.from({ length: 8 }, (_, bits): Vec3 => [
++		x + (bits & 1 ? 0.8 : -0.8),
++		y + (bits & 2 ? 1.2 : 0),
++		z + (bits & 4 ? 0.8 : -0.8),
++	]);
++const support = (): FollowingSupport => ({
++	id: 'box',
++	level: 'level',
++	model: 'fixture',
++	geometryKind: 'box',
++	initialState: 0,
++	assumption: 'placement-within-activity-range',
++	spawn: [0, 0, 0],
++	bodies: [cuboid(0, 0, 0)],
++	maxDistance: 65,
++});
++const build = {
++	profile: { radius: 0.2, height: 1.4 },
++	maxSlope: 45,
++	stepUp: 0.3,
++	stepDown: 0.5,
++	cellSize: 0.1,
++	cellHeight: 0.05,
++	bounds: { min: [-8, -6] as [number, number], max: [18, 6] as [number, number] },
++};
++const jump: JumpRouteOptions = {
++	profile: build.profile,
++	speed: 3,
++	maxVertical: 0.5,
++	walls: [],
++	locomotion: { speed: 3, sprintSpeed: 6, sprintAcceleration: 3 },
++	model: {
++		gravity: 10,
++		fallingGravity: 10,
++		maxJumpHeight: 1.5,
++		maxFallingSpeed: 15,
++		apexTime: 0,
++		maxHorizontalSpeed: 4,
++		airAcceleration: 60,
++		airDeceleration: 10,
++	},
++	runAirSpeed: 4,
++	maxSlope: 45,
++	maxDrop: 5,
++	maxHorizontalDistance: 6,
++	sampleSpacing: 0.5,
++	maxCandidates: 640,
++	maxLinks: 8,
++};
++const starts: GroundArrival[] = [{ id: 'player', state: 'available', position: [-4, 0, 0], cost: 0 }];
++const base = () => [floor('lower', -8, 18, 0), floor('upper', 10, 15, 2.5, -2, 2)];
++const solve = async ({
++	boxes = [support()],
++	surfaces = base(),
++	arrivals = starts,
++	target = [12, 2.5, 0],
++	options = jump,
++}: {
++	boxes?: FollowingSupport[];
++	surfaces?: Surface[];
++	arrivals?: GroundArrival[];
++	target?: Vec3;
++	options?: JumpRouteOptions;
++} = {}) => {
++	const terrain = geometry(surfaces),
++		world = createCollisionWorld(terrain, { bounds: { min: [-8.5, -6.5], max: [18.5, 6.5] } });
++	return planFollowingRoute(boxes, terrain, world, arrivals, target, { surfaces, build, jump: options });
++};
++
++test('one useful assumed placement supports the target without control actions or artificial travel cost', async () => {
++	const boxes = [support()],
++		before = structuredClone(boxes);
++	const result = await solve({ boxes });
++	assert.equal(result.route.status, 'complete', JSON.stringify(result.diagnostics));
++	assert.equal(result.diagnostics.assumption, 'placement-within-activity-range');
++	assert.equal(result.supportBoxes.length, 1);
++	assert.equal(result.supportBoxes[0].family, 'following-box');
++	assert.ok(result.supportBoxes[0].min[0] > 1);
++	assert.equal('operations' in result, false);
++	assert.deepEqual(boxes, before);
++	if (result.route.status !== 'complete') {
++		return;
++	}
++	assert.deepEqual(result.route.points[0], starts[0].position);
++	assert.deepEqual(result.route.points.at(-1), [12, 2.5, 0]);
++	assert.equal(
++		result.route.cost,
++		result.route.arrivalCost + result.route.segments.reduce((sum, segment) => sum + segment.times.at(-1)!, 0),
++	);
++});
++
++test('placement may use another ground height without proving a route for moving the box', async () => {
++	const result = await solve({
++		surfaces: [
++			floor('birth', -8, 2, 0),
++			floor('destination', 6, 18, 0.2),
++			floor('upper', 10, 15, 2.7, -2, 2),
++		],
++		arrivals: [{ id: 'player', state: 'available', position: [6.5, 0.2, 0], cost: 0 }],
++		target: [12, 2.7, 0],
++	});
++	assert.equal(result.route.status, 'complete', JSON.stringify(result.diagnostics));
++	assert.ok(Math.abs(result.supportBoxes[0].min[1] - 0.2) < 1e-8);
++});
++
++test('collider bottom offset aligns to the candidate floor, independently of the source root height', async () => {
++	const box = support();
++	box.spawn[1] = 3;
++	box.bodies = [cuboid(0, 1, 0)];
++	const result = await solve({ boxes: [box] });
++	assert.equal(result.route.status, 'complete', JSON.stringify(result.diagnostics));
++	assert.equal(result.supportBoxes[0].min[1], 0);
++});
++
++test('a spherical activity limit rejects otherwise useful poses outside the source range', async () => {
++	const box = support();
++	box.maxDistance = 5;
++	const result = await solve({ boxes: [box] });
++	assert.equal(result.route.status, 'no-verified-route');
++	assert.ok(
++		result.diagnostics.outcomes.some((outcome) => outcome.reason === 'placement-outside-activity-range'),
++	);
++});
++
++test('zero or invalid discovery budgets and unavailable starts return explicit finite results', async () => {
++	for (const limits of [
++		{ maxLinks: 0 },
++		{ maxCandidates: 0 },
++		{ maxLinks: -1 },
++		{ maxCandidates: NaN },
++		{ maxCandidates: Infinity },
++		{ maxLinks: 1.5 },
++	]) {
++		const result = await solve({ options: { ...jump, ...limits } });
++		assert.equal(result.route.status, 'no-verified-route');
++		assert.ok(Number.isFinite(result.diagnostics.limits.jumpCandidatesPerPlacement));
++		assert.equal(result.diagnostics.placements, 0);
++	}
++	for (const arrivals of [
++		[],
++		[{ ...starts[0], state: 'locked' as const }],
++		[{ ...starts[0], state: 'unknown' as const }],
++	]) {
++		const result = await solve({ arrivals });
++		assert.equal(result.route.status, 'no-verified-route');
++		assert.equal(result.diagnostics.outcomes[0].reason, 'no-available-starts');
++	}
++});
++
++test('the selected available start and its arrival cost survive with and without locomotion', async () => {
++	for (const locomotion of [jump.locomotion, undefined]) {
++		const arrivals: GroundArrival[] = [
++			{ id: 'locked', state: 'locked', position: [-4, 0, 0], cost: 0 },
++			{ id: 'expensive', state: 'available', position: [-4, 0, 0], cost: 500 },
++			{ id: 'selected', state: 'available', position: [5, 0, 0], cost: 7 },
++		];
++		const result = await solve({ arrivals, options: { ...jump, locomotion } });
++		assert.equal(result.route.status, 'complete', JSON.stringify(result.diagnostics));
++		if (result.route.status !== 'complete') {
++			continue;
++		}
++		assert.equal(result.route.start, 'selected');
++		assert.equal(result.route.arrivalCost, 7);
++		assert.deepEqual(result.route.points[0], [5, 0, 0]);
++		assert.ok(result.route.cost >= 7);
++	}
++});
++
++test('initial poses retain nonzero arrival cost and reject a blocked starting point', async () => {
++	const result = await solve({
++		surfaces: [floor('lower', -8, 18, 0)],
++		target: [0, 1.2, 0],
++		arrivals: [
++			{ id: 'inside-box', state: 'available', position: [0, 0, 0], cost: 0 },
++			{ id: 'outside', state: 'available', position: [-4, 0, 0], cost: 11 },
++		],
++		options: { ...jump, locomotion: undefined },
++	});
++	assert.equal(result.route.status, 'complete', JSON.stringify(result.diagnostics));
++	if (result.route.status !== 'complete') {
++		return;
++	}
++	assert.equal(result.route.start, 'outside');
++	assert.equal(result.route.arrivalCost, 11);
++	assert.deepEqual(result.supportBoxes[0].min, [-0.8, 0, -0.8]);
++});
++
++test('unidentified original static box collision is retained and prevents relocation', async () => {
++	const result = await solve({ surfaces: [...base(), floor('original-roof', -0.8, 0.8, 1.2, -0.8, 0.8)] });
++	assert.equal(result.route.status, 'no-verified-route');
++	assert.ok(
++		result.diagnostics.outcomes.some((outcome) => outcome.reason === 'source-collision-ownership-unresolved'),
++	);
++});
++
++test('a candidate needs complete support under its actual footprint, including narrow holes', async () => {
++	const result = await solve({
++		surfaces: [
++			floor('left', -8, 7.9, 0, -1, 1),
++			floor('right', 9.5, 18, 0, -1, 1),
++			floor('upper', 10, 15, 2.5, -0.5, 0.5),
++		],
++	});
++	assert.equal(result.route.status, 'no-verified-route');
++	assert.ok(result.diagnostics.outcomes.some((outcome) => outcome.reason === 'placement-base-unsupported'));
++});
++
++test('rotated source boxes retain their real roof and unsupported geometry is rejected', async () => {
++	const box = support(),
++		angle = Math.PI / 4;
++	box.bodies = box.bodies.map((body) =>
++		body.map((p): Vec3 => [
++			p[0] * Math.cos(angle) - p[2] * Math.sin(angle),
++			p[1],
++			p[0] * Math.sin(angle) + p[2] * Math.cos(angle),
++		]),
++	);
++	const result = await solve({ boxes: [box], options: { ...jump, maxLinks: 16, maxCandidates: 1280 } });
++	assert.equal(result.route.status, 'complete', JSON.stringify(result.diagnostics));
++	assert.ok(result.supportBoxes[0].max[0] - result.supportBoxes[0].min[0] > 2);
++	box.geometryKind = 'convex';
++	const unsupported = await solve({ boxes: [box] });
++	assert.equal(unsupported.route.status, 'no-verified-route');
++	assert.equal(unsupported.diagnostics.outcomes[0].reason, 'solid-roof-unsupported');
++});
++
++test('other boxes retain their initial solids and malformed obstacle geometry fails conservatively', async () => {
++	const obstacle = support();
++	obstacle.id = 'obstacle';
++	obstacle.geometryKind = 'convex';
++	obstacle.spawn = [4, 0, 0];
++	obstacle.bodies = [
++		Array.from({ length: 8 }, (_, bits): Vec3 => [bits & 1 ? 4.3 : 3.7, bits & 2 ? 5 : 0, bits & 4 ? 6 : -6]),
++	];
++	const before = structuredClone(obstacle);
++	const result = await solve({ boxes: [support(), obstacle] });
++	assert.equal(result.route.status, 'no-verified-route');
++	assert.deepEqual(obstacle, before);
++	obstacle.bodies = [];
++	const malformed = await solve({ boxes: [support(), obstacle] });
++	assert.equal(malformed.route.status, 'no-verified-route');
++	assert.ok(
++		malformed.diagnostics.outcomes.some((outcome) => outcome.reason === 'invalid-box-obstacle-geometry'),
++	);
++});
++
++test('compatible known device actions remain usable and actions crossing the placed solid are rejected', async () => {
++	const box = support();
++	box.spawn = [8.7, 0, 0];
++	box.bodies = [cuboid(8.7, 0, 0)];
++	box.maxDistance = 0.01;
++	const surfaces = [floor('entry', -8, -6, 0), floor('lower', 0, 18, 0), floor('upper', 10, 15, 2.5, -2, 2)];
++	const arrivals: GroundArrival[] = [
++		{ id: 'rope-player', state: 'available', position: [-7, 0, 0], cost: 3 },
++	];
++	const connection = {
++		id: 'rope',
++		mode: 'rope' as const,
++		state: 'open' as const,
++		points: [[-6.4, 0.01, 0] as Vec3, [2, 0.01, 0] as Vec3],
++		times: [0, 2],
++		endpointTolerance: 0.2,
++	};
++	const compatible = await solve({
++		boxes: [box],
++		surfaces,
++		arrivals,
++		options: { ...jump, connections: [connection] },
++	});
++	assert.equal(compatible.route.status, 'complete', JSON.stringify(compatible.diagnostics));
++	if (compatible.route.status === 'complete') {
++		assert.ok(compatible.route.segments.some((segment) => segment.connection === 'rope'));
++		assert.equal(compatible.route.arrivalCost, 3);
++	}
++	const crossing = {
++		...connection,
++		points: [connection.points[0], [14, 0.01, 0] as Vec3, connection.points[1]],
++		times: [0, 2, 4],
++	};
++	const blocked = await solve({
++		boxes: [box],
++		surfaces,
++		arrivals,
++		options: { ...jump, connections: [crossing] },
++	});
++	assert.equal(blocked.route.status, 'no-verified-route');
++});
+diff --git a/packages/extractor/src/game/following-route.ts b/packages/extractor/src/game/following-route.ts
+new file mode 100644
+index 00000000..dadbbed0
+--- /dev/null
++++ b/packages/extractor/src/game/following-route.ts
+@@ -0,0 +1,666 @@
++/* oxlint-disable no-await-in-loop -- each bounded layout is baked and queried in isolation */
++import {
++	createGoalProjector,
++	createWallChecker,
++	planJumpRoute,
++	retimeGroundRoute,
++	type GroundArrival,
++	type GroundConnection,
++	type JumpRouteOptions,
++	type Route,
++	type Surface,
++	type Vec3,
++} from '@opendfieldmap/ganglia';
++import { buildGroundSurfaces, type BuildOptions, type CollisionGeometry } from '@opendfieldmap/ganglia/build';
++import { createCollisionWorld, type CollisionWorld } from '@opendfieldmap/ganglia/collision';
++
++import type { FollowingSupport } from './following-supports.ts';
++import type { SupportBox } from './moving-route.ts';
++import { supportBounds, type PoseBounds } from './swept-supports.ts';
++
++type Point = [number, number];
++type Diagnostics = {
++	assumption: 'placement-within-activity-range';
++	placements: number;
++	limits: { placements: number; jumpCandidatesPerPlacement: number };
++	truncated: boolean;
++	outcomes: { device: string; reason: string; position?: Vec3 }[];
++};
++type Result = {
++	route: Route;
++	connections: GroundConnection[];
++	supportBoxes: SupportBox[];
++	diagnostics: Diagnostics;
++};
++
++const vector = (component: (axis: number) => number): Vec3 => [component(0), component(1), component(2)];
++const distance = (a: Vec3, b: Vec3) => Math.hypot(...a.map((v, axis) => v - b[axis]));
++const shifted = (point: Vec3, delta: Vec3): Vec3 => vector((axis) => point[axis] + delta[axis]);
++const corners = ({ min, max }: PoseBounds): Vec3[] =>
++	Array.from({ length: 8 }, (_, bits): Vec3 => vector((axis) => (bits & (1 << axis) ? max : min)[axis]));
++const flatCuboid = (body: Vec3[]) => {
++	if (body.length !== 8) {
++		return false;
++	}
++	const axes = [1, 2, 4].map((index) => vector((axis) => body[index][axis] - body[0][axis]));
++	if (axes.some((axis) => Math.hypot(...axis) < 1e-5)) {
++		return false;
++	}
++	for (let i = 0; i < 3; i++) {
++		for (let j = i + 1; j < 3; j++) {
++			if (
++				Math.abs(axes[i].reduce((sum, v, axis) => sum + v * axes[j][axis], 0)) >
++				Math.hypot(...axes[i]) * Math.hypot(...axes[j]) * 1e-5
++			) {
++				return false;
++			}
++		}
++	}
++	if (
++		body.some(
++			(point, bits) =>
++				distance(
++					point,
++					vector(
++						(axis) =>
++							body[0][axis] +
++							axes.reduce((sum, basis, index) => sum + (bits & (1 << index) ? basis[axis] : 0), 0),
++					),
++				) > 1e-5,
++		)
++	) {
++		return false;
++	}
++	const bounds = supportBounds([body]);
++	return (
++		body.filter((point) => Math.abs(point[1] - bounds.max[1]) < 1e-5).length === 4 &&
++		body.filter((point) => Math.abs(point[1] - bounds.min[1]) < 1e-5).length === 4
++	);
++};
++const footprintOf = (body: Vec3[], height: number) => {
++	const roof = body.filter((p) => Math.abs(p[1] - height) < 1e-5);
++	const center: Point = [
++		roof.reduce((sum, p) => sum + p[0], 0) / 4,
++		roof.reduce((sum, p) => sum + p[2], 0) / 4,
++	];
++	roof.sort(
++		(a, b) => Math.atan2(a[2] - center[1], a[0] - center[0]) - Math.atan2(b[2] - center[1], b[0] - center[0]),
++	);
++	return roof.map((p): Point => [p[0], p[2]]);
++};
++const roofContains = (body: Vec3[], point: Vec3) => {
++	const roof = footprintOf(body, Math.max(...body.map((p) => p[1])));
++	return roof.every((a, i) => side(a, roof[(i + 1) % roof.length], [point[0], point[2]]) >= -1e-6);
++};
++const area = (polygon: Point[]) =>
++	Math.abs(
++		polygon.reduce((sum, a, i) => {
++			const b = polygon[(i + 1) % polygon.length];
++			return sum + a[0] * b[1] - b[0] * a[1];
++		}, 0),
++	) / 2;
++const side = (a: Point, b: Point, p: Point) => (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]);
++const clip = (polygon: Point[], a: Point, b: Point, inside: boolean): Point[] => {
++	const result: Point[] = [];
++	for (const [i, p] of polygon.entries()) {
++		const q = polygon[(i + 1) % polygon.length];
++		const from = side(a, b, p),
++			to = side(a, b, q);
++		const keepP = inside ? from >= 0 : from <= 0;
++		const keepQ = inside ? to >= 0 : to <= 0;
++		if (keepP) {
++			result.push(p);
++		}
++		if (keepP !== keepQ) {
++			const t = from / (from - to);
++			result.push([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]);
++		}
++	}
++	return result;
++};
++const trianglesOf = (
++	geometry: CollisionGeometry,
++	selected = Array.from({ length: geometry.indices.length / 3 }, (_, i) => i),
++) =>
++	selected.map((i) =>
++		[0, 1, 2].map((j): Vec3 => {
++			const vertex = geometry.indices[i * 3 + j];
++			return [
++				geometry.positions[vertex * 3],
++				geometry.positions[vertex * 3 + 1],
++				geometry.positions[vertex * 3 + 2],
++			];
++		}),
++	);
++
++// polygon subtraction proves coverage of the complete footprint, including holes smaller
++// than a sampling interval. duplicate and overlapping source triangles cannot add coverage twice.
++const flatSupport = (footprint: Point[], height: number, triangles: Vec3[][]) => {
++	let uncovered = [footprint];
++	for (const triangle of triangles) {
++		if (triangle.some((p) => Math.abs(p[1] - height) > 1e-5)) {
++			continue;
++		}
++		const ring = triangle.map((p): Point => [p[0], p[2]]);
++		// upward faces are clockwise in XZ; clipping uses the opposite winding.
++		if (side(ring[0], ring[1], ring[2]) >= -1e-9) {
++			continue;
++		}
++		ring.reverse();
++		const next: Point[][] = [];
++		for (const polygon of uncovered) {
++			let remainder = polygon;
++			for (let i = 0; i < 3 && remainder.length; i++) {
++				const outside = clip(remainder, ring[i], ring[(i + 1) % 3], false);
++				if (area(outside) > 1e-9) {
++					next.push(outside);
++				}
++				remainder = clip(remainder, ring[i], ring[(i + 1) % 3], true);
++			}
++		}
++		uncovered = next;
++		if (!uncovered.length) {
++			return true;
++		}
++		if (uncovered.length > 256) {
++			return false;
++		}
++	}
++	return false;
++};
++const overlaps = (a: PoseBounds, b: PoseBounds) =>
++	a.min.every((v, axis) => v <= b.max[axis] && a.max[axis] >= b.min[axis]);
++const blockedBody = (bounds: PoseBounds, floor: number, triangles: Vec3[][]) =>
++	triangles.some((triangle) => {
++		const other = supportBounds([triangle]);
++		return other.max[1] > floor + 1e-5 && overlaps(bounds, other);
++	});
++const onBoxFace = (triangle: Vec3[], body: Vec3[]) => {
++	const axes = [1, 2, 4].map((index) => vector((axis) => body[index][axis] - body[0][axis]));
++	const coordinates = triangle.map((point) =>
++		axes.map((basis) => {
++			const squared = basis.reduce((sum, value) => sum + value * value, 0);
++			return basis.reduce((sum, value, axis) => sum + value * (point[axis] - body[0][axis]), 0) / squared;
++		}),
++	);
++	return (
++		coordinates.every((point) => point.every((value) => value >= -1e-5 && value <= 1 + 1e-5)) &&
++		axes.some(
++			(_, axis) =>
++				coordinates.every((point) => Math.abs(point[axis]) < 1e-5) ||
++				coordinates.every((point) => Math.abs(point[axis] - 1) < 1e-5),
++		)
++	);
++};
++
++const joinedGeometry = (terrain: CollisionGeometry, bodies: Vec3[][]): CollisionGeometry => {
++	const positions = Array.from(terrain.positions),
++		indices = Array.from(terrain.indices);
++	for (const body of bodies) {
++		const base = positions.length / 3;
++		positions.push(...body.flat());
++		const center = vector((axis) => body.reduce((sum, point) => sum + point[axis] / 8, 0));
++		for (const face of [
++			[0, 4, 6, 2],
++			[1, 3, 7, 5],
++			[0, 1, 5, 4],
++			[2, 6, 7, 3],
++			[0, 2, 3, 1],
++			[4, 5, 7, 6],
++		]) {
++			const [a, b, c] = face.map((i) => body[i]);
++			const u = b.map((v, axis) => v - a[axis]),
++				v = c.map((value, axis) => value - a[axis]);
++			const normal = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
++			if (normal.reduce((sum, value, axis) => sum + value * (a[axis] - center[axis]), 0) < 0) {
++				face.reverse();
++			}
++			indices.push(
++				base + face[0],
++				base + face[1],
++				base + face[2],
++				base + face[0],
++				base + face[2],
++				base + face[3],
++			);
++		}
++	}
++	return { positions, indices };
++};
++const addBodies = (base: CollisionWorld, bodies: Vec3[][]): CollisionWorld => {
++	const extra = createCollisionWorld(joinedGeometry({ positions: [], indices: [] }, bodies));
++	return {
++		bounds: base.bounds,
++		trianglesInBounds: base.trianglesInBounds?.bind(base),
++		sweepCapsule(a, b, profile) {
++			return base.sweepCapsule(a, b, profile) ?? extra.sweepCapsule(a, b, profile);
++		},
++		groundAt(point, options) {
++			const a = base.groundAt(point, options),
++				b = extra.groundAt(point, options);
++			if (!a) {
++				return b;
++			}
++			if (!b) {
++				return a;
++			}
++			return (options.radius ?? 0) > 0
++				? a.position[1] > b.position[1]
++					? a
++					: b
++				: Math.abs(a.position[1] - point[1]) <= Math.abs(b.position[1] - point[1])
++					? a
++					: b;
++		},
++	};
++};
++const geometryOfTriangles = (triangles: Vec3[][]): CollisionGeometry => ({
++	positions: triangles.flat(2),
++	indices: Array.from({ length: triangles.length * 3 }, (_, i) => i),
++});
++
++const bodyWall = (bounds: PoseBounds) => ({
++	...bounds,
++	max: [bounds.max[0], bounds.max[1] - 0.001, bounds.max[2]] as Vec3,
++	state: 'active' as const,
++});
++const insideScope = (bounds: PoseBounds, scope: BuildOptions['bounds']) =>
++	!scope || [0, 2].every((axis, i) => bounds.min[axis] >= scope.min[i] && bounds.max[axis] <= scope.max[i]);
++
++const validPoint = (point: Vec3) =>
++	Array.isArray(point) && point.length === 3 && point.every(Number.isFinite);
++
++// known actions retain their source timing. only the newly introduced solids need
++// another sweep; the same gravity/air-acceleration bound covers their arc chords.
++const compatibleConnections = (connections: GroundConnection[], bodies: Vec3[][], jump: JumpRouteOptions) => {
++	const added = createCollisionWorld(joinedGeometry({ positions: [], indices: [] }, bodies));
++	const blocked = createWallChecker(
++		bodies.map((body) => bodyWall(supportBounds([body]))),
++		jump.profile,
++	);
++	return connections.filter((connection) => {
++		if (
++			connection.points.length < 2 ||
++			connection.times.length !== connection.points.length ||
++			!connection.points.every(validPoint) ||
++			!connection.times.every(Number.isFinite)
++		) {
++			return false;
++		}
++		return connection.points.slice(1).every((point, index) => {
++			const elapsed = connection.times[index + 1] - connection.times[index];
++			if (elapsed < 0) {
++				return false;
++			}
++			const acceleration =
++				connection.mode === 'rope'
++					? 0
++					: Math.hypot(
++							Math.max(jump.model.gravity, jump.model.fallingGravity),
++							Math.max(jump.model.airAcceleration ?? 0, jump.model.airDeceleration ?? 0),
++						);
++			const inflation = (acceleration * elapsed ** 2) / 8 + 0.01;
++			return (
++				!blocked(connection.points[index], point, inflation) &&
++				!added.sweepCapsule(connection.points[index], point, { ...jump.profile, inflation })
++			);
++		});
++	});
++};
++
++/**
++ * @param supports actual source box colliders and their spherical activity limits
++ * @param terrain immutable static collision; unidentified original box collision is never removed
++ * @param world matching static collision index
++ * @param starts grounded arrivals; unavailable, invalid and blocked arrivals cannot seed a route
++ * @param goal grounded target or explicit interaction centre
++ * @param options matching player settings, ground build and finite shared discovery budgets
++ * @returns a resource-feasible route for one assumed box placement, with its actual support bounds
++ * @throws for invalid player build settings or a failed native bake
++ */
++export const planFollowingRoute = async (
++	supports: FollowingSupport[],
++	terrain: CollisionGeometry,
++	world: CollisionWorld,
++	starts: GroundArrival[],
++	goal: Vec3,
++	{
++		surfaces,
++		build,
++		jump,
++		onProgress,
++	}: {
++		surfaces: Surface[];
++		build: BuildOptions;
++		jump: JumpRouteOptions;
++		onProgress?: (value: Record<string, unknown>) => void;
++	},
++): Promise<Result> => {
++	const validBudget = [jump.maxLinks, jump.maxCandidates].every(
++		(value) => Number.isSafeInteger(value) && value >= 0,
++	);
++	const maxPlacements = validBudget ? Math.min(jump.maxLinks, jump.maxCandidates) : 0;
++	const perPlacement = maxPlacements ? Math.floor(jump.maxCandidates / maxPlacements) : 0;
++	const diagnostics: Diagnostics = {
++		assumption: 'placement-within-activity-range',
++		placements: 0,
++		limits: { placements: maxPlacements, jumpCandidatesPerPlacement: perPlacement },
++		truncated: false,
++		outcomes: [],
++	};
++	let best: Result = {
++		route: { status: 'no-verified-route' },
++		connections: [],
++		supportBoxes: [],
++		diagnostics,
++	};
++	const outcome = (device: string, reason: string, position?: Vec3) =>
++		diagnostics.outcomes.push({ device, reason, ...(position ? { position } : {}) });
++	if (!validBudget || !maxPlacements) {
++		outcome('', validBudget ? 'placement-budget-empty' : 'invalid-placement-budget');
++		return best;
++	}
++	const arrivals = starts.filter(
++		(start) =>
++			start.state === 'available' &&
++			validPoint(start.position) &&
++			Number.isFinite(start.cost) &&
++			start.cost >= 0,
++	);
++	if (!arrivals.length) {
++		outcome('', 'no-available-starts');
++		return best;
++	}
++	const definitions: { support: FollowingSupport; bounds: PoseBounds }[] = [];
++	for (const support of supports) {
++		try {
++			definitions.push({ support, bounds: supportBounds(support.bodies) });
++		} catch {
++			outcome(support.id, 'invalid-box-obstacle-geometry');
++			return best;
++		}
++	}
++	const project = createGoalProjector(surfaces);
++	for (const { support, bounds: original } of definitions) {
++		if (
++			!validPoint(support.spawn) ||
++			!Number.isFinite(support.maxDistance) ||
++			support.maxDistance <= 0 ||
++			!support.bodies.length ||
++			support.bodies.some((body) => body.some((p) => !validPoint(p)))
++		) {
++			outcome(support.id, 'invalid-support-definition');
++			continue;
++		}
++		if (support.geometryKind !== 'box' || support.bodies.some((body) => !flatCuboid(body))) {
++			outcome(support.id, 'solid-roof-unsupported');
++			continue;
++		}
++		const bottomOffset = original.min[1] - support.spawn[1];
++		if (support.bodies.some((body) => Math.abs(supportBounds([body]).min[1] - original.min[1]) > 1e-5)) {
++			outcome(support.id, 'solid-base-unsupported');
++			continue;
++		}
++		const radius = Math.max(
++			original.max[0] - support.spawn[0],
++			support.spawn[0] - original.min[0],
++			original.max[2] - support.spawn[2],
++			support.spawn[2] - original.min[2],
++		);
++		const sourceScope = {
++			min: [
++				support.spawn[0] - support.maxDistance - radius,
++				support.spawn[2] - support.maxDistance - radius,
++			] as Point,
++			max: [
++				support.spawn[0] + support.maxDistance + radius,
++				support.spawn[2] + support.maxDistance + radius,
++			] as Point,
++		};
++		if (world.bounds) {
++			for (let axis = 0; axis < 2; axis++) {
++				sourceScope.min[axis] = Math.max(sourceScope.min[axis], world.bounds.min[axis]);
++				sourceScope.max[axis] = Math.min(sourceScope.max[axis], world.bounds.max[axis]);
++			}
++		}
++		if (sourceScope.min.some((value, axis) => value > sourceScope.max[axis])) {
++			outcome(support.id, 'activity-range-outside-collision-scope');
++			continue;
++		}
++		const otherBounds = definitions.filter((other) => other.support !== support).map((other) => other.bounds);
++		const others = otherBounds.map(corners);
++		const otherTriangles = trianglesOf(joinedGeometry({ positions: [], indices: [] }, others));
++		const supportTriangles = trianglesOf(terrain, world.trianglesInBounds?.(sourceScope));
++		const triangles = [...supportTriangles, ...otherTriangles];
++		// enclosing other boxes blocks motion without granting invented AABB roof support.
++		const staticWorld = others.length
++			? { ...addBodies(world, others), groundAt: world.groundAt.bind(world) }
++			: world;
++		const walls = [...jump.walls, ...others.map((body) => bodyWall(supportBounds([body])))];
++		const sourceCollision = blockedBody(original, original.min[1], triangles);
++		const anchors: Vec3[] = [[support.spawn[0], original.min[1], support.spawn[2]]];
++		const reach = jump.maxHorizontalDistance + radius + (jump.interaction?.radius ?? 0);
++		for (const hit of project(goal, {
++			maxVertical: support.maxDistance + Math.abs(bottomOffset),
++			interaction: { radius: reach, maxVertical: support.maxDistance + Math.abs(bottomOffset) },
++		}).slice(0, maxPlacements)) {
++			anchors.push(hit.position);
++			const surface = surfaces.find((face) => face.id === hit.surface)!;
++			for (const [i, a] of surface.vertices.entries()) {
++				const b = surface.vertices[(i + 1) % surface.vertices.length];
++				const dx = b[0] - a[0],
++					dz = b[2] - a[2],
++					squared = dx * dx + dz * dz;
++				if (!squared) {
++					continue;
++				}
++				const t = Math.max(0, Math.min(1, ((goal[0] - a[0]) * dx + (goal[2] - a[2]) * dz) / squared));
++				const clearance = radius + jump.profile.radius + build.cellSize * 2;
++				for (const sign of [-1, 1]) {
++					const anchor: Vec3 = [
++						a[0] + t * dx + ((sign * dz) / Math.sqrt(squared)) * clearance,
++						a[1] + t * (b[1] - a[1]),
++						a[2] + t * dz - ((sign * dx) / Math.sqrt(squared)) * clearance,
++					];
++					for (const nearby of project(anchor, {
++						maxVertical: support.maxDistance,
++						interaction: {
++							radius: Math.hypot(support.maxDistance, build.cellSize),
++							maxVertical: support.maxDistance,
++						},
++					})) {
++						if (
++							Math.hypot(nearby.position[0] - anchor[0], nearby.position[2] - anchor[2]) <= build.cellSize
++						) {
++							anchors.push(nearby.position);
++						}
++					}
++				}
++			}
++		}
++		const candidates: { position: Vec3; floor: number }[] = [];
++		for (const anchor of anchors) {
++			if (!insideScope(supportBounds([[anchor]]), world.bounds ?? undefined)) {
++				continue;
++			}
++			const ground = staticWorld.groundAt(anchor, {
++				maxUp: build.cellHeight * 3,
++				maxDown: build.cellHeight * 3,
++				maxSlope: build.maxSlope,
++			});
++			if (!ground) {
++				continue;
++			}
++			const position: Vec3 = [ground.position[0], ground.position[1] - bottomOffset, ground.position[2]];
++			if (distance(position, support.spawn) > support.maxDistance) {
++				outcome(support.id, 'placement-outside-activity-range', position);
++				continue;
++			}
++			if (candidates.some((other) => distance(position, other.position) < build.cellSize)) {
++				continue;
++			}
++			candidates.push({ position, floor: ground.position[1] });
++		}
++		candidates.sort((a, b) => distance(a.position, goal) - distance(b.position, goal));
++		const initialIndex = candidates.findIndex(({ position }) => distance(position, support.spawn) < 1e-5);
++		if (initialIndex > 0) {
++			candidates.unshift(candidates.splice(initialIndex, 1)[0]);
++		}
++		for (const { position, floor } of candidates) {
++			const delta = vector((axis) => position[axis] - support.spawn[axis]);
++			const bodies = support.bodies.map((body) => body.map((point) => shifted(point, delta)));
++			const placed = supportBounds(bodies);
++			if (
++				!jump.interaction &&
++				createWallChecker(
++					bodies.map((body) => bodyWall(supportBounds([body]))),
++					jump.profile,
++				)(goal, goal)
++			) {
++				outcome(support.id, 'placement-blocks-goal', position);
++				continue;
++			}
++			if (diagnostics.placements >= maxPlacements) {
++				diagnostics.truncated = true;
++				break;
++			}
++			diagnostics.placements++;
++			onProgress?.({ phase: 'following-placement', completed: diagnostics.placements, total: maxPlacements });
++			if (distance(position, support.spawn) > 1e-5 && sourceCollision) {
++				outcome(support.id, 'source-collision-ownership-unresolved', position);
++				continue;
++			}
++			if (!insideScope(placed, world.bounds ?? undefined)) {
++				outcome(support.id, 'placement-outside-collision-scope', position);
++				continue;
++			}
++			if (bodies.some((body) => !flatSupport(footprintOf(body, floor), floor, supportTriangles))) {
++				outcome(support.id, 'placement-base-unsupported', position);
++				continue;
++			}
++			const initial = distance(position, support.spawn) < 1e-5;
++			if (
++				otherBounds.some((other) =>
++					placed.min.every(
++						(value, axis) =>
++							Math.min(placed.max[axis], other.max[axis]) - Math.max(value, other.min[axis]) > 1e-5,
++					),
++				)
++			) {
++				outcome(support.id, 'placement-collision-blocked', position);
++				continue;
++			}
++			const obstacles = initial
++				? triangles.filter((triangle) => !bodies.some((body) => onBoxFace(triangle, body)))
++				: triangles;
++			if (blockedBody(placed, floor, obstacles)) {
++				outcome(support.id, 'placement-collision-blocked', position);
++				continue;
++			}
++			const placedWorld = addBodies(staticWorld, bodies);
++			const placedWalls = [...walls, ...bodies.map((body) => bodyWall(supportBounds([body])))];
++			const blocked = createWallChecker(placedWalls, jump.profile);
++			const usableStarts = arrivals.filter((start) => {
++				const feet = shifted(start.position, [0, 0.01, 0]);
++				return (
++					insideScope(
++						{
++							min: [feet[0] - jump.profile.radius, feet[1], feet[2] - jump.profile.radius],
++							max: [
++								feet[0] + jump.profile.radius,
++								feet[1] + jump.profile.height,
++								feet[2] + jump.profile.radius,
++							],
++						},
++						world.bounds ?? undefined,
++					) &&
++					!blocked(start.position, start.position) &&
++					!placedWorld.sweepCapsule(feet, feet, jump.profile)
++				);
++			});
++			if (!usableStarts.length) {
++				outcome(support.id, 'placement-blocks-all-starts', position);
++				continue;
++			}
++			const padding = jump.profile.radius + build.cellSize * 4;
++			const localBounds = {
++				min: [placed.min[0] - padding, placed.min[2] - padding] as Point,
++				max: [placed.max[0] + padding, placed.max[2] + padding] as Point,
++			};
++			if (build.bounds) {
++				for (let axis = 0; axis < 2; axis++) {
++					localBounds.min[axis] = Math.max(localBounds.min[axis], build.bounds.min[axis]);
++					localBounds.max[axis] = Math.min(localBounds.max[axis], build.bounds.max[axis]);
++				}
++			}
++			if (localBounds.min.some((value, axis) => value >= localBounds.max[axis])) {
++				outcome(support.id, 'placed-roof-outside-ground-build', position);
++				continue;
++			}
++			const bakeTriangles = triangles.filter((triangle) =>
++				overlaps(supportBounds([triangle]), {
++					min: [localBounds.min[0], -Infinity, localBounds.min[1]],
++					max: [localBounds.max[0], Infinity, localBounds.max[1]],
++				}),
++			);
++			const baked = await buildGroundSurfaces(joinedGeometry(geometryOfTriangles(bakeTriangles), bodies), {
++				...build,
++				bounds: localBounds,
++			});
++			const roofs = baked
++				.filter((surface) =>
++					bodies.some((body) => {
++						const top = Math.max(...body.map((p) => p[1]));
++						return surface.vertices.every(
++							(point) => Math.abs(point[1] - top) <= build.cellHeight * 3 && roofContains(body, point),
++						);
++					}),
++				)
++				.map((surface, index): Surface => ({
++					id: 'following/' + support.id + '/' + index,
++					vertices: surface.vertices,
++					portals: surface.portals,
++				}));
++			if (!roofs.length) {
++				outcome(support.id, 'placed-roof-unmapped', position);
++				continue;
++			}
++			// each search sees exactly one pose, with compatible known device actions.
++			const result = planJumpRoute([...surfaces, ...roofs], placedWorld, usableStarts, goal, {
++				...jump,
++				groundPlanner: undefined,
++				connections: compatibleConnections(jump.connections ?? [], [...others, ...bodies], jump),
++				walls: placedWalls,
++				maxCandidates: perPlacement,
++				maxShortcutCandidates: 0,
++			});
++			const roofProject = createGoalProjector(roofs);
++			const usedRoof =
++				result.route.status === 'complete' &&
++				result.route.segments.some((segment) =>
++					(segment.mode === 'walk' ? segment.points : [segment.points[0], segment.points.at(-1)!]).some(
++						(point) => roofProject(point, { maxVertical: build.cellHeight * 3 }).length,
++					),
++				);
++			if (result.route.status !== 'complete' || !usedRoof) {
++				outcome(support.id, 'placed-box-route-unavailable', position);
++				continue;
++			}
++			const route = jump.locomotion ? retimeGroundRoute(result.route, jump.locomotion) : result.route;
++			if (route.status !== 'complete') {
++				outcome(support.id, 'placement-resource-infeasible', position);
++				continue;
++			}
++			outcome(support.id, initial ? 'accepted-initial-pose' : 'accepted', position);
++			if (best.route.status !== 'complete' || route.cost < best.route.cost) {
++				best = {
++					route,
++					connections: result.connections,
++					supportBoxes: [{ device: support.id, family: 'following-box', role: 'use', ...placed }],
++					diagnostics,
++				};
++			}
++		}
++	}
++	return best;
++};
+diff --git a/packages/extractor/src/game/following-supports.test.ts b/packages/extractor/src/game/following-supports.test.ts
+new file mode 100644
+index 00000000..52745255
+--- /dev/null
++++ b/packages/extractor/src/game/following-supports.test.ts
+@@ -0,0 +1,84 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++
++import type { LevelInteractive } from '@endfield-noclip/formats/endfield/level-interactives';
++import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
++
++import type { Vec3 } from '@opendfieldmap/ganglia';
++
++import { followingSupport, isFollowingBox } from './following-supports.ts';
++
++const bits = (v: number) => {
++	const data = new DataView(new ArrayBuffer(4));
++	data.setFloat32(0, v);
++	return String(data.getUint32(0));
++};
++const param = (key: string, values: number[], type = 5) => ({
++	key,
++	value: {
++		type,
++		valueArray: values.map((v) => ({ valueBit64: type === 3 ? String(v) : bits(v), valueString: null })),
++	},
++});
++const template = (): MemoryPackValue => ({
++	componentList: [
++		{
++			$type: '_InteractiveLogicControllerComponentDataForMemoryPack',
++			propertyList: [param('logic_type', [12], 3)],
++		},
++	],
++	configProperties: [param('box_max_distance', [65]), param('end_pos', [100, 2, 300], 11)],
++	saveProperties: [param('state', [0], 3)],
++});
++const row = {
++	template: 'box',
++	position: [10, 0, 20],
++	properties: [],
++	componentProperties: new Map(),
++} as unknown as LevelInteractive;
++const bodies: Vec3[][] = [
++	Array.from({ length: 8 }, (_, i) => [10 + (i & 1 ? 1 : -1), i & 2 ? 2 : 0, 20 + (i & 4 ? 1 : -1)]),
++];
++
++test('sources retain the authored activity range and actual solid without a transport state space', () => {
++	const data = followingSupport('x', 'level', 'model', template(), row, bodies, 'box');
++	assert.equal(isFollowingBox(template(), row), true);
++	assert.deepEqual(data.spawn, row.position);
++	assert.equal(data.maxDistance, 65);
++	assert.deepEqual(data.bodies, bodies);
++	assert.equal(data.assumption, 'placement-within-activity-range');
++	assert.equal('surfaces' in data, false);
++	assert.equal('activation' in data, false);
++	assert.equal('movement' in data, false);
++});
++
++test('saved state restores the activity centre once without granting a separate free endpoint', () => {
++	const saved = template() as Record<string, MemoryPackValue>;
++	saved.saveProperties = [param('state', [1], 3)];
++	const data = followingSupport('x', 'level', 'model', saved, row, bodies, 'box');
++	assert.deepEqual(data.spawn, [100, 2, 300]);
++	assert.deepEqual(data.bodies[0][0], [99, 2, 299]);
++	assert.deepEqual(bodies[0][0], [9, 0, 19]);
++});
++
++test('invalid activity ranges and solids do not grant placements', () => {
++	const invalid = template() as Record<string, MemoryPackValue>;
++	invalid.configProperties = [param('box_max_distance', [-1])];
++	assert.throws(() => followingSupport('x', 'level', 'model', invalid, row, bodies, 'box'), /activity range/);
++	assert.throws(() => followingSupport('x', 'level', 'model', template(), row, [], 'box'), /solid geometry/);
++});
++
++test('controller declaration is a fallback, while effective placement properties take precedence', () => {
++	const source = template() as Record<string, MemoryPackValue>;
++	source.componentList = [
++		{ $type: '_InteractiveLogicControllerComponentDataForMemoryPack', logicType: 12, propertyList: [] },
++	];
++	assert.equal(isFollowingBox(source, row), true);
++	const changed = {
++		...row,
++		componentProperties: new Map([
++			[29, [{ key: 'logic_type', type: 3, values: [{ bits: 24n, text: null }] }]],
++		]),
++	} as LevelInteractive;
++	assert.equal(isFollowingBox(source, changed), false);
++});
+diff --git a/packages/extractor/src/game/following-supports.ts b/packages/extractor/src/game/following-supports.ts
+new file mode 100644
+index 00000000..d8783c2e
+--- /dev/null
++++ b/packages/extractor/src/game/following-supports.ts
+@@ -0,0 +1,105 @@
++import type { LevelInteractive } from '@endfield-noclip/formats/endfield/level-interactives';
++import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
++
++import type { Vec3 } from '@opendfieldmap/ganglia';
++
++import { componentOf, componentParams } from './interactives/component-params.ts';
++import { atomFloat, entityProperties, entityProperty, entityState } from './interactives/template-data.ts';
++
++/** One movable support with an authored activity range, independent of its transport choreography. */
++export interface FollowingSupport {
++	id: string;
++	level: string;
++	model: string;
++	spawn: Vec3;
++	bodies: Vec3[][];
++	geometryKind: 'box' | 'convex';
++	/** Three-dimensional distance from the restored spawn, not an arbitrary endpoint. */
++	maxDistance: number;
++	initialState: number;
++	assumption: 'placement-within-activity-range';
++}
++
++/**
++ * @param template decoded template with placement and variant overrides
++ * @param row placed interactive
++ * @returns whether the effective controller belongs to the following-box family
++ */
++export const isFollowingBox = (template: MemoryPackValue, row: LevelInteractive): boolean => {
++	const suffix = '_InteractiveLogicControllerComponentDataForMemoryPack';
++	const logic = componentParams(template, row, {
++		suffix,
++		diffKey: 'Comp_InteractiveLogicController',
++		type: 29,
++	})?.get('logic_type');
++	return logic === undefined
++		? componentOf(template, suffix)?.logicType === 12
++		: logic.type === 3 && logic.values.length === 1 && logic.values[0].bits === 12n;
++};
++
++/**
++ * @param id source identity
++ * @param level owning level
++ * @param model source model
++ * @param template decoded effective interactive template
++ * @param row placed box
++ * @param bodies solid collider vertices at the authored placement in world space
++ * @param geometryKind decoded solid provenance
++ * @returns an activity-range source; the solver must still validate each stationary placement
++ * @throws on invalid collision geometry, saved state or activity range
++ */
++export const followingSupport = (
++	id: string,
++	level: string,
++	model: string,
++	template: MemoryPackValue,
++	row: LevelInteractive,
++	bodies: Vec3[][],
++	geometryKind: FollowingSupport['geometryKind'],
++): FollowingSupport => {
++	const entity = entityProperties(template);
++	if (!entity || !isFollowingBox(template, row)) {
++		throw new Error('following box controller unresolved');
++	}
++	const distance = entityProperty(entity, row, 'box_max_distance');
++	const maxDistance = distance?.length === 1 ? atomFloat(distance[0].bits) : NaN;
++	if (!Number.isFinite(maxDistance) || maxDistance <= 0) {
++		throw new Error('invalid following box activity range');
++	}
++	const initialState = entityState(entity, row);
++	if (initialState !== 0 && initialState !== 1) {
++		throw new Error('following box saved state unresolved');
++	}
++	let spawn: Vec3 = [...row.position];
++	if (initialState === 1) {
++		const values = entityProperty(entity, row, 'end_pos');
++		if (!values || values.length !== 3) {
++			throw new Error('following box restored position unresolved');
++		}
++		spawn = [atomFloat(values[0].bits), atomFloat(values[1].bits), atomFloat(values[2].bits)];
++	}
++	if (
++		!spawn.every(Number.isFinite) ||
++		!bodies.length ||
++		bodies.some((body) => body.length < 8 || body.some((p) => p.length !== 3 || !p.every(Number.isFinite)))
++	) {
++		throw new Error('following box solid geometry unresolved');
++	}
++	return {
++		id,
++		level,
++		model,
++		spawn,
++		geometryKind,
++		bodies: bodies.map((body) =>
++			body.map((p): Vec3 => [
++				p[0] + spawn[0] - row.position[0],
++				p[1] + spawn[1] - row.position[1],
++				p[2] + spawn[2] - row.position[2],
++			]),
++		),
++		maxDistance,
++		initialState,
++		assumption: 'placement-within-activity-range',
++	};
++};
+diff --git a/packages/extractor/src/game/forklift-supports.test.ts b/packages/extractor/src/game/forklift-supports.test.ts
+new file mode 100644
+index 00000000..193ff2d5
+--- /dev/null
++++ b/packages/extractor/src/game/forklift-supports.test.ts
+@@ -0,0 +1,289 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++
++import type {
++	InteractiveParam,
++	LevelInteractive,
++} from '@endfield-noclip/formats/endfield/level-interactives';
++import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
++import { UnityClass } from '@endfield-noclip/formats/unity/serialized-file';
++import { transformPoint, trsMatrix, unityEulerQuaternion } from '@endfield-noclip/formats/unity/transform';
++import type { TypeTreeObject } from '@endfield-noclip/formats/unity/type-tree';
++import type { PPtr } from '@endfield-noclip/formats/unity/values';
++
++import type { Vec3 } from '@opendfieldmap/ganglia';
++
++import type { AssetResolver, ObjectRef } from './assets/assets.ts';
++import { forkliftOf, forkliftSupports } from './forklift-supports.ts';
++import { readPrefabSupport } from './prefab-support.ts';
++import { supportBounds } from './swept-supports.ts';
++
++const floatBits = (value: number) => {
++	const data = new DataView(new ArrayBuffer(4));
++	data.setFloat32(0, value);
++	return BigInt(data.getUint32(0));
++};
++const property = (key: string, type: number, values: bigint[]): MemoryPackValue => ({
++	key,
++	value: { type, valueArray: values.map((bits) => ({ valueBit64: String(bits) })) },
++});
++const vectorProperty = (key: string, point: Vec3) => property(key, 12, point.map(floatBits));
++const param = (key: string, type: number, values: bigint[]): InteractiveParam => ({
++	key,
++	type,
++	values: values.map((bits) => ({ bits, text: null })),
++});
++const template = (): MemoryPackValue => ({
++	componentList: [
++		{
++			$type: 'Beyond_Gameplay_InteractiveLogicControllerComponentDataForMemoryPack',
++			logicType: 24,
++			propertyList: [property('logic_type', 3, [24n])],
++		},
++	],
++	configProperties: [
++		vectorProperty('start_pos', [3, 0.5, 0]),
++		vectorProperty('end_pos', [3, 4.5, 0]),
++		property('speed', 5, [floatBits(2)]),
++	],
++	saveProperties: [property('state', 3, [0n]), property('is_on', 1, [1n])],
++	templateVariant: [
++		[
++			'variant',
++			{
++				diffProperties: [vectorProperty('end_pos', [3, 8.5, 0]), property('speed', 5, [floatBits(4)])],
++			},
++		],
++	],
++});
++const row = (): LevelInteractive => ({
++	id: 1n,
++	template: 'unrelated-name',
++	createState: 0,
++	position: [10, 20, 30],
++	rotation: [0, 90, 0],
++	scale: [2, 3, 4],
++	modelScale: 0,
++	isLocked: false,
++	properties: [],
++	componentProperties: new Map(),
++});
++const pointer = (id: number) => ({ m_FileID: 0, m_PathID: BigInt(id) });
++const identity = trsMatrix([0, 0, 0], [0, 0, 0, 1], [1, 1, 1]);
++
++const sourceMesh = (): TypeTreeObject => {
++	const bounds = { m_Center: { x: 0.5, y: 0, z: 0.5 }, m_Extent: { x: 0.5, y: 0, z: 0.5 } };
++	return {
++		m_Name: 'synthetic collider',
++		m_BakedTriangleCollisionMesh: new Uint8Array(),
++		m_VertexData: {
++			m_VertexCount: 4,
++			m_Channels: [{ stream: 0, offset: 0, format: 0, dimension: 3 }],
++			m_DataSize: new Uint8Array(new Float32Array([999, 999, 999, 0, 0, 0, 1, 0, 0, 0, 0, 1]).buffer),
++		},
++		m_IndexFormat: 0,
++		m_IndexBuffer: new Uint8Array(new Uint16Array([8, 0, 1, 2, 8]).buffer),
++		m_SubMeshes: [
++			{
++				firstByte: 2,
++				indexCount: 3,
++				topology: 0,
++				baseVertex: 1,
++				firstVertex: 1,
++				vertexCount: 3,
++				localAABB: bounds,
++			},
++		],
++		m_LocalAABB: bounds,
++		m_BindPose: [],
++		m_BoneNameHashes: [],
++	};
++};
++
++const prefab = (field: string, mesh: TypeTreeObject | null = null) => {
++	const objects = new Map<number, { classId: number; data: TypeTreeObject }>();
++	const node = (id: number, position: Vec3, children: number[], components: number[]) => {
++		objects.set(id, {
++			classId: UnityClass.GameObject,
++			data: {
++				m_IsActive: true,
++				m_Component: [id + 1, ...components].map((c) => ({ component: pointer(c) })),
++			},
++		});
++		objects.set(id + 1, {
++			classId: UnityClass.Transform,
++			data: {
++				m_GameObject: pointer(id),
++				m_LocalPosition: { x: position[0], y: position[1], z: position[2] },
++				m_LocalRotation: { x: 0, y: 0, z: 0, w: 1 },
++				m_LocalScale: { x: 1, y: 1, z: 1 },
++				m_Children: children.map((c) => pointer(c + 1)),
++			},
++		});
++	};
++	node(10, [0, 0, 0], [20, 30], [12]);
++	node(20, [3, 0.5, 0], [40], []);
++	node(30, [0, 0, 0], [], [32]);
++	node(40, [0.25, 1, 0], [], [42]);
++	objects.set(12, { classId: UnityClass.MonoBehaviour, data: { [field]: pointer(21) } });
++	// an undecodable static chassis must remain outside the moving subtree.
++	objects.set(32, { classId: 64, data: { m_Mesh: pointer(99), m_Convex: true } });
++	objects.set(42, {
++		classId: mesh ? 64 : 65,
++		data: mesh
++			? { m_Mesh: pointer(99), m_Convex: false }
++			: {
++					m_Center: { x: 0, y: 0, z: 0 },
++					m_Size: { x: 2, y: 2, z: 2 },
++				},
++	});
++	if (mesh) {
++		objects.set(99, { classId: 43, data: mesh });
++	}
++	const reference = (id: number) =>
++		({
++			file: { node: { path: 'CAB-test' } },
++			info: { classId: objects.get(id)!.classId, pathId: BigInt(id) },
++		}) as ObjectRef;
++	const resolver = {
++		read: async (ref: ObjectRef) => objects.get(Number(ref.info.pathId))!.data,
++		resolve: async (_: ObjectRef, ptr: PPtr) =>
++			objects.has(Number(ptr.pathId)) ? reference(Number(ptr.pathId)) : null,
++	} as unknown as AssetResolver;
++	return { objects, resolver, root: reference(10) };
++};
++
++test('forklift control recognizes its component and merges variant and placement properties', () => {
++	const placed = row();
++	placed.template = 'variant';
++	placed.properties = [param('speed', 5, [floatBits(6)]), param('state', 3, [2n]), param('is_on', 1, [0n])];
++	const control = forkliftOf(template(), placed)!;
++	assert.deepEqual(control.start, [3, 0.5, 0]);
++	assert.deepEqual(control.end, [3, 8.5, 0]);
++	assert.equal(control.speed, 6);
++	assert.equal(control.initialState, 2);
++	assert.equal(control.initiallyOn, false);
++	assert.equal(control.assumption, 'fully-enabled');
++	placed.componentProperties.set(29, [param('logic_type', 3, [9n])]);
++	assert.equal(forkliftOf(template(), placed), null);
++	assert.equal(forkliftOf({ componentList: [] }, placed), null);
++});
++
++test('forklift control rejects missing poses, invalid speed and malformed state gates', () => {
++	for (const bad of [
++		param('start_pos', 12, [floatBits(1)]),
++		param('end_pos', 12, [floatBits(1), floatBits(Infinity), 0n]),
++		param('speed', 5, [floatBits(0)]),
++		param('speed', 5, [floatBits(Number.NaN)]),
++		param('state', 3, []),
++		param('is_on', 1, [2n]),
++	]) {
++		const placed = row();
++		placed.properties = [bad];
++		assert.throws(() => forkliftOf(template(), placed), /invalid forklift/);
++	}
++	const placed = row();
++	placed.componentProperties.set(29, [param('logic_type', 5, [24n])]);
++	assert.throws(() => forkliftOf(template(), placed), /invalid forklift logic/);
++});
++
++test('lifted selects the moving child hierarchy and preserves the existing seesaw pivot contract', async () => {
++	for (const field of ['lifted', 'rotatingRoot', 'MovingPartRoot', 'movingPartRoot']) {
++		const source = prefab(field);
++		const body = await readPrefabSupport(source.resolver, source.root);
++		assert.equal(body.bodies.length, 1);
++		assert.deepEqual(supportBounds(body.bodies), { min: [2.25, 0.5, -1], max: [4.25, 2.5, 1] });
++		assert.equal(body.movingPart, true);
++		assert.equal(body.pivot !== null, field === 'rotatingRoot');
++		assert.equal(body.translationRoot !== null, field === 'lifted');
++		if (body.pivot) {
++			assert.deepEqual(transformPoint(body.pivot, [0, 0, 0]), [3, 0.5, 0]);
++		}
++	}
++});
++
++test('forklift poses replace the rest offset once, retaining rotation, scale, speed and source spans', async () => {
++	const source = prefab('lifted');
++	const body = await readPrefabSupport(source.resolver, source.root);
++	const before = structuredClone(body.bodies);
++	const placed = row();
++	placed.properties = [param('start_pos', 12, [floatBits(4), floatBits(2), floatBits(1)])];
++	const control = forkliftOf(template(), placed)!;
++	const placement = trsMatrix(placed.position, unityEulerQuaternion(placed.rotation), placed.scale);
++	const result = forkliftSupports('lift', body, placement, control);
++	const expected = [control.start, control.end].map((position) =>
++		supportBounds([
++			before[0].map(([x, y, z]) =>
++				transformPoint(placement, [x - 3 + position[0], y - 0.5 + position[1], z + position[2]]),
++			),
++		]),
++	);
++	assert.deepEqual(result.poses, expected);
++	assert.deepEqual(result.endpoints, { initial: expected[0], terminal: expected[1] });
++	assert.deepEqual(body.bodies, before);
++	assert.equal(result.transfers.length, 1);
++	assert.equal(result.transfers[0].speed, 2);
++	assert.equal(result.transfers[0].body, 0);
++	assert.equal(result.transfers[0].fromPose, 0);
++	assert.equal(result.transfers[0].toPose, 1);
++	assert.equal(result.surfacePoses.length, result.surfaces.length);
++	assert.ok(result.surfacePoses.flat().some((span) => span.fromPose === 0));
++	assert.ok(result.surfacePoses.flat().some((span) => span.toPose === 1));
++});
++
++test('fully-enabled forklift exports both vertical caps for a disabled initial gate and upper state', async () => {
++	const source = prefab('lifted');
++	const body = await readPrefabSupport(source.resolver, source.root);
++	const placed = row();
++	placed.properties = [param('is_on', 1, [0n]), param('state', 3, [1n])];
++	const result = forkliftSupports('lift', body, identity, forkliftOf(template(), placed)!);
++	assert.equal(result.surfaces.length, 2);
++	assert.equal(result.transfers.length, 1);
++	assert.deepEqual(result.transfers[0].from, [3.25, 2.5, 0]);
++	assert.deepEqual(result.transfers[0].to, [3.25, 6.5, 0]);
++	assert.equal(result.control.initialState, 1);
++	assert.equal(result.control.initiallyOn, false);
++	assert.throws(
++		() => forkliftSupports('lift', { ...body, translationRoot: null }, identity, result.control),
++		/subtree/,
++	);
++});
++
++test('a collider with neither a cook nor decodable source fails explicitly', async () => {
++	const source = prefab('lifted', { m_BakedTriangleCollisionMesh: new Uint8Array() });
++	await assert.rejects(readPrefabSupport(source.resolver, source.root));
++});
++
++test('ordinary nonconvex colliders use their indexed static source mesh when the cook is empty', async () => {
++	const mesh = sourceMesh();
++	const source = prefab('lifted', mesh);
++	const body = await readPrefabSupport(source.resolver, source.root);
++	assert.deepEqual(body.bodies, [
++		[
++			[3.25, 1.5, 0],
++			[4.25, 1.5, 0],
++			[3.25, 1.5, 1],
++		],
++	]);
++	for (const invalid of [
++		{ ...mesh, m_BakedTriangleCollisionMesh: Uint8Array.of(1) },
++		{ ...mesh, m_BindPose: [{}] },
++		{
++			...mesh,
++			m_SubMeshes: [
++				{
++					firstByte: 2,
++					indexCount: 3,
++					topology: 3,
++					baseVertex: 1,
++					firstVertex: 1,
++					vertexCount: 3,
++					localAABB: mesh.m_LocalAABB,
++				},
++			],
++		},
++	]) {
++		const broken = prefab('lifted', invalid);
++		await assert.rejects(readPrefabSupport(broken.resolver, broken.root));
++	}
++});
+diff --git a/packages/extractor/src/game/forklift-supports.ts b/packages/extractor/src/game/forklift-supports.ts
+new file mode 100644
+index 00000000..40061f90
+--- /dev/null
++++ b/packages/extractor/src/game/forklift-supports.ts
+@@ -0,0 +1,118 @@
++import type { LevelInteractive } from '@endfield-noclip/formats/endfield/level-interactives';
++import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
++import { transformPoint } from '@endfield-noclip/formats/unity/transform';
++
++import type { Vec3 } from '@opendfieldmap/ganglia';
++
++import { componentOf, componentParams } from './interactives/component-params.ts';
++import { atomFloat, entityProperties, entityProperty, entityState } from './interactives/template-data.ts';
++import type { readPrefabSupport } from './prefab-support.ts';
++import { supportEndpoints, sweepSupports, type SweptSupport } from './swept-supports.ts';
++
++type Control = NonNullable<SweptSupport['control']>;
++const LOGIC = {
++	suffix: '_InteractiveLogicControllerComponentDataForMemoryPack',
++	diffKey: 'Comp_InteractiveLogicController',
++	type: 29,
++};
++
++/**
++ * @param template decoded interactive template
++ * @param row placement with entity and component overrides
++ * @returns the forklift's authored local control, or null for another logic controller
++ * @throws when a forklift has missing, malformed or nonfinite control properties
++ */
++export const forkliftOf = (template: MemoryPackValue, row: LevelInteractive): Control | null => {
++	const params = componentParams(template, row, LOGIC);
++	const logic = params?.get('logic_type');
++	const declared = componentOf(template, LOGIC.suffix)?.logicType;
++	if (declared !== 24 && logic?.values[0]?.bits !== 24n) {
++		return null;
++	}
++	if (logic !== undefined && (logic.type !== 3 || logic.values.length !== 1)) {
++		throw new Error('invalid forklift logic control');
++	}
++	if (logic !== undefined && Number(BigInt.asIntN(32, logic.values[0].bits)) !== 24) {
++		return null;
++	}
++	const entity = entityProperties(template);
++	if (!entity) {
++		throw new Error('forklift entity properties unresolved');
++	}
++	const vector = (key: string): Vec3 => {
++		const values = entityProperty(entity, row, key);
++		if (!values || values.length !== 3) {
++			throw new Error(`invalid forklift ${key}`);
++		}
++		const point: Vec3 = [atomFloat(values[0].bits), atomFloat(values[1].bits), atomFloat(values[2].bits)];
++		if (!point.every(Number.isFinite)) {
++			throw new Error(`invalid forklift ${key}`);
++		}
++		return point;
++	};
++	const start = vector('start_pos'),
++		end = vector('end_pos');
++	const speedAtoms = entityProperty(entity, row, 'speed');
++	const speed = speedAtoms?.length === 1 ? atomFloat(speedAtoms[0].bits) : Number.NaN;
++	const state = entityProperty(entity, row, 'state');
++	const on = entityProperty(entity, row, 'is_on');
++	if (
++		!Number.isFinite(speed) ||
++		speed <= 0 ||
++		state?.length !== 1 ||
++		on?.length !== 1 ||
++		(on[0].bits !== 0n && on[0].bits !== 1n)
++	) {
++		throw new Error('invalid forklift speed or state control');
++	}
++	if (start.every((value, axis) => value === end[axis])) {
++		throw new Error('forklift has coincident control poses');
++	}
++	return {
++		kind: 'forklift',
++		logicType: 24,
++		start,
++		end,
++		speed,
++		initialState: entityState(entity, row),
++		initiallyOn: on[0].bits === 1n,
++		assumption: 'fully-enabled',
++	};
++};
++
++/**
++ * @param id stable source identity
++ * @param body decoded moving subtree in prefab space, with its authored rest matrix
++ * @param placement prefab/model-to-world matrix, including authored rotation and scale
++ * @param control validated local start/end control
++ * @returns phase-free supports, poses, endpoint boxes and rides at the authored world speed
++ * @throws when the lifted subtree or placement is unresolved
++ */
++export const forkliftSupports = (
++	id: string,
++	body: Awaited<ReturnType<typeof readPrefabSupport>>,
++	placement: Float32Array,
++	control: Control,
++) => {
++	const rest = body.translationRoot;
++	if (!rest || !body.movingPart || ![...rest, ...placement].every(Number.isFinite)) {
++		throw new Error('forklift lifted subtree or placement unresolved');
++	}
++	// setting the lifted transform's world position replaces its rest translation. its orientation,
++	// scale and descendant transforms remain in the decoded prefab-space vertices.
++	const poseBodies = [control.start, control.end].map((position) =>
++		body.bodies.map((vertices) =>
++			vertices.map((point) =>
++				transformPoint(
++					placement,
++					point.map((value, axis) => value - rest[12 + axis] + position[axis]),
++				),
++			),
++		),
++	);
++	return {
++		...sweepSupports(id, poseBodies, control.speed),
++		endpoints: supportEndpoints(poseBodies),
++		control,
 +	};
 +};
 diff --git a/packages/extractor/src/game/ground-data.test.ts b/packages/extractor/src/game/ground-data.test.ts
@@ -9864,7 +11618,7 @@ index 00000000..f6a756c3
 +});
 diff --git a/packages/extractor/src/game/moving-route.ts b/packages/extractor/src/game/moving-route.ts
 new file mode 100644
-index 00000000..dd68efa9
+index 00000000..1bc4ea28
 --- /dev/null
 +++ b/packages/extractor/src/game/moving-route.ts
 @@ -0,0 +1,375 @@
@@ -9883,7 +11637,7 @@ index 00000000..dd68efa9
 +/** a selected route's actual contact pose, independent of its navigation model */
 +export type SupportBox = PoseBounds & {
 +	device: string;
-+	family: SweptSupport['family'];
++	family: SweptSupport['family'] | 'following-box';
 +	role: 'board' | 'leave' | 'use';
 +};
 +
@@ -10245,10 +11999,10 @@ index 00000000..dd68efa9
 +};
 diff --git a/packages/extractor/src/game/moving-supports.ts b/packages/extractor/src/game/moving-supports.ts
 new file mode 100644
-index 00000000..b59efa08
+index 00000000..60be63e5
 --- /dev/null
 +++ b/packages/extractor/src/game/moving-supports.ts
-@@ -0,0 +1,475 @@
+@@ -0,0 +1,523 @@
 +/* oxlint-disable no-await-in-loop -- offline catalogue reads each small prefab and template once */
 +import {
 +	readDynamicResources,
@@ -10286,6 +12040,8 @@ index 00000000..b59efa08
 +import type { Context } from '../context.ts';
 +import { VfsGroup } from '../hg/vfs.ts';
 +
++import { followingSupport, isFollowingBox, type FollowingSupport } from './following-supports.ts';
++import { forkliftOf, forkliftSupports } from './forklift-supports.ts';
 +import { componentOf, componentParams } from './interactives/component-params.ts';
 +import { curveMoveOf } from './interactives/curve-move.ts';
 +import { readPrefabSupport } from './prefab-support.ts';
@@ -10423,6 +12179,7 @@ index 00000000..b59efa08
 + */
 +export const collectMovingSupports = async (ctx: Context, scene: string) => {
 +	const supports: SweptSupport[] = [];
++	const following: FollowingSupport[] = [];
 +	const unsupported: { id: string; template: string; reason: string }[] = [];
 +	const pool = await ctx.world.stringPool(),
 +		reader = await ctx.memoryPack();
@@ -10480,14 +12237,12 @@ index 00000000..b59efa08
 +			}
 +		}
 +		for (const raw of rows) {
-+			if (
-+				!isRecord(raw) ||
-+				typeof raw.entityDataIdKey !== 'string' ||
-+				!/^int_(platform_|movingplat|lifter|seesaw|water_volume_floater)/.test(raw.entityDataIdKey) ||
-+				raw.entityDataIdKey.startsWith('int_lifter_button')
-+			) {
++			if (!isRecord(raw) || typeof raw.entityDataIdKey !== 'string') {
 +				continue;
 +			}
++			const existing =
++				/^int_(platform_|movingplat|lifter|seesaw|water_volume_floater)/.test(raw.entityDataIdKey) &&
++				!raw.entityDataIdKey.startsWith('int_lifter_button');
 +			if (typeof raw.levelLogicId !== 'string' || !/^[1-9]\d*$/.test(raw.levelLogicId)) {
 +				throw new Error('invalid moving support identity');
 +			}
@@ -10501,12 +12256,20 @@ index 00000000..b59efa08
 +				const templateId = table.templates.get(row.template);
 +				const path = templateId === undefined ? undefined : table.templatePaths.get(templateId);
 +				if (!path) {
++					if (!existing) {
++						continue;
++					}
 +					throw new Error('missing moving support template');
 +				}
 +				let template = templates.get(path);
 +				if (!template) {
 +					template = reader.decode(await read(path), 'Beyond_Gameplay_InteractiveTemplateDataForMemoryPack');
 +					templates.set(path, template);
++				}
++				const forklift = forkliftOf(template, row);
++				const follows = isFollowingBox(template, row);
++				if (!existing && !forklift && !follows) {
++					continue;
 +				}
 +				const move = curveMoveOf(template, row);
 +				const params = parameters(template, row);
@@ -10522,7 +12285,14 @@ index 00000000..b59efa08
 +				let positions: Vec3[],
 +					speed: number | null,
 +					family: SweptSupport['family'] = 'platform';
-+				if (move) {
++				if (follows) {
++					positions = [row.position];
++					speed = null;
++				} else if (forklift) {
++					positions = [forklift.start, forklift.end];
++					speed = forklift.speed;
++					family = 'forklift';
++				} else if (move) {
 +					const spline = splines.get(move.splineId);
 +					if (!spline || move.followsTangent) {
 +						throw new Error('moving support spline or tangent rotation unresolved');
@@ -10558,7 +12328,7 @@ index 00000000..b59efa08
 +				} else {
 +					throw new Error('no authored moving support path');
 +				}
-+				if (!seesaw && positions.length < 2) {
++				if (!seesaw && !follows && positions.length < 2) {
 +					throw new Error('moving support path has fewer than two poses');
 +				}
 +				const base = componentOf(template, '_InteractiveModelComponentDataForMemoryPack');
@@ -10582,9 +12352,40 @@ index 00000000..b59efa08
 +				const scale =
 +					(row.modelScale > 0 ? row.modelScale : typeof base?.modelScale === 'number' ? base.modelScale : 1) *
 +					numberField(model, 'scaleFactor');
++				if (follows) {
++					if (body.bodyKinds.some((kind) => kind === 'triangle')) {
++						throw new Error('following box requires solid convex collider provenance');
++					}
++					const placement = trsMatrix(
++						row.position,
++						unityEulerQuaternion(row.rotation),
++						row.scale.map((v) => v * scale),
++					);
++					following.push(
++						followingSupport(
++							id,
++							level.id,
++							prefab,
++							template,
++							row,
++							body.bodies.map((vertices) => vertices.map((p) => transformPoint(placement, p))),
++							body.bodyKinds.every((kind) => kind === 'box') ? 'box' : 'convex',
++						),
++					);
++					continue;
++				}
 +				let geometry: Pick<SweptSupport, 'surfaces' | 'transfers' | 'poses' | 'surfacePoses'>;
 +				let endpoints: NonNullable<SweptSupport['endpoints']>;
-+				if (seesaw) {
++				if (forklift) {
++					const placement = trsMatrix(
++						row.position,
++						unityEulerQuaternion(row.rotation),
++						row.scale.map((v) => v * scale),
++					);
++					const support = forkliftSupports(id, body, placement, forklift);
++					geometry = support;
++					endpoints = support.endpoints;
++				} else if (seesaw) {
 +					const angle = scalar(params.get('max_rotation'));
 +					const pivot = body.pivot;
 +					if (!pivot || angle === null) {
@@ -10624,6 +12425,7 @@ index 00000000..b59efa08
 +					family,
 +					level: level.id,
 +					model: prefab,
++					...(forklift ? { control: forklift } : {}),
 +					endpoints,
 +					...geometry,
 +					assumption: 'phase-free-swept-support',
@@ -10722,7 +12524,7 @@ index 00000000..b59efa08
 +	if (new Set(supports.map((support) => support.id)).size !== supports.length) {
 +		throw new Error('duplicate moving support source identity');
 +	}
-+	return { supports, unsupported };
++	return { supports, following, unsupported };
 +};
 diff --git a/packages/extractor/src/game/navigation-portals.test.ts b/packages/extractor/src/game/navigation-portals.test.ts
 new file mode 100644
@@ -11315,24 +13117,27 @@ index 00000000..ac4ff889
 +};
 diff --git a/packages/extractor/src/game/prefab-support.ts b/packages/extractor/src/game/prefab-support.ts
 new file mode 100644
-index 00000000..00ce99d1
+index 00000000..25e1c1f0
 --- /dev/null
 +++ b/packages/extractor/src/game/prefab-support.ts
-@@ -0,0 +1,188 @@
+@@ -0,0 +1,258 @@
 +/* oxlint-disable no-await-in-loop -- resolve hierarchy and collision cooks once per prefab */
 +import { FormatError } from '@endfield-noclip/formats/binary/binary-reader';
++import { MeshTopology } from '@endfield-noclip/formats/unity/mesh';
 +import { isTransformClass } from '@endfield-noclip/formats/unity/serialized-file';
 +import { multiplyMatrices, transformPoint, trsMatrix } from '@endfield-noclip/formats/unity/transform';
 +import type { TypeTreeObject } from '@endfield-noclip/formats/unity/type-tree';
 +import {
 +	arrayField,
 +	asPPtr,
++	bytesField,
 +	isObject,
 +	numberField,
 +	objectField,
 +	pptrField,
 +} from '@endfield-noclip/formats/unity/values';
 +
++import { loadMesh } from './assets/asset-decode.ts';
 +import { objectKey, type AssetResolver, type ObjectRef } from './assets/assets.ts';
 +import { readColliderGeometry } from './collision-inputs.ts';
 +
@@ -11350,7 +13155,7 @@ index 00000000..00ce99d1
 +/**
 + * @param resolver asset reader
 + * @param root prefab GameObject
-+ * @returns collision vertices of the moving subtree in prefab space, with an optional rotational pivot
++ * @returns collision vertices in prefab space, with the selected subtree's rest matrix and rotational pivot
 + * @throws for malformed references, unsupported nonempty collision cooks or absent solid support
 + */
 +export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef) => {
@@ -11363,6 +13168,7 @@ index 00000000..00ce99d1
 +	}[] = [];
 +	let selected: string | null = null;
 +	let pivot: string | null = null;
++	let translated: string | null = null;
 +	const seen = new Set<string>();
 +	const visit = async (go: ObjectRef, parent: (typeof nodes)[number] | null) => {
 +		const key = objectKey(go);
@@ -11410,7 +13216,7 @@ index 00000000..00ce99d1
 +		};
 +		nodes.push(node);
 +		for (const component of components) {
-+			for (const field of ['MovingPartRoot', 'movingPartRoot', 'rotatingRoot']) {
++			for (const field of ['MovingPartRoot', 'movingPartRoot', 'rotatingRoot', 'lifted']) {
 +				if (!(field in component.data)) {
 +					continue;
 +				}
@@ -11424,6 +13230,9 @@ index 00000000..00ce99d1
 +						selected = objectKey(partGo);
 +						if (field === 'rotatingRoot') {
 +							pivot = selected;
++						}
++						if (field === 'lifted') {
++							translated = selected;
 +						}
 +					}
 +				}
@@ -11441,11 +13250,16 @@ index 00000000..00ce99d1
 +	};
 +	await visit(root, null);
 +	const byKey = new Map(nodes.map((node) => [node.key, node]));
++	if (selected !== null && !byKey.has(selected)) {
++		throw new FormatError('moving support subtree is outside prefab');
++	}
 +	const belongs = (node: (typeof nodes)[number]): boolean =>
 +		!selected || node.key === selected || (node.parent !== null && belongs(byKey.get(node.parent)!));
 +	const vertices: Vec3[] = [];
 +	const bodies: Vec3[][] = [];
-+	const add = (points: Vec3[]) => {
++	const bodyKinds: ('box' | 'convex' | 'triangle')[] = [];
++	const add = (points: Vec3[], kind: 'box' | 'convex' | 'triangle') => {
++		bodyKinds.push(kind);
 +		vertices.push(...points);
 +		bodies.push(points);
 +	};
@@ -11462,6 +13276,52 @@ index 00000000..00ce99d1
 +					corners(xyz(objectField(data, 'm_Center')), xyz(objectField(data, 'm_Size'))).map((p) =>
 +						transformPoint(node.matrix, p),
 +					),
++					'box',
++				);
++			}
++			// the lifted subtree's collider set is audited together with its local-position controller.
++			if (ref.info.classId === 64 && translated !== null) {
++				const mesh = await resolver.resolve(ref, pptrField(data, 'm_Mesh'));
++				if (!mesh) {
++					throw new FormatError('support collider has no mesh');
++				}
++				const kind = data.m_Convex === true || data.m_Convex === 1 ? 'convex' : 'triangle';
++				const source = await resolver.read(mesh);
++				let points: Vec3[];
++				if (kind === 'convex' || bytesField(source, 'm_BakedTriangleCollisionMesh').length) {
++					points = readColliderGeometry(source, kind, false).vertices;
++				} else {
++					// ordinary nonconvex colliders can retain their actual source mesh instead of a cook.
++					// only its indexed static triangles contribute; unused vertices and render bounds do not.
++					const decoded = await loadMesh(resolver, mesh);
++					if (decoded.skin || !decoded.submeshes.length) {
++						throw new FormatError('support collider source mesh is not static triangles');
++					}
++					const indices = new Set<number>();
++					for (const part of decoded.submeshes) {
++						if (part.topology !== MeshTopology.Triangles || part.indexCount % 3 !== 0) {
++							throw new FormatError('unsupported support collider source topology');
++						}
++						for (const index of decoded.indices.subarray(
++							part.firstIndex,
++							part.firstIndex + part.indexCount,
++						)) {
++							const vertex = index + part.baseVertex;
++							if (!Number.isInteger(vertex) || vertex < 0 || vertex >= decoded.vertexCount) {
++								throw new FormatError('invalid support collider source index');
++							}
++							indices.add(vertex);
++						}
++					}
++					points = [...indices].map((index): Vec3 => [
++						decoded.positions[index * 3],
++						decoded.positions[index * 3 + 1],
++						decoded.positions[index * 3 + 2],
++					]);
++				}
++				add(
++					points.map((p) => transformPoint(node.matrix, p)),
++					kind,
 +				);
 +			}
 +			if (ref.info.classId !== 135183052) {
@@ -11473,7 +13333,10 @@ index 00000000..00ce99d1
 +						node.matrix,
 +						trsMatrix(xyz(objectField(item, 'position')), rotation(objectField(item, 'rotation')), [1, 1, 1]),
 +					);
-+					add(corners([0, 0, 0], xyz(objectField(item, 'size'))).map((p) => transformPoint(m, p)));
++					add(
++						corners([0, 0, 0], xyz(objectField(item, 'size'))).map((p) => transformPoint(m, p)),
++						'box',
++					);
 +				}
 +			}
 +			for (const [field, kind] of [
@@ -11497,7 +13360,10 @@ index 00000000..00ce99d1
 +							xyz(objectField(item, 'scale')),
 +						),
 +					);
-+					add(geometry.vertices.map((p) => transformPoint(m, p)));
++					add(
++						geometry.vertices.map((p) => transformPoint(m, p)),
++						kind,
++					);
 +				}
 +			}
 +		}
@@ -11505,7 +13371,13 @@ index 00000000..00ce99d1
 +	if (!vertices.length || vertices.some((p) => !p.every(Number.isFinite))) {
 +		throw new FormatError('moving prefab has no decoded solid support');
 +	}
-+	return { bodies, pivot: pivot ? (byKey.get(pivot)?.matrix ?? null) : null, movingPart: selected !== null };
++	return {
++		bodies,
++		bodyKinds,
++		pivot: pivot ? (byKey.get(pivot)?.matrix ?? null) : null,
++		translationRoot: translated ? (byKey.get(translated)?.matrix ?? null) : null,
++		movingPart: selected !== null,
++	};
 +};
 diff --git a/packages/extractor/src/game/round-exclusions.test.ts b/packages/extractor/src/game/round-exclusions.test.ts
 new file mode 100644
@@ -12893,10 +14765,10 @@ index 00000000..7696e1cf
 +});
 diff --git a/packages/extractor/src/game/swept-supports.ts b/packages/extractor/src/game/swept-supports.ts
 new file mode 100644
-index 00000000..3171b58e
+index 00000000..a897f412
 --- /dev/null
 +++ b/packages/extractor/src/game/swept-supports.ts
-@@ -0,0 +1,186 @@
+@@ -0,0 +1,197 @@
 +import type { Surface, Vec3 } from '@opendfieldmap/ganglia';
 +
 +/** world-axis-aligned bounds enclosing all collider bodies at one sampled pose */
@@ -12915,9 +14787,20 @@ index 00000000..3171b58e
 +/** query-independent phase-free support, scoped to one moving body's authored path */
 +export interface SweptSupport {
 +	id: string;
-+	family: 'platform' | 'conveyor' | 'seesaw' | 'water-floater';
++	family: 'platform' | 'conveyor' | 'seesaw' | 'water-floater' | 'forklift';
 +	level: string;
 +	model: string;
++	/** local authored control, retained alongside the fully-enabled planning assumption */
++	control?: {
++		kind: 'forklift';
++		logicType: 24;
++		start: Vec3;
++		end: Vec3;
++		speed: number;
++		initialState: number;
++		initiallyOn: boolean;
++		assumption: 'fully-enabled';
++	};
 +	/** world-axis-aligned endpoint boxes for illustration; separate from navigation support */
 +	endpoints?: {
 +		initial: PoseBounds;
@@ -13552,10 +15435,10 @@ index 00000000..b7091945
 +});
 diff --git a/packages/extractor/src/game/traversal-links.ts b/packages/extractor/src/game/traversal-links.ts
 new file mode 100644
-index 00000000..a9c5a1ef
+index 00000000..9874f65e
 --- /dev/null
 +++ b/packages/extractor/src/game/traversal-links.ts
-@@ -0,0 +1,526 @@
+@@ -0,0 +1,528 @@
 +import { trsMatrix, transformPoint, unityEulerQuaternion } from '@endfield-noclip/formats/unity/transform';
 +import type { TypeTreeObject } from '@endfield-noclip/formats/unity/type-tree';
 +import { isObject, numberField } from '@endfield-noclip/formats/unity/values';
@@ -13572,6 +15455,7 @@ index 00000000..a9c5a1ef
 +} from '@opendfieldmap/ganglia';
 +import type { CollisionWorld } from '@opendfieldmap/ganglia/collision';
 +
++import type { FollowingSupport } from './following-supports.ts';
 +import { interactionPoint, interactionRules } from './interaction-rules.ts';
 +import type { SweptSupport } from './swept-supports.ts';
 +import { ropePairs, type traversalDevice } from './traversal-devices.ts';
@@ -13585,6 +15469,7 @@ index 00000000..a9c5a1ef
 +	devices: Device[];
 +	templates: Record<string, unknown>;
 +	movingSupports?: SweptSupport[];
++	followingSupports?: FollowingSupport[];
 +};
 +type Options = {
 +	scene: string;

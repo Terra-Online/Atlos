@@ -276,10 +276,10 @@ index fad04436..d0babc98 100644
 +transparent alone does not select this stage.
 diff --git a/docs/navigation.md b/docs/navigation.md
 new file mode 100644
-index 00000000..b539893c
+index 00000000..e04651d0
 --- /dev/null
 +++ b/docs/navigation.md
-@@ -0,0 +1,738 @@
+@@ -0,0 +1,766 @@
 +# ground navigation extraction
 +
 +Ganglia alpha.22 builds consecutive ordinary steps through local support-span
@@ -1018,6 +1018,34 @@ index 00000000..b539893c
 +preparation reports `moving-supports`, `timingMs.moving` and per-transfer rejection
 +evidence. a changed device catalogue invalidates both moving preparation and
 +target refinement, including changes that retain the same number of faces.
++
++## controlled support placement
++
++`traversal-devices` exports forklift supports by their effective controller,
++including the unmarked variant. the moving collider subtree is placed at its
++authored local lower and upper positions. the chassis remains static. both poses
++retain sampled body provenance and timed rides under the fully-enabled snapshot.
++
++`followingSupports` exports movable boxes separately from swept surfaces. Each
++source retains its actual solid collider, restored spawn and authored activity
++radius. Saved endpoints determine the restored spawn rather than a second free
++placement. The planner proposes useful stationary placements in this activity
++range, checks their local support and collision, then clearance-bakes the real
++roof for the ordinary route search. The selected placement is the arrangement
++witness and is drawn as a contact box in the existing route overlay.
++
++Relocation within the activity range is an explicit planning assumption. This
++model does not search activation, escort paths, player separation, phase or
++manipulation duration. It never grants a walkable plane over the complete range
++and never uses two alternative poses of the same source in one layout. Candidate
++coverage is bounded by the existing action-search budget. Unresolved static
++collision ownership is retained and reported instead of deleting geometry by
++bounds. Coordinated multi-box layouts require further candidate coverage.
++
++A data-only export audit found 18 forklifts and 23 following boxes in map01, and
++5 forklifts and 9 following boxes in map02. Existing moving supports and the other
++catalogue fields remain identical. Focused synthetic tests cover the placement
++contracts; real-map route and browser acceptance is a separate step.
 diff --git a/docs/oem-integration.md b/docs/oem-integration.md
 new file mode 100644
 index 00000000..254de7f1

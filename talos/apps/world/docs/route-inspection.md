@@ -468,3 +468,21 @@ string-size limit. Reachability for this point remains unresolved.
 
 The alpha.56 frozen replay retains all 38 successful candidates and their selected
 costs. GPU rendering of the endpoint overlay still requires manual inspection.
+
+## Controlled supports
+
+Forklifts in both regions use their actual moving cargo subtree and authored
+local control poses. A data-only export audit found 18 in map01 and 5 in map02;
+all previous moving supports and other catalogue fields remain identical.
+
+Following boxes retain their real colliders and authored activity range. The
+planner assumes they can be arranged within this range, checks the support and
+collision at a useful placement, then uses its clearance-baked roof for routing.
+The selected box is drawn at the actual use position in the existing overlay.
+There is no extra panel or activation/escort search. Manipulation duration is
+outside the route cost. The catalogue contains 23 in map01 and 9 in map02.
+
+Candidate coverage is bounded and unsupported geometry is reported. A trial uses
+one pose per source; coordinated multi-box placement remains follow-up work.
+Focused synthetic correctness checks cover this model. Real-map route and
+browser acceptance remains pending.
