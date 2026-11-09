@@ -3,8 +3,12 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import L from 'leaflet';
 import { createRoot, type Root } from 'react-dom/client';
 
-import { REGION_DICT, type IMapRegion } from '@/data/map';
+import { REGION_DICT } from '@/data/map';
+import { TILE_SIZE } from '@/data/map/tiles';
 import useRegion from '@/store/region';
+import { useLayerStore } from '@/store/layer';
+import { getRegionTileCoverage, hasSatelliteTiles } from '@/services/map/tileCoverage';
+import { coverageRows } from '@/services/map/core/coverageGeometry';
 import { detectPolygon, type TileCoordinate } from './polygonDetector';
 import styles from './splitTool.module.scss';
 
@@ -18,8 +22,6 @@ interface Subregion {
     tileCoords: TileCoordinate[];
     polygon: number[][][];
 }
-
-const cloneBounds = (bounds: L.LatLngBounds): L.LatLngBounds => L.latLngBounds(bounds.getSouthWest(), bounds.getNorthEast());
 
 const randomColor = (() => {
     let hue = Math.random() * 360;
@@ -36,12 +38,12 @@ const blendColors = (colors: string[]): string => {
     return `hsl(${(hues.reduce((sum, hue) => sum + hue, 0) / hues.length).toFixed(1)} 72% 52%)`;
 };
 
-const exportSubregions = (subregions: Subregion[], config: IMapRegion) => subregions.map((subregion) => {
+const exportSubregions = (subregions: Subregion[]) => subregions.map((subregion) => {
     const coords = subregion.tileCoords;
     const xs = coords.map(([x]) => x);
     const ys = coords.map(([, y]) => y);
     const bounds = xs.length
-        ? [[Math.min(...xs) * config.tileSize, Math.min(...ys) * config.tileSize], [(Math.max(...xs) + 1) * config.tileSize, (Math.max(...ys) + 1) * config.tileSize]]
+        ? [[Math.min(...xs) * TILE_SIZE, Math.min(...ys) * TILE_SIZE], [(Math.max(...xs) + 1) * TILE_SIZE, (Math.max(...ys) + 1) * TILE_SIZE]]
         : undefined;
     return { id: subregion.id, name: subregion.name, ...(bounds ? { bounds } : {}), polygon: subregion.polygon };
 });
@@ -49,6 +51,8 @@ const exportSubregions = (subregions: Subregion[], config: IMapRegion) => subreg
 const SplitTool: React.FC<{ map: L.Map }> = ({ map }) => {
     const regionKey = useRegion((state) => state.currentRegionKey);
     const config = REGION_DICT[regionKey] ?? REGION_DICT.Valley_4;
+    const satellite = useLayerStore((state) => state.satellite && state.currentLayer === 'M');
+    const source = satellite && hasSatelliteTiles(regionKey) ? 'satellite' : 'clips';
     const [tiles, setTiles] = useState<Tile[]>([]);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [subregions, setSubregions] = useState<Subregion[]>([]);
@@ -60,7 +64,6 @@ const SplitTool: React.FC<{ map: L.Map }> = ({ map }) => {
     const selectedRef = useRef(new Set<string>());
     const activeRef = useRef<string | null>(null);
     const selectingRef = useRef(false);
-    const boundsRef = useRef<L.LatLngBounds | null>(null);
 
     const updateSelection = useCallback((id: string) => {
         const active = activeRef.current;
@@ -69,31 +72,15 @@ const SplitTool: React.FC<{ map: L.Map }> = ({ map }) => {
                 if (subregion.id !== active || subregion.tiles.includes(id)) return subregion;
                 const tile = tileLayersRef.current[id];
                 const tileCoords: TileCoordinate[] = [...subregion.tileCoords, [tile?._tileIdX ?? 0, tile?._tileIdY ?? 0]];
-                return { ...subregion, tiles: [...subregion.tiles, id], tileCoords, polygon: detectPolygon(tileCoords.map(([x, y]) => ({ x, y })), config.tileSize) };
+                return { ...subregion, tiles: [...subregion.tiles, id], tileCoords, polygon: detectPolygon(tileCoords.map(([x, y]) => ({ x, y })), TILE_SIZE) };
             }));
             return;
         }
         setSelectedIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
-    }, [config.tileSize]);
+    }, []);
 
     useEffect(() => { selectedRef.current = new Set(selectedIds); }, [selectedIds]);
     useEffect(() => { activeRef.current = activeId; }, [activeId]);
-
-    useEffect(() => {
-        const removeBounds = () => {
-            const bounds = map.options.maxBounds;
-            if (bounds instanceof L.LatLngBounds) boundsRef.current = cloneBounds(bounds);
-            map.setMaxBounds(null as unknown as L.LatLngBoundsExpression);
-        };
-        removeBounds();
-        const onRegionSwitched = () => removeBounds();
-        map.on('talos:regionSwitched', onRegionSwitched);
-        return () => {
-            map.off('talos:regionSwitched', onRegionSwitched);
-            map.dragging.enable();
-            if (boundsRef.current) map.setMaxBounds(boundsRef.current);
-        };
-    }, [map]);
 
     useEffect(() => {
         setSelectedIds([]);
@@ -106,13 +93,12 @@ const SplitTool: React.FC<{ map: L.Map }> = ({ map }) => {
         const nextTiles: Tile[] = [];
         const grid = L.layerGroup().addTo(map);
         const polygonLayer = L.layerGroup().addTo(map);
-        const width = Math.ceil(config.dimensions[0] / config.tileSize);
-        const height = Math.ceil(config.dimensions[1] / config.tileSize);
-        for (let y = 0; y < height; y += 1) {
-            for (let x = 0; x < width; x += 1) {
+        const coverage = getRegionTileCoverage(regionKey, source).zooms[String(config.coordZoom)] ?? {};
+        for (const [y, ranges] of coverageRows(coverage, Object.keys(coverage))) {
+            for (const [left, right] of ranges) for (let x = left; x < right; x += 1) {
                 const tile = { id: `tile-${x}-${y}`, x, y };
-                const sw = map.unproject([x * config.tileSize, (y + 1) * config.tileSize], config.maxZoom);
-                const ne = map.unproject([(x + 1) * config.tileSize, y * config.tileSize], config.maxZoom);
+                const sw = map.unproject([x * TILE_SIZE, (y + 1) * TILE_SIZE], config.coordZoom);
+                const ne = map.unproject([(x + 1) * TILE_SIZE, y * TILE_SIZE], config.coordZoom);
                 const rectangle = L.rectangle(L.latLngBounds(sw, ne), { color: '#8d98a8', weight: 1, opacity: 0.45, fillColor: '#8d98a8', fillOpacity: 0.08 });
                 const rectangleWithCoords = rectangle as TileLayer;
                 rectangleWithCoords._tileIdX = x;
@@ -127,9 +113,9 @@ const SplitTool: React.FC<{ map: L.Map }> = ({ map }) => {
         layerRef.current = grid;
         polygonLayerRef.current = polygonLayer;
         setTiles(nextTiles);
-        map.setZoom(config.maxZoom);
+        map.setZoom(config.coordZoom);
         return () => { grid.remove(); polygonLayer.remove(); };
-    }, [config, map, regionKey, updateSelection]);
+    }, [config, map, regionKey, source, updateSelection]);
 
     useEffect(() => {
         const ownership = new Map<string, string[]>();
@@ -150,9 +136,9 @@ const SplitTool: React.FC<{ map: L.Map }> = ({ map }) => {
         layer.clearLayers();
         subregions.forEach((subregion) => {
             if (!subregion.polygon.length) return;
-            L.polygon(subregion.polygon.map((ring) => ring.map(([x, y]) => map.unproject([x, y], config.maxZoom))), { color: subregion.color, weight: 2, fillColor: subregion.color, fillOpacity: 0.16, interactive: false }).addTo(layer);
+            L.polygon(subregion.polygon.map((ring) => ring.map(([x, y]) => map.unproject([x, y], config.coordZoom))), { color: subregion.color, weight: 2, fillColor: subregion.color, fillOpacity: 0.16, interactive: false }).addTo(layer);
         });
-    }, [config.maxZoom, map, subregions]);
+    }, [config.coordZoom, map, subregions]);
 
     useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => { if (event.metaKey || event.ctrlKey) selectingRef.current = true; };
@@ -174,12 +160,12 @@ const SplitTool: React.FC<{ map: L.Map }> = ({ map }) => {
     const createSubregion = () => {
         if (!selectedTiles.length) return;
         const index = subregions.length;
-        const next: Subregion = { id: `subregion-${index}`, name: `子区域 ${index + 1}`, color: randomColor(), tiles: selectedTiles.map((tile) => tile.id), tileCoords: selectedTiles.map(({ x, y }) => [x, y]), polygon: detectPolygon(selectedTiles, config.tileSize) };
+        const next: Subregion = { id: `subregion-${index}`, name: `子区域 ${index + 1}`, color: randomColor(), tiles: selectedTiles.map((tile) => tile.id), tileCoords: selectedTiles.map(({ x, y }) => [x, y]), polygon: detectPolygon(selectedTiles, TILE_SIZE) };
         setSubregions((current) => [...current, next]);
         setSelectedIds([]);
     };
     const deleteSubregion = (id: string) => { setSubregions((current) => current.filter((item) => item.id !== id)); if (activeId === id) setActiveId(null); };
-    const exportData = useMemo(() => exportSubregions(subregions, config), [config, subregions]);
+    const exportData = useMemo(() => exportSubregions(subregions), [subregions]);
     const download = () => {
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);

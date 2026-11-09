@@ -206,7 +206,7 @@ const verboseSkips = process.env.PUBLISH_VERBOSE_SKIPS === "1";
 const shouldUploadSeoPointAliases = process.env.SEO_UPLOAD_POINT_ALIASES === "1";
 const seoPointAliasConcurrency = Number.parseInt(process.env.SEO_POINT_ALIAS_CONCURRENCY || "150", 10);
 const uploadProfile = process.env.R2_UPLOAD_PROFILE === "resources" ? "resources" : "full";
-const resourceUploadPrefixes = ["assets/", "files/", "search/", "clips/"];
+const resourceUploadPrefixes = ["assets/", "files/", "search/", "clips/", "satellite/"];
 const seoPointTarget = "r2";
 const targetSeoPointPrefix = `seo/points/${seoPointTarget}/`;
 const targetSeoPointHtmlPattern = new RegExp(`^${targetSeoPointPrefix}[0-9a-zA-Z]{7}\\.html$`);
@@ -473,8 +473,8 @@ const buildRemoteObjectInfoIndex = async (localFiles) => {
   return index;
 };
 
-const reconcileClipObjects = async (expectedClipFiles) => {
-  const clipPrefix = toPrefixedObjectKey(prefix, "clips/");
+const reconcileClipObjects = async (expectedClipFiles, source = 'clips') => {
+  const clipPrefix = toPrefixedObjectKey(prefix, `${source}/`);
   const remoteClipKeys = await listRemoteObjectKeys(clipPrefix);
 
   const expectedSet = new Set(
@@ -484,12 +484,12 @@ const reconcileClipObjects = async (expectedClipFiles) => {
   const staleKeys = remoteClipKeys.filter((key) => !expectedSet.has(normalizeObjectKey(key)));
 
   if (!staleKeys.length) {
-    console.log("[publish-R2] clips directory already consistent with index.");
+    console.log(`[publish-R2] ${source} directory already consistent with index.`);
     return;
   }
 
   await deleteRemoteObjectKeys(staleKeys);
-  console.log(`[publish-R2] deleted ${staleKeys.length} stale clips objects.`);
+  console.log(`[publish-R2] deleted ${staleKeys.length} stale ${source} objects.`);
 };
 
 const reconcileAssetObjects = async (localFiles) => {
@@ -574,15 +574,13 @@ const uploadFiles = async (files, remoteObjectInfoIndex) => {
 };
 
 const run = async () => {
-  const clipIndex = appPath
-    ? { generated: false, reason: 'standalone app release preserves main-site tiles' }
-    : await buildClipIndex({ distDir });
-  if (clipIndex.generated) {
-    console.log(
-      `[publish-R2] clip index generated: tiles=${clipIndex.tileFileCount}, coverageFiles=${clipIndex.coverageFileCount}`
-    );
-  } else {
-    console.log(`[publish-R2] clip index skipped: ${clipIndex.reason}`);
+  const tileIndexes = [];
+  if (!appPath) {
+    for (const source of ['clips', 'satellite']) {
+      const index = await buildClipIndex({ distDir, source });
+      tileIndexes.push({ source, index });
+      console.log(`[tiles] ${source}: ${index.generated ? `${index.tileFileCount} files indexed` : index.reason}`);
+    }
   }
 
   const localFiles = getAllFiles(distDir).filter(shouldUploadLocalFile);
@@ -597,8 +595,8 @@ const run = async () => {
 
   await uploadFiles(resourceFiles, remoteObjectInfoIndex);
 
-  if (clipIndex.generated) {
-    await reconcileClipObjects(clipIndex.expectedClipFiles);
+  for (const { source, index } of tileIndexes) {
+    if (index.generated) await reconcileClipObjects(index.expectedClipFiles, source);
   }
 
   await reconcileAssetObjects(localFiles);

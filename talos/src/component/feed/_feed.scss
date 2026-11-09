@@ -1,0 +1,78 @@
+@use '@/styles/palette' as *;
+@use '@/styles/curves' as *;
+
+@mixin root {
+    --support-divider-height: 1.5px;
+
+    min-height: 0;
+    height: 100%;
+    max-height: 100%;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: var(--notify-text);
+    font-family:
+        'HMSans_EN', HMSans, 'UD_ShinGo Medium', 'Noto Sans Arabic',
+        'Noto Sans Thai', sans-serif;
+    letter-spacing: 0;
+}
+
+@mixin card {
+    --card-accent: #{$primary-accent-7};
+
+    position: relative;
+    width: 100%;
+    flex: 0 0 auto;
+    color: var(--notify-text);
+    background: var(--notify-card-bg);
+    border: 0;
+    border-radius: 3px;
+    box-shadow: 0 0 4px 1px rgba($black-0, 0.25);
+    overflow: clip;
+    transition:
+        background-color 0.2s ease-in,
+        opacity 0.2s $moderato-curve;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0.6rem;
+        top: 0.55rem;
+        bottom: 0.55rem;
+        width: 1rem;
+        background-color: var(--card-accent);
+        clip-path: polygon(0 0, 4px 0, 4px 100%, 0 100%);
+        pointer-events: none;
+        transition:
+            background-color 0.3s ease,
+            clip-path 0.25s ease;
+    }
+
+    &[data-unread='false'] {
+        opacity: 0.8;
+    }
+
+    &:hover {
+        background: var(--notify-card-hover-bg);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--card-accent);
+        outline-offset: 2px;
+    }
+}
+
+@mixin metadata {
+    color: var(--notify-muted);
+    font-family:
+        'Fedra Sans Pro', 'UD_ShinGo Medium', 'Noto Sans Arabic',
+        'Noto Sans Thai', sans-serif;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+@mixin pagination {
+    width: min(60%, 18rem);
+    margin: 0.25rem auto 0.75rem;
+}

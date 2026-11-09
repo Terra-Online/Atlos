@@ -203,6 +203,8 @@ export const Drawer: React.FC<DrawerProps> = ({
 	// Motion values
 	const size = useMotionValue(initSize);
 	const progress = useMotionValue((initSize - minSnap) / safeRange);
+	// Size drives CSS variables rather than a motion element, so own its animation teardown.
+	useEffect(() => () => size.stop(), [size]);
 	
 	// Refs
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -214,6 +216,23 @@ export const Drawer: React.FC<DrawerProps> = ({
 	const scrollElsRef = useRef<HTMLElement[]>([]);
 	const lastSnapCommandRef = useRef<number | null | undefined>(undefined);
 	const previousSnapsRef = useRef(snapsNormalized);
+	const dragPolicyRef = useRef<{ touchAction: string; overscrollBehavior: string } | null>(null);
+	const releaseGesture = useCallback(() => {
+		isDraggingRef.current = false;
+		scrollElsRef.current = [];
+		handleRef.current?.removeAttribute('data-dragging');
+		const policy = dragPolicyRef.current, container = containerRef.current;
+		if (policy && container) {
+			container.style.touchAction = policy.touchAction;
+			container.style.overscrollBehavior = policy.overscrollBehavior;
+		}
+		dragPolicyRef.current = null;
+	}, []);
+	useEffect(() => {
+		if (!dragDisabled) return;
+		isGestureRejectedRef.current = true;
+		releaseGesture();
+	}, [dragDisabled, releaseGesture]);
 	
 	// Debug: track renders
 	logger.logRender(++renderCount.current, { side, initialSize, snapToIndex, handleSize, fullWidth });
@@ -301,10 +320,12 @@ export const Drawer: React.FC<DrawerProps> = ({
 	
 	// Container positioning
 	const containerStyle = useMemo<React.CSSProperties>(() => {
+		// Search/zoom can change the snap geometry after the drawer has opened.
+		// A React style update must preserve the live pose owned by Motion.
 		const common = {
 			'--handle-size': `${resolvedHandleSize}px`,
-			'--drawer-size': `${initSize}px`,
-			'--drawer-progress': `${(initSize - minSnap) / safeRange}`,
+			'--drawer-size': `${size.get()}px`,
+			'--drawer-progress': `${progress.get()}`,
 		} as React.CSSProperties;
 		
 		const posMap = {
@@ -315,7 +336,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 		};
 		
 		return { ...common, ...posMap[side] };
-	}, [resolvedHandleSize, initSize, minSnap, safeRange, side, fullWidth]);
+	}, [resolvedHandleSize, side, fullWidth, size, progress]);
 	
 	// Gesture handler
 	const axis: 'x' | 'y' = side === 'left' || side === 'right' ? 'x' : 'y';
@@ -398,6 +419,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 			if (scrollOwner) {
 				logger.logGestureCancel('content scroll priority');
 				isGestureRejectedRef.current = true;
+				releaseGesture();
 				cancel();
 				return;
 			}
@@ -405,9 +427,16 @@ export const Drawer: React.FC<DrawerProps> = ({
 		
 		// Start dragging state
 		if (!isDraggingRef.current) {
+			// Direct MotionValue writes do not cancel an existing snap animation.
+			// The accepted gesture now owns the pose until it ends.
+			size.stop();
 			isDraggingRef.current = true;
 			if (handleRef.current) handleRef.current.setAttribute('data-dragging', 'true');
 			if (containerRef.current) {
+				dragPolicyRef.current = {
+					touchAction: containerRef.current.style.touchAction ?? '',
+					overscrollBehavior: containerRef.current.style.overscrollBehavior ?? '',
+				};
 				containerRef.current.style.touchAction = 'none';
 				(containerRef.current.style as CSSStyleDeclaration & { overscrollBehavior?: string }).overscrollBehavior = 'contain';
 			}
@@ -438,15 +467,10 @@ export const Drawer: React.FC<DrawerProps> = ({
 				logger.logSnapTarget(cur, snapResult.target, snapResult.index);
 			}
 			
-			isDraggingRef.current = false;
-			if (handleRef.current) handleRef.current.removeAttribute('data-dragging');
-			if (containerRef.current) {
-				containerRef.current.style.removeProperty('touch-action');
-				(containerRef.current.style as CSSStyleDeclaration & { overscrollBehavior?: string }).overscrollBehavior = '';
-			}
+			releaseGesture();
 			logger.logDragComplete();
 		}
-	}, [axis, side, size, minSnap, maxSnap, snapsNormalized, thresholdsPct, logger, dragDisabled]);
+	}, [axis, side, size, minSnap, maxSnap, snapsNormalized, thresholdsPct, logger, dragDisabled, releaseGesture]);
 	
 	const dragOptions = useMemo(() => ({
 		target: containerRef,

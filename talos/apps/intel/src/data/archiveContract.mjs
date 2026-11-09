@@ -1,5 +1,5 @@
 const CATEGORY_IDS = ['paper', 'digital', 'collection', 'document', 'report', 'media'];
-const METHOD_IDS = new Set(['map', 'mission', 'auto', 'shop', 'invstgt']);
+const METHOD_IDS = new Set(['map', 'mission', 'auto', 'shop', 'invstgt', 'unknown']);
 
 const fail = (message) => {
   throw new Error(`Invalid archive contract: ${message}`);

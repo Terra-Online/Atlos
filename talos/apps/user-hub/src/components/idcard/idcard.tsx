@@ -1,10 +1,10 @@
 import type { CSSProperties } from 'react';
 import { useTranslateUI } from '@hub/locale';
-import IdCardView from '@main/component/login/idcardView';
-import { normalizeAvatarIndex } from '@main/component/login/avatarConfig';
-import { useIdCardHoverAngle } from '@main/component/login/useIdCardHoverAngle';
-import { useIdCardScale } from '@main/component/login/useIdCardScale';
-import { useIdCardProfileViewModel } from '@main/component/login/useIdCardProfileViewModel';
+import IdCardView from '@main/component/shared/account/idcardView';
+import { normalizeAvatarIndex } from '@main/component/shared/account/avatarConfig';
+import { useIdCardHoverAngle } from '@main/component/shared/account/useIdCardHoverAngle';
+import { useIdCardScale } from '@main/component/shared/account/useIdCardScale';
+import { useIdCardProfileViewModel } from '@main/component/shared/account/useIdCardProfileViewModel';
 import type { Overview } from '../../types';
 import styles from './styles';
 import { navigate } from '../../routing';

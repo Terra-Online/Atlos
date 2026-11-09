@@ -52,7 +52,7 @@ it('keeps comment bodies and snapshot identities together across cache hits and 
 
 it('does not attach a public translation to the owner pending body', async () => {
     const { requestCommentTranslations } = await import(
-        '@/component/detail/comment/translationCoordinator'
+        '@/pages/detail/comment/translationCoordinator'
     );
     fetcher.mockImplementation(() =>
         Promise.resolve(

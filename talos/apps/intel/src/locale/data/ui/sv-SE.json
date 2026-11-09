@@ -31,7 +31,8 @@
       "mission": "Uppdrag",
       "auto": "Framsteg",
       "shop": "Butik",
-      "invstgt": "Undersökning"
+      "invstgt": "Undersökning",
+      "unknown": "Upplåsningsvillkor obekräftat"
     },
     "label": {
       "missionSequence": "Uppdrag",

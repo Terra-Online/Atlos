@@ -1,3 +1,4 @@
+import { bundleReport } from '../../scripts/lib/bundle-report.mjs';
 import { fontShardsPlugin } from '../../scripts/fonts/vite-plugin.mjs';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
@@ -50,6 +51,7 @@ export default defineConfig(async ({ command }) => {
         base: '/me/',
         envDir,
         plugins: [
+            bundleReport('user-hub'),
             htmlMetadataPlugin(),
             fontShardsPlugin('user-hub'),
             react(),

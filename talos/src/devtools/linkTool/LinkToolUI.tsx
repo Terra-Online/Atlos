@@ -50,9 +50,9 @@ export const LinkToolUI: React.FC<LinkToolUIProps> = ({ map }) => {
     const currentRegionKey = useRegion((s) => s.currentRegionKey);
     const currentRegion = mapRegionKeyToLinkCode(currentRegionKey);
 
-    // Get maxZoom for current region
-    const getMaxZoom = useCallback((): number => {
-        return currentRegionKey ? REGION_DICT[currentRegionKey]?.maxZoom ?? 3 : 3;
+    // Get coordZoom for current region
+    const getCoordZoom = useCallback((): number => {
+        return currentRegionKey ? REGION_DICT[currentRegionKey]?.coordZoom ?? 3 : 3;
     }, [currentRegionKey]);
 
     // Handle drawing mode
@@ -110,11 +110,11 @@ export const LinkToolUI: React.FC<LinkToolUIProps> = ({ map }) => {
             }
 
             const bounds = drawRectRef.current.getBounds();
-            const maxZoom = getMaxZoom();
+            const coordZoom = getCoordZoom();
 
             // Convert to pixel coordinates
-            const sw = map.project(bounds.getSouthWest(), maxZoom);
-            const ne = map.project(bounds.getNorthEast(), maxZoom);
+            const sw = map.project(bounds.getSouthWest(), coordZoom);
+            const ne = map.project(bounds.getNorthEast(), coordZoom);
 
             // Make it a perfect square in pixel space and round to 3 decimal places
             const width = Math.abs(ne.x - sw.x);
@@ -155,7 +155,7 @@ export const LinkToolUI: React.FC<LinkToolUIProps> = ({ map }) => {
             map.off('mousemove', onMouseMove);
             map.off('mouseup', onMouseUp);
         };
-    }, [mode, map, currentRegion, linkData, upsertLink, getMaxZoom, cancelDrawing]);
+    }, [mode, map, currentRegion, linkData, upsertLink, getCoordZoom, cancelDrawing]);
 
     // Get links for current region
     const links = currentRegion ? Object.values(linkData.regions[currentRegion]?.links ?? {}) : [];

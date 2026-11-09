@@ -5,9 +5,6 @@
             "deployChannels": {
                 "beta": {
                     "ossPrefix": ""
-                },
-                "prod": {
-                    "ossPrefix": ""
                 }
             },
             "oss": {

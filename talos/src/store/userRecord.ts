@@ -9,6 +9,26 @@ interface IUserRecordStore {
     updatedAt: number;
 }
 
+const STORAGE_KEY = 'points-storage';
+const CHANNEL_NAME = 'atlos-intel-progress';
+const normalizeIds = (value: unknown): string[] | undefined => Array.isArray(value)
+    && value.every((id: unknown) => typeof id === 'string' || typeof id === 'number' && Number.isFinite(id))
+    ? value.map(String) : undefined;
+
+const mergeProgress = (value: unknown, current: IUserRecordStore): IUserRecordStore => {
+    if (!value || typeof value !== 'object') return current;
+    const persisted = value as Partial<IUserRecordStore>;
+    const points = normalizeIds(persisted.activePoints), archives = normalizeIds(persisted.activeArchives);
+    if (!points && !archives) return current;
+    const keepSnapshot = (next: string[] | undefined, previous: string[]) => !next
+        || next.length === previous.length && next.every((id, index) => id === previous[index]) ? previous : next;
+    const activePoints = keepSnapshot(points, current.activePoints);
+    const activeArchives = keepSnapshot(archives, current.activeArchives);
+    const updatedAt = typeof persisted.updatedAt === 'number' && Number.isFinite(persisted.updatedAt) ? persisted.updatedAt : current.updatedAt;
+    return activePoints === current.activePoints && activeArchives === current.activeArchives && updatedAt === current.updatedAt
+        ? current : { ...current, activePoints, activeArchives, updatedAt };
+};
+
 export const useUserRecordStore = create<IUserRecordStore>()(
     persist<IUserRecordStore, [], [], Partial<IUserRecordStore>>(
         () => ({
@@ -17,7 +37,7 @@ export const useUserRecordStore = create<IUserRecordStore>()(
             updatedAt: Date.now(),
         }),
         {
-            name: 'points-storage',
+            name: STORAGE_KEY,
             storage: createJSONStorage(() => createConditionalStorage(
                 localStorage,
                 () => useUiPrefsStore.getState().prefsMarkerProgressEnabled,
@@ -27,39 +47,58 @@ export const useUserRecordStore = create<IUserRecordStore>()(
                 activeArchives: state.activeArchives,
                 updatedAt: state.updatedAt,
             }),
-            merge: (persistedState, currentState) => {
-                const persisted = persistedState as Partial<IUserRecordStore>;
-                // Always restore persisted progress when it exists,
-                // regardless of the current preference toggle. The preference
-                // only controls whether *new* writes go to localStorage (via
-                // createConditionalStorage).  We must never discard data from
-                // localStorage during hydration — that would wipe the user's
-                // progress silently if they toggle the setting off and on.
-                if (Array.isArray(persisted.activePoints) || Array.isArray(persisted.activeArchives)) {
-                    return {
-                        ...currentState,
-                        activePoints: Array.isArray(persisted.activePoints)
-                            ? persisted.activePoints
-                            : currentState.activePoints,
-                        activeArchives: Array.isArray(persisted.activeArchives)
-                            ? persisted.activeArchives
-                            : currentState.activeArchives,
-                        updatedAt: persisted.updatedAt ?? currentState.updatedAt,
-                    };
-                }
-                return currentState;
-            },
+            // The preference controls new writes, not restoring existing progress.
+            merge: mergeProgress,
         },
     ),
 );
 
+export function publishProgressChange(): void {
+    try {
+        const channel = new BroadcastChannel(CHANNEL_NAME);
+        channel.postMessage({ updatedAt: Date.now() });
+        channel.close();
+    } catch {
+        // Native storage events cover browsers without BroadcastChannel.
+    }
+}
+
+/** Both apps read the persisted owner; duplicate notifications must not echo writes. */
+export function observeProgressStorage(onPointChange?: () => void): () => void {
+    let active = true;
+    const refresh = () => {
+        if (!active) return;
+        let decoded: unknown;
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return;
+            decoded = JSON.parse(raw);
+        } catch {
+            // An invalid/blocked storage read must preserve live progress.
+            return;
+        }
+        if (!decoded || typeof decoded !== 'object' || !('state' in decoded)) return;
+        const previous = useUserRecordStore.getState();
+        const next = mergeProgress(decoded.state, previous);
+        if (next === previous) return;
+        useUserRecordStore.setState(next);
+        if (next.activePoints !== previous.activePoints) onPointChange?.();
+    };
+    const onStorage = (event: StorageEvent) => {
+        if (event.key === STORAGE_KEY && (!event.storageArea || event.storageArea === localStorage)) refresh();
+    };
+    let channel: BroadcastChannel | null = null;
+    try { channel = new BroadcastChannel(CHANNEL_NAME); channel.onmessage = refresh; } catch { /* Storage event fallback. */ }
+    window.addEventListener('storage', onStorage);
+    // Another tab may have written while startup was waiting for fonts/map data.
+    refresh();
+    return () => { active = false; window.removeEventListener('storage', onStorage); channel?.close(); };
+}
+
 // Auto-restore when preference is enabled
 useUiPrefsStore.subscribe((state, prevState) => {
     if (state.prefsMarkerProgressEnabled && !prevState.prefsMarkerProgressEnabled) {
-        void Promise.resolve(useUserRecordStore.persist.rehydrate()).then(async () => {
-            const { useHistoryStore } = await import('@/store/history');
-            useHistoryStore.getState().clear();
-        });
+        void useUserRecordStore.persist.rehydrate();
     }
 });
 

@@ -12,6 +12,7 @@ import {
   type Lang,
 } from '@main/lib/i18n/lang';
 import { switchFontRegion } from '@main/locale/fontLoader';
+import { retryLoad } from '@main/lib/async/retryLoad';
 
 export {
   FULL_LANGS,
@@ -90,9 +91,11 @@ const loadLocale = (locale: Lang): Promise<I18nBundle> => {
 };
 
 const beginRequest = createRequestGuard();
-const loadAndSet = async (locale: Lang) => {
+const loadAndSet = async (locale: Lang, retryCatalog = false) => {
   const isCurrent = beginRequest();
-  const dataPromise = loadLocale(locale);
+  const dataPromise = retryCatalog
+    ? retryLoad(() => loadLocale(locale), { onRetry: (error) => console.warn('Initial Intel locale unavailable; retrying:', error) })
+    : loadLocale(locale);
   const fontsPromise = switchFontRegion(getFontRegionForLocale(locale), isCurrent);
   const [dataResult, fontsResult] = await Promise.allSettled([
     dataPromise,
@@ -162,4 +165,4 @@ export const preloadAllLanguages = async (current: Lang = getCurrentLocale()) =>
   await Promise.allSettled(SUPPORTED_LANGS.filter((locale) => locale !== current).map(loadLocale));
 };
 
-export const i18nInitPromise = loadAndSet(readInitialLocale());
+export const i18nInitPromise = loadAndSet(readInitialLocale(), true);

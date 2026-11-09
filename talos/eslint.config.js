@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
 
 const tsFiles = ['**/*.{ts,tsx,mts,cts}'];
-const browserFiles = ['src/**/*.{js,jsx,mjs,ts,tsx}', 'apps/*/src/**/*.{js,jsx,mjs,ts,tsx}'];
+const browserFiles = ['src/**/*.{js,jsx,mjs,ts,tsx}', 'apps/*/src/**/*.{js,jsx,mjs,ts,tsx}', 'test-support/browser/**/*.{js,jsx,mjs,ts,tsx}'];
 
 export default [
   {
@@ -86,6 +86,17 @@ export default [
       'no-unused-vars': 'off',
     },
   },
+  {
+    files: ['src/{component,services,lib,platform,store}/**/*.{ts,tsx}', 'apps/*/src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          { group: ['@/utils', '@/utils/**'], message: 'Import from src/lib, src/platform, or src/services instead of src/utils.' },
+          { group: ['@/pages', '@/pages/**', '@main/pages', '@main/pages/**', '**/pages/**'], message: 'Shared modules and standalone apps must not depend on main-site pages.' },
+        ],
+      }],
+    },
+  },
   ...['intel', 'user-hub'].map((app) => ({
     files: [`apps/${app}/**/*.{ts,tsx,mts,cts}`],
     languageOptions: { parserOptions: { project: [`./apps/${app}/tsconfig.json`] } },
@@ -98,7 +109,7 @@ export default [
     },
   })),
   {
-    files: ['**/*.{test,spec}.{js,mjs,cjs,ts,tsx}', '**/*{setup,Setup}.ts', 'test-support/**/*.ts'],
+    files: ['**/*.{test,spec}.{js,mjs,cjs,ts,tsx}', '**/*{setup,Setup}.ts', 'test-support/**/*.ts', 'test-support/browser/**/*.mjs'],
     languageOptions: { globals: globals.node },
   },
   eslintConfigPrettier,

@@ -7,6 +7,7 @@ export type ButtonSchema = 'light' | 'dark';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   text: string;
+  ref?: React.Ref<HTMLButtonElement>;
   buttonType?: ButtonType;
   buttonStyle?: ButtonStyle;
   schema?: ButtonSchema;
@@ -24,6 +25,8 @@ const toCssSize = (v?: string | number): string | undefined => {
 
 const Button: React.FC<ButtonProps> = ({
   text,
+  ref,
+  'aria-label': ariaLabel,
   width = '6rem',
   height = '1.5rem',
   size = '2rem',
@@ -48,6 +51,8 @@ const Button: React.FC<ButtonProps> = ({
   return (
     <button
       type="button"
+      ref={ref}
+      aria-label={ariaLabel ?? (buttonStyle === 'icon' ? text : undefined)}
       className={[styles.button, className].filter(Boolean).join(' ')}
       style={mergedStyle}
       data-type={buttonType}

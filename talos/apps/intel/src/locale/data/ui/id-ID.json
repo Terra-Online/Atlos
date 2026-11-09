@@ -31,7 +31,8 @@
       "mission": "Misi",
       "auto": "Progres",
       "shop": "Toko",
-      "invstgt": "Investigasi"
+      "invstgt": "Investigasi",
+      "unknown": "Syarat pembukaan belum dikonfirmasi"
     },
     "label": {
       "missionSequence": "Misi",

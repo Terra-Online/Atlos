@@ -1,3 +1,4 @@
+import { registerOverlay } from '@/lib/dom/overlay';
 import { registerFontRegion } from '@/locale/fontLoader';
 import React, { useRef, useEffect, useCallback, useId, useLayoutEffect } from 'react';
 import styles from './popover.module.scss';
@@ -149,8 +150,11 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     variant = 'text',
 }) => {
     const closeTimeoutRef = useRef<number | undefined>(undefined);
-    const positionFrameRef = useRef<number | undefined>(undefined);
+    const positionFrameRef = useRef<(() => void) | undefined>(undefined);
+    const viewportCleanupRef = useRef<(() => void) | undefined>(undefined);
+    const scheduleLatest = useRef<() => void>(() => {});
     const isOpenRef = useRef(false);
+    const layerRef = useRef<ReturnType<typeof registerOverlay> | null>(null);
     const fontOwner = useRef<ReturnType<typeof registerFontRegion>>(undefined);
     const text = fontText ?? (typeof content === 'string' || typeof content === 'number' ? String(content) : '');
     useLayoutEffect(() => {
@@ -201,38 +205,41 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     }, [anchor, gap, placement]);
 
     const schedulePosition = useCallback(() => {
-        if (positionFrameRef.current) {
-            window.cancelAnimationFrame(positionFrameRef.current);
-        }
-        positionFrameRef.current = window.requestAnimationFrame(() => {
+        positionFrameRef.current?.();
+        const ownerWindow = triggerRef.current?.ownerDocument.defaultView ?? window;
+        const frame = ownerWindow.requestAnimationFrame(() => {
             positionFrameRef.current = undefined;
             positionPopover();
         });
+        positionFrameRef.current = () => ownerWindow.cancelAnimationFrame(frame);
     }, [positionPopover]);
+    scheduleLatest.current = schedulePosition;
 
     const hidePopover = useCallback((immediate = false) => {
         clearCloseTimeout();
-        if (positionFrameRef.current) {
-            window.cancelAnimationFrame(positionFrameRef.current);
-            positionFrameRef.current = undefined;
-        }
+        positionFrameRef.current?.();
+        positionFrameRef.current = undefined;
+        viewportCleanupRef.current?.();
+        viewportCleanupRef.current = undefined;
+        isOpenRef.current = false;
 
         const popover = popoverRef.current;
-        if (!popover) return;
-
+        layerRef.current?.setActive(false);
         const finishClose = () => {
+            closeTimeoutRef.current = undefined;
             try {
-                popover.hidePopover?.();
+                popover?.hidePopover?.();
             } catch {
                 // Ignore if already hidden
             }
-            popover.classList.remove(styles.popoverClose);
-            isOpenRef.current = false;
+            popover?.classList.remove(styles.popoverClose);
+            layerRef.current?.dispose();
+            layerRef.current = null;
             fontOwner.current?.stop();
             fontOwner.current = undefined;
         };
 
-        if (immediate || !isPopoverOpen(popover)) {
+        if (immediate || !popover || !isPopoverOpen(popover)) {
             finishClose();
             return;
         }
@@ -258,18 +265,42 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
             // Ignore if already shown
         }
 
+        if (!layerRef.current) layerRef.current = registerOverlay({
+            element: popover, trigger: triggerRef.current, closeOnOutside: true, onDismiss: () => hidePopover(true),
+        });
+        layerRef.current.setActive(true);
+        if (!viewportCleanupRef.current) {
+            const ownerWindow = popover.ownerDocument.defaultView ?? window;
+            const update = () => { if (isOpenRef.current) scheduleLatest.current(); };
+            const trigger = triggerRef.current;
+            // Regional fonts and loaded imagery can change either geometry
+            // without producing a window resize or scroll event.
+            const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
+            observer?.observe(popover);
+            if (trigger) observer?.observe(trigger);
+            const onFontChange = (event: Event) => {
+                const region = event.target as Element | null;
+                if (region?.contains(trigger) || region?.contains(popover)) update();
+            };
+            ownerWindow.addEventListener('resize', update);
+            ownerWindow.addEventListener('scroll', update, true);
+            popover.ownerDocument.addEventListener('fontregionchange', onFontChange);
+            viewportCleanupRef.current = () => {
+                observer?.disconnect();
+                ownerWindow.removeEventListener('resize', update);
+                ownerWindow.removeEventListener('scroll', update, true);
+                popover.ownerDocument.removeEventListener('fontregionchange', onFontChange);
+            };
+        }
         isOpenRef.current = true;
         positionPopover();
         schedulePosition();
-    }, [clearCloseTimeout, disabled, hasContent, positionPopover, schedulePosition, text]);
+    }, [clearCloseTimeout, disabled, hasContent, hidePopover, positionPopover, schedulePosition, text]);
 
     // Cleanup function: ensure popover is closed
     useEffect(() => {
         return () => {
             clearCloseTimeout();
-            if (positionFrameRef.current) {
-                window.cancelAnimationFrame(positionFrameRef.current);
-            }
             hidePopover(true);
             fontOwner.current?.stop();
             fontOwner.current = undefined;
@@ -295,18 +326,6 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
         if (isOpenRef.current) schedulePosition();
     }, [content, schedulePosition]);
 
-    useEffect(() => {
-        const handleViewportChange = () => schedulePosition();
-        const ownerWindow = triggerRef.current?.ownerDocument.defaultView ?? window;
-        ownerWindow.addEventListener('resize', handleViewportChange);
-        ownerWindow.addEventListener('scroll', handleViewportChange, true);
-
-        return () => {
-            ownerWindow.removeEventListener('resize', handleViewportChange);
-            ownerWindow.removeEventListener('scroll', handleViewportChange, true);
-        };
-    }, [schedulePosition]);
-
     const handleMouseEnter = () => {
         if (visible !== undefined) return;
         showPopover();
@@ -322,31 +341,39 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
         setMergedRef(childRef, node);
     }, [childRef]);
 
-    if (!hasContent) {
+    if (disabled || !hasContent) {
         return children;
     }
 
     // Clone children and add event handlers
-    const originalOnMouseEnter = childProps.onMouseEnter as ((e: React.MouseEvent<HTMLElement>) => void) | undefined;
-    const originalOnMouseLeave = childProps.onMouseLeave as ((e: React.MouseEvent<HTMLElement>) => void) | undefined;
-    const describedBy = disabled
-        ? childProps['aria-describedby']
-        : [childProps['aria-describedby'], popoverId].filter(Boolean).join(' ') || undefined;
+    const describedBy = [childProps['aria-describedby'], popoverId].filter(Boolean).join(' ') || undefined;
 
     const childWithHandlers = React.cloneElement(children, {
         ref: setTriggerRef,
         'aria-describedby': describedBy,
-        onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
-            handleMouseEnter();
-            if (originalOnMouseEnter) {
-                originalOnMouseEnter(e);
-            }
+        onFocus: (e: React.FocusEvent<HTMLElement>) => {
+            if (e.target.matches(':focus-visible')) handleMouseEnter();
+            (childProps.onFocus as ((event: React.FocusEvent<HTMLElement>) => void) | undefined)?.(e);
         },
-        onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
+        onBlur: (e: React.FocusEvent<HTMLElement>) => {
             handleMouseLeave();
-            if (originalOnMouseLeave) {
-                originalOnMouseLeave(e);
-            }
+            (childProps.onBlur as ((event: React.FocusEvent<HTMLElement>) => void) | undefined)?.(e);
+        },
+        onPointerEnter: (e: React.PointerEvent<HTMLElement>) => {
+            if (e.pointerType !== 'touch') handleMouseEnter();
+            (childProps.onPointerEnter as ((event: React.PointerEvent<HTMLElement>) => void) | undefined)?.(e);
+        },
+        onPointerLeave: (e: React.PointerEvent<HTMLElement>) => {
+            handleMouseLeave();
+            (childProps.onPointerLeave as ((event: React.PointerEvent<HTMLElement>) => void) | undefined)?.(e);
+        },
+        onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
+            if (visible === undefined) hidePopover(true);
+            (childProps.onPointerDown as ((event: React.PointerEvent<HTMLElement>) => void) | undefined)?.(e);
+        },
+        onClick: (e: React.MouseEvent<HTMLElement>) => {
+            if (visible === undefined) hidePopover(true);
+            (childProps.onClick as ((event: React.MouseEvent<HTMLElement>) => void) | undefined)?.(e);
         },
     } as Partial<React.HTMLAttributes<HTMLElement>> & { ref: React.Ref<HTMLElement> });
 

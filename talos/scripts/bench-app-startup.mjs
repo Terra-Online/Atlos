@@ -7,7 +7,7 @@ const { values } = parseArgs({
     options: {
         baseline: { type: 'string' },
         candidate: { type: 'string' },
-        out: { type: 'string', default: '.cache/app-startup/results.json' },
+        out: { type: 'string', default: '../docs/perf/app-startup/results.json' },
         rounds: { type: 'string', default: '10' },
         help: { type: 'boolean' },
     },

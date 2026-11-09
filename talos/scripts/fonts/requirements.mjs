@@ -1,13 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { root, regions, uiCharacters } from './catalog-data.mjs';
+import { root, regions, literalText } from './catalog-data.mjs';
 
-const strings = (value) =>
-    typeof value === 'string'
-        ? value
-        : Object.values(value || {})
-              .map(strings)
-              .join('');
 const points = (range) =>
     range.split(',').map((span) => {
         const [start, end = start] = span.slice(2).split('-');
@@ -30,37 +24,38 @@ export const partsForText = (manifest, face, text) => {
 // Conservative shell requirements are built from catalogs, never inferred from
 // layout. Additional faces/content are requested by their owning components.
 export async function requirements(manifests, app) {
-    const ui = await uiCharacters();
     const result = {};
     for (const [region, locale] of Object.entries(regions)) {
         const manifest = manifests[region];
         if (!manifest) continue;
-        const contentLocale = locale === 'zh-HK' ? 'zh-TW' : locale;
-        const labels = (
-            await Promise.all(
-                [
-                    `src/locale/data/game/${contentLocale}.json`,
-                    `src/locale/data/region/${contentLocale}.json`,
-                    `apps/intel/src/locale/data/game/${contentLocale}.json`,
-                ].map(async (file) =>
-                    strings(
-                        JSON.parse(
-                            await fs.readFile(path.join(root, file), 'utf8'),
-                        ),
-                    ),
+        const appRoot =
+            app === 'intel' || app === 'user-hub' ? `apps/${app}` : '';
+        const uiCatalog = JSON.parse(
+            await fs.readFile(
+                path.join(
+                    root,
+                    appRoot,
+                    'src/locale/data/ui',
+                    `${locale}.json`,
                 ),
-            )
-        ).join('');
+                'utf8',
+            ),
+        );
+        // ICU identifiers do not describe visible glyphs. Extract each leaf so
+        // plural/select branches retain all of their literal copy.
+        const uiText = (value) =>
+            typeof value === 'string'
+                ? literalText(value, locale)
+                : Object.values(value || {})
+                      .map(uiText)
+                      .join('');
+        const characters =
+            uiText(uiCatalog) +
+            '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
         const uiParts = Object.fromEntries(
             Object.keys(manifest.faces).map((face) => [
                 face,
-                partsForText(manifest, face, ui[region]),
-            ]),
-        );
-        const catalog = Object.fromEntries(
-            Object.keys(manifest.faces).map((face) => [
-                face,
-                partsForText(manifest, face, ui[region] + labels),
+                partsForText(manifest, face, characters),
             ]),
         );
         // The main sidebar ID card uses Regular from its first render;
@@ -80,18 +75,10 @@ export async function requirements(manifests, app) {
                 .filter((face) => manifest.faces[face])
                 .map((face) => [
                     face,
-                    partsForText(
-                        manifest,
-                        face,
-                        ui[region] +
-                            (app !== 'user-hub' &&
-                            (face === 'db' || face === 'h')
-                                ? labels
-                                : ''),
-                    ),
+                    partsForText(manifest, face, characters),
                 ]),
         );
-        result[region] = { ui: uiParts, catalog, shell };
+        result[region] = { ui: uiParts, shell };
     }
     return result;
 }

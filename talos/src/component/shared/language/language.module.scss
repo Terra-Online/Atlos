@@ -1,0 +1,272 @@
+@use '@/styles/palette.scss' as *;
+@use '@/styles/curves.scss' as *;
+@use '@/styles/size.scss' as *;
+
+:root, :root[data-theme='light'] {
+    --lang-bg: #{$white-1};
+    --lang-hover-bg: #{$white-3};
+    --lang-actived-bg: #{$dim-1};
+    --lang-text: #{$grey-1};
+    --lang-actived-text: #{$white-1};
+    --lang-bar: #{$grey-1};
+    --lang-active-bar: #{$primary-accent-4};
+    --lang-hover-bar: #{$primary-accent-1};
+    --lang-tag: #{$dim-1};
+    --lang-actived-tag: #{$primary-accent-4};
+    --lang-actived-tag-text: #{$grey-1};
+    --lang-section-border: #{rgba($grey-1, 0.75)};
+    --lang-title-text: #{$black-1};
+    --lang-section-text: #{$grey-1};
+}
+:root[data-theme='dark'] {
+    --lang-bg: #{$black-1};
+    --lang-hover-bg: #{$grey-2};
+    --lang-actived-bg: #{$light-1};
+    --lang-text: #{$light-1};
+    --lang-actived-text: #{$black-1};
+    --lang-bar: #{$light-1};
+    --lang-active-bar: #{$primary-accent-5};
+    --lang-hover-bar: #{$primary-accent-2};
+    --lang-tag: #{$dim-2};
+    --lang-actived-tag: #{$primary-accent-4};
+    --lang-actived-tag-text: #{$black-1};
+    --lang-section-border: #{rgba($light-1, 0.75)};
+    --lang-title-text: #{$light-2};
+    --lang-section-text: #{$light-1};
+}
+
+.langList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.langSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    &:not(:last-child)::after {
+        content: "";
+        display: block;
+        width: 100%;
+        height: 3px;
+        background-color: var(--lang-section-border);
+        box-shadow: 0 0 2px rgba($black-0, 0.3);
+    }
+}
+.sectionHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.sectionTitle {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    letter-spacing: -.3px;
+    color: var(--lang-section-text);
+    unicode-bidi: plaintext;
+}
+.sectionHint {
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.25;
+    font-family: 'HMSans_EN','HMSans','UD_ShinGo Regular', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    letter-spacing: -.2px;
+    color: var(--lang-section-text);
+    overflow-wrap: break-word;
+    hyphens: auto;
+    unicode-bidi: plaintext;
+}
+
+.sectionItems {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    gap: .6rem .75rem;
+    align-items: stretch;
+}
+
+@media (max-width:$smallmobile-bp) {
+    .sectionItems {
+        grid-template-columns: 1fr
+    }
+}
+
+.langItem {
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+    overscroll-behavior: auto;
+    display: grid;
+    grid-template-columns: 1.5fr 0.5fr;
+    grid-template-rows: repeat(3, 1fr);
+    grid-auto-columns: 1fr;
+    grid-auto-rows: 1fr;
+    gap: 0;
+    grid-auto-flow: row;
+    grid-template-areas:
+        "langOrigin langTag"
+        "langOrigin langTag"
+        "langDisplay langTag";
+
+    border-radius: 3px;
+    height: 3.6rem;
+    padding: .4rem .5rem;
+    box-shadow: 0 0 4px 1px rgba($black-0, 0.25);
+    background-color: var(--lang-bg);
+    color: var(--lang-text);
+    cursor: pointer;
+    transition:
+        background-color .2s ease-in,
+        color .2s ease-in,
+        box-shadow .4s $moderato-curve;
+    &::before {
+        content: "";
+        position: absolute;
+        left: 5px;
+        top: 10%;
+        width: 3px;
+        height: 80%;
+        background-color: var(--lang-bar);
+        box-shadow: 0 0 0 0 transparent;
+        z-index: 0;
+        pointer-events: none;
+        transition: background-color .4s ease;
+    }
+    &:hover {
+        background-color: var(--lang-hover-bg);
+        box-shadow: 0 0 4px 1px rgba($black-0, 0.35);
+        &::before {
+            background-color: var(--lang-hover-bar);
+            transition: background-color .2s ease;
+        }
+    }
+    &.active {
+        background-color: var(--lang-actived-bg);
+        color: var(--lang-actived-text);
+        &::before {
+            background-color: var(--lang-active-bar);
+            transition: background-color .4s ease-in, box-shadow .5s ease;
+            box-shadow: 0 0 3px 0 $primary-accent-4;
+        }
+        &:hover {
+            background-color: var(--lang-text);
+        }
+    }
+}
+.langOrigin {
+    grid-area: langOrigin;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    line-height: 1;
+    font-size: 1.2rem;
+    font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', 'Lang Origin', 'Noto Sans Arabic', 'Noto Sans Thai',
+ sans-serif;
+    font-weight: 700;
+    letter-spacing: -.5px;
+    padding-left: 5px;
+    text-align: left;
+    &[lang='id-ID'], &[lang='ms-MY'] {
+        line-height: 0.77;
+    }
+    &[lang='ar-SA'] {
+        font-family: 'Noto Sans Arabic', sans-serif;
+    }
+    &[lang='th-TH'] {
+        font-family: 'Noto Sans Thai', sans-serif;
+    }
+}
+.langDisplay {
+    grid-area: langDisplay;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    text-transform: uppercase;
+    line-height: 1;
+    font-size: 0.8rem;
+    font-family: 'Novecento Medium', 'Novecento Cyrillic Medium', 'Novecento Vietnamese Medium', 'UD_ShinGo Medium', 'Noto Sans Arabic', 'Noto Sans Thai',
+ sans-serif;
+    font-weight: 500;
+    padding-left: 6px;
+    max-width: 0;
+    white-space: nowrap;
+}
+
+.langTag {
+    grid-area: langTag;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: end;
+    align-self: start;
+    border: 2px solid var(--lang-tag);
+    border-radius: 4px;
+    padding: 2.5px 6px 3px;
+    color: var(--lang-tag);
+    font-size: .9rem;
+    font-family: 'Novecento DemiBold', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    height: 22px;
+    width: fit-content;
+    min-width: 2rem;
+    line-height: 1;
+    transition:
+        background-color .2s ease-in,
+        color .2s ease-in,
+        border-color .2s ease-in,
+        box-shadow .4s $moderato-curve,
+        transform .3s $moderato-curve;
+    transform: translateY(0);
+    will-change: transform;
+}
+
+.currentLang {
+    opacity: 0;
+    overflow: hidden;
+    max-width: 0;
+    white-space: nowrap;
+    margin-left: 0;
+    color: var(--lang-actived-tag-text);
+    font-family: 'Novecento Bold', 'Lang Origin', 'Novecento Cyrillic DemiBold','Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    transition:
+        opacity .4s $moderato-curve,
+        max-width .3s $moderato-curve;
+}
+.currentLang::before {
+    content: '\200A\00B7\200A'; // U+200A: HAIR SPACE, aka &hairsp;
+    display: inline-block;
+}
+
+.active .langTag {
+    background-color: var(--lang-actived-tag);
+    color: var(--lang-actived-tag-text);
+    border-color: var(--lang-actived-tag);
+    font-family: 'Novecento Bold', 'UD_ShinGo Bold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    box-shadow: 0 1px 2px rgba($black-0, 0.2);
+    transform: translateY(0.72rem);
+}
+
+.active .langTag .currentLang {
+    display: flex;
+    align-items: center;
+    opacity: 1;
+    max-width: 3rem;
+    &[lang='de-DE'], &[lang='es-ES'], &[lang='fr-FR'], &[lang='it-IT'], &[lang='pl-PL'] {
+        max-width: 4rem;
+    }
+    &[lang='ar-SA'], &[lang='vi-VN'], &[lang='th-TH'] {
+        height: 1.5rem;
+    }
+    &[lang='ar-SA'] {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        transform: translateY(-2px);
+        &::before {
+            transform: translateY(2px);
+        }
+    }
+}

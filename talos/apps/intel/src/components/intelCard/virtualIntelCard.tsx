@@ -47,10 +47,12 @@ const VirtualIntelCard = memo(({ virtualize, rootRef, ...card }: Props) => {
   }, []);
 
   if (nearby || !virtualize) {
+    // Keep the scroll range stable while the restored card waits for rAF measurement.
     return (
       <IntelCard
         {...card}
         virtualRef={setSkeleton}
+        measuredHeight={height ?? undefined}
         onHeightMeasured={onHeightMeasured}
       />
     );

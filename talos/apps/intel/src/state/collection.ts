@@ -1,18 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useUserRecordStore } from '@main/store/userRecord';
+import { useUserRecordStore, observeProgressStorage, publishProgressChange } from '@main/store/userRecord';
 import type { IntelArchive } from '@intel/data/types';
-
-const CHANNEL_NAME = 'atlos-intel-progress';
-
-const publishProgressChange = () => {
-  try {
-    const channel = new BroadcastChannel(CHANNEL_NAME);
-    channel.postMessage({ updatedAt: Date.now() });
-    channel.close();
-  } catch {
-    // Storage events still synchronize browsers without BroadcastChannel.
-  }
-};
 
 const collectionId = (archive: IntelArchive) => (
   archive.acquisition.method === 'map'
@@ -20,24 +8,18 @@ const collectionId = (archive: IntelArchive) => (
     : archive.id
 );
 
-const rehydrateProgress = () => {
-  const raw = localStorage.getItem('points-storage');
-  if (!raw) return;
-  try {
-    const parsed = JSON.parse(raw) as {
-      state?: { activePoints?: unknown; activeArchives?: unknown; updatedAt?: unknown };
-    };
-    const activePoints = Array.isArray(parsed.state?.activePoints)
-      ? parsed.state.activePoints.map(String)
-      : [];
-    const activeArchives = Array.isArray(parsed.state?.activeArchives)
-      ? parsed.state.activeArchives.map(String)
-      : [];
-    const updatedAt = typeof parsed.state?.updatedAt === 'number' ? parsed.state.updatedAt : Date.now();
-    useUserRecordStore.setState({ activePoints, activeArchives, updatedAt });
-  } catch {
-    // Ignore malformed storage; the main store owns its persisted shape.
-  }
+const collectedArchiveIds = (archives: IntelArchive[], mapSet: ReadonlySet<string>, localSet: ReadonlySet<string>) => new Set(
+  archives
+    .filter((archive) => archive.acquisition.method === 'map'
+      ? mapSet.has(collectionId(archive))
+      : localSet.has(collectionId(archive)))
+    .map((archive) => archive.id),
+);
+
+/** Capture current progress after an import, including intervening edits from other tabs. */
+export const getCollectedIds = (archives: IntelArchive[]) => {
+  const state = useUserRecordStore.getState();
+  return collectedArchiveIds(archives, new Set(state.activePoints), new Set(state.activeArchives));
 };
 
 export const useIntelCollection = (archives: IntelArchive[]) => {
@@ -50,33 +32,16 @@ export const useIntelCollection = (archives: IntelArchive[]) => {
     void Promise.resolve(useUserRecordStore.persist.rehydrate()).then(() => {
       if (active) setIsReady(true);
     });
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === 'points-storage') rehydrateProgress();
-    };
-    let channel: BroadcastChannel | null = null;
-    try {
-      channel = new BroadcastChannel(CHANNEL_NAME);
-      channel.onmessage = () => rehydrateProgress();
-    } catch {
-      channel = null;
-    }
-    window.addEventListener('storage', onStorage);
+    const stop = observeProgressStorage();
     return () => {
       active = false;
-      window.removeEventListener('storage', onStorage);
-      channel?.close();
+      stop();
     };
   }, []);
 
   const mapSet = useMemo(() => new Set(mapPointIds), [mapPointIds]);
   const localSet = useMemo(() => new Set(localArchiveIds), [localArchiveIds]);
-  const collectedIds = useMemo(() => new Set(
-    archives
-      .filter((archive) => archive.acquisition.method === 'map'
-        ? mapSet.has(collectionId(archive))
-        : localSet.has(collectionId(archive)))
-      .map((archive) => archive.id),
-  ), [archives, localSet, mapSet]);
+  const collectedIds = useMemo(() => collectedArchiveIds(archives, mapSet, localSet), [archives, localSet, mapSet]);
 
   const toggle = useCallback((archive: IntelArchive) => {
     const id = collectionId(archive);

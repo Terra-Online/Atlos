@@ -678,5 +678,8 @@
       "research_tales": "Tạp Ký Kỳ Thú",
       "research_gm02m27": "BCĐT: Thành Phố Nghiên Cứu & Phát Triển"
     }
+  },
+  "glossary": {
+    "optical_fog": "<span class=\"highlight\">Sương Quang Học</span>: Tấn công vào đó để xua tan sương."
   }
 }

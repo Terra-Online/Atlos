@@ -330,7 +330,7 @@ const getDb = async (env: Env, docsLocale: string): Promise<SearchDb> => {
   const existing = dbPromiseByLocale.get(docsLocale);
   if (existing) return existing;
 
-  const promise = (async () => {
+  const promise: Promise<SearchDb> = (async () => {
     const docs = await loadDocs(env, docsLocale);
     docsByLocale.set(docsLocale, docs);
     const db = await createDb({
@@ -352,7 +352,10 @@ const getDb = async (env: Env, docsLocale: string): Promise<SearchDb> => {
 
     await insertDocs(db, docs, 300);
     return db;
-  })();
+  })().catch((error: unknown) => {
+    if (dbPromiseByLocale.get(docsLocale) === promise) dbPromiseByLocale.delete(docsLocale);
+    throw error;
+  });
 
   dbPromiseByLocale.set(docsLocale, promise);
   return promise;
@@ -361,7 +364,7 @@ const getDb = async (env: Env, docsLocale: string): Promise<SearchDb> => {
 const getLegacySingleDb = async (env: Env): Promise<SearchDb> => {
   if (dbPromise) return dbPromise;
 
-  dbPromise = (async () => {
+  const promise: Promise<SearchDb> = (async () => {
     const docs = await loadDocs(env, 'en-US');
     docsByLocale.set('en-US', docs);
     const db = await createDb({
@@ -383,9 +386,13 @@ const getLegacySingleDb = async (env: Env): Promise<SearchDb> => {
 
     await insertDocs(db, docs, 300);
     return db;
-  })();
+  })().catch((error: unknown) => {
+    if (dbPromise === promise) dbPromise = null;
+    throw error;
+  });
 
-  return dbPromise;
+  dbPromise = promise;
+  return promise;
 };
 
 const parseLimit = (raw: string | null): number => {

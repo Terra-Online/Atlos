@@ -4,28 +4,21 @@ import VL_SUBREGIONS from './subregionData/VL.json';
 import WL_SUBREGIONS from './subregionData/WL.json';
 
 export interface IMapRegion {
-    dimensions: number[];
-    /** Temporary max-zoom pixel offset for shifting the visible map bounds. */
-    boundsOffset?: {
-        x: number;
-        y: number;
-    };
-    maxZoom: number;
-    tileSize: number;
-    initialOffset: {
-        x: number;
-        y: number;
+    /** Coordinate basis for pixel-space labels, links and subregions. */
+    coordZoom: number;
+    /** Initial map coordinates, independent of the pixel-space coordinate basis. */
+    initialCenter: {
+        lat: number;
+        lng: number;
     };
     initialZoom: number;
     subregions: string[];
-    layers?: string[];
 }
 
 export interface IMapSubregionAreaData {
     id: string;
     name: string;
     bounds?: number[][];
-    tiles?: number;
     polygon?: number[][][];
 }
 

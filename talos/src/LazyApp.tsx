@@ -16,7 +16,7 @@ export default function LazyApp() {
             setMaxProgress(60);
             await fontLoader();
             setMaxProgress(90);
-            const module = await import('./App');
+            const module = await import('./pages/MapPage');
             setMaxProgress(100);
             await complete; // 等待loading播放完成
             setApp(() => module.default);

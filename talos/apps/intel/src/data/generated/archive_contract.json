@@ -3313,7 +3313,9 @@
         "id": "nar_digital_map02_research11_12_1",
         "icon": "prts_read_electronicscreen",
         "acquisition": {
-          "method": "auto"
+          "method": "mission",
+          "missionId": "gm02m27d5",
+          "questId": "gm02m27d5_q#4"
         }
       },
       {
@@ -3541,427 +3543,428 @@
         "id": "nar_document_v0d8_1_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_2_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_3_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_4_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_5_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_6_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_7_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_8_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_9_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_10_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_11_1",
         "icon": "prts_centralAchive_new",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_12_1",
         "icon": "prts_centralAchive_others",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_13_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_14_1",
         "icon": "prts_centralAchive_new",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_15_1",
         "icon": "prts_centralAchive_new",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_16_1",
         "icon": "prts_centralAchive_others",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_17_1",
         "icon": "prts_centralAchive_others",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_18_1",
         "icon": "prts_centralAchive_new",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_19_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_21_1",
         "icon": "prts_centralAchive_new",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_23_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_24_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_25_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_26_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_27_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_28_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_29_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_30_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_31_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_32_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_33_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_34_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_35_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_37_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_38_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_39_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v0d8_40_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d1_1_1",
         "icon": "prts_centralAchive_new",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d2_1_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d2_2_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d2_3_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d2_4_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d2_5_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d2_6_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d2_7_1",
         "icon": "prts_centralAchive_others",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d2_8_1",
         "icon": "prts_centralAchive_others",
         "acquisition": {
-          "method": "auto"
+          "method": "mission",
+          "missionId": "sm2l3m3"
         }
       },
       {
         "id": "nar_document_v1d2_9_1",
         "icon": "prts_centralAchive_new",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d2_10_1",
         "icon": "prts_centralAchive_others",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d2_11_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d2_12_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d3_1_1",
         "icon": "prts_centralAchive_others",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d3_2_1",
         "icon": "prts_centralAchive_new",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d4_5_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d4_2_1",
         "icon": "prts_centralAchive_new",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d4_3_1",
         "icon": "prts_centralAchive_others",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d4_4_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d5_1_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d5_2_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d5_3_1",
         "icon": "prts_centralAchive_basic",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d6_1_1",
         "icon": "prts_centralAchive_new",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       },
       {
         "id": "nar_document_v1d6_2_1",
         "icon": "prts_centralAchive_new",
         "acquisition": {
-          "method": "auto"
+          "method": "unknown"
         }
       }
     ],

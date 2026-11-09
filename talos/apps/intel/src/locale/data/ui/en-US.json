@@ -31,7 +31,8 @@
       "mission": "Mission",
       "auto": "Progression",
       "shop": "Shop",
-      "invstgt": "Investigation"
+      "invstgt": "Investigation",
+      "unknown": "Unlock condition unconfirmed"
     },
     "label": {
       "missionSequence": "Mission",

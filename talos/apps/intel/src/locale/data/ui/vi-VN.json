@@ -31,7 +31,8 @@
       "mission": "Nhiệm vụ",
       "auto": "Tiến trình",
       "shop": "Cửa hàng",
-      "invstgt": "Điều tra"
+      "invstgt": "Điều tra",
+      "unknown": "Chưa xác nhận điều kiện mở khóa"
     },
     "label": {
       "missionSequence": "Nhiệm vụ",

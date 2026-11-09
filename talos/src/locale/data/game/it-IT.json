@@ -678,5 +678,8 @@
       "research_tales": "Volumi e archivi intelligenti",
       "research_gm02m27": "RI: Una città di ricerca e sviluppo"
     }
+  },
+  "glossary": {
+    "optical_fog": "<span class=\"highlight\">Nebbia ottica</span>: Puoi diradarle attaccandole."
   }
 }

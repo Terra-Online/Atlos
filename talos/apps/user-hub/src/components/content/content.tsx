@@ -1,11 +1,11 @@
+import { EntryButton } from '@/component/button/EntryButton';
 import { useRef, useState } from 'react';
 import { useLocale, useTranslateUI } from '@hub/locale';
 import List from './list';
 import { useContributions, type Kind } from './useContributions';
 import type { Overview } from '../../types';
 import { ModalTabs } from '@main/component/modal/modal';
-import Feed from '@main/component/notify/feed';
-import { AccessButton } from '@main/component/login/access/button';
+import Feed from '@main/component/feed/Feed';
 import ImageIcon from '@main/assets/logos/images.svg?react';
 import CommentIcon from '@main/assets/logos/comment.svg?react';
 import styles from './content.module.scss';
@@ -14,18 +14,22 @@ import { useNearViewport } from '@main/lib/dom/useNearViewport';
 type Props = {
     revision: number;
     counts: Overview['contributions'];
+    onUnauthorized?: () => void;
+    authRevision?: number;
 };
 
-export default function Content({ revision, counts }: Props) {
+export default function Content({ revision, counts, onUnauthorized, authRevision }: Props) {
     const t = useTranslateUI();
     const locale = useLocale();
     const [kind, setKind] = useState<Kind>('image');
     const swipeTarget = useRef<HTMLDivElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
     const loadMoreRef = useRef<HTMLDivElement>(null);
-    const { items, cursor, loading, error, loadMore, retry } = useContributions(
+    const { items, cursor, loading, error, unauthorized, loadMore, retry } = useContributions(
         kind,
         revision,
+        onUnauthorized,
+        authRevision,
     );
     const totals = {
         image: counts.imageCount,
@@ -35,7 +39,7 @@ export default function Content({ revision, counts }: Props) {
     useNearViewport({
         rootRef: listRef,
         targetRef: loadMoreRef,
-        enabled: Boolean(cursor && !loading && !error),
+        enabled: Boolean(cursor && !loading && !error && !unauthorized),
         onNear: loadMore,
     });
 
@@ -65,7 +69,7 @@ export default function Content({ revision, counts }: Props) {
                                     {t('userHub.contributionsError')} {error}
                                 </p>
                                 <div className={styles.more}>
-                                    <AccessButton
+                                    <EntryButton
                                         onClick={retry}
                                         disabled={loading}
                                         label={t('userHub.retry')}
@@ -79,11 +83,11 @@ export default function Content({ revision, counts }: Props) {
                                 {t('common.loading')}
                             </p>
                         )}
-                        {cursor && !error && (
+                        {cursor && !error && !unauthorized && (
                             <>
                                 <div ref={loadMoreRef} className={styles.loadMoreSentinel} aria-hidden='true' />
                                 <div className={styles.pagination}>
-                                    <AccessButton
+                                    <EntryButton
                                         label={t(
                                             loading
                                                 ? 'common.loading'

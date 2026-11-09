@@ -4,7 +4,12 @@ import {
     type FontRegionOptions,
     type FontScope,
 } from './fontRegions';
-import { loadManifest, preloadFontBytes, type Region } from './fontShards';
+import {
+    loadManifest,
+    preloadFontBytes,
+    type Region,
+    type TextRun,
+} from './fontShards';
 import { shellFiles } from './fontConfig';
 
 const fontRegions: Region[] = ['CN', 'HK', 'JP'];
@@ -50,8 +55,7 @@ export function preloadFontRegion(region: Exclude<FontRegion, null>): void {
                 ),
             ),
         ),
-    ])
-        .catch(() => undefined);
+    ]).catch(() => undefined);
 }
 
 const documents = new Map<
@@ -100,6 +104,16 @@ export const switchFontRegion = (
     ).then(() => undefined);
 };
 
+/** Prepare the same native faces later used by a concrete content owner. */
+export async function preloadFontRuns(
+    runs: TextRun[],
+    doc: Document = document,
+    region: FontRegion = detectLanguage(doc),
+): Promise<void> {
+    await fontLoader(doc, region);
+    await documents.get(doc)?.regions.preloadRuns(runs, region);
+}
+
 export function getCurrentRegion(): FontRegion {
     return detectLanguage(document);
 }
@@ -132,6 +146,9 @@ export function registerFontRegion(
     };
     owners.add(migrate);
     return {
+        get ready() {
+            return area?.ready ?? Promise.resolve();
+        },
         update(next: import('./fontShards').TextRun[]) {
             runs = next;
             migrate();

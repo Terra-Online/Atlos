@@ -42,6 +42,8 @@
   "gm02m18": "Namenlose Klingen II",
   "gm02m19": "Namenlose Klingen III",
   "gm02m24": "Schriften außer Rand und Band",
+  "gm02m27d5": "Glocke der Erinnerung: Nachklang",
+  "gm02m27d5_q#4": "Sammle alle Suiming-<span class=\"highlight\">Hinweise</span> für das <span class=\"highlight\">Archiv</span>.",
   "group": {
     "intel": "Funde",
     "central": "Nexus-Dateien",
@@ -648,6 +650,7 @@
   "sm1l7m1": "Innere Bedrohung",
   "sm2l1m5": "Immer auf Trab",
   "sm2l2m3": "Der alte Mann und die Flut I",
+  "sm2l3m3": "Schutzherr der Quelle III",
   "sm2l3m6": "Sucher des verlorenen Schatzes III",
   "sm2l6m1": "Tief eingeschlossener Stahl",
   "sns_chat_nfm_0_1": "Camp-Kommunikationsgruppe",

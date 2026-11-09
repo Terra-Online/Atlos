@@ -60,6 +60,11 @@
 }
 
 .txtInner {
+    :global(.highlight) {
+        color: $primary-accent-4;
+        font-weight: 800;
+    }
+
     padding: 6px 12px;
     white-space: nowrap;
 }

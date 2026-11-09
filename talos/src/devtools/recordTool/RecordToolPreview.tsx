@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import type { IMarkerData } from '@/data/marker';
 import { useTranslateGame } from '@/locale';
-import { getAppViewport } from '@/component/scale/pip';
+import { getAppViewport } from '@/platform/pictureInPicture';
 import PopoverTooltip from '@/component/popover/popover';
 import { useAppViewport } from '@/platform/device';
 import { parseTimestamp } from '@/lib/format/time';
@@ -17,8 +17,8 @@ import {
     MARKER_PREVIEW_LEAVE_EVENT,
     type PreviewEnterDetail,
     type PreviewLeaveDetail,
-} from '@/component/map/PreviewEvents';
-import styles from '@/component/map/Preview.module.scss';
+} from '@/services/map/events/PreviewEvents';
+import styles from '@/pages/map/Preview.module.scss';
 
 type PreviewMarkerState = {
     marker: IMarkerData;

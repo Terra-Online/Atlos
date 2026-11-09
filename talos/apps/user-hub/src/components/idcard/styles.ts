@@ -1,4 +1,4 @@
-import shared from '@main/component/login/idcard.module.scss';
+import shared from '@main/component/shared/account/idcard.module.scss';
 import local from './idcard.module.scss';
 
 export default Object.assign({}, local, {

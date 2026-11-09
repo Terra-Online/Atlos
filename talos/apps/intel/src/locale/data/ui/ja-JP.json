@@ -31,7 +31,8 @@
       "mission": "任務報酬",
       "auto": "システム解放",
       "shop": "ショップ購入",
-      "invstgt": "報告概要"
+      "invstgt": "報告概要",
+      "unknown": "解放条件未確認"
     },
     "label": {
       "missionSequence": "任務シーケンス",

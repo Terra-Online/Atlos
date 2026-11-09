@@ -36,8 +36,8 @@ const selectParts = (
         }),
     );
 
-/** Keep decoded faces warm for a few recently used collections. */
-const MAX_IDLE_BATCHES = 6;
+/** Retain recently used shards, rather than duplicate overlapping collections. */
+const MAX_IDLE_PARTS = 24;
 
 export type FontScope = 'critical' | 'background';
 
@@ -49,93 +49,95 @@ export interface FontRegionOptions {
  * geometry to decide which font collection a region needs. */
 export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
     let usageTick = 0;
-    const batches = new Map<
+    const alias = `area${++nextAreaId}`;
+    const parts = new Map<
         string,
         {
             ready: Promise<Prepared>;
             refs: number;
-            registered: boolean;
-            parts: Set<string>;
             prepared?: Prepared;
             lastUsed: number;
         }
     >();
     const evictIdle = () => {
-        const idle = [...batches.entries()]
+        const idle = [...parts.entries()]
             .filter(([, entry]) => entry.refs === 0)
             .sort(([, a], [, b]) => a.lastUsed - b.lastUsed);
-        while (idle.length > MAX_IDLE_BATCHES) {
+        while (idle.length > MAX_IDLE_PARTS) {
             const [key, entry] = idle.shift()!;
-            for (const font of entry.prepared?.fonts || []) doc.fonts.delete(font);
-            if (batches.get(key) === entry) batches.delete(key);
+            for (const font of entry.prepared?.fonts || [])
+                doc.fonts.delete(font);
+            if (parts.get(key) === entry) parts.delete(key);
         }
     };
-    const leaseFonts = (key: string, selection: Selection[]) => {
-        let batch = batches.get(key);
-        if (!batch) {
-            // A later-mounted region can reuse a fully loaded shell collection.
-            // Pending collections are excluded so extra shards cannot delay it.
-            for (const [candidateKey, candidate] of batches) {
-                if (
-                    candidate.registered &&
-                    selection.every((part) =>
-                        candidate.parts.has(`${part.face}:${part.url}`),
-                    )
-                ) {
-                    key = candidateKey;
-                    batch = candidate;
-                    candidate.lastUsed = ++usageTick;
-                    break;
-                }
+    const leaseFonts = (selection: Selection[], next: Region) => {
+        // One native face per document/locale/shard. Different owners can share
+        // overlapping selections without decoding the same WOFF2 repeatedly.
+        const entries = selection.map((part) => {
+            const key = `${next}:${part.face}:${part.url}`;
+            let entry = parts.get(key);
+            if (!entry) {
+                entry = {
+                    ready: prepareFonts([part], `${alias}-${next}`),
+                    refs: 0,
+                    lastUsed: ++usageTick,
+                };
+                parts.set(key, entry);
+                const current = entry;
+                void entry.ready.catch(() => {
+                    if (parts.get(key) === current) parts.delete(key);
+                });
             }
-        }
-        if (!batch) {
-            batch = {
-                ready: prepareFonts(selection, `area${++nextAreaId}-0`),
-                refs: 0,
-                registered: false,
-                parts: new Set(
-                    selection.map((part) => `${part.face}:${part.url}`),
-                ),
-                lastUsed: ++usageTick,
-            };
-            batches.set(key, batch);
-        }
-        const entry = batch;
-        entry.lastUsed = ++usageTick;
-        entry.refs++;
+            entry.lastUsed = ++usageTick;
+            entry.refs++;
+            return entry;
+        });
+        const ready = Promise.all(entries.map((entry) => entry.ready)).then(
+            (prepared): Prepared => ({
+                fonts: prepared.flatMap((part) => part.fonts),
+                families: Object.assign(
+                    {},
+                    ...prepared.map((part) => part.families),
+                ) as Prepared['families'],
+            }),
+        );
         let released = false;
         return {
-            ready: entry.ready,
+            ready,
             activate(prepared: Prepared) {
                 if (released) return;
-                if (!entry.registered) {
-                    try {
-                        for (const font of prepared.fonts) doc.fonts.add(font);
-                    } catch (error) {
-                        for (const font of prepared.fonts)
-                            doc.fonts.delete(font);
-                        throw error;
+                const added: FontFace[] = [];
+                try {
+                    for (const font of prepared.fonts) {
+                        if (doc.fonts.has(font)) continue;
+                        doc.fonts.add(font);
+                        added.push(font);
                     }
-                    entry.prepared = prepared;
-                    entry.registered = true;
-                    entry.lastUsed = ++usageTick;
+                } catch (error) {
+                    for (const font of added) doc.fonts.delete(font);
+                    throw error;
                 }
+                entries.forEach((entry, index) => {
+                    entry.prepared = {
+                        fonts: [prepared.fonts[index]],
+                        families: prepared.families,
+                    };
+                    entry.lastUsed = ++usageTick;
+                });
             },
             release: () => {
                 if (released) return;
                 released = true;
-                if (--entry.refs === 0) {
-                    entry.lastUsed = ++usageTick;
-                    evictIdle();
+                for (const entry of entries) {
+                    if (--entry.refs === 0) entry.lastUsed = ++usageTick;
                 }
+                evictIdle();
             },
         };
     };
     type Lease = ReturnType<typeof leaseFonts>;
     let warmRegion: Region | null = null;
     let warmLeases: Lease[] = [];
-    const warmedShells = new Set<string>();
     const releaseWarm = () => {
         warmLeases.forEach((lease) => lease.release());
         warmLeases = [];
@@ -180,60 +182,14 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
         changingLanguage = false,
     ) => {
         const preset = requirements[next];
-        const shell = preset?.shell || {};
-        const uiShell = Object.fromEntries(
-            Object.entries(shell)
-                .map(([face, keys]) => [
-                    face,
-                    (preset?.ui[face as Face] || []).filter((key) =>
-                        (keys || []).includes(key),
-                    ),
-                ])
-                .filter(([, keys]) => (keys as string[]).length),
-        ) as Parts;
         const staticParts =
             runs === null
-                ? changingLanguage
-                    ? uiShell
-                    : shell
-                : Object.fromEntries(
-                      [
-                          ...new Set(
-                              runs.flatMap(
-                                  (run) =>
-                                      // A present primary face can still have
-                                      // cmap holes; prepare its declared UI fallbacks too.
-                                      run.faces.filter(
-                                          (face) => manifest.faces[face],
-                                      ),
-                              ),
-                          ),
-                      ].map((face) => [
-                          face,
-                          [
-                              ...new Set([
-                                  ...(preset?.ui[face] || []),
-                                  ...(!changingLanguage
-                                      ? preset?.shell[face] || []
-                                      : []),
-                                  // Content packs are loaded when the
-                                  // localized content area is committed. A
-                                  // language transaction must prepare the
-                                  // shared UI shell first; pulling every
-                                  // prose pack here turns a small switch into
-                                  // a full-page font download.
-                                  ...(!changingLanguage &&
-                                  runs.some(
-                                      (run) =>
-                                          run.localized === 'game' &&
-                                          run.faces.includes(face),
-                                  )
-                                      ? preset?.catalog[face] || []
-                                      : []),
-                              ]),
-                          ],
-                      ]),
-                  );
+                ? preset?.shell || {}
+                : (Object.fromEntries(
+                      [...new Set(runs.flatMap((run) => run.faces))].map(
+                          (face) => [face, preset?.ui[face] || []],
+                      ),
+                  ) as Parts);
         return [
             ...new Map(
                 [
@@ -311,7 +267,8 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
                 !selection.length
             )
                 return plan;
-            const lease = leaseFonts(plan.key, selection);
+            if (!next) return plan;
+            const lease = leaseFonts(selection, next);
             try {
                 plan.prepared = await lease.ready;
                 plan.lease = lease;
@@ -377,7 +334,9 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
                     return;
                 }
             }
-            fallback();
+            // Keep the previous complete collection while new text is prepared.
+            // Dropping its aliases here makes every existing glyph flash fallback.
+            if (!active) fallback();
             ready = prepare(target)
                 .then((plan) => {
                     if (
@@ -469,12 +428,21 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
             const { manifest, url } = await source(next);
             const selection = select(next, { manifest, url }, null);
             if (!selection.length) return;
-            const key = `${next}:${keyFor(selection)}`;
-            if (warmedShells.has(key)) return;
-            const lease = leaseFonts(key, selection);
+            const lease = leaseFonts(selection, next);
             try {
                 await lease.ready;
-                warmedShells.add(key);
+            } finally {
+                lease.release();
+            }
+        },
+        async preloadRuns(runs: TextRun[], next: FontRegion = region) {
+            if (!next || stopped || !manifests[next]) return;
+            const selection = select(next, await source(next), runs);
+            if (!selection.length) return;
+            const lease = leaseFonts(selection, next);
+            try {
+                const prepared = await lease.ready;
+                if (!stopped) lease.activate(prepared);
             } finally {
                 lease.release();
             }
@@ -551,7 +519,9 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
                 // background result from changing a newer language.
                 const background = [
                     ...new Set([
-                        ...[...areas].filter((area) => !snapshot.includes(area)),
+                        ...[...areas].filter(
+                            (area) => !snapshot.includes(area),
+                        ),
                         ...[...areas].filter((area) => area.isShell()),
                     ]),
                 ];
@@ -595,13 +565,12 @@ export const createFontRegions = (doc: Document, initialRegion: FontRegion) => {
         stop() {
             stopped = true;
             generation++;
-            warmedShells.clear();
             releaseWarm();
             for (const area of [...areas]) area.stop();
-            for (const entry of batches.values())
+            for (const entry of parts.values())
                 for (const font of entry.prepared?.fonts || [])
                     doc.fonts.delete(font);
-            batches.clear();
+            parts.clear();
         },
     };
 };

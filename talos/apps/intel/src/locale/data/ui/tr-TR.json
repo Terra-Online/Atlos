@@ -31,7 +31,8 @@
       "mission": "Görev",
       "auto": "İlerleme",
       "shop": "Mağaza",
-      "invstgt": "Araştırma"
+      "invstgt": "Araştırma",
+      "unknown": "Açılma koşulu doğrulanmadı"
     },
     "label": {
       "missionSequence": "Görev",

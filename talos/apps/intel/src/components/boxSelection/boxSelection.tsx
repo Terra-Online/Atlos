@@ -1,6 +1,6 @@
-import { useSelectionVisibility } from '@main/component/sideBar/useSelectionVisibility';
+import { useSelectionVisibility } from '@main/component/selection/useSelectionVisibility';
 import { useRef, type RefObject } from 'react';
-import { useScopedBoxSelection } from '@main/component/sideBar/useScopedBoxSelection';
+import { useScopedBoxSelection } from '@main/component/selection/useScopedBoxSelection';
 import styles from './boxSelection.module.scss';
 
 interface BoxSelectionProps {

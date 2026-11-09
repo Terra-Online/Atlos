@@ -58,7 +58,7 @@ export const resolveSubregionAtLocation = (
 ): string | null => {
     const region = REGION_DICT[regionId];
     if (!region) return null;
-    const pixel = map.project(location, region.maxZoom);
+    const pixel = map.project(location, region.coordZoom);
     const areas = region.subregions.map((id) => SUBREGION_DICT[id]).filter(Boolean);
     const polygons = areas.filter((area) => area.polygon?.length);
     // Do not fall back to bounding boxes when precise geometry exists but misses.

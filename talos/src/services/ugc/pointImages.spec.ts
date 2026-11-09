@@ -39,3 +39,29 @@ describe('combined detail client', () => {
         expect(fetcher.mock.calls.some(([url]) => String(url).includes('publicOnly=1'))).toBe(true);
     });
 });
+
+describe('resource batch isolation', () => {
+    it('keeps public and authenticated requests and caches separate; mine remains uncached', async () => {
+        const client = await import('./client');
+        fetcher.mockImplementation(() => Promise.resolve(Response.json({ items: [image] })));
+        await Promise.all([
+            client.listPublicUGCImages('m'), client.listUGCImages('m'), client.listUGCMyImages('m'),
+        ]);
+        expect(fetcher).toHaveBeenCalledTimes(3);
+        const publicCall = fetcher.mock.calls.find(([url]) => String(url).includes('publicOnly=1'));
+        expect(publicCall?.[1]).toEqual({ credentials: 'omit' });
+        for (const [url, init] of fetcher.mock.calls) {
+            if (!String(url).includes('publicOnly=1')) expect(init).toMatchObject({ credentials: 'include' });
+        }
+        await Promise.all([
+            client.listPublicUGCImages('m'), client.listUGCImages('m'), client.listUGCMyImages('m'),
+        ]);
+        expect(fetcher).toHaveBeenCalledTimes(4);
+        expect(fetcher.mock.calls[3][0]).toContain('/images/mine?');
+        client.invalidateUGCImageCache('m');
+        await client.listPublicUGCImages('m');
+        expect(fetcher).toHaveBeenCalledTimes(4);
+        await client.listUGCImages('m');
+        expect(fetcher).toHaveBeenCalledTimes(5);
+    });
+});

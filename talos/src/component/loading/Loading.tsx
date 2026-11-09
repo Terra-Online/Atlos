@@ -12,37 +12,30 @@ const Loading = ({
     const { isMobile } = useDevice();
     const [progress, setProgress] = useState(0);
     const [showCompletionEffect, setShowCompletionEffect] = useState(false);
-    const intervalRef = useRef<number | null>(null);
+    const completion = useRef(completeController);
+    completion.current = completeController;
 
     useEffect(() => {
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-        }
-
-        intervalRef.current = window.setInterval(() => {
-            setProgress((prev) => {
-                if (prev < maxProgress) {
-                    return prev + 1;
-                }
-
-                if (maxProgress === 100) {
-                    setTimeout(() => {
-                        setShowCompletionEffect(true);
-                        setTimeout(() => {
-                            completeController?.();
-                        }, 450); // 与CSS动画持续时间保持一致
-                    }, 300);
-                }
-                return maxProgress;
-            });
+        const interval = window.setInterval(() => {
+            setProgress((prev) => prev < maxProgress ? prev + 1 : maxProgress);
         }, 30);
+        return () => window.clearInterval(interval);
+    }, [maxProgress]);
 
+    useEffect(() => {
+        if (progress !== 100 || maxProgress !== 100) return undefined;
+        let finish: number | undefined;
+        // Preserve the old final tick plus 300ms pause, but own one completion
+        // sequence instead of scheduling side effects from every state updater.
+        const start = window.setTimeout(() => {
+            setShowCompletionEffect(true);
+            finish = window.setTimeout(() => completion.current?.(), 450);
+        }, 330);
         return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
+            window.clearTimeout(start);
+            window.clearTimeout(finish);
         };
-    }, [completeController, maxProgress]);
+    }, [progress, maxProgress]);
 
     return (
         <div className={styles.loadingContainer}>

@@ -678,5 +678,8 @@
       "research_tales": "기이한 이야기",
       "research_gm02m27": "어느 과학 연구 도시에 관한 조사 보고서"
     }
+  },
+  "glossary": {
+    "optical_fog": "<span class=\"highlight\">광학 안개 그림자</span>: 공격을 받으면 바로 사라집니다."
   }
 }

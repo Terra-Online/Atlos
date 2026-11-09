@@ -1,0 +1,52 @@
+import type { ComponentProps } from 'react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import type Language from '@main/component/shared/language/language';
+import Header from './header';
+import { flush } from '../../testSetup';
+import { installResizeObserver } from '../../../../../test-support/browser';
+
+const runtime = vi.hoisted(() => ({ init: vi.fn(), cleanup: vi.fn(), toggle: vi.fn(), prepare: vi.fn(), commit: vi.fn(), fonts: vi.fn(), load: vi.fn(), pending: undefined as Promise<void> | undefined }));
+vi.mock('@main/platform/useTheme', () => ({ useTheme: () => 'dark' }));
+vi.mock('@main/platform/theme', () => ({ initTheme: runtime.init, cleanupTheme: runtime.cleanup, toggleTheme: runtime.toggle }));
+vi.mock('@main/locale', () => ({ useTranslateUI: () => (key: string) => key, getFontRegionForLocale: (locale: string) => locale === 'ja-JP' ? 'jp' : undefined }));
+vi.mock('@main/locale/fontLoader', () => ({ preloadFontRegion: runtime.fonts }));
+vi.mock('@hub/locale', () => ({ useTranslateUI: () => (key: string) => key, preloadLocale: runtime.prepare, applyLocaleData: runtime.commit }));
+vi.mock('@main/locale/useFontRegion', () => ({ useFontRegion: () => () => {} }));
+vi.mock('@main/component/shared/language/language', async () => {
+    runtime.load();
+    await runtime.pending;
+    return { default: (props: ComponentProps<typeof Language>) => props.open ? <button onClick={() => { props.preloadFonts?.('ja-JP'); props.commitLocale?.('ja-JP', { fixture: true }); props.onChange?.(false); }}>Choose Japanese</button> : null };
+});
+
+beforeEach(() => { installResizeObserver(); });
+afterEach(() => { cleanup(); vi.clearAllMocks(); vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+it('loads language only on click, lets the pending dialog close, and commits to the independent hub catalog after reopening', async () => {
+    let release!: () => void;
+    runtime.pending = new Promise<void>((resolve) => { release = resolve; });
+    const refresh = vi.fn();
+    const view = render(<Header busy onRefresh={refresh} />);
+    expect(runtime.load).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'userHub.refresh' }));
+    expect(refresh).not.toHaveBeenCalled();
+    view.rerender(<Header busy={false} onRefresh={refresh} />);
+    fireEvent.click(screen.getByRole('button', { name: 'userHub.refresh' }));
+    expect(refresh).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: 'headbar.lightmode' }));
+    expect(runtime.toggle).toHaveBeenCalledOnce();
+    await flush(() => { fireEvent.click(screen.getByRole('button', { name: 'headbar.language' })); });
+    await vi.waitFor(() => expect(runtime.load).toHaveBeenCalledOnce());
+    expect(screen.getByRole('status').textContent).toBe('common.loading');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await flush(release);
+    expect(screen.queryByText('Choose Japanese')).toBeNull();
+    await flush(() => { fireEvent.click(screen.getByRole('button', { name: 'headbar.language' })); });
+    await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Choose Japanese' })).toBeTruthy());
+    await flush(() => { fireEvent.click(screen.getByRole('button', { name: 'Choose Japanese' })); });
+    expect(runtime.commit).toHaveBeenCalledWith('ja-JP', { fixture: true });
+    expect(runtime.fonts).toHaveBeenCalledWith('jp');
+    expect(screen.queryByText('Choose Japanese')).toBeNull();
+    view.unmount();
+    expect(runtime.init).toHaveBeenCalledOnce();
+    expect(runtime.cleanup).toHaveBeenCalledOnce();
+});

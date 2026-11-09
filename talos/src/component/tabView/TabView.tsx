@@ -6,6 +6,7 @@ export interface TabViewItem {
     key: string;
     label: React.ReactNode;
     description?: React.ReactNode;
+    disabled?: boolean;
 }
 
 interface TabViewProps {
@@ -82,6 +83,7 @@ const TabView: React.FC<TabViewProps> = ({
                         key={item.key}
                         role="tab"
                         aria-selected={activeKey === item.key}
+                        disabled={item.disabled}
                         ref={(el) => {
                             if (el) tabRefs.current.set(item.key, el);
                             else tabRefs.current.delete(item.key);

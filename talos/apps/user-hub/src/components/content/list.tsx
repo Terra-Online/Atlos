@@ -1,6 +1,6 @@
 import { useFontRegion } from '@main/locale/useFontRegion';
 import { useEffect, useState } from 'react';
-import { CommentContent } from '@main/component/detail/comment/emoji';
+import { CommentContent } from '@main/component/shared/comments/CommentContent';
 import { useTranslateGame } from '@main/locale';
 import { useLocale, useTranslateUI } from '@hub/locale';
 import PopoverTooltip from '@main/component/popover/popover';
@@ -117,6 +117,7 @@ export default function List({
 }) {
     const t = useTranslateUI();
     const game = useTranslateGame();
+    const locale = useLocale();
     const [markers, setMarkers] = useState<Record<string, IMarkerData>>({});
     useEffect(() => {
         if (kind !== 'comment' || !items.length) return;
@@ -214,7 +215,7 @@ export default function List({
                                         <time dateTime={item.createdAt}>
                                             {formatDate(
                                                 item.createdAt,
-                                                'zh-CN',
+                                                locale,
                                             )}
                                         </time>
                                         {point && (

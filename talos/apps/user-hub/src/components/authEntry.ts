@@ -5,10 +5,13 @@ let pending: Promise<typeof AuthGate> | undefined;
 
 export const getAuthGate = () => gate;
 
-// The overview request and renderer share one load. Keep failures for the loader's
-// retry UI; a full reload also recovers a stale or failed module URL.
+// Share in-flight loads and successful modules. A rejected transport attempt
+// must be released so an active loader can try again.
 export const loadAuthGate = (): Promise<typeof AuthGate> =>
     (pending ??= import('./authGate').then((module) => {
         gate = module.default;
         return gate;
+    }).catch((error: unknown) => {
+        pending = undefined;
+        throw error;
     }));

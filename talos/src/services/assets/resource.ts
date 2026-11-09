@@ -37,7 +37,11 @@ export function getResourceUrl(property: string, key: string, ext: string = 'web
     return `${prefix}/assets/images/${property}/${key}.${ext}`;
 }
 
-export const getTileResourceUrl = (path:string) => getResourceUrl('tiles', path);
+export type TileSource = 'clips' | 'satellite';
+
+/** Accept existing /clips paths as well as paths relative to the tile source. */
+export const getTileResourceUrl = (path: string, source: TileSource = 'clips') =>
+    getResourceUrl('tiles', `/${source}/${path.replace(/^\/?(?:clips\/|satellite\/)?/, '')}`);
 // remove get MarkerIconUrl - use getItemIconUrl with _spot suffix instead
 export const getItemIconUrl = (key:string, ext = 'webp') => {
     if (key && key.endsWith('_spot')) {

@@ -42,6 +42,8 @@
   "gm02m18": "Nameless Blades II",
   "gm02m19": "Nameless Blades III",
   "gm02m24": "Miscellanies on Rampage",
+  "gm02m27d5": "Bell of Recollection: Afternotes",
+  "gm02m27d5_q#4": "Gather all Suiming <span class=\"highlight\">clues</span> for the <span class=\"highlight\">Archives</span>",
   "group": {
     "intel": "Findings",
     "central": "Nexus Files",
@@ -648,6 +650,7 @@
   "sm1l7m1": "Insider Threat",
   "sm2l1m5": "Always Running",
   "sm2l2m3": "The Old Man and the Tide I",
+  "sm2l3m3": "Patron of the Spring III",
   "sm2l3m6": "Seekers of the Lost Treasure III",
   "sm2l6m1": "Deep Vaulted Steel",
   "sns_chat_nfm_0_1": "Camp Communication Group",

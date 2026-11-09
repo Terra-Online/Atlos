@@ -9,6 +9,7 @@ import {
     type Lang,
 } from '@main/lib/i18n/lang';
 import { switchFontRegion } from '@main/locale/fontLoader';
+import { retryLoad } from '@main/lib/async/retryLoad';
 
 type Catalog = Record<string, unknown>;
 type JsonModule = { default: Catalog };
@@ -61,9 +62,11 @@ const loadLocale = (locale: Lang): Promise<Bundle> => {
 };
 
 const beginRequest = createRequestGuard();
-const loadAndSet = async (locale: Lang) => {
+const loadAndSet = async (locale: Lang, retryCatalog = false) => {
     const isCurrent = beginRequest();
-    const dataPromise = loadLocale(locale);
+    const dataPromise = retryCatalog
+        ? retryLoad(() => loadLocale(locale), { onRetry: (error) => console.warn('Initial user-hub locale unavailable; retrying:', error) })
+        : loadLocale(locale);
     const fontsPromise = switchFontRegion(getFontRegionForLocale(locale), isCurrent);
     const [dataResult, fontsResult] = await Promise.allSettled([
         dataPromise,
@@ -125,4 +128,4 @@ export const applyLocaleData = (locale: string, data: Bundle) => {
 
 export const preloadLocale = (locale: string) => loadLocale(normalizeLang(locale));
 
-export const i18nInitPromise = loadAndSet(getCurrentLocale());
+export const i18nInitPromise = loadAndSet(getCurrentLocale(), true);

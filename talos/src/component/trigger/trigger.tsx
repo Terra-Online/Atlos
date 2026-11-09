@@ -32,6 +32,8 @@ const Trigger = ({
     return (
         <div className={`${styles.trigger} ${disabled ? styles.disabled : ''} ${className}`}>
             <button
+                type="button"
+                aria-pressed={isActive}
                 className={`${styles.triggerButton} ${isActive ? styles.active : ''}`}
                 onClick={handleClick}
                 disabled={disabled}

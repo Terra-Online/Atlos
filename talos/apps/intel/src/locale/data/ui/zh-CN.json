@@ -31,7 +31,8 @@
       "mission": "跟随任务",
       "auto": "自动解锁",
       "shop": "商店购买",
-      "invstgt": "报告摘要"
+      "invstgt": "报告摘要",
+      "unknown": "解锁条件待确认"
     },
     "label": {
       "missionSequence": "任务序列",

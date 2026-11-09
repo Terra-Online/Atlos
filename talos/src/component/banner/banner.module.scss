@@ -28,11 +28,16 @@ $banner-mobile-width: 80vw;
     left: calc(50% - calc($banner-desktop-width / 2));
     z-index: 9999;
     color: var(--banner-text);
-    transition: all .35s $adagio-curve;
-    animation: slideDown 0.2s ease-out;
+    transform: translateY(-100%);
+    opacity: 0;
+    transition: all .35s $adagio-curve, transform .2s ease-out, opacity .2s ease-out;
+    &[data-state='open'] {
+        transform: translateY(0);
+        opacity: 1;
+    }
     &[data-closing='true'] {
         pointer-events: none;
-        animation: slideUp 0.2s ease-in forwards;
+        transition: all .35s $adagio-curve, transform .2s ease-in, opacity .2s ease-in;
     }
     &::before {
         content: "";
@@ -127,27 +132,5 @@ $banner-mobile-width: 80vw;
     .bannerContainer::before {
         border-radius: 2.5rem;
         corner-shape: superellipse(2.5);
-    }
-}
-
-@keyframes slideDown {
-    from {
-        transform: translateY(-100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-@keyframes slideUp {
-    from {
-        transform: translateY(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateY(-100%);
-        opacity: 0;
     }
 }

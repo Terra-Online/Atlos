@@ -44,7 +44,7 @@ const isOverElement = (el: HTMLElement, x: number, y: number): boolean => {
 export const LabelTool: React.FC<{ map: L.Map }> = ({ map }) => {
     const currentRegionKey = useRegion((s) => s.currentRegionKey) ?? DEFAULT_REGION;
     const regionCode = useMemo(() => mapRegionKeyToLocaleCode(currentRegionKey), [currentRegionKey]);
-    const maxZoom = REGION_DICT[currentRegionKey]?.maxZoom ?? REGION_DICT[DEFAULT_REGION].maxZoom;
+    const coordZoom = REGION_DICT[currentRegionKey]?.coordZoom ?? REGION_DICT[DEFAULT_REGION].coordZoom;
 
     const [collapsed, setCollapsed] = useState(false);
     const [zoom, setZoom] = useState(() => map.getZoom());
@@ -168,7 +168,7 @@ export const LabelTool: React.FC<{ map: L.Map }> = ({ map }) => {
         for (const label of labels) {
             if (label.type !== showType) continue;
             const [x, y] = label.point;
-            const latLng = map.unproject([x, y], maxZoom);
+            const latLng = map.unproject([x, y], coordZoom);
             const place = idToPlace.get(label.id);
             const text = place?.label ?? (label.type === 'site' ? label.site : label.sub);
 
@@ -179,7 +179,7 @@ export const LabelTool: React.FC<{ map: L.Map }> = ({ map }) => {
             });
             m.on('dragend', () => {
                 const ll = m.getLatLng();
-                const pt = map.project(ll, maxZoom);
+                const pt = map.project(ll, coordZoom);
                 // Leaflet draggable can fire dragend on click; avoid no-op updates.
                 const [ox, oy] = label.point;
                 if (Math.abs(pt.x - ox) < 0.01 && Math.abs(pt.y - oy) < 0.01) return;
@@ -187,7 +187,7 @@ export const LabelTool: React.FC<{ map: L.Map }> = ({ map }) => {
             });
             editLayerRef.current.addLayer(m);
         }
-    }, [labels, regionCode, zoom, map, maxZoom, store, idToPlace, hasSubLevel, showRegionLabels]);
+    }, [labels, regionCode, zoom, map, coordZoom, store, idToPlace, hasSubLevel, showRegionLabels]);
 
     // Global drag listeners
     useEffect(() => {
@@ -221,7 +221,7 @@ export const LabelTool: React.FC<{ map: L.Map }> = ({ map }) => {
             const overMap = isOverElement(mapEl, e.clientX, e.clientY);
             if (overMap && regionCode) {
                 const latLng = map.mouseEventToLatLng(e as unknown as MouseEvent);
-                const pt = map.project(latLng, maxZoom);
+                const pt = map.project(latLng, coordZoom);
 
                 if (dragging.kind === 'sub') {
                     store.upsertLabel({
@@ -255,7 +255,7 @@ export const LabelTool: React.FC<{ map: L.Map }> = ({ map }) => {
             window.removeEventListener('mousemove', move);
             window.removeEventListener('mouseup', up);
         };
-    }, [dragging, map, regionCode, maxZoom, store]);
+    }, [dragging, map, regionCode, coordZoom, store]);
 
     const exportText = useMemo(() => serializeLabelData(data), [data]);
 

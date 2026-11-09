@@ -71,6 +71,8 @@ const rootFileNames = async () => {
 const copyRootFiles = async () => {
   const files = await rootFileNames();
   await Promise.all(files.map(copyIfExists));
+  // Only copy the SPA entry; satellite imagery stays on the resource CDN.
+  await fs.copy(path.resolve(distDir, 'satellite/index.html'), path.resolve(outputDir, 'satellite/index.html'));
   return files.length;
 };
 
@@ -183,6 +185,7 @@ const writePagesConfigFiles = async () => {
 
 // Validate the whole site before replacing a previous Pages package.
 await verifyArtifact(distDir, { channel, skipIntel: shouldSkipIntel }, target);
+await fs.access(path.resolve(distDir, 'satellite/index.html'));
 await verifyOutput(ROOT, outputDir, 'pages');
 const relativeOutput = path.relative(distDir, outputDir);
 const relativeSource = path.relative(outputDir, distDir);

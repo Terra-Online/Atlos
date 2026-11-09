@@ -2,10 +2,12 @@ import { setLocale } from '@/locale';
 import {
     findMarkerById,
     findUniqueArchiveMarkerByType,
+    getMarkerSubregion,
+    getUniqueArchivePointId,
     type IMarkerData,
     MARKER_TYPE_DICT,
 } from '@/data/marker';
-import { REGION_DICT } from '@/data/map';
+import { DEFAULT_REGION, REGION_DICT } from '@/data/map';
 import useRegion from '@/store/region';
 import { useMarkerStore } from '@/store/marker';
 import { completeCurrentUserGuide } from '@/store/userGuide';
@@ -16,7 +18,7 @@ import { SUBREGION_TO_REGION_MAP } from './protocol';
 import { getCurrentLocale } from './runtime';
 import { decodePointIdToken } from './pointToken';
 import { buildCleanUrl } from './cleanup';
-import { parseUrlState, type ParsedUrlState } from './parse';
+import { parseUrlState, type ParsedUrlState, type UrlLocationLike } from './parse';
 
 let suppressInitialAutoOverlays = false;
 
@@ -45,6 +47,34 @@ const resolveArchiveTypeShareTarget = async (
     if (!point) return null;
     const regionKey = SUBREGION_TO_REGION_MAP[point.subregId];
     return regionKey ? { point, regionKey } : null;
+};
+
+/** Resolve the startup data target without committing routing or store changes. */
+export const resolveInitialRegion = async (location: UrlLocationLike): Promise<string> => {
+    const state = parseUrlState(location);
+    const stored = useRegion.getState().currentRegionKey;
+    const current = REGION_DICT[stored] ? stored : DEFAULT_REGION;
+    const requested = state.regionKey && REGION_DICT[state.regionKey] ? state.regionKey : null;
+    const regionForPoint = async (id: string) => {
+        const subregion = await getMarkerSubregion(id);
+        return subregion ? SUBREGION_TO_REGION_MAP[subregion] : undefined;
+    };
+    const tokenId = state.pointToken ? decodePointIdToken(state.pointToken) : null;
+    if (tokenId) {
+        const target = await regionForPoint(tokenId);
+        if (target) return target;
+    }
+    if (state.pointId) {
+        const target = await regionForPoint(state.pointId);
+        if (target) return target;
+        if (state.filterParam) return requested || current;
+    } else if (state.typeKey) {
+        const id = await getUniqueArchivePointId(state.typeKey);
+        const target = id ? await regionForPoint(id) : null;
+        if (target) return target;
+    }
+    if (state.coordinate && requested) return requested;
+    return requested && current === DEFAULT_REGION ? requested : current;
 };
 
 const applyLanguage = async (state: ParsedUrlState): Promise<void> => {

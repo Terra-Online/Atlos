@@ -1,9 +1,10 @@
+import { EntryButton } from '@/component/button/EntryButton';
 import { useEffect, useRef, type RefObject } from 'react';
-import { Access, AccessButton } from '@main/component/login/access';
-import { notifyOemAuthModalDismissed } from '@main/component/login/authEvents';
-import { useIdCardAuthController } from '@main/component/login/useIdCardAuthController';
-import { useIdCardProfileViewModel } from '@main/component/login/useIdCardProfileViewModel';
-import ProfileModal from '@main/component/login/profile/profile';
+import { Access } from '@main/component/shared/account/access';
+import { notifyOemAuthModalDismissed } from '@main/component/shared/account/authEvents';
+import { useIdCardAuthController } from '@main/component/shared/account/useIdCardAuthController';
+import { useIdCardProfileViewModel } from '@main/component/shared/account/useIdCardProfileViewModel';
+import ProfileModal from '@main/component/shared/account/profile/profile';
 import { useTranslateUI as useTranslateMainUI } from '@main/locale';
 
 export default function AuthGate({
@@ -59,7 +60,7 @@ export default function AuthGate({
 
     return (
         <>
-            <AccessButton
+            <EntryButton
                 label={main('idcard.auth.login')}
                 onClick={() => {
                     attemptedSession.current = null;

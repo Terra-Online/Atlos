@@ -22,18 +22,27 @@ const normalizeRawMarker = (raw, subregionId) => {
 export const readManualOverrides = async () =>
   JSON.parse(await fs.readFile(MANUAL_OVERRIDE_FILE, 'utf8'));
 
-export const loadRawMarkers = async () => {
-  const entries = [];
+export const loadMarkerShards = async () => {
+  const shards = [];
   for (const file of (await fs.readdir(MARKER_DIR)).filter((name) => name.endsWith('.json')).sort()) {
     const subregionId = file.replace(/\.json$/, '');
     const rows = JSON.parse(await fs.readFile(path.join(MARKER_DIR, file), 'utf8'));
+    const markers = [];
     for (const raw of rows) {
       const marker = normalizeRawMarker(raw, subregionId);
-      if (marker) entries.push(marker);
+      if (marker) markers.push(marker);
     }
+    const pointIds = rows.flatMap((raw) => {
+      const id = Array.isArray(raw) ? raw[0] : raw?.id;
+      return id == null ? [] : [String(id)];
+    });
+    shards.push({ subregionId, markers, pointIds });
   }
-  return entries;
+  return shards;
 };
+
+export const loadRawMarkers = async () =>
+  (await loadMarkerShards()).flatMap((shard) => shard.markers);
 
 export const loadEffectiveMarkers = async ({ typeMap, subregionIds } = {}) => {
   const entries = await loadRawMarkers();

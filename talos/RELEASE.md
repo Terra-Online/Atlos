@@ -127,31 +127,33 @@ release. Pages receives the complete composed package. CN uploads the selected
 app's OSS resources first, then swaps the composed complete server directory.
 App uploads do not reconcile or prune main-site assets or tiles.
 
-Release commands take a local `.cache/release.lock` before modifying build
-outputs. Publications additionally acquire an exclusive object at
-`<resource-prefix>/_release/<target>-<channel>/lock.json`, serializing releases
-from different checkouts/hosts. R2 uses conditional PUT; OSS uses
-`x-oss-forbid-overwrite`, so the publishing credentials need bucket-versioning
-read access and the OSS bucket must have versioning **never enabled**.
-Locks never expire automatically. If a process is killed or a lock request has
-an uncertain network outcome, inspect the recorded host/PID and confirm that
-no publisher is running before removing the local lock or the exact remote
-lock object (use the existing rclone remote for R2). Never remove a live lock.
+Release commands no longer create or consult local `.cache/release.lock` or
+remote `_release/<target>-<channel>/lock.json` objects. Legacy lock files are
+ignored; interrupted and failed releases can be retried without manual unlocks.
+Run builds and releases from one checkout serially, and coordinate publications
+to the same target/channel across hosts. `deploy:all` still manages its two
+independent site pipelines in parallel.
 
-Remote state becomes `publishing` before uploads begin and becomes `ready`
-only after entrypoint and entry JS/CSS HTTP/MIME/content checks succeed and the
-new snapshot is saved. A failed release may have partially updated the remote;
-it cannot serve as an app baseline. After remote mutation starts, failures also
-retain the remote lock because an interrupted SSH/upload may still be running.
-Confirm it has stopped, remove its lock, and complete a full publish to recover.
-A transport-only `--only` publication records `partial`
-and requires a full publish to reestablish a baseline.
+Ctrl+C and SIGTERM cancel the command, terminate its child command trees and
+prevent subsequent build/upload/Worker stages from starting. On POSIX systems,
+unresponsive command groups are killed after five seconds; network calls cannot
+keep a cancelled CLI running beyond the six-second shutdown deadline.
 
-Use the unified commands for **all** releases. Direct transport scripts,
-manual Wrangler deployments and raw file uploads bypass coordination. Existing
-out-of-band HTML changes are detected, but a publisher bypassing the lock can
-still race a coordinated publication. Dry-run neither acquires locks nor checks
-the remote baseline. No command in this workflow changes hosting configuration.
+Remote state becomes `publishing` before uploads begin and becomes `ready` only
+after entrypoint and entry JS/CSS HTTP/MIME/content checks succeed and the new
+snapshot is saved. A failed release may have partially updated the remote; it
+cannot serve as an app baseline. Complete a full publish to recover; no lock
+cleanup is required. An already submitted Pages deployment or remote SSH
+operation may still complete after the local command is cancelled; cancellation
+does not roll back externally accepted work. A transport-only `--only`
+publication records `partial` and requires a full publish to reestablish a
+baseline.
+
+Use the unified commands for **all** releases. Direct transport scripts, manual
+Wrangler deployments and raw file uploads bypass release checks. Existing
+out-of-band HTML changes are detected; simultaneous publications are not
+serialized. Dry-run does not check the remote baseline. No command in this
+workflow changes hosting configuration.
 
 ## OG images and Workers
 

@@ -1,4 +1,4 @@
-// Link rectangle bounds in region maxZoom pixel space: [[x1, y1], [x2, y2]]
+// Link rectangle bounds in region coordZoom pixel space: [[x1, y1], [x2, y2]]
 // Note: Links are always square (1:1 aspect ratio), coordinates rounded to 3 decimal places
 export type LinkBounds = [[number, number], [number, number]];
 

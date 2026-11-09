@@ -678,5 +678,8 @@
       "research_tales": "Anthologies et archives ingénieuses",
       "research_gm02m27": "RE : Une ville de R&D"
     }
+  },
+  "glossary": {
+    "optical_fog": "<span class=\"highlight\">Brume optique</span>: Attaquez-en une pour la dissiper."
   }
 }

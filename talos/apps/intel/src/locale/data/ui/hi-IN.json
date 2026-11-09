@@ -31,7 +31,8 @@
       "mission": "मिशन",
       "auto": "प्रगति",
       "shop": "दुकान",
-      "invstgt": "जाँच"
+      "invstgt": "जाँच",
+      "unknown": "अनलॉक की शर्त की पुष्टि नहीं हुई"
     },
     "label": {
       "missionSequence": "मिशन",

@@ -31,7 +31,8 @@ export const refreshSessionUser = (expectedEmail?: string): Promise<SessionUser 
         .then((user) => {
             const state = useAuthStore.getState();
             if (state.sessionVersion !== version) return state.sessionUser;
-            state.setSessionUser(user);
+            if (expectedEmail) state.setSessionUser(user);
+            else state.updateSessionUser(user);
             lastAttemptSucceeded = true;
             revalidationRequested = false;
             return user;
