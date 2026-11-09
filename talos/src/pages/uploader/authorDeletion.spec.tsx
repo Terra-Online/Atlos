@@ -77,7 +77,6 @@ function setup(own = true) {
                 applyServerImage: () => {},
                 viewerOpen,
                 setViewerOpen,
-                refreshPublicImage: async () => {},
             },
             {
                 uploading: false,

@@ -1,4 +1,3 @@
-import { useTranslateUI } from '@/locale';
 import { useReportSync } from '@/component/ugc/useReportSync';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuthStore } from '@/store/auth';
@@ -43,7 +42,6 @@ const getToggleTask = (
 };
 
 export type ImageActionsState = {
-    reportError: string;
     actionPending: boolean;
     deleteConfirming: boolean;
     cancelDeleteConfirmation: () => void;
@@ -53,8 +51,6 @@ export type ImageActionsState = {
 };
 
 const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadState): ImageActionsState => {
-    const tUI = useTranslateUI();
-    const [reportError, setReportError] = useState('');
     const user = useAuthStore((state) => state.sessionUser);
     const accountVersion = useAuthStore((state) => state.sessionVersion);
     const isAuthenticated = Boolean(user);
@@ -73,7 +69,6 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
 
     const {
         active,
-        refreshPublicImage,
         isOwnActive,
         applyServerImage,
         patchImageById,
@@ -141,21 +136,22 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
     const { start: syncFlag } = useReportSync({
         scope: `${active?.markerId ?? ''}:${accountVersion}`,
         delay: TOGGLE_SYNC_DELAY_MS,
-        send: (target, desired) => toggleUGCImageFlag(target.id, desired, target.snapshotId),
-        apply: (target, patch) => patchImageById(target.id, (image) => image.snapshotId === target.snapshotId ? { ...image, ...patch } : image),
-        rollback: (target, original) => patchImageById(target.id, (image) => image.snapshotId === target.snapshotId ? {
-            ...image, flagged: original.flagged, status: original.status,
-        } : image),
-        conflict: async (target) => {
-            setReportError(tUI('detail.errors.reportVersionChanged'));
-            await refreshPublicImage(target.id);
-        },
+        send: (target, desired) => toggleUGCImageFlag(target.id, desired),
+        apply: (target, patch) => patchImageById(target.id, (image) => ({
+            ...image,
+            ...patch,
+            status: image.status === 'active' || image.status === 'flagged' ? patch.status ?? image.status : image.status,
+        })),
+        rollback: (target, original) => patchImageById(target.id, (image) => ({
+            ...image,
+            flagged: original.flagged,
+            status: image.status === 'active' || image.status === 'flagged' ? original.status : image.status,
+        })),
     });
 
     useEffect(() => {
         currentScopeRef.current = scope;
         setActionPending(false);
-        setReportError('');
         cancelDeleteConfirmation();
         const upvotes = upvoteTasksRef.current;
         return () => {
@@ -203,20 +199,19 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
     }, [active, isAuthenticated, isCurrent, patchImageById, scheduleUpvoteSync]);
 
     const handleToggleFlag = useCallback(() => {
-        if (!active?.snapshotId || isOwnActive || !isCurrent()) return;
+        if (!active || isOwnActive || !isCurrent()) return;
         if (!isAuthenticated) {
             openOemAuthModal('login');
             return;
         }
         const imageId = active.id;
-        setReportError('');
         const nextFlagged = !active.flagged;
         patchImageById(imageId, (image) => ({
             ...image,
             flagged: nextFlagged,
             status: nextFlagged ? 'flagged' : image.status === 'flagged' ? 'active' : image.status,
         }));
-        syncFlag({ id: imageId, snapshotId: active.snapshotId }, { flagged: Boolean(active.flagged), status: active.status }, nextFlagged);
+        syncFlag({ id: imageId }, { flagged: Boolean(active.flagged), status: active.status }, nextFlagged);
     }, [active, isAuthenticated, isCurrent, isOwnActive, patchImageById, syncFlag]);
 
     const handleDelete = useCallback(async () => {
@@ -265,7 +260,6 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
     }, [actionPending, active, images, isAuthenticated, isCurrent, isOwnActive, lastSubmission, myImages, deleteConfirmation, requestedImage, selectedImageId, setImages, setLastSubmission, setMyImages, setRequestedImage, setSelectedImageId, setViewerOpen, viewerOpen]);
 
     return {
-        reportError,
         actionPending,
         deleteConfirming: Boolean(active && deleteConfirmation?.imageId === active.id),
         cancelDeleteConfirmation,

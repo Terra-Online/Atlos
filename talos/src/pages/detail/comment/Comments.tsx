@@ -17,7 +17,6 @@ import type { IMarkerData } from '@/data/marker';
 import {
     editUGCComment,
     toggleUGCCommentFlag,
-    getUGCCommentById,
     invalidateUGCCommentCache,
     UGCClientError,
     listUGCComments,
@@ -43,8 +42,6 @@ import {
     isReviewing,
     isVisible,
     patchTree,
-    removeTree,
-    clearTrans,
     voteDelta,
 } from '@/pages/detail/comment/commentsTree';
 import {
@@ -233,7 +230,7 @@ const CommentItem = memo(({
                 label: comment.flagged ? tUI('detail.viewer.unflag') : tUI('detail.viewer.flag'),
                 icon: <FlagIcon />,
                 active: Boolean(comment.flagged),
-                disabled: !comment.snapshotId || !canInteract || !canModerate || actionPending,
+                disabled: !canInteract || !canModerate || actionPending,
                 tooltipKey: `flag:${comment.flagged ? 'on' : 'off'}:${comment.id}`,
                 onClick: () => onFlag(comment),
             });
@@ -442,34 +439,21 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
         return () => { editScopeRef.current = null; };
     }, [point.id, ownerVersion]);
 
-    const reportScopeRef = useRef(point.id);
-    reportScopeRef.current = point.id;
     const { start: syncVote, clear: clearVote } = useVoteSync(COMMENT_TOGGLE_SYNC_DELAY_MS, patchComment);
     const { start: syncFlag, clear: clearFlag } = useReportSync({
         scope: `${point.id}:${accountVersion}`,
         delay: COMMENT_TOGGLE_SYNC_DELAY_MS,
-        send: (target, desired) => toggleUGCCommentFlag(target.id, desired, target.snapshotId),
-        apply: (target, patch) => patchComment(target.id, (item) => item.snapshotId === target.snapshotId ? { ...item, ...patch } : item),
-        rollback: (target, original) => patchComment(target.id, (item) => item.snapshotId === target.snapshotId ? {
-            ...item, flagged: original.flagged, status: original.status,
-        } : item),
-        conflict: async (target) => {
-            setError(tUI('detail.errors.reportVersionChanged'));
-            const accountVersion = useAuthStore.getState().sessionVersion;
-            const current = () => reportScopeRef.current === point.id && useAuthStore.getState().sessionVersion === accountVersion;
-            invalidateUGCCommentCache(point.id);
-            try {
-                // The direct read bypasses list caches and any older list request in flight.
-                const context = await getUGCCommentById(point.id, target.id);
-                if (!current()) return;
-                const fresh = context.path.find((item) => item.id === target.id);
-                if (fresh) patchComment(target.id, (item) => ({ ...clearTrans(item), ...fresh, replies: item.replies }));
-            } catch (error) {
-                if (current() && error instanceof UGCClientError && error.status === 404) {
-                    setComments((items) => removeTree(items, target.id).comments);
-                }
-            }
-        },
+        send: (target, desired) => toggleUGCCommentFlag(target.id, desired),
+        apply: (target, patch) => patchComment(target.id, (item) => ({
+            ...item,
+            ...patch,
+            status: isVisible(item.status) ? patch.status ?? item.status : item.status,
+        })),
+        rollback: (target, original) => patchComment(target.id, (item) => ({
+            ...item,
+            flagged: original.flagged,
+            status: isVisible(item.status) ? original.status : item.status,
+        })),
     });
     const clearSync = useCallback((commentIds: Set<string>) => {
         clearVote(commentIds);
@@ -781,14 +765,14 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
     }, [patchComment, requireAuth, syncVote]);
 
     const handleFlag = useCallback((comment: UGCComment) => {
-        if (!comment.snapshotId || !requireAuth()) return;
+        if (!requireAuth()) return;
         const nextFlagged = !comment.flagged;
         patchComment(comment.id, (item) => ({
             ...item,
             flagged: nextFlagged,
             status: nextFlagged ? 'flagged' : item.status === 'flagged' ? 'active' : item.status,
         }));
-        syncFlag({ id: comment.id, snapshotId: comment.snapshotId }, { flagged: Boolean(comment.flagged), status: comment.status }, nextFlagged);
+        syncFlag({ id: comment.id }, { flagged: Boolean(comment.flagged), status: comment.status }, nextFlagged);
     }, [patchComment, requireAuth, syncFlag]);
 
     const ruleUrl = useMemo(() => docsLink(locale, 'communityGuidelines'), [locale]);

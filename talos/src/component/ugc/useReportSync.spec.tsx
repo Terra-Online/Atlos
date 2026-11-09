@@ -9,9 +9,7 @@ vi.mock('@/services/routing/share', () => ({ buildPointShareToken: vi.fn() }));
 import {
     toggleUGCCommentFlag,
     toggleUGCImageFlag,
-    UGCClientError,
 } from '@/services/ugc/client';
-import type { ReportTarget } from './useReportSync';
 import { useReportSync } from './useReportSync';
 
 beforeEach(() => vi.useFakeTimers());
@@ -26,133 +24,76 @@ const tick = () =>
     });
 
 it.each(['comment', 'image'] as const)(
-    'captures %s click IDs and coalesces only within the same version',
+    'coalesces %s reports by submission and sends no snapshot body',
     async (kind) => {
-        const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(() =>
-            Promise.resolve(
-                Response.json({
-                    ok: true,
-                    status: 'flagged',
-                    flagCount: 1,
-                }),
-            ),
-        );
+        const fetch = vi
+            .fn<typeof globalThis.fetch>()
+            .mockResolvedValue(
+                Response.json({ ok: true, status: 'flagged', flagCount: 1 }),
+            );
         vi.stubGlobal('fetch', fetch);
-        const apply =
-            vi.fn<(target: ReportTarget, patch: { status?: string }) => void>();
+        const apply = vi.fn();
         const send =
             kind === 'comment' ? toggleUGCCommentFlag : toggleUGCImageFlag;
         const { result } = renderHook(() =>
             useReportSync({
                 scope: 'point:user',
                 delay: 300,
-                send: (target, desired) =>
-                    send(target.id, desired, target.snapshotId),
+                send: (target, desired) => send(target.id, desired),
                 apply,
                 rollback: vi.fn(),
-                conflict: vi.fn().mockResolvedValue(undefined),
             }),
         );
-        const clicked = { id: 'target', snapshotId: 'A' };
         act(() => {
             result.current.start(
-                clicked,
-                { flagged: false, status: 'flagged' },
-                true,
-            );
-            // A new read must not silently change the version of the already queued click.
-            clicked.snapshotId = 'B';
-            result.current.start(
-                { id: 'target', snapshotId: 'B' },
-                { flagged: false, status: 'flagged' },
+                { id: 'target' },
+                { flagged: false, status: 'active' },
                 true,
             );
             result.current.start(
-                { id: 'cancelled', snapshotId: 'C' },
-                { flagged: false, status: 'flagged' },
-                true,
-            );
-            result.current.start(
-                { id: 'cancelled', snapshotId: 'C' },
+                { id: 'target' },
                 { flagged: true, status: 'flagged' },
-                false,
-            );
-            result.current.start(
-                { id: 'unsaved', snapshotId: '' },
-                { flagged: false, status: 'flagged' },
                 true,
             );
+            result.current.start({ id: 'cancelled' }, { flagged: false }, true);
+            result.current.start({ id: 'cancelled' }, { flagged: true }, false);
         });
         await tick();
-        expect(fetch).toHaveBeenCalledTimes(2);
-        expect(
-            fetch.mock.calls.map(([, init]) => {
-                if (typeof init?.body !== 'string')
-                    throw new Error('Expected a JSON report body');
-                return JSON.parse(init.body) as unknown;
-            }),
-        ).toEqual([{ snapshotId: 'A' }, { snapshotId: 'B' }]);
-        expect(apply.mock.calls.map(([target]) => target.snapshotId)).toEqual([
-            'A',
-            'B',
-        ]);
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(fetch.mock.calls[0][1]?.body).toBeUndefined();
+        expect(apply).toHaveBeenCalledExactlyOnceWith(
+            { id: 'target' },
+            expect.objectContaining({ flagged: true }),
+        );
     },
 );
 
-it.each([true, false])(
-    'cancels a desired=%s 409 task and invokes rollback and recovery without retry, including newer clicks in flight',
-    async (desired) => {
-        let reject!: (error: Error) => void;
-        const send = vi.fn(
-            () =>
-                new Promise<never>((_, fail) => {
-                    reject = fail;
-                }),
-        );
-        const rollback = vi.fn();
-        const refresh = vi
-            .fn<() => Promise<void>>()
-            .mockResolvedValue(undefined);
-        const { result } = renderHook(() =>
-            useReportSync({
-                scope: 'point:user',
-                delay: 300,
-                send,
-                apply: vi.fn(),
-                rollback,
-                conflict: refresh,
-            }),
-        );
-        act(() =>
-            result.current.start(
-                { id: 'target', snapshotId: 'A' },
-                { flagged: !desired, status: 'flagged' },
-                desired,
-            ),
-        );
-        await tick();
-        act(() =>
-            result.current.start(
-                { id: 'target', snapshotId: 'A' },
-                { flagged: desired, status: 'flagged' },
-                !desired,
-            ),
-        );
-        await act(async () => {
-            reject(
-                new UGCClientError('Changed', 'PUBLIC_SNAPSHOT_CONFLICT', 409),
-            );
-            await Promise.resolve();
-        });
-        await tick();
-        expect(rollback).toHaveBeenCalledExactlyOnceWith(
-            { id: 'target', snapshotId: 'A' },
-            { flagged: !desired, status: 'flagged' },
-        );
-        expect(refresh).toHaveBeenCalledTimes(1);
-        expect(send).toHaveBeenCalledTimes(1);
-    },
-);
+it('rolls back failed reporting without retrying', async () => {
+    const send = vi.fn().mockRejectedValue(new Error('offline'));
+    const rollback = vi.fn();
+    const { result } = renderHook(() =>
+        useReportSync({
+            scope: 'point:user',
+            delay: 300,
+            send,
+            apply: vi.fn(),
+            rollback,
+        }),
+    );
+    act(() =>
+        result.current.start(
+            { id: 'target' },
+            { flagged: false, status: 'active' },
+            true,
+        ),
+    );
+    await tick();
+    expect(rollback).toHaveBeenCalledExactlyOnceWith(
+        { id: 'target' },
+        { flagged: false, status: 'active' },
+    );
+    expect(send).toHaveBeenCalledTimes(1);
+});
 
 it('drops a previous account or point task and ignores its late response', async () => {
     let resolve!: (value: { status: 'active' }) => void;
@@ -171,13 +112,12 @@ it('drops a previous account or point task and ignores its late response', async
                 send,
                 apply,
                 rollback: vi.fn(),
-                conflict: vi.fn().mockResolvedValue(undefined),
             }),
         { initialProps: { scope: 'point:user-A' } },
     );
     act(() =>
         result.current.start(
-            { id: 'target', snapshotId: 'A' },
+            { id: 'target' },
             { flagged: false, status: 'flagged' },
             true,
         ),
@@ -205,7 +145,7 @@ it.each(['comment', 'image'] as const)(
         vi.stubGlobal('fetch', fetch);
         const send =
             kind === 'comment' ? toggleUGCCommentFlag : toggleUGCImageFlag;
-        expect(await send('target', false, 'A')).toMatchObject({
+        expect(await send('target', false)).toMatchObject({
             flagged: false,
             status: 'flagged',
         });

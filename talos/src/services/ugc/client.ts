@@ -477,8 +477,8 @@ export async function toggleUGCImageUpvote(imageId: string, upvoted: boolean): P
     return updateUGCImageAction(imageId, upvoted ? 'upvote' : 'unvote');
 }
 
-export async function toggleUGCImageFlag(imageId: string, flagged: boolean, snapshotId: string): Promise<UGCImageActionPatch> {
-    return updateUGCImageAction(imageId, flagged ? 'flag' : 'unflag', { snapshotId });
+export async function toggleUGCImageFlag(imageId: string, flagged: boolean): Promise<UGCImageActionPatch> {
+    return updateUGCImageAction(imageId, flagged ? 'flag' : 'unflag');
 }
 
 export async function deleteUGCImage(
@@ -491,8 +491,8 @@ export async function voteUGCComment(commentId: string, value: 1 | -1): Promise<
     return updateUGCCommentAction(commentId, value === 1 ? 'upvote' : 'downvote');
 }
 
-export async function toggleUGCCommentFlag(commentId: string, flagged: boolean, snapshotId: string): Promise<UGCCommentActionPatch> {
-    return updateUGCCommentAction(commentId, flagged ? 'flag' : 'unflag', { snapshotId });
+export async function toggleUGCCommentFlag(commentId: string, flagged: boolean): Promise<UGCCommentActionPatch> {
+    return updateUGCCommentAction(commentId, flagged ? 'flag' : 'unflag');
 }
 
 export async function deleteUGCComment(
@@ -552,12 +552,11 @@ export async function transUGCComments(
     return payload.items;
 }
 
-async function updateUGCImageAction(imageId: string, action: string, body?: { snapshotId: string }): Promise<UGCImageActionPatch> {
+async function updateUGCImageAction(imageId: string, action: string): Promise<UGCImageActionPatch> {
     const response = await fetch(`${UGC_API_BASE}/images/${encodeURIComponent(imageId)}/${action}`, {
         method: 'POST',
         credentials: 'include',
-        headers: { ...getAuthHeaders(), ...(body ? { 'content-type': 'application/json' } : {}) },
-        ...(body ? { body: JSON.stringify(body) } : {}),
+        headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -584,10 +583,9 @@ async function updateUGCImageAction(imageId: string, action: string, body?: { sn
     return patch;
 }
 
-async function updateUGCCommentAction(commentId: string, action: string, body?: { snapshotId: string }): Promise<UGCCommentActionPatch> {
+async function updateUGCCommentAction(commentId: string, action: string): Promise<UGCCommentActionPatch> {
     const payload = await postJson<UGCCommentActionResponse>(
         `${UGC_API_BASE}/comments/${encodeURIComponent(commentId)}/${action}`,
-        body,
     );
 
     if (payload.ok !== true) {

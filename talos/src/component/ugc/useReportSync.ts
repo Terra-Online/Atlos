@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { UGCSubmissionStatus } from '@/services/ugc/client';
-import { UGCClientError } from '@/services/ugc/client';
 
-export type ReportTarget = { id: string; snapshotId: string };
+export type ReportTarget = { id: string };
 export type ReportState = { flagged: boolean; status?: UGCSubmissionStatus };
 type Task = {
     target: ReportTarget;
@@ -17,10 +16,9 @@ type Config<Patch extends { status?: UGCSubmissionStatus }> = {
     send: (target: ReportTarget, desired: boolean) => Promise<Patch>;
     apply: (target: ReportTarget, patch: Patch) => void;
     rollback: (target: ReportTarget, state: ReportState) => void;
-    conflict: (target: ReportTarget) => Promise<void>;
 };
 
-/** Delayed reporting belongs to the version clicked, including rollback and conflict recovery. */
+/** Delayed reports belong to the submission and are discarded when the account or point changes. */
 export function useReportSync<Patch extends { status?: UGCSubmissionStatus }>(
     config: Config<Patch>,
 ) {
@@ -57,21 +55,8 @@ export function useReportSync<Patch extends { status?: UGCSubmissionStatus }>(
                     if (task.desired === sent)
                         latest.current.apply(task.target, patch);
                 })
-                .catch((error: unknown) => {
+                .catch(() => {
                     if (tasks.current.get(key) !== task) return;
-                    if (
-                        error instanceof UGCClientError &&
-                        error.status === 409
-                    ) {
-                        // Cancel the entire stale-version task, including a click made while in flight.
-                        tasks.current.delete(key);
-                        if (task.timer) window.clearTimeout(task.timer);
-                        latest.current.rollback(task.target, task.lastSynced);
-                        void latest.current
-                            .conflict(task.target)
-                            .catch(() => undefined);
-                        return;
-                    }
                     if (task.desired !== sent) return;
                     task.desired = task.lastSynced.flagged;
                     latest.current.rollback(task.target, task.lastSynced);
@@ -86,8 +71,7 @@ export function useReportSync<Patch extends { status?: UGCSubmissionStatus }>(
     }, []);
     const start = useCallback(
         (target: ReportTarget, current: ReportState, desired: boolean) => {
-            if (!target.snapshotId) return;
-            const key = JSON.stringify([target.id, target.snapshotId]);
+            const key = target.id;
             let task = tasks.current.get(key);
             if (!task) {
                 task = {

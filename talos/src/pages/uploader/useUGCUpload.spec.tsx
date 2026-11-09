@@ -17,7 +17,7 @@ function imageState(marker: IMarkerData): PointImagesState {
     return { target: { ...marker, uploadCategory: 'collection' }, images: [], myImages: [], activeImages: [], active: null,
         selectedImageId: null, isOwnActive: false, isActivePending: false, pendingOwn: null, pointImages: [], pointMyImages: [],
         loading: false, show: true, requestedImage: null, viewerOpen: false, setImages: vi.fn(), setMyImages: vi.fn(),
-        setSelectedImageId: vi.fn(), setRequestedImage: vi.fn(), patchImageById: vi.fn(), applyServerImage: vi.fn(), refreshPublicImage: vi.fn(), setViewerOpen: vi.fn() };
+        setSelectedImageId: vi.fn(), setRequestedImage: vi.fn(), patchImageById: vi.fn(), applyServerImage: vi.fn(), setViewerOpen: vi.fn() };
 }
 
 it('preserves in-flight uploads across unmounts, releases expired completed tasks, and isolates accounts', async () => {

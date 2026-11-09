@@ -54,7 +54,6 @@ const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props)
         canAppendUpload,
     } = uploadState;
     const {
-        reportError,
         actionPending,
         deleteConfirming,
         cancelDeleteConfirmation,
@@ -269,8 +268,8 @@ const Uploader = memo(({ point, pointName, active: activeDetail = true }: Props)
                 accept={UPLOAD_ACCEPT}
                 onChange={(event) => void upload(event)}
             />
-            {(reportError || error) && (
-                <div className={styles.uploadHint}>{reportError || error}</div>
+            {error && (
+                <div className={styles.uploadHint}>{error}</div>
             )}
             <Viewer
                 open={viewerOpen && Boolean(active)}
