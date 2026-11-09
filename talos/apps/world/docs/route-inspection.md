@@ -561,3 +561,32 @@ alpha.62 extractor with regenerated movement settings. It collected the target
 in 7.323 model seconds, using 8 dash activations and ending with 0.392 normalized
 charges. The 256-label limit was reached, so this is a feasible bounded result.
 The same package with the previous no-dash settings reproduced 7.572 seconds.
+
+## Extracted ordinary dash animation evidence
+
+On 2026-11-09 the current installed build's male administrator animation config
+was decoded with strict full consumption of all 139,074 bytes. Both ordinary and
+optimized AnimatorControllers resolve `Dash_L` / `Dash_R` (states 29/30) to clips
+66/67, `A_actor_boy_sprint_dash_l/r`. The clips hold the detailed curves in
+`m_AclCompressedBuffer.RootMotionBufferData`, encoded as ACL float1f with 28 scalar
+tracks, 55 samples and a 60 Hz sample rate. The first seven tracks encode root
+translation and quaternion. Left/right root tracks agree. Their 8.169165 m end
+displacement divided by the 0.9 s clip duration agrees with the clip's average
+forward-speed metadata (9.07684898 m/s).
+
+The sampled raw forward displacement is 1.526869 m at 0.1 s, 2.748962 m at 0.2 s,
+3.773294 m at 0.3 s and 8.169165 m at 0.9 s. Runtime grounded Dash mode uses
+`MovementSetting._dashDuration` (0.3 s by default), with an optional character
+animation override. The current administrator has no such override. The
+controller also uses dynamic `playbackSpeed`, state transitions and root-motion
+blending, so raw clip displacement requires those runtime conditions when used
+as a world-motion model. The existing alpha.62 3 m / 0.3 s approximation remains
+a provisional planner model.
+
+Reproduction material is retained under the sibling endfield-noclip checkout's
+ignored `.research` directory. `anim-config-probe.ts` and `anim-config-receipt.json`
+cover config decoding. `anim-controller-report.md` records state/clip references.
+`anim-curves-receipt.json` records input hashes and decoder revision.
+`anim-curves-root-66.csv` / `67.csv` contain the per-frame root motion, while
+`anim-curves-root-66-decoded.json` / `67-decoded.json` retain all 28 tracks.
+`anim-curves-dash.png` plots displacement and frame-average speed.
