@@ -635,8 +635,10 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
     }, [executeDelete, deleteConfirmation]);
 
     const handleSubmit = useCallback(async () => {
-        const content = inputValue.trim();
-        if (!content || getCommentLength(inputValue) > COMMENT_MAX_LENGTH) return;
+        // Lexical can commit visible text before React echoes onChange into inputValue.
+        const source = inputRef.current?.getValue() ?? inputValue;
+        const content = source.trim();
+        if (!content || getCommentLength(source) > COMMENT_MAX_LENGTH) return;
         if (!requireAuth()) return;
 
         setError('');

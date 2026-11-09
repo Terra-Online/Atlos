@@ -71,6 +71,7 @@ const EDITOR_MAX_LENGTH = 550;
 const CONTROLLED_VALUE_TAG = 'comment-controlled-value';
 
 export type CommentEditorHandle = {
+    getValue: () => string;
     focus: () => void;
     focusEnd: () => void;
     insertEmoji: (id: string) => void;
@@ -439,6 +440,8 @@ const CommentEditorBridge = ({
     ), [editor, maxLength, onSubmit]);
 
     useImperativeHandle(forwardedRef, () => ({
+        // Enter submits inside a Lexical update; read it without forcing a nested commit.
+        getValue: () => editor.read('pending', getCommentRawText),
         focus: () => editor.focus(),
         focusEnd: () => {
             editor.update(() => $getRoot().selectEnd());

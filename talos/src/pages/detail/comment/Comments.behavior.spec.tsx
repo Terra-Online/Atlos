@@ -61,12 +61,17 @@ it('submits a reply with the actual parent, clears its quote, and keeps a pendin
 
 it('restores the editable draft and original comment when an edit fails without changing another comment', async () => {
     const marker = point(), own = comment(marker.id, true); api.list.mockResolvedValue([own]); api.edit.mockRejectedValue(new Error('offline'));
-    render(<Comments point={marker} pointName="Crate" />); await screen.findByText('Original comment'); fireEvent.click(screen.getByRole('button', { name: 'detail.comments.edit' }));
+    render(<Comments point={marker} pointName="Crate" />); await screen.findByText('Original comment'); fireEvent.click(await screen.findByRole('button', { name: 'detail.comments.edit' }));
     const editor = await screen.findByRole('textbox'); await waitFor(() => expect(editor.textContent).toBe('Original comment'));
     // Replace the controlled source through the real editor selection.
     act(() => { editor.focus(); }); const selection = window.getSelection(); const range = document.createRange(); range.selectNodeContents(editor); selection?.removeAllRanges(); selection?.addRange(range); fireEvent(document, new Event('selectionchange'));
-    fireEvent.paste(editor, { clipboardData: { getData: () => 'Edited comment' } }); await waitFor(() => expect(editor.textContent).toBe('Edited comment'));
-    fireEvent.click(screen.getByRole('button', { name: 'detail.comments.submitEdit' }));
+    await act(async () => {
+        fireEvent.paste(editor, { clipboardData: { getData: () => 'Edited comment' } });
+        // Lexical has committed the visible text while React still has its previous value.
+        await Promise.resolve();
+        expect(editor.textContent).toBe('Edited comment');
+        fireEvent.click(screen.getByRole('button', { name: 'detail.comments.submitEdit' }));
+    });
     await waitFor(() => expect(api.edit).toHaveBeenCalledExactlyOnceWith(own.id, 'Edited comment', own.snapshotId));
     await waitFor(() => expect(screen.getByText('detail.comments.editFailed')).toBeTruthy());
     expect(document.querySelector(`[data-comment-id="${own.id}"]`)?.textContent).toContain('Original comment');
