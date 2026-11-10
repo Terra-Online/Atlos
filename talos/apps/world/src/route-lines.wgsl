@@ -2,7 +2,7 @@ struct Settings {
     viewport: vec4f,
     depthOffset: vec4f,
     color: vec4f,
-    animation: vec4f, // x: viewer time; y: material repeat in CSS pixels
+    animation: vec4f, // x: viewer time; y: material repeat in CSS pixels; z: focal length times world radius / base width
 }
 @group(0) @binding(0) var<uniform> settings: Settings;
 @group(0) @binding(1) var sceneDepth: texture_depth_2d;
@@ -16,6 +16,7 @@ struct Vertex {
     @location(4) @interpolate(flat) wirePhase: f32,
     @location(5) @interpolate(flat) before: vec4f,
     @location(6) @interpolate(flat) after: vec4f,
+    @location(7) halfWidth: f32,
 }
 
 @vertex fn vs(@builtin(vertex_index) index: u32, @location(0) a: vec4f, @location(1) b: vec4f, @location(2) color: vec4f, @location(3) before: vec4f, @location(4) after: vec4f) -> Vertex {
@@ -26,12 +27,15 @@ struct Vertex {
     let segmentLength = length(delta);
     let direction = delta / max(segmentLength, 0.000001);
     let normal = vec2f(-direction.y, direction.x);
-    let halfWidth = settings.color.w + 4.0;
+    // World-sized cable with a subpixel readability floor and a close-up cap.
+    let width = clamp(settings.color.w * settings.animation.z * mix(a.z, b.z, t) / settings.viewport.w, 0.45, settings.color.w * 1.5);
+    let halfWidth = width + 1.5;
     let offset = (direction * corner.x + normal * corner.y) * halfWidth;
     let xy = mix(a.xy, b.xy, t) + offset * vec2f(2,-2) * settings.viewport.z / settings.viewport.xy;
     var out: Vertex;
     out.position = vec4f(xy, mix(a.z, b.z, t), 1);
     out.local = vec2f(t * segmentLength + corner.x * halfWidth, corner.y * halfWidth);
+    out.halfWidth = width;
     out.length = segmentLength;
     out.phase = a.w;
     out.color = color.rgb;
@@ -60,13 +64,15 @@ struct Vertex {
     let exit = 0.5 * (1 - smoothstep(0.0, blendWidth, input.after.w - runPosition));
     let tint = input.color + (input.before.rgb - input.color) * entry + (input.after.rgb - input.color) * exit;
     let pulse = 1 - smoothstep(0.04, 0.25, abs(fract(along / settings.animation.y - settings.animation.x * 0.35) - 0.5));
-    let core = 1 - smoothstep(settings.color.w - 0.8, settings.color.w, distance);
-    let hot = 1 - smoothstep(settings.color.w * 0.15, settings.color.w * 0.85, abs(input.local.y));
-    let halo = 1 - smoothstep(settings.color.w - 0.2, settings.color.w + 4.0, distance);
-    let coreColor = mix(tint, vec3f(1.0), 0.22 + hot * 0.30 + pulse * 0.10);
-    let bodyAlpha = core * 0.98;
-    let haloAlpha = halo * halo * 0.25;
+    let core = 1 - smoothstep(max(0.0, input.halfWidth - 0.65), input.halfWidth + 0.15, distance);
+    let hot = 1 - smoothstep(input.halfWidth * 0.15, input.halfWidth * 0.85, distance);
+    let halo = 1 - smoothstep(input.halfWidth, input.halfWidth + 1.5, distance);
+    let coreColor = mix(tint, vec3f(1.0), 0.08 + hot * 0.14 + pulse * 0.04);
+    let bodyAlpha = core * select(0.98, 0.5, hidden);
+    let haloAlpha = halo * halo * select(0.07, 0.0, hidden);
     let alpha = bodyAlpha + haloAlpha * (1 - bodyAlpha);
     if alpha < 0.001 { discard; }
-    return vec4f((coreColor * bodyAlpha + tint * haloAlpha * (1 - bodyAlpha)) / alpha, alpha);
+    // Premultiplied max blending builds one cable layer without accumulating
+    // brightness at overlapping segment caps or dense bends.
+    return vec4f(coreColor * bodyAlpha + tint * haloAlpha * (1 - bodyAlpha), alpha);
 }
