@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DASH_PERIOD, WIRE_PERIOD, projectLines, routeStyle, ROUTE_STYLES } from './route-lines';
+import { DASH_PERIOD, WIRE_PERIOD, projectLines, softenLines, routeStyle, ROUTE_STYLES } from './route-lines';
 import type { Segment } from '@opendfieldmap/ganglia';
 
 const camera: Parameters<typeof projectLines>[1] = {
@@ -108,4 +108,22 @@ it('keeps braid phase independent of dashes across colour boundaries, omitted se
     expect(output[15]).toBeCloseTo(10 % DASH_PERIOD);
     expect(output[39]).toBeCloseTo(120 % DASH_PERIOD);
     expect(Array.from(output).every(Number.isFinite)).toBe(true);
+});
+
+
+it('rounds display corners across colour boundaries without changing route data', () => {
+    const original = [run([[-1, 0, 10], [0, 0, 10]]), { ...run([[0, 0, 10], [0, 1, 10]]), gait: 'dash' as const }];
+    const snapshot = structuredClone(original);
+    const rounded = softenLines(original);
+    expect(original).toEqual(snapshot);
+    expect(rounded[0].points[0]).toEqual(original[0].points[0]);
+    expect(rounded[1].points.at(-1)).toEqual(original[1].points.at(-1));
+    expect(rounded[0].points.at(-1)).toEqual(rounded[1].points[0]);
+    expect(rounded[0].points.at(-1)).not.toEqual([0, 0, 10]);
+    expect(rounded[0].points.every(p => p[0] >= -1 && p[0] <= 0 && p[1] >= 0 && p[1] <= 0.25)).toBe(true);
+    expect(rounded[1].gait).toBe('dash');
+    const straight = run([[-1, 0, 10], [0, 0, 10], [1, 0, 10]]);
+    expect(softenLines([straight])[0]).toEqual(straight);
+    const separate = [original[0], run([[0, 2, 10], [0, 3, 10]])];
+    expect(softenLines(separate)).toEqual(separate);
 });

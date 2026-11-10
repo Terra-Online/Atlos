@@ -94,3 +94,43 @@ export function projectLines(
         }
     return result.subarray(0, cursor);
 }
+
+/** Round render-only bends within 25 cm; route points and playback stay authoritative. */
+export function softenLines(segments: Segment[]): Segment[] {
+    const same = (a: number[] | undefined, b: number[] | undefined) =>
+        a && b && a.every((v, i) => Math.abs(v - b[i]) < 1e-6);
+    return segments.map((segment, segmentIndex) => {
+        if (segment.points.length < 2) return segment;
+        const points: Segment['points'] = [];
+        const times: number[] = [];
+        const append = (point: Segment['points'][number], time: number) => { points.push(point); times.push(time); };
+        const mix = (a: number[], b: number[], t: number): Segment['points'][number] =>
+            [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+        for (let i = 0; i < segment.points.length; i++) {
+            const previous = segments[segmentIndex - 1], next = segments[segmentIndex + 1];
+            const b = segment.points[i];
+            const a = segment.points[i - 1] ?? (same(previous?.points.at(-1), b) ? previous.points.at(-2) : undefined);
+            const c = segment.points[i + 1] ?? (same(next?.points[0], b) ? next.points[1] : undefined);
+            const time = segment.times[i];
+            if (!a || !c) { append(b, time); continue; }
+            const before = Math.hypot(...b.map((v, j) => v - a[j]));
+            const after = Math.hypot(...c.map((v, j) => v - b[j]));
+            if (before < 1e-6 || after < 1e-6) { append(b, time); continue; }
+            const dot = b.reduce((sum, v, j) => sum + (v - a[j]) * (c[j] - v), 0) / (before * after);
+            // Straight samples and reversals must not grow unnecessary geometry.
+            if (dot > 0.995 || dot < -0.95) { append(b, time); continue; }
+            const trim = Math.min(0.25, before * 0.25, after * 0.25);
+            const entry = mix(b, a, trim / before), exit = mix(b, c, trim / after);
+            // Split a shared bend at its midpoint so colour boundaries stay joined.
+            const first = i === 0 ? 2 : 0;
+            const last = i === segment.points.length - 1 ? 2 : 4;
+            const startTime = i === 0 ? time : time + (segment.times[i - 1] - time) * trim / before;
+            const endTime = i === segment.points.length - 1 ? time : time + (segment.times[i + 1] - time) * trim / after;
+            for (let step = first; step <= last; step++) {
+                const t = step / 4;
+                append(mix(mix(entry, b, t), mix(b, exit, t), t), startTime + (endTime - startTime) * (step - first) / (last - first));
+            }
+        }
+        return { ...segment, points, times };
+    });
+}

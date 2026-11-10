@@ -5341,7 +5341,7 @@ diff --git a/packages/viewer/src/viewer/renderer.ts b/packages/viewer/src/viewer
 index 0e01265..256b673 100644
 --- a/packages/viewer/src/viewer/renderer.ts
 +++ b/packages/viewer/src/viewer/renderer.ts
-@@ -40,6 +40,22 @@ const INSTANCE_ROWS = 1_500_000;
+@@ -40,6 +40,24 @@ const INSTANCE_ROWS = 1_500_000;
  /** the frame uniforms' local lights while they're off */
  const NO_LOCAL_LIGHTS: LocalLightFrame = { count: 0, tilesX: 1, tilesY: 1 };
  
@@ -5359,6 +5359,8 @@ index 0e01265..256b673 100644
 +	jitter: readonly [number, number];
 +	/** viewer animation clock in seconds; pauses with animation disabled */
 +	time: number;
++	/** World-space direction towards the current environment sun. */
++	sunDirection?: readonly number[];
 +}
 +
  /** what {@link Renderer.render} draws */
@@ -5381,7 +5383,7 @@ index 0e01265..256b673 100644
  		for (const history of this.#histories) {
  			history.reset();
  		}
-@@ -266,6 +285,19 @@ export class Renderer {
+@@ -266,6 +285,20 @@ export class Renderer {
  			},
  			this.frame,
  		);
@@ -5396,6 +5398,7 @@ index 0e01265..256b673 100644
 +				height: outputHeight,
 +				jitter: this.post.jitter,
 +				time: input.time,
++				sunDirection: input.look.environment.sunDirection,
 +			});
 +		}
  		this.profiler.resolve(encoder);

@@ -1,7 +1,7 @@
 import type { OverlayFrame, Viewer } from '@endfield-noclip/viewer/host';
 import type { Segment } from '@opendfieldmap/ganglia';
 import shader from './route-lines.wgsl?raw';
-import { DASH_PERIOD, WIRE_PERIOD, projectLines, routeStyle } from './route-lines';
+import { DASH_PERIOD, WIRE_PERIOD, projectLines, routeStyle, softenLines } from './route-lines';
 
 /** Own the route's GPU resources for one viewer. Dispose after unregistering its overlay. */
 export function createRouteLines(
@@ -10,6 +10,7 @@ export function createRouteLines(
     segments: Segment[],
     style: { color?: number[]; halfWidth: number } = { halfWidth: 3.5 },
 ) {
+    if (!style.color) segments = softenLines(segments);
     const module = device.createShaderModule({
         label: 'Route braided ribbon',
         code: shader,
@@ -63,7 +64,7 @@ export function createRouteLines(
     });
     const uniforms = device.createBuffer({
         label: 'Route viewport',
-        size: 64,
+        size: 80,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
     let depth: GPUTextureView | undefined, group: GPUBindGroup;
@@ -80,6 +81,8 @@ export function createRouteLines(
             );
             if (!projected.length) return;
             device.queue.writeBuffer(vertices, 0, projected);
+            const sun = frame.sunDirection ?? [0, 1, 0];
+            const dot = (axis: readonly number[]) => axis.reduce((sum, value, i) => sum + value * sun[i], 0);
             device.queue.writeBuffer(
                 uniforms,
                 0,
@@ -95,6 +98,7 @@ export function createRouteLines(
                     0, 0, 0,
                     style.halfWidth,
                     frame.time, WIRE_PERIOD, 0, 0,
+                    dot(camera.right()), -dot(camera.up()), -dot(camera.forward()), 0,
                 ]),
             );
             if (depth !== frame.depth) {
