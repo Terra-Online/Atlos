@@ -1,0 +1,166 @@
+diff --git a/packages/viewer/src/gfx/device.ts b/packages/viewer/src/gfx/device.ts
+--- a/packages/viewer/src/gfx/device.ts
++++ b/packages/viewer/src/gfx/device.ts
+@@ -36,9 +36,11 @@
+ 	if (!('gpu' in navigator)) {
+ 		throw new GfxUnsupportedError(`this browser doesn't support WebGPU`);
+ 	}
+-	const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
++	// A performance preference can fail even when the browser's default adapter is usable.
++	const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' })
++		?? await navigator.gpu.requestAdapter();
+ 	if (adapter === null) {
+-		throw new GfxUnsupportedError(`no WebGPU adapter is available`);
++		throw new GfxUnsupportedError(`no WebGPU adapter is available. Retry after closing other 3D tabs; if this persists, restart the browser.`);
+ 	}
+ 
+ 	const has = (feature: GPUFeatureName): boolean => adapter.features.has(feature);
+@@ -82,7 +84,8 @@
+ 	device.lost
+ 		.then((info) => {
+ 			if (info.reason !== 'destroyed') {
+-				onLost(info.message);
++				console.error('webgpu device lost:', info.reason, info.message);
++				onLost(info.message || info.reason);
+ 			}
+ 		})
+ 		.catch(() => {});
+diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/viewer.ts
+--- a/packages/viewer/src/viewer/viewer.ts
++++ b/packages/viewer/src/viewer/viewer.ts
+@@ -323,7 +323,14 @@
+ 			gfx.device.destroy();
+ 			throw signal.reason;
+ 		}
+-		const viewer = new Viewer(gfx, canvas);
++		let viewer: Viewer;
++		try {
++			viewer = new Viewer(gfx, canvas);
++		} catch (error) {
++			// Constructor failure must not leave a live device and its allocations behind.
++			gfx.device.destroy();
++			throw error;
++		}
+ 		viewer.#raf = requestAnimationFrame(viewer.#onFrame);
+ 		document.addEventListener('visibilitychange', viewer.#onVisibilityChange);
+ 		return viewer;
+diff --git a/packages/viewer/src/app.tsx b/packages/viewer/src/app.tsx
+--- a/packages/viewer/src/app.tsx
++++ b/packages/viewer/src/app.tsx
+@@ -42,6 +42,7 @@
+ 	const canvasRef = useRef<HTMLCanvasElement>(null);
+ 	const [viewer, setViewer] = useState<Viewer | null>(null);
+ 	const [error, setError] = useState<string | null>(null);
++	const [attempt, setAttempt] = useState(0);
+ 	const [current, setCurrent] = useState<OpenPackage | null>(null);
+ 	const [status, setStatus] = useState('');
+ 	const [pointPanelRoot, setPointPanelRoot] = useState<HTMLDivElement | null>(null);
+@@ -67,7 +68,14 @@
+ 		// StrictMode mounts this effect twice in development, so the first creation is aborted mid-flight
+ 		const abort = new AbortController();
+ 		let created: Viewer | null = null;
+-		Viewer.create(canvas, (reason) => setError(`the GPU device was lost: ${reason}`), abort.signal)
++		setError(null);
++		Viewer.create(canvas, (reason) => {
++			if (abort.signal.aborted) return;
++			setError(`the GPU device was lost: ${reason}`);
++			setViewer(null);
++			created?.destroy();
++			created = null;
++		}, abort.signal)
+ 			.then((instance) => {
+ 				// built before the abort, so before any replacement touched the canvas: safe to destroy
+ 				if (abort.signal.aborted) {
+@@ -94,7 +102,7 @@
+ 			abort.abort();
+ 			created?.destroy();
+ 		};
+-	}, [hosted, open]);
++	}, [hosted, open, attempt]);
+ 
+ 	// the current level lives in the URL, so a reload or a shared link opens over the same level
+ 	useEffect(() => {
+@@ -116,6 +124,7 @@
+ 				<div className="panel error" role="alert">
+ 					<h2>can't start the viewer</h2>
+ 					<p>{error}</p>
++					<button type="button" onClick={() => setAttempt(value => value + 1)}>Retry viewer</button>
+ 				</div>
+ 			)}
+ 			{viewer !== null && (
+diff --git a/packages/viewer/src/viewer/frame-queue.ts b/packages/viewer/src/viewer/frame-queue.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/viewer/src/viewer/frame-queue.ts
+@@ -0,0 +1,10 @@
++/** Bound CPU submission when animation outpaces the GPU. */
++export class FrameQueue {
++    #pending = 0;
++    get full(): boolean { return this.#pending >= 2; }
++    submitted(queue: Pick<GPUQueue, 'onSubmittedWorkDone'>): void {
++        this.#pending++;
++        const release = () => { this.#pending--; };
++        queue.onSubmittedWorkDone().then(release, release);
++    }
++}
+diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/viewer.ts
+--- a/packages/viewer/src/viewer/viewer.ts
++++ b/packages/viewer/src/viewer/viewer.ts
+@@ -20,6 +20,7 @@
+ import { ROW_BYTES, ROW_WORDS } from '../content/instance-rows.ts';
+ import type { AppliedVolume } from '../environment/blend.ts';
+ import { windClockRate } from '../environment/environment.ts';
++import { FrameQueue } from './frame-queue.ts';
+ import { type GfxDevice, createGfxDevice } from '../gfx/device.ts';
+ import { DecodePool } from '../package/decode-pool.ts';
+ import type { PackageSource } from '../package/package-source.ts';
+@@ -265,6 +266,7 @@
+ 	 * `animate` is on, so animation pauses when the view idles and resumes where it stopped
+ 	 */
+ 	#time = 0;
++	readonly #frameQueue = new FrameQueue();
+ 	/** the wind clock (`Frame.wind.x`), which advances with {@link #time} at the wind's rate */
+ 	#windClock = 0;
+ 	/**
+@@ -880,6 +882,9 @@
+ 		this.#raf = requestAnimationFrame(this.#onFrame);
+ 		const dt = this.#lastTime === 0 ? 1 / 60 : Math.min(0.1, (time - this.#lastTime) / 1000);
+ 		this.#lastTime = time;
++		// Route flow can keep a heavy scene rendering while the camera is stationary.
++		// Do not accumulate submissions when the GPU cannot keep up.
++		if (this.#frameQueue.full) return;
+ 		this.#times.begin();
+ 		const renderer = this.#renderer;
+ 		const traversal = this.#traversal;
+@@ -978,6 +983,7 @@
+ 				times: this.#times,
+ 				overlays: this.#overlays,
+ 			});
++			this.#frameQueue.submitted(this.#gfx.device.queue);
+ 			this.#times.rendered(dt);
+ 		}
+ 		if (render || traverse) {
+diff --git a/packages/viewer/src/app.tsx b/packages/viewer/src/app.tsx
+--- a/packages/viewer/src/app.tsx
++++ b/packages/viewer/src/app.tsx
+@@ -68,9 +68,11 @@
+ 		// StrictMode mounts this effect twice in development, so the first creation is aborted mid-flight
+ 		const abort = new AbortController();
+ 		let created: Viewer | null = null;
++		let lost = false;
+ 		setError(null);
+ 		Viewer.create(canvas, (reason) => {
+ 			if (abort.signal.aborted) return;
++			lost = true;
+ 			setError(`the GPU device was lost: ${reason}`);
+ 			setViewer(null);
+ 			created?.destroy();
+@@ -78,7 +80,7 @@
+ 		}, abort.signal)
+ 			.then((instance) => {
+ 				// built before the abort, so before any replacement touched the canvas: safe to destroy
+-				if (abort.signal.aborted) {
++				if (abort.signal.aborted || lost) {
+ 					instance.destroy();
+ 					return;
+ 				}
