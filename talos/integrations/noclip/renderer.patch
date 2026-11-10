@@ -5338,10 +5338,10 @@ index 8b54f7c8..2fd40f13 100644
  	tonemapper: options.tonemapper,
  	sky: options.sky,
 diff --git a/packages/viewer/src/viewer/renderer.ts b/packages/viewer/src/viewer/renderer.ts
-index 0e012651..f35577f8 100644
+index 0e01265..256b673 100644
 --- a/packages/viewer/src/viewer/renderer.ts
 +++ b/packages/viewer/src/viewer/renderer.ts
-@@ -40,6 +40,20 @@ const INSTANCE_ROWS = 1_500_000;
+@@ -40,6 +40,22 @@ const INSTANCE_ROWS = 1_500_000;
  /** the frame uniforms' local lights while they're off */
  const NO_LOCAL_LIGHTS: LocalLightFrame = { count: 0, tilesX: 1, tilesY: 1 };
  
@@ -5357,12 +5357,14 @@ index 0e012651..f35577f8 100644
 +	height: number;
 +	/** current depth-buffer projection jitter in NDC */
 +	jitter: readonly [number, number];
++	/** viewer animation clock in seconds; pauses with animation disabled */
++	time: number;
 +}
 +
  /** what {@link Renderer.render} draws */
  export interface RenderInput {
  	camera: Camera;
-@@ -58,6 +72,8 @@ export interface RenderInput {
+@@ -58,6 +74,8 @@ export interface RenderInput {
  	options: FrameUniformInputs['options'];
  	/** where the CPU spans go */
  	times: FrameTimes;
@@ -5371,7 +5373,7 @@ index 0e012651..f35577f8 100644
  }
  
  /** the GPU side of the viewer: the device's renderers and targets, and the frame they encode together */
-@@ -173,6 +189,7 @@ export class Renderer {
+@@ -173,6 +191,7 @@ export class Renderer {
  
  	/** drops what the passes carry over from earlier frames, after a cut to somewhere else */
  	cut(): void {
@@ -5379,7 +5381,7 @@ index 0e012651..f35577f8 100644
  		for (const history of this.#histories) {
  			history.reset();
  		}
-@@ -266,6 +283,18 @@ export class Renderer {
+@@ -266,6 +285,19 @@ export class Renderer {
  			},
  			this.frame,
  		);
@@ -5393,13 +5395,14 @@ index 0e012651..f35577f8 100644
 +				width: outputWidth,
 +				height: outputHeight,
 +				jitter: this.post.jitter,
++				time: input.time,
 +			});
 +		}
  		this.profiler.resolve(encoder);
  		times.span('encode');
  		this.device.queue.submit([encoder.finish()]);
 diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/viewer.ts
-index 8e8816d0..62c1a59d 100644
+index 8e8816d..7a9e3df 100644
 --- a/packages/viewer/src/viewer/viewer.ts
 +++ b/packages/viewer/src/viewer/viewer.ts
 @@ -1,4 +1,19 @@
@@ -5440,7 +5443,7 @@ index 8e8816d0..62c1a59d 100644
  import { type LevelEntry, type LoadedScene, openScene } from './scene-loader.ts';
  import { type ViewerStats, FrameTimes, STATS_INTERVAL, collectStats, emptyStats } from './stats.ts';
  import { Traversal } from './traversal.ts';
-@@ -30,8 +48,157 @@ import { Traversal } from './traversal.ts';
+@@ -30,8 +48,160 @@ import { Traversal } from './traversal.ts';
  /** the irradiance volume of a package without one */
  const EMPTY_IRRADIANCE = { keys: new Uint32Array(), blobs: new Uint32Array(), groups: new Uint32Array() };
  
@@ -5449,15 +5452,18 @@ index 8e8816d0..62c1a59d 100644
  /** the running viewer */
  export class Viewer {
 +	#overlays = new Set<(frame: OverlayFrame) => void>();
++	#animatedOverlays = new Set<(frame: OverlayFrame) => void>();
 +	#baseStates: StatesInfo | null = null;
 +	#cameraListeners = new Set<() => void>();
 +	#photoFilters: readonly PhotoFilter[] = [];
 +
-+	addOverlay(encode: (frame: OverlayFrame) => void): () => void {
++	addOverlay(encode: (frame: OverlayFrame) => void, options?: { animated?: boolean }): () => void {
 +		this.#overlays.add(encode);
++		if (options?.animated) this.#animatedOverlays.add(encode);
 +		this.#dirty = true;
 +		return () => {
 +			this.#overlays.delete(encode);
++			this.#animatedOverlays.delete(encode);
 +			this.#dirty = true;
 +		};
 +	}
@@ -5598,7 +5604,7 @@ index 8e8816d0..62c1a59d 100644
  	readonly camera = new Camera();
  	readonly controls: NoclipControls;
  	readonly options: ViewerOptions = structuredClone(DEFAULT_OPTIONS);
-@@ -173,10 +340,12 @@ export class Viewer {
+@@ -173,10 +343,12 @@ export class Viewer {
  		source: PackageSource,
  		initialLevel: string | null,
  		onProgress: (phase: string) => void,
@@ -5611,7 +5617,7 @@ index 8e8816d0..62c1a59d 100644
  		const renderer = this.#renderer;
  		renderer.setIrradiance(pkg.irradiance, manifest.irradianceRegions);
  		const scene = openScene(pkg, {
-@@ -204,7 +373,9 @@ export class Viewer {
+@@ -204,7 +376,9 @@ export class Viewer {
  		this.#updateVisibility();
  		this.#waterLevels.settle();
  		this.#applyEnvironment();
@@ -5622,7 +5628,7 @@ index 8e8816d0..62c1a59d 100644
  			this.#setPose(overviewPose(manifest));
  		} else {
  			this.#focusCells = levelCellIds(manifest, level);
-@@ -228,6 +399,7 @@ export class Viewer {
+@@ -228,6 +402,7 @@ export class Viewer {
  		renderer.bindings.setReflection(null, 1);
  		renderer.bindings.set('shadowRamp', null);
  		this.scene = null;
@@ -5630,7 +5636,7 @@ index 8e8816d0..62c1a59d 100644
  		this.#sceneState.setPackage(null, this.#groupsConsumers);
  		this.options.environmentPin = null;
  		this.#environment.fades.reset();
-@@ -320,6 +492,7 @@ export class Viewer {
+@@ -320,6 +495,7 @@ export class Viewer {
  				eye: this.camera.position,
  				volumes: this.options.environmentVolumes,
  				pinnedPhase: this.options.environmentPin,
@@ -5638,7 +5644,7 @@ index 8e8816d0..62c1a59d 100644
  				loaded: this.#sceneState.conditionResults,
  				dt,
  			},
-@@ -393,6 +566,9 @@ export class Viewer {
+@@ -393,6 +569,9 @@ export class Viewer {
  		this.camera.pitch = pitch;
  		// a cut: the last frames show somewhere else
  		this.#renderer.cut();
@@ -5648,7 +5654,7 @@ index 8e8816d0..62c1a59d 100644
  	}
  
  	/** re-poses the first view over the ground once the coarse terrain lands; drops it if the camera moved */
-@@ -481,15 +657,29 @@ export class Viewer {
+@@ -481,15 +660,29 @@ export class Viewer {
  	// #region scene states
  
  	/** @returns every scene control's current value, by index into the manifest's controls */
@@ -5680,7 +5686,7 @@ index 8e8816d0..62c1a59d 100644
  	/** @returns per conditional set of the loaded package, whether the selected scene values satisfy it */
  	get conditionResults(): readonly boolean[] {
  		return this.#sceneState.conditionResults;
-@@ -509,21 +699,35 @@ export class Viewer {
+@@ -509,21 +702,35 @@ export class Viewer {
  	}
  
  	/**
@@ -5723,7 +5729,7 @@ index 8e8816d0..62c1a59d 100644
  			return;
  		}
  		this.#updateVisibility();
-@@ -553,11 +757,50 @@ export class Viewer {
+@@ -553,11 +760,50 @@ export class Viewer {
  	/** @param patch options to change */
  	setOptions(patch: Partial<ViewerOptions>): void {
  		const { post, targets } = this.#renderer;
@@ -5774,7 +5780,7 @@ index 8e8816d0..62c1a59d 100644
  		}
  		if (patch.streamAreas !== undefined) {
  			this.#updateVisibility();
-@@ -631,7 +874,13 @@ export class Viewer {
+@@ -631,7 +877,13 @@ export class Viewer {
  		const renderer = this.#renderer;
  		const traversal = this.#traversal;
  
@@ -5788,7 +5794,7 @@ index 8e8816d0..62c1a59d 100644
  		const watered = this.#waterLevels.update(dt, this.options.waterLevelRate);
  		this.#waterLevels.applyFloaters(this.#writeFloater);
  		if (this.#sceneState.follow(this.camera.position)) {
-@@ -657,7 +906,7 @@ export class Viewer {
+@@ -657,7 +909,7 @@ export class Viewer {
  		// the temporal antialiasing converges over a few more jittered frames of the same view
  		let settling = false;
  		if (changed) {
@@ -5797,7 +5803,7 @@ index 8e8816d0..62c1a59d 100644
  		} else if (this.#settleFrames > 0) {
  			this.#settleFrames--;
  			settling = true;
-@@ -666,7 +915,11 @@ export class Viewer {
+@@ -666,7 +918,12 @@ export class Viewer {
  		// particles change what it meters every frame, so a meter that kept running would never let it settle
  		const settings = frameSettings(options, scene !== null, postSettings(options, scene !== null));
  		const adapting = renderer.post.adaptExposure(settings.post, dt, { metering: changed || settling });
@@ -5806,11 +5812,12 @@ index 8e8816d0..62c1a59d 100644
 +			changed ||
 +			settling ||
 +			adapting ||
++			(options.animate && this.#animatedOverlays.size > 0) ||
 +			(options.animate && settings.post.debugView === 'lit' && renderer.post.photoParticles.active);
  		const look = this.#environment.look;
  		if (render && options.animate) {
  			this.#time += dt;
-@@ -712,6 +965,7 @@ export class Viewer {
+@@ -712,6 +969,7 @@ export class Viewer {
  				revealRadii: revealRadii(scene?.pkg.manifest.fireSeed ?? null, this.#sceneState.values),
  				options,
  				times: this.#times,
@@ -5818,11 +5825,12 @@ index 8e8816d0..62c1a59d 100644
  			});
  			this.#times.rendered(dt);
  		}
-@@ -731,6 +985,8 @@ export class Viewer {
+@@ -731,6 +989,9 @@ export class Viewer {
  		document.removeEventListener('visibilitychange', this.#onVisibilityChange);
  		this.unload();
  		this.controls.destroy();
 +		this.#overlays.clear();
++		this.#animatedOverlays.clear();
 +		this.#cameraListeners.clear();
  		this.#pool.destroy();
  		this.#renderer.destroy();

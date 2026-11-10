@@ -86,6 +86,7 @@ it('draws only selected contact boxes in the existing route overlay and releases
     );
     expect(screen.queryByText('Moving devices')).toBeNull();
     expect(overlay).toBeDefined();
+    expect(viewer.addOverlay).toHaveBeenCalledWith(expect.any(Function), { animated: true });
     overlay!({ device: {}, format: 'rgba8unorm' } as OverlayFrame);
     const renderers = vi
         .mocked(createRouteLines)

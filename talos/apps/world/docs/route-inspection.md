@@ -78,7 +78,7 @@ depth with its projection jitter and render scale accounted for. Visible fragmen
 are solid. Occluded fragments use 5 CSS-pixel strokes and 3-pixel gaps, with phase
 continuous across path segments. A 0.15-metre view-depth tolerance avoids ground
 contact flicker. Occlusion follows the geometry currently streamed and displayed.
-All movement segments share the luminous cable colour treatment.
+All movement segments use a nearly opaque braided ribbon with a travelling surface highlight.
 The panel uses the existing host Panel component and right-hand dock. Dashed
 fragments retain visibility through geometry; reachability remains a separate
 planner/model concern. The overlay consumes the planner's candidate samples.

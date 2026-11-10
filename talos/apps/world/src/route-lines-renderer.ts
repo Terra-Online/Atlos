@@ -1,7 +1,8 @@
 import type { OverlayFrame, Viewer } from '@endfield-noclip/viewer/host';
 import type { Segment } from '@opendfieldmap/ganglia';
 import shader from './route-lines.wgsl?raw';
-import { DASH_PERIOD, projectLines, routeStyle } from './route-lines';
+import compositeShader from './route-composite.wgsl?raw';
+import { DASH_PERIOD, WIRE_PERIOD, projectLines, routeStyle, softenLines } from './route-lines';
 
 /** Own the route's GPU resources for one viewer. Dispose after unregistering its overlay. */
 export function createRouteLines(
@@ -10,24 +11,27 @@ export function createRouteLines(
     segments: Segment[],
     style: { color?: number[]; halfWidth: number } = { halfWidth: 3.5 },
 ) {
+    if (!style.color) segments = softenLines(segments);
     const module = device.createShaderModule({
-        label: 'Route depth and dashes',
+        label: 'Route emissive cable',
         code: shader,
     });
     const pipeline = device.createRenderPipeline({
-        label: 'Route depth and dashes',
+        label: 'Route emissive cable',
         layout: 'auto',
         vertex: {
             module,
             entryPoint: 'vs',
             buffers: [
                 {
-                    arrayStride: 48,
+                    arrayStride: 80,
                     stepMode: 'instance',
                     attributes: [
                         { shaderLocation: 0, offset: 0, format: 'float32x4' },
                         { shaderLocation: 1, offset: 16, format: 'float32x4' },
                         { shaderLocation: 2, offset: 32, format: 'float32x4' },
+                        { shaderLocation: 3, offset: 48, format: 'float32x4' },
+                        { shaderLocation: 4, offset: 64, format: 'float32x4' },
                     ],
                 },
             ],
@@ -37,33 +41,48 @@ export function createRouteLines(
             entryPoint: 'fs',
             targets: [
                 {
-                    format,
+                    format: 'rgba8unorm',
                     blend: {
                         color: {
-                            srcFactor: 'src-alpha',
-                            dstFactor: 'one-minus-src-alpha',
+                            operation: 'max',
+                            srcFactor: 'one',
+                            dstFactor: 'one',
                         },
                         alpha: {
+                            operation: 'max',
                             srcFactor: 'one',
-                            dstFactor: 'one-minus-src-alpha',
+                            dstFactor: 'one',
                         },
                     },
                 },
             ],
         },
     });
+    const compositeModule = device.createShaderModule({ code: compositeShader });
+    const composite = device.createRenderPipeline({
+        layout: 'auto',
+        vertex: { module: compositeModule, entryPoint: 'vs' },
+        fragment: {
+            module: compositeModule, entryPoint: 'fs',
+            targets: [{ format, blend: {
+                color: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
+                alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
+            } }],
+        },
+    });
+    let layer: GPUTexture | undefined, layerView: GPUTextureView, compositeGroup: GPUBindGroup;
     const count = segments.reduce(
         (sum, segment) => sum + segment.points.length - 1,
         0,
     );
     const vertices = device.createBuffer({
         label: 'Route segments',
-        size: Math.max(48, count * 48),
+        size: Math.max(80, count * 80),
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
     const uniforms = device.createBuffer({
         label: 'Route viewport',
-        size: 48,
+        size: 64,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
     let depth: GPUTextureView | undefined, group: GPUBindGroup;
@@ -77,6 +96,7 @@ export function createRouteLines(
                 frame.height,
                 ratio,
                 (segment) => style.color ?? routeStyle(segment).color,
+                true,
             );
             if (!projected.length) return;
             device.queue.writeBuffer(vertices, 0, projected);
@@ -94,6 +114,7 @@ export function createRouteLines(
                     DASH_PERIOD,
                     0, 0, 0,
                     style.halfWidth,
+                    frame.time, WIRE_PERIOD, frame.height / ratio / (2 * Math.tan(camera.fovY / 2)) * 0.045 / 3.5, 0,
                 ]),
             );
             if (depth !== frame.depth) {
@@ -106,19 +127,40 @@ export function createRouteLines(
                     ],
                 });
             }
+            if (!layer || layer.width !== frame.width || layer.height !== frame.height) {
+                layer?.destroy();
+                layer = device.createTexture({
+                    label: 'Route coverage', size: [frame.width, frame.height], format: 'rgba8unorm',
+                    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+                });
+                layerView = layer.createView();
+                compositeGroup = device.createBindGroup({
+                    layout: composite.getBindGroupLayout(0),
+                    entries: [{ binding: 0, resource: layerView }],
+                });
+            }
             const pass = frame.encoder.beginRenderPass({
                 label: 'Route overlay',
                 colorAttachments: [
-                    { view: frame.target, loadOp: 'load', storeOp: 'store' },
+                    { view: layerView, loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 0] },
                 ],
             });
             pass.setPipeline(pipeline);
             pass.setBindGroup(0, group);
             pass.setVertexBuffer(0, vertices);
-            pass.draw(6, projected.length / 12);
+            pass.draw(6, projected.length / 20);
             pass.end();
+            const resolve = frame.encoder.beginRenderPass({
+                label: 'Route composite',
+                colorAttachments: [{ view: frame.target, loadOp: 'load', storeOp: 'store' }],
+            });
+            resolve.setPipeline(composite);
+            resolve.setBindGroup(0, compositeGroup);
+            resolve.draw(3);
+            resolve.end();
         },
         destroy() {
+            layer?.destroy();
             vertices.destroy();
             uniforms.destroy();
         },

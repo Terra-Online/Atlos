@@ -159,7 +159,7 @@ export default function RouteInspection({
             ];
             for (const renderer of renderers)
                 renderer.encode(frame, viewer.camera);
-        });
+        }, { animated: true });
         return () => {
             remove();
             renderers?.forEach((renderer) => renderer.destroy());
