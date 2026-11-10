@@ -6,7 +6,7 @@ index fa7c03a9..79f3c9be 100644
  		"@mary-ext/array-fns": "^0.1.0",
  		"@mary-ext/czar": "^0.1.2",
  		"@mary-ext/ds-queue": "^0.1.0",
-+		"@opendfieldmap/ganglia": "file:../../../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.75.tgz",
++		"@opendfieldmap/ganglia": "file:../../../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.76.tgz",
  		"meshoptimizer": "1.3.0"
  	}
  }
