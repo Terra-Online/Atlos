@@ -93,8 +93,15 @@ it('draws only selected contact boxes in the existing route overlay and releases
         .mock.results.map((result) => result.value);
     expect(createRouteLines).toHaveBeenCalledTimes(2);
     expect(vi.mocked(createRouteLines).mock.calls[1][2]).toHaveLength(12);
-    fireEvent.click(screen.getByRole('button', { name: 'Hide' }));
+    expect(vi.mocked(createRouteLines).mock.calls[0][3]?.hideOccluded).toBe(false);
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Hide occluded' }));
     expect(remove).toHaveBeenCalledTimes(1);
+    overlay!({ device: {}, format: 'rgba8unorm' } as OverlayFrame);
+    expect(createRouteLines).toHaveBeenCalledTimes(4);
+    expect(vi.mocked(createRouteLines).mock.calls[2][3]?.hideOccluded).toBe(true);
+    expect(vi.mocked(createRouteLines).mock.calls[3][3]?.hideOccluded).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Hide' }));
+    expect(remove).toHaveBeenCalledTimes(2);
     for (const renderer of renderers)
         expect(renderer.destroy).toHaveBeenCalledTimes(1);
     view.unmount();

@@ -54,213 +54,7 @@ test('ranks local and corridor coverage by tile cost for every endpoint geometry
     );
 });
 test(
-    'preserves bounded nearby grounding, supports floating targets and reports distinct failures',
-    { timeout: 3000 },
-    async () => {
-        const directory = await mkdtemp(
-                join(tmpdir(), 'world-route-diagnostic-'),
-            ),
-            source = { buildGuid: 'build-test', contentHash: 'hash-test' };
-        const floor = (id, x, y = 0) => ({
-            id,
-            vertices: [
-                [x, y, 0],
-                [x, y, 3],
-                [x + 3, y, 3],
-                [x + 3, y, 0],
-            ],
-        });
-        const anchor = {
-            id: 'tp',
-            position: [0.5, 0, 0.5],
-            cost: 0,
-            state: 'unknown',
-        };
-        let data = {
-            scene: 'map01',
-            source,
-            surfaces: [floor('floor', 0)],
-            arrivals: [anchor],
-            options: {
-                speed: 5,
-                maxVertical: 0.5,
-                profile: { radius: 0.35, height: 1.66 },
-                walls: [],
-            },
-        };
-        let interactionCatalog;
-        async function makeRequest() {
-            await writeFile(
-                directory + '/map01-ground-all.json',
-                JSON.stringify(data),
-            );
-            await writeFile(
-                directory + '/travel-points.json',
-                JSON.stringify({
-                    source,
-                    points: data.arrivals.map((a) => ({
-                        ...a,
-                        level: 'map01_lv001',
-                    })),
-                }),
-            );
-            if (interactionCatalog)
-                await writeFile(
-                    directory + '/map01-interaction-points.json',
-                    JSON.stringify(interactionCatalog),
-                );
-            let handle;
-            routeServer(directory).configureServer({
-                middlewares: {
-                    use: (_path, handler) => {
-                        handle = handler;
-                    },
-                },
-                config: { logger: { error: console.error } },
-            });
-            return async (y, x = 2.5, point) =>
-                new Promise((resolve) => {
-                    const params = new URLSearchParams({
-                        scene: 'map01',
-                        level: 'map01_lv001',
-                        x: String(x),
-                        y: String(y),
-                        z: '.5',
-                        ...source,
-                    });
-                    if (point) params.set('point', point);
-                    handle(
-                        { method: 'GET', url: '/?' + params },
-                        {
-                            statusCode: 200,
-                            setHeader() {},
-                            end(body) {
-                                resolve({
-                                    code: this.statusCode,
-                                    body: JSON.parse(body),
-                                });
-                            },
-                        },
-                    );
-                });
-        }
-        try {
-            let request = await makeRequest();
-            let result = await request(2);
-            assert.equal(result.body.status, 'candidate');
-            assert.equal(result.body.grounding.heightOffset, 2);
-            assert.deepEqual(
-                result.body.markers.at(-1).position,
-                [2.5, 2, 0.5],
-            );
-            assert.equal(result.body.route.points.at(-1)[1], 0);
-            result = await request(5);
-            assert.equal(result.body.category, 'projection-target');
-            assert.ok(result.body.diagnostics.attempts.length);
-            result = await request(-0.1);
-            assert.equal(result.body.status, 'candidate');
-            assert.equal(result.body.grounding.heightOffset, -0.1);
-            assert.equal(
-                result.body.grounding.method,
-                'near-surface-or-downward',
-            );
-            result = await request(-1);
-            assert.equal(result.body.category, 'projection-target');
-            data.surfaces.push(floor('outside-crop', 5000));
-            data.options.portals = [
-                {
-                    from: 'floor',
-                    to: 'outside-crop',
-                    points: [
-                        [3, 0, 0],
-                        [3, 0, 3],
-                    ],
-                },
-            ];
-            request = await makeRequest();
-            result = await request(2);
-            assert.equal(result.body.status, 'candidate');
-            data.options.portals = [];
-            data.surfaces.push(floor('upper', 0, 1));
-            request = await makeRequest();
-            result = await request(2);
-            assert.equal(result.body.category, 'disconnected-ground');
-            assert.equal(
-                result.body.diagnostics.attempts[0].target.position[1],
-                1,
-            );
-            data.surfaces = [floor('left', 0), floor('right', 5)];
-            request = await makeRequest();
-            result = await request(0, 6);
-            assert.equal(result.body.category, 'disconnected-ground');
-            data.surfaces = [floor('floor', 0)];
-            data.arrivals = [
-                { ...anchor, id: 'nearest', position: [5.1, 0, 0.5] },
-                { ...anchor, id: 'farther', position: [0.5, 0, 2.9] },
-            ];
-            request = await makeRequest();
-            result = await request(0);
-            assert.equal(result.body.category, 'projection-anchor');
-            assert.equal(result.body.anchor.id, 'nearest');
-
-            data.surfaces = [floor('floor', 0)];
-            data.arrivals = [anchor];
-            const item = {
-                id: '123',
-                level: 'map01_lv001',
-                position: [3.5, 1, 0.5],
-                template: 'collection',
-                templatePath: 'fixture-template.json',
-                effective: { unresolved: [] },
-                navigationGoal: {
-                    position: [3.5, 0.6, 0.5],
-                    interaction: { radius: 1.5 },
-                },
-            };
-            interactionCatalog = { scene: 'map01', source, points: [item] };
-            request = await makeRequest();
-            result = await request(1, 3.5);
-            assert.equal(result.body.category, 'projection-target');
-            result = await request(1, 3.5, '123');
-            assert.equal(result.body.status, 'candidate');
-            assert.equal(
-                result.body.grounding.method,
-                'source-interaction-volume',
-            );
-            assert.equal(result.body.interaction.template, 'collection');
-            const end = result.body.route.points.at(-1);
-            assert.ok(
-                Math.hypot(
-                    ...end.map((v, i) => v - item.navigationGoal.position[i]),
-                ) <= 1.5,
-            );
-            assert.equal(end[1], 0);
-            item.navigationGoal.interaction = {
-                radius: 1.5,
-                facing: [1, 0, 0],
-                halfAngle: 90,
-            };
-            request = await makeRequest();
-            result = await request(1, 3.5, '123');
-            assert.equal(result.body.category, 'projection-target');
-            item.navigationGoal = null;
-            item.effective.unresolved = ['unsupported-shape'];
-            request = await makeRequest();
-            result = await request(1, 3.5, '123');
-            assert.equal(result.body.category, 'projection-target');
-            assert.equal(result.body.interaction.status, 'unresolved');
-            interactionCatalog.source = { ...source, contentHash: 'old' };
-            request = await makeRequest();
-            result = await request(1, 3.5, '123');
-            assert.equal(result.body.category, 'stale-build');
-        } finally {
-            await rm(directory, { recursive: true, force: true });
-        }
-    },
-);
-
-test(
-    'builds physical ground after a generic routing failure and reuses the completed job',
+    'polls global candidates and bounded windows, distinguishes partial output and caches terminal results',
     { timeout: 15000 },
     async () => {
         const directory = await mkdtemp(join(tmpdir(), 'world-route-build-'));
@@ -277,7 +71,7 @@ test(
                 id: 'tp',
                 position: [0.5, 0, 0.5],
                 cost: 0,
-                state: 'unknown',
+                state: 'available',
             };
             const floor = {
                 id: 'physical',
@@ -293,8 +87,8 @@ test(
                 JSON.stringify({
                     scene: 'map01',
                     source,
-                    arrivals: [anchor],
-                    surfaces: [],
+                    arrivals: [anchor, { ...anchor, id: 'alternate', position: [1, 0, 0.5] }],
+                    surfaces: [floor],
                     options,
                 }),
             );
@@ -302,7 +96,7 @@ test(
                 join(directory, 'travel-points.json'),
                 JSON.stringify({
                     source,
-                    points: [{ ...anchor, level: 'map01_lv001' }],
+                    points: [{ ...anchor, level: 'map01_lv001' }, { ...anchor, id: 'alternate', position: [1, 0, 0.5], level: 'map01_lv002' }],
                 }),
             );
             const extractor = join(directory, 'extractor');
@@ -312,7 +106,7 @@ test(
             const config = join(directory, 'fixture-config.json');
             await writeFile(
                 join(directory, 'movement-settings-current.json'),
-                JSON.stringify({ source }),
+                JSON.stringify({ source, sustainedSprint: { speed: 5, sprintSpeed: 5, sprintAcceleration: 1 } }),
             );
             const fixture = {
                 scene: 'map01',
@@ -353,7 +147,7 @@ test(
                 await writeFile(${JSON.stringify(config + '.route-runs')}, 'route\\n', { flag: 'a' });
                 const fixture = JSON.parse(await readFile(${JSON.stringify(config)}, 'utf8'));
                 await new Promise(resolve => setTimeout(resolve, 60));
-                if (fixture.failRoute) throw new Error('synthetic action search failure');
+                if (fixture.failRoute || (fixture.onlyTail && request.arrival.id !== 'target-approach') || (fixture.failPrefix && request.arrival.id !== 'target-approach' && request.arrival.id !== 'alternate')) throw new Error('synthetic action search failure');
                 if (Number.isFinite(fixture.routeCost)) {
                     const points = [request.arrival.position, request.target], cost = fixture.routeCost;
                     await writeFile(args[args.indexOf('-o') + 1], JSON.stringify({
@@ -429,289 +223,64 @@ test(
                         },
                     );
                 });
+            const poll = async (overrides = {}, terminal = false) => {
+                const deadline = Date.now() + 5000;
+                let result;
+                do {
+                    result = await request(overrides);
+                    if (result.body.status !== 'building-ground' && (!terminal || !result.body.optimizing)) return result;
+                    await new Promise(resolve => setTimeout(resolve, 25));
+                } while (Date.now() < deadline);
+                throw new Error('Route polling timed out: ' + JSON.stringify(result.body));
+            };
             let result = await request();
             assert.equal(result.body.status, 'building-ground');
             assert.equal(result.body.retryAfter, 1000);
-            const deadline = Date.now() + 3000;
-            do {
-                await new Promise((resolve) => setTimeout(resolve, 25));
-                result = await request();
-            } while (
-                result.body.status === 'building-ground' &&
-                Date.now() < deadline
-            );
+            result = await poll();
             assert.equal(result.body.status, 'candidate');
-            assert.match(result.body.coverage, /Physical collision ground/);
-            assert.deepEqual(result.body.supportBoxes, [
-                {
-                    device: 'borrowed-box',
-                    family: 'conveyor',
-                    role: 'use',
-                    min: [2, 0, 0],
-                    max: [4, 2, 2],
-                },
-            ]);
-            assert.deepEqual(result.body.coverageDetails.remaining, [
-                'interactive-prefabs',
-            ]);
-            assert.deepEqual(result.body.coverageDetails.approximations, [
-                'sphere-envelope',
-            ]);
-            assert.ok(
-                result.body.assumptions.includes(
-                    'Base scene state 0 and area 0 are assumed',
-                ),
-            );
-            result = await request({ x: '6.5' });
-            const secondDeadline = Date.now() + 3000;
-            while (
-                result.body.status === 'building-ground' &&
-                Date.now() < secondDeadline
-            ) {
-                await new Promise((resolve) => setTimeout(resolve, 25));
-                result = await request({ x: '6.5' });
-            }
-            assert.equal(result.body.status, 'candidate');
-            assert.equal(result.body.route.points.at(-1)[0], 6.5);
-            assert.equal(await readFile(config + '.runs', 'utf8'), 'run\n');
-            result = await request({ scene: 'map../01' });
-            assert.equal(result.code, 400);
-            result = await request({ buildGuid: 'stale' });
-            assert.equal(result.body.category, 'stale-build');
-            assert.equal(await readFile(config + '.runs', 'utf8'), 'run\n');
-
-            // A separate source/build key must retain its failed job rather than retrying forever.
-            await writeFile(config, JSON.stringify({ fail: true }));
-            result = await request({ x: '40' });
-            assert.equal(result.body.status, 'building-ground');
-            const failureDeadline = Date.now() + 3000;
-            do {
-                await new Promise((resolve) => setTimeout(resolve, 25));
-                result = await request({ x: '40' });
-            } while (
-                result.body.status === 'building-ground' &&
-                Date.now() < failureDeadline
-            );
-            assert.equal(result.body.category, 'physical-build-failed');
-            assert.match(
-                result.body.message,
-                /synthetic collision decoder failure/,
-            );
-            result = await request({ x: '40' });
-            assert.equal(result.body.category, 'physical-build-failed');
-            assert.equal(
-                await readFile(config + '.runs', 'utf8'),
-                'run\nrun\n',
-            );
-
-            // Wider physical coverage must use valid source input after the failed-build case.
-            await writeFile(config, JSON.stringify({ result: fixture }));
-            // Physical ground retains scene exclusions, including a wall absent from the bake output.
-            await writeFile(
-                join(directory, 'map01-ground-all.json'),
-                JSON.stringify({
-                    scene: 'map01',
-                    source,
-                    arrivals: [anchor],
-                    surfaces: [],
-                    options: {
-                        ...options,
-                        walls: [
-                            {
-                                min: [3, -1, -10],
-                                max: [3.2, 4, 10],
-                                state: 'unknown',
-                            },
-                        ],
-                    },
-                }),
-            );
-            routeServer(directory, {
-                extractor,
-                config,
-                node: process.execPath,
-            }).configureServer({
-                httpServer,
-                middlewares: {
-                    use: (_path, handler) => {
-                        handle = handler;
-                    },
-                },
-                config: { logger: { error: console.error } },
-            });
-            result = await request();
-            assert.equal(result.body.status, 'building-ground');
-            // Both rectangular and corridor proposals now run before coverage exhaustion.
-            const movementDeadline = Date.now() + 7000;
-            do {
-                await new Promise((resolve) => setTimeout(resolve, 25));
-                result = await request();
-            } while (
-                result.body.status === 'building-ground' &&
-                Date.now() < movementDeadline
-            );
-            assert.equal(result.body.category, 'movement-coverage');
-            assert.match(
-                result.body.log,
-                /^\/__routes\/log\?path=player-routes/,
-            );
-            assert.deepEqual(
-                result.body.diagnostics.physicalMargins,
-                [24, 64, 128, 256],
-            );
-            assert.equal(result.body.diagnostics.traversal.walls.length, 1);
-            assert.equal(
-                result.body.diagnostics.traversal.walls[0].state,
-                'unknown',
-            );
-            const routeRuns = await readFile(config + '.route-runs', 'utf8');
-            result = await request();
-            assert.equal(result.body.category, 'movement-coverage');
-            assert.equal(
-                await readFile(config + '.route-runs', 'utf8'),
-                routeRuns,
-            );
-            assert.equal(
-                await readFile(config + '.runs', 'utf8'),
-                'run\n'.repeat(9),
-            );
-            const previousRouteRuns = (
-                await readFile(config + '.route-runs', 'utf8')
-            ).length;
-            // Rebuilding movement rules in the same game build must invalidate both artifact stages.
-            await writeFile(config, JSON.stringify({ result: fixture }));
-            await writeFile(
-                join(directory, 'movement-settings-current.json'),
-                JSON.stringify({ source, policy: 'updated' }),
-            );
-            routeServer(directory, {
-                extractor,
-                config,
-                node: process.execPath,
-            }).configureServer({
-                httpServer,
-                middlewares: {
-                    use: (_path, handler) => {
-                        handle = handler;
-                    },
-                },
-                config: { logger: { error: console.error } },
-            });
-            result = await request();
-            assert.equal(result.body.status, 'building-ground');
-            const revisedDeadline = Date.now() + 7000;
-            do {
-                await new Promise((resolve) => setTimeout(resolve, 25));
-                result = await request();
-            } while (
-                result.body.status === 'building-ground' &&
-                Date.now() < revisedDeadline
-            );
-            assert.equal(result.body.category, 'movement-coverage');
-            assert.equal(
-                await readFile(config + '.runs', 'utf8'),
-                'run\n'.repeat(17),
-            );
-            assert.ok(
-                (await readFile(config + '.route-runs', 'utf8')).length >
-                    previousRouteRuns,
-            );
-            const policies = (
-                await readFile(config + '.movement-files', 'utf8')
-            )
-                .trim()
-                .split('\n')
-                .map(JSON.parse);
-            assert.notEqual(policies[0].path, policies.at(-1).path);
-            assert.equal(policies.at(-1).data.policy, 'updated');
-            assert.deepEqual(
-                JSON.parse(await readFile(policies[0].path, 'utf8')),
-                { source },
-            );
-            // Successful ground queries now enqueue action optimization too. Keep
-            // that incumbent visible through polling, failures and slower results.
-            await writeFile(
-                join(directory, 'map01-ground-all.json'),
-                JSON.stringify({
-                    scene: 'map01',
-                    source,
-                    options,
-                    surfaces: [floor],
-                    arrivals: [anchor],
-                }),
-            );
-            for (const scenario of [
-                { name: 'faster', routeCost: 0.2 },
-                { name: 'slower', routeCost: 99 },
-                { name: 'unavailable' },
-                { name: 'failure', failRoute: true },
-            ]) {
-                await Promise.all(
-                    httpServer
-                        .rawListeners('close')
-                        .map((listener) => listener.call(httpServer)),
-                );
-                await writeFile(
-                    config,
-                    JSON.stringify({ result: fixture, ...scenario }),
-                );
-                await writeFile(
-                    join(directory, 'movement-settings-current.json'),
-                    JSON.stringify({ source, scenario: scenario.name }),
-                );
-                const buildsBefore = (await readFile(config + '.runs', 'utf8'))
-                    .trim()
-                    .split('\n').length;
-                routeServer(directory, {
-                    extractor,
-                    config,
-                    node: process.execPath,
-                }).configureServer({
-                    httpServer,
-                    middlewares: {
-                        use: (_path, handler) => {
-                            handle = handler;
-                        },
-                    },
-                    config: { logger: { error: console.error } },
-                });
-                const initial = await request();
-                assert.equal(initial.body.status, 'candidate');
-                assert.equal(initial.body.optimizing, true);
-                const baselineCost = initial.body.route.cost;
-                const concurrent = await Promise.all([
-                    request(),
-                    request(),
-                    request(),
-                ]);
-                for (const response of concurrent) {
-                    assert.equal(response.body.status, 'candidate');
-                    assert.ok(response.body.route.cost <= baselineCost);
-                }
-                let final = concurrent.at(-1);
-                const deadline = Date.now() + 3000;
-                while (final.body.optimizing && Date.now() < deadline) {
-                    await new Promise((resolve) => setTimeout(resolve, 25));
-                    final = await request();
-                    assert.equal(final.body.status, 'candidate');
-                    assert.ok(final.body.route.cost <= baselineCost);
-                }
-                assert.equal(final.body.optimizing, false);
-                assert.equal(
-                    final.body.route.cost,
-                    scenario.name === 'faster' ? 0.2 : baselineCost,
-                );
-                assert.equal(
-                    (await request()).body.route.cost,
-                    final.body.route.cost,
-                );
-                assert.equal(
-                    (await readFile(config + '.runs', 'utf8'))
-                        .trim()
-                        .split('\n').length,
-                    buildsBefore + 1,
-                );
-            }
+            assert.equal(result.body.partial, true);
+            assert.equal(result.body.optimizing, true);
+            assert.match(result.body.title, /Partial/);
+            assert.equal(result.body.markers[0].label, 'Local approach start');
+            assert.equal(result.body.supportBoxes[0].device, 'borrowed-box');
+            result = await poll({}, true);
+            assert.equal(result.body.partial, false);
+            assert.equal(result.body.optimizing, false);
+            assert.equal(result.body.title, 'Teleport → Target');
+            assert.equal(result.body.markers[0].label, 'Teleport');
+            assert.equal(result.body.route.points.at(-1)[0], 5.5);
+            const runs = await readFile(config + '.route-runs', 'utf8');
+            assert.deepEqual((await request()).body, result.body);
+            assert.equal(await readFile(config + '.route-runs', 'utf8'), runs);
+            assert.equal((await request({ scene: 'map../01' })).code, 400);
+            assert.equal((await request({ buildGuid: 'stale' })).body.category, 'stale-build');
+            const missing = await poll({ x: '500' }, true);
+            assert.equal(missing.body.status, 'unavailable');
+            assert.equal(missing.body.category, 'candidate-search');
+            assert.deepEqual((await request({ x: '500' })).body, missing.body);
+            // Preserve a verified tail while retrying another scene anchor after a prefix failure.
+            await writeFile(config, JSON.stringify({ result: fixture, routeCost: 1, failPrefix: true }));
+            const rerouted = await poll({ x: '7' }, true);
+            assert.equal(rerouted.body.status, 'candidate');
+            assert.equal(rerouted.body.partial, false);
+            assert.equal(rerouted.body.anchor.id, 'alternate');
+            assert.equal(rerouted.body.route.start, 'alternate');
+            await writeFile(config, JSON.stringify({ result: fixture, routeCost: 1, onlyTail: true }));
+            const partial = await poll({ x: '7.5' }, true);
+            assert.equal(partial.body.status, 'candidate');
+            assert.equal(partial.body.partial, true);
+            assert.equal(partial.body.optimizing, false);
+            assert.match(partial.body.title, /Partial/);
+            assert.equal(partial.body.markers[0].label, 'Local approach start');
+            assert.deepEqual((await request({ x: '7.5' })).body, partial.body);
+            // A failed physical search is terminal, and subsequent polls retain it.
+            await writeFile(config, JSON.stringify({ result: fixture, failRoute: true }));
+            const failed = await poll({ x: '6.5' }, true);
+            assert.equal(failed.body.status, 'unavailable');
+            assert.equal(failed.body.category, 'window-route');
+            const failedRuns = await readFile(config + '.route-runs', 'utf8');
+            assert.deepEqual((await request({ x: '6.5' })).body, failed.body);
+            assert.equal(await readFile(config + '.route-runs', 'utf8'), failedRuns);
         } finally {
             await Promise.all(
                 httpServer
@@ -773,217 +342,27 @@ test('serves retained task logs while rejecting paths outside the task directori
     }
 });
 
-for (const scenario of [
-    'unmapped',
-    'disconnected',
-    'wider',
-    'vertical',
-    'vertical-fallback',
-])
-    test(
-        scenario === 'unmapped'
-            ? 'an unmapped nearest landing falls back without widening the same ground'
-            : scenario === 'disconnected'
-              ? 'a mapped but disconnected landing tries another origin before widening'
-              : scenario === 'wider'
-                ? 'deferred wider approaches remain available after other origins fail'
-                : scenario === 'vertical'
-                  ? 'nearby stacked endpoints try local XZ coverage before coarse directions'
-                  : 'stacked endpoint local failure retains the coarse corridor fallback',
-        { timeout: 10000 },
-        async () => {
-            const directory = await mkdtemp(
-                join(tmpdir(), 'world-arrival-fallback-'),
-            );
-            const httpServer = new EventEmitter();
-            const source = { buildGuid: 'fixture', contentHash: 'fixture' };
-            const extractor = join(directory, 'extractor');
-            const config = join(directory, 'config.json');
-            try {
-                const vertical = scenario.startsWith('vertical');
-                const arrivals = vertical
-                    ? [
-                          {
-                              id: 'good',
-                              position: [5, 100, 1],
-                              cost: 0,
-                              state: 'unknown',
-                          },
-                      ]
-                    : [
-                          {
-                              id: 'bad',
-                              position: [5, 2, 1],
-                              cost: 0,
-                              state: 'unknown',
-                          },
-                          {
-                              id: 'good',
-                              position: [1, 0, 1],
-                              cost: 0,
-                              state: 'unknown',
-                          },
-                      ];
-                const data = {
-                    scene: 'map01',
-                    source,
-                    surfaces: [],
-                    arrivals,
-                    options: {
-                        speed: 5,
-                        maxVertical: 0.5,
-                        walls: [],
-                        profile: { radius: 0.35, height: 1.66 },
-                    },
-                };
-                await writeFile(
-                    join(directory, 'map01-ground-all.json'),
-                    JSON.stringify(data),
-                );
-                await writeFile(
-                    join(directory, 'travel-points.json'),
-                    JSON.stringify({
-                        source,
-                        points: arrivals.map((a) => ({
-                            ...a,
-                            scene: 'map01',
-                            level: 'map01_lv001',
-                        })),
-                    }),
-                );
-                await writeFile(
-                    join(directory, 'movement-settings-current.json'),
-                    '{}',
-                );
-                await writeFile(config, JSON.stringify(data));
-                await mkdir(join(extractor, 'packages/extractor/src'), {
-                    recursive: true,
-                });
-                await writeFile(
-                    join(extractor, 'packages/extractor/src/cli.ts'),
-                    `
-            import {readFile,writeFile,appendFile} from 'node:fs/promises';
-            const args=process.argv.slice(2), get=k=>args[args.indexOf(k)+1];
-            if(args.includes('--identity')) {console.log(JSON.stringify({generator:'fixture'}));process.exit(0);}
-            const output=get('-o');
-            if(args[0]==='player-ground') {
-                await appendFile(${JSON.stringify(config + '.builds')},'build\\n');
-                const data=JSON.parse(await readFile(get('--config'),'utf8'));
-                const b=args.find(a=>a.startsWith('--bounds=')).slice(9).split(',').map(Number);
-                const tiled=args.some(a=>a.startsWith('--tiles='));
-                await appendFile(${JSON.stringify(config + '.coverage')},JSON.stringify({tiled,bounds:b})+'\\n');
-                await writeFile(output,JSON.stringify({...data,tiled,build:{bounds:{min:b.slice(0,2),max:b.slice(2)}},surfaces:[{id:'floor',vertices:[[0,0,0],[8,0,0],[8,0,4],[0,0,4]]}]}));
-            } else {
-                const r=JSON.parse(await readFile(get('--request'),'utf8'));
-                const ground=JSON.parse(await readFile(get('--ground'),'utf8'));
-                const width=ground.build.bounds.max[0]-ground.build.bounds.min[0];
-                const scenario=${JSON.stringify(scenario)};
-                await appendFile(${JSON.stringify(config + '.attempts')},JSON.stringify({id:r.arrival.id,width})+'\\n');
-                const failure=scenario==='wider' ? width<128 : scenario==='vertical-fallback' ? !ground.tiled : r.arrival.id==='bad';
-                const points=[r.arrival.position,r.target];
-                await writeFile(output,JSON.stringify({scene:r.scene,source:r.source,...(failure
-                    ? {status:'unavailable',reason:scenario==='unmapped'?'arrival-unmapped':'no-verified-route'}
-                    : {status:'candidate',route:{status:'complete',start:r.arrival.id,cost:1,arrivalCost:0,length:5,points,segments:[{mode:'walk',points,times:[0,1]}]}})}));
-            }
-        `,
-                );
-                let handle;
-                routeServer(directory, {
-                    extractor,
-                    config,
-                    node: process.execPath,
-                }).configureServer({
-                    httpServer,
-                    middlewares: {
-                        use: (_path, handler) => {
-                            handle = handler;
-                        },
-                    },
-                    config: { logger: { error: console.error } },
-                });
-                const query = new URLSearchParams({
-                    scene: 'map01',
-                    level: 'map01_lv001',
-                    x: '6',
-                    y: '0',
-                    z: '1',
-                    ...source,
-                });
-                const request = () =>
-                    new Promise((resolve) =>
-                        handle(
-                            { method: 'GET', url: '/?' + query },
-                            {
-                                setHeader() {},
-                                end(body) {
-                                    resolve(JSON.parse(body));
-                                },
-                            },
-                        ),
-                    );
-                let result;
-                const deadline = Date.now() + 7000;
-                do {
-                    result = await request();
-                    if (
-                        result.status === 'candidate' ||
-                        result.status === 'unavailable'
-                    )
-                        break;
-                    await new Promise((resolve) => setTimeout(resolve, 25));
-                } while (Date.now() < deadline);
-                assert.equal(result.status, 'candidate');
-                assert.equal(
-                    result.route.start,
-                    scenario === 'wider' ? 'bad' : 'good',
-                );
-                assert.equal(
-                    await readFile(config + '.builds', 'utf8'),
-                    'build\n'.repeat(
-                        scenario === 'wider' || scenario === 'vertical-fallback'
-                            ? 2
-                            : 1,
-                    ),
-                );
-                const attempts = (await readFile(config + '.attempts', 'utf8'))
-                    .trim()
-                    .split('\n')
-                    .map((line) => JSON.parse(line));
-                const order = attempts.filter(
-                    (attempt, index) =>
-                        index === 0 ||
-                        attempt.id !== attempts[index - 1].id ||
-                        attempt.width !== attempts[index - 1].width,
-                );
-                assert.deepEqual(
-                    order.map((attempt) => attempt.id),
-                    scenario === 'vertical'
-                        ? ['good']
-                        : scenario === 'vertical-fallback'
-                          ? ['good', 'good']
-                          : scenario === 'wider'
-                            ? ['bad', 'good', 'bad']
-                            : ['bad', 'good'],
-                );
-                if (scenario === 'wider')
-                    assert.ok(order[2].width > order[0].width);
-                if (vertical) {
-                    const coverage = (
-                        await readFile(config + '.coverage', 'utf8')
-                    )
-                        .trim()
-                        .split('\n')
-                        .map((line) => JSON.parse(line));
-                    assert.deepEqual(coverage[0], {
-                        tiled: false,
-                        bounds: [-32, -32, 32, 32],
-                    });
-                    if (scenario === 'vertical-fallback')
-                        assert.equal(coverage[1].tiled, true);
-                }
-            } finally {
-                httpServer.emit('close');
-                await rm(directory, { recursive: true, force: true });
-            }
-        },
-    );
+for (const scenario of ['unmapped', 'disconnected']) {
+    test(`global candidate rejects ${scenario} nearest anchor and selects a connected scene anchor`, async () => {
+        const directory = await mkdtemp(join(tmpdir(), 'world-global-arrivals-'));
+        const source = { buildGuid: 'fixture', contentHash: 'fixture' };
+        const { candidateJobs } = await import('./candidate-job.ts');
+        const jobs = candidateJobs(directory);
+        try {
+            const surfaces = [{ id: 'floor', vertices: [[0, 0, 0], [8, 0, 0], [8, 0, 4], [0, 0, 4]] }];
+            if (scenario === 'disconnected') surfaces.push({ id: 'upper', vertices: [[4, 2, 0], [8, 2, 0], [8, 2, 4], [4, 2, 4]] });
+            await writeFile(join(directory, 'map01-ground-all.json'), JSON.stringify({ source, surfaces,
+                options: { speed: 5, maxVertical: 0.5, walls: [], profile: { radius: 0.35, height: 1.66 } } }));
+            const job = jobs.start({ scene: 'map01', source, target: [6, 0, 1], arrivals: [
+                { id: 'bad', position: [5, 2, 1], cost: 0, state: 'available' },
+                { id: 'good', position: [1, 0, 1], cost: 0, state: 'available' },
+            ] });
+            const deadline = Date.now() + 3000;
+            while (job.status === 'pending' && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 10));
+            assert.equal(job.status, 'ready');
+            assert.equal(job.result.status, 'candidate');
+            assert.equal(job.result.arrival.id, 'good');
+            assert.deepEqual(job.result.points.at(-1), [6, 0, 1]);
+        } finally { jobs.close(); await rm(directory, { recursive: true, force: true }); }
+    });
+}

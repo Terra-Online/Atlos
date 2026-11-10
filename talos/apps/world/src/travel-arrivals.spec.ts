@@ -38,11 +38,14 @@ test('fully enabled previews include new base centres with their source height b
     );
     expect(arrivals.map((a) => a.id)).toEqual(['main-base', 'camp']);
     expect(arrivals[0].groundRange).toEqual([-1, 24]);
+    expect(arrivals[0]).toMatchObject({ kind: 'base' });
     expect(arrivals.every((a) => a.state === 'available')).toBe(true);
     expect(
         travelArrivals(points, existing, 'map', 'level', false, [0, 0, 0]).map(
             (a) => a.id,
         ),
     ).toEqual(['camp']);
+    expect(travelArrivals(points, existing, 'map', undefined, true, [0, 0, 0]).map(a => a.id))
+        .toEqual(['other-base', 'main-base', 'camp']);
     expect(points).toEqual(before);
 });

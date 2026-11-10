@@ -13,6 +13,7 @@ import { relative, resolve } from 'node:path';
 import type { InteractionGoal, Vec3, Wall } from '@opendfieldmap/ganglia';
 import type { TravelArrival } from './travel-arrivals.ts';
 import type { Corridor } from './coarse-route.ts';
+import { createWindowRoute } from './window-route.ts';
 import { createRouteWorker } from './route-worker.ts';
 
 type Source = { buildGuid: string; contentHash: string };
@@ -23,7 +24,7 @@ type Options = {
     node?: string;
     solver?: string;
 };
-type Job = {
+export type Job = {
     status: 'queued' | 'building' | 'ready' | 'failed';
     message: string;
     output: string;
@@ -32,7 +33,7 @@ type Job = {
     child?: { kill: (signal?: NodeJS.Signals) => boolean };
     result?: unknown;
 };
-type RouteRequest = {
+export type RouteRequest = {
     point?: string | null;
     scene: string;
     source: Source;
@@ -47,6 +48,20 @@ const hash = (value: unknown) =>
 
 export const physicalTileSpan = 256 * 0.15;
 export const physicalMargins = [24, 64, 128, 256] as const;
+
+/** Check cheap known movement for every origin before bounded jump discovery. */
+export const routeAttempts = (anchorCount: number, knownFirst = true) => {
+    const origins = Array.from({ length: anchorCount }, (_, anchorIndex) => ({
+        anchorIndex, marginIndex: 0,
+    }));
+    const searches = origins.flatMap(({ anchorIndex }) =>
+        Array.from({ length: physicalMargins.length * 2 }, (_, marginIndex) => ({
+            anchorIndex, marginIndex,
+        })),
+    ).sort((a, b) => a.anchorIndex + a.marginIndex - b.anchorIndex - b.marginIndex ||
+        a.marginIndex - b.marginIndex);
+    return knownFirst ? [...origins, ...searches] : searches;
+};
 
 type Approach = { margin: number; corridor?: Corridor };
 
@@ -501,6 +516,7 @@ export function physicalRouteBuilder(options: Options) {
             };
         }
         const settings = await movementFile();
+        const staticSupports = await deviceFile(scene);
         const buildIdentity = await generatorIdentity();
         const key = hash({
             scene,
@@ -509,6 +525,8 @@ export function physicalRouteBuilder(options: Options) {
             state: 0,
             area: 0,
             policy: 4,
+            physicsSnapshot: 'terminal-scene-v1',
+            staticSupports: staticSupports?.fingerprint,
             tiles: corridor?.tiles,
             movement: settings.fingerprint,
             generator: buildIdentity,
@@ -560,6 +578,8 @@ export function physicalRouteBuilder(options: Options) {
                     'player-ground',
                     scene,
                     `--bounds=${bounds.join(',')}`,
+                    '--terminal-scene',
+                    ...(staticSupports ? ['--static-supports', staticSupports.path] : []),
                     '--scene-state',
                     '0',
                     '--area',
@@ -689,7 +709,7 @@ export function physicalRouteBuilder(options: Options) {
                       : 'route',
             ground: ground.output,
             request,
-            policy: stage === 'walking' ? 14 : 17,
+            policy: stage === 'walking' ? 14 : 18,
             devices: devices?.fingerprint,
             movement: settings.fingerprint,
             solver: options.solver,
@@ -786,6 +806,8 @@ export function physicalRouteBuilder(options: Options) {
     return {
         query,
         solve,
+        windows: (request: RouteRequest, points: Vec3[], settings: Parameters<typeof createWindowRoute>[3]) =>
+            createWindowRoute({ query, solve }, request, points, settings),
         async close() {
             closed = true;
             for (const worker of solverWorkers) worker.close();

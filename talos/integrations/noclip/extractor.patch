@@ -6,7 +6,7 @@ index fa7c03a9..79f3c9be 100644
  		"@mary-ext/array-fns": "^0.1.0",
  		"@mary-ext/czar": "^0.1.2",
  		"@mary-ext/ds-queue": "^0.1.0",
-+		"@opendfieldmap/ganglia": "file:../../../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.62.tgz",
++		"@opendfieldmap/ganglia": "file:../../../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.73.tgz",
  		"meshoptimizer": "1.3.0"
  	}
  }
@@ -907,7 +907,7 @@ new file mode 100644
 index 00000000..c9766701
 --- /dev/null
 +++ b/packages/extractor/src/commands/navmesh.ts
-@@ -0,0 +1,85 @@
+@@ -0,0 +1,90 @@
 +/* oxlint-disable no-await-in-loop -- release each asset before loading the next */
 +import { writeFile } from 'node:fs/promises';
 +import { parseArgs } from 'node:util';
@@ -924,6 +924,8 @@ index 00000000..c9766701
 +import { withContext } from '../context.ts';
 +
 +export const summary = 'export source-bound navigation tile topology without inventing player connectivity';
++import { VfsGroup } from '../hg/vfs.ts';
++
 +export const usage = 'usage: endfield-extract navmesh <scene> -o <file> [--limit n] --config <config>';
 +
 +/**
@@ -957,7 +959,9 @@ index 00000000..c9766701
 +		if (!assets.length) {
 +			throw new Error('no navigation assets');
 +		}
-+		const rows = [];
++		const stateFile = await ctx.vfs.find(VfsGroup.JsonData, `Data/Json/NavMesh/${positionals[0]}/NavMeshStateContainer.json`);
++        const states = stateFile ? (await ctx.memoryPack()).decode(await ctx.vfs.readVerified(stateFile), 'Beyond_Gameplay_NavMeshStateContainerForMemoryPack') : undefined;
++        const rows = [];
 +		for (const [hash, path] of assets.slice(0, limit)) {
 +			const data = await resolver.read(await resolver.findUnique({ hash, path }, 238));
 +			const tiles = arrayField(data, 'm_NavMeshTiles').map((tile) => {
@@ -981,6 +985,7 @@ index 00000000..c9766701
 +				scene: positionals[0],
 +				source: { buildGuid: build.guid, contentHash: build.contentHash },
 +				partial: rows.length !== assets.length,
++                states,
 +				assets: rows,
 +			}),
 +		);
@@ -2291,10 +2296,9 @@ index 00000000..56af04e6
 +});
 diff --git a/packages/extractor/src/commands/player-ground.ts b/packages/extractor/src/commands/player-ground.ts
 new file mode 100644
-index 00000000..22332a0a
 --- /dev/null
 +++ b/packages/extractor/src/commands/player-ground.ts
-@@ -0,0 +1,257 @@
+@@ -0,0 +1,290 @@
 +import { createHash } from 'node:crypto';
 +/* oxlint-disable no-await-in-loop -- retain one selected collision export at a time */
 +import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
@@ -2312,13 +2316,15 @@ index 00000000..22332a0a
 +	walkableCollisionIndices,
 +	type CollisionInputs,
 +} from '../game/collision-ground.ts';
-+import { collectCollisionInputs } from '../game/collision-inputs.ts';
++import { GameState } from '../game/state/game-state.ts';
++import { loadSceneStates, loadMapVariables, defaultSceneStates } from '../game/state/scene-conditions.ts';
++import { collectCollisionInputs, collisionChunkFiles } from '../game/collision-inputs.ts';
 +import { groundGeneratorIdentity, groundTileCache } from '../game/ground-tile-cache.ts';
 +
 +export const summary =
 +	'build bounded player ground tiles from selected collision sources, including factory floors';
 +export const usage =
-+	'usage: endfield-extract player-ground <scene> --bounds <minX,minZ,maxX,maxZ> --scene-state <n> --area <n> --movement-settings <file> -o <ground-file> --collision-output <geometry-file> [--cell-size <m>] [--tile-cells <n>] [--tiles <x,z;x,z>] [--tile-cache <directory>] --config <config>; player-ground --identity';
++	'usage: endfield-extract player-ground <scene> --bounds <minX,minZ,maxX,maxZ> --scene-state <n> --area <n> --movement-settings <file> -o <ground-file> --collision-output <geometry-file> [--terminal-scene] [--cell-size <m>] [--tile-cells <n>] [--tiles <x,z;x,z>] [--tile-cache <directory>] --config <config>; player-ground --identity';
 +
 +/**
 + * @param args source selection, build-bound movement parameters and explicit world bounds
@@ -2332,6 +2338,8 @@ index 00000000..22332a0a
 +		options: {
 +			bounds: { type: 'string' },
 +			'scene-state': { type: 'string' },
++			'terminal-scene': { type: 'boolean' },
++			'static-supports': { type: 'string' },
 +			area: { type: 'string' },
 +			'movement-settings': { type: 'string' },
 +			output: { type: 'string', short: 'o' },
@@ -2428,6 +2436,7 @@ index 00000000..22332a0a
 +	};
 +	const selection = {
 +		sceneState: parseInteger(values['scene-state'], '--scene-state'),
++		sceneStates: undefined as number[] | undefined,
 +		area: parseInteger(values.area, '--area'),
 +		layerMask: numberField(objectField(settings, '_collidableLayers'), 'm_Bits'),
 +		solidsOnly: true,
@@ -2437,6 +2446,13 @@ index 00000000..22332a0a
 +		const manifest = await ctx.world.manifest();
 +		if (source.buildGuid !== manifest.guid || source.contentHash !== manifest.contentHash) {
 +			throw new Error('collision and movement sources must share a build');
++		}
++		if (values['terminal-scene']) {
++			const states = await loadSceneStates(ctx.world, scene);
++			const game = new GameState({ variables: await loadMapVariables(ctx.world, scene) });
++			game.note(states.flatMap(state => state.condition ? [state.condition] : []));
++			// Streaming filenames encode a MapConfig index plus one. Zero is shared base geometry.
++			selection.sceneStates = [0, ...[...defaultSceneStates(states, game)].map(index => index + 1)].sort((a, b) => a - b);
 +		}
 +		const cells: ({ x: number; z: number } | 'global')[] = ['global'];
 +		// Adjacent cells may own geometry intersecting the region despite an outside actor origin.
@@ -2455,7 +2471,7 @@ index 00000000..22332a0a
 +		const inputs: CollisionInputs[] = [],
 +			absent = [];
 +		for (const cell of cells) {
-+			if (!(await ctx.world.cellChunkFiles(scene, cell, selection)).length) {
++			if (!(await collisionChunkFiles(ctx, scene, cell, selection)).length) {
 +				absent.push(cell);
 +				continue;
 +			}
@@ -2494,6 +2510,24 @@ index 00000000..22332a0a
 +		const geometry = collisionGeometry(inputs, {
 +			walkableLayers: numberField(objectField(settings, '_walkableLayers'), 'm_Bits'),
 +		});
++		if (values['static-supports']) {
++			const catalog = JSON.parse(await readFile(values['static-supports'], 'utf8'));
++			if (catalog.scene !== scene || catalog.source?.buildGuid !== source.buildGuid || catalog.source?.contentHash !== source.contentHash) throw new Error('static support source mismatch');
++			const used = [];
++			for (const support of catalog.staticSupports ?? []) {
++				if (!Array.isArray(support.positions) || support.positions.length % 3 || support.positions.some((v: unknown) => typeof v !== 'number' || !Number.isFinite(v)) ||
++					!Array.isArray(support.indices) || support.indices.length % 3 || support.indices.some((v: number) => !Number.isInteger(v) || v < 0 || v >= support.positions.length / 3)) throw new Error('invalid static support geometry');
++				const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
++				for (let i = 0; i < support.positions.length; i++) { min[i % 3] = Math.min(min[i % 3], support.positions[i]); max[i % 3] = Math.max(max[i % 3], support.positions[i]); }
++				if (max[0] < bounds[0] || min[0] > bounds[2] || max[2] < bounds[1] || min[2] > bounds[3]) continue;
++				const base = geometry.positions.length / 3, first = geometry.indices.length / 3;
++				for (const value of support.positions) geometry.positions.push(value);
++				for (const index of support.indices) geometry.indices.push(base + index);
++				geometry.records.push({ id: Number(support.id), component: 0, index: 0, kind: 'mesh', layer: 0, bounds: { min: min as [number, number, number], max: max as [number, number, number] }, first, count: support.indices.length / 3, walkable: true });
++				used.push({ id: support.id, model: support.model, pose: support.pose });
++			}
++			Object.assign(geometry.coverage, { staticSupports: used });
++		}
 +		const buildIndices = walkableCollisionIndices(geometry);
 +		const options = {
 +			profile,
@@ -2509,7 +2543,8 @@ index 00000000..22332a0a
 +			},
 +			...(tiles ? { tiles } : {}),
 +		};
-+		await writeFile(values['collision-output']!, JSON.stringify({ ...geometry, options, absent }));
++		const generator = await groundGeneratorIdentity();
++		await writeFile(values['collision-output']!, JSON.stringify({ ...geometry, exportRevision: 2, generator, options, absent }));
 +		const ground = await buildGroundTiles(
 +			{ positions: geometry.positions, indices: buildIndices },
 +			{
@@ -2524,6 +2559,8 @@ index 00000000..22332a0a
 +			values.output!,
 +			JSON.stringify({
 +				version: 1,
++				exportRevision: 2,
++				generator,
 +				source: geometry.source,
 +				scene,
 +				selection,
@@ -3241,10 +3278,9 @@ index 00000000..cae27cc2
 +});
 diff --git a/packages/extractor/src/commands/player-route.ts b/packages/extractor/src/commands/player-route.ts
 new file mode 100644
-index 00000000..66875eb8
 --- /dev/null
 +++ b/packages/extractor/src/commands/player-route.ts
-@@ -0,0 +1,820 @@
+@@ -0,0 +1,833 @@
 +import { readFile, rename, rm, writeFile } from 'node:fs/promises';
 +import { resolve } from 'node:path';
 +import { isDeepStrictEqual, parseArgs } from 'node:util';
@@ -3256,6 +3292,7 @@ index 00000000..66875eb8
 +	jumpDuration,
 +	planJumpRoute,
 +	projectPoint,
++	pruneGroundDetours,
 +	retimeGroundRoute,
 +	type GroundArrival,
 +	type GroundConnection,
@@ -3861,12 +3898,17 @@ index 00000000..66875eb8
 +		if (!request.interaction) {
 +			goal = targetSupport(surfaces, request.target)?.position ?? goal;
 +		}
-+		const connected = options.connections.length
++		let connected = options.connections.length
 +			? groundPlanner!.plan([arrival], goal, {
 +					interaction: request.interaction,
 +					connections: options.connections,
 +				})
 +			: walking;
++		if (connected.status === 'complete' && groundPlanner) {
++			const comparison = pruneGroundDetours(connected, groundPlanner, movement.sustainedSprint);
++			connected = comparison.route;
++			diagnostics.deviceDetours = { replacements: comparison.replacements, queries: comparison.queries };
++		}
 +		if (
 +			connected.status === 'complete' &&
 +			(knownRoute.status !== 'complete' || connected.cost < knownRoute.cost)
@@ -4047,6 +4089,13 @@ index 00000000..66875eb8
 +		route = knownRoute;
 +		connections = knownConnections;
 +	}
++	if (route.status === 'complete' && groundPlanner) {
++		const comparisonStart = performance.now();
++		const comparison = pruneGroundDetours(route, groundPlanner, movement.sustainedSprint);
++		route = comparison.route;
++		diagnostics.groundDetours = { replacements: comparison.replacements, queries: comparison.queries };
++		timing.groundDetours = performance.now() - comparisonStart;
++	}
 +	progress({ phase: 'route-search', connections: connections.length });
 +	if (route.status === 'complete') {
 +		await emit({ status: 'candidate', route, connections, groundedTarget: route.points.at(-1) });
@@ -4216,7 +4265,7 @@ index 00000000..9308bd7f
 +							scene: level.mapId,
 +							position: start.map((v: number, i: number) => v + Number(size[i]) / 2),
 +							availability: 'unknown',
-+							approximate: true,
++							// Region centres are teleport anchors in the completed-world model.
 +							requiresGroundProjection: true,
 +							groundRange: [Number(start[1]), Number(start[1]) + Number(size[1])],
 +							areaLevel: Number(stage.level),
@@ -4240,10 +4289,9 @@ index 00000000..9308bd7f
 +};
 diff --git a/packages/extractor/src/commands/traversal-devices.ts b/packages/extractor/src/commands/traversal-devices.ts
 new file mode 100644
-index 00000000..1f108779
 --- /dev/null
 +++ b/packages/extractor/src/commands/traversal-devices.ts
-@@ -0,0 +1,155 @@
+@@ -0,0 +1,167 @@
 +/* oxlint-disable no-await-in-loop -- decode and release level files, caching each small template once */
 +import { writeFile } from 'node:fs/promises';
 +import { parseArgs } from 'node:util';
@@ -4252,6 +4300,9 @@ index 00000000..1f108779
 +import { isObject } from '@endfield-noclip/formats/unity/values';
 +
 +import { withContext } from '../context.ts';
++import { groundGeneratorIdentity } from '../game/ground-tile-cache.ts';
++import { collectRaftTransports } from '../game/raft-transports.ts';
++import { collectStaticSupports } from '../game/static-supports.ts';
 +import { collectMovingSupports } from '../game/moving-supports.ts';
 +import { ropePairs, traversalDevice } from '../game/traversal-devices.ts';
 +import { VfsGroup } from '../hg/vfs.ts';
@@ -4372,10 +4423,14 @@ index 00000000..1f108779
 +			];
 +		});
 +		const moving = await collectMovingSupports(ctx, scene);
++		const structures = await collectStaticSupports(ctx, scene, new Set([...moving.supports, ...moving.following, ...moving.staticSupports].map(value => value.id)));
++		const rafts = await collectRaftTransports(ctx, scene);
 +		await writeFile(
 +			values.output!,
 +			JSON.stringify({
 +				version: 1,
++				exportRevision: 2,
++				generator: await groundGeneratorIdentity(),
 +				scene,
 +				source: { buildGuid: build.guid, contentHash: build.contentHash },
 +				coverage: {
@@ -4388,6 +4443,11 @@ index 00000000..1f108779
 +				devices,
 +				conveyors,
 +				movingSupports: moving.supports,
++				transports: rafts.transports,
++				unsupportedTransports: rafts.unsupported,
++				staticSupports: [...moving.staticSupports, ...structures.supports],
++				structuralObjects: structures.objects,
++				unsupportedStructures: structures.unsupported,
 +				followingSupports: moving.following,
 +				unsupportedMovingSupports: moving.unsupported,
 +				templates: Object.fromEntries(templates),
@@ -6033,10 +6093,9 @@ index 00000000..26a2a4de
 +});
 diff --git a/packages/extractor/src/game/collision-ground.ts b/packages/extractor/src/game/collision-ground.ts
 new file mode 100644
-index 00000000..1933b4d6
 --- /dev/null
 +++ b/packages/extractor/src/game/collision-ground.ts
-@@ -0,0 +1,612 @@
+@@ -0,0 +1,613 @@
 +import type { EcsCollider } from '@endfield-noclip/formats/endfield/ecs-collider';
 +import type { CollisionMesh } from '@endfield-noclip/formats/unity/collision-mesh';
 +import { multiplyMatrices, transformPoint, trsMatrix } from '@endfield-noclip/formats/unity/transform';
@@ -6044,7 +6103,7 @@ index 00000000..1933b4d6
 +
 +type Vec3 = [number, number, number];
 +type Source = { buildGuid: string; contentHash: string };
-+type Selection = { sceneState: number; area: number; layerMask: number };
++type Selection = { sceneState: number; sceneStates?: number[]; area: number; layerMask: number };
 +/** source collision geometry; missing cooks retain bounds without claiming decoded triangles */
 +export type MeshGeometry = CollisionMesh & { approximation?: 'missing-cook-bounds' };
 +type Actor = {
@@ -6167,7 +6226,7 @@ index 00000000..1933b4d6
 +		throw new Error('invalid collision pose');
 +	}
 +};
-+const box = ([x, y, z]: Vec3): Pick<CollisionMesh, 'vertices' | 'triangles'> => {
++export const collisionBox = ([x, y, z]: Vec3): Pick<CollisionMesh, 'vertices' | 'triangles'> => {
 +	if (![x, y, z].every((value) => Number.isFinite(value) && value >= 0)) {
 +		throw new Error('invalid collision box dimensions');
 +	}
@@ -6356,6 +6415,7 @@ index 00000000..1933b4d6
 +		if (
 +			![sceneState, area, layerMask].every(Number.isInteger) ||
 +			sceneState < 0 ||
++			(input.selection.sceneStates !== undefined && (!Array.isArray(input.selection.sceneStates) || input.selection.sceneStates.some(state => !Number.isInteger(state) || state < 0))) ||
 +			area < 0 ||
 +			layerMask < 0 ||
 +			layerMask > 0xffffffff ||
@@ -6480,7 +6540,7 @@ index 00000000..1933b4d6
 +			let approximation: ApproximationDetails | undefined;
 +			switch (shape.kind) {
 +				case 'box': {
-+					mesh = box(shape.halfExtents);
++					mesh = collisionBox(shape.halfExtents);
 +					break;
 +				}
 +				case 'sphere':
@@ -6533,7 +6593,7 @@ index 00000000..1933b4d6
 +							throw new Error('invalid missing-cook collision bounds');
 +						}
 +						const center: Vec3 = [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2];
-+						const enclosure = box([(max[0] - min[0]) / 2, (max[1] - min[1]) / 2, (max[2] - min[2]) / 2]);
++						const enclosure = collisionBox([(max[0] - min[0]) / 2, (max[1] - min[1]) / 2, (max[2] - min[2]) / 2]);
 +						mesh = {
 +							vertices: enclosure.vertices.map((vertex): Vec3 => [
 +								vertex[0] + center[0],
@@ -6654,11 +6714,12 @@ new file mode 100644
 index 00000000..684a16b7
 --- /dev/null
 +++ b/packages/extractor/src/game/collision-inputs.test.ts
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,47 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
-+import { readColliderGeometry } from './collision-inputs.ts';
++import type { Context } from '../context.ts';
++import { collisionChunkFiles, readColliderGeometry } from './collision-inputs.ts';
 +
 +const source = () => ({
 +	m_BakedTriangleCollisionMesh: new Uint8Array(0),
@@ -6691,12 +6752,22 @@ index 00000000..684a16b7
 +		assert.throws(() => readColliderGeometry(data, 'triangle', true), /invalid missing-cook/);
 +	}
 +});
++
++test('terminal collision selection retains base and enabled additions only', async () => {
++ const files = [0, 1, 3, 843].map(sceneState => ({ sceneState }));
++ const ctx = { world: { cellChunkFiles: async (_scene: string, _cell: unknown, filter: unknown) => {
++  assert.deepEqual(filter, { area: 0 });
++  return files;
++ } } } as unknown as Context;
++ assert.deepEqual(await collisionChunkFiles(ctx, 'map02', 'global', { sceneState: 0, sceneStates: [0, 3], area: 0 }), [files[0], files[2]]);
++ assert.deepEqual(await collisionChunkFiles(ctx, 'map02', 'global', { sceneState: 0, area: 0 }), [files[0]]);
++});
 diff --git a/packages/extractor/src/game/collision-inputs.ts b/packages/extractor/src/game/collision-inputs.ts
 new file mode 100644
 index 00000000..577efbce
 --- /dev/null
 +++ b/packages/extractor/src/game/collision-inputs.ts
-@@ -0,0 +1,202 @@
+@@ -0,0 +1,212 @@
 +/* oxlint-disable no-await-in-loop -- retain one streamed payload at a time */
 +import { readCollisionHeightfield } from '@endfield-noclip/formats/endfield/collision-heightfield';
 +import { readEcsCollider } from '@endfield-noclip/formats/endfield/ecs-collider';
@@ -6747,6 +6818,16 @@ index 00000000..577efbce
 +	};
 +};
 +
++/** Select base chunks and the enabled terminal-state additions with one shared rule. */
++export const collisionChunkFiles = async (
++ ctx: Context, scene: string, cell: { x: number; z: number } | 'global',
++ selection: { sceneState: number; sceneStates?: number[]; area: number },
++) => {
++ const states = new Set(selection.sceneStates ?? [selection.sceneState]);
++ return (await ctx.world.cellChunkFiles(scene, cell, { area: selection.area }))
++  .filter(file => states.has(file.sceneState));
++};
++
 +/**
 + * @param ctx open installation context, reused across cells
 + * @param scene source scene identifier
@@ -6759,9 +6840,9 @@ index 00000000..577efbce
 +	ctx: Context,
 +	scene: string,
 +	cell: { x: number; z: number } | 'global',
-+	selection: { sceneState: number; area: number; layerMask: number; solidsOnly?: boolean },
++	selection: { sceneState: number; sceneStates?: number[]; area: number; layerMask: number; solidsOnly?: boolean },
 +): Promise<CollisionInputs> => {
-+	const files = await ctx.world.cellChunkFiles(scene, cell, selection);
++	const files = await collisionChunkFiles(ctx, scene, cell, selection);
 +	if (!files.length) {
 +		throw new Error('no chunks match the collision selection');
 +	}
@@ -8090,10 +8171,9 @@ index 00000000..d8783c2e
 +};
 diff --git a/packages/extractor/src/game/forklift-supports.test.ts b/packages/extractor/src/game/forklift-supports.test.ts
 new file mode 100644
-index 00000000..193ff2d5
 --- /dev/null
 +++ b/packages/extractor/src/game/forklift-supports.test.ts
-@@ -0,0 +1,289 @@
+@@ -0,0 +1,317 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
@@ -8112,6 +8192,7 @@ index 00000000..193ff2d5
 +import type { AssetResolver, ObjectRef } from './assets/assets.ts';
 +import { forkliftOf, forkliftSupports } from './forklift-supports.ts';
 +import { readPrefabSupport } from './prefab-support.ts';
++import { bindingKey } from './prefabs/pose-paths.ts';
 +import { supportBounds } from './swept-supports.ts';
 +
 +const floatBits = (value: number) => {
@@ -8382,6 +8463,33 @@ index 00000000..193ff2d5
 +		const broken = prefab('lifted', invalid);
 +		await assert.rejects(readPrefabSupport(broken.resolver, broken.root));
 +	}
++});
++
++
++test('whole-prefab export retains chassis and moving solids with indexed faces', async () => {
++ const source = prefab('lifted');
++ source.objects.set(32, { classId: 65, data: { m_Center: {x:0,y:0,z:0}, m_Size:{x:6,y:1,z:4} } });
++ const moving = await readPrefabSupport(source.resolver, source.root);
++ const whole = await readPrefabSupport(source.resolver, source.root, {wholePrefab:true});
++ assert.equal(moving.bodies.length,1);
++ assert.equal(whole.bodies.length,2);
++ assert.ok(whole.bodyTriangles.every(triangles=>triangles?.length===12));
++ assert.deepEqual(supportBounds(whole.bodies), {min:[-3,-0.5,-2],max:[4.25,2.5,2]});
++});
++
++test('whole-prefab export applies active state and clip transforms to collision', async () => {
++ const source = prefab('lifted');
++ for (const id of [10,20,30,40]) source.objects.get(id)!.data.m_Name='node'+id;
++ source.objects.set(32, {classId:65,data:{m_Center:{x:0,y:0,z:0},m_Size:{x:6,y:1,z:4}}});
++ const whole = await readPrefabSupport(source.resolver, source.root, {wholePrefab:true,pose:{
++  key:'open', active:new Map([['node30',false]]),clips:[{animator:null,
++   transforms:new Map([[bindingKey('node20/node40'),[{kind:'position',value:[0,5,0]}]]]),
++   active:new Map(),materials:new Map(),renderers:new Map(),motion:null,
++  }],
++ }});
++ assert.equal(whole.bodies.length,1);
++ assert.deepEqual(supportBounds(whole.bodies), {min:[2,4.5,-1],max:[4,6.5,1]});
++ assert.equal(whole.bodyTriangles[0]?.length,12);
 +});
 diff --git a/packages/extractor/src/game/forklift-supports.ts b/packages/extractor/src/game/forklift-supports.ts
 new file mode 100644
@@ -8816,13 +8924,14 @@ new file mode 100644
 index 00000000..d9562ef2
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-data.ts
-@@ -0,0 +1,367 @@
+@@ -0,0 +1,370 @@
 +import { isObject } from '@endfield-noclip/formats/unity/values';
 +
 +import type { GroundArrival, GroundOptions, LocomotionOptions, Surface, Vec3, Wall } from '@opendfieldmap/ganglia';
 +
 +import { completedWallState, enabledWallState } from './air-wall-state.ts';
 +import { navigationPortals } from './navigation-portals.ts';
++import { terminalNavigationAssets } from './navigation-state.ts';
 +
 +const object = (value: unknown): Record<string, unknown> => {
 +	if (!isObject(value)) {
@@ -8900,7 +9009,8 @@ index 00000000..d9562ef2
 +	) {
 +		throw new Error('unsupported route progression snapshot');
 +	}
-+	const selected = new Set(list(query.assets).map(string));
++	const selected = new Set(query.navigationState === undefined ? list(query.assets).map(string) :
++        terminalNavigationAssets(list(nav.assets).map(value => string(object(value).asset)), nav.states, query.navigationState, list(query.assets).map(string)));
 +	const areas = new Set(list(query.areas).map(number));
 +	if (!selected.size || !areas.size || [...areas].some((a) => !Number.isInteger(a) || a < 0 || a > 31)) {
 +		throw new Error('explicit assets and area whitelist required');
@@ -9176,6 +9286,7 @@ index 00000000..d9562ef2
 +		state,
 +		...(query.progression !== undefined ? { progression: query.progression } : {}),
 +		assets: [...selected],
++        ...(query.navigationState === undefined ? {} : { navigationState: query.navigationState }),
 +		areas: [...areas],
 +		profileSource: query.profile === undefined ? 'most-common-character' : 'explicit',
 +		surfaces,
@@ -9434,12 +9545,11 @@ index 00000000..6b23241a
 +};
 diff --git a/packages/extractor/src/game/ground-tile-cache.test.ts b/packages/extractor/src/game/ground-tile-cache.test.ts
 new file mode 100644
-index 00000000..15f6706e
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-tile-cache.test.ts
-@@ -0,0 +1,60 @@
+@@ -0,0 +1,79 @@
 +import assert from 'node:assert/strict';
-+import { mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
++import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 +import { tmpdir } from 'node:os';
 +import { join } from 'node:path';
 +import { test } from 'node:test';
@@ -9447,7 +9557,26 @@ index 00000000..15f6706e
 +import type { Surface } from '@opendfieldmap/ganglia';
 +import type { BuildOptions, CollisionGeometry } from '@opendfieldmap/ganglia/build';
 +
-+import { groundTileCache } from './ground-tile-cache.ts';
++import { groundGeneratorIdentity, groundTileCache } from './ground-tile-cache.ts';
++
++test('physical generator identity invalidates changed geometry importers and excludes route code', async () => {
++	const read = new Map<string, Uint8Array>();
++	const baseline = await groundGeneratorIdentity(async (file) => {
++		const bytes = await readFile(file);
++		read.set(file, bytes);
++		return bytes;
++	});
++	for (const name of ['collision-ground.ts', 'prefab-support.ts', 'floor-supports.ts', 'collision-heightfield.ts']) {
++		const file = [...read.keys()].find((file) => file.endsWith(`/${name}`));
++		assert.ok(file, `missing physical generator dependency ${name}`);
++		const changed = await groundGeneratorIdentity(async (source) => source === file
++			? Buffer.concat([read.get(source)!, Buffer.from('\n// changed geometry implementation\n')])
++			: read.get(source)!);
++		assert.notEqual(changed, baseline, `${name} change reused an old physical generator`);
++	}
++	assert.ok([...read.keys()].every((file) => !/\/(?:player-route\.ts|routes\.mjs|locomotion\.mjs|shortcuts\.mjs)$/.test(file)));
++	assert.equal(await groundGeneratorIdentity(async (file) => read.get(file)!), baseline);
++});
 +
 +test('tile reuse binds geometry, physical settings and source and ignores corrupt files', async () => {
 +	const directory = await mkdtemp(join(tmpdir(), 'ground-tiles-'));
@@ -9500,10 +9629,9 @@ index 00000000..15f6706e
 +});
 diff --git a/packages/extractor/src/game/ground-tile-cache.ts b/packages/extractor/src/game/ground-tile-cache.ts
 new file mode 100644
-index 00000000..f874118b
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-tile-cache.ts
-@@ -0,0 +1,95 @@
+@@ -0,0 +1,122 @@
 +import { createHash, randomUUID } from 'node:crypto';
 +import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 +import { dirname, resolve } from 'node:path';
@@ -9525,16 +9653,43 @@ index 00000000..f874118b
 +	);
 +
 +/** @returns the installed geometry generator identity, independent of runtime route code */
-+export const groundGeneratorIdentity = async (): Promise<string> => {
++export const groundGeneratorIdentity = async (
++	readSource: (file: string) => Promise<Uint8Array> = readFile,
++): Promise<string> => {
 +	const entry = fileURLToPath(import.meta.resolve('@opendfieldmap/ganglia/build'));
 +	const files = [
 +		entry,
 +		resolve(dirname(entry), 'support-field.mjs'),
 +		resolve(dirname(entry), 'clip-surface.mjs'),
++		// Physical exports also depend on decoding, selecting and placing source
++		// geometry. SDK-only hashing could otherwise retain old bridge/floor/terrain
++		// results after those importers changed. Route/search code is excluded.
++		...[
++			'../commands/player-ground.ts',
++			'./collision-inputs.ts',
++			'./collision-ground.ts',
++			'./prefab-support.ts',
++			'./static-supports.ts',
++			'./moving-supports.ts',
++			'./floor-supports.ts',
++			'./prefabs/pose-paths.ts',
++			'./assets/asset-decode.ts',
++		].map((file) => fileURLToPath(new URL(file, import.meta.url))),
++		...[
++			'endfield/collision-heightfield',
++			'endfield/ecs-collider',
++			'endfield/streaming-chunk-data',
++			'unity/collision-mesh',
++			'unity/convex-mesh',
++			'unity/mesh',
++			'unity/transform',
++			'hg/terrain',
++			'binary/binary-reader',
++		].map((file) => fileURLToPath(import.meta.resolve(`@endfield-noclip/formats/${file}`))),
 +	];
 +	const generator = createHash('sha256');
-+	for (const bytes of await Promise.all(files.map((file) => readFile(file)))) {
-+		generator.update(bytes);
++	for (const bytes of await Promise.all(files.map((file) => readSource(file)))) {
++		generator.update(bytes).update('\0');
 +	}
 +	const sdk = JSON.parse(await readFile(resolve(dirname(entry), '../package.json'), 'utf8'));
 +	generator.update(JSON.stringify(sdk.dependencies));
@@ -12024,10 +12179,9 @@ index 00000000..1bc4ea28
 +};
 diff --git a/packages/extractor/src/game/moving-supports.ts b/packages/extractor/src/game/moving-supports.ts
 new file mode 100644
-index 00000000..60be63e5
 --- /dev/null
 +++ b/packages/extractor/src/game/moving-supports.ts
-@@ -0,0 +1,523 @@
+@@ -0,0 +1,551 @@
 +/* oxlint-disable no-await-in-loop -- offline catalogue reads each small prefab and template once */
 +import {
 +	readDynamicResources,
@@ -12070,6 +12224,7 @@ index 00000000..60be63e5
 +import { componentOf, componentParams } from './interactives/component-params.ts';
 +import { curveMoveOf } from './interactives/curve-move.ts';
 +import { readPrefabSupport } from './prefab-support.ts';
++import { floorSupportPoses } from './floor-supports.ts';
 +import { seesawSupports } from './seesaw-supports.ts';
 +import { supportEndpoints, sweepSupports, type SweptSupport } from './swept-supports.ts';
 +import { readWaterVolumes } from './water/water-volumes.ts';
@@ -12204,6 +12359,7 @@ index 00000000..60be63e5
 + */
 +export const collectMovingSupports = async (ctx: Context, scene: string) => {
 +	const supports: SweptSupport[] = [];
++	const staticSupports: { id: string; level: string; model: string; pose: string; positions: number[]; indices: number[] }[] = [];
 +	const following: FollowingSupport[] = [];
 +	const unsupported: { id: string; template: string; reason: string }[] = [];
 +	const pool = await ctx.world.stringPool(),
@@ -12291,6 +12447,32 @@ index 00000000..60be63e5
 +					template = reader.decode(await read(path), 'Beyond_Gameplay_InteractiveTemplateDataForMemoryPack');
 +					templates.set(path, template);
 +				}
++				// Rotating bridges are arranged in an authored pose in the phase-free model.
++				// Retain their indexed solid geometry instead of a convex support envelope.
++				if (row.template.startsWith('int_rotate_bridge_')) {
++					const base = componentOf(template, '_InteractiveModelComponentDataForMemoryPack');
++					if (typeof base?.modelId !== 'string') throw new Error('bridge model unavailable');
++					const variants = isRecord(template) && Array.isArray(template.templateVariant) ? template.templateVariant : [];
++					const variant = variants.find(pair => Array.isArray(pair) && pair[0] === row.template);
++					const override = Array.isArray(variant) && isRecord(variant[1]) && isRecord(variant[1].modelId) ? variant[1].modelId : null;
++					const modelId = override?.enabled === true ? override.value : base.modelId;
++					if (typeof modelId !== 'string') throw new Error('invalid bridge model variant');
++					const model = objectField(models, modelId);
++					const prefab = stringField(model, 'path').toLowerCase();
++					const body = await bodyOf(prefab);
++					const scale = (row.modelScale > 0 ? row.modelScale : Number(base.modelScale ?? 1)) * numberField(model, 'scaleFactor');
++					const matrix = trsMatrix(row.position, unityEulerQuaternion(row.rotation), row.scale.map(v => v * scale));
++					const positions: number[] = [], indices: number[] = [];
++					for (let i = 0; i < body.bodies.length; i++) {
++						const triangles = body.bodyTriangles[i];
++						if (!triangles) throw new Error('bridge collider triangle indices unavailable');
++						const first = positions.length / 3;
++						for (const vertex of body.bodies[i]) positions.push(...transformPoint(matrix, vertex));
++						for (const triangle of triangles) indices.push(...triangle.map(index => index + first));
++					}
++					staticSupports.push({ id, level: level.id, model: prefab, pose: 'authored-rest', positions, indices });
++					continue;
++				}
 +				const forklift = forkliftOf(template, row);
 +				const follows = isFollowingBox(template, row);
 +				if (!existing && !forklift && !follows) {
@@ -12325,15 +12507,14 @@ index 00000000..60be63e5
 +					positions = splinePath(spline, move);
 +					speed = move.speed > 0 ? move.speed : null;
 +				} else if (lifter || moving) {
-+					// floor positions are local offsets, unlike world-space spline knots.
-+					const placement = trsMatrix(row.position, unityEulerQuaternion(row.rotation), row.scale);
-+					positions = vectors(params.get('position_list')).map((p) => transformPoint(placement, p));
++					// Both components set the moving part to these authored world positions.
++                    positions = vectors(params.get('position_list'));
 +					const suffix = lifter
 +						? '_LifterCoreComponentDataForMemoryPack'
 +						: '_InteractiveMovingPlatformComponentDataForMemoryPack';
 +					const p = componentParams(template, row, {
 +						suffix,
-+						diffKey: lifter ? 'Comp_Lifter' : 'Comp_MovingPlatform',
++						diffKey: lifter ? 'Comp_LifterCore' : 'Comp_MovingPlatform',
 +						type: lifter ? 154 : 178,
 +					});
 +					speed = scalar(p?.get('speed')) ?? scalar(params.get('speed'));
@@ -12434,7 +12615,8 @@ index 00000000..60be63e5
 +						),
 +					]);
 +				} else {
-+					const poses = positions.map((position) => {
++					const poses = lifter || moving ? floorSupportPoses(body, positions, row.rotation,
++                        row.scale.map(value => value * scale) as Vec3) : positions.map((position) => {
 +						const matrix = trsMatrix(
 +							position,
 +							unityEulerQuaternion(row.rotation),
@@ -12549,7 +12731,7 @@ index 00000000..60be63e5
 +	if (new Set(supports.map((support) => support.id)).size !== supports.length) {
 +		throw new Error('duplicate moving support source identity');
 +	}
-+	return { supports, following, unsupported };
++	return { supports, following, unsupported, staticSupports };
 +};
 diff --git a/packages/extractor/src/game/navigation-portals.test.ts b/packages/extractor/src/game/navigation-portals.test.ts
 new file mode 100644
@@ -13142,10 +13324,9 @@ index 00000000..ac4ff889
 +};
 diff --git a/packages/extractor/src/game/prefab-support.ts b/packages/extractor/src/game/prefab-support.ts
 new file mode 100644
-index 00000000..25e1c1f0
 --- /dev/null
 +++ b/packages/extractor/src/game/prefab-support.ts
-@@ -0,0 +1,258 @@
+@@ -0,0 +1,272 @@
 +/* oxlint-disable no-await-in-loop -- resolve hierarchy and collision cooks once per prefab */
 +import { FormatError } from '@endfield-noclip/formats/binary/binary-reader';
 +import { MeshTopology } from '@endfield-noclip/formats/unity/mesh';
@@ -13160,32 +13341,37 @@ index 00000000..25e1c1f0
 +	numberField,
 +	objectField,
 +	pptrField,
++	stringField,
 +} from '@endfield-noclip/formats/unity/values';
 +
 +import { loadMesh } from './assets/asset-decode.ts';
 +import { objectKey, type AssetResolver, type ObjectRef } from './assets/assets.ts';
 +import { readColliderGeometry } from './collision-inputs.ts';
++import { collisionBox } from './collision-ground.ts';
++import { bindingKey, clipPaths, posedLocal, type ClipPaths } from './prefabs/pose-paths.ts';
++import type { PrefabPose } from './prefabs/prefab.ts';
 +
 +type Vec3 = [number, number, number];
 +const xyz = (v: TypeTreeObject): Vec3 => [numberField(v, 'x'), numberField(v, 'y'), numberField(v, 'z')];
 +const rotation = (v: TypeTreeObject) => [...xyz(v), numberField(v, 'w')];
 +const identity = () => trsMatrix([0, 0, 0], [0, 0, 0, 1], [1, 1, 1]);
 +const corners = (center: Vec3, size: Vec3): Vec3[] =>
-+	Array.from({ length: 8 }, (_, bits): Vec3 => [
-+		center[0] + (bits & 1 ? 0.5 : -0.5) * size[0],
-+		center[1] + (bits & 2 ? 0.5 : -0.5) * size[1],
-+		center[2] + (bits & 4 ? 0.5 : -0.5) * size[2],
-+	]);
++ collisionBox(size.map(value => value / 2) as Vec3).vertices.map(point => point.map((value, axis) => value + center[axis]) as Vec3);
 +
 +/**
 + * @param resolver asset reader
 + * @param root prefab GameObject
++ * @param options wholePrefab retains fixed braces and all collider subtrees; pose applies the same active/transform values used for rendering
 + * @returns collision vertices in prefab space, with the selected subtree's rest matrix and rotational pivot
 + * @throws for malformed references, unsupported nonempty collision cooks or absent solid support
 + */
-+export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef) => {
++export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef,
++ options: { wholePrefab?: boolean; pose?: PrefabPose | null } = {}) => {
++ const clips = options.pose?.clips ?? [];
++ const transforms = clips.map(clip => clip.transforms);
 +	const nodes: {
 +		key: string;
++		paths: ClipPaths;
 +		parent: string | null;
 +		matrix: Float32Array;
 +		active: boolean;
@@ -13222,26 +13408,25 @@ index 00000000..25e1c1f0
 +			throw new FormatError('support prefab has no transform');
 +		}
 +		const t = transform.data;
-+		const matrix = parent
-+			? multiplyMatrices(
-+					parent.matrix,
-+					trsMatrix(
-+						xyz(objectField(t, 'm_LocalPosition')),
-+						rotation(objectField(t, 'm_LocalRotation')),
-+						xyz(objectField(t, 'm_LocalScale')),
-+					),
-+				)
-+			: identity();
-+		const node = {
-+			key,
-+			parent: parent?.key ?? null,
-+			matrix,
-+			active: (parent?.active ?? true) && data.m_IsActive !== false && data.m_IsActive !== 0,
-+			components,
-+		};
++
++        const name = options.pose ? stringField(data, 'm_Name') : '';
++        const paths = clipPaths(clips, parent?.paths ?? [], { name, isRoot: parent === null });
++        const local = posedLocal({ position: xyz(objectField(t, 'm_LocalPosition')),
++            rotation: rotation(objectField(t, 'm_LocalRotation')) as [number, number, number, number],
++            scale: xyz(objectField(t, 'm_LocalScale')) }, transforms, paths);
++        const matrix = parent ? multiplyMatrices(parent.matrix, trsMatrix(local.position, local.rotation, local.scale)) : identity();
++        let enabled = options.pose?.active.get(name);
++        for (const [i, clip] of clips.entries()) {
++            const path = paths[i];
++            if (path !== null && path !== undefined && path !== '') enabled = clip.active.get(bindingKey(path)) ?? enabled;
++        }
++        const node = { key, paths, parent: parent?.key ?? null, matrix,
++            active: (parent?.active ?? true) && options.pose?.hidden !== true &&
++                (enabled ?? (data.m_IsActive !== false && data.m_IsActive !== 0)), components };
++
 +		nodes.push(node);
 +		for (const component of components) {
-+			for (const field of ['MovingPartRoot', 'movingPartRoot', 'rotatingRoot', 'lifted']) {
++			for (const field of options.wholePrefab ? [] : ['MovingPartRoot', 'movingPartRoot', 'rotatingRoot', 'lifted']) {
 +				if (!(field in component.data)) {
 +					continue;
 +				}
@@ -13283,7 +13468,9 @@ index 00000000..25e1c1f0
 +	const vertices: Vec3[] = [];
 +	const bodies: Vec3[][] = [];
 +	const bodyKinds: ('box' | 'convex' | 'triangle')[] = [];
-+	const add = (points: Vec3[], kind: 'box' | 'convex' | 'triangle') => {
++	const bodyTriangles: (number[][] | null)[] = [];
++	const add = (points: Vec3[], kind: 'box' | 'convex' | 'triangle', triangles: number[][] | null = null) => {
++		bodyTriangles.push(triangles ?? (kind === 'box' ? collisionBox([1, 1, 1]).triangles : null));
 +		bodyKinds.push(kind);
 +		vertices.push(...points);
 +		bodies.push(points);
@@ -13293,7 +13480,7 @@ index 00000000..25e1c1f0
 +			continue;
 +		}
 +		for (const { ref, data } of node.components) {
-+			if (data.m_Enabled === false || data.m_Enabled === 0 || data.m_IsTrigger === true) {
++			if (data.m_Enabled === false || data.m_Enabled === 0 || data.m_IsTrigger === true || data.m_IsTrigger === 1) {
 +				continue;
 +			}
 +			if (ref.info.classId === 65) {
@@ -13305,7 +13492,7 @@ index 00000000..25e1c1f0
 +				);
 +			}
 +			// the lifted subtree's collider set is audited together with its local-position controller.
-+			if (ref.info.classId === 64 && translated !== null) {
++			if (ref.info.classId === 64 && (translated !== null || options.wholePrefab)) {
 +				const mesh = await resolver.resolve(ref, pptrField(data, 'm_Mesh'));
 +				if (!mesh) {
 +					throw new FormatError('support collider has no mesh');
@@ -13313,8 +13500,10 @@ index 00000000..25e1c1f0
 +				const kind = data.m_Convex === true || data.m_Convex === 1 ? 'convex' : 'triangle';
 +				const source = await resolver.read(mesh);
 +				let points: Vec3[];
++				let triangles: number[][] | null = null;
 +				if (kind === 'convex' || bytesField(source, 'm_BakedTriangleCollisionMesh').length) {
-+					points = readColliderGeometry(source, kind, false).vertices;
++					const geometry = readColliderGeometry(source, kind, false);
++                    points = geometry.vertices; triangles = geometry.triangles;
 +				} else {
 +					// ordinary nonconvex colliders can retain their actual source mesh instead of a cook.
 +					// only its indexed static triangles contribute; unused vertices and render bounds do not.
@@ -13323,6 +13512,7 @@ index 00000000..25e1c1f0
 +						throw new FormatError('support collider source mesh is not static triangles');
 +					}
 +					const indices = new Set<number>();
++                    const indexed: number[] = [];
 +					for (const part of decoded.submeshes) {
 +						if (part.topology !== MeshTopology.Triangles || part.indexCount % 3 !== 0) {
 +							throw new FormatError('unsupported support collider source topology');
@@ -13335,9 +13525,11 @@ index 00000000..25e1c1f0
 +							if (!Number.isInteger(vertex) || vertex < 0 || vertex >= decoded.vertexCount) {
 +								throw new FormatError('invalid support collider source index');
 +							}
-+							indices.add(vertex);
++							indices.add(vertex); indexed.push(vertex);
 +						}
 +					}
++					const remap = new Map([...indices].map((index, i) => [index, i]));
++                    triangles = Array.from({ length: indexed.length / 3 }, (_, i) => indexed.slice(i * 3, i * 3 + 3).map(index => remap.get(index)!));
 +					points = [...indices].map((index): Vec3 => [
 +						decoded.positions[index * 3],
 +						decoded.positions[index * 3 + 1],
@@ -13347,6 +13539,7 @@ index 00000000..25e1c1f0
 +				add(
 +					points.map((p) => transformPoint(node.matrix, p)),
 +					kind,
++					triangles,
 +				);
 +			}
 +			if (ref.info.classId !== 135183052) {
@@ -13388,20 +13581,22 @@ index 00000000..25e1c1f0
 +					add(
 +						geometry.vertices.map((p) => transformPoint(m, p)),
 +						kind,
++						geometry.triangles,
 +					);
 +				}
 +			}
 +		}
 +	}
-+	if (!vertices.length || vertices.some((p) => !p.every(Number.isFinite))) {
-+		throw new FormatError('moving prefab has no decoded solid support');
-+	}
++	if (!vertices.length) throw new FormatError('prefab has no decoded solid support');
++    if (vertices.some(point => !point.every(Number.isFinite))) throw new FormatError('prefab collider contains nonfinite vertices');
 +	return {
 +		bodies,
 +		bodyKinds,
++		bodyTriangles,
 +		pivot: pivot ? (byKey.get(pivot)?.matrix ?? null) : null,
 +		translationRoot: translated ? (byKey.get(translated)?.matrix ?? null) : null,
 +		movingPart: selected !== null,
++        movingRoot: selected ? (byKey.get(selected)?.matrix ?? null) : null,
 +	};
 +};
 diff --git a/packages/extractor/src/game/round-exclusions.test.ts b/packages/extractor/src/game/round-exclusions.test.ts
@@ -16351,3 +16546,668 @@ index 00000000..4ca43fc5
 +	process.exit(0);
 +});
 +send({ type: 'ready', version: 1 });
+diff --git a/packages/extractor/src/game/navigation-state.ts b/packages/extractor/src/game/navigation-state.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/game/navigation-state.ts
+@@ -0,0 +1,67 @@
++type Pair = [unknown, unknown];
++const entries = (value: unknown): Pair[] => {
++    if (!Array.isArray(value) || value.some(row => !Array.isArray(row) || row.length !== 2))
++        throw new Error('Invalid navigation state dictionary');
++    return value as Pair[];
++};
++const record = (value: unknown): Record<string, unknown> => {
++    if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid navigation state');
++    return value as Record<string, unknown>;
++};
++const bucket = (value: unknown): bigint[] => {
++    const row = record(value);
++    return Array.from({ length: 8 }, (_, i) => {
++        const v = row[`bucket${i}`];
++        if (!(typeof v === 'string' && /^\d+$/.test(v)) && !(typeof v === 'number' && Number.isSafeInteger(v) && v >= 0))
++            throw new Error('Invalid scene state bucket');
++        const n = BigInt(v);
++        if (n > 0xffffffffffffffffn) throw new Error('Scene state bucket overflow');
++        return n;
++    });
++};
++const terminalLevels = (value: unknown) => {
++    const result = new Map<string, number>();
++    for (const [, values] of entries(value)) {
++        const levels = entries(values).map(([level, chunks]) => {
++            const n = Number(level);
++            if (!Number.isInteger(n) || n < 0 || n > 254 || !Array.isArray(chunks)) throw new Error('Invalid navigation upgrade');
++            return { level: n, chunks };
++        }).sort((a, b) => b.level - a.level);
++        for (const id of levels[0]?.chunks ?? []) {
++            const key = String(id), level = levels[0].level;
++            if (result.has(key) && result.get(key) !== level) throw new Error('Conflicting navigation upgrades');
++            result.set(key, level);
++        }
++    }
++    return result;
++};
++
++/** Select one authored chunk variant for the terminal upgrade snapshot.
++ * Scene buckets are resolved from the caller's completed quest/map-variable snapshot.
++ * The native manager masks each chunk and accepts only an authored state combination.
++ */
++export function terminalNavigationAssets(available: string[], stateValue: unknown, snapshotValue: unknown, requested = available): string[] {
++    const state = record(stateValue), snapshot = bucket(snapshotValue);
++    const masks = new Map(entries(state.surfTileIDToSceneStateBucketsMask).map(([id, value]) => [String(id), bucket(value)]));
++    const sets = new Map(entries(state.surfTileIDToSceneStateBucketsSet).map(([id, value]) => {
++        if (!Array.isArray(value)) throw new Error('Invalid navigation state set');
++        return [String(id), value.map(bucket)] as const;
++    }));
++    const strongholds = terminalLevels(state.strongholdToSurfTileID), pois = terminalLevels(state.poiToSurfTileID);
++    const names = new Set(available), selected: string[] = [];
++    for (const name of requested) {
++        const match = /^(\d+)_NavMeshChunkData\.asset$/.exec(name);
++        if (!match) continue;
++        const id = match[1], mask = masks.get(id);
++        let scene = mask ? snapshot.map((value, i) => value & mask[i]) : Array<bigint>(8).fill(0n);
++        if (!sets.get(id)?.some(candidate => candidate.every((value, i) => value === scene[i]))) scene = Array<bigint>(8).fill(0n);
++        // These exports use the native legacy filename format, which holds 32 scene bits.
++        if (scene[0] > 0xffffffffn || scene.slice(1).some(value => value !== 0n)) throw new Error('Navigation state requires protocol filenames');
++        const prefix = scene[0] | (BigInt((strongholds.get(id) ?? -1) + 1) << 32n) | (BigInt((pois.get(id) ?? -1) + 1) << 40n);
++        const chosen = prefix === 0n ? name : `${prefix}_${name}`;
++        if (!names.has(chosen)) throw new Error(`Missing terminal navigation asset ${chosen}`);
++        selected.push(chosen);
++    }
++    if (!selected.length) throw new Error('No navigation chunks');
++    return selected;
++}
+diff --git a/packages/extractor/src/game/navigation-state.test.ts b/packages/extractor/src/game/navigation-state.test.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/game/navigation-state.test.ts
+@@ -0,0 +1,16 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++import { terminalNavigationAssets } from './navigation-state.ts';
++const buckets = (n: number) => Object.fromEntries(Array.from({ length: 8 }, (_, i) => [`bucket${i}`, i ? 0 : n]));
++test('selects one authored terminal variant per chunk and rejects missing assets', () => {
++    const state = {
++        surfTileIDToSceneStateBucketsMask: [['1', buckets(31)]],
++        surfTileIDToSceneStateBucketsSet: [['1', [buckets(10), buckets(21)]]],
++        strongholdToSurfTileID: [],
++        poiToSurfTileID: [['site', [[0, []], [4, ['2']]]]],
++    };
++    const names = ['1_NavMeshChunkData.asset', '10_1_NavMeshChunkData.asset', '21_1_NavMeshChunkData.asset', '2_NavMeshChunkData.asset', '5497558138880_2_NavMeshChunkData.asset'];
++    assert.deepEqual(terminalNavigationAssets(names, state, buckets(842)), ['10_1_NavMeshChunkData.asset', '5497558138880_2_NavMeshChunkData.asset']);
++    assert.equal(terminalNavigationAssets(names, state, buckets(31))[0], '1_NavMeshChunkData.asset');
++    assert.throws(() => terminalNavigationAssets(names.slice(0, -1), state, buckets(842)), /Missing terminal/);
++});
+diff --git a/packages/extractor/src/game/raft-transports.ts b/packages/extractor/src/game/raft-transports.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/game/raft-transports.ts
+@@ -0,0 +1,143 @@
++/* oxlint-disable no-await-in-loop -- offline export reads each template and level once */
++import { readInteractiveTable } from '@endfield-noclip/formats/endfield/interactive-model';
++import { levelInteractiveFromValue, type InteractiveParam, type LevelInteractive } from '@endfield-noclip/formats/endfield/level-interactives';
++import { readLevelSplines, splineCurves, type BezierCurve, type LevelSpline } from '@endfield-noclip/formats/endfield/level-splines';
++import { isMemoryPackObject, type MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
++
++import type { Context } from '../context.ts';
++import { VfsGroup } from '../hg/vfs.ts';
++import { componentOf, componentParams } from './interactives/component-params.ts';
++
++type Vec3 = [number, number, number];
++type Placement = { row: LevelInteractive; template: MemoryPackValue; source: string };
++type Unsupported = { id: string; template: string; reason: string };
++const RAFT = '_InteractiveBambooRaftComponentDataForMemoryPack';
++const DOCK = '_InteractiveBambooRaftDockComponentDataForMemoryPack';
++const CURVE = { suffix: '_CurveMoveComponentDataForMemoryPack', diffKey: 'Comp_CurveMove', type: 88 };
++const DOCK_KEYS = { suffix: DOCK, diffKey: 'Comp_InteractiveBambooRaftDock', type: 120 };
++
++const integer = (params: Map<string, InteractiveParam>, key: string) => Number(BigInt.asIntN(32, params.get(key)?.values[0]?.bits ?? 0n));
++const float = (params: Map<string, InteractiveParam>, key: string) => {
++    const view = new DataView(new ArrayBuffer(4));
++    view.setUint32(0, Number(BigInt.asUintN(32, params.get(key)?.values[0]?.bits ?? 0n)), true);
++    return view.getFloat32(0, true);
++};
++const point = (value: readonly number[]): Vec3 => [value[0], value[1], value[2]];
++const distance = (a: readonly number[], b: readonly number[]) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
++const reversed = (curve: BezierCurve): BezierCurve => [point(curve[3]), point(curve[2]), point(curve[1]), point(curve[0])];
++
++/** A dock placement is a shore interaction point, not the boat root or a proved
++ * walking connector. This guard rejects distant or ambiguous catalogue matches;
++ * it does not represent an activation radius or authorize boarding through air. */
++const DOCK_NODE_NEIGHBOURHOOD = 32;
++
++/** Export authored spline transfers without constructing water support. The
++ * independent shore and ride positions remain available to later access checks. */
++export const raftTransports = (placements: Placement[], splines: ReadonlyMap<number, LevelSpline>, level: string) => {
++    const unsupported: Unsupported[] = [];
++    const transports: {
++        id: string; kind: 'raft'; level: string; template: string; source: string; position: Vec3;
++        splineId: number; closed: boolean; curves: BezierCurve[]; nodes: Vec3[];
++        movement: { speed: number; tween: number; rampDistance: number | null; followsTangent: boolean; reverse: boolean; speedCurve: string | null };
++        docks: { id: string; nodeIndex: number; position: Vec3; ridePosition: Vec3; separation: number }[];
++        legs: { from: string; to: string; direction: 'forward' | 'reverse'; curves: BezierCurve[] }[];
++        snapshot: 'completed-game'; unpricedCosts: string[];
++    }[] = [];
++    const fail = (row: LevelInteractive, reason: string) => unsupported.push({ id: String(row.id), template: row.template, reason });
++    for (const { row, template, source } of placements) {
++        if (!componentOf(template, RAFT)) continue;
++        try {
++            const params = componentParams(template, row, CURVE);
++            if (!params) throw new Error('raft curve component unavailable');
++            const splineId = integer(params, 'spline_id');
++            const spline = splines.get(splineId);
++            if (!spline || spline.knots.length < 2) throw new Error(`raft spline ${splineId} unavailable`);
++            const curves = splineCurves(spline, spline.closed);
++            const nodes = curves.map(curve => point(curve[0]));
++            if (!spline.closed) nodes.push(point(curves.at(-1)![3]));
++            if (curves.flat(2).some(value => !Number.isFinite(value))) throw new Error('nonfinite raft spline');
++            const speed = float(params, 'speed');
++            if (!Number.isFinite(speed) || speed <= 0) throw new Error('raft speed must be finite and positive');
++            const tween = integer(params, 'tween');
++            const rampDistance = tween === 1 ? float(params, 'distance') : null;
++            if (rampDistance !== null && (!Number.isFinite(rampDistance) || rampDistance < 0)) throw new Error('invalid raft ramp distance');
++            transports.push({ id: String(row.id), kind: 'raft', level, template: row.template, source,
++                position: point(row.position), splineId, closed: spline.closed, curves, nodes,
++                movement: { speed, tween, rampDistance, followsTangent: integer(params, 'curve_move_direction') === 1,
++                    reverse: integer(params, 'curve_is_reverse') !== 0,
++                    speedCurve: integer(params, 'use_curve_control_speed') !== 0 ? params.get('speed_variation_curve_key')?.values[0]?.text ?? '' : null },
++                docks: [], legs: [], snapshot: 'completed-game', unpricedCosts: ['call', 'wait', 'board', 'alight'] });
++        } catch (error) {
++            fail(row, error instanceof Error ? error.message : String(error));
++        }
++    }
++    for (const { row, template } of placements) {
++        if (!componentOf(template, DOCK)) continue;
++        const params = componentParams(template, row, DOCK_KEYS);
++        if (!params) { fail(row, 'dock component unavailable'); continue; }
++        const nodeIndex = integer(params, 'node_index');
++        const matches = transports.filter(raft => nodeIndex >= 0 && nodeIndex < raft.nodes.length &&
++            distance(raft.nodes[nodeIndex], row.position) <= DOCK_NODE_NEIGHBOURHOOD);
++        if (matches.length !== 1) {
++            fail(row, matches.length ? 'dock matches several raft spline nodes' : 'dock has no nearby authored spline node');
++            continue;
++        }
++        const raft = matches[0], ridePosition = raft.nodes[nodeIndex];
++        if (raft.docks.some(dock => dock.nodeIndex === nodeIndex)) { fail(row, 'several docks name the same raft node'); continue; }
++        raft.docks.push({ id: String(row.id), nodeIndex, position: point(row.position), ridePosition,
++            separation: distance(ridePosition, row.position) });
++    }
++    for (const raft of transports) {
++        raft.docks.sort((a, b) => a.nodeIndex - b.nodeIndex);
++        for (const from of raft.docks) for (const to of raft.docks) {
++            if (from === to) continue;
++            const low = Math.min(from.nodeIndex, to.nodeIndex), high = Math.max(from.nodeIndex, to.nodeIndex);
++            const forward = from.nodeIndex < to.nodeIndex;
++            const curves = raft.curves.slice(low, high);
++            raft.legs.push({ from: from.id, to: to.id, direction: forward ? 'forward' : 'reverse',
++                curves: forward ? curves : curves.toReversed().map(reversed) });
++        }
++        if (raft.docks.length < 2) unsupported.push({ id: raft.id, template: raft.template, reason: 'raft has fewer than two unambiguous docks' });
++    }
++    return { transports, unsupported };
++};
++
++/** Read both template defaults and placement overrides from the installation. */
++export const collectRaftTransports = async (ctx: Context, scene: string) => {
++    const pool = await ctx.world.stringPool(), reader = await ctx.memoryPack(), paths = await ctx.world.pathLookup();
++    const read = async (path: string) => {
++        const file = await ctx.vfs.find(VfsGroup.JsonData, path);
++        if (!file) throw new Error(`missing raft input ${path}`);
++        return ctx.vfs.readVerified(file);
++    };
++    const table = readInteractiveTable(await read('Data/Json/Interactive/InteractiveTable.json'), id => pool.get(id));
++    const templates = new Map<string, MemoryPackValue>();
++    const transports: ReturnType<typeof raftTransports>['transports'] = [];
++    const unsupported: Unsupported[] = [];
++    for (const level of (await ctx.world.levelConfigs()).values()) {
++        if (level.mapId !== scene) continue;
++        const placements: Placement[] = [], splines = new Map<number, LevelSpline>(), seen = new Set<string>();
++        for (const hash of level.levelDataPathHashes ?? []) {
++            const source = paths(hash);
++            if (!source) throw new Error('missing raft level path');
++            const data = reader.decode(await read(source), 'Beyond_Gameplay_LevelDataForMemoryPack');
++            if (!isMemoryPackObject(data) || !Array.isArray(data.interactives)) throw new Error('invalid raft level data');
++            for (const spline of readLevelSplines(data)) splines.set(spline.id, spline);
++            for (const raw of data.interactives) {
++                if (!isMemoryPackObject(raw) || typeof raw.entityDataIdKey !== 'string' || !/raft/.test(raw.entityDataIdKey)) continue;
++                if (typeof raw.levelLogicId !== 'string' || !/^[1-9]\d*$/.test(raw.levelLogicId)) throw new Error('invalid raft identity');
++                const row = levelInteractiveFromValue(raw, BigInt(raw.levelLogicId));
++                if (seen.has(String(row.id))) continue;
++                seen.add(String(row.id));
++                const templateId = table.templates.get(row.template), templatePath = templateId === undefined ? undefined : table.templatePaths.get(templateId);
++                if (!templatePath) { unsupported.push({ id: String(row.id), template: row.template, reason: 'raft template unavailable' }); continue; }
++                let template = templates.get(templatePath);
++                if (!template) { template = reader.decode(await read(templatePath), 'Beyond_Gameplay_InteractiveTemplateDataForMemoryPack'); templates.set(templatePath, template); }
++                placements.push({ row, template, source });
++            }
++        }
++        const result = raftTransports(placements, splines, level.id);
++        transports.push(...result.transports); unsupported.push(...result.unsupported);
++    }
++    return { transports, unsupported };
++};
+diff --git a/packages/extractor/src/game/raft-transports.test.ts b/packages/extractor/src/game/raft-transports.test.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/game/raft-transports.test.ts
+@@ -0,0 +1,72 @@
++import assert from 'node:assert/strict';
++import { describe, it } from 'node:test';
++import type { LevelInteractive } from '@endfield-noclip/formats/endfield/level-interactives';
++import type { LevelSpline } from '@endfield-noclip/formats/endfield/level-splines';
++import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
++
++import { raftTransports } from './raft-transports.ts';
++
++const bits = (value: number) => {
++    const view = new DataView(new ArrayBuffer(4)); view.setFloat32(0, value, true); return BigInt(view.getUint32(0, true));
++};
++const parameter = (key: string, type: number, value: bigint) => ({ key, type, values: [{ bits: value, text: null }] });
++const rawParameter = (key: string, type: number, value: bigint) => ({ key, value: { type, valueArray: [{ valueBit64: String(value), valueString: null }] } });
++const row = (id: bigint, template: string, position: [number, number, number], componentProperties: LevelInteractive['componentProperties'] = new Map()): LevelInteractive => ({
++    id, template, position, rotation: [0, 0, 0], scale: [1, 1, 1], modelScale: 0, createState: 0,
++    properties: [], componentProperties, isLocked: false,
++});
++const raftTemplate: MemoryPackValue = { componentList: [
++    { $type: 'Beyond_Gameplay_InteractiveBambooRaftComponentDataForMemoryPack' },
++    { $type: 'Beyond_Gameplay_CurveMoveComponentDataForMemoryPack', propertyList: [
++        rawParameter('spline_id', 3, 8n), rawParameter('speed', 5, bits(2)),
++        rawParameter('tween', 3, 1n), rawParameter('distance', 5, bits(8)),
++    ] },
++] };
++const dockTemplate: MemoryPackValue = { componentList: [{
++    $type: 'Beyond_Gameplay_InteractiveBambooRaftDockComponentDataForMemoryPack',
++    propertyList: [rawParameter('node_index', 3, 0n)],
++}] };
++const spline: LevelSpline = { id: 8, position: [100, 20, 200], rotation: [0, 90, 0], closed: false,
++    knots: [[0, 0, 0], [100, 0, 0]].map(position => ({ position: position as [number, number, number],
++        tangentIn: [0, 0, 0], tangentOut: [0, 0, 0], rotation: [0, 0, 0, 1] })) };
++const placement = (placed: LevelInteractive, template: MemoryPackValue) => ({ row: placed, template, source: 'level.json' });
++const boat = placement(row(1n, 'int_bamboo_raft_v2', [100, 20, 200], new Map([[88, [parameter('speed', 5, bits(10))]]])), raftTemplate);
++const first = placement(row(2n, 'int_bamboo_raft_dock', [103, 21, 200]), dockTemplate);
++const last = placement(row(3n, 'int_bamboo_raft_dock', [103, 21, 100], new Map([[120, [parameter('node_index', 3, 1n)]]])), dockTemplate);
++
++describe('authored raft transport export', () => {
++    it('uses placement speed, world spline transform and distinct shore/ride positions', () => {
++        const { transports, unsupported } = raftTransports([boat, first, last], new Map([[8, spline]]), 'map02_lv007');
++        assert.deepEqual(unsupported, []);
++        assert.equal(transports.length, 1);
++        const raft = transports[0];
++        assert.equal(raft.movement.speed, 10);
++        assert.equal(raft.movement.rampDistance, 8);
++        assert.deepEqual(raft.docks.map(dock => dock.id), ['2', '3']);
++        assert.deepEqual(raft.docks[0].position, [103, 21, 200]);
++        assert.deepEqual(raft.docks[0].ridePosition, [100, 20, 200]);
++        assert.ok(Math.abs(raft.docks[1].ridePosition[0] - 100) < 1e-6);
++        assert.ok(Math.abs(raft.docks[1].ridePosition[2] - 100) < 1e-6);
++        assert.equal(raft.legs.length, 2);
++        assert.deepEqual(raft.legs[1].curves[0][0], raft.legs[0].curves[0][3]);
++        assert.deepEqual(raft.legs[1].curves[0][3], raft.legs[0].curves[0][0]);
++        assert.ok(raft.unpricedCosts.includes('wait'));
++    });
++
++    it('does not turn an ambiguous or distant dock into a usable transfer', () => {
++        const secondBoat = placement(row(4n, 'int_bamboo_raft_v2', [100, 20, 200]), raftTemplate);
++        const ambiguous = raftTransports([boat, secondBoat, first, last], new Map([[8, spline]]), 'map02_lv007');
++        assert.ok(ambiguous.transports.every(raft => raft.docks.length === 0 && raft.legs.length === 0));
++        assert.ok(ambiguous.unsupported.some(row => row.id === '2' && row.reason.includes('several')));
++        const distant = placement(row(5n, 'int_bamboo_raft_dock', [1000, 20, 200]), dockTemplate);
++        const result = raftTransports([boat, first, distant], new Map([[8, spline]]), 'map02_lv007');
++        assert.deepEqual(result.transports[0].legs, []);
++        assert.ok(result.unsupported.some(row => row.id === '5' && row.reason.includes('no nearby')));
++    });
++
++    it('retains an explicit unresolved record when a referenced spline is absent', () => {
++        const result = raftTransports([boat], new Map(), 'map02_lv007');
++        assert.deepEqual(result.transports, []);
++        assert.deepEqual(result.unsupported, [{ id: '1', template: 'int_bamboo_raft_v2', reason: 'raft spline 8 unavailable' }]);
++    });
++});
+diff --git a/packages/extractor/src/game/static-supports.ts b/packages/extractor/src/game/static-supports.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/game/static-supports.ts
+@@ -0,0 +1,250 @@
++/* oxlint-disable no-await-in-loop -- offline export follows authored placement order */
++import { levelInteractiveFromValue, type LevelInteractive } from '@endfield-noclip/formats/endfield/level-interactives';
++import { isMemoryPackObject } from '@endfield-noclip/formats/endfield/memory-pack';
++import { UnityClass } from '@endfield-noclip/formats/unity/serialized-file';
++import { transformPoint, trsMatrix, unityEulerQuaternion } from '@endfield-noclip/formats/unity/transform';
++
++import type { Context } from '../context.ts';
++import { VfsGroup } from '../hg/vfs.ts';
++import { loadDynamicStructures, type StructureModel } from './dynamic/dynamic-structures.ts';
++import { loadInteractiveFacilities } from './interactives/interactive-facilities.ts';
++import { readPrefabSupport } from './prefab-support.ts';
++import type { PrefabPose } from './prefabs/prefab.ts';
++import { GameState } from './state/game-state.ts';
++import { loadMapVariables, loadSceneStates, defaultSceneStates } from './state/scene-conditions.ts';
++import { loadProgressions, progressionId } from './state/scenery-variants.ts';
++import type { DraftControl, Visibility } from './state/scene-control.ts';
++
++type Row = { row: LevelInteractive; level: string; source: string; owners: string[] };
++type Motion = {
++    animator: string | null; duration: number; sampleRate: number; loops: boolean; paths: readonly number[];
++    frames: { time: number; transforms: [number, unknown][] }[];
++};
++type Support = {
++    id: string; level: string; template: string; source: string; model: string; pose: string;
++    positions: number[]; indices: number[];
++    parts: { model: { pathHash: string; position: number[]; rotation: number[]; scale: number[] }; path: string; pose: string; source: string; motion: Motion[] }[];
++    motion: 'fixed-terminal-pose' | 'animated-terminal-pose';
++};
++type ObjectRecord = {
++    id: string; level: string; template: string; source: string; owners: string[];
++    category: string; status: string; reason?: string;
++};
++
++/** Names select an audit scope; they never create support geometry. Controllers
++ * and destroyed obstructions remain in the object inventory as removed records. */
++export const supportObjectKind = (name: string): 'support' | 'removed' | 'controller' | null => {
++    if (/door|unrealwall|destruct|breakfloor|breakable|shards|electric_fence/i.test(name)) return 'removed';
++    if (/button|switch|terminal|monitor|controller|bamboo_raft_dock/i.test(name)) return 'controller';
++    return /bridge|waterwheel|platform|movingplat|gantry|crane|lifter|floater|floating_raft|move_bamboo|unstable|seesaw|dynamicbox|box_for_box_game|trap_floor|barrier|invisible_collider/i.test(name) ? 'support' : null;
++};
++
++/** A StructureModel already includes ModelTable and placement scales. Apply it
++ * exactly once, preserving the indexed solid shape rather than inventing a top. */
++export const supportGeometry = (
++    body: Pick<Awaited<ReturnType<typeof readPrefabSupport>>, 'bodies' | 'bodyTriangles'>,
++    model: StructureModel['model'],
++) => {
++    const matrix = trsMatrix(model.position, unityEulerQuaternion(model.rotation), model.scale);
++    const mirrored = model.scale[0] * model.scale[1] * model.scale[2] < 0;
++    const positions: number[] = [], indices: number[] = [];
++    for (const [i, vertices] of body.bodies.entries()) {
++        const triangles = body.bodyTriangles[i];
++        if (!triangles) throw new Error('solid collider has no triangle indices');
++        const first = positions.length / 3;
++        for (const vertex of vertices) {
++            const point = transformPoint(matrix, vertex);
++            if (!point.every(Number.isFinite)) throw new Error('nonfinite support placement');
++            positions.push(...point);
++        }
++        for (const triangle of triangles) {
++            if (triangle.length !== 3 || triangle.some(index => !Number.isInteger(index) || index < 0 || index >= vertices.length)) throw new Error('invalid solid triangle index');
++            const [a, b, c] = triangle.map(index => index + first);
++            indices.push(a, mirrored ? c : b, mirrored ? b : c);
++        }
++    }
++    return { positions, indices };
++};
++
++/** ClipMotion.sample is an executable reader, so serialize its authored-rate
++ * Transform samples and binding IDs explicitly instead of losing it in JSON. */
++export const supportMotion = (pose: PrefabPose | null): Motion[] => (pose?.clips ?? []).flatMap(clip => {
++    const motion = clip.motion;
++    if (!motion) return [];
++    const { duration, sampleRate, loops, paths } = motion;
++    if (![duration, sampleRate].every(Number.isFinite) || duration < 0 || sampleRate <= 0) throw new Error('invalid support animation timing');
++    const count = Math.max(1, Math.ceil(duration * sampleRate));
++    const frames = Array.from({ length: count + 1 }, (_, index) => {
++        const time = Math.min(index / sampleRate, duration);
++        return { time, transforms: [...motion.sample(time)] };
++    });
++    return [{ animator: clip.animator, duration, sampleRate, loops, paths, frames }];
++});
++
++// Keep unresolved control references separate from a proven terminal exclusion.
++const visibility = (condition: Visibility, values: Record<string, number>): 'visible' | 'hidden' | 'unresolved' => {
++    let unresolved = false;
++    for (const requirements of condition.alternatives) {
++        let unknown = false, excluded = false;
++        for (const { control, mask } of requirements) {
++            const value = values[control];
++            if (value === undefined) unknown = true;
++            else if (((mask >>> value) & 1) === 0) { excluded = true; break; }
++        }
++        if (!excluded && !unknown) return 'visible';
++        if (!excluded && unknown) unresolved = true;
++    }
++    return unresolved ? 'unresolved' : 'hidden';
++};
++
++/** Import passable completed-state scenery from the same placements and poses as
++ * the viewer. Geometry with ongoing motion is tagged and retains its motion data;
++ * exporting one pose does not establish time-independent traversal feasibility. */
++export const collectStaticSupports = async (ctx: Context, scene: string, knownIds: ReadonlySet<string>) => {
++    const objects: ObjectRecord[] = [], unsupported: { id: string; template: string; reason: string }[] = [];
++    const supports = new Map<string, Support>();
++    const rows = new Map<string, Row>(), byOwner = new Map<string, Row[]>();
++    const paths = await ctx.world.pathLookup(), reader = await ctx.memoryPack();
++    const levels = [...(await ctx.world.levelConfigs()).values()].filter(level => level.mapId === scene);
++    for (const level of levels) for (const hash of level.levelDataPathHashes ?? []) {
++        const source = paths(hash);
++        const file = source && await ctx.vfs.find(VfsGroup.JsonData, source);
++        if (!file) throw new Error('missing static-support level data');
++        const data = reader.decode(await ctx.vfs.readVerified(file), 'Beyond_Gameplay_LevelDataForMemoryPack');
++        if (!isMemoryPackObject(data) || !Array.isArray(data.interactives)) throw new Error('invalid static-support level data');
++        for (const raw of data.interactives) {
++            if (!isMemoryPackObject(raw) || typeof raw.levelLogicId !== 'string') continue;
++            const row = levelInteractiveFromValue(raw, BigInt(raw.levelLogicId)), id = String(row.id);
++            if (rows.has(id)) continue;
++            const owners = [...row.componentProperties.values()].flatMap(params => params.filter(param => param.key === 'dynamic_entity_id')
++                .flatMap(param => param.values.filter(atom => atom.bits > 0n).map(atom => String(atom.bits))));
++            const placed: Row = { row, level: level.id, source: source!, owners };
++            rows.set(id, placed);
++            for (const owner of owners) byOwner.set(owner, [...byOwner.get(owner) ?? [], placed]);
++        }
++    }
++    const records = new Map<string, ObjectRecord>();
++    const record = (placed: Row) => {
++        const id = String(placed.row.id);
++        let item = records.get(id);
++        if (!item) {
++            const category = supportObjectKind(placed.row.template) ?? 'dynamic-support';
++            item = { id, level: placed.level, template: placed.row.template, source: placed.source, owners: placed.owners,
++                category, status: knownIds.has(id) ? 'known' : category === 'removed' || category === 'controller' ? 'excluded' : 'pending' };
++            records.set(id, item); objects.push(item);
++        }
++        return item;
++    };
++    for (const placed of rows.values()) if (supportObjectKind(placed.row.template)) record(placed);
++    const states = await loadSceneStates(ctx.world, scene);
++    const progressions = await loadProgressions(ctx.world, scene);
++    const game = new GameState({ variables: await loadMapVariables(ctx.world, scene) });
++    game.note(states.flatMap(state => state.condition ? [state.condition] : []));
++    const partition = await ctx.world.partition(scene);
++    const levelsByTag = new Map((partition?.levels ?? []).map(level => [level.tag, level.id]));
++    const dynamic = await loadDynamicStructures(ctx, scene, partition, game);
++    const values: Record<string, number> = { ...game.defaults(), ...Object.fromEntries(dynamic.controls.map(control => [control.id, control.default])),
++        ...Object.fromEntries(progressions.map(progression => [progressionId(progression.kind, progression.key), progression.defaultLevel])) };
++    const enabledStates = defaultSceneStates(states, game);
++    for (const state of states) values[`sceneState:${state.index}`] = Number(enabledStates.has(state.index));
++    for (const area of dynamic.areas) values[`area:${area}`] = 1;
++    const resolver = await ctx.resolver();
++    const bodies = new Map<string, Promise<Awaited<ReturnType<typeof readPrefabSupport>>>>();
++    const add = async (item: ObjectRecord, model: StructureModel) => {
++        if (knownIds.has(item.id)) return;
++        const path = paths(model.model.pathHash)?.toLowerCase();
++        if (!path) throw new Error('static-support prefab path unavailable');
++        const pose = model.pose?.key ?? 'authored-rest';
++        const key = `${path}:${pose}`;
++        if (!bodies.has(key)) bodies.set(key, (async () => {
++            const ref = await resolver.findUnique({ hash: model.model.pathHash, path }, UnityClass.GameObject);
++            return readPrefabSupport(resolver, ref, { wholePrefab: true, pose: model.pose });
++        })());
++        const body = await bodies.get(key)!;
++        const geometry = supportGeometry(body, model.model);
++        if (!geometry.indices.length) throw new Error('prefab has no solid triangles');
++        const motion = supportMotion(model.pose);
++        let support = supports.get(item.id);
++        if (!support) {
++            support = { id: item.id, level: item.level, template: item.template, source: item.source,
++                model: path, pose, positions: [], indices: [], parts: [], motion: 'fixed-terminal-pose' };
++            supports.set(item.id, support);
++        }
++        const first = support.positions.length / 3;
++        for (const coordinate of geometry.positions) support.positions.push(coordinate);
++        for (const index of geometry.indices) support.indices.push(index + first);
++        support.parts.push({ model: { pathHash: String(model.model.pathHash), position: model.model.position,
++            rotation: model.model.rotation, scale: model.model.scale }, path, pose, source: model.source, motion });
++        if (motion.length) support.motion = 'animated-terminal-pose';
++        if (item.status !== 'unresolved') item.status = motion.length || support.motion === 'animated-terminal-pose' ? 'animated' : 'exported';
++    };
++    const failed = (item: ObjectRecord, error: unknown) => {
++        const reason = error instanceof Error ? error.message : String(error);
++        if (/has no decoded solid support|has no solid triangles/.test(reason)) {
++            if (item.status === 'pending') { item.status = 'no-solid'; item.reason = reason; }
++        } else {
++            item.status = 'unresolved'; item.reason = reason;
++        }
++    };
++    const claimed = new Set<string>();
++    for (const model of dynamic.models) {
++        const path = paths(model.model.pathHash) ?? '';
++        const matches = model.logicId && rows.has(model.logicId) ? [rows.get(model.logicId)!] : model.owner ? byOwner.get(model.owner) ?? (rows.has(model.owner) ? [rows.get(model.owner)!] : []) : [];
++        const placed = matches.find(row => supportObjectKind(row.row.template) === 'support');
++        // A controller may address a separate physical dynamic model. Classify
++        // that model by its own prefab rather than removing its whole owner.
++        if (!placed && supportObjectKind(path) !== 'support') continue;
++        const item = placed ? record(placed) : { id: model.owner ?? model.logicId ?? `dynamic/${model.source}`, level: levelsByTag.get(model.levelTag) ?? String(model.levelTag),
++            template: path, source: model.source, owners: model.owner ? [model.owner] : [], category: 'dynamic-support', status: 'pending' };
++        if (!placed && !records.has(item.id)) { records.set(item.id, item); objects.push(item); }
++        const target = records.get(item.id) ?? item;
++        if (knownIds.has(target.id) || target.status === 'excluded') continue;
++        // Even an excluded terminal variant establishes dynamic ownership. A
++        // fallback at the logical interactive pivot would reintroduce a model
++        // that its actual completed-state dynamic owner has hidden.
++        claimed.add(target.id);
++        const shown = visibility(model.visibility, values);
++        if (shown !== 'visible') {
++            if (shown === 'unresolved') failed(target, new Error(`unresolved dynamic visibility: ${JSON.stringify(model.visibility)}`));
++            else if (target.status === 'pending') target.status = 'terminal-hidden';
++            continue;
++        }
++        try { await add(target, model); } catch (error) { failed(target, error); }
++    }
++    if (objects.some(item => item.status === 'pending' && !claimed.has(item.id))) {
++        const facilities = await loadInteractiveFacilities(ctx, { scene, level: null, partition, scripted: new Set(), erosionCores: dynamic.erosionCores });
++        const controls: DraftControl[] = [...facilities.progressions, ...facilities.created, ...facilities.activities,
++            ...facilities.proximityControls, ...facilities.bridges, ...facilities.doors.map(door => door.control), ...facilities.scriptControls.values()];
++        for (const control of controls) values[control.id] = control.kind === 'bridge' ? 1 : control.kind === 'created' ? 1 : control.default;
++        for (const model of facilities.models) {
++            const item = model.logicId ? records.get(model.logicId) : undefined;
++            if (!item || item.category !== 'support' || knownIds.has(item.id) || claimed.has(item.id)) continue;
++            const shown = visibility(model.visibility, values);
++            if (shown !== 'visible') {
++                if (shown === 'unresolved') failed(item, new Error(`unresolved interactive visibility: ${JSON.stringify(model.visibility)}`));
++                continue;
++            }
++            try { await add(item, model); } catch (error) { failed(item, error); }
++        }
++        for (const missing of facilities.standIns) {
++            // loadInteractiveFacilities creates stand-in sources as `${path}#${row.id}`.
++            const id = /#([1-9]\d*)$/.exec(missing.source)?.[1], item = id ? records.get(id) : undefined;
++            if (item?.status === 'pending') failed(item, new Error(missing.reason));
++        }
++    }
++    const dynamicOwners = new Set((await ctx.world.dynamicEntities(scene)).flatMap(entity => entity.uid === null ? [] : [String(entity.uid)]));
++    for (const item of objects) {
++        if (item.status === 'pending') {
++            item.status = 'unresolved';
++            const absentOwners = item.owners.filter(owner => !dynamicOwners.has(owner));
++            item.reason = item.owners.length && absentOwners.length === item.owners.length
++                ? `referenced dynamic owner is absent from scene resources: ${absentOwners.join(', ')}`
++                : 'no terminal physical model was resolved';
++        }
++        if (item.status === 'unresolved') {
++            supports.delete(item.id);
++            unsupported.push({ id: item.id, template: item.template, reason: item.reason ?? 'unresolved physical model' });
++        }
++    }
++    return { supports: [...supports.values()], objects, unsupported };
++};
+diff --git a/packages/extractor/src/game/static-supports.test.ts b/packages/extractor/src/game/static-supports.test.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/game/static-supports.test.ts
+@@ -0,0 +1,42 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++
++import type { PrefabPose } from './prefabs/prefab.ts';
++import { supportGeometry, supportMotion, supportObjectKind } from './static-supports.ts';
++
++test('support audit keeps persistent barriers and excludes only explicit removed/control families', () => {
++    assert.equal(supportObjectKind('int_bridge_wuling_18m'), 'support');
++    assert.equal(supportObjectKind('int_waterwheel'), 'support');
++    assert.equal(supportObjectKind('dyn_gantry_bigPlatform'), 'support');
++    assert.equal(supportObjectKind('int_invisible_collider'), 'support');
++    assert.equal(supportObjectKind('persistent_barrier_postmodel'), 'support');
++    assert.equal(supportObjectKind('int_door_common_v2'), 'removed');
++    assert.equal(supportObjectKind('int_destructible_physics_miasma_rock'), 'removed');
++    assert.equal(supportObjectKind('int_lifter_button'), 'controller');
++    assert.equal(supportObjectKind('int_doodad_grass'), null);
++});
++
++test('uses the actual dynamic transform once and preserves solid indices under reflection', () => {
++    const body: Parameters<typeof supportGeometry>[0] = { bodies: [[[1, 0, 0], [0, 1, 0], [0, 0, 1]]], bodyTriangles: [[[0, 1, 2]]] };
++    const model = { pathHash: 1n, position: [10, 20, 30] as [number, number, number], rotation: [0, 90, 0] as [number, number, number], scale: [2, 3, 4] as [number, number, number] };
++    const result = supportGeometry(body, model);
++    const expected = [10, 20, 28, 10, 23, 30, 14, 20, 30];
++    assert.ok(result.positions.every((value, i) => Math.abs(value - expected[i]) < 1e-5));
++    assert.deepEqual(result.indices, [0, 1, 2]);
++    assert.deepEqual(supportGeometry(body, { ...model, scale: [-2, 3, 4] }).indices, [0, 2, 1]);
++    assert.throws(() => supportGeometry({ ...body, bodyTriangles: [[[0, 1, 3]]] }, model), /invalid solid triangle index/);
++});
++
++test('looping transform animation survives JSON as authored-rate samples', () => {
++    const pose: PrefabPose = { key: 'wheel:state=1', active: new Map(), clips: [{ animator: 'WheelRoot',
++        transforms: new Map(), active: new Map(), materials: new Map(), renderers: new Map(),
++        motion: { duration: 1, sampleRate: 2, loops: true, paths: [17], sample: time =>
++            new Map([[17, [{ kind: 'position', value: [time, 0, 0] }]]]) },
++    }] };
++    const motion = JSON.parse(JSON.stringify(supportMotion(pose)));
++    assert.equal(motion[0].loops, true);
++    assert.equal(motion[0].animator, 'WheelRoot');
++    assert.deepEqual(motion[0].paths, [17]);
++    assert.deepEqual(motion[0].frames.map((frame: { time: number }) => frame.time), [0, 0.5, 1]);
++    assert.deepEqual(motion[0].frames[2].transforms, [[17, [{ kind: 'position', value: [1, 0, 0] }]]]);
++});
+diff --git a/packages/extractor/src/game/floor-supports.ts b/packages/extractor/src/game/floor-supports.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/game/floor-supports.ts
+@@ -0,0 +1,18 @@
++import { transformPoint, trsMatrix, unityEulerQuaternion } from '@endfield-noclip/formats/unity/transform';
++import type { Vec3 } from '@opendfieldmap/ganglia';
++
++/** LifterCore and MovingPlatform floor lists name world positions of the moving
++ * part, not offsets of the interactive pivot. Replace its saved translation once
++ * while retaining the placed body's orientation and scale. */
++export const floorSupportPoses = (
++    body: { bodies: Vec3[][]; movingRoot: Float32Array | null },
++    floors: Vec3[], rotation: Vec3, scale: Vec3,
++): Vec3[][][] => {
++    if (!body.movingRoot) throw new Error('platform moving subtree unresolved');
++    const origin = transformPoint(body.movingRoot, [0, 0, 0]);
++    return floors.map(floor => {
++        const matrix = trsMatrix(floor, unityEulerQuaternion(rotation), scale);
++        return body.bodies.map(vertices => vertices.map(vertex => transformPoint(matrix,
++            vertex.map((value, axis) => value - origin[axis]))));
++    });
++};
+diff --git a/packages/extractor/src/game/floor-supports.test.ts b/packages/extractor/src/game/floor-supports.test.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/game/floor-supports.test.ts
+@@ -0,0 +1,17 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++import { trsMatrix } from '@endfield-noclip/formats/unity/transform';
++import { floorSupportPoses } from './floor-supports.ts';
++
++test('world floors replace the moving root translation without a second placement transform', () => {
++    const body = { movingRoot: trsMatrix([3, 0.5, 0], [0, 0, 0, 1], [1, 1, 1]),
++        bodies: [[[3, 0.5, 0], [4, 1.5, 0]] as [number, number, number][]] };
++    const floors: [number, number, number][] = [[34.15, 170.35, 1322.47], [34.15, 214.552, 1322.47]];
++    const poses = floorSupportPoses(body, floors, [0, 90, 0], [2, 3, 4]);
++    for (const [index, floor] of floors.entries()) {
++        assert.ok(poses[index][0][0].every((value, axis) => Math.abs(value - floor[axis]) < 1e-4));
++        const expected = [floor[0], floor[1] + 3, floor[2] - 2];
++        assert.ok(poses[index][0][1].every((value, axis) => Math.abs(value - expected[axis]) < 1e-4));
++    }
++    assert.throws(() => floorSupportPoses({ ...body, movingRoot: null }, floors, [0, 0, 0], [1, 1, 1]), /subtree/);
++});

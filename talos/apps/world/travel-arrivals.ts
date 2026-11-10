@@ -9,14 +9,17 @@ export type TravelPoint = {
     requiresGroundProjection?: boolean;
     groundRange?: [number, number];
 };
-export type TravelArrival = GroundArrival & { groundRange?: [number, number] };
+export type TravelArrival = GroundArrival & {
+    kind?: string;
+    groundRange?: [number, number];
+};
 
 /** Fully enabled previews include newly exported bases without rebuilding AI navigation. */
 export function travelArrivals(
     points: TravelPoint[],
     existing: GroundArrival[],
     scene: string,
-    level: string,
+    level: string | undefined,
     fullyEnabled: boolean,
     target: Vec3,
 ): TravelArrival[] {
@@ -25,7 +28,7 @@ export function travelArrivals(
         .flatMap((point): TravelArrival[] => {
             const arrival = previous.get(point.id);
             if (
-                point.level !== level ||
+                (level !== undefined && point.level !== level) ||
                 (point.scene !== undefined && point.scene !== scene) ||
                 (!arrival && (!fullyEnabled || point.scene !== scene))
             )
@@ -40,7 +43,7 @@ export function travelArrivals(
             const range = point.requiresGroundProjection
                 ? point.groundRange
                 : undefined;
-            // Approximate centres without source height bounds cannot be treated as landings.
+            // Region centres use source height bounds to select their ground support.
             if (
                 point.requiresGroundProjection &&
                 (!range ||
@@ -55,6 +58,7 @@ export function travelArrivals(
                     position,
                     cost: arrival?.cost ?? 0,
                     state: fullyEnabled ? 'available' : arrival!.state,
+                    ...(point.kind !== undefined ? { kind: point.kind } : {}),
                     ...(range ? { groundRange: range } : {}),
                 },
             ];

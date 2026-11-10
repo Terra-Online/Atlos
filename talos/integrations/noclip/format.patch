@@ -903,7 +903,7 @@ index b7e4ec99..2f3f981b 100644
  	'GameplayTag',
  	'CameraControlStateInitialParam',
  	'PosRot',
-@@ -443,6 +445,19 @@ export class MemoryPackReader {
+@@ -443,6 +445,20 @@ export class MemoryPackReader {
  		if (type.kind === 'generic') {
  			const [first, second] = type.args;
  			switch (base) {
@@ -920,9 +920,19 @@ index b7e4ec99..2f3f981b 100644
 +					}
 +					return [this.#value(first, false), this.#value(second, false)];
 +				}
++				case 'HashSet':
  				case 'List': {
  					return this.#list(() => this.#value(first, true));
  				}
+@@ -570,7 +586,7 @@
+ 			return false;
+ 		}
+ 		const definition = this.schema.runtime.metadata.typeDefinition(type.definition);
+-		return definition.enumType || VECTORS.has(definition.name);
++		return definition.enumType || VECTORS.has(definition.name) || definition.name === 'SceneStateBuckets';
+ 	}
+ 
+ 	/** @returns the unmanaged layout of a type, or `null` if it holds references or is unknown */
 diff --git a/packages/formats/src/hg/spark-buffer.test.ts b/packages/formats/src/hg/spark-buffer.test.ts
 index 58a5cc22..4f0c2d95 100644
 --- a/packages/formats/src/hg/spark-buffer.test.ts

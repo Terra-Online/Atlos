@@ -1,7 +1,7 @@
 struct Settings {
     viewport: vec4f,
     depthOffset: vec4f,
-    color: vec4f,
+    color: vec4f, // x: hide occluded fragments; w: line half-width
     animation: vec4f, // x: viewer time; y: material repeat in CSS pixels; z: focal length times world radius / base width
 }
 @group(0) @binding(0) var<uniform> settings: Settings;
@@ -57,6 +57,7 @@ struct Vertex {
     let near = settings.viewport.w;
     let separation = near / max(input.position.z, 0.000000001) - near / max(depth, 0.000000001);
     let hidden = depth > 0 && separation > settings.depthOffset.z;
+    if hidden && settings.color.x > 0.5 { discard; }
     // Ease into occlusion over 45 cm instead of switching opacity and gaps at once.
     let occlusion = select(0.0, smoothstep(settings.depthOffset.z, settings.depthOffset.z + 0.45, separation), depth > 0);
     // A capsule gives the 22px strokes rounded, antialiased ends inside the 32px period.

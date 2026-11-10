@@ -1,13 +1,13 @@
+import { candidateJobs, type CandidateJob } from './candidate-job.ts';
+import type { createWindowRoute } from './window-route.ts';
 import { readFile } from 'node:fs/promises';
-import { relative, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
+import { selectTerminal, joinTerminal, type Terminal, type Catalog as TerminalCatalog } from './terminal-routes.ts';
+import { resolve } from 'node:path';
 import type { ServerResponse } from 'node:http';
-import { isDeepStrictEqual } from 'node:util';
 import type { Plugin } from 'vite';
 import { supportBoxes, type SupportBox } from './src/moving-bounds.ts';
 import {
-    createGroundPlanner,
-    projectGoal,
-    projectPoint,
     type GroundArrival,
     type GroundOptions,
     type InteractionGoal,
@@ -15,23 +15,11 @@ import {
     type Surface,
     type Vec3,
 } from '@opendfieldmap/ganglia';
-import {
-    physicalApproaches,
-    physicalMargins,
-    physicalTileSpan,
-    physicalRouteBuilder,
-} from './physical-route-builder.ts';
-
-import {
-    coarseCorridors,
-    coarseWaypoints,
-    type Corridor,
-} from './coarse-route.ts';
+import { physicalRouteBuilder } from './physical-route-builder.ts';
 
 import {
     travelArrivals,
     type TravelPoint,
-    type TravelArrival,
 } from './travel-arrivals.ts';
 
 type Source = { buildGuid: string; contentHash: string };
@@ -50,7 +38,7 @@ type Data = {
     coverage?: unknown;
     selection?: unknown;
 };
-type IndexedData = { data: Data; bounds: Float64Array };
+type IndexedData = { data: Data };
 
 type InteractionPoint = {
     id: string;
@@ -68,19 +56,12 @@ type InteractionCatalog = {
     points: Map<string, InteractionPoint>;
 };
 type Answer = { value: unknown; status: number };
-type Result = {
-    scene: string;
-    source: Source;
-    status: string;
-    route?: Route;
-    supportBoxes?: unknown;
-    diagnostics?: unknown;
-};
 type Candidate = {
     log?: string;
     status: 'candidate';
     route: Extract<Route, { status: 'complete' }>;
     supportBoxes?: SupportBox[];
+    partial?: boolean;
     optimizing?: boolean;
     optimizationMessage?: string;
     diagnostics?: {
@@ -89,17 +70,13 @@ type Candidate = {
         traversal?: unknown;
     };
 };
+type WindowQuery = { physicalFailure?: { reason: string; diagnostics: unknown }; attempts: number; excludedEdges: (number | string)[]; excludedArrivals: string[]; job: CandidateJob; window?: ReturnType<typeof createWindowRoute>; tailDone?: boolean; partial?: Candidate };
 type Query = {
+    windows?: WindowQuery;
     pending: Promise<Answer>;
     done: boolean;
     progress?: boolean;
-    marginIndex: number;
-    anchorIndex: number;
-    attemptIndex: number;
-    excludedAnchors: Set<number>;
-    approachCounts: Map<number, number>;
     log?: string;
-    corridors?: Corridor[];
     candidate?: Candidate;
 };
 
@@ -107,17 +84,6 @@ const finiteVector = (value: unknown): value is Vec3 =>
     Array.isArray(value) && value.length === 3 && value.every(Number.isFinite);
 const sameSource = (a: Source, b: Source) =>
     a.buildGuid === b.buildGuid && a.contentHash === b.contentHash;
-const intersects = (a: Bounds, b: Bounds) =>
-    a.min[0] <= b.max[0] &&
-    a.max[0] >= b.min[0] &&
-    a.min[1] <= b.max[1] &&
-    a.max[1] >= b.min[1];
-const contains = (bounds: Bounds, point: Vec3) =>
-    point[0] >= bounds.min[0] &&
-    point[0] <= bounds.max[0] &&
-    point[2] >= bounds.min[1] &&
-    point[2] <= bounds.max[1];
-
 const indexData = (data: Data): IndexedData => {
     if (
         !data.source ||
@@ -127,83 +93,7 @@ const indexData = (data: Data): IndexedData => {
         !Array.isArray(data.options.walls)
     )
         throw new Error('Invalid local routing data');
-    const bounds = new Float64Array(data.surfaces.length * 4);
-    data.surfaces.forEach((surface, i) => {
-        if (
-            !Array.isArray(surface.vertices) ||
-            surface.vertices.length < 3 ||
-            !surface.vertices.every(finiteVector)
-        )
-            throw new Error('Invalid local ground surface');
-        bounds[i * 4] = Math.min(...surface.vertices.map((p) => p[0]));
-        bounds[i * 4 + 1] = Math.min(...surface.vertices.map((p) => p[2]));
-        bounds[i * 4 + 2] = Math.max(...surface.vertices.map((p) => p[0]));
-        bounds[i * 4 + 3] = Math.max(...surface.vertices.map((p) => p[2]));
-    });
-    return { data, bounds };
-};
-
-const normalizeData = (value: object, base: Data): IndexedData => {
-    const result = value as Data & { build?: { bounds?: Bounds } };
-    const bounds = result.build?.bounds;
-    if (
-        result.scene !== base.scene ||
-        !result.source ||
-        !sameSource(result.source, base.source) ||
-        !bounds ||
-        !Array.isArray(bounds.min) ||
-        !Array.isArray(bounds.max) ||
-        bounds.min.length !== 2 ||
-        bounds.max.length !== 2 ||
-        ![...bounds.min, ...bounds.max].every(Number.isFinite) ||
-        bounds.min.some((value, axis) => value >= bounds.max[axis]) ||
-        !result.options ||
-        !Array.isArray(result.options.walls)
-    )
-        throw new Error('Invalid completed physical ground build');
-    return indexData({
-        ...result,
-        bounds,
-        arrivals: base.arrivals,
-        options: {
-            ...result.options,
-            walls: [...base.options.walls, ...result.options.walls],
-        },
-    });
-};
-
-type Projection = {
-    mapped: boolean;
-    heightOffset: number | null;
-    position: Vec3 | null;
-    nearestBelowOffset: number | null;
-};
-const projection = (
-    surfaces: Surface[],
-    point: Vec3,
-    maxVertical: number,
-    direction: 'nearest' | 'near-or-below',
-): Projection => {
-    const strict = projectPoint(surfaces, point, { maxVertical });
-    let nearestBelow: Vec3 | null = null;
-    for (const surface of surfaces) {
-        const support = projectPoint([surface], point, { maxVertical: 4 });
-        if (
-            support &&
-            support.position[1] <= point[1] + 1e-6 &&
-            (!nearestBelow || support.position[1] > nearestBelow[1])
-        )
-            nearestBelow = support.position;
-    }
-    const position =
-        strict?.position ??
-        (direction === 'near-or-below' ? nearestBelow : null);
-    return {
-        mapped: position !== null,
-        heightOffset: position ? point[1] - position[1] : null,
-        position,
-        nearestBelowOffset: nearestBelow ? point[1] - nearestBelow[1] : null,
-    };
+    return { data };
 };
 
 const send = (response: ServerResponse, value: unknown, status = 200) => {
@@ -225,9 +115,10 @@ export function routeServer(
 ): Plugin {
     const cache = new Map<string, Promise<IndexedData>>();
     const builder = physicalRouteBuilder({ ...build, directory });
-    let builtCache = new WeakMap<object, IndexedData>();
+    const globalJobs = candidateJobs(directory, build.node);
     let travel: Promise<{ source: Source; points: TravelPoint[] }> | undefined;
-    let physical: Promise<IndexedData | null> | undefined;
+    let terminalCatalog: Promise<TerminalCatalog|null> | undefined;
+    let movementHash: Promise<string> | undefined;
     const interactionCache = new Map<
         string,
         Promise<InteractionCatalog | null>
@@ -235,13 +126,13 @@ export function routeServer(
     const queries = new Map<string, Query>();
     let removeCloseListener = () => {};
     const close = async () => {
+        globalJobs.close();
         const drained = builder.close();
         cache.clear();
         interactionCache.clear();
         queries.clear();
-        builtCache = new WeakMap();
         travel = undefined;
-        physical = undefined;
+        terminalCatalog = undefined; movementHash = undefined;
         removeCloseListener();
         await drained;
     };
@@ -299,16 +190,6 @@ export function routeServer(
         }
         return pending;
     };
-    const physicalData = () => {
-        physical ??= read('physical-route-data.json')
-            .then(indexData)
-            .catch((error) => {
-                physical = undefined;
-                if (error?.code === 'ENOENT') return null;
-                throw error;
-            });
-        return physical;
-    };
     return {
         name: 'world-local-route-inspection',
         closeBundle: close,
@@ -336,10 +217,6 @@ export function routeServer(
                     response.end('Log is not available yet');
                 }
             };
-            const logUrl = (file: string | undefined) =>
-                file && directory
-                    ? `/__routes/log?path=${encodeURIComponent(relative(directory, file))}`
-                    : undefined;
             server.middlewares.use('/__routes/logs', (request, response) => {
                 if (request.method !== 'GET') {
                     response.statusCode = 405;
@@ -365,6 +242,11 @@ export function routeServer(
                     return;
                 }
                 void serveLog(name, response);
+            });
+            server.middlewares.use('/__routes/preview', (request, response) => {
+                if (request.method !== 'GET') { response.statusCode = 405; response.end(); return; }
+                void read('route-preview-current.json').then(value => send(response, value))
+                    .catch(() => send(response, { message: 'Route preview is not ready' }, 404));
             });
             server.middlewares.use('/__routes/nearest', (request, response) => {
                 let reply = (value: unknown, status = 200) =>
@@ -444,7 +326,6 @@ export function routeServer(
                         pointId,
                     });
                     const previous = queries.get(queryKey);
-                    let marginIndex = 0;
                     if (previous) {
                         const alreadyDone = previous.done;
                         let answer = await previous.pending;
@@ -461,7 +342,6 @@ export function routeServer(
                             return;
                         }
                         fallback = previous.candidate;
-                        marginIndex = previous.marginIndex;
                         queries.delete(queryKey);
                     }
                     let finish!: (answer: Answer) => void;
@@ -470,12 +350,7 @@ export function routeServer(
                             finish = resolve;
                         }),
                         done: false,
-                        marginIndex,
-                        anchorIndex: previous?.anchorIndex ?? 0,
-                        attemptIndex: previous?.attemptIndex ?? 0,
-                        excludedAnchors: previous?.excludedAnchors ?? new Set(),
-                        approachCounts: previous?.approachCounts ?? new Map(),
-                        corridors: previous?.corridors,
+                        windows: previous?.windows,
                     };
                     queries.set(queryKey, entry);
                     const deliver = reply;
@@ -588,790 +463,139 @@ export function routeServer(
                         anchors.points,
                         data.arrivals,
                         scene,
-                        level,
+                        undefined,
                         data.progression === 'fully-enabled',
                         target,
                     );
-                    const anchor = candidates[entry.anchorIndex];
-                    if (!anchor) {
-                        reply({
-                            status: 'unavailable',
-                            category: 'missing-data',
-                            message:
-                                'No teleport anchors are available for this level',
-                        });
+                    if (!candidates.length) {
+                        reply({ status: 'unavailable', category: 'missing-data', message: 'No teleport anchors are available for this scene' });
                         return;
                     }
-                    const arrival: TravelArrival = {
-                        ...anchor,
-                        position: [...anchor.position],
-                        state: 'available',
+                    let terminal:Terminal|null=null;
+                    if(goal?.interaction.airborne){
+                        terminalCatalog ??= read('terminal-routes.json').catch(error=>{
+                            if(error?.code==='ENOENT') return null;
+                            terminalCatalog=undefined; throw error;
+                        });
+                        const catalog=await terminalCatalog;
+                        if(catalog){
+                            movementHash ??= readFile(resolve(directory!,'movement-settings-current.json')).then(bytes=>
+                                createHash('sha256').update(bytes).digest('hex'));
+                            terminal=selectTerminal(catalog,{scene,source,generator:(data as Data & {generator?:string}).generator,
+                                solver:build.solver,movementHash:await movementHash,target:goal.position,interaction:goal.interaction,
+                                arrivals:candidates,speed:data.options.locomotion?.sprintSpeed??data.options.speed});
+                        }
+                    }
+                    const planningTarget=terminal?.route.points[0]??goal?.position??target;
+                    // Every distance uses one global candidate and bounded physical windows.
+                    entry.windows ??= { attempts: 1, excludedEdges: [], excludedArrivals: [], job: globalJobs.start({ scene, source, arrivals: candidates,
+                        target: planningTarget }) };
+                    const windowQuery = entry.windows;
+                    const pendingWindows = (message: string) => {
+                        if (windowQuery.partial) {
+                            entry.candidate = { ...windowQuery.partial, optimizing: true, optimizationMessage: message };
+                            reply(entry.candidate);
+                        } else reply({ status: 'building-ground', message, retryAfter: 1000 });
                     };
-                    entry.corridors ??= coarseCorridors(
-                        data,
-                        arrival.position,
-                        goal?.position ?? target,
-                        physicalTileSpan,
-                    );
-                    const approaches = physicalApproaches(
-                        arrival.position,
-                        target,
-                        entry.corridors,
-                    );
-                    const approach = approaches[entry.marginIndex];
-                    entry.approachCounts.set(
-                        entry.anchorIndex,
-                        approaches.length,
-                    );
-                    const assumptions = [
-                        'All teleport anchors assumed unlocked',
-                        'Same-level anchors tried by distance, including industrial bases',
-                        'Base scene state 0 and area 0 are assumed',
-                        ...(data.progression === 'fully-enabled'
-                            ? [
-                                  'All traversal devices enabled and powered; controllable passage barriers open',
-                              ]
-                            : data.progression === 'completed'
-                              ? [
-                                    'All level tasks assumed completed; resolved wall controls use the selected completed-world snapshot',
-                                ]
-                              : []),
-                        goal
-                            ? 'Authored interaction volume applied; runtime interaction availability remains unresolved'
-                            : 'Interaction rules unresolved; endpoint uses ground projection only',
-                    ];
-                    const retain = (
-                        message: string,
-                        optimizing: boolean,
-                        traversal?: unknown,
-                    ) => {
-                        if (!fallback) return false;
-                        const candidate = {
-                            ...fallback,
-                            log: entry.log ?? fallback.log,
-                            optimizing,
-                            optimizationMessage: message,
-                            ...(traversal
-                                ? {
-                                      diagnostics: {
-                                          ...fallback.diagnostics,
-                                          traversal,
-                                      },
-                                  }
-                                : {}),
+                    if (windowQuery.job.status === 'pending') {
+                        pendingWindows('Finding a global route corridor…');
+                        return;
+                    }
+                    const stopWindows = (reason: string, diagnostics?: unknown) => {
+                        if (windowQuery.partial) {
+                            entry.candidate = { ...windowQuery.partial, optimizing: false, optimizationMessage: reason };
+                            reply(entry.candidate);
+                        } else reply({ status: 'unavailable', category: windowQuery.physicalFailure ? 'window-route' : 'candidate-search',
+                            message: windowQuery.physicalFailure?.reason ?? reason, diagnostics: windowQuery.physicalFailure?.diagnostics ?? diagnostics });
+                    };
+                    if (windowQuery.job.status === 'failed') {
+                        stopWindows(windowQuery.job.error ?? 'Candidate search failed');
+                        return;
+                    }
+                    const global = windowQuery.job.result!;
+                    if (!global.points?.length) {
+                        stopWindows(global.reason ?? 'No global route corridor found', global.diagnostics);
+                        return;
+                    }
+                    const selectedArrival = global.arrival;
+                    if (!selectedArrival) throw new Error('Candidate route omitted its arrival');
+                    if (!windowQuery.window) {
+                        const movement = await read('movement-settings-current.json');
+                        if (!sameSource(source, movement.source)) throw new Error('Movement settings do not match scene build');
+                        windowQuery.window = builder.windows({ point: pointId, scene, source, arrival: selectedArrival,
+                            target: planningTarget, interaction: terminal?undefined:goal?.interaction, walls: data.options.walls },
+                            global.points, { maxTiles: 16, margin: 8, locomotion: movement.sustainedSprint,
+                                transfers: global.path?.filter(edge => edge.unresolved).map(edge => edge.points) });
+                    }
+                    const publishWindow = (route: Extract<Route, { status: 'complete' }>, partial: boolean, diagnostics: unknown, evidence: unknown[]) => {
+                        const contacts = evidence.flatMap(item => supportBoxes((item as { supportBoxes?: unknown })?.supportBoxes));
+                        const result = { version: 1, supportBoxes: contacts, status: 'candidate' as const, scene, level, source, route, partial,
+                            title: partial ? 'Target approach · Partial route' : 'Teleport → Target',
+                            markers: [{ label: partial ? 'Local approach start' : 'Teleport', position: route.points[0] },
+                                { label: 'Target', position: target }],
+                            coverage: partial ? 'Verified target-side window; teleport approach pending' : 'Verified physical route windows',
+                            diagnostics: { anchorCandidates: candidates.length, traversal: diagnostics },
+                            anchor: { id: selectedArrival.id, position: selectedArrival.position }, interaction,
+                            optimizing: partial, optimizationMessage: partial ? 'Connecting the teleport approach…' : '',
+                            assumptions: ['All tasks completed; devices enabled and powered'],
                         };
-                        entry.candidate = candidate;
-                        reply(candidate);
-                        return true;
+                        entry.candidate = result;
+                        if (partial) windowQuery.partial = result;
+                        reply(result);
                     };
-                    const building = (message: string) => {
-                        if (retain(message, true)) return;
-                        reply({
-                            status: 'building-ground',
-                            log: entry.log,
-                            message,
-                            retryAfter: 1000,
-                            anchor: {
-                                id: anchor.id,
-                                position: anchor.position,
-                            },
-                            assumptions,
-                            interaction,
-                        });
-                    };
-                    // Interleave origins and wider approaches. A nearby but disconnected
-                    // landing must not consume every coverage expansion before another
-                    // already-unlocked teleport gets its first attempt. Deferred wider
-                    // approaches remain in the schedule, including the nearest origin's.
-                    const schedule = candidates
-                        .flatMap((_, anchorIndex) =>
-                            Array.from(
-                                { length: physicalMargins.length * 2 },
-                                (_, marginIndex) => ({
-                                    anchorIndex,
-                                    marginIndex,
-                                }),
-                            ),
-                        )
-                        .sort(
-                            (a, b) =>
-                                a.anchorIndex +
-                                    a.marginIndex -
-                                    b.anchorIndex -
-                                    b.marginIndex ||
-                                a.marginIndex - b.marginIndex,
-                        );
-                    const nextAttempt = (excludeAnchor = false) => {
-                        if (excludeAnchor)
-                            entry.excludedAnchors.add(entry.anchorIndex);
-                        while (++entry.attemptIndex < schedule.length) {
-                            const next = schedule[entry.attemptIndex];
-                            if (entry.excludedAnchors.has(next.anchorIndex))
-                                continue;
-                            if (
-                                next.marginIndex >=
-                                (entry.approachCounts.get(next.anchorIndex) ??
-                                    Infinity)
-                            )
-                                continue;
-                            const changed =
-                                next.anchorIndex !== entry.anchorIndex;
-                            entry.anchorIndex = next.anchorIndex;
-                            entry.marginIndex = next.marginIndex;
-                            if (changed) entry.corridors = undefined;
-                            building(
-                                changed
-                                    ? 'Trying another teleport approach…'
-                                    : 'Loading a wider route area…',
-                            );
-                            return true;
-                        }
-                        return false;
-                    };
-                    if (!approach) {
-                        if (nextAttempt()) return;
-                        reply({
-                            status: 'unavailable',
-                            category: 'no-route',
-                            message: 'No physical route found',
-                        });
-                        return;
-                    }
-                    const job = await builder.query(
-                        scene,
-                        source,
-                        anchor.position,
-                        target,
-                        {
-                            startBuild: false,
-                            margin: approach.margin,
-                            corridor: approach.corridor,
-                        },
-                    );
-                    if (job?.log) entry.log = logUrl(job.log);
-                    if (
-                        job?.status === 'queued' ||
-                        job?.status === 'building'
-                    ) {
-                        building(job.message);
-                        return;
-                    }
-                    let built: IndexedData | undefined;
-                    if (job?.status === 'ready') {
-                        if (!job.result || typeof job.result !== 'object')
-                            throw new Error(
-                                'Missing completed physical ground build',
-                            );
-                        built = builtCache.get(job.result);
-                        if (!built) {
-                            built = normalizeData(job.result, data);
-                            builtCache.set(job.result, built);
-                        }
-                        if (
-                            !built.data.bounds ||
-                            !contains(built.data.bounds, anchor.position) ||
-                            !contains(built.data.bounds, target)
-                        )
-                            throw new Error(
-                                'Physical ground build does not cover this route',
-                            );
-                    }
-                    const sample = await physicalData();
-                    const usePhysical =
-                        sample &&
-                        sample.data.scene === scene &&
-                        sample.data.level === level &&
-                        sameSource(source, sample.data.source) &&
-                        sample.data.bounds &&
-                        contains(sample.data.bounds, anchor.position) &&
-                        contains(sample.data.bounds, target);
-                    // Built tiles are planned in the extractor child so route polling stays responsive.
-                    const attempts = [
-                        ...(usePhysical ? [sample] : []),
-                        indexed,
-                    ];
-                    const coverageAttempts: string[] = [];
-                    const diagnostics: {
-                        coverage: string;
-                        margin: number;
-                        surfaces: number;
-                        walls: number;
-                        anchor: Projection;
-                        target: Projection;
-                        plannerStatus?: string;
-                    }[] = [];
-                    const publish = (
-                        route: Extract<Route, { status: 'complete' }>,
-                        selected: Data,
-                        coverage: string,
-                        traversal?: unknown,
-                        optimization?: {
-                            status: string;
-                            message: string;
-                        } | null,
-                        boxes?: unknown,
-                    ) => {
-                        const contacts = supportBoxes(boxes);
-                        if (fallback && fallback.route.cost <= route.cost) {
-                            if (
-                                contacts.length &&
-                                isDeepStrictEqual(fallback.route, route)
-                            ) {
-                                fallback = {
-                                    ...fallback,
-                                    supportBoxes: contacts,
-                                };
-                            }
-                            retain(
-                                optimization?.message ?? '',
-                                Boolean(
-                                    optimization &&
-                                        optimization.status !== 'failed',
-                                ),
-                                traversal,
-                            );
+                    if (!windowQuery.tailDone) {
+                        if(terminal){
+                            windowQuery.tailDone=true;
+                            publishWindow(terminal.route,true,{terminalAsset:terminal.id},[{supportBoxes:terminal.supportBoxes??[]}]);
                             return;
                         }
-                        const candidate = {
-                            version: 1,
-                            status: 'candidate' as const,
-                            scene,
-                            level,
-                            source,
-                            title: 'Teleport → Target',
-                            log: entry.log,
-                            diagnostics: {
-                                anchorCandidates: candidates.length,
-                                attempts: diagnostics,
-                                traversal,
-                            },
-                            route,
-                            ...(contacts.length
-                                ? { supportBoxes: contacts }
-                                : {}),
-                            grounding: {
-                                requestedTarget: target,
-                                groundTarget: route.points.at(-1),
-                                heightOffset:
-                                    target[1] - route.points.at(-1)![1],
-                                method: goal
-                                    ? 'source-interaction-volume'
-                                    : 'near-surface-or-downward',
-                                maximumNearOffset: selected.options.maxVertical,
-                                maximumDrop: 4,
-                            },
-                            markers: [
-                                {
-                                    label: 'Teleport',
-                                    position: route.points[0],
-                                },
-                                { label: 'Target', position: target },
-                            ],
-                            coverage,
-                            coverageDetails: selected.coverage,
-                            ...(traversal
-                                ? { motionValidation: 'model-based' }
-                                : {}),
-                            assumptions: [
-                                ...assumptions,
-                                ...(route.locomotion?.dashes
-                                    ? ['Ground dash uses an approximate configured distance/duration model and a conservative input interval']
-                                    : []),
-                                ...(route.boosts?.length
-                                    ? ['Vortex pickup, expiry and airborne continuation use the declared movement model']
-                                    : []),
-                                ...(route.segments.some(
-                                    (segment) => segment.mode === 'rope',
-                                )
-                                    ? [
-                                          'All vertical ropes assumed enabled and unlocked; device motion timing is model-based',
-                                      ]
-                                    : []),
-                                ...(route.segments.some(
-                                    (segment) => segment.mode === 'launch',
-                                )
-                                    ? [
-                                          'All launch devices assumed enabled and powered; motion timing is model-based',
-                                      ]
-                                    : []),
-                            ],
-                            interaction,
-                            anchor: {
-                                id: anchor.id,
-                                position: anchor.position,
-                            },
-                            optimizing: Boolean(
-                                optimization &&
-                                    optimization.status !== 'failed',
-                            ),
-                            optimizationMessage: optimization?.message ?? '',
-                        };
-                        entry.candidate = candidate;
-                        reply(candidate);
-                    };
-                    const direction = approach.corridor;
-                    const routeRequest = {
-                        point: pointId,
-                        scene,
-                        source,
-                        arrival,
-                        target: goal?.position ?? target,
-                        interaction: goal?.interaction,
-                        walls: data.options.walls,
-                        waypoints: direction
-                            ? coarseWaypoints([direction])
-                            : undefined,
-                    };
-                    const walking =
-                        job?.status === 'ready'
-                            ? await builder.solve(
-                                  job,
-                                  routeRequest,
-                                  false,
-                                  'walking',
-                              )
-                            : null;
-                    if (walking?.log) entry.log = logUrl(walking.log);
-                    if (
-                        walking?.status === 'queued' ||
-                        walking?.status === 'building'
-                    ) {
-                        building(walking.message);
-                        return;
-                    }
-                    const walked = walking?.result as Result | undefined;
-                    const device =
-                        job?.status === 'ready' &&
-                        walked?.status === 'unavailable'
-                            ? await builder.solve(
-                                  job,
-                                  routeRequest,
-                                  true,
-                                  'devices',
-                              )
-                            : null;
-                    if (device?.log) entry.log = logUrl(device.log);
-                    if (
-                        device?.status === 'queued' ||
-                        device?.status === 'building'
-                    ) {
-                        building(device.message);
-                        return;
-                    }
-                    const known = (device?.result ?? walked) as
-                        | Result
-                        | undefined;
-                    const motion =
-                        job?.status === 'ready' && walking?.status === 'ready'
-                            ? await builder.solve(job, routeRequest, true)
-                            : null;
-                    if (motion?.log) entry.log = logUrl(motion.log);
-                    if (
-                        motion?.status === 'queued' ||
-                        motion?.status === 'building'
-                    ) {
-                        const provisional = (motion.result ?? known) as
-                            | Result
-                            | undefined;
-                        if (
-                            built &&
-                            provisional?.scene === scene &&
-                            provisional.source &&
-                            sameSource(source, provisional.source) &&
-                            provisional.status === 'candidate' &&
-                            provisional.route?.status === 'complete'
-                        ) {
-                            publish(
-                                provisional.route,
-                                built.data,
-                                'Physical collision ground · Known movement route',
-                                provisional.diagnostics,
-                                { status: 'building', message: motion.message },
-                                provisional.supportBoxes,
-                            );
+                        const tail = await windowQuery.window.advanceTail();
+                        if (tail.status === 'partial') {
+                            windowQuery.tailDone = true;
+                            publishWindow(tail.route, true, { global: global.diagnostics, partial: true }, tail.evidence);
                             return;
                         }
-                        building(motion.message);
-                        return;
-                    }
-                    if (motion?.status === 'ready' && built) {
-                        const result = motion.result as Result & {
-                            reason?: string;
-                        };
-                        if (
-                            !result ||
-                            result.scene !== scene ||
-                            !sameSource(source, result.source)
-                        )
-                            throw new Error(
-                                'Physical route does not match this scene build',
-                            );
-                        if (
-                            result.status === 'candidate' &&
-                            result.route?.status === 'complete'
-                        ) {
-                            publish(
-                                result.route,
-                                built.data,
-                                'Physical collision ground with model-based device, jump and drop actions',
-                                result.diagnostics,
-                                undefined,
-                                result.supportBoxes,
-                            );
-                        } else if (result.status === 'unavailable') {
-                            if (
-                                retain(
-                                    'Jump search completed without a faster covered route',
-                                    false,
-                                    result.diagnostics,
-                                )
-                            )
-                                return;
-                            const arrivalFailed =
-                                result.reason === 'arrival-unmapped' ||
-                                result.reason === 'arrival-unavailable';
-                            if (nextAttempt(arrivalFailed)) return;
-                            reply({
-                                status: 'unavailable',
-                                category: arrivalFailed
-                                    ? 'projection-anchor'
-                                    : 'movement-coverage',
-                                message: arrivalFailed
-                                    ? 'Teleport landing could not be placed on supported ground'
-                                    : 'No route found within the current ground and movement search',
-                                diagnostics: {
-                                    traversal: result.diagnostics,
-                                    physicalMargins: physicalMargins.slice(
-                                        0,
-                                        entry.marginIndex + 1,
-                                    ),
-                                },
-                                assumptions,
-                                interaction,
-                                anchor: {
-                                    id: anchor.id,
-                                    position: anchor.position,
-                                },
-                                coverageDetails: built.data.coverage,
-                            });
-                        } else
-                            throw new Error(
-                                'Invalid completed physical route result',
-                            );
-                        return;
-                    }
-                    const failed =
-                        walking?.status === 'failed' ? walking : motion;
-                    if (failed?.status === 'failed') {
-                        if (
-                            retain(
-                                'Jump optimization could not finish; the current route is retained',
-                                false,
-                            )
-                        )
-                            return;
-                        if (nextAttempt(true)) return;
-                        reply({
-                            status: 'unavailable',
-                            category: 'movement-solver-error',
-                            log: entry.log,
-                            message: failed.message,
-                            assumptions,
-                            interaction,
-                            anchor: {
-                                id: anchor.id,
-                                position: anchor.position,
-                            },
-                        });
-                        return;
-                    }
-                    for (const selected of fallback ? [] : attempts) {
-                        const coverage =
-                            selected === sample
-                                ? 'Physical collision ground sample; incomplete player coverage'
-                                : 'AI NavMesh base state / area 0; incomplete player coverage';
-                        coverageAttempts.push(coverage);
-                        let previousCount = -1;
-                        for (const margin of [64, 128, 256]) {
-                            const bounds: Bounds = {
-                                min: [
-                                    Math.min(anchor.position[0], target[0]) -
-                                        margin,
-                                    Math.min(anchor.position[2], target[2]) -
-                                        margin,
-                                ],
-                                max: [
-                                    Math.max(anchor.position[0], target[0]) +
-                                        margin,
-                                    Math.max(anchor.position[2], target[2]) +
-                                        margin,
-                                ],
-                            };
-                            const occupied: Bounds = {
-                                min: [Infinity, Infinity],
-                                max: [-Infinity, -Infinity],
-                            };
-                            const surfaces = selected.data.surfaces.filter(
-                                (_, i) => {
-                                    const offset = i * 4;
-                                    const included =
-                                        selected.bounds[offset] <=
-                                            bounds.max[0] &&
-                                        selected.bounds[offset + 2] >=
-                                            bounds.min[0] &&
-                                        selected.bounds[offset + 1] <=
-                                            bounds.max[1] &&
-                                        selected.bounds[offset + 3] >=
-                                            bounds.min[1];
-                                    if (included) {
-                                        occupied.min[0] = Math.min(
-                                            occupied.min[0],
-                                            selected.bounds[offset],
-                                        );
-                                        occupied.min[1] = Math.min(
-                                            occupied.min[1],
-                                            selected.bounds[offset + 1],
-                                        );
-                                        occupied.max[0] = Math.max(
-                                            occupied.max[0],
-                                            selected.bounds[offset + 2],
-                                        );
-                                        occupied.max[1] = Math.max(
-                                            occupied.max[1],
-                                            selected.bounds[offset + 3],
-                                        );
-                                    }
-                                    return included;
-                                },
-                            );
-                            // Keep exclusions that can touch retained polygons, including their portions outside the crop.
-                            const walls = selected.data.options.walls.filter(
-                                (wall) => {
-                                    const clearance =
-                                        selected.data.options.profile.radius +
-                                        (wall.padding ?? 0);
-                                    return intersects(occupied, {
-                                        min: [
-                                            wall.min[0] - clearance,
-                                            wall.min[2] - clearance,
-                                        ],
-                                        max: [
-                                            wall.max[0] + clearance,
-                                            wall.max[2] + clearance,
-                                        ],
-                                    });
-                                },
-                            );
-                            if (
-                                !surfaces.length ||
-                                surfaces.length === previousCount
-                            )
-                                continue;
-                            previousCount = surfaces.length;
-                            const anchorProjection = projection(
-                                surfaces,
-                                arrival.position,
-                                selected.data.options.maxVertical,
-                                'nearest',
-                            );
-                            const standing =
-                                goal && !anchorProjection.mapped
-                                    ? (projectGoal(surfaces, goal.position, {
-                                          maxVertical:
-                                              selected.data.options.maxVertical,
-                                          interaction: goal.interaction,
-                                      })[0] ?? null)
-                                    : null;
-                            const targetProjection: Projection = goal
-                                ? {
-                                      mapped: standing !== null,
-                                      heightOffset: standing
-                                          ? target[1] - standing.position[1]
-                                          : null,
-                                      position: standing?.position ?? null,
-                                      nearestBelowOffset: null,
-                                  }
-                                : projection(
-                                      surfaces,
-                                      target,
-                                      selected.data.options.maxVertical,
-                                      'near-or-below',
-                                  );
-                            const attempt = {
-                                coverage,
-                                margin,
-                                surfaces: surfaces.length,
-                                walls: walls.length,
-                                anchor: anchorProjection,
-                                target: targetProjection,
-                                plannerStatus: 'unmapped',
-                            };
-                            diagnostics.push(attempt);
-                            const destination =
-                                goal?.position ?? targetProjection.position;
-                            if (!anchorProjection.mapped || !destination)
-                                continue;
-                            const retained = new Set(
-                                surfaces.map((surface) => surface.id),
-                            );
-                            const portals =
-                                selected.data.options.portals?.filter(
-                                    (portal) =>
-                                        retained.has(portal.from) &&
-                                        retained.has(portal.to),
-                                );
-                            const options = {
-                                ...selected.data.options,
-                                walls,
-                                portals,
-                            };
-                            const planner = createGroundPlanner(
-                                surfaces,
-                                options,
-                            );
-                            const route = planner.plan(
-                                [arrival],
-                                destination,
-                                goal
-                                    ? { interaction: goal.interaction }
-                                    : undefined,
-                            );
-                            attempt.plannerStatus = route.status;
-                            // With the arrival already mapped, an unmapped query means no eligible goal surface.
-                            if (goal) {
-                                targetProjection.mapped =
-                                    route.status !== 'unmapped';
-                                if (route.status === 'complete') {
-                                    targetProjection.position =
-                                        route.points.at(-1)!;
-                                    targetProjection.heightOffset =
-                                        target[1] -
-                                        targetProjection.position[1];
-                                }
-                            }
-                            if (route.status !== 'complete') continue;
-                            const next = await builder.query(
-                                scene,
-                                source,
-                                anchor.position,
-                                target,
-                                {
-                                    startBuild: true,
-                                    margin: approach.margin,
-                                    corridor: approach.corridor,
-                                },
-                            );
-                            const optimization =
-                                next?.status === 'ready'
-                                    ? await builder.solve(
-                                          next,
-                                          routeRequest,
-                                          true,
-                                          'walking',
-                                      )
-                                    : next;
-                            publish(
-                                route,
-                                selected.data,
-                                coverage,
-                                undefined,
-                                optimization,
-                            );
+                        if (tail.status === 'pending') {
+                            pendingWindows('Validating the target approach…');
                             return;
                         }
+                        windowQuery.tailDone = true;
                     }
-                    const nextJob = await builder.query(
-                        scene,
-                        source,
-                        anchor.position,
-                        target,
-                        {
-                            startBuild: true,
-                            margin: approach.margin,
-                            corridor: approach.corridor,
-                        },
-                    );
-                    if (nextJob?.log) entry.log = logUrl(nextJob.log);
-                    if (
-                        nextJob?.status === 'queued' ||
-                        nextJob?.status === 'building'
-                    ) {
-                        building(nextJob.message);
-                        return;
-                    }
-                    // A disk-cached result can become ready on the first build request.
-                    // Let the next poll run that physical data through the normal planner.
-                    if (!built && nextJob?.status === 'ready') {
-                        building(nextJob.message);
-                        return;
-                    }
-                    if (built && nextJob?.status === 'ready') {
-                        const solving = await builder.solve(
-                            nextJob,
-                            routeRequest,
-                            true,
-                            'walking',
-                        );
-                        if (solving) {
-                            building(solving.message);
+                    const windowResult = await windowQuery.window.advance();
+                    if (windowResult.status === 'complete') {
+                        const route=terminal?joinTerminal(windowResult.route,terminal.route,(await read('movement-settings-current.json')).sustainedSprint):windowResult.route;
+                        if(route.status!=='complete'){
+                            stopWindows('Terminal entry or resource schedule changed; the verified target approach is retained');
                             return;
                         }
+                        publishWindow(route, false, { global: global.diagnostics, windows: windowResult.pieces.length,
+                            ...(terminal?{terminalAsset:terminal.id}:{}) }, [...windowResult.evidence,...(terminal?[{supportBoxes:terminal.supportBoxes??[]}]:[])]);
+                    } else if (windowResult.status === 'pending') {
+                        pendingWindows(`Connecting route windows (${windowResult.completedWindows} complete)…`);
+                    } else {
+                        // Reject only this query's failed transfer. Other targets can still
+                        // use the shared prepared graph and its untested alternatives.
+                        windowQuery.physicalFailure = { reason: windowResult.reason ?? 'no-verified-route', diagnostics: windowResult };
+                        const local = windowResult.window.points;
+                        const edge = global.path?.find(edge => edge.unresolved &&
+                            !windowQuery.excludedEdges.includes(edge.key ?? edge.index) && edge.points.some(point =>
+                                local.some(candidate => Math.hypot(...point.map((value, axis) => value - candidate[axis])) < 1e-5)));
+                        if (edge) windowQuery.excludedEdges.push(edge.key ?? edge.index);
+                        else windowQuery.excludedArrivals.push(selectedArrival.id);
+                        const alternatives = candidates.filter(candidate => !windowQuery.excludedArrivals.includes(candidate.id));
+                        if (windowQuery.attempts < 6 && alternatives.length) {
+                            windowQuery.attempts++;
+                            windowQuery.job = globalJobs.start({ scene, source, arrivals: alternatives,
+                                target: planningTarget, excludedEdges: windowQuery.excludedEdges });
+                            windowQuery.window = undefined;
+                            windowQuery.tailDone = Boolean(windowQuery.partial);
+                            pendingWindows('Checking an alternative route after a failed physical window…');
+                        } else if (windowQuery.partial) {
+                            stopWindows(`Teleport approach incomplete after ${windowQuery.attempts} candidates: ${windowResult.reason}`);
+                        } else reply({ status: 'unavailable', category: 'window-route', message: windowResult.reason,
+                            diagnostics: { ...windowResult, candidateAttempts: windowQuery.attempts, candidateBudget: 6 } });
                     }
-                    if (
-                        retain(
-                            'Jump optimization could not finish; the current route is retained',
-                            false,
-                        )
-                    )
-                        return;
-                    if (nextJob?.status === 'failed' && nextAttempt(true))
-                        return;
-                    const best = diagnostics.toSorted(
-                        (a, b) =>
-                            Number(b.anchor.mapped) +
-                            Number(b.target.mapped) -
-                            Number(a.anchor.mapped) -
-                            Number(a.target.mapped),
-                    )[0];
-                    const category = !best
-                        ? 'missing-data'
-                        : !best.anchor.mapped
-                          ? 'projection-anchor'
-                          : !best.target.mapped
-                            ? 'projection-target'
-                            : 'disconnected-ground';
-                    const messages = {
-                        'missing-data':
-                            'No ground surfaces are covered in the requested region',
-                        'projection-anchor':
-                            'The nearest teleport has no matching ground surface',
-                        'projection-target': goal
-                            ? 'The target has no ground within its interaction volume'
-                            : 'The target has no matching ground surface',
-                        'disconnected-ground':
-                            'The nearest teleport and target have no covered ground connection',
-                    };
-                    reply({
-                        status: 'unavailable',
-                        category:
-                            nextJob?.status === 'failed'
-                                ? 'physical-build-failed'
-                                : category,
-                        diagnostics: {
-                            anchorCandidates: candidates.length,
-                            attempts: diagnostics,
-                        },
-                        message:
-                            nextJob?.status === 'failed'
-                                ? nextJob.message
-                                : messages[category],
-                        groundFailure: category,
-                        anchor: { id: anchor.id, position: anchor.position },
-                        coverage: coverageAttempts.join(' / '),
-                        coverageDetails: built?.data.coverage,
-                        assumptions,
-                        interaction,
-                    });
+                    return;
                 })().catch((error) => {
                     const missing = error?.code === 'ENOENT';
                     server.config.logger.error(

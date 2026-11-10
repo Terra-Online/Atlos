@@ -590,3 +590,58 @@ cover config decoding. `anim-controller-report.md` records state/clip references
 `anim-curves-root-66.csv` / `67.csv` contain the per-frame root motion, while
 `anim-curves-root-66-decoded.json` / `67-decoded.json` retain all 28 tracks.
 `anim-curves-dash.png` plots displacement and frame-average speed.
+
+## alpha.63 routing investigation
+
+This investigation targets `02gcZm4` (22800010117), whose vortex is on the
+northern roof. `0e9bjd3` resolves to a different chest and was initially
+investigated in error before the user clarified the target.
+
+The installed alpha.63 CLI reproduces the supported rope-bottom start to roof,
+vortex and airborne collection in 8.068946 model seconds. A continuous route
+from a real teleport to the street-level entrances remains unverified. Fifteen
+separately swept local jumps into the rope support component are valid. Adding
+them to a TP30005 physical ground query still yields no verified prefix.
+
+A 130-tile, 1,016,585-surface rectangular prefix investigation exceeded the default
+worker heap. An isolated 8 GiB diagnostic completed after 343 seconds without a
+walking route. The ordinary worker and one-shot fallback now declare a 6 GiB heap
+limit. Coarse corridors remain proposals. Removing authored walls did not connect
+the tested prefix components.
+
+Generic changes retain supported-transfer validation across changed targets, prune
+caches when endpoints disappear, and try unique causal device entries lazily.
+Mutually walk-connected entry regions share discovery work and an apportioned
+entry budget, with truncation propagated. Grounded goals check known movement
+from all origins before jump discovery. Airborne goals retain flight discovery in
+their first attempt because ground/device-only preflight cannot complete them.
+
+These changes reduce redundant work. Complete teleport-to-collectible acceptance
+remains pending. Further strategy work should connect goal-side entrance sets to
+teleport-side reachable regions, load the dependencies of those entrances, and
+distinguish rejected motion, missing coverage and exhausted search work.
+
+
+## alpha.64 segmented planning
+
+The ordinary `/__routes/nearest` entry now runs global candidate search in a
+persistent child process and validates bounded physical windows. All distances
+use this pipeline. Same-scene anchors from other levels participate. Factories
+use their region centres as teleport anchors and are assumed fully traversable.
+
+A target-side window can be displayed as a partial route while the teleport
+approach continues. Each subsequent window starts at the preceding actual exit.
+Completed sequences undergo one resource schedule. Failed windows trigger
+query-local candidate exclusion or another anchor, retaining a validated target
+approach. Candidate scores prioritize search work and do not represent travel
+seconds or global route optimality.
+
+Navigation selects one terminal variant per chunk. Physical construction uses
+`--terminal-scene` and a distinct `terminal-scene-v1` cache identity. The map02
+fixed terminal snapshot includes green/sunny, raised fields/open flowers and day.
+Earlier `scene-state=0` physical evidence remains a base-layer diagnostic.
+
+The map02 extreme pair is south `25000000462` to north `37900000014`.
+Terminal-physics validation is in progress. The north target-side window passed
+with model travel time 21.53835 seconds and full authored walls. This partial
+result does not establish the full south-to-north route.

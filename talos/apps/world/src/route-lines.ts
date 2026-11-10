@@ -6,6 +6,10 @@ export const DASH_PERIOD = 32;
 export const WIRE_PERIOD = 96;
 
 export const ROUTE_STYLES = {
+    unverified: { label: 'Candidate', color: [0.65, 0.68, 0.74] },
+    verified: { label: 'Verified', color: [0.1, 0.85, 0.45] },
+    blocked: { label: 'Blocked', color: [1, 0.15, 0.16] },
+    terminal: { label: 'Target approach', color: [0.12, 0.6, 1] },
     run: { label: 'Run', color: [0.2, 0.65, 1] },
     sprint: { label: 'Sprint (sustained)', color: [1, 0.8, 0.15] },
     dash: { label: 'Dash', color: [1, 0.4, 0.05] },
@@ -15,7 +19,8 @@ export const ROUTE_STYLES = {
     transport: { label: 'Moving support', color: [0.1, 0.85, 0.8] },
 };
 
-export function routeStyle(segment: Segment) {
+export function routeStyle(segment: Segment & { validation?: 'unverified' | 'verified' | 'blocked' | 'terminal' }) {
+    if (segment.validation) return ROUTE_STYLES[segment.validation];
     if (segment.mode === 'walk') {
         if (segment.gait === 'dash') return ROUTE_STYLES.dash;
         return segment.gait === 'sprint' ? ROUTE_STYLES.sprint : ROUTE_STYLES.run;

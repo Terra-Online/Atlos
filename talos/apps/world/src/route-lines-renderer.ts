@@ -9,7 +9,7 @@ export function createRouteLines(
     device: GPUDevice,
     format: GPUTextureFormat,
     segments: Segment[],
-    style: { color?: number[]; halfWidth: number } = { halfWidth: 3.5 },
+    style: { color?: number[]; halfWidth: number; hideOccluded?: boolean } = { halfWidth: 3.5 },
 ) {
     if (!style.color) segments = softenLines(segments);
     const module = device.createShaderModule({
@@ -112,7 +112,7 @@ export function createRouteLines(
                     -frame.jitter[1] * 0.5,
                     0.15,
                     DASH_PERIOD,
-                    0, 0, 0,
+                    Number(Boolean(style.hideOccluded)), 0, 0,
                     style.halfWidth,
                     frame.time, WIRE_PERIOD, frame.height / ratio / (2 * Math.tan(camera.fovY / 2)) * 0.045 / 3.5, 0,
                 ]),

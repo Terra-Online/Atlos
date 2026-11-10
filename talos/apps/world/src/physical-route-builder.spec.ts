@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { expect, test } from 'vitest';
-import { physicalRouteBuilder } from '../physical-route-builder';
+import { physicalRouteBuilder, routeAttempts, physicalMargins } from '../physical-route-builder';
 
 test('publishes walking progress and resumes an interrupted provisional cache', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'world-route-progress-'));
@@ -329,4 +329,23 @@ test('runs a queued known-device query before further ground construction', asyn
         await builder.close();
         await rm(directory, { recursive: true, force: true });
     }
+});
+
+
+test('checks known routes from all origins before starting jump discovery and retains widening attempts', () => {
+    const anchors = 5;
+    const attempts = routeAttempts(anchors);
+    expect(attempts.slice(0, anchors)).toEqual(Array.from({ length: anchors }, (_, anchorIndex) =>
+        ({ anchorIndex, marginIndex: 0 })));
+    const searches = attempts.slice(anchors);
+    for (let anchorIndex = 0; anchorIndex < anchors; anchorIndex++) {
+        expect(searches.filter(attempt => attempt.anchorIndex === anchorIndex)
+            .map(attempt => attempt.marginIndex).sort((a, b) => a - b))
+            .toEqual(Array.from({ length: physicalMargins.length * 2 }, (_, index) => index));
+    }
+    expect(searches[0]).toEqual({ anchorIndex: 0, marginIndex: 0 });
+    // Airborne endpoints always require flight discovery, so retain the original schedule.
+    expect(routeAttempts(anchors, false)).toEqual(searches);
+    expect(searches.findIndex(attempt => attempt.anchorIndex === 1 && attempt.marginIndex === 0))
+        .toBeLessThan(searches.findIndex(attempt => attempt.anchorIndex === 0 && attempt.marginIndex === 2));
 });

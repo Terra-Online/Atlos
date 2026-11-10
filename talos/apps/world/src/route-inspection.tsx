@@ -14,6 +14,7 @@ export type Candidate = {
     source: { buildGuid: string; contentHash: string };
     title: string;
     status: 'candidate';
+    draft?: boolean;
     log?: string;
     coverage?: string;
     assumptions?: string[];
@@ -48,6 +49,9 @@ export default function RouteInspection({
     const [seconds, setSeconds] = useState(0);
     const time = useRef(0);
     const [visible, setVisible] = useState(true);
+    const [hideOccluded, setHideOccluded] = useState(false);
+    const [localSource, setLocalSource] = useState<string | null>(null);
+    const activeSource = localSource ?? source;
     useEffect(() => {
         if (candidate !== undefined) {
             setData(candidate);
@@ -57,15 +61,16 @@ export default function RouteInspection({
         }
     }, [candidate]);
     useEffect(() => {
-        if (!source) return;
+        if (!activeSource) return;
+        setError('');
         const abort = new AbortController();
         void (async () => {
-            const url = new URL(source, location.href);
+            const url = new URL(activeSource, location.href);
             if (
                 url.origin !== location.origin ||
-                !url.pathname.startsWith('/oem/')
+                !(url.pathname.startsWith('/oem/') || url.pathname === '/__routes/preview')
             )
-                throw new Error('Route preview only reads local /oem/ data');
+                throw new Error('Route preview only reads local route data');
             const response = await fetch(url, { signal: abort.signal });
             if (!response.ok) throw new Error('Unable to load candidate route');
             const value: Candidate = await response.json();
@@ -110,7 +115,7 @@ export default function RouteInspection({
             if (!abort.signal.aborted) setError(String(e));
         });
         return () => abort.abort();
-    }, [source]);
+    }, [activeSource]);
     useEffect(() => {
         if (!data || !visible) return;
         let renderers: ReturnType<typeof createRouteLines>[] | undefined;
@@ -125,7 +130,7 @@ export default function RouteInspection({
             const manifest = viewer.scene?.pkg.manifest;
             if (
                 manifest?.scene.id !== data.scene ||
-                viewer.level !== data.level ||
+                (!data.draft && viewer.level !== data.level) ||
                 manifest.source.buildGuid !== data.source.buildGuid ||
                 manifest.source.contentHash !== data.source.contentHash
             )
@@ -135,6 +140,7 @@ export default function RouteInspection({
                     frame.device,
                     frame.format,
                     data.route.segments,
+                    { halfWidth: 3.5, hideOccluded },
                 ),
                 ...(boarding.length
                     ? [
@@ -142,7 +148,7 @@ export default function RouteInspection({
                               frame.device,
                               frame.format,
                               boarding,
-                              { color: [0.05, 0.85, 0.95], halfWidth: 2 },
+                              { color: [0.05, 0.85, 0.95], halfWidth: 2, hideOccluded },
                           ),
                       ]
                     : []),
@@ -152,7 +158,7 @@ export default function RouteInspection({
                               frame.device,
                               frame.format,
                               leaving,
-                              { color: [1, 0.48, 0.08], halfWidth: 2 },
+                              { color: [1, 0.48, 0.08], halfWidth: 2, hideOccluded },
                           ),
                       ]
                     : []),
@@ -164,7 +170,7 @@ export default function RouteInspection({
             remove();
             renderers?.forEach((renderer) => renderer.destroy());
         };
-    }, [viewer, data, visible]);
+    }, [viewer, data, visible, hideOccluded]);
     useEffect(() => {
         if (!data || !canvas.current) return;
         let frame = 0,
@@ -197,7 +203,7 @@ export default function RouteInspection({
             const manifest = viewer.scene?.pkg.manifest;
             const matches =
                 manifest?.scene.id === data.scene &&
-                viewer.level === data.level &&
+                (data.draft || viewer.level === data.level) &&
                 manifest.source.buildGuid === data.source.buildGuid &&
                 manifest.source.contentHash === data.source.contentHash;
             if (visible && matches) {
@@ -249,7 +255,7 @@ export default function RouteInspection({
         frame = requestAnimationFrame(draw);
         return () => cancelAnimationFrame(frame);
     }, [viewer, data, playing, visible]);
-    if (!source && !candidate && !message) return null;
+    if (!source && candidate === null && !message) return null;
     const pose = (kind: 'side' | 'top') => {
         if (!data || viewer.scene?.pkg.manifest.scene.id !== data.scene) return;
         if (kind === 'side' && data.overview) {
@@ -311,6 +317,11 @@ export default function RouteInspection({
                         className='route-inspection-panel'
                         actions={
                             <>
+                                {candidate === undefined && (
+                                    <button type='button' onClick={() => setLocalSource('/__routes/preview')}>
+                                        South → North
+                                    </button>
+                                )}
                                 {(log ?? data?.log) && (
                                     <a
                                         href={log ?? data?.log}
@@ -362,6 +373,11 @@ export default function RouteInspection({
                                     <p>Route ends when the airborne target is collected.</p>
                                 )}
                                 <div className='world-panel-actions'>
+                                    <label>
+                                        <input type='checkbox' checked={hideOccluded}
+                                            onChange={(event) => setHideOccluded(event.target.checked)} />
+                                        Hide occluded
+                                    </label>
                                     <button onClick={() => pose('side')}>
                                         Side overview
                                     </button>
@@ -369,12 +385,14 @@ export default function RouteInspection({
                                         Top view
                                     </button>
                                     <button
+                                        hidden={data.draft}
                                         onClick={() => setPlaying(!playing)}
                                     >
                                         {playing ? 'Pause' : 'Play'}
                                     </button>
                                 </div>
                                 <input
+                                    hidden={data.draft}
                                     aria-label='Route playback position'
                                     type='range'
                                     min='0'
@@ -386,7 +404,7 @@ export default function RouteInspection({
                                         setSeconds(time.current);
                                     }}
                                 />
-                                <small>
+                                <small hidden={data.draft}>
                                     {seconds.toFixed(1)} /{' '}
                                     {data.route.cost.toFixed(1)} s
                                 </small>

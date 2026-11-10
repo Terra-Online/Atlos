@@ -34,7 +34,7 @@ export function createRouteWorker(options: {
         current.task.emit('close', code, signal);
     };
     const startChild = () => {
-        const process = spawn(options.node, [entry], {
+        const process = spawn(options.node, ['--max-old-space-size=6144', entry], {
             cwd: options.extractor,
             stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
         });
@@ -126,6 +126,7 @@ export function createRouteWorker(options: {
                 const process = spawn(
                     options.node,
                     [
+                        '--max-old-space-size=6144',
                         resolve(
                             options.extractor,
                             'packages/extractor/src/cli.ts',
