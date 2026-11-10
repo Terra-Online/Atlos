@@ -67,7 +67,7 @@ const ioModules = new Set([
 ]);
 
 function selection(path) {
-    const sdk = path.match(/\/@opendfieldmap\/ganglia\/src\/([^/]+)$/);
+    const sdk = path.match(/\/@opendfieldmap\/ganglia\/src\/(?:geo\/|reach\/|motion\/|search\/|resource\/|route\/)?([^/]+)$/);
     if (sdk && ganglia[sdk[1]]) return { module: `ganglia/${sdk[1]}`, names: new Set(ganglia[sdk[1]]) };
     const source = path.match(/\/packages\/extractor\/src\/(.+)$/);
     if (source && extractor[source[1]]) return { module: `extractor/${source[1]}`,
