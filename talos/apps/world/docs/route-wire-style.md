@@ -1,17 +1,9 @@
-# Route wire material
+# Braided route ribbon
 
-The route ribbon uses the pulling-wire preview material from `Brain_LinkWire_Line.prefab` in the local game install. Its main trail renderer references `M_UI_lightingtrail`, shader `HGRP/Effect/VFXLine`. The prefab bundle is `main/1a977a0fac973098be34a299.ab`, material path ID `34063205321503037`.
+The visual reference is the dense, crossing yarn structure of [PET tight-weave cable sleeving](https://www.mj-ist.com/pet-tight-weave-expandable-braided-sleeving_p118.html). The route uses a flat ribbon with alternating over/under diagonal yarns, a gently crowned highlight and a dark edge. The selected action or validation state supplies the ribbon colour.
 
-## Texture data
+The fragment shader evaluates the weave procedurally. Derivative filtering softens fine yarn detail at low render resolution. A broad highlight moves along the route at 0.22 repeats per viewer-animation second, with one repeat every 96 CSS pixels. It adds light to the surface. Body opacity is 0.98, with antialiasing at the outer edge. The existing depth test opens the occlusion dashes, using 5 CSS-pixel strokes and 3-pixel gaps, and the Hide occluded option can discard covered fragments.
 
-`src/assets/wire-flow.bin` contains `T_fx_flow_30_M` from `CAB-f09163f9f9bbe64b7ce3d88a4601a0e9`, path ID `-8098814572473729256`. `wire-mask.bin` contains `T_fx_mask_24_C_M` from `CAB-8031a0a07a3a8cba360168d90dd3f12b`, path ID `-6839752139354832701`.
+The braid has a 12 CSS-pixel pitch. Its phase accumulates independently from the shorter dash phase, continuing across movement/colour boundaries and polyline joins. Both phases follow the near-clipped, projected route and wrap at their own repeat lengths. CSS-pixel coordinates keep the weave legible across device pixel ratios. The viewer animation clock and animated-overlay registration provide movement under a stationary camera and pause with the viewer's animation setting.
 
-Both source textures are 256 × 256 sRGB BC7 with nine mip levels. Each binary holds the decoded red channel, largest mip first down to 1 × 1, in Unity's original row order. All decoded source texels have equal RGB channels and opaque alpha, verified for every mip. The renderer restores RGBA and uploads to `rgba8unorm-srgb` so sRGB decoding happens before hardware filtering. Vite inlines the binaries into the module. The runtime uses the bundled data without a game install or additional texture requests.
-
-## Material transfer
-
-The material's active `_USE_MASK` variant was decoded from its Vulkan SMOL-V program and inspected through SPIRV-Cross. The port uses its world-XZ main texture coordinates, 90-degree UV rotation, main UV speed `(-0.27, 0)`, unit texture scale, mask U offset `-3.43`, red-channel alpha selection for both textures, tint alpha `1`, intensity `1.5`, and source-alpha blending. The flow sampler repeats and the mask sampler clamps, with linear filtering and the original mip chains.
-
-The host supplies elapsed seconds and substitutes each route segment's colour for the game tint. The existing route ribbon supplies CSS-pixel width, rounded antialiased ends, and depth-based occlusion/dash clipping. World coordinates are perspective-correct across the screen-space ribbon. Mask U uses cumulative route distance in metres and mask V spans the ribbon width. This adapts the game's generated trail UVs to the route polyline. Route points and camera-space clipping supply the UV endpoints, including segments crossing the near plane.
-
-The prefab also has endpoint/ring renderers with `M_fx_UI_lightingtrail_02` and `_04`. The route material port covers the continuous line, whose referenced material is `M_UI_lightingtrail`.
+The renderer uses one screen-space quad per segment and one overlay pass. Each instance occupies 48 bytes. The shader binds the viewport uniforms and existing scene-depth texture. The procedural material uses arithmetic surface shading within that pass.

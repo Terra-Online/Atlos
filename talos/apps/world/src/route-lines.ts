@@ -2,6 +2,9 @@ import type { Viewer } from '@endfield-noclip/viewer/host';
 import type { Segment } from '@opendfieldmap/ganglia';
 
 export const DASH_PERIOD = 8;
+// Eight 12px braid repeats fit inside one moving highlight. Keep this phase
+// separate from the shorter occlusion dashes so joins retain the weave pattern.
+export const WIRE_PERIOD = 96;
 
 export const ROUTE_STYLES = {
     run: { label: 'Run', color: [0.2, 0.65, 1] },
@@ -26,7 +29,7 @@ export function routeStyle(segment: Segment) {
     return ROUTE_STYLES.rope;
 }
 
-/** Project runs into NDC and CSS-pixel dash phase, with world-space wire UVs for coloured draws. */
+/** Project runs into NDC with separate CSS-pixel phases for dashes and the braid. */
 export function projectLines(
     segments: Segment[],
     camera: Pick<
@@ -42,7 +45,7 @@ export function projectLines(
         (sum, segment) => sum + segment.points.length - 1,
         0,
     );
-    const stride = color ? 20 : 8;
+    const stride = color ? 12 : 8;
     const result = new Float32Array(Math.max(0, count) * stride);
     const right = camera.right(),
         up = camera.up(),
@@ -61,27 +64,19 @@ export function projectLines(
     ];
     let cursor = 0,
         phase = 0,
-        distance = 0;
+        wirePhase = 0;
     for (const segment of segments)
         for (let index = 1; index < segment.points.length; index++) {
-            const worldA = segment.points[index - 1],
-                worldB = segment.points[index];
-            const startDistance = distance;
-            distance += Math.hypot(...worldB.map((value, axis) => value - worldA[axis]));
-            let a = space(worldA),
-                b = space(worldB),
-                startT = 0,
-                endT = 1;
+            let a = space(segment.points[index - 1]),
+                b = space(segment.points[index]);
             if (a[2] < camera.near && b[2] < camera.near) continue;
             if (a[2] < camera.near) {
                 const t = (camera.near - a[2]) / (b[2] - a[2]);
                 a = a.map((value, axis) => value + t * (b[axis] - value));
-                startT = t;
             }
             if (b[2] < camera.near) {
                 const t = (camera.near - b[2]) / (a[2] - b[2]);
                 b = b.map((value, axis) => value + t * (a[axis] - value));
-                endT = 1 - t;
             }
             const start = project(a),
                 end = project(b);
@@ -92,17 +87,10 @@ export function projectLines(
                 ) / pixelRatio;
             if (length < 1e-6) continue;
             result.set([...start, phase, ...end, phase + length], cursor);
-            if (color) {
-                result.set([...color(segment), 1], cursor + 8);
-                result.set([
-                    ...worldA.map((value, axis) => value + startT * (worldB[axis] - value)),
-                    startDistance + startT * (distance - startDistance),
-                    ...worldA.map((value, axis) => value + endT * (worldB[axis] - value)),
-                    startDistance + endT * (distance - startDistance),
-                ], cursor + 12);
-            }
+            if (color) result.set([...color(segment), wirePhase], cursor + 8);
             cursor += stride;
             phase = (phase + length) % DASH_PERIOD;
+            wirePhase = (wirePhase + length) % WIRE_PERIOD;
         }
     return result.subarray(0, cursor);
 }

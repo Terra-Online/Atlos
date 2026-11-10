@@ -2,14 +2,10 @@ struct Settings {
     viewport: vec4f,
     depthOffset: vec4f,
     color: vec4f,
-    animation: vec4f, // x: elapsed seconds
+    animation: vec4f, // x: viewer time; y: material repeat in CSS pixels
 }
 @group(0) @binding(0) var<uniform> settings: Settings;
 @group(0) @binding(1) var sceneDepth: texture_depth_2d;
-@group(0) @binding(2) var flowTexture: texture_2d<f32>;
-@group(0) @binding(3) var flowSampler: sampler;
-@group(0) @binding(4) var maskTexture: texture_2d<f32>;
-@group(0) @binding(5) var maskSampler: sampler;
 
 struct Vertex {
     @builtin(position) position: vec4f,
@@ -17,11 +13,10 @@ struct Vertex {
     @location(1) @interpolate(flat) length: f32,
     @location(2) @interpolate(flat) phase: f32,
     @location(3) @interpolate(flat) color: vec3f,
-    @location(4) world: vec4f,
-    @location(5) distance: f32,
+    @location(4) @interpolate(flat) wirePhase: f32,
 }
 
-@vertex fn vs(@builtin(vertex_index) index: u32, @location(0) a: vec4f, @location(1) b: vec4f, @location(2) color: vec4f, @location(3) worldA: vec4f, @location(4) worldB: vec4f) -> Vertex {
+@vertex fn vs(@builtin(vertex_index) index: u32, @location(0) a: vec4f, @location(1) b: vec4f, @location(2) color: vec4f) -> Vertex {
     let corners = array<vec2f, 6>(vec2f(-1,-1), vec2f(1,-1), vec2f(-1,1), vec2f(-1,1), vec2f(1,-1), vec2f(1,1));
     let corner = corners[index];
     let t = (corner.x + 1) * 0.5;
@@ -38,23 +33,39 @@ struct Vertex {
     out.length = segmentLength;
     out.phase = a.w;
     out.color = color.rgb;
-    // The screen-space ribbon has clip w=1. Carry reciprocal depth explicitly
-    // so the game's world-space texture stays attached to the route in perspective.
-    out.world = vec4f(mix(worldA.xyz * a.z, worldB.xyz * b.z, t), mix(a.z, b.z, t));
-    out.distance = mix(worldA.w * a.z, worldB.w * b.z, t);
+    out.wirePhase = color.a;
     return out;
 }
 
+// Coverage and rounded crown of one diagonal yarn. Derivative filtering keeps
+// the weave stable when the ribbon or the render target is narrow.
+fn yarn(phase: f32) -> vec2f {
+    let distance = abs(fract(phase) - 0.5) * 2;
+    let filterWidth = min(fwidth(phase), 0.35);
+    let coverage = 1 - smoothstep(0.55 - filterWidth, 0.85 + filterWidth, distance);
+    return vec2f(coverage, coverage * (1 - distance));
+}
+
 @fragment fn fs(input: Vertex) -> @location(0) vec4f {
-    let world = input.world.xyz / input.world.w;
-    // HGRP/Effect/VFXLine, M_UI_lightingtrail: rotate world XZ by 90 degrees
-    // after UV speed (-0.27, 0), then multiply both sampled red channels into alpha.
-    let flowUV = vec2f(world.z, 1 - world.x + settings.animation.x * 0.27);
-    let maskUV = vec2f(input.distance / input.world.w - 3.43, input.local.y / (2 * settings.color.w) + 0.5);
-    let flow = textureSample(flowTexture, flowSampler, flowUV).r;
-    let mask = textureSample(maskTexture, maskSampler, maskUV).r;
+    let along = input.wirePhase + input.local.x;
+    let across = input.local.y / settings.color.w;
+    let pitch = settings.animation.y / 8;
+    let strands = vec2f(along / pitch + across * 1.5, along / pitch - across * 1.5);
+    let first = yarn(strands.x);
+    let second = yarn(strands.y);
+    // Alternate the upper yarn at each intersection, like a dense braided sleeve.
+    let firstOver = fract((floor(strands.x) + floor(strands.y)) * 0.5) < 0.5;
+    let upper = select(second, first, firstOver);
+    let lower = select(first, second, firstOver);
+    let detail = 1 - smoothstep(0.4, 0.9, max(fwidth(strands.x), fwidth(strands.y)));
+    let weave = mix(0.9, 0.62 + lower.x * 0.23 + upper.x * 0.16 + upper.y * 0.18, detail);
+    let crown = sqrt(max(0, 1 - across * across));
+    let lighting = weave * (0.78 + crown * 0.22);
+    let pulseDistance = abs(fract(along / settings.animation.y - settings.animation.x * 0.22) - 0.5);
+    let pulse = 1 - smoothstep(0.06, 0.22, pulseDistance);
     let radius = length(vec2f(max(max(-input.local.x, input.local.x - input.length), 0), input.local.y));
     let edge = 1 - smoothstep(settings.color.w - 0.75, settings.color.w, radius);
+    let rim = smoothstep(settings.color.w - 1.1, settings.color.w - 0.35, radius);
     if radius > settings.color.w { discard; }
     let size = vec2i(textureDimensions(sceneDepth));
     let uv = input.position.xy / settings.viewport.xy + settings.depthOffset.xy;
@@ -64,5 +75,10 @@ struct Vertex {
     // Compare in metres so ground-contact tolerance stays stable at any distance.
     let hidden = depth > 0 && near / max(input.position.z, 0.000000001) > near / max(depth, 0.000000001) + settings.depthOffset.z;
     if hidden && fract((input.phase + input.local.x) / settings.depthOffset.w) > 0.625 { discard; }
-    return vec4f(input.color * 1.5, clamp(flow * mask, 0, 1) * edge);
+    let body = input.color * (lighting + pulse * 0.12);
+    let highlight = vec3f(0.08) * upper.y * crown * detail + vec3f(0.04) * pulse;
+    let color = mix(body + highlight, input.color * 0.22, rim);
+    // The braid and travelling highlight affect light only. Continuous geometry
+    // stays nearly opaque, and only the depth-driven dash rule opens gaps.
+    return vec4f(color, 0.98 * edge);
 }
