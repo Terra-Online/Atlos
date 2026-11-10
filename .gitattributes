@@ -1,2 +1,3 @@
 # Unified diff context contains a prefix space before blank lines and tab-indented source.
 talos/integrations/noclip/*.patch whitespace=-blank-at-eol,-space-before-tab
+talos/apps/world/src/assets/wire-*.bin binary

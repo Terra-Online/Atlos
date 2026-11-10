@@ -81,11 +81,28 @@ it('retains action colours and dash phase when segments are clipped or hidden', 
         { ...run([[0, 0, 10], [2, 0, 10]]), mode: 'drop' },
     ];
     const output = projectLines(segments, camera, 200, 100, 1, segment => routeStyle(segment).color);
-    expect(output.length).toBe(24);
+    expect(output.length).toBe(40);
     expect(Array.from(output.slice(8, 11))).toEqual(ROUTE_STYLES.dash.color.map(Math.fround));
-    expect(Array.from(output.slice(20, 23))).toEqual(ROUTE_STYLES.flight.color.map(Math.fround));
-    expect(output[15]).toBeCloseTo(output[7] % DASH_PERIOD);
+    expect(Array.from(output.slice(28, 31))).toEqual(ROUTE_STYLES.flight.color.map(Math.fround));
+    expect(output[23]).toBeCloseTo(output[7] % DASH_PERIOD);
     expect(routeStyle({ ...segments[0], gait: 'sprint' })).toBe(ROUTE_STYLES.sprint);
     expect(routeStyle({ ...segments[0], mode: 'rope', connection: 'moving-ride/lift/0' })).toBe(ROUTE_STYLES.transport);
     expect(routeStyle({ ...segments[0], mode: 'rope', connection: 'rope/lower/upper' })).toBe(ROUTE_STYLES.rope);
+});
+
+it('keeps wire world coordinates and distance continuous through colour boundaries and near clipping', () => {
+    const segments = [
+        run([[0, 0, -1], [0, 1, 1]]),
+        { ...run([[0, 1, 1], [1, 1, -1]]), gait: 'dash' as const },
+    ];
+    const output = projectLines(segments, camera, 200, 100, 1, segment => routeStyle(segment).color);
+    expect(output.length).toBe(40);
+    expect(Array.from(output.slice(12, 15))).toEqual([0, 0.625, 0.25]);
+    expect(output[15]).toBeCloseTo(Math.sqrt(5) * 0.625);
+    expect(Array.from(output.slice(16, 19))).toEqual([0, 1, 1]);
+    expect(output[19]).toBeCloseTo(Math.sqrt(5));
+    expect(Array.from(output.slice(32, 36))).toEqual(Array.from(output.slice(16, 20)));
+    expect(Array.from(output.slice(36, 39))).toEqual([0.375, 1, 0.25]);
+    expect(output[39]).toBeCloseTo(Math.sqrt(5) * 1.375);
+    expect(Array.from(output).every(Number.isFinite)).toBe(true);
 });

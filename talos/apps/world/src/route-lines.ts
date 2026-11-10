@@ -26,7 +26,7 @@ export function routeStyle(segment: Segment) {
     return ROUTE_STYLES.rope;
 }
 
-/** Project continuous runs into output NDC and a shared CSS-pixel dash phase. */
+/** Project runs into NDC and CSS-pixel dash phase, with world-space wire UVs for coloured draws. */
 export function projectLines(
     segments: Segment[],
     camera: Pick<
@@ -42,7 +42,7 @@ export function projectLines(
         (sum, segment) => sum + segment.points.length - 1,
         0,
     );
-    const stride = color ? 12 : 8;
+    const stride = color ? 20 : 8;
     const result = new Float32Array(Math.max(0, count) * stride);
     const right = camera.right(),
         up = camera.up(),
@@ -60,19 +60,28 @@ export function projectLines(
         camera.near / point[2],
     ];
     let cursor = 0,
-        phase = 0;
+        phase = 0,
+        distance = 0;
     for (const segment of segments)
         for (let index = 1; index < segment.points.length; index++) {
-            let a = space(segment.points[index - 1]),
-                b = space(segment.points[index]);
+            const worldA = segment.points[index - 1],
+                worldB = segment.points[index];
+            const startDistance = distance;
+            distance += Math.hypot(...worldB.map((value, axis) => value - worldA[axis]));
+            let a = space(worldA),
+                b = space(worldB),
+                startT = 0,
+                endT = 1;
             if (a[2] < camera.near && b[2] < camera.near) continue;
             if (a[2] < camera.near) {
                 const t = (camera.near - a[2]) / (b[2] - a[2]);
                 a = a.map((value, axis) => value + t * (b[axis] - value));
+                startT = t;
             }
             if (b[2] < camera.near) {
                 const t = (camera.near - b[2]) / (a[2] - b[2]);
                 b = b.map((value, axis) => value + t * (a[axis] - value));
+                endT = 1 - t;
             }
             const start = project(a),
                 end = project(b);
@@ -83,7 +92,15 @@ export function projectLines(
                 ) / pixelRatio;
             if (length < 1e-6) continue;
             result.set([...start, phase, ...end, phase + length], cursor);
-            if (color) result.set([...color(segment), 1], cursor + 8);
+            if (color) {
+                result.set([...color(segment), 1], cursor + 8);
+                result.set([
+                    ...worldA.map((value, axis) => value + startT * (worldB[axis] - value)),
+                    startDistance + startT * (distance - startDistance),
+                    ...worldA.map((value, axis) => value + endT * (worldB[axis] - value)),
+                    startDistance + endT * (distance - startDistance),
+                ], cursor + 12);
+            }
             cursor += stride;
             phase = (phase + length) % DASH_PERIOD;
         }
