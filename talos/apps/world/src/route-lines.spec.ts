@@ -127,3 +127,20 @@ it('rounds display corners across colour boundaries without changing route data'
     const separate = [original[0], run([[0, 2, 10], [0, 3, 10]])];
     expect(softenLines(separate)).toEqual(separate);
 });
+
+
+it('provides matching transition colours and bounded run distances at connected boundaries', () => {
+    const a = run([[-4, 0, 10], [-2, 0, 10], [0, 0, 10]]);
+    const b = { ...run([[0, 0, 10], [4, 0, 10]]), gait: 'dash' as const };
+    const colors = (segment: Segment) => routeStyle(segment).color;
+    const result = projectLines([a, b], camera, 200, 100, 1, colors, true);
+    expect(result.length).toBe(60);
+    expect(result[15]).toBe(0);
+    expect(result[35]).toBeCloseTo(10);
+    expect(result[19]).toBeCloseTo(20);
+    expect(Array.from(result.slice(16, 19))).toEqual(colors(b).map(Math.fround));
+    expect(Array.from(result.slice(52, 55))).toEqual(colors(a).map(Math.fround));
+    const isolated = projectLines([a, { ...b, points: [[1, 0, 10], [4, 0, 10]] }], camera, 200, 100, 1, colors, true);
+    expect(Array.from(isolated.slice(16, 19))).toEqual(colors(a).map(Math.fround));
+    expect(Array.from(projectLines([a, b], camera, 400, 200, 2, colors, true))).toEqual(Array.from(result));
+});

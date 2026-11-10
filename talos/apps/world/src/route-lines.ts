@@ -1,9 +1,8 @@
 import type { Viewer } from '@endfield-noclip/viewer/host';
 import type { Segment } from '@opendfieldmap/ganglia';
 
-export const DASH_PERIOD = 8;
-// Eight 12px braid repeats fit inside one moving highlight. Keep this phase
-// separate from the shorter occlusion dashes so joins retain the weave pattern.
+export const DASH_PERIOD = 32;
+// Independent screen-space periods for the travelling highlight and occlusion dashes.
 export const WIRE_PERIOD = 96;
 
 export const ROUTE_STYLES = {
@@ -29,7 +28,7 @@ export function routeStyle(segment: Segment) {
     return ROUTE_STYLES.rope;
 }
 
-/** Project runs into NDC with separate CSS-pixel phases for dashes and the braid. */
+/** Project runs into NDC with separate CSS-pixel phases for dashes and the glow. */
 export function projectLines(
     segments: Segment[],
     camera: Pick<
@@ -40,12 +39,13 @@ export function projectLines(
     height: number,
     pixelRatio: number,
     color?: (segment: Segment) => number[],
+    blendColors = false,
 ): Float32Array {
     const count = segments.reduce(
         (sum, segment) => sum + segment.points.length - 1,
         0,
     );
-    const stride = color ? 12 : 8;
+    const stride = color ? (blendColors ? 20 : 12) : 8;
     const result = new Float32Array(Math.max(0, count) * stride);
     const right = camera.right(),
         up = camera.up(),
@@ -65,7 +65,9 @@ export function projectLines(
     let cursor = 0,
         phase = 0,
         wirePhase = 0;
-    for (const segment of segments)
+    for (const [segmentIndex, segment] of segments.entries()) {
+        const runStart = cursor;
+        let runLength = 0;
         for (let index = 1; index < segment.points.length; index++) {
             let a = space(segment.points[index - 1]),
                 b = space(segment.points[index]);
@@ -88,10 +90,27 @@ export function projectLines(
             if (length < 1e-6) continue;
             result.set([...start, phase, ...end, phase + length], cursor);
             if (color) result.set([...color(segment), wirePhase], cursor + 8);
+            if (color && blendColors) {
+                result[cursor + 15] = runLength;
+                runLength += length;
+            }
             cursor += stride;
             phase = (phase + length) % DASH_PERIOD;
             wirePhase = (wirePhase + length) % WIRE_PERIOD;
         }
+        if (color && blendColors) {
+            const own = color(segment);
+            const previous = segments[segmentIndex - 1], next = segments[segmentIndex + 1];
+            const connected = (a: number[] | undefined, b: number[] | undefined) =>
+                a && b && a.every((v, i) => Math.abs(v - b[i]) < 1e-6);
+            const before = connected(previous?.points.at(-1), segment.points[0]) ? color(previous) : own;
+            const after = connected(segment.points.at(-1), next?.points[0]) ? color(next) : own;
+            for (let offset = runStart; offset < cursor; offset += stride) {
+                result.set(before, offset + 12);
+                result.set([...after, runLength], offset + 16);
+            }
+        }
+    }
     return result.subarray(0, cursor);
 }
 

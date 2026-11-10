@@ -12,23 +12,25 @@ export function createRouteLines(
 ) {
     if (!style.color) segments = softenLines(segments);
     const module = device.createShaderModule({
-        label: 'Route braided ribbon',
+        label: 'Route emissive cable',
         code: shader,
     });
     const pipeline = device.createRenderPipeline({
-        label: 'Route braided ribbon',
+        label: 'Route emissive cable',
         layout: 'auto',
         vertex: {
             module,
             entryPoint: 'vs',
             buffers: [
                 {
-                    arrayStride: 48,
+                    arrayStride: 80,
                     stepMode: 'instance',
                     attributes: [
                         { shaderLocation: 0, offset: 0, format: 'float32x4' },
                         { shaderLocation: 1, offset: 16, format: 'float32x4' },
                         { shaderLocation: 2, offset: 32, format: 'float32x4' },
+                        { shaderLocation: 3, offset: 48, format: 'float32x4' },
+                        { shaderLocation: 4, offset: 64, format: 'float32x4' },
                     ],
                 },
             ],
@@ -59,12 +61,12 @@ export function createRouteLines(
     );
     const vertices = device.createBuffer({
         label: 'Route segments',
-        size: Math.max(48, count * 48),
+        size: Math.max(80, count * 80),
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
     const uniforms = device.createBuffer({
         label: 'Route viewport',
-        size: 80,
+        size: 64,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
     let depth: GPUTextureView | undefined, group: GPUBindGroup;
@@ -78,11 +80,10 @@ export function createRouteLines(
                 frame.height,
                 ratio,
                 (segment) => style.color ?? routeStyle(segment).color,
+                true,
             );
             if (!projected.length) return;
             device.queue.writeBuffer(vertices, 0, projected);
-            const sun = frame.sunDirection ?? [0, 1, 0];
-            const dot = (axis: readonly number[]) => axis.reduce((sum, value, i) => sum + value * sun[i], 0);
             device.queue.writeBuffer(
                 uniforms,
                 0,
@@ -98,7 +99,6 @@ export function createRouteLines(
                     0, 0, 0,
                     style.halfWidth,
                     frame.time, WIRE_PERIOD, 0, 0,
-                    dot(camera.right()), -dot(camera.up()), -dot(camera.forward()), 0,
                 ]),
             );
             if (depth !== frame.depth) {
@@ -120,7 +120,7 @@ export function createRouteLines(
             pass.setPipeline(pipeline);
             pass.setBindGroup(0, group);
             pass.setVertexBuffer(0, vertices);
-            pass.draw(6, projected.length / 12);
+            pass.draw(6, projected.length / 20);
             pass.end();
         },
         destroy() {
