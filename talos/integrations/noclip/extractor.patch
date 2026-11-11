@@ -9597,10 +9597,10 @@ index 00000000..6b23241a
 +};
 diff --git a/packages/extractor/src/game/ground-tile-cache.test.ts b/packages/extractor/src/game/ground-tile-cache.test.ts
 new file mode 100644
-index 00000000..2892d25e
+index 00000000..7e86afe8
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-tile-cache.test.ts
-@@ -0,0 +1,79 @@
+@@ -0,0 +1,117 @@
 +import assert from 'node:assert/strict';
 +import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 +import { tmpdir } from 'node:os';
@@ -9619,15 +9619,26 @@ index 00000000..2892d25e
 +		read.set(file, bytes);
 +		return bytes;
 +	});
-+	for (const name of ['collision-ground.ts', 'prefab-support.ts', 'floor-supports.ts', 'collision-heightfield.ts']) {
++	for (const name of [
++		'collision-ground.ts',
++		'prefab-support.ts',
++		'floor-supports.ts',
++		'collision-heightfield.ts',
++	]) {
 +		const file = [...read.keys()].find((file) => file.endsWith(`/${name}`));
 +		assert.ok(file, `missing physical generator dependency ${name}`);
-+		const changed = await groundGeneratorIdentity(async (source) => source === file
-+			? Buffer.concat([read.get(source)!, Buffer.from('\n// changed geometry implementation\n')])
-+			: read.get(source)!);
++		const changed = await groundGeneratorIdentity(async (source) =>
++			source === file
++				? Buffer.concat([read.get(source)!, Buffer.from('\n// changed geometry implementation\n')])
++				: read.get(source)!,
++		);
 +		assert.notEqual(changed, baseline, `${name} change reused an old physical generator`);
 +	}
-+	assert.ok([...read.keys()].every((file) => !/\/(?:player-route\.ts|routes\.mjs|locomotion\.mjs|shortcuts\.mjs)$/.test(file)));
++	assert.ok(
++		[...read.keys()].every(
++			(file) => !/\/(?:player-route\.ts|routes\.mjs|locomotion\.mjs|shortcuts\.mjs)$/.test(file),
++		),
++	);
 +	assert.equal(await groundGeneratorIdentity(async (file) => read.get(file)!), baseline);
 +});
 +
@@ -9680,12 +9691,39 @@ index 00000000..2892d25e
 +		await rm(directory, { recursive: true, force: true });
 +	}
 +});
++
++// Simulate the stable package entry forwarding into the reorganized SDK.
++test('modular geometry identity includes implementations and spatial tile selection', async () => {
++	const read = new Map<string, Uint8Array>();
++	const source = (file: string) =>
++		Buffer.from(
++			file.endsWith('/src/build.mjs')
++				? "export { buildGroundSurfaces, buildGroundTiles } from './geo/build.mjs';\n"
++				: file,
++		);
++	const baseline = await groundGeneratorIdentity(async (file) => {
++		const bytes = source(file);
++		read.set(file, bytes);
++		return bytes;
++	});
++	for (const name of ['build.mjs', 'support-field.mjs', 'clip-surface.mjs', 'bounds.mjs']) {
++		const file = [...read.keys()].find((path) => path.endsWith(`/geo/${name}`));
++		assert.ok(file, `missing modular physical dependency ${name}`);
++		assert.notEqual(
++			await groundGeneratorIdentity(async (path) =>
++				path === file ? Buffer.concat([read.get(path)!, Buffer.from('changed')]) : read.get(path)!,
++			),
++			baseline,
++		);
++	}
++	assert.ok([...read.keys()].every((file) => !/\/src\/(?:support-field|clip-surface)\.mjs$/.test(file)));
++});
 diff --git a/packages/extractor/src/game/ground-tile-cache.ts b/packages/extractor/src/game/ground-tile-cache.ts
 new file mode 100644
-index 00000000..1a875635
+index 00000000..791accae
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-tile-cache.ts
-@@ -0,0 +1,122 @@
+@@ -0,0 +1,129 @@
 +import { createHash, randomUUID } from 'node:crypto';
 +import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 +import { dirname, resolve } from 'node:path';
@@ -9711,10 +9749,15 @@ index 00000000..1a875635
 +	readSource: (file: string) => Promise<Uint8Array> = readFile,
 +): Promise<string> => {
 +	const entry = fileURLToPath(import.meta.resolve('@opendfieldmap/ganglia/build'));
++	const entryBytes = await readSource(entry);
++	// The public build entry stays stable; modular SDKs forward to geo/build.
++	const modular = /from\s+['"]\.\/geo\/build\.mjs['"]/.test(Buffer.from(entryBytes).toString('utf8'));
++	const geometry = modular ? resolve(dirname(entry), 'geo') : dirname(entry);
 +	const files = [
 +		entry,
-+		resolve(dirname(entry), 'support-field.mjs'),
-+		resolve(dirname(entry), 'clip-surface.mjs'),
++		...(modular ? [resolve(geometry, 'build.mjs'), resolve(geometry, 'bounds.mjs')] : []),
++		resolve(geometry, 'support-field.mjs'),
++		resolve(geometry, 'clip-surface.mjs'),
 +		// Physical exports also depend on decoding, selecting and placing source
 +		// geometry. SDK-only hashing could otherwise retain old bridge/floor/terrain
 +		// results after those importers changed. Route/search code is excluded.
@@ -9742,7 +9785,9 @@ index 00000000..1a875635
 +		].map((file) => fileURLToPath(import.meta.resolve(`@endfield-noclip/formats/${file}`))),
 +	];
 +	const generator = createHash('sha256');
-+	for (const bytes of await Promise.all(files.map((file) => readSource(file)))) {
++	for (const bytes of await Promise.all(
++		files.map(async (file) => (file === entry ? entryBytes : readSource(file))),
++	)) {
 +		generator.update(bytes).update('\0');
 +	}
 +	const sdk = JSON.parse(await readFile(resolve(dirname(entry), '../package.json'), 'utf8'));
