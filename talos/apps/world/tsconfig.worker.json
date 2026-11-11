@@ -1,0 +1,14 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "types": ["node"]
+    },
+    "include": [
+        "solver-worker.ts",
+        "scene-resources.ts",
+        "route-worker.ts",
+        "physical-route-builder.ts",
+        "dev-route-server.ts"
+    ],
+    "exclude": []
+}

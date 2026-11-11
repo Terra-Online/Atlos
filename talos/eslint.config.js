@@ -99,7 +99,7 @@ export default [
   },
   ...['intel', 'user-hub', 'world'].map((app) => ({
     files: [`apps/${app}/**/*.{ts,tsx,mts,cts}`],
-    languageOptions: { parserOptions: { project: [`./apps/${app}/tsconfig.json`] } },
+    languageOptions: { parserOptions: { project: [`./apps/${app}/tsconfig.json`, ...(app === 'world' ? ['./apps/world/tsconfig.worker.json'] : [])] } },
   })),
   ...['oem-relink', 'oem-search'].map((worker) => ({
     files: [`${worker}/src/**/*.{ts,tsx}`],

@@ -1,0 +1,16 @@
+diff --git a/packages/viewer/src/package/package-source.ts b/packages/viewer/src/package/package-source.ts
+--- a/packages/viewer/src/package/package-source.ts
++++ b/packages/viewer/src/package/package-source.ts
+@@ -54,10 +54,10 @@
+  * @param baseUrl the package directory's URL; a trailing slash is added if missing
+  * @returns a source issuing one HTTP range request per read
+  */
+-export const httpSource = (baseUrl: string): PackageSource => {
++export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): PackageSource => {
+ 	const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+ 	const fetchOk = async (path: string, init: RequestInit): Promise<Response> => {
+-		const response = await fetch(new URL(path, new URL(base, location.href)), init);
++		const response = await fetcher(new URL(path, new URL(base, location.href)), init);
+ 		if (!response.ok) {
+ 			throw new Error(`${path}: HTTP ${response.status}`);
+ 		}

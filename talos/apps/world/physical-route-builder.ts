@@ -1,3 +1,4 @@
+import type { PhysicalFiles } from '../../.cache/noclip/packages/extractor/src/game/physical-input.ts';
 import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createHash, randomUUID } from 'node:crypto';
@@ -52,14 +53,24 @@ export const physicalMargins = [24, 64, 128, 256] as const;
 /** Check cheap known movement for every origin before bounded jump discovery. */
 export const routeAttempts = (anchorCount: number, knownFirst = true) => {
     const origins = Array.from({ length: anchorCount }, (_, anchorIndex) => ({
-        anchorIndex, marginIndex: 0,
+        anchorIndex,
+        marginIndex: 0,
     }));
-    const searches = origins.flatMap(({ anchorIndex }) =>
-        Array.from({ length: physicalMargins.length * 2 }, (_, marginIndex) => ({
-            anchorIndex, marginIndex,
-        })),
-    ).sort((a, b) => a.anchorIndex + a.marginIndex - b.anchorIndex - b.marginIndex ||
-        a.marginIndex - b.marginIndex);
+    const searches = origins
+        .flatMap(({ anchorIndex }) =>
+            Array.from(
+                { length: physicalMargins.length * 2 },
+                (_, marginIndex) => ({
+                    anchorIndex,
+                    marginIndex,
+                }),
+            ),
+        )
+        .sort(
+            (a, b) =>
+                a.anchorIndex + a.marginIndex - b.anchorIndex - b.marginIndex ||
+                a.marginIndex - b.marginIndex,
+        );
     return knownFirst ? [...origins, ...searches] : searches;
 };
 
@@ -129,6 +140,7 @@ export function physicalRouteBuilder(options: Options) {
         job.result = result;
     };
     const workerOptions = {
+        entry: resolve(import.meta.dirname, 'solver-worker.ts'),
         extractor: options.extractor ?? '',
         node: options.node || process.execPath,
     };
@@ -140,12 +152,8 @@ export function physicalRouteBuilder(options: Options) {
     const workerRegions = new Map<(typeof solverWorkers)[number], string>();
     const workerUses = new Map<(typeof solverWorkers)[number], number>();
     let workerUse = 0;
-    const startSolver = async (args: string[]) => {
-        const region = hash(
-            ['--ground', '--collision', '--movement-settings'].map(
-                (flag) => args[args.indexOf(flag) + 1],
-            ),
-        );
+    const startSolver = async (files: PhysicalFiles) => {
+        const region = hash([files.ground, files.collision, files.movement]);
         // A completed foreground device check can hand its prepared region to
         // optimization; the other worker remains available for foreground work.
         const worker =
@@ -166,7 +174,7 @@ export function physicalRouteBuilder(options: Options) {
         if (workerRegions.get(worker) !== region) worker.discard();
         busyWorkers.add(worker);
         try {
-            const task = await worker.start(args);
+            const task = await worker.start(files);
             workerRegions.set(worker, region);
             workerUses.set(worker, ++workerUse);
             task.once('close', () => busyWorkers.delete(worker));
@@ -268,7 +276,7 @@ export function physicalRouteBuilder(options: Options) {
     };
     const enqueue = (
         current: Job,
-        args: string[],
+        args: string[] | PhysicalFiles,
         {
             background,
             context,
@@ -326,23 +334,22 @@ export function physicalRouteBuilder(options: Options) {
                 current.status = 'building';
                 record('started');
                 const launch = async () => {
-                    const child =
-                        args[0] === 'player-route'
-                            ? await startSolver(args)
-                            : spawn(
-                                  options.node || process.execPath,
-                                  [
-                                      resolve(
-                                          options.extractor!,
-                                          'packages/extractor/src/cli.ts',
-                                      ),
-                                      ...args,
-                                  ],
-                                  {
-                                      cwd: options.extractor,
-                                      stdio: ['ignore', 'pipe', 'pipe'],
-                                  },
-                              );
+                    const child = !Array.isArray(args)
+                        ? await startSolver(args)
+                        : spawn(
+                              options.node || process.execPath,
+                              [
+                                  resolve(
+                                      options.extractor!,
+                                      'packages/extractor/src/cli.ts',
+                                  ),
+                                  ...args,
+                              ],
+                              {
+                                  cwd: options.extractor,
+                                  stdio: ['ignore', 'pipe', 'pipe'],
+                              },
+                          );
                     current.child = child;
                     record('solver-started', {
                         pid: child.pid,
@@ -431,7 +438,10 @@ export function physicalRouteBuilder(options: Options) {
                                 const result = JSON.parse(
                                     await readFile(current.output, 'utf8'),
                                 );
-                                if (args[0] === 'player-ground')
+                                if (
+                                    Array.isArray(args) &&
+                                    args[0] === 'player-ground'
+                                )
                                     retainGround(current, result);
                                 else current.result = result;
                                 current.status = 'ready';
@@ -489,7 +499,7 @@ export function physicalRouteBuilder(options: Options) {
         };
         if (background) optimization = optimization.then(run);
         else {
-            foreground.push({ run, query: args[0] === 'player-route' });
+            foreground.push({ run, query: !Array.isArray(args) });
             drain();
         }
     };
@@ -579,7 +589,9 @@ export function physicalRouteBuilder(options: Options) {
                     scene,
                     `--bounds=${bounds.join(',')}`,
                     '--terminal-scene',
-                    ...(staticSupports ? ['--static-supports', staticSupports.path] : []),
+                    ...(staticSupports
+                        ? ['--static-supports', staticSupports.path]
+                        : []),
                     '--scene-state',
                     '0',
                     '--area',
@@ -760,42 +772,26 @@ export function physicalRouteBuilder(options: Options) {
         try {
             await writeFile(temporary, JSON.stringify(request));
             await rename(temporary, input);
-            const args = [
-                'player-route',
-                '--ground',
-                ground.output,
-                '--collision',
-                ground.collision,
-                '--movement-settings',
-                settings.path,
-                '--request',
-                input,
-                '-o',
+            const files: PhysicalFiles = {
+                ground: ground.output,
+                collision: ground.collision,
+                movement: settings.path,
+                request: input,
                 output,
-                ...(devices ? ['--devices', devices.path] : []),
-            ];
-            enqueue(
-                job,
-                stage === 'all'
-                    ? args
-                    : [
-                          ...args,
-                          stage === 'walking'
-                              ? '--ground-only'
-                              : '--devices-only',
-                      ],
-                {
-                    background: stage === 'all',
-                    context: {
-                        stage,
-                        scene: request.scene,
-                        point: request.point,
-                        source: request.source,
-                        from: request.arrival.position,
-                        target: request.target,
-                    },
+                devices: devices?.path,
+                effort: stage,
+            };
+            enqueue(job, files, {
+                background: stage === 'all',
+                context: {
+                    stage,
+                    scene: request.scene,
+                    point: request.point,
+                    source: request.source,
+                    from: request.arrival.position,
+                    target: request.target,
                 },
-            );
+            });
         } catch (error) {
             job.status = 'failed';
             job.message = String(error);
@@ -806,8 +802,11 @@ export function physicalRouteBuilder(options: Options) {
     return {
         query,
         solve,
-        windows: (request: RouteRequest, points: Vec3[], settings: Parameters<typeof createWindowRoute>[3]) =>
-            createWindowRoute({ query, solve }, request, points, settings),
+        windows: (
+            request: RouteRequest,
+            points: Vec3[],
+            settings: Parameters<typeof createWindowRoute>[3],
+        ) => createWindowRoute({ query, solve }, request, points, settings),
         async close() {
             closed = true;
             for (const worker of solverWorkers) worker.close();

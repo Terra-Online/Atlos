@@ -89,6 +89,7 @@ export const typeCheck = async (runner, app = 'all', prepare = true) => {
             '--project',
             packageName ? '.' : project,
         ]);
+        if (name === 'world') await runner.run('pnpm', ['--filter', packageName, 'exec', 'tsc', '--noEmit', '--project', 'tsconfig.worker.json']);
     }
 };
 
@@ -111,7 +112,10 @@ export const test = async (runner, app = 'all') => {
                   : ['oem-relink']),
         ]);
     }
-    if (app === 'all' || app === 'world') await runner.run('pnpm', ['exec', 'vitest', 'run', '--config', 'apps/world/vitest.config.ts']);
+    if (app === 'all' || app === 'world') {
+        await runner.run('pnpm', ['exec', 'vitest', 'run', '--config', 'apps/world/vitest.config.ts']);
+        await runner.run('node', ['--test', 'apps/world/dev-route-server.test.mjs', 'apps/world/route-worker.test.mjs', 'apps/world/bench/network.test.mjs']);
+    }
     if (app === 'all' || app === 'intel')
         await runner.run('pnpm', [
             'exec',

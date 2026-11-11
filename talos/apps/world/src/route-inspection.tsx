@@ -1,28 +1,14 @@
+import { routing, type Candidate } from './services/routing';
 import { useEffect, useRef, useState } from 'react';
 import { Panel, type Viewer } from '@endfield-noclip/viewer/host';
 import { createPortal } from 'react-dom';
-import { sampleJourney, type Route, type Vec3 } from '@opendfieldmap/ganglia';
+import { sampleJourney, type Vec3 } from '@opendfieldmap/ganglia';
 import './route-inspection.css';
 import { createRouteLines } from './route-lines-renderer';
 import { routeStyle } from './route-lines';
-import { boxSegments, supportBoxes, type SupportBox } from './moving-bounds';
+import { boxSegments, supportBoxes } from './moving-bounds';
 
-export type Candidate = {
-    version: 1;
-    scene: string;
-    level: string;
-    source: { buildGuid: string; contentHash: string };
-    title: string;
-    status: 'candidate';
-    draft?: boolean;
-    log?: string;
-    coverage?: string;
-    assumptions?: string[];
-    overview?: { position: Vec3; yaw: number; pitch: number; fovY: number };
-    route: Extract<Route, { status: 'complete' }>;
-    supportBoxes?: SupportBox[];
-    markers: { label: string; position: Vec3 }[];
-};
+export type { Candidate } from './services/routing';
 const dot = (a: number[], b: number[]) =>
     a.reduce((s, v, i) => s + v * b[i], 0);
 
@@ -53,6 +39,20 @@ export default function RouteInspection({
     const [localSource, setLocalSource] = useState<string | null>(null);
     const activeSource = localSource ?? source;
     useEffect(() => {
+        if (
+            !import.meta.env.DEV ||
+            !new URL(location.href).searchParams.has('benchmark')
+        )
+            return;
+        const receive = (event: Event) => {
+            if (event instanceof CustomEvent)
+                setData((event as CustomEvent<Candidate>).detail);
+        };
+        window.addEventListener('world:benchmark-route', receive);
+        return () =>
+            window.removeEventListener('world:benchmark-route', receive);
+    }, []);
+    useEffect(() => {
         if (candidate !== undefined) {
             setData(candidate);
             time.current = 0;
@@ -66,14 +66,7 @@ export default function RouteInspection({
         const abort = new AbortController();
         void (async () => {
             const url = new URL(activeSource, location.href);
-            if (
-                url.origin !== location.origin ||
-                !(url.pathname.startsWith('/oem/') || url.pathname === '/__routes/preview')
-            )
-                throw new Error('Route preview only reads local route data');
-            const response = await fetch(url, { signal: abort.signal });
-            if (!response.ok) throw new Error('Unable to load candidate route');
-            const value: Candidate = await response.json();
+            const value = await routing.preview(url, abort.signal);
             const vector = (p: number[]) =>
                 Array.isArray(p) && p.length === 3 && p.every(Number.isFinite);
             if (
@@ -126,46 +119,59 @@ export default function RouteInspection({
         const leaving = boxes
             .filter((box) => box.role === 'leave')
             .flatMap(boxSegments);
-        const remove = viewer.addOverlay((frame) => {
-            const manifest = viewer.scene?.pkg.manifest;
-            if (
-                manifest?.scene.id !== data.scene ||
-                (!data.draft && viewer.level !== data.level) ||
-                manifest.source.buildGuid !== data.source.buildGuid ||
-                manifest.source.contentHash !== data.source.contentHash
-            )
-                return;
-            renderers ??= [
-                createRouteLines(
-                    frame.device,
-                    frame.format,
-                    data.route.segments,
-                    { halfWidth: 3.5, hideOccluded },
-                ),
-                ...(boarding.length
-                    ? [
-                          createRouteLines(
-                              frame.device,
-                              frame.format,
-                              boarding,
-                              { color: [0.05, 0.85, 0.95], halfWidth: 2, hideOccluded },
-                          ),
-                      ]
-                    : []),
-                ...(leaving.length
-                    ? [
-                          createRouteLines(
-                              frame.device,
-                              frame.format,
-                              leaving,
-                              { color: [1, 0.48, 0.08], halfWidth: 2, hideOccluded },
-                          ),
-                      ]
-                    : []),
-            ];
-            for (const renderer of renderers)
-                renderer.encode(frame, viewer.camera);
-        }, { animated: true });
+        const remove = viewer.addOverlay(
+            (frame) => {
+                const manifest = viewer.scene?.pkg.manifest;
+                if (
+                    manifest?.scene.id !== data.scene ||
+                    (data.generation !== undefined &&
+                        manifest.generation !== data.generation) ||
+                    (!data.draft && viewer.level !== data.level) ||
+                    manifest.source.buildGuid !== data.source.buildGuid ||
+                    manifest.source.contentHash !== data.source.contentHash
+                )
+                    return;
+                renderers ??= [
+                    createRouteLines(
+                        frame.device,
+                        frame.format,
+                        data.route.segments,
+                        { halfWidth: 3.5, hideOccluded },
+                    ),
+                    ...(boarding.length
+                        ? [
+                              createRouteLines(
+                                  frame.device,
+                                  frame.format,
+                                  boarding,
+                                  {
+                                      color: [0.05, 0.85, 0.95],
+                                      halfWidth: 2,
+                                      hideOccluded,
+                                  },
+                              ),
+                          ]
+                        : []),
+                    ...(leaving.length
+                        ? [
+                              createRouteLines(
+                                  frame.device,
+                                  frame.format,
+                                  leaving,
+                                  {
+                                      color: [1, 0.48, 0.08],
+                                      halfWidth: 2,
+                                      hideOccluded,
+                                  },
+                              ),
+                          ]
+                        : []),
+                ];
+                for (const renderer of renderers)
+                    renderer.encode(frame, viewer.camera);
+            },
+            { animated: true },
+        );
         return () => {
             remove();
             renderers?.forEach((renderer) => renderer.destroy());
@@ -203,6 +209,8 @@ export default function RouteInspection({
             const manifest = viewer.scene?.pkg.manifest;
             const matches =
                 manifest?.scene.id === data.scene &&
+                (data.generation === undefined ||
+                    manifest.generation === data.generation) &&
                 (data.draft || viewer.level === data.level) &&
                 manifest.source.buildGuid === data.source.buildGuid &&
                 manifest.source.contentHash === data.source.contentHash;
@@ -318,7 +326,12 @@ export default function RouteInspection({
                         actions={
                             <>
                                 {candidate === undefined && (
-                                    <button type='button' onClick={() => setLocalSource('/__routes/preview')}>
+                                    <button
+                                        type='button'
+                                        onClick={() =>
+                                            setLocalSource('/__routes/preview')
+                                        }
+                                    >
                                         South → North
                                     </button>
                                 )}
@@ -346,36 +359,67 @@ export default function RouteInspection({
                         {error && <p role='alert'>{error}</p>}
                         {data && (
                             <>
-                                {data.route.locomotion?.dashes !== undefined && (
+                                {data.route.locomotion?.dashes !==
+                                    undefined && (
                                     <p>
-                                        Dash × {data.route.locomotion.dashes} · Remaining stamina{' '}
+                                        Dash × {data.route.locomotion.dashes} ·
+                                        Remaining stamina{' '}
                                         {data.route.locomotion.final.toFixed(2)}
                                     </p>
                                 )}
-                                <ul className='route-legend' aria-label='Route actions'>
-                                    {[...new Set(data.route.segments.map(routeStyle))].map((style) => (
+                                <ul
+                                    className='route-legend'
+                                    aria-label='Route actions'
+                                >
+                                    {[
+                                        ...new Set(
+                                            data.route.segments.map(routeStyle),
+                                        ),
+                                    ].map((style) => (
                                         <li key={style.label}>
-                                            <span aria-hidden='true' style={{ backgroundColor: `rgb(${style.color.map(value => Math.round(value * 255)).join(',')})` }} />
+                                            <span
+                                                aria-hidden='true'
+                                                style={{
+                                                    backgroundColor: `rgb(${style.color.map((value) => Math.round(value * 255)).join(',')})`,
+                                                }}
+                                            />
                                             {style.label}
                                         </li>
                                     ))}
                                 </ul>
                                 {data.route.boosts?.map((boost) => (
                                     <p key={boost.id}>
-                                        Vortex {boost.id} · {boost.multiplier}× ·{' '}
-                                        {boost.elapsed.toFixed(2)} / {boost.duration.toFixed(1)} s
+                                        Vortex {boost.id} · {boost.multiplier}×
+                                        · {boost.elapsed.toFixed(2)} /{' '}
+                                        {boost.duration.toFixed(1)} s
                                     </p>
                                 ))}
-                                {data.route.segments.some((segment) => segment.boostExpiry !== undefined) && (
-                                    <p>The vortex buff expires during the final jump.</p>
+                                {data.route.segments.some(
+                                    (segment) =>
+                                        segment.boostExpiry !== undefined,
+                                ) && (
+                                    <p>
+                                        The vortex buff expires during the final
+                                        jump.
+                                    </p>
                                 )}
                                 {data.route.goalHit && (
-                                    <p>Route ends when the airborne target is collected.</p>
+                                    <p>
+                                        Route ends when the airborne target is
+                                        collected.
+                                    </p>
                                 )}
                                 <div className='world-panel-actions'>
                                     <label>
-                                        <input type='checkbox' checked={hideOccluded}
-                                            onChange={(event) => setHideOccluded(event.target.checked)} />
+                                        <input
+                                            type='checkbox'
+                                            checked={hideOccluded}
+                                            onChange={(event) =>
+                                                setHideOccluded(
+                                                    event.target.checked,
+                                                )
+                                            }
+                                        />
                                         Hide occluded
                                     </label>
                                     <button onClick={() => pose('side')}>

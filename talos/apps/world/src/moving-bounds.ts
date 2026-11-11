@@ -1,11 +1,8 @@
 import type { Segment, Vec3 } from '@opendfieldmap/ganglia';
 
 export type Box = { min: Vec3; max: Vec3 };
-export type SupportBox = Box & {
-    device: string;
-    family: string;
-    role: 'board' | 'leave' | 'use';
-};
+import type { SupportBox } from './services/routing';
+export type { SupportBox } from './services/routing';
 
 /** Optional route annotations never substitute for the selected trajectory. */
 export function supportBoxes(value: unknown): SupportBox[] {

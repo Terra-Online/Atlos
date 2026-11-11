@@ -1,4 +1,5 @@
 // @vitest-environment node
+import {writePhysicalAdapter} from "../../../test-support/physical-adapter.mjs";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -62,6 +63,7 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
         target: [1, 0, 1] as [number, number, number],
         walls: [],
     };
+    await writePhysicalAdapter(directory);
     let builder = physicalRouteBuilder(options);
     try {
         const ground = await builder.query(
@@ -267,6 +269,7 @@ test('runs a queued known-device query before further ground construction', asyn
         }
     `,
     );
+    await writePhysicalAdapter(directory);
     const builder = physicalRouteBuilder({
         directory,
         extractor: directory,

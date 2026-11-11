@@ -3,7 +3,7 @@ diff --git a/packages/extractor/package.json b/packages/extractor/package.json
 +++ b/packages/extractor/package.json
 @@ -15,5 +15,13 @@
  		"@mary-ext/ds-queue": "^0.1.0",
- 		"@opendfieldmap/ganglia": "file:../../../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.77.tgz",
+ 		"@opendfieldmap/ganglia": "file:../../../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.78.tgz",
  		"meshoptimizer": "1.3.0"
 +	},
 +	"scripts": {

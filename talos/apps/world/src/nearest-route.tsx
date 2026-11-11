@@ -1,5 +1,7 @@
+import { sceneReference } from './services/scene';
+import { routing, type RouteUpdate } from './services/routing';
 import { useEffect, useState } from 'react';
-import type { Viewer } from '@endfield-noclip/viewer/host';
+import { useViewerState, type Viewer } from '@endfield-noclip/viewer/host';
 import type { Point } from '@endfield-noclip/package-format/oem';
 import type { Vec3 } from '@opendfieldmap/ganglia';
 import RouteInspection, { type Candidate } from './route-inspection';
@@ -16,6 +18,11 @@ export default function NearestRoute({
     panelRoot: HTMLElement | null;
     onRoute: (points: Vec3[] | null) => void;
 }) {
+    useViewerState(viewer);
+    const sceneKey = JSON.stringify([
+        viewer.scene?.pkg.manifest.generation,
+        Object.entries(viewer.scenePicks).sort(),
+    ]);
     const [log, setLog] = useState<string | null>(null);
     const [data, setData] = useState<Candidate | null>(null);
     const [message, setMessage] = useState(
@@ -30,7 +37,8 @@ export default function NearestRoute({
         void (async () => {
             const source = viewer.scene?.pkg.manifest.source;
             if (!source) throw new Error('Scene is not ready');
-            const query = new URLSearchParams({
+            const query = {
+                ...sceneReference(viewer),
                 scene: point.scene,
                 level: point.level,
                 point: point.id,
@@ -39,19 +47,14 @@ export default function NearestRoute({
                 z: String(point.position[2]),
                 buildGuid: source.buildGuid,
                 contentHash: source.contentHash,
-            });
-            let result;
-            let response;
+            };
+            let result: RouteUpdate | undefined;
             let routeSignature = '';
-            let pending = false;
-            do {
-                response = await fetch(`/__routes/nearest?${query}`, {
-                    signal: abort.signal,
-                });
-                result = await response.json();
+            for await (const update of routing.nearest(query, abort.signal)) {
+                result = update;
                 if (abort.signal.aborted) return;
                 setLog(result.log ?? null);
-                if (response.ok && result.status === 'candidate') {
+                if (result.status === 'candidate') {
                     const signature = JSON.stringify([
                         result.route,
                         result.supportBoxes,
@@ -62,36 +65,16 @@ export default function NearestRoute({
                         onRoute(result.route.points);
                     }
                 }
-                pending =
-                    response.ok &&
-                    (result.status === 'building-ground' ||
-                        (result.status === 'candidate' && result.optimizing));
-                if (pending) {
-                    setMessage(
-                        result.optimizationMessage ||
-                            result.message ||
-                            'Comparing jump alternatives…',
-                    );
-                    await new Promise<void>((resolve, reject) => {
-                        const stop = () => {
-                            clearTimeout(timer);
-                            reject(new DOMException('Aborted', 'AbortError'));
-                        };
-                        const timer = setTimeout(() => {
-                            abort.signal.removeEventListener('abort', stop);
-                            resolve();
-                        }, 1000);
-                        abort.signal.addEventListener('abort', stop, {
-                            once: true,
-                        });
-                        if (abort.signal.aborted) stop();
-                    });
-                }
-            } while (pending && !abort.signal.aborted);
+                setMessage(
+                    result.optimizationMessage ||
+                        result?.message ||
+                        'Comparing jump alternatives…',
+                );
+            }
             if (abort.signal.aborted) return;
-            if (!response.ok || result.status !== 'candidate')
+            if (!result || result.status !== 'candidate')
                 throw new Error(
-                    result.message ||
+                    result?.message ||
                         'No route is available in the current data',
                 );
             if (abort.signal.aborted) return;
@@ -106,7 +89,7 @@ export default function NearestRoute({
             abort.abort();
             onRoute(null);
         };
-    }, [viewer, point, onRoute]);
+    }, [viewer, point, onRoute, sceneKey]);
     return (
         <RouteInspection
             viewer={viewer}
