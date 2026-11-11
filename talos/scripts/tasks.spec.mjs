@@ -393,7 +393,10 @@ test('CI check builds all targets after preparing types only once and covers sta
     await runTask(['check', '--build', '--source-only', '--skip-subset'], f);
     assert.equal(countScript(f.calls, 'build-marker-version-new.mjs'), 1);
     assert.equal(countScript(f.calls, 'build-relink-preview.mjs'), 1);
-    assert.equal(f.calls.filter(({ args }) => args.includes('tsc')).length, 6);
+    assert.equal(f.calls.filter(({ args }) => args.includes('tsc')).length, 7);
+    assert.ok(f.calls.some(({ args }) =>
+        args.includes('@endfield-noclip/extractor') && args.includes('tsc'),
+    ));
     assert.equal(
         f.calls.filter(({ args }) => args.includes('vitest')).length,
         4,

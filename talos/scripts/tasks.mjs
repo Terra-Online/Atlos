@@ -35,7 +35,7 @@ const help = `Usage: pnpm <command> [options]
   og          [--target cn|org|all] [--action build|publish|refresh]
   worker      search|relink check|deploy
   check [--build] / lint / lint:fix / type-check / test
-  type-check [--app main|intel|user-hub|world|relink|search]
+  type-check [--app main|intel|user-hub|world|extractor|relink|search]
   run test    [--app main|intel|user-hub|world|relink|scripts]
   data        prepare|check|overrides|intel|locale|tile-coverage|marker-stats|marker-lookup|marker-diff|search-index|relink-preview|seo
   data fonts  (generate shared immutable shards for all apps)
@@ -141,7 +141,7 @@ export const parseTask = (argv, env = process.env) => {
         throw new Error('--dist-dir requires a single target.');
     const allowedApps =
         command === 'type-check'
-            ? ['all', ...Object.keys(apps), 'world', 'search', 'relink']
+            ? ['all', ...Object.keys(apps), 'world', 'extractor', 'search', 'relink']
             : command === 'test'
               ? ['all', ...Object.keys(apps), 'world', 'relink', 'scripts']
               : ['all', ...Object.keys(apps), 'world'];

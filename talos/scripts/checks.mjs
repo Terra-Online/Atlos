@@ -69,6 +69,7 @@ export const typeCheck = async (runner, app = 'all', prepare = true) => {
         intel: 'apps/intel',
         'user-hub': 'apps/user-hub',
         world: 'apps/world',
+        extractor: '.cache/noclip/packages/extractor',
         search: 'oem-search',
         relink: 'oem-relink',
     };
@@ -76,15 +77,18 @@ export const typeCheck = async (runner, app = 'all', prepare = true) => {
         throw new Error(`Unknown type-check app: ${app}`);
     // Typed lint also uses these projects; keep memory use bounded on CI.
     for (const [name, project] of Object.entries(projects)) {
-        if (app === 'all' || app === name)
-            await runner.run('pnpm', [
-                ...(name === 'world' ? ['--filter', '@atlos/world'] : []),
-                'exec',
-                'tsc',
-                '--noEmit',
-                '--project',
-                name === 'world' ? '.' : project,
-            ]);
+        if (app !== 'all' && app !== name) continue;
+        const packageName = name === 'world'
+            ? '@atlos/world'
+            : name === 'extractor' ? '@endfield-noclip/extractor' : null;
+        await runner.run('pnpm', [
+            ...(packageName ? ['--filter', packageName] : []),
+            'exec',
+            'tsc',
+            '--noEmit',
+            '--project',
+            packageName ? '.' : project,
+        ]);
     }
 };
 
