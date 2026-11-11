@@ -116,11 +116,8 @@ export const useIdCardProfileViewModel = ({
     const displayName = sessionUser?.nickname || fallbackUsername || DEFAULT_NAME;
     const uidLabel: 'UID' | 'GID' = isGuest ? 'GID' : 'UID';
 
-    const unassignedText = t('idcard.unassigned');
     const displayUid = isGuest
       ? buildGuestId()
-      : sessionUser?.needsProfileSetup
-      ? unassignedText
       : sessionUser?.uid || fallbackUid || DEFAULT_UID;
 
     const groupCode = isGuest
