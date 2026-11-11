@@ -1,4 +1,4 @@
-import type { PhysicalFiles } from '../../.cache/noclip/packages/extractor/src/game/physical-input.ts';
+import type { PhysicalTask } from './physical-task.ts';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
@@ -117,7 +117,7 @@ export function createRouteWorker(options: {
     };
     return {
         async start(
-            args: string[] | PhysicalFiles,
+            args: string[] | PhysicalTask,
         ): Promise<Task | ChildProcess> {
             if (closed) throw new Error('Route worker is closed');
             available ??= access(entry).then(

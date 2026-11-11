@@ -8,7 +8,8 @@
         "scene-resources.ts",
         "route-worker.ts",
         "physical-route-builder.ts",
-        "dev-route-server.ts"
+        "dev-route-server.ts",
+        "physical-task.ts"
     ],
     "exclude": []
 }

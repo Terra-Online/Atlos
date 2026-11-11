@@ -6,6 +6,7 @@
   "patches": [
     "renderer.patch",
     "extractor.patch",
+    "routing-adapter.patch",
     "format.patch",
     "documentation.patch",
     "gpu-recovery.patch",

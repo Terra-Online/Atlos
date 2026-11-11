@@ -1,4 +1,12 @@
-import type { PhysicalFiles } from '../../.cache/noclip/packages/extractor/src/game/physical-input.ts';
+import type { PhysicalTask } from './physical-task.ts';
+import {
+    physicalCoverage,
+    physicalMargin,
+    physicalWork,
+    physicalWorkPlan,
+    type PhysicalWork,
+} from '@opendfieldmap/ganglia/solver/host';
+export { physicalTileSpan } from '@opendfieldmap/ganglia/solver/host';
 import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createHash, randomUUID } from 'node:crypto';
@@ -47,82 +55,6 @@ export type RouteRequest = {
 const hash = (value: unknown) =>
     createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
-export const physicalTileSpan = 256 * 0.15;
-export const physicalMargins = [24, 64, 128, 256] as const;
-
-/** Check cheap known movement for every origin before bounded jump discovery. */
-export const routeAttempts = (anchorCount: number, knownFirst = true) => {
-    const origins = Array.from({ length: anchorCount }, (_, anchorIndex) => ({
-        anchorIndex,
-        marginIndex: 0,
-    }));
-    const searches = origins
-        .flatMap(({ anchorIndex }) =>
-            Array.from(
-                { length: physicalMargins.length * 2 },
-                (_, marginIndex) => ({
-                    anchorIndex,
-                    marginIndex,
-                }),
-            ),
-        )
-        .sort(
-            (a, b) =>
-                a.anchorIndex + a.marginIndex - b.anchorIndex - b.marginIndex ||
-                a.marginIndex - b.marginIndex,
-        );
-    return knownFirst ? [...origins, ...searches] : searches;
-};
-
-type Approach = { margin: number; corridor?: Corridor };
-
-const coverage = (start: number[], target: number[], approach: Approach) => {
-    const { margin, corridor } = approach;
-    const min = corridor?.bounds.min ?? [
-        Math.min(start[0], target[0]) - margin,
-        Math.min(start[2], target[2]) - margin,
-    ];
-    const max = corridor?.bounds.max ?? [
-        Math.max(start[0], target[0]) + margin,
-        Math.max(start[2], target[2]) + margin,
-    ];
-    const bounds = [
-        Math.floor(min[0] / 32) * 32,
-        Math.floor(min[1] / 32) * 32,
-        Math.ceil(max[0] / 32) * 32,
-        Math.ceil(max[1] / 32) * 32,
-    ];
-    const tiles =
-        corridor?.tiles.length ??
-        (Math.ceil(bounds[2] / physicalTileSpan) -
-            Math.floor(bounds[0] / physicalTileSpan)) *
-            (Math.ceil(bounds[3] / physicalTileSpan) -
-                Math.floor(bounds[1] / physicalTileSpan));
-    return { bounds, tiles };
-};
-
-/** Rank both coverage proposals by the same tile estimate used by the builder.
- * A failed attempt advances to another proposal without classifying the route
- * by endpoint distance or elevation. All original widening choices remain.
- */
-export const physicalApproaches = (
-    start: number[],
-    target: number[],
-    corridors: Corridor[],
-): Approach[] =>
-    [
-        ...physicalMargins.map((margin) => ({ margin })),
-        ...corridors.map((corridor, index) => ({
-            margin: physicalMargins[
-                Math.min(index, physicalMargins.length - 1)
-            ],
-            corridor,
-        })),
-    ].sort(
-        (a, b) =>
-            coverage(start, target, a).tiles - coverage(start, target, b).tiles,
-    );
-
 /** Ground construction and known-action queries share a foreground lane.
  * Queries over ready ground precede further queued builds. Jump optimization
  * uses an independent lane, so it cannot hold up a device feasibility result.
@@ -152,8 +84,12 @@ export function physicalRouteBuilder(options: Options) {
     const workerRegions = new Map<(typeof solverWorkers)[number], string>();
     const workerUses = new Map<(typeof solverWorkers)[number], number>();
     let workerUse = 0;
-    const startSolver = async (files: PhysicalFiles) => {
-        const region = hash([files.ground, files.collision, files.movement]);
+    const startSolver = async (files: PhysicalTask) => {
+        const region = hash([
+            files.resources.ground,
+            files.resources.collision,
+            files.resources.movement,
+        ]);
         // A completed foreground device check can hand its prepared region to
         // optimization; the other worker remains available for foreground work.
         const worker =
@@ -276,7 +212,7 @@ export function physicalRouteBuilder(options: Options) {
     };
     const enqueue = (
         current: Job,
-        args: string[] | PhysicalFiles,
+        args: string[] | PhysicalTask,
         {
             background,
             context,
@@ -511,11 +447,14 @@ export function physicalRouteBuilder(options: Options) {
         request: { startBuild: boolean; margin?: number; corridor?: Corridor },
     ) => {
         if (!configured || closed) return null;
-        const margin = request.margin ?? physicalMargins[0];
+        const margin = request.margin ?? physicalMargin;
         if (!Number.isFinite(margin) || margin < 0)
             throw new Error('Invalid physical coverage margin');
         const corridor = request.corridor;
-        const { bounds, tiles } = coverage(start, target, { margin, corridor });
+        const { bounds, tiles } = physicalCoverage(start, target, {
+            margin,
+            corridor,
+        });
         if (!bounds.every(Number.isSafeInteger) || tiles > 512) {
             return {
                 status: 'failed' as const,
@@ -705,23 +644,20 @@ export function physicalRouteBuilder(options: Options) {
         ground: Job,
         request: RouteRequest,
         startSolve: boolean,
-        stage: 'walking' | 'devices' | 'all' = 'all',
+        work: PhysicalWork = physicalWork(2),
     ) => {
         if (!configured || closed || ground.status !== 'ready') return null;
         const settings = await movementFile();
-        const devices =
-            stage === 'walking' ? undefined : await deviceFile(request.scene);
+        const plan = physicalWorkPlan(work);
+        const devices = plan.devices
+            ? await deviceFile(request.scene)
+            : undefined;
         // Traversals depend on endpoints, interaction volumes and exclusions, even when ground tiles are shared.
         const key = hash({
-            stage:
-                stage === 'walking'
-                    ? 'walking-route'
-                    : stage === 'devices'
-                      ? 'device-route'
-                      : 'route',
+            work,
             ground: ground.output,
             request,
-            policy: stage === 'walking' ? 14 : 18,
+            policy: plan.policy,
             devices: devices?.fingerprint,
             movement: settings.fingerprint,
             solver: options.solver,
@@ -733,10 +669,6 @@ export function physicalRouteBuilder(options: Options) {
         const existing = jobs.get(key);
         if (existing) return existing;
         const output = resolve(directory, `${request.scene}-${key}.json`);
-        const input = resolve(
-            directory,
-            `${request.scene}-${key}-request.json`,
-        );
         job = {
             status: 'queued',
             message: 'Queued physical route search…',
@@ -757,7 +689,7 @@ export function physicalRouteBuilder(options: Options) {
                     job.status = 'ready';
                     job.message = 'Physical route data ready';
                     await cacheLog(job, {
-                        stage,
+                        work,
                         scene: request.scene,
                         point: request.point,
                         source: request.source,
@@ -768,23 +700,22 @@ export function physicalRouteBuilder(options: Options) {
         } catch {
             /* Rebuild missing or incomplete query artifacts. */
         }
-        const temporary = `${input}.${process.pid}.tmp`;
         try {
-            await writeFile(temporary, JSON.stringify(request));
-            await rename(temporary, input);
-            const files: PhysicalFiles = {
-                ground: ground.output,
-                collision: ground.collision,
-                movement: settings.path,
-                request: input,
+            const files: PhysicalTask = {
+                resources: {
+                    ground: ground.output,
+                    collision: ground.collision,
+                    movement: settings.path,
+                    devices: devices?.path,
+                },
+                request,
                 output,
-                devices: devices?.path,
-                effort: stage,
+                work,
             };
             enqueue(job, files, {
-                background: stage === 'all',
+                background: plan.background,
                 context: {
-                    stage,
+                    work,
                     scene: request.scene,
                     point: request.point,
                     source: request.source,
@@ -795,7 +726,6 @@ export function physicalRouteBuilder(options: Options) {
         } catch (error) {
             job.status = 'failed';
             job.message = String(error);
-            await unlink(temporary).catch(() => {});
         }
         return job;
     };

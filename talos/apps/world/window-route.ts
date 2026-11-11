@@ -1,3 +1,4 @@
+import type {PhysicalWork} from '@opendfieldmap/ganglia/solver/host';
 import { readFile } from 'node:fs/promises';
 import { createWindowRoute as createRoute, type WindowConfig } from '@opendfieldmap/ganglia/solver';
 import type { GroundOptions, Surface, Route, Vec3 } from '@opendfieldmap/ganglia';
@@ -6,7 +7,7 @@ import type { Corridor } from '@opendfieldmap/ganglia/solver';
 
 type Builder = {
     query(scene: string, source: RouteRequest['source'], start: number[], target: number[], options: { startBuild: boolean; margin: number; corridor: Corridor }): Promise<Job | null>;
-    solve(job: Job, request: RouteRequest, start: boolean, stage: 'walking' | 'devices' | 'all'): Promise<Job | null>;
+    solve(job: Job, request: RouteRequest, start: boolean, work: PhysicalWork): Promise<Job | null>;
 };
 
 export function createWindowRoute(builder: Builder, request: RouteRequest, points: Vec3[], config: Omit<WindowConfig, 'tileSpan' | 'gridSpan'>) {

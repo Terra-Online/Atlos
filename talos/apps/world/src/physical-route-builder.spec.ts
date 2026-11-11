@@ -1,11 +1,12 @@
+import { physicalWork } from '@opendfieldmap/ganglia/solver/host';
 // @vitest-environment node
-import {writePhysicalAdapter} from "../../../test-support/physical-adapter.mjs";
+import { writePhysicalAdapter } from '../../../test-support/physical-adapter.mjs';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { expect, test } from 'vitest';
-import { physicalRouteBuilder, routeAttempts, physicalMargins } from '../physical-route-builder';
+import { physicalRouteBuilder } from '../physical-route-builder';
 
 test('publishes walking progress and resumes an interrupted provisional cache', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'world-route-progress-'));
@@ -41,7 +42,7 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
             if (!process.argv.includes('--ground-only')) {
                 // The test owns completion so machine load cannot finish the interrupted run.
                 while (true) {
-                    try { await access(output + '.release'); break; }
+                    try { await access(${JSON.stringify(join(directory, 'release'))}); break; }
                     catch { await new Promise(resolve => setTimeout(resolve, 20)); }
                 }
                 await save({ source, scene: 'map01', status: 'candidate', optimizing: false });
@@ -110,7 +111,12 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
         expect(next.result).toMatchObject({ source, surfaces: [] });
         expect(ground.result).toBeUndefined();
         expect(restored?.result).toMatchObject({ source, surfaces: [] });
-        const walking = await builder.solve(next, request, true, 'walking');
+        const walking = await builder.solve(
+            next,
+            request,
+            true,
+            physicalWork(0),
+        );
         if (!walking)
             throw new Error('Foreground walking stage was not created');
         await expect.poll(() => walking.status).toBe('ready');
@@ -133,7 +139,7 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
         if (!resumed) throw new Error('Provisional route was not resumed');
         expect(resumed.status).not.toBe('ready');
         expect(resumed.result).toMatchObject({ optimizing: true });
-        await writeFile(resumed.output + '.release', '');
+        await writeFile(join(directory, 'release'), '');
         await expect.poll(() => resumed.status).toBe('ready');
         expect(resumed.result).toMatchObject({ optimizing: false });
         if (!resumed.log) throw new Error('Task log was not retained');
@@ -319,7 +325,7 @@ test('runs a queued known-device query before further ground construction', asyn
                 walls: [],
             },
             true,
-            'devices',
+            physicalWork(1),
         );
         if (!route) throw new Error('missing device query');
         await expect.poll(() => route.status).toBe('ready');
@@ -332,23 +338,4 @@ test('runs a queued known-device query before further ground construction', asyn
         await builder.close();
         await rm(directory, { recursive: true, force: true });
     }
-});
-
-
-test('checks known routes from all origins before starting jump discovery and retains widening attempts', () => {
-    const anchors = 5;
-    const attempts = routeAttempts(anchors);
-    expect(attempts.slice(0, anchors)).toEqual(Array.from({ length: anchors }, (_, anchorIndex) =>
-        ({ anchorIndex, marginIndex: 0 })));
-    const searches = attempts.slice(anchors);
-    for (let anchorIndex = 0; anchorIndex < anchors; anchorIndex++) {
-        expect(searches.filter(attempt => attempt.anchorIndex === anchorIndex)
-            .map(attempt => attempt.marginIndex).sort((a, b) => a - b))
-            .toEqual(Array.from({ length: physicalMargins.length * 2 }, (_, index) => index));
-    }
-    expect(searches[0]).toEqual({ anchorIndex: 0, marginIndex: 0 });
-    // Airborne endpoints always require flight discovery, so retain the original schedule.
-    expect(routeAttempts(anchors, false)).toEqual(searches);
-    expect(searches.findIndex(attempt => attempt.anchorIndex === 1 && attempt.marginIndex === 0))
-        .toBeLessThan(searches.findIndex(attempt => attempt.anchorIndex === 0 && attempt.marginIndex === 2));
 });

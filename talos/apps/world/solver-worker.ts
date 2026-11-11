@@ -1,6 +1,8 @@
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-const { runPhysicalFiles, physicalFiles } = (await import(
+import { physicalTask } from './physical-task.ts';
+import { routeWriter } from '../../.cache/noclip/packages/extractor/src/write-route.ts';
+const { preparePhysicalRoute } = (await import(
     pathToFileURL(
         resolve(
             process.argv[2],
@@ -35,17 +37,28 @@ process.on('message', (value: unknown) => {
     const files = value.files;
     running = true;
     void (async () => {
-        await runPhysicalFiles(physicalFiles(files), {
-            cache,
-            progress: (progress) =>
-                send({
-                    type: 'progress',
-                    id,
-                    progress: {
-                        ...progress,
-                        memory: process.memoryUsage(),
-                    },
-                }),
+        const task = physicalTask(files);
+        const write = routeWriter(
+            task.output,
+            Object.values(task.resources).filter(
+                (v): v is string => typeof v === 'string',
+            ),
+        );
+        const progress = (progress: { phase: string }) =>
+            send({
+                type: 'progress',
+                id,
+                progress: { ...progress, memory: process.memoryUsage() },
+            });
+        const prepared = await preparePhysicalRoute(
+            task.resources,
+            task.request,
+            { cache, progress },
+        );
+        await prepared.solve({
+            work: task.work,
+            onProgress: progress,
+            onResult: write,
         });
     })()
         .then(() => send({ type: 'done', id, memory: process.memoryUsage() }))
