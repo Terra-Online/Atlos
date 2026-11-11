@@ -8,30 +8,30 @@ export const profilerKey = '__atlosRouteStageProfiler';
 // Keep per-vertex and per-sweep helpers out of the stopwatch pass. Their CPU
 // contribution remains visible in the optional sampling profile.
 const ganglia = {
-    'build.mjs': ['buildGroundTiles', 'buildGroundSurfaces', 'buildHeightLayers', 'supportHeightRanges', 'joinTiles', 'boundaryEdges'],
-    'support-field.mjs': ['buildSupportField'],
-    'ground.mjs': ['createGroundPlanner', 'planGroundRoute', 'plan', 'straightenRoute'],
-    'surfaces.mjs': ['surfaceGraph', 'surfacePortals'],
-    'routes.mjs': ['prepareRoutePlanner', 'prepareGraph', 'search'],
-    'support-projector.mjs': ['createSupportProjector'],
-    'goals.mjs': ['createGoalProjector'],
-    'straighten.mjs': ['createGroundStraightener'],
-    'connectivity.mjs': ['groundComponents', 'directedComponents', 'condenseComponents'],
-    'collision.mjs': ['createCollisionWorld'],
-    'jump-planner.mjs': ['planJumpRoute', 'solveJumpRoute', 'planDirectedRoute', 'planBaseRoute'],
-    'shortcuts.mjs': ['findJumpFrontier', 'findJumpShortcuts', 'findConnections', 'prepareGeometry'],
-    'traversal.mjs': ['findJumpConnections', 'exposedBoundaries', 'findChain', 'candidatesFor', 'validate'],
-    'movement-geometry.mjs': ['movementGeometry'],
-    'route-shortcuts.mjs': ['findRouteShortcuts'],
-    'ground-detours.mjs': ['pruneGroundDetours'],
-    'airborne-goal.mjs': ['planAirborneGoal'],
-    'boosted-route.mjs': ['planBoostedRoute'],
-    'resource-search.mjs': ['searchResources'],
-    'distance-field.mjs': ['advanceDistanceField'],
+    'build-implementation.ts': ['buildGroundTiles', 'buildGroundSurfaces', 'buildHeightLayers', 'supportHeightRanges', 'joinTiles', 'boundaryEdges'],
+    'support-field.ts': ['buildSupportField'],
+    'ground.ts': ['createGroundPlanner', 'planGroundRoute', 'plan', 'straightenRoute'],
+    'surfaces.ts': ['surfaceGraph', 'surfacePortals'],
+    'routes.ts': ['prepareRoutePlanner', 'prepareGraph', 'search'],
+    'support-projector.ts': ['createSupportProjector'],
+    'goals.ts': ['createGoalProjector'],
+    'straighten.ts': ['createGroundStraightener'],
+    'connectivity.ts': ['groundComponents', 'directedComponents', 'condenseComponents'],
+    'collision-implementation.ts': ['createCollisionWorld'],
+    'jump-planner.ts': ['planJumpRoute', 'solveJumpRoute', 'planDirectedRoute', 'planBaseRoute'],
+    'shortcuts.ts': ['findJumpFrontier', 'findJumpShortcuts', 'findConnections', 'prepareGeometry'],
+    'traversal.ts': ['findJumpConnections', 'exposedBoundaries', 'findChain', 'candidatesFor', 'validate'],
+    'movement-geometry.ts': ['movementGeometry'],
+    'route-shortcuts.ts': ['findRouteShortcuts'],
+    'ground-detours.ts': ['pruneGroundDetours'],
+    'airborne-goal.ts': ['planAirborneGoal'],
+    'boosted-route.ts': ['planBoostedRoute'],
+    'resource-search.ts': ['searchResources'],
+    'distance-field.ts': ['advanceDistanceField'],
     // The resource DP can call scheduleBlock millions of times. Inspect that
     // hot path through CPU sampling to avoid per-call stopwatch overhead.
-    'locomotion.mjs': ['retimeGroundRoute'],
-    'candidate-planner.mjs': ['createCandidatePlanner', 'plan'],
+    'locomotion.ts': ['retimeGroundRoute'],
+    'candidate-planner.ts': ['createCandidatePlanner', 'plan'],
 };
 const extractor = {
     'commands/player-route.ts': ['run'],
@@ -67,7 +67,7 @@ const ioModules = new Set([
 ]);
 
 function selection(path) {
-    const sdk = path.match(/\/@opendfieldmap\/ganglia\/src\/([^/]+)$/);
+    const sdk = path.match(/\/(?:@opendfieldmap|\.cache)\/ganglia\/src\/([^/]+)$/);
     if (sdk && ganglia[sdk[1]]) return { module: `ganglia/${sdk[1]}`, names: new Set(ganglia[sdk[1]]) };
     const source = path.match(/\/packages\/extractor\/src\/(.+)$/);
     if (source && extractor[source[1]]) return { module: `extractor/${source[1]}`,

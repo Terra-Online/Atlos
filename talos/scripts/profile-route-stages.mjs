@@ -217,7 +217,7 @@ export async function main(argv = process.argv.slice(2)) {
         }
     }
     const setupMs = performance.now() - setupStart;
-    const sdkModule = hooks.modules.find(module => module.path.includes('/@opendfieldmap/ganglia/src/'));
+    const sdkModule = hooks.modules.find(module => /\/(?:@opendfieldmap|\.cache)\/ganglia\/src\//.test(module.path));
     const sdkPath = sdkModule?.path.slice(0, sdkModule.path.lastIndexOf('/src/'));
     const sdk = sdkPath ? { path: sdkPath, ...JSON.parse(await readFile(resolve(sdkPath, 'package.json'), 'utf8')) } : null;
     const runtime = { node: process.version, execPath: process.execPath, execArgv: process.execArgv,

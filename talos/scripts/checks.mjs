@@ -94,7 +94,7 @@ export const test = async (runner, app = 'all') => {
     )
         throw new Error(`Unknown test app: ${app}`);
     if (app === 'all' || app === 'scripts')
-        await runner.run('node', ['--test', './scripts/tasks.spec.mjs', './scripts/closure.spec.mjs', './scripts/package-pages.spec.mjs', './scripts/map-tiles.spec.mjs', './scripts/noclip.test.mjs']);
+        await runner.run('node', ['--test', './scripts/tasks.spec.mjs', './scripts/closure.spec.mjs', './scripts/package-pages.spec.mjs', './scripts/map-tiles.spec.mjs', './scripts/noclip.test.mjs', './scripts/ganglia.test.mjs']);
     if (app === 'all' || app === 'main' || app === 'relink') {
         await runner.run('pnpm', [
             'exec',

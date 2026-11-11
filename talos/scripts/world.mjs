@@ -6,11 +6,13 @@ import { createRunner, ROOT } from './task-runner.mjs';
 import { hashFiles } from './release-snapshot.mjs';
 import { verifyOutput } from './release-artifact.mjs';
 import { prepare } from './noclip.mjs';
+import { prepare as prepareGanglia } from './ganglia.mjs';
 
 const command = process.argv[2];
 if (!['build', 'deploy'].includes(command)) throw new Error('Use world.mjs build|deploy');
 const output = path.join(ROOT, 'dist/world');
 const git = (...args) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' }).trim();
+await prepareGanglia();
 const { identity: pin, upstream } = await prepare();
 const runner = createRunner();
 const receipt = path.join(output, '.world-build.json');
