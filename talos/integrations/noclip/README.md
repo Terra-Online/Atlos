@@ -27,6 +27,12 @@ configure route data and the private game configuration. Neither keys nor game c
 
 ## updating
 
+The current pin uses package format v102, including upstream foliage lighting, local-light shadows
+and texture-driven cloth offsets. Existing v98 archives must be repacked before using this viewer.
+Point coordinates and navigation exports do not need recomputing for this renderer update; retained
+companion metadata must be checked against the new package states, source fingerprint and levels,
+and its catalog and navigation generation bindings updated before publication.
+
 1. Fast-forward the clean upstream noclip checkout to `upstream/trunk`.
 2. Regenerate `upstream.tar.gz` with `git archive --format=tar.gz upstream/trunk`, record its commit
    and SHA-256 in `source.json`, and port each patch to that baseline. Review the package-format version

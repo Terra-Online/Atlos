@@ -1,7 +1,59 @@
+diff --git a/packages/viewer/src/app.tsx b/packages/viewer/src/app.tsx
+index f1ffcbb3..e92e2e9a 100644
+--- a/packages/viewer/src/app.tsx
++++ b/packages/viewer/src/app.tsx
+@@ -42,6 +42,7 @@ export const App = ({
+ 	const canvasRef = useRef<HTMLCanvasElement>(null);
+ 	const [viewer, setViewer] = useState<Viewer | null>(null);
+ 	const [error, setError] = useState<string | null>(null);
++	const [attempt, setAttempt] = useState(0);
+ 	const [current, setCurrent] = useState<OpenPackage | null>(null);
+ 	const [status, setStatus] = useState('');
+ 	const [pointPanelRoot, setPointPanelRoot] = useState<HTMLDivElement | null>(null);
+@@ -67,10 +68,19 @@ export const App = ({
+ 		// StrictMode mounts this effect twice in development, so the first creation is aborted mid-flight
+ 		const abort = new AbortController();
+ 		let created: Viewer | null = null;
+-		Viewer.create(canvas, (reason) => setError(`the GPU device was lost: ${reason}`), abort.signal)
++		let lost = false;
++		setError(null);
++		Viewer.create(canvas, (reason) => {
++			if (abort.signal.aborted) return;
++			lost = true;
++			setError(`the GPU device was lost: ${reason}`);
++			setViewer(null);
++			created?.destroy();
++			created = null;
++		}, abort.signal)
+ 			.then((instance) => {
+ 				// built before the abort, so before any replacement touched the canvas: safe to destroy
+-				if (abort.signal.aborted) {
++				if (abort.signal.aborted || lost) {
+ 					instance.destroy();
+ 					return;
+ 				}
+@@ -94,7 +104,7 @@ export const App = ({
+ 			abort.abort();
+ 			created?.destroy();
+ 		};
+-	}, [hosted, open]);
++	}, [hosted, open, attempt]);
+ 
+ 	// the current level lives in the URL, so a reload or a shared link opens over the same level
+ 	useEffect(() => {
+@@ -116,6 +126,7 @@ export const App = ({
+ 				<div className="panel error" role="alert">
+ 					<h2>can't start the viewer</h2>
+ 					<p>{error}</p>
++					<button type="button" onClick={() => setAttempt(value => value + 1)}>Retry viewer</button>
+ 				</div>
+ 			)}
+ 			{viewer !== null && (
 diff --git a/packages/viewer/src/gfx/device.ts b/packages/viewer/src/gfx/device.ts
+index d30e5f51..7a2394d6 100644
 --- a/packages/viewer/src/gfx/device.ts
 +++ b/packages/viewer/src/gfx/device.ts
-@@ -36,9 +36,11 @@
+@@ -36,9 +36,11 @@ export const createGfxDevice = async (onLost: (reason: string) => void): Promise
  	if (!('gpu' in navigator)) {
  		throw new GfxUnsupportedError(`this browser doesn't support WebGPU`);
  	}
@@ -15,7 +67,7 @@ diff --git a/packages/viewer/src/gfx/device.ts b/packages/viewer/src/gfx/device.
  	}
  
  	const has = (feature: GPUFeatureName): boolean => adapter.features.has(feature);
-@@ -82,7 +84,8 @@
+@@ -82,7 +84,8 @@ export const createGfxDevice = async (onLost: (reason: string) => void): Promise
  	device.lost
  		.then((info) => {
  			if (info.reason !== 'destroyed') {
@@ -25,10 +77,43 @@ diff --git a/packages/viewer/src/gfx/device.ts b/packages/viewer/src/gfx/device.
  			}
  		})
  		.catch(() => {});
+diff --git a/packages/viewer/src/viewer/frame-queue.ts b/packages/viewer/src/viewer/frame-queue.ts
+new file mode 100644
+index 00000000..6b06d53b
+--- /dev/null
++++ b/packages/viewer/src/viewer/frame-queue.ts
+@@ -0,0 +1,10 @@
++/** Bound CPU submission when animation outpaces the GPU. */
++export class FrameQueue {
++    #pending = 0;
++    get full(): boolean { return this.#pending >= 2; }
++    submitted(queue: Pick<GPUQueue, 'onSubmittedWorkDone'>): void {
++        this.#pending++;
++        const release = () => { this.#pending--; };
++        queue.onSubmittedWorkDone().then(release, release);
++    }
++}
 diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/viewer.ts
+index df7f3683..a08a148d 100644
 --- a/packages/viewer/src/viewer/viewer.ts
 +++ b/packages/viewer/src/viewer/viewer.ts
-@@ -323,7 +323,14 @@
+@@ -20,6 +20,7 @@ import type { WaterSurfaceEntry } from '@endfield-noclip/package-format/water';
+ import { ROW_BYTES, ROW_WORDS } from '../content/instance-rows.ts';
+ import type { AppliedVolume } from '../environment/blend.ts';
+ import { windClockRate } from '../environment/environment.ts';
++import { FrameQueue } from './frame-queue.ts';
+ import { type GfxDevice, createGfxDevice } from '../gfx/device.ts';
+ import { DecodePool } from '../package/decode-pool.ts';
+ import type { PackageSource } from '../package/package-source.ts';
+@@ -265,6 +266,7 @@ export class Viewer {
+ 	 * `animate` is on, so animation pauses when the view idles and resumes where it stopped
+ 	 */
+ 	#time = 0;
++	readonly #frameQueue = new FrameQueue();
+ 	/** the wind clock (`Frame.wind.x`), which advances with {@link #time} at the wind's rate */
+ 	#windClock = 0;
+ 	/**
+@@ -323,7 +325,14 @@ export class Viewer {
  			gfx.device.destroy();
  			throw signal.reason;
  		}
@@ -44,85 +129,7 @@ diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/v
  		viewer.#raf = requestAnimationFrame(viewer.#onFrame);
  		document.addEventListener('visibilitychange', viewer.#onVisibilityChange);
  		return viewer;
-diff --git a/packages/viewer/src/app.tsx b/packages/viewer/src/app.tsx
---- a/packages/viewer/src/app.tsx
-+++ b/packages/viewer/src/app.tsx
-@@ -42,6 +42,7 @@
- 	const canvasRef = useRef<HTMLCanvasElement>(null);
- 	const [viewer, setViewer] = useState<Viewer | null>(null);
- 	const [error, setError] = useState<string | null>(null);
-+	const [attempt, setAttempt] = useState(0);
- 	const [current, setCurrent] = useState<OpenPackage | null>(null);
- 	const [status, setStatus] = useState('');
- 	const [pointPanelRoot, setPointPanelRoot] = useState<HTMLDivElement | null>(null);
-@@ -67,7 +68,14 @@
- 		// StrictMode mounts this effect twice in development, so the first creation is aborted mid-flight
- 		const abort = new AbortController();
- 		let created: Viewer | null = null;
--		Viewer.create(canvas, (reason) => setError(`the GPU device was lost: ${reason}`), abort.signal)
-+		setError(null);
-+		Viewer.create(canvas, (reason) => {
-+			if (abort.signal.aborted) return;
-+			setError(`the GPU device was lost: ${reason}`);
-+			setViewer(null);
-+			created?.destroy();
-+			created = null;
-+		}, abort.signal)
- 			.then((instance) => {
- 				// built before the abort, so before any replacement touched the canvas: safe to destroy
- 				if (abort.signal.aborted) {
-@@ -94,7 +102,7 @@
- 			abort.abort();
- 			created?.destroy();
- 		};
--	}, [hosted, open]);
-+	}, [hosted, open, attempt]);
- 
- 	// the current level lives in the URL, so a reload or a shared link opens over the same level
- 	useEffect(() => {
-@@ -116,6 +124,7 @@
- 				<div className="panel error" role="alert">
- 					<h2>can't start the viewer</h2>
- 					<p>{error}</p>
-+					<button type="button" onClick={() => setAttempt(value => value + 1)}>Retry viewer</button>
- 				</div>
- 			)}
- 			{viewer !== null && (
-diff --git a/packages/viewer/src/viewer/frame-queue.ts b/packages/viewer/src/viewer/frame-queue.ts
-new file mode 100644
---- /dev/null
-+++ b/packages/viewer/src/viewer/frame-queue.ts
-@@ -0,0 +1,10 @@
-+/** Bound CPU submission when animation outpaces the GPU. */
-+export class FrameQueue {
-+    #pending = 0;
-+    get full(): boolean { return this.#pending >= 2; }
-+    submitted(queue: Pick<GPUQueue, 'onSubmittedWorkDone'>): void {
-+        this.#pending++;
-+        const release = () => { this.#pending--; };
-+        queue.onSubmittedWorkDone().then(release, release);
-+    }
-+}
-diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/viewer.ts
---- a/packages/viewer/src/viewer/viewer.ts
-+++ b/packages/viewer/src/viewer/viewer.ts
-@@ -20,6 +20,7 @@
- import { ROW_BYTES, ROW_WORDS } from '../content/instance-rows.ts';
- import type { AppliedVolume } from '../environment/blend.ts';
- import { windClockRate } from '../environment/environment.ts';
-+import { FrameQueue } from './frame-queue.ts';
- import { type GfxDevice, createGfxDevice } from '../gfx/device.ts';
- import { DecodePool } from '../package/decode-pool.ts';
- import type { PackageSource } from '../package/package-source.ts';
-@@ -265,6 +266,7 @@
- 	 * `animate` is on, so animation pauses when the view idles and resumes where it stopped
- 	 */
- 	#time = 0;
-+	readonly #frameQueue = new FrameQueue();
- 	/** the wind clock (`Frame.wind.x`), which advances with {@link #time} at the wind's rate */
- 	#windClock = 0;
- 	/**
-@@ -880,6 +882,9 @@
+@@ -873,6 +882,9 @@ export class Viewer {
  		this.#raf = requestAnimationFrame(this.#onFrame);
  		const dt = this.#lastTime === 0 ? 1 / 60 : Math.min(0.1, (time - this.#lastTime) / 1000);
  		this.#lastTime = time;
@@ -132,7 +139,7 @@ diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/v
  		this.#times.begin();
  		const renderer = this.#renderer;
  		const traversal = this.#traversal;
-@@ -978,6 +983,7 @@
+@@ -974,6 +986,7 @@ export class Viewer {
  				times: this.#times,
  				overlays: this.#overlays,
  			});
@@ -140,27 +147,3 @@ diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/v
  			this.#times.rendered(dt);
  		}
  		if (render || traverse) {
-diff --git a/packages/viewer/src/app.tsx b/packages/viewer/src/app.tsx
---- a/packages/viewer/src/app.tsx
-+++ b/packages/viewer/src/app.tsx
-@@ -68,9 +68,11 @@
- 		// StrictMode mounts this effect twice in development, so the first creation is aborted mid-flight
- 		const abort = new AbortController();
- 		let created: Viewer | null = null;
-+		let lost = false;
- 		setError(null);
- 		Viewer.create(canvas, (reason) => {
- 			if (abort.signal.aborted) return;
-+			lost = true;
- 			setError(`the GPU device was lost: ${reason}`);
- 			setViewer(null);
- 			created?.destroy();
-@@ -78,7 +80,7 @@
- 		}, abort.signal)
- 			.then((instance) => {
- 				// built before the abort, so before any replacement touched the canvas: safe to destroy
--				if (abort.signal.aborted) {
-+				if (abort.signal.aborted || lost) {
- 					instance.destroy();
- 					return;
- 				}

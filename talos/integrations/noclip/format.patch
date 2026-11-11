@@ -276,10 +276,10 @@ index e3484c08..c7ebc428 100644
 +	assert.throws(() => readDynamicEntities(bytes), /non-finite conveyor/);
 +});
 diff --git a/packages/formats/src/endfield/dynamic-scene.ts b/packages/formats/src/endfield/dynamic-scene.ts
-index bc516315..21bf8c7b 100644
+index bff8b7ae..760f44ca 100644
 --- a/packages/formats/src/endfield/dynamic-scene.ts
 +++ b/packages/formats/src/endfield/dynamic-scene.ts
-@@ -58,6 +58,10 @@ export const DynamicData = {
+@@ -36,6 +36,10 @@ export const DynamicData = {
  	ResourceComp: 30,
  	ErosionRootComp: 34,
  	ModelViewStateControllerNewComp: 35,
@@ -290,7 +290,7 @@ index bc516315..21bf8c7b 100644
  	SludgeComp: 42,
  	ExtraSceneComp: 44,
  	MapVarControlComp: 51,
-@@ -142,6 +146,29 @@ export interface DynamicViewState {
+@@ -120,6 +124,29 @@ export interface DynamicViewState {
  	oldVersion: boolean;
  }
  
@@ -320,7 +320,7 @@ index bc516315..21bf8c7b 100644
  /** a DynamicStreaming entity */
  export interface DynamicEntity {
  	/** grid unique id */
-@@ -168,6 +195,8 @@ export interface DynamicEntity {
+@@ -146,6 +173,8 @@ export interface DynamicEntity {
  	erosionCore: ErosionCoreLink | null;
  	/** the erosion sludge core whose sludge this entity is, `null` for other entities */
  	sludgeCore: SludgeCoreLink | null;
@@ -329,7 +329,7 @@ index bc516315..21bf8c7b 100644
  }
  
  /** the blight core an erosion root belongs to */
-@@ -214,6 +243,10 @@ const Slot = {
+@@ -193,6 +222,10 @@ const Slot = {
  	RootComp: 33,
  	ErosionRootComp: 36,
  	ModelViewStateControllerNewComp: 37,
@@ -340,7 +340,7 @@ index bc516315..21bf8c7b 100644
  	SludgeComp: 44,
  	ExtraSceneComp: 46,
  	MapVarControlComp: 52,
-@@ -236,6 +269,10 @@ const Width = {
+@@ -216,6 +249,10 @@ const Width = {
  	ExtraSceneComp: 40,
  	ErosionRootComp: 48,
  	ModelViewStateControllerNewComp: 36,
@@ -351,7 +351,7 @@ index bc516315..21bf8c7b 100644
  	SludgeComp: 264,
  } as const;
  
-@@ -289,6 +326,21 @@ export const readDynamicEntities = (bytes: Uint8Array): DynamicEntity[] => {
+@@ -269,6 +306,21 @@ export const readDynamicEntities = (bytes: Uint8Array): DynamicEntity[] => {
  		}
  		return vector.start + index * width;
  	};
@@ -373,7 +373,7 @@ index bc516315..21bf8c7b 100644
  	/** reads a variable component: the variable it reads, and its load gate when it controls loading */
  	const variableComp = (
  		kind: 'globalVar' | 'mapVar',
-@@ -441,6 +493,80 @@ export const readDynamicEntities = (bytes: Uint8Array): DynamicEntity[] => {
+@@ -421,6 +473,80 @@ export const readDynamicEntities = (bytes: Uint8Array): DynamicEntity[] => {
  						entity.uid = fb.u64(id);
  						break;
  					}
@@ -891,10 +891,10 @@ index 4f1300f8..0abdd25c 100644
 +	);
 +});
 diff --git a/packages/formats/src/endfield/memory-pack.ts b/packages/formats/src/endfield/memory-pack.ts
-index b7e4ec99..2f3f981b 100644
+index 76ec8e43..289de68c 100644
 --- a/packages/formats/src/endfield/memory-pack.ts
 +++ b/packages/formats/src/endfield/memory-pack.ts
-@@ -82,6 +82,8 @@ const VECTORS = new Map<string, [string, number]>([
+@@ -75,6 +75,8 @@ const VECTORS = new Map<string, [string, number]>([
  
  /** structs serialized raw rather than through their wrapper (besides `*Ptr`) */
  const RAW_STRUCTS = new Set([
@@ -903,7 +903,7 @@ index b7e4ec99..2f3f981b 100644
  	'GameplayTag',
  	'CameraControlStateInitialParam',
  	'PosRot',
-@@ -443,6 +445,20 @@ export class MemoryPackReader {
+@@ -440,6 +442,20 @@ export class MemoryPackReader {
  		if (type.kind === 'generic') {
  			const [first, second] = type.args;
  			switch (base) {
@@ -924,7 +924,7 @@ index b7e4ec99..2f3f981b 100644
  				case 'List': {
  					return this.#list(() => this.#value(first, true));
  				}
-@@ -570,7 +586,7 @@
+@@ -568,7 +584,7 @@ export class MemoryPackReader {
  			return false;
  		}
  		const definition = this.schema.runtime.metadata.typeDefinition(type.definition);
@@ -1027,10 +1027,10 @@ index 58a5cc22..4f0c2d95 100644
 +	assert.throws(() => parseSparkBean(new Uint8Array(b.bytes)), /spark|bounds|range/i);
 +});
 diff --git a/packages/formats/src/hg/spark-buffer.ts b/packages/formats/src/hg/spark-buffer.ts
-index 02786b06..b88ae30d 100644
+index 041f239a..1e3f38a6 100644
 --- a/packages/formats/src/hg/spark-buffer.ts
 +++ b/packages/formats/src/hg/spark-buffer.ts
-@@ -12,6 +12,7 @@ import { ByteView } from '../binary/byte-view.ts';
+@@ -10,6 +10,7 @@ import { ByteView } from '../binary/byte-view.ts';
  //   type ref: u8 type, then [pad4, u32 typeHash] for beans and enums, the element's type ref for arrays, or
  //             the key's and the value's type refs for maps
  //   root:  u8 0x0a (map), cstring name, key type ref, value type ref
@@ -1038,7 +1038,7 @@ index 02786b06..b88ae30d 100644
  //   data:  u32 slotCount, slotCount × (u32 entriesOffset, u32 entryCount); entries are `key ‖ value` packed
  //          with natural alignment. bools and bytes are u8, enums i32, floats f32, doubles f64. strings, beans,
  //          arrays and maps are stored as u32 absolute offsets (0xFFFFFFFF = null); a bean's fields follow the
-@@ -75,14 +76,43 @@ export interface SparkTable {
+@@ -73,14 +74,43 @@ export interface SparkTable {
  	entries: [key: number | bigint | string, value: SparkValue][];
  }
  
@@ -1083,7 +1083,7 @@ index 02786b06..b88ae30d 100644
  	const view = new ByteView(bytes, 'spark');
  	const u32 = (at: number): number => view.u32(at);
  	const u8 = (at: number): number => view.u8(at);
-@@ -157,18 +187,20 @@ export const parseSparkTable = (bytes: Uint8Array): SparkTable => {
+@@ -155,18 +185,20 @@ export const parseSparkTable = (bytes: Uint8Array): SparkTable => {
  
  	const rootAt = u32(4);
  	const rootKind = u8(rootAt);
@@ -1108,7 +1108,7 @@ index 02786b06..b88ae30d 100644
  			}
  			case SparkType.Byte: {
  				return [u8(pos), pos + 1];
-@@ -281,7 +313,12 @@ export const parseSparkTable = (bytes: Uint8Array): SparkTable => {
+@@ -279,7 +311,12 @@ export const parseSparkTable = (bytes: Uint8Array): SparkTable => {
  		return entries;
  	};
  
@@ -1887,7 +1887,7 @@ index 00000000..5dbe61ba
 +	return { x, z, vertices: points, polygons: faces };
 +};
 diff --git a/packages/package-format/src/materials.ts b/packages/package-format/src/materials.ts
-index 446e15f8..5744e168 100644
+index c2f8bd38..9c1bb0c6 100644
 --- a/packages/package-format/src/materials.ts
 +++ b/packages/package-format/src/materials.ts
 @@ -17,6 +17,8 @@ export interface ReadyMaterial {

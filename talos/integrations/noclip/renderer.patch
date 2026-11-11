@@ -220,7 +220,7 @@ index 112457bd..624528c3 100644
   *
   * @module
 diff --git a/packages/viewer/src/environment/derive.ts b/packages/viewer/src/environment/derive.ts
-index 5f9bb8d5..9a0f4fb6 100644
+index 8a633c7a..c15ffd4c 100644
 --- a/packages/viewer/src/environment/derive.ts
 +++ b/packages/viewer/src/environment/derive.ts
 @@ -6,10 +6,12 @@
@@ -266,10 +266,10 @@ index 00000000..ed61d7ae
 +export { useViewerState } from './ui/use-viewer.ts';
 +export { Panel, PanelProvider, type PanelProps } from './ui/panel.tsx';
 diff --git a/packages/viewer/src/looks/lit-look.test.ts b/packages/viewer/src/looks/lit-look.test.ts
-index 45989204..8612b322 100644
+index e36de382..4d53e872 100644
 --- a/packages/viewer/src/looks/lit-look.test.ts
 +++ b/packages/viewer/src/looks/lit-look.test.ts
-@@ -369,3 +369,23 @@ test('foliage: leaves and grass fill the foliage rows, and surfaces keeping lit
+@@ -486,3 +486,23 @@ test('foliage: leaves and grass fill the foliage rows, and surfaces keeping lit
  	assert.deepEqual(row(grass, LookRow.foliage2), [0.1, 3, 4, 0.25].map(Math.fround));
  	assert.equal(grass.params[LookRow.detail2 + 3], 0);
  });
@@ -294,10 +294,10 @@ index 45989204..8612b322 100644
 +	);
 +});
 diff --git a/packages/viewer/src/looks/look.ts b/packages/viewer/src/looks/look.ts
-index 6780492b..f903a50a 100644
+index 30ab9878..89551aee 100644
 --- a/packages/viewer/src/looks/look.ts
 +++ b/packages/viewer/src/looks/look.ts
-@@ -116,6 +116,8 @@ export interface MaterialLook {
+@@ -122,6 +122,8 @@ export interface MaterialLook {
  	unsupported: boolean;
  	/** the draws the look's meshes join, which decide their pass and pipelines */
  	queue: LookQueue;
@@ -306,7 +306,7 @@ index 6780492b..f903a50a 100644
  	/** the faces the game culls, for unmirrored instances */
  	cull: MaterialCull;
  	/** whether the material draws into shadow maps */
-@@ -310,6 +312,7 @@ export const emptyLook = ({ drawn }: { drawn: boolean }): MaterialLook => ({
+@@ -322,6 +324,7 @@ export const emptyLook = ({ drawn }: { drawn: boolean }): MaterialLook => ({
  	drawn,
  	unsupported: false,
  	queue: 'opaque',
@@ -315,7 +315,7 @@ index 6780492b..f903a50a 100644
  	castsShadows: true,
  	...emptySlots(),
 diff --git a/packages/viewer/src/looks/material-looks.ts b/packages/viewer/src/looks/material-looks.ts
-index 78d826e0..6ec6e17b 100644
+index 19a0feb9..d84e8ced 100644
 --- a/packages/viewer/src/looks/material-looks.ts
 +++ b/packages/viewer/src/looks/material-looks.ts
 @@ -97,7 +97,7 @@ const stencilMaskLook = (mask: StencilMaskSurface, cull: MaterialCull): Material
@@ -896,10 +896,10 @@ index 2cac49c2..b9b132b5 100644
  		throw new Error(`zstd frame decoded to ${raw.byteLength} bytes, expected ${rawLength ?? 'more'}`);
  	}
 diff --git a/packages/viewer/src/render/frame/frame-graph.ts b/packages/viewer/src/render/frame/frame-graph.ts
-index 2462af25..b8e4b059 100644
+index 055f3d23..d0fd4e78 100644
 --- a/packages/viewer/src/render/frame/frame-graph.ts
 +++ b/packages/viewer/src/render/frame/frame-graph.ts
-@@ -412,6 +412,25 @@ export const encodeFrame = (
+@@ -428,6 +428,25 @@ export const encodeFrame = (
  		outputWidth,
  		outputHeight,
  		settings: settings.post,
@@ -926,7 +926,7 @@ index 2462af25..b8e4b059 100644
  	return draws;
  };
 diff --git a/packages/viewer/src/render/frame/render-targets.ts b/packages/viewer/src/render/frame/render-targets.ts
-index db8a8317..b2573f2a 100644
+index 48a8998b..97c13e3a 100644
 --- a/packages/viewer/src/render/frame/render-targets.ts
 +++ b/packages/viewer/src/render/frame/render-targets.ts
 @@ -302,7 +302,8 @@ export class RenderTargets {
@@ -940,7 +940,7 @@ index db8a8317..b2573f2a 100644
  		this.#transparentDepth = depth;
  		return depth;
 diff --git a/packages/viewer/src/render/meshes/draw-ranges.ts b/packages/viewer/src/render/meshes/draw-ranges.ts
-index 1086c034..86385566 100644
+index e8337c00..a23b93a3 100644
 --- a/packages/viewer/src/render/meshes/draw-ranges.ts
 +++ b/packages/viewer/src/render/meshes/draw-ranges.ts
 @@ -115,7 +115,7 @@ export const PHASES = {
@@ -969,7 +969,7 @@ index 1086c034..86385566 100644
  
  /**
 diff --git a/packages/viewer/src/render/meshes/mesh-renderer.ts b/packages/viewer/src/render/meshes/mesh-renderer.ts
-index cab31a0c..70f0af19 100644
+index ecb797be..45030059 100644
 --- a/packages/viewer/src/render/meshes/mesh-renderer.ts
 +++ b/packages/viewer/src/render/meshes/mesh-renderer.ts
 @@ -72,7 +72,17 @@ const createLookTable = (device: GPUDevice): GrowableBuffer =>
@@ -998,7 +998,7 @@ index cab31a0c..70f0af19 100644
  	#drawCount = 0;
  	/**
  	 * the transparent pass's draw order, as `[draw, first, count, phase]` quads: the draws that write the
-@@ -437,6 +448,7 @@ export class MeshRenderer {
+@@ -442,6 +453,7 @@ export class MeshRenderer {
  
  	/** draws nothing this frame */
  	clear(): void {
@@ -1006,7 +1006,7 @@ index cab31a0c..70f0af19 100644
  		this.#drawCount = 0;
  		this.#sortedRuns.length = 0;
  		this.instanceCount = 0;
-@@ -518,6 +530,7 @@ export class MeshRenderer {
+@@ -523,6 +535,7 @@ export class MeshRenderer {
  			}
  			range.end = d;
  		}
@@ -1014,7 +1014,7 @@ index cab31a0c..70f0af19 100644
  		this.#drawCount = d;
  		this.#prepareSorted();
  		this.#flushLooks();
-@@ -551,6 +564,9 @@ export class MeshRenderer {
+@@ -556,6 +569,9 @@ export class MeshRenderer {
  			const range = this.#range(phase.range);
  			for (let i = range.castOnlyEnd; i < range.end; i++) {
  				const draw = this.#draws[i];
@@ -1024,7 +1024,7 @@ index cab31a0c..70f0af19 100644
  				if (draw.stencil?.replace === true || draw.distances.length === 0) {
  					runs.push(i, 0, draw.count, p);
  					continue;
-@@ -721,6 +737,7 @@ export class MeshRenderer {
+@@ -726,6 +742,7 @@ export class MeshRenderer {
  		const draw = this.#draws[d];
  		if (draw === undefined) {
  			this.#draws[d] = {
@@ -1032,7 +1032,7 @@ index cab31a0c..70f0af19 100644
  				geometry: resident,
  				indexCount: range.indexCount,
  				firstIndex: range.firstIndex,
-@@ -738,6 +755,7 @@ export class MeshRenderer {
+@@ -743,6 +760,7 @@ export class MeshRenderer {
  				bands: bucket.bands,
  			};
  		} else {
@@ -1040,7 +1040,7 @@ index cab31a0c..70f0af19 100644
  			draw.geometry = resident;
  			draw.indexCount = range.indexCount;
  			draw.firstIndex = range.firstIndex;
-@@ -758,6 +776,21 @@ export class MeshRenderer {
+@@ -763,6 +781,21 @@ export class MeshRenderer {
  			draw.distances = bucket.distances;
  			draw.bands = bucket.bands;
  		}
@@ -1062,7 +1062,7 @@ index cab31a0c..70f0af19 100644
  		if (!bucket.castOnly && gpu === null) {
  			this.instanceCount += span.count;
  			this.triangles += (span.count * range.indexCount) / 3;
-@@ -821,6 +854,21 @@ export class MeshRenderer {
+@@ -826,6 +859,21 @@ export class MeshRenderer {
  		return this.#encode(which, pass, -1);
  	}
  
@@ -1084,7 +1084,7 @@ index cab31a0c..70f0af19 100644
  	/** builds the groups of a pass's effect draws, which also bind the main pass's outputs */
  	#bindEffectGroups(which: MeshPass, inputs: EffectInputs): void {
  		for (const phase of PASS_PHASES[which]) {
-@@ -873,7 +921,7 @@ export class MeshRenderer {
+@@ -878,7 +926,7 @@ export class MeshRenderer {
  	 * encodes a pass's phases in order; nothing if any of its or its paired pass's pipelines isn't ready.
  	 * `layer` limits each draw to the rows that shadow layer draws, or is -1 for all of them
  	 */
@@ -1093,7 +1093,7 @@ index cab31a0c..70f0af19 100644
  		if (this.#drawCount === 0) {
  			return 0;
  		}
-@@ -897,6 +945,14 @@ export class MeshRenderer {
+@@ -902,6 +950,14 @@ export class MeshRenderer {
  			material: null,
  		};
  		let draws = 0;
@@ -1108,7 +1108,7 @@ index cab31a0c..70f0af19 100644
  		if (which === 'transparent') {
  			const phases = PASS_PHASES.transparent;
  			const runs = this.#sortedRuns;
-@@ -921,6 +977,9 @@ export class MeshRenderer {
+@@ -926,6 +982,9 @@ export class MeshRenderer {
  			const to = phase.shadow ? range.castersEnd : range.end;
  			for (let i = from; i < to; i++) {
  				const draw = this.#draws[i];
@@ -5281,7 +5281,7 @@ index 6f50ebaa..5752b618 100644
  	}
  }
 diff --git a/packages/viewer/src/viewer/options.ts b/packages/viewer/src/viewer/options.ts
-index 8b54f7c8..2fd40f13 100644
+index 8772c38c..de1431cd 100644
 --- a/packages/viewer/src/viewer/options.ts
 +++ b/packages/viewer/src/viewer/options.ts
 @@ -3,6 +3,10 @@ import type { PostSettings, Tonemapper } from '../render/post/settings.ts';
@@ -5338,7 +5338,7 @@ index 8b54f7c8..2fd40f13 100644
  	tonemapper: options.tonemapper,
  	sky: options.sky,
 diff --git a/packages/viewer/src/viewer/renderer.ts b/packages/viewer/src/viewer/renderer.ts
-index 0e01265..256b673 100644
+index 5804e4ac..f9112494 100644
 --- a/packages/viewer/src/viewer/renderer.ts
 +++ b/packages/viewer/src/viewer/renderer.ts
 @@ -40,6 +40,22 @@ const INSTANCE_ROWS = 1_500_000;
@@ -5364,8 +5364,8 @@ index 0e01265..256b673 100644
  /** what {@link Renderer.render} draws */
  export interface RenderInput {
  	camera: Camera;
-@@ -58,6 +74,8 @@ export interface RenderInput {
- 	options: FrameUniformInputs['options'];
+@@ -63,6 +79,8 @@ export interface RenderInput {
+ 	content: { version: number; idle: boolean };
  	/** where the CPU spans go */
  	times: FrameTimes;
 +	/** host GPU overlays encoded after tonemapping */
@@ -5373,7 +5373,7 @@ index 0e01265..256b673 100644
  }
  
  /** the GPU side of the viewer: the device's renderers and targets, and the frame they encode together */
-@@ -173,6 +191,7 @@ export class Renderer {
+@@ -188,6 +206,7 @@ export class Renderer {
  
  	/** drops what the passes carry over from earlier frames, after a cut to somewhere else */
  	cut(): void {
@@ -5381,7 +5381,7 @@ index 0e01265..256b673 100644
  		for (const history of this.#histories) {
  			history.reset();
  		}
-@@ -266,6 +285,19 @@ export class Renderer {
+@@ -304,6 +323,19 @@ export class Renderer {
  			},
  			this.frame,
  		);
@@ -5402,7 +5402,7 @@ index 0e01265..256b673 100644
  		times.span('encode');
  		this.device.queue.submit([encoder.finish()]);
 diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/viewer.ts
-index 8e8816d..7a9e3df 100644
+index 4a9eca6d..df7f3683 100644
 --- a/packages/viewer/src/viewer/viewer.ts
 +++ b/packages/viewer/src/viewer/viewer.ts
 @@ -1,4 +1,19 @@
@@ -5794,7 +5794,7 @@ index 8e8816d..7a9e3df 100644
  		const watered = this.#waterLevels.update(dt, this.options.waterLevelRate);
  		this.#waterLevels.applyFloaters(this.#writeFloater);
  		if (this.#sceneState.follow(this.camera.position)) {
-@@ -657,7 +909,7 @@ export class Viewer {
+@@ -659,7 +911,7 @@ export class Viewer {
  		// the temporal antialiasing converges over a few more jittered frames of the same view
  		let settling = false;
  		if (changed) {
@@ -5803,7 +5803,7 @@ index 8e8816d..7a9e3df 100644
  		} else if (this.#settleFrames > 0) {
  			this.#settleFrames--;
  			settling = true;
-@@ -666,7 +918,12 @@ export class Viewer {
+@@ -668,7 +920,12 @@ export class Viewer {
  		// particles change what it meters every frame, so a meter that kept running would never let it settle
  		const settings = frameSettings(options, scene !== null, postSettings(options, scene !== null));
  		const adapting = renderer.post.adaptExposure(settings.post, dt, { metering: changed || settling });
@@ -5817,15 +5817,15 @@ index 8e8816d..7a9e3df 100644
  		const look = this.#environment.look;
  		if (render && options.animate) {
  			this.#time += dt;
-@@ -712,6 +969,7 @@ export class Viewer {
- 				revealRadii: revealRadii(scene?.pkg.manifest.fireSeed ?? null, this.#sceneState.values),
+@@ -715,6 +972,7 @@ export class Viewer {
+ 				content: { version: scene?.stream.version ?? 0, idle: scene?.stream.idle ?? true },
  				options,
  				times: this.#times,
 +				overlays: this.#overlays,
  			});
  			this.#times.rendered(dt);
  		}
-@@ -731,6 +989,9 @@ export class Viewer {
+@@ -734,6 +992,9 @@ export class Viewer {
  		document.removeEventListener('visibilitychange', this.#onVisibilityChange);
  		this.unload();
  		this.controls.destroy();

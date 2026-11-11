@@ -14,7 +14,7 @@ async function sourceDigest(base) {
     const visit = async (relative = '') => {
         const entries = await fs.readdir(path.join(base, relative), { withFileTypes: true });
         for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name, 'en'))) {
-            if (['node_modules', '.generated.json', 'out', '.research'].includes(entry.name)) continue;
+            if (['node_modules', '.generated.json', 'out', 'dist', '.research'].includes(entry.name)) continue;
             const name = path.join(relative, entry.name);
             if (entry.isDirectory()) await visit(name);
             else if (entry.isFile()) hash.update(name + '\0').update(await fs.readFile(path.join(base, name)));

@@ -1,8 +1,8 @@
 diff --git a/docs/architecture.md b/docs/architecture.md
-index b641cf39..d5dfef80 100644
+index 9594f135..50ac16c7 100644
 --- a/docs/architecture.md
 +++ b/docs/architecture.md
-@@ -31,8 +31,14 @@ shows in game, with unchecked facts marked as such. how our code implements any
+@@ -33,8 +33,14 @@ shows in game, with unchecked facts marked as such. how our code implements any
  [package-format.md](package-format.md), and what it lacks in [status.md](status.md). links run from
  those pages to game-data, never the reverse.
  
@@ -18,7 +18,7 @@ index b641cf39..d5dfef80 100644
  install (Endfield_Data)                      local, read-only
    │  VFS catalogs + chunks → HG bundles → Unity SerializedFiles, world data, tables
 diff --git a/docs/extraction.md b/docs/extraction.md
-index c257f882..b868e1b4 100644
+index d51c97a3..a9500f64 100644
 --- a/docs/extraction.md
 +++ b/docs/extraction.md
 @@ -24,12 +24,13 @@ pnpm extract --help
@@ -41,7 +41,7 @@ index c257f882..b868e1b4 100644
  
  | command    | what it does                                                                                                                                                                                                                                                                                                                                                              |
  | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-@@ -110,6 +111,21 @@ with `--class`, it selects objects of that class in matching SerializedFiles. `-
+@@ -111,6 +112,21 @@ with `--class`, it selects objects of that class in matching SerializedFiles. `-
  `selection` object of sorted area ids and chunk file names to the variants object, without trailing
  text.
  
@@ -63,7 +63,7 @@ index c257f882..b868e1b4 100644
  ## local config and keys
  
  `endfield.local.json` holds the install path (`gameData`, the `Endfield_Data` directory) and the key
-@@ -212,6 +228,19 @@ booleans. code: [serialized-file.ts](../packages/formats/src/unity/serialized-fi
+@@ -270,6 +286,19 @@ booleans. code: [serialized-file.ts](../packages/formats/src/unity/serialized-fi
  [values.ts](../packages/formats/src/unity/values.ts),
  [plain-object.ts](../packages/formats/src/unity/plain-object.ts).
  
@@ -83,9 +83,9 @@ index c257f882..b868e1b4 100644
  ## decoders
  
  `formats` modules validate layouts while decoding and throw on a mismatch. the linked game-data
-@@ -240,6 +269,18 @@ mesh any swaying material draws is converted with the strongest of their sways,
- weights in position W and grows its bounds
- ([swaying geometry](package-format.md#geometry-blob-mesh-efgm)).
+@@ -298,6 +327,18 @@ mesh any swaying material draws is converted with the strongest of their sways,
+ weights in position W and grows its bounds, and a mesh any material offsets by a texture with the
+ farthest of their offsets ([swaying geometry](package-format.md#geometry-blob-mesh-efgm)).
  
 +**collision mesh.** `asset collision <object> [-o file.json]` reads the cooked triangle bytes with
 +[collision-mesh.ts](../packages/formats/src/unity/collision-mesh.ts), separately from render
@@ -102,10 +102,10 @@ index c257f882..b868e1b4 100644
  **skin pose.** [skin-pose.ts](../packages/formats/src/unity/skin-pose.ts) bakes linear blend
  skinning into a new static mesh: positions, normals, tangents and bounds move into the space of the
  supplied pose (bone matrix × bind pose per bone). it throws on missing influences, bad bone indices
-@@ -680,3 +721,23 @@ to entities and chunk files, and `assets.json` says why an asset didn't convert.
-   ([asset conversion](#asset-conversion-and-workers)).
- - LevelData with populated blackbox settings isn't read ([MemoryPack data](#memorypack-data)).
- - texture formats without a WebGPU equivalent aren't convertible ([texture](#asset-classes)).
+@@ -731,3 +772,23 @@ ignores:
+ start from these when something is missing in the viewer: `instances.jsonl` maps a drawn block back
+ to entities and chunk files, and `assets.json` says why an asset didn't convert. what the extractor
+ lacks is listed in [status.md](status.md#packaging).
 +
 +`pnpm extract oem-views out/releases/<base> -o out/releases --cache out/framing/<base>` computes
 +every point's completed-profile view without WebGPU, sharing CPU decode jobs with the browser
@@ -127,10 +127,10 @@ index c257f882..b868e1b4 100644
 +scopes; see [movement devices](navigation.md#movement-devices). its candidate connections still
 +require grounded endpoints, active state and motion validation.
 diff --git a/docs/extraction/scene-controls.md b/docs/extraction/scene-controls.md
-index 940349aa..a6a9c82a 100644
+index 17531533..d44f2c69 100644
 --- a/docs/extraction/scene-controls.md
 +++ b/docs/extraction/scene-controls.md
-@@ -32,6 +32,7 @@ the package side of [the selectors](../game-data/scene-states.md#the-selectors-a
+@@ -34,6 +34,7 @@ the package side of [the selectors](../game-data/scene-states.md#the-selectors-a
  | growth chamber level       | `cabinLevel:<entity id>`, the table's levels       | level 1                                                           |
  | Dijiang region wall        | `controlNexus:<level id>`                          | level 1                                                           |
  | door                       | `door:<interactive id>`, closed / open             | closed; a cabin's follows its slot                                |
@@ -225,16 +225,13 @@ index 00000000..b75e4269
 +inputs. line-of-sight checks, active interaction state and unlock conditions are evaluated separately
 +before claiming that an endpoint can perform the interaction.
 diff --git a/docs/game-data/post-processing.md b/docs/game-data/post-processing.md
-index fad04436..d0babc98 100644
+index fe955bb9..7914e7f6 100644
 --- a/docs/game-data/post-processing.md
 +++ b/docs/game-data/post-processing.md
-@@ -124,7 +124,20 @@ variant, and what selects it and what the extra fields do isn't read.
- mixer, shadows/midtones/highlights, lift/gamma/gain, split toning, colour curves); each sub-section
- that's off reads as its neutral default. the game bakes grading and curve into a LogC LUT, with its
- HG-specific contrast and its modified-ACES curve (the only tonemapper the game ships besides none;
--every profile sets `tonemappingMode` 5). no shipped profile enables the external lookup texture.
-+every profile sets `tonemappingMode` 5). no shipped scene profile enables the external lookup texture.
-+
+@@ -134,6 +134,19 @@ every profile sets `tonemappingMode` 5, `ACES_modified`, and modes 1–4, `Neutr
+ and `External`, are hidden from the game's inspector), and dithers the output by half an 8-bit step.
+ no shipped profile enables the external lookup texture.
+ 
 +### photo filters
 +
 +`SnapshotFilterTable` identifies each photo filter's volume prefab and, optionally, an additional
@@ -247,10 +244,11 @@ index fad04436..d0babc98 100644
 +across slices. these are external display-colour lookups rather than the internal HDR LogC LUT. Warm
 +and Pale also carry vignette, bloom and character-volume settings; Black and Gold references an
 +additional camera effect. item unlocks control availability in the game, not the LUT data.
- 
++
  ## open
  
-@@ -132,3 +145,23 @@ every profile sets `tonemappingMode` 5). no shipped profile enables the external
+ - the vignette's extra mode and fields (above).
+@@ -141,3 +154,23 @@ no shipped profile enables the external lookup texture.
  - the flare component's own settings, which apply while the environment's flare is off.
  - unverified: at Origin Lodespring's overview the game's flare seems not to be occluded by the
    crystal mountain behind the sun, as if the mountain weren't in its depth buffer.
@@ -1351,10 +1349,10 @@ index 00000000..37f79965
 +ordinary-area-only routing has so far established only a short local approach. no all-point routing
 +bake, in-game traversal validation or browser screenshot comparison has been completed.
 diff --git a/docs/package-format.md b/docs/package-format.md
-index bf161508..162e6bb2 100644
+index 14da7606..9f9bdf1b 100644
 --- a/docs/package-format.md
 +++ b/docs/package-format.md
-@@ -522,6 +522,9 @@ material is ready or an `UnconvertedEntry`, as in the [asset tables](#asset-tabl
+@@ -537,6 +537,9 @@ material is ready or an `UnconvertedEntry`, as in the [asset tables](#asset-tabl
  
  ### materials
  
@@ -1365,10 +1363,10 @@ index bf161508..162e6bb2 100644
  state ([material and shader](game-data/assets.md#material-and-shader), decoded as
  [extraction.md](extraction.md#asset-classes) describes) into what it draws
 diff --git a/docs/status.md b/docs/status.md
-index 9027039c..0ba1c081 100644
+index 91823220..e6aede15 100644
 --- a/docs/status.md
 +++ b/docs/status.md
-@@ -40,6 +40,14 @@ packs or renders correctly.
+@@ -42,6 +42,14 @@ packs or renders correctly.
  
  ## lighting and post-processing
  
@@ -1380,13 +1378,13 @@ index 9027039c..0ba1c081 100644
 +  remain unsupported. external-LUT colour-space parity still needs an in-game comparison
 +  ([photo filters](viewer/post-processing.md#photo-filters))
 +
- - baked GI ([irradiance](game-data/irradiance.md), [ambient](game-data/lighting.md#ambient)):
-   brightness is unchecked against in-game shots; the native scalar on all diffuse ambient, the
-   specular ambient's scale (taken as `indirectSpecularFactor`) and the volume's default SH aren't
-@@ -580,3 +588,77 @@ packs or renders correctly.
-   [progressions](game-data/scene-states.md#progressions))
- - weather/time state ids
- - runtime: BC texture support in Safari, the texture-array layer limit on Apple GPUs
+ - ambient ([ambient](viewer/lighting.md#ambient)): GI brightness is unchecked against in-game shots;
+   the native scalar on all diffuse ambient, the specular ambient's scale (taken as
+   `indirectSpecularFactor`) and the volume's default SH aren't recovered
+@@ -722,3 +730,77 @@ an entry when it's done or ruled out.
+ - `world vars <scene>`: join AutoName, MapConfig, LevelData and DynamicStreaming variables
+ - `world scripts find <type>`: print level-script nodes of a type
+ - `vfs table <name>`: dump a config table
 +
 +## ground routes and arrival framing
 +
@@ -1462,10 +1460,10 @@ index 9027039c..0ba1c081 100644
 +  corridor search and full player dynamics remain open. The English development route panel uses the
 +  existing host component.
 diff --git a/docs/viewer/frame.md b/docs/viewer/frame.md
-index 166b0639..98324215 100644
+index 97a0c50e..5d19ff45 100644
 --- a/docs/viewer/frame.md
 +++ b/docs/viewer/frame.md
-@@ -38,6 +38,12 @@ passes up to the lens flare run at the render size, the canvas's device-pixel si
+@@ -39,6 +39,12 @@ passes up to the lens flare run at the render size, the canvas's device-pixel si
  what each post pass computes is in [post-processing](post-processing.md) and
  [sky and fog](sky-and-fog.md).
  
@@ -1479,10 +1477,10 @@ index 166b0639..98324215 100644
    plane and a 0.25 m near plane; logarithmic depth is avoided because writing fragment depth
    disables early-Z and, on tile-based GPUs, hidden-surface removal. where the GPU has the
 diff --git a/docs/viewer/post-processing.md b/docs/viewer/post-processing.md
-index 39e04994..57daf806 100644
+index a75ca71d..0cbe2b46 100644
 --- a/docs/viewer/post-processing.md
 +++ b/docs/viewer/post-processing.md
-@@ -73,3 +73,91 @@ grading.
+@@ -76,3 +76,91 @@ grading.
  without the colour curves, which the package doesn't carry. where the game bakes grading and curve
  into a LogC LUT, the viewer evaluates them per pixel. it also offers Khronos PBR Neutral and a
  clamp, for separating lighting errors from grading.
