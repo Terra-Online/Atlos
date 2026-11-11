@@ -28,6 +28,10 @@ test('prepares reproducible source and rejects altered inputs or edited generate
         const output = path.join(root, '.cache/noclip/value.txt');
         assert.equal(await fs.readFile(output, 'utf8'), 'hosted\n');
         assert.equal(run().stdout, first.stdout);
+        const build = path.join(root, '.cache/noclip/packages/viewer/dist');
+        await fs.mkdir(build, { recursive: true });
+        await fs.writeFile(path.join(build, 'index.html'), 'built viewer');
+        assert.equal(run().stdout, first.stdout);
         await fs.appendFile(path.join(input, 'upstream.tar.gz'), 'tamper');
         assert.match(run().stderr, /checksum differs/);
         assert.equal(await fs.readFile(output, 'utf8'), 'hosted\n');

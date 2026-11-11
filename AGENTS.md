@@ -32,6 +32,30 @@ Use comments to explain design decisions, important constraints, non-obvious beh
 
 Update related comments and documentation when changing an implementation, and remove obsolete descriptions. Prefer clear names and straightforward structure when the code can communicate the intent itself. Avoid boilerplate commentary, TODOs without context, and claims that are no longer supported by the implementation.
 
+## Route Solver Handoff
+
+Before investigating or changing Ganglia/World route solving, spatial generation,
+action discovery, caching, or solver performance, read the two canonical English
+records in the Ganglia repository:
+
+- [Current implementation and open work](../Ganglia/docs/handoff/handoff.md).
+- [Strategy history and testing standards](../Ganglia/docs/handoff/history.md).
+
+The links assume a sibling Ganglia checkout; locate that repository if the workspace
+layout differs. Check the recorded versions against current source and the user's
+latest requirements. Consult implemented, rejected, reverted, and inconclusive
+approaches before repeating work; identify the changed premise for a retry.
+
+Keep both records synchronized with completed solver optimization work, including
+Atlos integration changes. Update `handoff.md` for resulting behavior, code ownership,
+cache/model contracts, and remaining gaps. Update `history.md` for strategies tried,
+their outcomes and reasons, actual input/code bindings, measurements, checks, and
+changed testing standards. Verify an unaffected record remains accurate instead of
+making a cosmetic edit. Keep both records in English; do not add another numbered
+handoff or duplicate their status elsewhere. Historical test results do not count
+as validation of a new change. Follow the focused testing standards in `history.md`
+alongside the required checks below.
+
 ## Testing and Validation
 
 Concentrate testing after the current refactor or feature change is complete and the implementation has stabilized. Do not repeatedly run tests, full builds, or broad checks after every few file edits. During implementation, use code inspection, call-site checks, and diff review to guide the work. When execution is necessary to diagnose a specific issue, use a minimal reproduction or focused diagnostic rather than repeatedly running the entire validation suite.

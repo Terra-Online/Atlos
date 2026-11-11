@@ -1,5 +1,5 @@
 import styles from '@/component/shared/siteShell/headBar/headbar.module.scss';
-import LiquidGlass from 'liquid-glass-react-positioning';
+import GlassSurface from './glassSurface';
 import React from 'react';
 import { usePerformanceMode } from '@/store/uiPrefs';
 import HeadBarDesktopFallback from '@/component/shared/siteShell/headBar/headBar.desktop.fallback';
@@ -18,30 +18,11 @@ const HeadBarDesktop: React.FC<HeadBarDesktopProps> = ({ children, compact = fal
     }
 
     return (
-        <LiquidGlass
-            displacementScale={60}
-            blurAmount={0}
-            saturation={120}
-            aberrationIntensity={2}
-            elasticity={0.1}
-            cornerRadius={50}
-            padding={compact ? '8px' : '8px 16px'}
-            mode='standard'
-            overLight={false}
-            positioning='top-right'
-            style={{
-                position: 'fixed',
-                top: 'max(1rem, env(safe-area-inset-top, 0px))',
-                right: '1rem',
-                backgroundColor: 'var(--headbar-bg)',
-                borderRadius: '50%',
-                transition: 'padding 0.3s ease',
-            }}
-        >
+        <GlassSurface compact={compact}>
             <div data-guide='headbar' className={`${styles.headbar} ${compact ? styles.visibilityOnly : ''}`}>
                 {children}
             </div>
-        </LiquidGlass>
+        </GlassSurface>
     );
 };
 

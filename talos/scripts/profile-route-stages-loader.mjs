@@ -8,7 +8,7 @@ export const profilerKey = '__atlosRouteStageProfiler';
 // Keep per-vertex and per-sweep helpers out of the stopwatch pass. Their CPU
 // contribution remains visible in the optional sampling profile.
 const ganglia = {
-    'build-implementation.ts': ['buildGroundTiles', 'buildGroundSurfaces', 'buildHeightLayers', 'supportHeightRanges', 'joinTiles', 'boundaryEdges'],
+    'build.ts': ['buildGroundTiles', 'buildGroundSurfaces', 'buildHeightLayers', 'supportHeightRanges', 'joinTiles', 'boundaryEdges'],
     'support-field.ts': ['buildSupportField'],
     'ground.ts': ['createGroundPlanner', 'planGroundRoute', 'plan', 'straightenRoute'],
     'surfaces.ts': ['surfaceGraph', 'surfacePortals'],
@@ -17,7 +17,7 @@ const ganglia = {
     'goals.ts': ['createGoalProjector'],
     'straighten.ts': ['createGroundStraightener'],
     'connectivity.ts': ['groundComponents', 'directedComponents', 'condenseComponents'],
-    'collision-implementation.ts': ['createCollisionWorld'],
+    'collision.ts': ['createCollisionWorld'],
     'jump-planner.ts': ['planJumpRoute', 'solveJumpRoute', 'planDirectedRoute', 'planBaseRoute'],
     'shortcuts.ts': ['findJumpFrontier', 'findJumpShortcuts', 'findConnections', 'prepareGeometry'],
     'traversal.ts': ['findJumpConnections', 'exposedBoundaries', 'findChain', 'candidatesFor', 'validate'],
@@ -67,7 +67,7 @@ const ioModules = new Set([
 ]);
 
 function selection(path) {
-    const sdk = path.match(/\/(?:@opendfieldmap|\.cache)\/ganglia\/src\/([^/]+)$/);
+    const sdk = path.match(/\/(?:@opendfieldmap|\.cache)\/ganglia\/src\/(?:geo\/|reach\/|motion\/|search\/|resource\/|route\/)?([^/]+)$/);
     if (sdk && ganglia[sdk[1]]) return { module: `ganglia/${sdk[1]}`, names: new Set(ganglia[sdk[1]]) };
     const source = path.match(/\/packages\/extractor\/src\/(.+)$/);
     if (source && extractor[source[1]]) return { module: `extractor/${source[1]}`,

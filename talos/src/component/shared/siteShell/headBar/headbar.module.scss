@@ -307,3 +307,40 @@
         padding-left: 7px;
     }
 }
+
+.glassShell {
+    // A positioned wrapper prevents the library's filtered backdrop from
+    // sampling the page in Chromium. Keep its fixed layers in the parent box.
+    display: contents;
+
+    // ResizeObserver supplies the rim dimensions. Apply those immediately,
+    // while all optical layers share the same transform-only transition.
+    > * {
+        transition: transform 0.12s ease-out !important;
+        transform-origin: center;
+    }
+
+    > :not(.glassMaterial) {
+        box-sizing: border-box;
+        pointer-events: none;
+    }
+
+    .glassMaterial {
+        display: inline-flex;
+        background: var(--headbar-bg);
+    }
+
+    :global(.glass) {
+        transition: padding 0.3s $moderato-curve !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        > * {
+            transform: none !important;
+        }
+
+        *, *::before, *::after {
+            transition: none !important;
+        }
+    }
+}
