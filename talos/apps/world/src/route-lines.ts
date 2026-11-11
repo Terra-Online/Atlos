@@ -27,8 +27,7 @@ export function routeStyle(segment: Segment & { validation?: 'unverified' | 'ver
     }
     if (segment.mode === 'jump' || segment.mode === 'drop') return ROUTE_STYLES.flight;
     if (segment.mode === 'launch') return ROUTE_STYLES.launch;
-    // Moving platforms share the rope traversal mode, with a source-owned ID.
-    if (segment.connection?.includes('moving-ride/') || segment.connection?.includes('moving-join/'))
+    if (segment.traversal === 'moving-support')
         return ROUTE_STYLES.transport;
     return ROUTE_STYLES.rope;
 }

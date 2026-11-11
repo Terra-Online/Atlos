@@ -6,7 +6,7 @@ index fa7c03a9..514212ed 100644
  		"@mary-ext/array-fns": "^0.1.0",
  		"@mary-ext/czar": "^0.1.2",
  		"@mary-ext/ds-queue": "^0.1.0",
-+		"@opendfieldmap/ganglia": "file:../../../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.76.tgz",
++		"@opendfieldmap/ganglia": "file:../../../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.77.tgz",
  		"meshoptimizer": "1.3.0"
  	}
  }
@@ -3282,7 +3282,7 @@ new file mode 100644
 index 00000000..dc242dc6
 --- /dev/null
 +++ b/packages/extractor/src/commands/player-route.ts
-@@ -0,0 +1,833 @@
+@@ -0,0 +1,832 @@
 +import { readFile, rename, rm, writeFile } from 'node:fs/promises';
 +import { resolve } from 'node:path';
 +import { isDeepStrictEqual, parseArgs } from 'node:util';
@@ -4024,7 +4024,6 @@ index 00000000..dc242dc6
 +				const refined = await refineGoalGround(geometry, surfaces, {
 +					build: refinementBuild,
 +					goal,
-+					project: groundPlanner.project,
 +					interaction: request.interaction,
 +					model,
 +					queryTriangles: world.trianglesInBounds?.bind(world),
@@ -9347,7 +9346,7 @@ new file mode 100644
 index 00000000..8b0492a2
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-refinement.test.ts
-@@ -0,0 +1,78 @@
+@@ -0,0 +1,76 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
@@ -9410,14 +9409,12 @@ index 00000000..8b0492a2
 +			build: options,
 +			goal,
 +			model,
-+			project: createGoalProjector(coarse),
 +		});
 +		const world = createCollisionWorld(geometry, { bounds: options.bounds });
 +		const indexed = await refineGoalGround(geometry, coarse, {
 +			build: options,
 +			goal,
 +			model,
-+			project: createGoalProjector(coarse),
 +			queryTriangles: world.trianglesInBounds?.bind(world),
 +		});
 +		assert.deepEqual(indexed, refined);
@@ -9428,168 +9425,10 @@ index 00000000..8b0492a2
 +});
 diff --git a/packages/extractor/src/game/ground-refinement.ts b/packages/extractor/src/game/ground-refinement.ts
 new file mode 100644
-index 00000000..6b23241a
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-refinement.ts
-@@ -0,0 +1,158 @@
-+import {
-+	type createGoalProjector,
-+	jumpDuration,
-+	surfaceGraph,
-+	type InteractionGoal,
-+	type JumpModel,
-+	type Surface,
-+	type Vec3,
-+} from '@opendfieldmap/ganglia';
-+import { buildGroundSurfaces, type BuildOptions, type CollisionGeometry } from '@opendfieldmap/ganglia/build';
-+
-+type Options = {
-+	build: BuildOptions;
-+	project: ReturnType<typeof createGoalProjector>;
-+	goal: Vec3;
-+	interaction?: InteractionGoal;
-+	model: JumpModel;
-+	/** complete inclusive XZ AABB candidates from this exact geometry, in input triangle order. */
-+	queryTriangles?: (bounds: NonNullable<BuildOptions['bounds']>) => number[];
-+};
-+
-+/**
-+ * @param geometry complete selected collision, with non-walkable support faces already excluded
-+ * @param surfaces immutable coarse ground from the same collision and body profile
-+ * @param options matching build parameters, goal region and movement model
-+ * @returns finer support patches missing from the coarse mesh in the goal's local jump-access region
-+ * @throws when the bounded native refinement fails; returned patches still require physical action checks
-+ */
-+export const refineGoalGround = async (
-+	geometry: CollisionGeometry,
-+	surfaces: Surface[],
-+	{ build, project, goal, interaction, model, queryTriangles }: Options,
-+) => {
-+	const duration = jumpDuration(goal[1], goal[1], { ...model, mode: 'jump' });
-+	if (!duration || !build.bounds) {
-+		return { surfaces: [], bounds: null };
-+	}
-+	// A goal region and one ordinary jump's horizontal reach cover its immediate
-+	// access supports. This is local resolution repair, not a limit on route hops.
-+	const reach = (interaction?.radius ?? 0) + duration * model.maxHorizontalSpeed + build.profile.radius;
-+	const bounds = {
-+		min: [Math.max(build.bounds.min[0], goal[0] - reach), Math.max(build.bounds.min[1], goal[2] - reach)] as [
-+			number,
-+			number,
-+		],
-+		max: [Math.min(build.bounds.max[0], goal[0] + reach), Math.min(build.bounds.max[1], goal[2] + reach)] as [
-+			number,
-+			number,
-+		],
-+	};
-+	if (bounds.min.some((value, axis) => value >= bounds.max[axis])) {
-+		return { surfaces: [], bounds };
-+	}
-+	const positions: number[] = [];
-+	const selected = queryTriangles?.(bounds);
-+	if (
-+		selected?.some(
-+			(id, index) =>
-+				!Number.isSafeInteger(id) ||
-+				id < 0 ||
-+				id >= geometry.indices.length / 3 ||
-+				(index > 0 && id <= selected[index - 1]),
-+		)
-+	) {
-+		throw new Error('refinement triangle query must return sorted input triangle indices');
-+	}
-+	const count = selected?.length ?? geometry.indices.length / 3;
-+	for (let triangle = 0; triangle < count; triangle++) {
-+		const offset = (selected ? selected[triangle] : triangle) * 3;
-+		const a = geometry.indices[offset],
-+			b = geometry.indices[offset + 1],
-+			c = geometry.indices[offset + 2];
-+		if (
-+			selected === undefined &&
-+			!([0, 2] as const).every(
-+				(axis, index) =>
-+					Math.min(
-+						geometry.positions[a * 3 + axis],
-+						geometry.positions[b * 3 + axis],
-+						geometry.positions[c * 3 + axis],
-+					) <= bounds.max[index] &&
-+					Math.max(
-+						geometry.positions[a * 3 + axis],
-+						geometry.positions[b * 3 + axis],
-+						geometry.positions[c * 3 + axis],
-+					) >= bounds.min[index],
-+			)
-+		) {
-+			continue;
-+		}
-+		for (const id of [a, b, c]) {
-+			positions.push(
-+				geometry.positions[id * 3],
-+				geometry.positions[id * 3 + 1],
-+				geometry.positions[id * 3 + 2],
-+			);
-+		}
-+	}
-+	if (!positions.length) {
-+		return { surfaces: [], bounds };
-+	}
-+	const fine = await buildGroundSurfaces(
-+		{ positions, indices: Array.from({ length: positions.length / 3 }, (_, index) => index) },
-+		{ ...build, bounds, cellSize: build.cellSize / 3 },
-+	);
-+	const graph = surfaceGraph(fine, { speed: 1 });
-+	const parents = new Map(fine.map((surface) => [surface.id, surface.id]));
-+	const root = (id: string): string => {
-+		let current = id;
-+		while (parents.get(current) !== current) {
-+			current = parents.get(current)!;
-+		}
-+		while (parents.get(id) !== id) {
-+			const next = parents.get(id)!;
-+			parents.set(id, current);
-+			id = next;
-+		}
-+		return current;
-+	};
-+	for (const edge of graph.edges) {
-+		parents.set(root(edge.from), root(edge.to));
-+	}
-+	const covered = new Set<string>();
-+	for (const surface of fine) {
-+		if (covered.has(root(surface.id))) {
-+			continue;
-+		}
-+		if (
-+			surface.vertices.some(
-+				(point) =>
-+					project(point, {
-+						maxVertical: build.cellHeight * 2,
-+						interaction: { radius: build.profile.radius },
-+					}).length,
-+			)
-+		) {
-+			covered.add(root(surface.id));
-+		}
-+	}
-+	const ids = new Set(surfaces.map((surface) => surface.id));
-+	const additions: Surface[] = [];
-+	let serial = 0;
-+	for (const surface of fine) {
-+		// Mixing overlapping detail meshes can invalidate ordinary portal ownership.
-+		// Keep only wholly missing support components; partial passage refinement
-+		// needs a stitched replacement mesh rather than isolated triangle fragments.
-+		if (covered.has(root(surface.id))) {
-+			continue;
-+		}
-+		let id: string;
-+		do {
-+			id = `refined/${serial++}`;
-+		} while (ids.has(id));
-+		ids.add(id);
-+		additions.push({ ...surface, id });
-+	}
-+	return { surfaces: additions, bounds };
-+};
+@@ -0,0 +1 @@
++export { refineGoalGround } from '@opendfieldmap/ganglia/solver';
 diff --git a/packages/extractor/src/game/ground-tile-cache.test.ts b/packages/extractor/src/game/ground-tile-cache.test.ts
 new file mode 100644
 index 00000000..2892d25e
@@ -11018,7 +10857,7 @@ new file mode 100644
 index 00000000..9afb2b21
 --- /dev/null
 +++ b/packages/extractor/src/game/moving-ground.ts
-@@ -0,0 +1,410 @@
+@@ -0,0 +1,414 @@
 +/* oxlint-disable no-await-in-loop -- each bounded native build is completed before allocating the next */
 +import {
 +	createGoalProjector,
@@ -11336,6 +11175,7 @@ index 00000000..9afb2b21
 +		connections.push({
 +			id,
 +			mode: 'rope',
++			traversal: 'moving-support',
 +			state: 'open',
 +			points: [a, b],
 +			times: [0, duration],
@@ -11346,6 +11186,7 @@ index 00000000..9afb2b21
 +		connections.push({
 +			id: id + '/reverse',
 +			mode: 'rope',
++			traversal: 'moving-support',
 +			state: 'open',
 +			points: [b, a],
 +			times: [0, duration],
@@ -11379,6 +11220,7 @@ index 00000000..9afb2b21
 +					connections.push({
 +						id,
 +						mode: 'rope',
++						traversal: 'moving-support',
 +						state: 'open',
 +						points: [a, b],
 +						times: [0, time],
@@ -11389,6 +11231,7 @@ index 00000000..9afb2b21
 +					connections.push({
 +						id: id + '/reverse',
 +						mode: 'rope',
++						traversal: 'moving-support',
 +						state: 'open',
 +						points: [b, a],
 +						times: [0, time],

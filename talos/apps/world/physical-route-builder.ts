@@ -12,7 +12,7 @@ import {
 import { relative, resolve } from 'node:path';
 import type { InteractionGoal, Vec3, Wall } from '@opendfieldmap/ganglia';
 import type { TravelArrival } from './travel-arrivals.ts';
-import type { Corridor } from './coarse-route.ts';
+import type { Corridor } from '@opendfieldmap/ganglia/solver';
 import { createWindowRoute } from './window-route.ts';
 import { createRouteWorker } from './route-worker.ts';
 

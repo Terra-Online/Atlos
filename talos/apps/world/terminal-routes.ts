@@ -1,5 +1,6 @@
+import { composeRoutes } from '@opendfieldmap/ganglia/solver';
 import { isDeepStrictEqual } from 'node:util';
-import { retimeGroundRoute, type GroundArrival, type InteractionGoal, type LocomotionOptions, type Route, type Vec3 } from '@opendfieldmap/ganglia';
+import { type GroundArrival, type InteractionGoal, type LocomotionOptions, type Route, type Vec3 } from '@opendfieldmap/ganglia';
 
 type Complete = Extract<Route, {status:'complete'}>;
 type Source = {buildGuid:string;contentHash:string};
@@ -25,18 +26,5 @@ export function selectTerminal(catalog:Catalog|null, context:{scene:string;sourc
 
 /** Joining must retain the validated entry and the boost's relative event clock. */
 export function joinTerminal(prefix:Complete, terminal:Complete, locomotion:LocomotionOptions):Route {
-    if (distance(prefix.points.at(-1)!,terminal.points[0])>1e-6) return {status:'no-verified-route'};
-    const segments=[...prefix.segments,...terminal.segments].map(({gait:_gait,...s})=>s);
-    const route=retimeGroundRoute({...prefix,segments,points:[...prefix.points,...terminal.points.slice(1)],
-        boosts:[...(prefix.boosts??[]),...(terminal.boosts??[])],
-        ...(terminal.goalHit?{goalHit:{...terminal.goalHit,segment:prefix.segments.length+terminal.goalHit.segment}}:{})},locomotion);
-    if (route.status!=='complete') return route;
-    const elapsed=new Map<string,number>();
-    for (const segment of route.segments) if (segment.boost) {
-        const before=elapsed.get(segment.boost.id)??0;
-        if (segment.boostExpiry!==undefined ? Math.abs(before+segment.boostExpiry-segment.boost.duration)>1e-6
-            : before+segment.times.at(-1)!>segment.boost.duration+1e-6) return {status:'no-verified-route'};
-        elapsed.set(segment.boost.id,before+segment.times.at(-1)!);
-    }
-    return route;
+    return composeRoutes([prefix, terminal], locomotion);
 }
