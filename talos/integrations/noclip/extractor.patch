@@ -5683,7 +5683,7 @@ index 00000000..26a2a4de
 +import type { ColliderShape, EcsCollider } from '@endfield-noclip/formats/endfield/ecs-collider';
 +import type { CollisionMesh } from '@endfield-noclip/formats/unity/collision-mesh';
 +
-+import { blockedByWalls } from '@opendfieldmap/ganglia';
++import { createWallChecker } from '@opendfieldmap/ganglia';
 +import { createCollisionWorld } from '@opendfieldmap/ganglia/collision';
 +
 +import { collisionGeometry, walkableCollisionIndices, type CollisionInputs } from './collision-ground.ts';
@@ -5982,7 +5982,7 @@ index 00000000..26a2a4de
 +		const profile = { radius: 0.1, height: 0.2 };
 +		assert.ok(raw.sweepCapsule([-3, 0, 0], [3, 0, 0], profile));
 +		assert.ok(classified.sweepCapsule([-3, 0, 0], [3, 0, 0], profile));
-+		assert.equal(blockedByWalls([0, 0, 0], [0, 0, 0], geometry.exclusions, profile), true);
++		assert.equal(createWallChecker(geometry.exclusions, profile)([0, 0, 0], [0, 0, 0]), true);
 +		assert.deepEqual(geometry.indices, snapshot);
 +	}
 +	const known = collisionGeometry([input()], { walkableLayers: 1 << 6 });
@@ -6040,9 +6040,9 @@ index 00000000..26a2a4de
 +	assert.equal(wall.state, 'unknown');
 +	assert.ok(wall.min.every((value, axis) => value < result.records[0].bounds.min[axis]));
 +	assert.ok(wall.max.every((value, axis) => value > result.records[0].bounds.max[axis]));
-+	assert.equal(blockedByWalls([15, 28, 17], [15, 28, 17], result.exclusions, profile), true);
-+	assert.equal(blockedByWalls([11, 28, 17], [19, 28, 17], result.exclusions, profile), true);
-+	assert.equal(blockedByWalls([11, 28, 17], [11, 28, 17], result.exclusions, profile), false);
++	assert.equal(createWallChecker(result.exclusions, profile)([15, 28, 17], [15, 28, 17]), true);
++	assert.equal(createWallChecker(result.exclusions, profile)([11, 28, 17], [19, 28, 17]), true);
++	assert.equal(createWallChecker(result.exclusions, profile)([11, 28, 17], [11, 28, 17]), false);
 +	assert.deepEqual(data, snapshot);
 +});
 +
@@ -8620,11 +8620,11 @@ new file mode 100644
 index 00000000..785654b5
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-data.test.ts
-@@ -0,0 +1,298 @@
+@@ -0,0 +1,293 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
-+import { planGroundRoute } from '@opendfieldmap/ganglia';
++import { createGroundPlanner } from '@opendfieldmap/ganglia';
 +
 +import { groundData } from './ground-data.ts';
 +
@@ -8670,7 +8670,7 @@ index 00000000..785654b5
 +test('excludes reset volumes even when the navmesh contains a continuous walkable face', () => {
 +	const clear = groundData(navigation, walls, request);
 +	assert.equal(
-+		planGroundRoute(clear.surfaces, clear.arrivals, clear.targets[0].position, clear.options).status,
++		createGroundPlanner(clear.surfaces, clear.options).plan(clear.arrivals, clear.targets[0].position).status,
 +		'complete',
 +	);
 +	const blocked = groundData(
@@ -8689,7 +8689,7 @@ index 00000000..785654b5
 +		request,
 +	);
 +	assert.equal(
-+		planGroundRoute(blocked.surfaces, blocked.arrivals, blocked.targets[0].position, blocked.options).status,
++		createGroundPlanner(blocked.surfaces, blocked.options).plan(blocked.arrivals, blocked.targets[0].position).status,
 +		'no-verified-route',
 +	);
 +	assert.throws(() => groundData(navigation, { ...walls, version: 1 }, request), /share/);
@@ -8716,7 +8716,7 @@ index 00000000..785654b5
 +		);
 +		assert.equal(result.options.walls[0].state, state);
 +		assert.equal(
-+			planGroundRoute(result.surfaces, result.arrivals, result.targets[0].position, result.options).status,
++			createGroundPlanner(result.surfaces, result.options).plan(result.arrivals, result.targets[0].position).status,
 +			'no-verified-route',
 +		);
 +	}
@@ -8791,7 +8791,7 @@ index 00000000..785654b5
 +	const data = groundData(navigation, { ...walls, hazards: [hazard] }, request);
 +	assert.deepEqual(data.options.walls[0].polygon, polygon);
 +	assert.equal(
-+		planGroundRoute(data.surfaces, data.arrivals, data.targets[0].position, data.options).status,
++		createGroundPlanner(data.surfaces, data.options).plan(data.arrivals, data.targets[0].position).status,
 +		'complete',
 +	);
 +	const boundsOnly = groundData(
@@ -8800,12 +8800,7 @@ index 00000000..785654b5
 +		request,
 +	);
 +	assert.equal(
-+		planGroundRoute(
-+			boundsOnly.surfaces,
-+			boundsOnly.arrivals,
-+			boundsOnly.targets[0].position,
-+			boundsOnly.options,
-+		).status,
++		createGroundPlanner(boundsOnly.surfaces, boundsOnly.options).plan(boundsOnly.arrivals, boundsOnly.targets[0].position).status,
 +		'no-verified-route',
 +	);
 +});
@@ -8831,7 +8826,7 @@ index 00000000..785654b5
 +	};
 +	const data = groundData(navigation, walls, request, { movement });
 +	assert.deepEqual(data.options.locomotion, { speed: 5, sprintSpeed: 7, sprintAcceleration: 60 });
-+	const route = planGroundRoute(data.surfaces, data.arrivals, data.targets[0].position, data.options);
++	const route = createGroundPlanner(data.surfaces, data.options).plan(data.arrivals, data.targets[0].position);
 +	assert.equal(route.status, 'complete');
 +	if (route.status !== 'complete') {
 +		throw new Error('expected sprint route');
@@ -9566,7 +9561,7 @@ new file mode 100644
 +		read.set(file, bytes);
 +		return bytes;
 +	});
-+	for (const name of ['build-implementation.ts', 'collision-ground.ts', 'prefab-support.ts', 'floor-supports.ts', 'collision-heightfield.ts']) {
++	for (const name of ['collision-ground.ts', 'prefab-support.ts', 'floor-supports.ts', 'collision-heightfield.ts']) {
 +		const file = [...read.keys()].find((file) => file.endsWith(`/${name}`));
 +		assert.ok(file, `missing physical generator dependency ${name}`);
 +		const changed = await groundGeneratorIdentity(async (source) => source === file
@@ -9631,7 +9626,7 @@ diff --git a/packages/extractor/src/game/ground-tile-cache.ts b/packages/extract
 new file mode 100644
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-tile-cache.ts
-@@ -0,0 +1,123 @@
+@@ -0,0 +1,116 @@
 +import { createHash, randomUUID } from 'node:crypto';
 +import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 +import { dirname, resolve } from 'node:path';
@@ -9640,7 +9635,7 @@ new file mode 100644
 +import { isObject } from '@endfield-noclip/formats/unity/values';
 +
 +import type { Surface } from '@opendfieldmap/ganglia';
-+import type { BuildOptions, CollisionGeometry, TileCache } from '@opendfieldmap/ganglia/build';
++import { groundBuildIdentity, type BuildOptions, type CollisionGeometry, type TileCache } from '@opendfieldmap/ganglia/build';
 +
 +type Source = { buildGuid: string; contentHash: string };
 +const validSurface = (value: unknown): value is Surface =>
@@ -9656,12 +9651,7 @@ new file mode 100644
 +export const groundGeneratorIdentity = async (
 +	readSource: (file: string) => Promise<Uint8Array> = readFile,
 +): Promise<string> => {
-+	const entry = fileURLToPath(import.meta.resolve('@opendfieldmap/ganglia/build'));
 +	const files = [
-+		entry,
-+		resolve(dirname(entry), 'build-implementation.ts'),
-+		resolve(dirname(entry), 'support-field.ts'),
-+		resolve(dirname(entry), 'clip-surface.ts'),
 +		// Physical exports also depend on decoding, selecting and placing source
 +		// geometry. SDK-only hashing could otherwise retain old bridge/floor/terrain
 +		// results after those importers changed. Route/search code is excluded.
@@ -9688,12 +9678,10 @@ new file mode 100644
 +			'binary/binary-reader',
 +		].map((file) => fileURLToPath(import.meta.resolve(`@endfield-noclip/formats/${file}`))),
 +	];
-+	const generator = createHash('sha256');
++	const generator = createHash('sha256').update(await groundBuildIdentity()).update('\0');
 +	for (const bytes of await Promise.all(files.map((file) => readSource(file)))) {
 +		generator.update(bytes).update('\0');
 +	}
-+	const sdk = JSON.parse(await readFile(resolve(dirname(entry), '../package.json'), 'utf8'));
-+	generator.update(JSON.stringify(sdk.dependencies));
 +	return generator.digest('hex');
 +};
 +

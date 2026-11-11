@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { createGroundPlanner, projectGoal, pruneGroundDetours, retimeGroundRoute, type GroundOptions, type Surface, type LocomotionOptions, type Route, type Vec3 } from '@opendfieldmap/ganglia';
+import { createGroundPlanner, createGoalProjector, pruneGroundDetours, retimeGroundRoute, type GroundOptions, type Surface, type LocomotionOptions, type Route, type Vec3 } from '@opendfieldmap/ganglia';
 import { physicalTileSpan, type Job, type RouteRequest } from './physical-route-builder.ts';
 
 import { coarseWaypoints, type Corridor } from './coarse-route.ts';
@@ -143,7 +143,7 @@ export function createWindowRoute(builder: Builder, request: RouteRequest, point
                         projectionData = { path: ground.output, surfaces: data.surfaces, options: data.options };
                     }
                     const vertical = settings.maxTargetError ?? 3;
-                    const supports = projectGoal(projectionData.surfaces, target, { maxVertical: vertical,
+                    const supports = createGoalProjector(projectionData.surfaces)(target, { maxVertical: vertical,
                         interaction: { radius: Math.hypot(vertical, 0.5), maxVertical: vertical } });
                     const support = supports.find(hit => Math.hypot(hit.position[0] - target[0], hit.position[2] - target[2]) <= 0.5);
                     if (support) supportedTarget = support.position;
