@@ -52,6 +52,13 @@ export type RouteRequest = {
     walls: Wall[];
     waypoints?: Vec3[];
 };
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    value !== null && typeof value === 'object' && !Array.isArray(value);
+const parseRecord = (text: string): Record<string, unknown> => {
+    const value: unknown = JSON.parse(text);
+    if (!isRecord(value)) throw new Error('Expected a JSON object');
+    return value;
+};
 const hash = (value: unknown) =>
     createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
@@ -151,7 +158,7 @@ export function physicalRouteBuilder(options: Options) {
             { cwd: options.extractor },
         )
             .then(({ stdout }) => {
-                const result = JSON.parse(stdout);
+                const result = parseRecord(stdout);
                 if (typeof result.generator !== 'string' || !result.generator)
                     throw new Error(
                         'Missing physical ground generator identity',
@@ -303,7 +310,7 @@ export function physicalRouteBuilder(options: Options) {
                         pending = lines.pop() || '';
                         for (const line of lines) {
                             try {
-                                const progress = JSON.parse(line);
+                                const progress = parseRecord(line);
                                 record('progress', {
                                     ...progress,
                                     durationMs: progress.elapsedMs,
@@ -312,7 +319,7 @@ export function physicalRouteBuilder(options: Options) {
                                     current.message =
                                         'Reading collision sources…';
                                 if (progress.phase === 'ground-tile')
-                                    current.message = `${progress.cached ? 'Reusing' : 'Preparing'} route terrain (${progress.completed}/${progress.total})`;
+                                    current.message = `${progress.cached ? 'Reusing' : 'Preparing'} route terrain (${String(progress.completed)}/${String(progress.total)})`;
                                 if (progress.phase === 'ground')
                                     current.message = 'Physical ground ready';
                                 if (progress.phase === 'ground-search')
@@ -324,15 +331,15 @@ export function physicalRouteBuilder(options: Options) {
                                 if (progress.phase === 'goal-refinement')
                                     current.message = 'Refining target access…';
                                 if (progress.phase === 'direction-search')
-                                    current.message = `Exploring route regions (${progress.completed}/${progress.total})`;
+                                    current.message = `Exploring route regions (${String(progress.completed)}/${String(progress.total)})`;
                                 if (progress.phase === 'device-entry-search')
-                                    current.message = `Finding device approaches (${progress.completed}/${progress.total})`;
+                                    current.message = `Finding device approaches (${String(progress.completed)}/${String(progress.total)})`;
                                 if (progress.phase === 'ground-route') {
                                     current.message =
                                         'Walking route ready. Comparing alternatives…';
                                     void readFile(current.output, 'utf8')
                                         .then((bytes) => {
-                                            const result = JSON.parse(bytes);
+                                            const result = parseRecord(bytes);
                                             if (
                                                 current.status === 'building' &&
                                                 result.status === 'candidate'
@@ -355,7 +362,7 @@ export function physicalRouteBuilder(options: Options) {
                             }
                         }
                     });
-                    child.once('error', (failure) => {
+                    child.once('error', (failure: Error) => {
                         current.status = 'failed';
                         current.message = failure.message;
                         record('process-error', { message: failure.message });
@@ -371,7 +378,7 @@ export function physicalRouteBuilder(options: Options) {
                         void (async () => {
                             delete current.child;
                             if (code === 0) {
-                                const result = JSON.parse(
+                                const result: unknown = JSON.parse(
                                     await readFile(current.output, 'utf8'),
                                 );
                                 if (
@@ -501,10 +508,11 @@ export function physicalRouteBuilder(options: Options) {
             if (existing) return existing;
             jobs.set(key, job);
             try {
-                const result = JSON.parse(await readFile(output, 'utf8'));
+                const result = parseRecord(await readFile(output, 'utf8'));
                 if (
-                    result.source?.buildGuid === source.buildGuid &&
-                    result.source?.contentHash === source.contentHash &&
+                    isRecord(result.source) &&
+                    result.source.buildGuid === source.buildGuid &&
+                    result.source.contentHash === source.contentHash &&
                     Array.isArray(result.surfaces)
                 ) {
                     await cacheLog(job, {
@@ -575,10 +583,11 @@ export function physicalRouteBuilder(options: Options) {
                 const current = job;
                 pending = readFile(current.output, 'utf8')
                     .then((bytes) => {
-                        const result = JSON.parse(bytes);
+                        const result = parseRecord(bytes);
                         if (
-                            result.source?.buildGuid !== source.buildGuid ||
-                            result.source?.contentHash !== source.contentHash ||
+                            !isRecord(result.source) ||
+                            result.source.buildGuid !== source.buildGuid ||
+                            result.source.contentHash !== source.contentHash ||
                             !Array.isArray(result.surfaces)
                         )
                             throw new Error('Invalid retained physical ground');
@@ -677,12 +686,14 @@ export function physicalRouteBuilder(options: Options) {
         };
         jobs.set(key, job);
         try {
-            const result = JSON.parse(await readFile(output, 'utf8'));
+            const result = parseRecord(await readFile(output, 'utf8'));
             if (
                 result.scene === request.scene &&
-                result.source?.buildGuid === request.source.buildGuid &&
-                result.source?.contentHash === request.source.contentHash &&
-                ['candidate', 'unavailable'].includes(result.status)
+                isRecord(result.source) &&
+                result.source.buildGuid === request.source.buildGuid &&
+                result.source.contentHash === request.source.contentHash &&
+                (result.status === 'candidate' ||
+                    result.status === 'unavailable')
             ) {
                 job.result = result;
                 if (result.optimizing !== true) {

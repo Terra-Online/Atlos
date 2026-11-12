@@ -95,7 +95,7 @@ async function main() {
         stages, phases, jobs,
     };
     if (values.output) await writeFile(values.output, JSON.stringify(report, null, 2) + '\n');
-    const { jobs: _jobs, ...summary } = report;
+    const summary = Object.fromEntries(Object.entries(report).filter(([key]) => key !== 'jobs'));
     console.log(JSON.stringify(summary, null, 2));
 }
 

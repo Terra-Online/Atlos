@@ -8,6 +8,15 @@ import { parseArgs } from 'node:util';
 import { expect, test } from 'vitest';
 import { physicalRouteBuilder } from '../physical-route-builder';
 
+type LogRecord = {
+    event: string;
+    phase?: string;
+    run: string;
+    elapsedMs: number;
+    durationMs?: number;
+    command?: string[];
+};
+
 test('publishes walking progress and resumes an interrupted provisional cache', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'world-route-progress-'));
     const options = {
@@ -153,7 +162,7 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
         const records = (await readFile(resumed.log, 'utf8'))
             .trim()
             .split('\n')
-            .map((line) => JSON.parse(line));
+            .map((line) => JSON.parse(line) as LogRecord);
         expect(
             records.some(
                 (row) =>
@@ -201,8 +210,9 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
         const queued = (await readFile(negative!.log!, 'utf8'))
             .trim()
             .split('\n')
-            .map((line) => JSON.parse(line))
+            .map((line) => JSON.parse(line) as LogRecord)
             .find((row) => row.event === 'queued');
+        if (!queued?.command) throw new Error('Ground job omitted its command');
         const tileArgs = queued.command.slice(
             queued.command.findIndex((arg: string) =>
                 arg.startsWith('--tiles'),

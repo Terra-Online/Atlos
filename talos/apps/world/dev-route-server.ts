@@ -16,6 +16,7 @@ import {
     type GroundArrival,
     type GroundOptions,
     type InteractionGoal,
+    type LocomotionOptions,
     type Route,
     type Surface,
     type Vec3,
@@ -95,7 +96,9 @@ const finiteVector = (value: unknown): value is Vec3 =>
     Array.isArray(value) && value.length === 3 && value.every(Number.isFinite);
 const sameSource = (a: Source, b: Source) =>
     a.buildGuid === b.buildGuid && a.contentHash === b.contentHash;
-const indexData = (data: Data): IndexedData => {
+const indexData = (value: unknown): IndexedData => {
+    // The envelope is checked here; Ganglia validates the exported geometry.
+    const data = value as Data;
     if (
         !data.source ||
         !Array.isArray(data.surfaces) ||
@@ -151,7 +154,7 @@ export function routeServer(
         removeCloseListener();
         await drained;
     };
-    const read = async (name: string) =>
+    const read = async (name: string): Promise<unknown> =>
         JSON.parse(await readFile(resolve(directory!, name), 'utf8'));
     const sceneData = (scene: string) => {
         let pending = cache.get(scene);
@@ -170,7 +173,12 @@ export function routeServer(
         let pending = interactionCache.get(scene);
         if (!pending) {
             pending = read(`${scene}-interaction-points.json`)
-                .then((catalog) => {
+                .then((value) => {
+                    const catalog = value as {
+                        scene: string;
+                        source: Source;
+                        points: InteractionPoint[];
+                    };
                     if (
                         catalog.scene !== scene ||
                         !catalog.source ||
@@ -196,8 +204,13 @@ export function routeServer(
                     }
                     return { scene, source: catalog.source, points };
                 })
-                .catch((error) => {
-                    if (error?.code === 'ENOENT') return null;
+                .catch((error: unknown) => {
+                    if (
+                        error instanceof Error &&
+                        'code' in error &&
+                        error.code === 'ENOENT'
+                    )
+                        return null;
                     interactionCache.delete(scene);
                     throw error;
                 });
@@ -209,9 +222,16 @@ export function routeServer(
         name: 'world-local-route-inspection',
         closeBundle: close,
         configureServer(server) {
-            server.httpServer?.once('close', close);
+            const onClose = () => {
+                void close().catch((error: unknown) =>
+                    server.config.logger.error(
+                        `Route cleanup failed: ${String(error)}`,
+                    ),
+                );
+            };
+            server.httpServer?.once('close', onClose);
             removeCloseListener = () => {
-                server.httpServer?.removeListener('close', close);
+                server.httpServer?.removeListener('close', onClose);
             };
             const serveLog = async (name: string, response: ServerResponse) => {
                 try {
@@ -532,10 +552,18 @@ export function routeServer(
                                       'interaction-rules-unavailable',
                                   ]),
                     };
-                    travel ??= read('travel-points.json').catch((error) => {
-                        travel = undefined;
-                        throw error;
-                    });
+                    travel ??= read('travel-points.json')
+                        .then(
+                            (value) =>
+                                value as {
+                                    source: Source;
+                                    points: TravelPoint[];
+                                },
+                        )
+                        .catch((error: unknown) => {
+                            travel = undefined;
+                            throw error;
+                        });
                     const anchors = await travel;
                     if (!sameSource(source, anchors.source)) {
                         reply({
@@ -565,18 +593,23 @@ export function routeServer(
                     }
                     let terminal: Terminal | null = null;
                     if (goal?.interaction.airborne) {
-                        terminalCatalog ??= read('terminal-routes.json').catch(
-                            (error) => {
-                                if (error?.code === 'ENOENT') return null;
+                        terminalCatalog ??= read('terminal-routes.json')
+                            .then((value) => value as TerminalCatalog)
+                            .catch((error: unknown) => {
+                                if (
+                                    error instanceof Error &&
+                                    'code' in error &&
+                                    error.code === 'ENOENT'
+                                )
+                                    return null;
                                 terminalCatalog = undefined;
                                 throw error;
-                            },
-                        );
+                            });
                         const catalog = await terminalCatalog;
                         if (catalog) {
                             movementHash ??= readFile(
                                 resolve(
-                                    directory!,
+                                    directory,
                                     'movement-settings-current.json',
                                 ),
                             ).then((bytes) =>
@@ -678,9 +711,12 @@ export function routeServer(
                     if (!selectedArrival)
                         throw new Error('Candidate route omitted its arrival');
                     if (!windowQuery.window) {
-                        const movement = await read(
+                        const movement = (await read(
                             'movement-settings-current.json',
-                        );
+                        )) as {
+                            source: Source;
+                            sustainedSprint: LocomotionOptions;
+                        };
                         if (!sameSource(source, movement.source))
                             throw new Error(
                                 'Movement settings do not match scene build',
@@ -799,8 +835,13 @@ export function routeServer(
                             ? joinTerminal(
                                   windowResult.route,
                                   terminal.route,
-                                  (await read('movement-settings-current.json'))
-                                      .sustainedSprint,
+                                  (
+                                      (await read(
+                                          'movement-settings-current.json',
+                                      )) as {
+                                          sustainedSprint: LocomotionOptions;
+                                      }
+                                  ).sustainedSprint,
                               )
                             : windowResult.route;
                         if (route.status !== 'complete') {
@@ -906,8 +947,11 @@ export function routeServer(
                             });
                     }
                     return;
-                })().catch((error) => {
-                    const missing = error?.code === 'ENOENT';
+                })().catch((error: unknown) => {
+                    const missing =
+                        error instanceof Error &&
+                        'code' in error &&
+                        error.code === 'ENOENT';
                     server.config.logger.error(
                         `Local route inspection failed: ${error instanceof Error ? error.message : String(error)}`,
                     );

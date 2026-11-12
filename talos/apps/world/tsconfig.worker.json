@@ -1,15 +1,12 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
-        "types": ["node"]
+        "types": [
+            "node"
+        ]
     },
     "include": [
-        "solver-worker.ts",
-        "scene-resources.ts",
-        "route-worker.ts",
-        "physical-route-builder.ts",
-        "dev-route-server.ts",
-        "physical-task.ts"
+        "*.ts"
     ],
     "exclude": []
 }

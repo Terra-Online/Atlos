@@ -9,12 +9,16 @@ export function supportBoxes(value: unknown): SupportBox[] {
     if (!Array.isArray(value)) return [];
     const vector = (v: unknown): v is Vec3 =>
         Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
-    return value.filter((box): box is SupportBox => {
+    return value.filter((box: unknown): box is SupportBox => {
         if (box === null || typeof box !== 'object') return false;
-        const { min, max, device, family, role } = box;
+        const { min, max, device, family, role } = box as Record<
+            string,
+            unknown
+        >;
         return (
             typeof device === 'string' &&
             typeof family === 'string' &&
+            typeof role === 'string' &&
             ['board', 'leave', 'use'].includes(role) &&
             vector(min) &&
             vector(max) &&
