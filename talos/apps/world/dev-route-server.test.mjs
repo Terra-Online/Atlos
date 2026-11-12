@@ -227,7 +227,7 @@ test(
             assert.equal(result.body.status, 'building-ground');
             assert.equal(result.body.retryAfter, 1000);
             result = await poll();
-            assert.equal(result.body.status, 'candidate');
+            assert.equal(result.body.status, 'candidate', JSON.stringify(result.body));
             assert.equal(result.body.partial, true);
             assert.equal(result.body.optimizing, true);
             assert.match(result.body.title, /Partial/);

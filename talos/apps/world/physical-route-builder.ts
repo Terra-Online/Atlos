@@ -22,7 +22,6 @@ import { relative, resolve } from 'node:path';
 import type { InteractionGoal, Vec3, Wall } from '@opendfieldmap/ganglia';
 import type { TravelArrival } from './travel-arrivals.ts';
 import type { Corridor } from '@opendfieldmap/ganglia/solver';
-import { createWindowRoute } from './window-route.ts';
 import { createRouteWorker } from './route-worker.ts';
 
 type Source = { buildGuid: string; contentHash: string };
@@ -51,6 +50,7 @@ export type RouteRequest = {
     interaction?: InteractionGoal;
     walls: Wall[];
     waypoints?: Vec3[];
+    config?: import('@opendfieldmap/ganglia/solver').RouteQuery['config'];
 };
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -743,11 +743,6 @@ export function physicalRouteBuilder(options: Options) {
     return {
         query,
         solve,
-        windows: (
-            request: RouteRequest,
-            points: Vec3[],
-            settings: Parameters<typeof createWindowRoute>[3],
-        ) => createWindowRoute({ query, solve }, request, points, settings),
         async close() {
             closed = true;
             for (const worker of solverWorkers) worker.close();

@@ -2,20 +2,7 @@ import { fork, type ChildProcess } from 'node:child_process';
 import { resolve } from 'node:path';
 import type { Vec3, GroundArrival } from '@opendfieldmap/ganglia';
 
-type Edge = {
-    index: number;
-    key?: string;
-    points: Vec3[];
-    unresolved: boolean;
-};
-type Result = {
-    path?: Edge[];
-    status: string;
-    points?: Vec3[];
-    arrival?: GroundArrival;
-    reason?: string;
-    diagnostics?: unknown;
-};
+type Result = import('@opendfieldmap/ganglia/solver').SceneProposal & { diagnostics?: unknown };
 export type CandidateJob = {
     status: 'pending' | 'ready' | 'failed';
     result?: Result;

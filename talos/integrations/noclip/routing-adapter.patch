@@ -199,7 +199,7 @@ diff --git a/packages/extractor/src/game/physical-input.ts b/packages/extractor/
 new file mode 100644
 --- /dev/null
 +++ b/packages/extractor/src/game/physical-input.ts
-@@ -0,0 +1,375 @@
+@@ -0,0 +1,377 @@
 +import { readFile } from 'node:fs/promises';
 +import { isDeepStrictEqual } from 'node:util';
 +import { isObject, numberField } from '@endfield-noclip/formats/unity/values';
@@ -269,6 +269,7 @@ new file mode 100644
 +	interaction?: InteractionGoal;
 +	walls: Wall[];
 +	waypoints?: Vec3[];
++	config?: import('@opendfieldmap/ganglia/solver').RouteQuery['config'];
 +};
 +
 +const vector = (point: unknown): point is Vec3 =>
@@ -555,6 +556,7 @@ new file mode 100644
 +						goal: request.target,
 +						interaction: request.interaction,
 +						waypoints: request.waypoints,
++						config: request.config,
 +					},
 +					{
 +						binding: JSON.stringify([generation, request.walls]),

@@ -1,11 +1,14 @@
-import { candidateJobs, type CandidateJob } from './candidate-job.ts';
-import type { createWindowRoute } from './window-route.ts';
+import { candidateJobs } from './candidate-job.ts';
+import { setTimeout as delay } from 'node:timers/promises';
+import {
+    prepareSceneRouteSolver,
+    type RouteResult,
+    type SceneResources,
+} from '@opendfieldmap/ganglia/solver';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import {
-    selectTerminal,
-    joinTerminal,
-    type Terminal,
+    matchingTerminals,
     type Catalog as TerminalCatalog,
 } from './terminal-routes.ts';
 import { resolve } from 'node:path';
@@ -73,22 +76,11 @@ type Candidate = {
         traversal?: unknown;
     };
 };
-type WindowQuery = {
-    physicalFailure?: { reason: string; diagnostics: unknown };
-    attempts: number;
-    excludedEdges: (number | string)[];
-    excludedArrivals: string[];
-    job: CandidateJob;
-    window?: ReturnType<typeof createWindowRoute>;
-    tailDone?: boolean;
-    partial?: Candidate;
-};
 type Query = {
-    windows?: WindowQuery;
     pending: Promise<Answer>;
+    latest?: Answer;
     done: boolean;
     progress?: boolean;
-    log?: string;
     candidate?: Candidate;
 };
 
@@ -142,7 +134,10 @@ export function routeServer(
     >();
     const queries = new Map<string, Query>();
     let removeCloseListener = () => {};
+    const shutdown = new AbortController();
+    const running = new Set<Promise<unknown>>();
     const close = async () => {
+        shutdown.abort();
         globalJobs.close();
         const drained = builder.close();
         cache.clear();
@@ -152,6 +147,7 @@ export function routeServer(
         terminalCatalog = undefined;
         movementHash = undefined;
         removeCloseListener();
+        await Promise.allSettled(running);
         await drained;
     };
     const read = async (name: string): Promise<unknown> =>
@@ -426,22 +422,10 @@ export function routeServer(
                               : 'miss',
                     );
                     if (previous) {
-                        const alreadyDone = previous.done;
-                        let answer = await previous.pending;
-                        const current = queries.get(queryKey);
-                        if (
-                            !alreadyDone ||
-                            (!previous.progress &&
-                                !previous.candidate?.optimizing) ||
-                            current !== previous
-                        ) {
-                            if (current && current !== previous)
-                                answer = await current.pending;
-                            reply(answer.value, answer.status);
-                            return;
-                        }
-                        fallback = previous.candidate;
-                        queries.delete(queryKey);
+                        const answer =
+                            previous.latest ?? (await previous.pending);
+                        reply(answer.value, answer.status);
+                        return;
                     }
                     let finish!: (answer: Answer) => void;
                     const entry: Query = {
@@ -449,18 +433,11 @@ export function routeServer(
                             finish = resolve;
                         }),
                         done: false,
-                        windows: previous?.windows,
                     };
                     queries.set(queryKey, entry);
                     const deliver = reply;
+                    let delivered = false;
                     reply = (value, status = 200) => {
-                        if (
-                            entry.log &&
-                            value !== null &&
-                            typeof value === 'object'
-                        )
-                            value = { ...value, log: entry.log };
-                        entry.done = true;
                         const progress =
                             value !== null &&
                             typeof value === 'object' &&
@@ -468,8 +445,13 @@ export function routeServer(
                             value.status === 'building-ground';
                         entry.progress = progress;
                         if (status >= 500) queries.delete(queryKey);
-                        finish({ value, status });
-                        deliver(value, status);
+                        entry.done = !progress && !entry.candidate?.optimizing;
+                        entry.latest = { value, status };
+                        if (!delivered) {
+                            delivered = true;
+                            finish(entry.latest);
+                            deliver(value, status);
+                        }
                         // Identical concurrent queries share one calculation. Terminal results
                         // belong to this immutable development snapshot and stay bounded.
                         for (const [key, cached] of queries) {
@@ -591,22 +573,72 @@ export function routeServer(
                         });
                         return;
                     }
-                    let terminal: Terminal | null = null;
-                    if (goal?.interaction.airborne) {
-                        terminalCatalog ??= read('terminal-routes.json')
-                            .then((value) => value as TerminalCatalog)
-                            .catch((error: unknown) => {
-                                if (
-                                    error instanceof Error &&
-                                    'code' in error &&
-                                    error.code === 'ENOENT'
-                                )
-                                    return null;
-                                terminalCatalog = undefined;
-                                throw error;
+                    const movement = (await read(
+                        'movement-settings-current.json',
+                    )) as {
+                        source: Source;
+                        sustainedSprint: LocomotionOptions;
+                    };
+                    if (!sameSource(source, movement.source))
+                        throw new Error(
+                            'Movement settings do not match scene build',
+                        );
+                    const resources: SceneResources<
+                        Source,
+                        Awaited<ReturnType<typeof builder.query>> & {}
+                    > = {
+                        query: builder.query,
+                        solve: builder.solve,
+                        key: (job) => job.output,
+                        ground: async (job) =>
+                            JSON.parse(await readFile(job.output, 'utf8')) as {
+                                surfaces: Surface[];
+                                options: GroundOptions;
+                            },
+                        route: (job) =>
+                            job.result as { route?: Route; reason?: string },
+                        wait: async (signal) => {
+                            if (!signal?.aborted)
+                                await delay(25, undefined, { signal }).catch(
+                                    (error) => {
+                                        if (!signal?.aborted) throw error;
+                                    },
+                                );
+                        },
+                        plan: async (starts, target, excludedEdges, signal) => {
+                            const job = globalJobs.start({
+                                scene,
+                                source,
+                                arrivals: starts,
+                                target,
+                                excludedEdges,
                             });
-                        const catalog = await terminalCatalog;
-                        if (catalog) {
+                            while (job.status === 'pending' && !signal?.aborted)
+                                await resources.wait(signal);
+                            if (signal?.aborted) return { status: 'cancelled' };
+                            if (job.status === 'failed')
+                                throw new Error(
+                                    job.error ?? 'Candidate search failed',
+                                );
+                            if (!job.result)
+                                throw new Error(
+                                    'Candidate worker omitted result',
+                                );
+                            return job.result;
+                        },
+                        terminals: async (query) => {
+                            terminalCatalog ??= read('terminal-routes.json')
+                                .then((value) => value as TerminalCatalog)
+                                .catch((error: unknown) => {
+                                    if (
+                                        error instanceof Error &&
+                                        'code' in error &&
+                                        error.code === 'ENOENT'
+                                    )
+                                        return null;
+                                    terminalCatalog = undefined;
+                                    throw error;
+                                });
                             movementHash ??= readFile(
                                 resolve(
                                     directory,
@@ -617,7 +649,7 @@ export function routeServer(
                                     .update(bytes)
                                     .digest('hex'),
                             );
-                            terminal = selectTerminal(catalog, {
+                            return matchingTerminals(await terminalCatalog, {
                                 scene,
                                 source,
                                 generator: (
@@ -625,146 +657,39 @@ export function routeServer(
                                 ).generator,
                                 solver: build.solver,
                                 movementHash: await movementHash,
-                                target: goal.position,
-                                interaction: goal.interaction,
-                                arrivals: candidates,
-                                speed:
-                                    data.options.locomotion?.sprintSpeed ??
-                                    data.options.speed,
+                                target: query.goal,
+                                interaction: query.interaction,
                             });
-                        }
-                    }
-                    const planningTarget =
-                        terminal?.route.points[0] ?? goal?.position ?? target;
-                    // Every distance uses one global candidate and bounded physical windows.
-                    entry.windows ??= {
-                        attempts: 1,
-                        excludedEdges: [],
-                        excludedArrivals: [],
-                        job: globalJobs.start({
-                            scene,
-                            source,
-                            arrivals: candidates,
-                            target: planningTarget,
-                        }),
+                        },
                     };
-                    const windowQuery = entry.windows;
-                    const pendingWindows = (message: string) => {
-                        if (windowQuery.partial) {
-                            entry.candidate = {
-                                ...windowQuery.partial,
-                                optimizing: true,
-                                optimizationMessage: message,
-                            };
-                            reply(entry.candidate);
-                        } else
-                            reply({
-                                status: 'building-ground',
-                                message,
-                                retryAfter: 1000,
-                            });
-                    };
-                    if (windowQuery.job.status === 'pending') {
-                        pendingWindows('Finding a global route corridor…');
-                        return;
-                    }
-                    const stopWindows = (
-                        reason: string,
-                        diagnostics?: unknown,
+                    const solver = prepareSceneRouteSolver(
+                        { scene, source, walls: data.options.walls },
+                        resources,
+                        {
+                            tileSpan: 38.4,
+                            gridSpan: 32,
+                            maxTiles: 16,
+                            margin: 8,
+                            locomotion: movement.sustainedSprint,
+                        },
+                    );
+                    const display = (
+                        result: RouteResult,
+                        optimizing: boolean,
+                        message = '',
                     ) => {
-                        if (windowQuery.partial) {
-                            entry.candidate = {
-                                ...windowQuery.partial,
-                                optimizing: false,
-                                optimizationMessage: reason,
-                            };
-                            reply(entry.candidate);
-                        } else
-                            reply({
-                                status: 'unavailable',
-                                category: windowQuery.physicalFailure
-                                    ? 'window-route'
-                                    : 'candidate-search',
-                                message:
-                                    windowQuery.physicalFailure?.reason ??
-                                    reason,
-                                diagnostics:
-                                    windowQuery.physicalFailure?.diagnostics ??
-                                    diagnostics,
-                            });
-                    };
-                    if (windowQuery.job.status === 'failed') {
-                        stopWindows(
-                            windowQuery.job.error ?? 'Candidate search failed',
-                        );
-                        return;
-                    }
-                    const global = windowQuery.job.result!;
-                    if (!global.points?.length) {
-                        stopWindows(
-                            global.reason ?? 'No global route corridor found',
-                            global.diagnostics,
-                        );
-                        return;
-                    }
-                    const selectedArrival = global.arrival;
-                    if (!selectedArrival)
-                        throw new Error('Candidate route omitted its arrival');
-                    if (!windowQuery.window) {
-                        const movement = (await read(
-                            'movement-settings-current.json',
-                        )) as {
-                            source: Source;
-                            sustainedSprint: LocomotionOptions;
-                        };
-                        if (!sameSource(source, movement.source))
-                            throw new Error(
-                                'Movement settings do not match scene build',
-                            );
-                        windowQuery.window = builder.windows(
-                            {
-                                point: pointId,
-                                scene,
-                                source,
-                                arrival: selectedArrival,
-                                target: planningTarget,
-                                interaction: terminal
-                                    ? undefined
-                                    : goal?.interaction,
-                                walls: data.options.walls,
-                            },
-                            global.points,
-                            {
-                                maxTiles: 16,
-                                margin: 8,
-                                locomotion: movement.sustainedSprint,
-                                transfers: global.path
-                                    ?.filter((edge) => edge.unresolved)
-                                    .map((edge) => edge.points),
-                            },
-                        );
-                    }
-                    const publishWindow = (
-                        route: Extract<Route, { status: 'complete' }>,
-                        partial: boolean,
-                        diagnostics: unknown,
-                        evidence: unknown[],
-                    ) => {
-                        const contacts = evidence.flatMap((item) =>
-                            supportBoxes(
-                                (item as { supportBoxes?: unknown })
-                                    ?.supportBoxes,
-                            ),
-                        );
-                        const result = {
+                        if (result.route.status !== 'complete') return;
+                        const route = result.route,
+                            partial = result.partial === true;
+                        const candidate = {
                             version: 1,
-                            supportBoxes: contacts,
                             status: 'candidate' as const,
                             scene,
                             level,
                             source,
                             route,
                             partial,
+                            supportBoxes: supportBoxes(result.supportBoxes),
                             title: partial
                                 ? 'Target approach · Partial route'
                                 : 'Teleport → Target',
@@ -782,169 +707,73 @@ export function routeServer(
                                 : 'Verified physical route windows',
                             diagnostics: {
                                 anchorCandidates: candidates.length,
-                                traversal: diagnostics,
+                                traversal: result.diagnostics,
                             },
-                            anchor: {
-                                id: selectedArrival.id,
-                                position: selectedArrival.position,
-                            },
+                            anchor: result.arrival,
                             interaction,
-                            optimizing: partial,
-                            optimizationMessage: partial
-                                ? 'Connecting the teleport approach…'
-                                : '',
+                            optimizing,
+                            optimizationMessage: message,
                             assumptions: [
                                 'All tasks completed; devices enabled and powered',
                             ],
                         };
-                        entry.candidate = result;
-                        if (partial) windowQuery.partial = result;
-                        reply(result);
+                        entry.candidate = candidate;
+                        fallback = candidate;
+                        reply(candidate);
                     };
-                    if (!windowQuery.tailDone) {
-                        if (terminal) {
-                            windowQuery.tailDone = true;
-                            publishWindow(
-                                terminal.route,
-                                true,
-                                { terminalAsset: terminal.id },
-                                [{ supportBoxes: terminal.supportBoxes ?? [] }],
-                            );
-                            return;
-                        }
-                        const tail = await windowQuery.window.advanceTail();
-                        if (tail.status === 'partial') {
-                            windowQuery.tailDone = true;
-                            publishWindow(
-                                tail.route,
-                                true,
-                                { global: global.diagnostics, partial: true },
-                                tail.evidence,
-                            );
-                            return;
-                        }
-                        if (tail.status === 'pending') {
-                            pendingWindows('Validating the target approach…');
-                            return;
-                        }
-                        windowQuery.tailDone = true;
-                    }
-                    const windowResult = await windowQuery.window.advance();
-                    if (windowResult.status === 'complete') {
-                        const route = terminal
-                            ? joinTerminal(
-                                  windowResult.route,
-                                  terminal.route,
-                                  (
-                                      (await read(
-                                          'movement-settings-current.json',
-                                      )) as {
-                                          sustainedSprint: LocomotionOptions;
-                                      }
-                                  ).sustainedSprint,
-                              )
-                            : windowResult.route;
-                        if (route.status !== 'complete') {
-                            stopWindows(
-                                'Terminal entry or resource schedule changed; the verified target approach is retained',
-                            );
-                            return;
-                        }
-                        publishWindow(
-                            route,
-                            false,
+                    try {
+                        const solving = solver.solve(
                             {
-                                global: global.diagnostics,
-                                windows: windowResult.pieces.length,
-                                ...(terminal
-                                    ? { terminalAsset: terminal.id }
-                                    : {}),
+                                starts: candidates,
+                                goal: goal?.position ?? target,
+                                interaction: goal?.interaction,
                             },
-                            [
-                                ...windowResult.evidence,
-                                ...(terminal
-                                    ? [
-                                          {
-                                              supportBoxes:
-                                                  terminal.supportBoxes ?? [],
-                                          },
-                                      ]
-                                    : []),
-                            ],
+                            {
+                                signal: shutdown.signal,
+                                onEvent: (event) => {
+                                    if (event.type === 'candidate')
+                                        display(event.result, event.optimizing);
+                                    else if (entry.candidate) {
+                                        entry.candidate = {
+                                            ...entry.candidate,
+                                            optimizing: true,
+                                            optimizationMessage:
+                                                'Connecting the route…',
+                                        };
+                                        reply(entry.candidate);
+                                    } else
+                                        reply({
+                                            status: 'building-ground',
+                                            message:
+                                                'Finding and validating route corridors…',
+                                            retryAfter: 1000,
+                                        });
+                                },
+                            },
                         );
-                    } else if (windowResult.status === 'pending') {
-                        pendingWindows(
-                            `Connecting route windows (${windowResult.completedWindows} complete)…`,
-                        );
-                    } else {
-                        // Reject only this query's failed transfer. Other targets can still
-                        // use the shared prepared graph and its untested alternatives.
-                        windowQuery.physicalFailure = {
-                            reason: windowResult.reason ?? 'no-verified-route',
-                            diagnostics: windowResult,
-                        };
-                        const local = windowResult.window.points;
-                        const edge = global.path?.find(
-                            (edge) =>
-                                edge.unresolved &&
-                                !windowQuery.excludedEdges.includes(
-                                    edge.key ?? edge.index,
-                                ) &&
-                                edge.points.some((point) =>
-                                    local.some(
-                                        (candidate) =>
-                                            Math.hypot(
-                                                ...point.map(
-                                                    (value, axis) =>
-                                                        value - candidate[axis],
-                                                ),
-                                            ) < 1e-5,
-                                    ),
-                                ),
-                        );
-                        if (edge)
-                            windowQuery.excludedEdges.push(
-                                edge.key ?? edge.index,
-                            );
-                        else
-                            windowQuery.excludedArrivals.push(
-                                selectedArrival.id,
-                            );
-                        const alternatives = candidates.filter(
-                            (candidate) =>
-                                !windowQuery.excludedArrivals.includes(
-                                    candidate.id,
-                                ),
-                        );
-                        if (windowQuery.attempts < 6 && alternatives.length) {
-                            windowQuery.attempts++;
-                            windowQuery.job = globalJobs.start({
-                                scene,
-                                source,
-                                arrivals: alternatives,
-                                target: planningTarget,
-                                excludedEdges: windowQuery.excludedEdges,
-                            });
-                            windowQuery.window = undefined;
-                            windowQuery.tailDone = Boolean(windowQuery.partial);
-                            pendingWindows(
-                                'Checking an alternative route after a failed physical window…',
-                            );
-                        } else if (windowQuery.partial) {
-                            stopWindows(
-                                `Teleport approach incomplete after ${windowQuery.attempts} candidates: ${windowResult.reason}`,
-                            );
-                        } else
+                        running.add(solving);
+                        let result: RouteResult;
+                        try {
+                            result = await solving;
+                        } finally {
+                            running.delete(solving);
+                        }
+                        if (result.route.status === 'complete')
+                            display(result, false, result.reason);
+                        else {
+                            entry.candidate = undefined;
                             reply({
                                 status: 'unavailable',
-                                category: 'window-route',
-                                message: windowResult.reason,
-                                diagnostics: {
-                                    ...windowResult,
-                                    candidateAttempts: windowQuery.attempts,
-                                    candidateBudget: 6,
-                                },
+                                category:
+                                    result.reason === 'no-global-candidate'
+                                        ? 'candidate-search'
+                                        : 'window-route',
+                                message: result.reason,
+                                diagnostics: result.diagnostics,
                             });
+                        }
+                    } finally {
+                        await solver.close();
                     }
                     return;
                 })().catch((error: unknown) => {
