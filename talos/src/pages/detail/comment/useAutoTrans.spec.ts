@@ -2,7 +2,7 @@ import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/auth';
-import type { UGCComment } from '@/services/ugc/client';
+import type { UGCComment, UGCCommentNode } from '@/services/ugc/client';
 import { useAutoTrans } from '@/pages/detail/comment/useAutoTrans';
 
 const requestCommentTranslationsMock = vi.hoisted(() => vi.fn());
@@ -15,7 +15,7 @@ vi.mock('@/pages/detail/comment/translationCoordinator', async (importOriginal) 
     };
 });
 
-const comments: UGCComment[] = [{
+const comments: UGCComment[] = [{ type: 'comment',
     id: 'comment-1',
     markerId: 'marker-1',
     parentId: null,
@@ -104,7 +104,7 @@ describe('automatic comment translation authentication', () => {
         }];
 
         const { result } = renderHook(() => {
-            const [current, setCurrent] = useState(nestedComments);
+            const [current, setCurrent] = useState<UGCCommentNode[]>(nestedComments);
             useAutoTrans({
                 comments: current,
                 locale: 'zh-HK',

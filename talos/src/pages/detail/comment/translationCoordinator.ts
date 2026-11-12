@@ -10,7 +10,7 @@ const MAX_ATTEMPTED_KEYS = 2_000;
 const MAX_BATCH_SIZE = 100;
 const TRANSLATION_CACHE_MISS = 'TRANSLATION_CACHE_MISS';
 
-type TranslationComment = Pick<UGCComment, 'id' | 'content'>;
+type TranslationComment = Pick<UGCComment, 'id' | 'snapshotId' | 'content'>;
 type TranslationPromise = Promise<UGCCommentTrans | undefined>;
 type LiveAttemptPolicy = 'always' | 'once';
 
@@ -35,9 +35,8 @@ const normalizeTargetLanguage = (targetLanguage: string): string => (
 export const getCommentTranslationKey = (
     comment: TranslationComment,
     targetLanguage: string,
-): string => (
-    `${encodeURIComponent(comment.id)}:${md5(normalizeCommentTranslationContent(comment.content))}:${normalizeTargetLanguage(targetLanguage)}`
-);
+): string =>
+    `${encodeURIComponent(comment.id)}:${encodeURIComponent(comment.snapshotId ?? '')}:${md5(normalizeCommentTranslationContent(comment.content))}:${normalizeTargetLanguage(targetLanguage)}`;
 
 const createDeferred = (): Deferred => {
     let resolve!: Deferred['resolve'];
@@ -101,7 +100,15 @@ const startBatch = (
             { cachedOnly },
         ).then((items) => {
             const itemById = new Map(items.map((item) => [item.commentId, item] as const));
-            batch.forEach(({ comment, deferred }) => deferred.resolve(itemById.get(comment.id)));
+            batch.forEach(({ comment, deferred }) => {
+                const item = itemById.get(comment.id);
+                deferred.resolve(
+                    comment.snapshotId &&
+                        item?.snapshotId === comment.snapshotId
+                        ? item
+                        : undefined,
+                );
+            });
         }).catch((error: unknown) => {
             batch.forEach(({ deferred }) => deferred.reject(error));
         }).finally(() => {

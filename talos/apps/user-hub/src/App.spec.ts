@@ -4,7 +4,7 @@ import { waitFor, within } from '@testing-library/react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from './App';
-import type { Overview } from './types';
+import type { Contribution, Overview } from './types';
 import { useAuthStore } from '@main/store/auth';
 
 const api = vi.hoisted(() => ({
@@ -294,7 +294,38 @@ it('reauthenticates a failed contribution page in place and resumes the same cur
     window.history.replaceState(null, '', '/me/content');
     useAuthStore.getState().clearSessionUser();
     auth.open = true;
-    const first = { id: 'image-a', kind: 'image', markerId: '42', poiType: 'ore', content: null, status: 'active', visibility: 'public', createdAt: '2026-05-21T03:28:31Z' };
+    const first: Contribution = {
+        snapshotId: 'snapshot-a',
+        revision: 1,
+        reviewStatus: 'approved',
+        authorDeletedAt: null,
+        adminDeletedAt: null,
+        previewUrl: null,
+        review: {
+            events: [],
+            manual: false,
+            published: true,
+            path: [
+                { key: 'uploaded', at: '2026-05-21T03:28:31Z' },
+                { key: 'public', at: null },
+            ],
+            times: {
+                uploaded: '2026-05-21T03:28:31Z',
+                ai: null,
+                manual: null,
+                public: null,
+                archived: null,
+            },
+        },
+        id: 'image-a',
+        kind: 'image',
+        markerId: '42',
+        poiType: 'ore',
+        content: null,
+        status: 'active',
+        visibility: 'public',
+        createdAt: '2026-05-21T03:28:31Z',
+    };
     api.getContributions
         .mockResolvedValueOnce({ items: [first], nextCursor: 'next+cursor' })
         .mockRejectedValueOnce(new Error('Unauthorized'))
@@ -351,7 +382,39 @@ it('hides the previous identity and private list immediately when the store swit
     let release!: (result: Overview) => void;
     const pending = new Promise<Overview>((resolve) => { release = resolve; });
     api.getOverview.mockResolvedValueOnce(overview).mockReturnValueOnce(pending);
-    api.getContributions.mockResolvedValueOnce({ items: [{ id: 'private-a', kind: 'image', markerId: '42', poiType: 'ore', content: null, previewUrl: '/private-a.webp', status: 'active', visibility: 'private', createdAt: '2026-05-21T03:28:31Z' }], nextCursor: null });
+    const privateItem: Contribution = {
+        snapshotId: 'snapshot-a',
+        revision: 1,
+        reviewStatus: 'approved',
+        authorDeletedAt: null,
+        adminDeletedAt: null,
+        review: {
+            events: [],
+            manual: false,
+            published: true,
+            path: [
+                { key: 'uploaded', at: '2026-05-21T03:28:31Z' },
+                { key: 'public', at: null },
+            ],
+            times: {
+                uploaded: '2026-05-21T03:28:31Z',
+                ai: null,
+                manual: null,
+                public: null,
+                archived: null,
+            },
+        },
+        id: 'private-a',
+        kind: 'image',
+        markerId: '42',
+        poiType: 'ore',
+        content: null,
+        previewUrl: '/private-a.webp',
+        status: 'active',
+        visibility: 'private',
+        createdAt: '2026-05-21T03:28:31Z',
+    };
+    api.getContributions.mockResolvedValueOnce({ items: [privateItem], nextCursor: null });
     useAuthStore.getState().setSessionUser(overview.user);
     const node = document.createElement('div'); document.body.append(node);
     const root = createRoot(node);

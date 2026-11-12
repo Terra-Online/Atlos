@@ -11,8 +11,8 @@ vi.mock('@/platform/pictureInPicture', () => ({ useAppDocument: () => document, 
 
 // Distinct metadata catches a carousel that changes only its image pixels.
 const images: UGCImage[] = [
-    { id: 'first', markerId: 'point', url: '/first.webp', content: 'First image', author: { nickname: 'Alice', publicUid: '42' }, createdAt: '2026-01-01T00:00:00Z', upvotes: 3, upvoted: true },
-    { id: 'second', markerId: 'point', url: '/second.webp', content: 'Second image', author: { nickname: 'Bob', publicUid: '43' }, createdAt: '2026-02-01T00:00:00Z', upvoteCount: 7, flagged: true, status: 'remove_request' },
+    { id: 'first', markerId: 'point', url: '/first.webp', content: 'First image', author: { nickname: 'Alice', publicUid: '42' }, createdAt: '2026-01-01T00:00:00Z', upvoteCount: 3, upvoted: true },
+    { id: 'second', markerId: 'point', url: '/second.webp', content: 'Second image', author: { nickname: 'Bob', publicUid: '43' }, createdAt: '2026-02-01T00:00:00Z', upvoteCount: 7, flagged: true, status: 'flagged' },
 ];
 let popover: ReturnType<typeof installPopover>;
 beforeEach(() => { vi.useFakeTimers(); popover = installPopover(); });
@@ -64,19 +64,19 @@ it('navigates only within the carousel hit zones and keeps the click inside the 
 });
 
 it('gates actions by permissions, pending state and callbacks without losing action targets', () => {
-    const callbacks = { onToggleUpvote: vi.fn(), onToggleFlag: vi.fn(), onShare: vi.fn(), onToggleRecall: vi.fn(), onRecallBlur: vi.fn(), onRequestUpload: vi.fn() };
-    const view = render(<Viewer open imageUrl="/one.webp" alt="One" canRecall canAppendUpload {...callbacks} onClose={() => {}} />);
-    for (const name of ['Upvote', 'Flag', 'Share', 'detail.viewer.recall', 'detail.viewer.uploadAno']) fireEvent.click(screen.getByRole('button', { name }));
-    for (const callback of Object.values(callbacks).filter((fn) => fn !== callbacks.onRecallBlur)) expect(callback).toHaveBeenCalledOnce();
-    fireEvent.blur(screen.getByRole('button', { name: 'detail.viewer.recall' }));
-    expect(callbacks.onRecallBlur).toHaveBeenCalledOnce();
-    view.rerender(<Viewer open imageUrl="/one.webp" alt="One" canFlag={false} canRecall actionPending recallConfirming shareCopied onClose={() => {}} />);
+    const callbacks = { onToggleUpvote: vi.fn(), onToggleFlag: vi.fn(), onShare: vi.fn(), onDelete: vi.fn(), onDeleteBlur: vi.fn(), onRequestUpload: vi.fn() };
+    const view = render(<Viewer open imageUrl="/one.webp" alt="One" canDelete canAppendUpload {...callbacks} onClose={() => {}} />);
+    for (const name of ['Upvote', 'Flag', 'Share', 'common.delete', 'detail.viewer.uploadAno']) fireEvent.click(screen.getByRole('button', { name }));
+    for (const callback of Object.values(callbacks).filter((fn) => fn !== callbacks.onDeleteBlur)) expect(callback).toHaveBeenCalledOnce();
+    fireEvent.blur(screen.getByRole('button', { name: 'common.delete' }));
+    expect(callbacks.onDeleteBlur).toHaveBeenCalledOnce();
+    view.rerender(<Viewer open imageUrl="/one.webp" alt="One" canFlag={false} canDelete actionPending deleteConfirming shareCopied onClose={() => {}} />);
     expect(screen.queryByRole('button', { name: 'Flag' })).toBeNull();
     for (const name of ['Upvote', 'Share', 'common.confirmAgain', 'detail.viewer.uploadAno']) expect(screen.getByRole<HTMLButtonElement>('button', { name }).disabled).toBe(true);
-    view.rerender(<Viewer open imageUrl="/one.webp" alt="One" canRecall recallOnly recallRequested onClose={() => {}} />);
+    view.rerender(<Viewer open imageUrl="/one.webp" alt="One" canDelete ownerActionsOnly onClose={() => {}} />);
     expect(screen.queryByRole('button', { name: 'Upvote' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Share' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'detail.viewer.unrecall' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: 'common.delete' })).toBeTruthy();
 });
 
 it('uses fallback metadata for a single image and cancels an interrupted exit', async () => {

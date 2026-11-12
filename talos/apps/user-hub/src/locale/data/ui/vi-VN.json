@@ -43,7 +43,6 @@
       "pending_audit": "Chờ xét duyệt thủ công",
       "active": "Đã công khai",
       "flagged": "Đã bị báo cáo",
-      "remove_request": "Đã yêu cầu xóa",
       "stale": "Không khả dụng"
     },
     "contentHint": "Xem nội dung đã gửi và trạng thái xét duyệt.",

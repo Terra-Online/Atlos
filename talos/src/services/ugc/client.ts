@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/store/auth';
 import { createMarkerQueue, failedBatchMarkers, listByMarkerIds, runUGCBatches, type MarkerBatchPayload } from './batch';
 import { UGCClientError } from './error';
 import { ReadCache } from './readCache';
@@ -18,11 +19,11 @@ export type UGCSubmissionStatus =
     | 'pending_audit'
     | 'active'
     | 'flagged'
-    | 'remove_request'
     | 'stale';
 
 export type UGCImage = {
     id: string;
+    snapshotId?: string;
     markerId: string;
     url: string;
     content: string | null;
@@ -31,11 +32,9 @@ export type UGCImage = {
         publicUid: string;
     } | null;
     createdAt: string;
-    upvotes?: number;
     upvoteCount?: number;
     upvoted?: boolean;
     flagged?: boolean;
-    recallRequested?: boolean;
     status?: UGCSubmissionStatus;
 };
 
@@ -48,7 +47,10 @@ export type UGCCommentAuthor = {
 };
 
 export type UGCComment = {
+    type: 'comment';
     id: string;
+    // Unsaved optimistic content has no server snapshot yet.
+    snapshotId?: string;
     markerId: string;
     poiHash?: string;
     poiType?: string;
@@ -60,26 +62,37 @@ export type UGCComment = {
     translationTargetLanguage?: string;
     translationHidden?: boolean;
     translationStatus?: 'translating' | 'failed';
-    editUndoAvailable?: boolean;
     author?: UGCCommentAuthor | null;
     createdAt: string;
     score: number;
     viewerVote?: UGCCommentVoteValue;
     flagged?: boolean;
-    recallRequested?: boolean;
     status?: UGCSubmissionStatus;
     replyCount: number;
-    replies: UGCComment[];
+    replies: UGCCommentNode[];
 };
+
+export type UGCCommentPlaceholder = {
+    type: 'placeholder';
+    id: string;
+    markerId: string;
+    parentId: string | null;
+    depth: number;
+    replyCount: number;
+    replies: UGCCommentNode[];
+};
+
+export type UGCCommentNode = UGCComment | UGCCommentPlaceholder;
 
 export type UGCCommentContext = {
     targetId: string;
-    path: UGCComment[];
-    replies: UGCComment[];
+    path: UGCCommentNode[];
+    replies: UGCCommentNode[];
     repliesTruncated: boolean;
 };
 
 export async function getUGCCommentById(markerId: string, commentId: string): Promise<UGCCommentContext> {
+    const accountVersion = useAuthStore.getState().sessionVersion;
     const search = new URLSearchParams({ markerId });
     const response = await fetch(
         `${UGC_API_BASE}/comments/${encodeURIComponent(commentId)}?${search.toString()}`,
@@ -87,8 +100,11 @@ export async function getUGCCommentById(markerId: string, commentId: string): Pr
     );
     if (!response.ok) throw await readUGCError(response);
     const payload = await response.json() as { item?: UGCCommentContext };
+    if (useAuthStore.getState().sessionVersion !== accountVersion) {
+        throw new UGCClientError('Session changed during comment read.', 'SESSION_CHANGED');
+    }
     if (!payload.item) throw new UGCClientError('Comment response is missing.', 'UGC_ERROR');
-    return { ...payload.item, path: payload.item.path.map(normalizeUGCComment), replies: payload.item.replies.map(normalizeUGCComment) };
+    return payload.item;
 }
 
 export type UGCUploadSubmission = {
@@ -124,7 +140,7 @@ type ImageCacheEntry = {
 
 type CommentCacheEntry = {
     expiresAt: number;
-    comments: UGCComment[];
+    comments: UGCCommentNode[];
 };
 
 type SubmissionCacheEntry = {
@@ -161,6 +177,16 @@ const imageCache = new ReadCache<ImageCacheEntry>();
 const publicImageCache = new ReadCache<ImageCacheEntry>();
 const commentCache = new ReadCache<CommentCacheEntry>();
 const submissionCache = new ReadCache<SubmissionCacheEntry>();
+let commentAccountVersion = useAuthStore.getState().sessionVersion;
+function syncCommentAccount(): number {
+    const version = useAuthStore.getState().sessionVersion;
+    if (version !== commentAccountVersion) {
+        commentCache.clear();
+        commentAccountVersion = version;
+        queueComments = createCommentQueue(version);
+    }
+    return version;
+}
 
 export const invalidateUGCImageCache = (markerId: string): void => {
     imageCache.delete(markerId);
@@ -194,7 +220,8 @@ export const peekPublicUGCImages = (markerId: string): UGCImage[] | null => {
     return cached.images;
 };
 
-export const peekUGCComments = (markerId: string): UGCComment[] | null => {
+export const peekUGCComments = (markerId: string): UGCCommentNode[] | null => {
+    syncCommentAccount();
     const cached = commentCache.get(markerId);
     if (!cached || cached.expiresAt <= Date.now()) {
         return null;
@@ -229,7 +256,7 @@ export async function listPublicUGCImages(markerId: string): Promise<UGCImage[]>
     return listPublicUGCImagesByMarkerIds([markerId]).then((grouped) => grouped[markerId] ?? []);
 }
 
-export async function listUGCComments(markerId: string): Promise<UGCComment[]> {
+export async function listUGCComments(markerId: string): Promise<UGCCommentNode[]> {
     return listUGCCommentsByMarkerIds([markerId]).then((grouped) => grouped[markerId] ?? []);
 }
 
@@ -241,7 +268,8 @@ export async function listPublicUGCImagesByMarkerIds(markerIds: string[]): Promi
     return listByMarkerIds(markerIds, peekPublicUGCImages, queuePublicImages);
 }
 
-export async function listUGCCommentsByMarkerIds(markerIds: string[]): Promise<Record<string, UGCComment[]>> {
+export async function listUGCCommentsByMarkerIds(markerIds: string[]): Promise<Record<string, UGCCommentNode[]>> {
+    syncCommentAccount();
     return listByMarkerIds(markerIds, peekUGCComments, queueComments);
 }
 
@@ -299,12 +327,12 @@ async function readPointImages(markerId: string): Promise<PointImageLists> {
         if (!response.ok) throw await readUGCError(response);
         const payload = await response.json() as {
             images: MarkerBatchPayload<UGCImage> & { error?: unknown };
-            mine: { items?: UGCSubmissionImage[]; error?: unknown };
+            mine: { items: UGCSubmissionImage[]; error?: unknown };
         };
         if (!payload.images.error && !failedBatchMarkers(payload.images, [markerId]).has(markerId)) {
-            result.images = (payload.images.items ?? []).map(normalizeUGCImage);
+            result.images = payload.images.items.map(normalizeUGCImage);
         }
-        if (!payload.mine.error) result.myImages = (payload.mine.items ?? []).map(normalizeUGCSubmissionImage);
+        if (!payload.mine.error) result.myImages = payload.mine.items.map(normalizeUGCSubmissionImage);
         // Completed private results stay in the mounted detail, never in the
         // global public preview cache or a new cross-account result cache.
     });
@@ -397,31 +425,36 @@ export async function submitUGCComment(
 export async function editUGCComment(
     commentId: string,
     content: string,
+    parentSnapshotId: string,
 ): Promise<UGCCommentSubmission> {
     const payload = await postJson<{
         submission?: UGCCommentSubmission;
-    }>(`${UGC_API_BASE}/comments/${encodeURIComponent(commentId)}/edit`, { content });
+    }>(`${UGC_API_BASE}/comments/${encodeURIComponent(commentId)}/edit`, {
+        content,
+        parentSnapshotId,
+    });
 
     if (!payload.submission) {
-        throw new UGCClientError('Comment edit response missing submission.', 'commentInvalidResponse');
+        throw new UGCClientError(
+            'Comment edit response missing submission.',
+            'commentInvalidResponse',
+        );
     }
 
     invalidateUGCCommentCache(payload.submission.markerId);
     return payload.submission;
 }
 
-export type UGCImageActionPatch = Partial<Pick<UGCImage, 'upvoteCount' | 'upvotes' | 'upvoted' | 'flagged' | 'recallRequested' | 'status'>> & {
+export type UGCImageActionPatch = Partial<Pick<UGCImage, 'upvoteCount' | 'upvoted' | 'flagged' | 'status'>> & {
     id: string;
 };
 
-export type UGCCommentActionPatch = Partial<Pick<UGCComment, 'content' | 'score' | 'viewerVote' | 'flagged' | 'recallRequested' | 'status' | 'editUndoAvailable'>> & {
+export type UGCCommentActionPatch = Partial<Pick<UGCComment, 'content' | 'score' | 'viewerVote' | 'flagged' | 'status'>> & {
     id: string;
-    editReverted?: boolean;
 };
 
 type UGCImageActionResponse = {
     ok?: boolean;
-    image?: UGCImage;
     upvoteCount?: number;
     flagCount?: number;
     status?: UGCSubmissionStatus;
@@ -429,16 +462,15 @@ type UGCImageActionResponse = {
 
 type UGCCommentActionResponse = {
     ok?: boolean;
-    comment?: UGCComment;
     vote?: UGCCommentVoteValue;
     score?: number;
     flagCount?: number;
     status?: UGCSubmissionStatus;
     content?: string;
-    editReverted?: boolean;
 };
 
 export type UGCCommentTrans = {
+    snapshotId?: string;
     commentId: string;
     translatedContent?: string;
     sourceLanguage?: string;
@@ -462,12 +494,10 @@ export async function toggleUGCImageFlag(imageId: string, flagged: boolean): Pro
     return updateUGCImageAction(imageId, flagged ? 'flag' : 'unflag');
 }
 
-export async function toggleUGCImageRecall(imageId: string, recallRequested: boolean): Promise<UGCImageActionPatch> {
-    return updateUGCImageAction(imageId, recallRequested ? 'remove-request' : 'unrecall');
-}
-
-export async function recallUGCImage(imageId: string): Promise<UGCImageActionPatch> {
-    return updateUGCImageAction(imageId, 'recall');
+export async function deleteUGCImage(
+    imageId: string,
+): Promise<{ authorDeletedAt: string }> {
+    return deleteUGCSubmission('images', imageId);
 }
 
 export async function voteUGCComment(commentId: string, value: 1 | -1): Promise<UGCCommentActionPatch> {
@@ -478,12 +508,36 @@ export async function toggleUGCCommentFlag(commentId: string, flagged: boolean):
     return updateUGCCommentAction(commentId, flagged ? 'flag' : 'unflag');
 }
 
-export async function requestUGCCommentRemoval(commentId: string): Promise<UGCCommentActionPatch> {
-    return updateUGCCommentAction(commentId, 'remove-request');
+export async function deleteUGCComment(
+    commentId: string,
+): Promise<{ authorDeletedAt: string }> {
+    return deleteUGCSubmission('comments', commentId);
 }
 
-export async function recallUGCComment(commentId: string): Promise<UGCCommentActionPatch> {
-    return updateUGCCommentAction(commentId, 'recall');
+async function deleteUGCSubmission(
+    kind: 'comments' | 'images',
+    id: string,
+): Promise<{ authorDeletedAt: string }> {
+    const response = await fetch(
+        `${UGC_API_BASE}/${kind}/${encodeURIComponent(id)}`,
+        {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: getAuthHeaders(),
+        },
+    );
+    if (!response.ok) throw await readUGCError(response);
+    const payload = (await response.json()) as {
+        ok?: boolean;
+        authorDeletedAt?: string;
+    };
+    if (payload.ok !== true || !payload.authorDeletedAt) {
+        throw new UGCClientError(
+            'Deletion response is invalid.',
+            'deleteInvalidResponse',
+        );
+    }
+    return { authorDeletedAt: payload.authorDeletedAt };
 }
 
 export async function transUGCComments(
@@ -497,7 +551,7 @@ export async function transUGCComments(
         ? { sourceLang: sourceLangOrOptions }
         : sourceLangOrOptions;
 
-    const payload = await postJson<{ items?: UGCCommentTrans[] }>(
+    const payload = await postJson<{ items: UGCCommentTrans[] }>(
         `${UGC_API_BASE}/comments/translations`,
         {
             commentIds: normalizedIds,
@@ -508,7 +562,7 @@ export async function transUGCComments(
         !options?.cachedOnly,
     );
 
-    return payload.items ?? [];
+    return payload.items;
 }
 
 async function updateUGCImageAction(imageId: string, action: string): Promise<UGCImageActionPatch> {
@@ -523,13 +577,6 @@ async function updateUGCImageAction(imageId: string, action: string): Promise<UG
     }
 
     const payload = await response.json() as UGCImageActionResponse;
-    if (payload.image) {
-        const image = normalizeUGCImage(payload.image);
-        invalidateUGCImageCache(image.markerId);
-        invalidateUGCPublicImageCache(image.markerId);
-        invalidateUGCSubmissionCache(image.markerId);
-        return image;
-    }
 
     if (payload.ok !== true) {
         throw new UGCClientError('Image action response is invalid.', 'imageActionInvalidResponse');
@@ -538,7 +585,6 @@ async function updateUGCImageAction(imageId: string, action: string): Promise<UG
     const patch: UGCImageActionPatch = { id: imageId };
     if (Number.isFinite(payload.upvoteCount)) {
         patch.upvoteCount = Math.max(0, payload.upvoteCount as number);
-        patch.upvotes = patch.upvoteCount;
         patch.upvoted = action === 'upvote';
     }
     if (Number.isFinite(payload.flagCount)) {
@@ -546,13 +592,6 @@ async function updateUGCImageAction(imageId: string, action: string): Promise<UG
     }
     if (payload.status) {
         patch.status = payload.status;
-        patch.recallRequested = payload.status === 'remove_request';
-        if (payload.status === 'flagged') {
-            patch.flagged = true;
-        }
-        if (payload.status === 'active' && (action === 'unflag' || action === 'unrecall')) {
-            patch.flagged = false;
-        }
     }
     return patch;
 }
@@ -560,14 +599,7 @@ async function updateUGCImageAction(imageId: string, action: string): Promise<UG
 async function updateUGCCommentAction(commentId: string, action: string): Promise<UGCCommentActionPatch> {
     const payload = await postJson<UGCCommentActionResponse>(
         `${UGC_API_BASE}/comments/${encodeURIComponent(commentId)}/${action}`,
-        undefined,
     );
-
-    if (payload.comment) {
-        const comment = normalizeUGCComment(payload.comment);
-        invalidateUGCCommentCache(comment.markerId);
-        return comment;
-    }
 
     if (payload.ok !== true) {
         throw new UGCClientError('Comment action response is invalid.', 'commentActionInvalidResponse');
@@ -585,18 +617,6 @@ async function updateUGCCommentAction(commentId: string, action: string): Promis
     }
     if (payload.status) {
         patch.status = payload.status;
-        patch.recallRequested = payload.status === 'remove_request';
-        if (payload.status === 'flagged') {
-            patch.flagged = true;
-        }
-        if (payload.status === 'active' && action === 'unflag') {
-            patch.flagged = false;
-        }
-    }
-    if (payload.editReverted && typeof payload.content === 'string') {
-        patch.content = payload.content;
-        patch.editReverted = true;
-        patch.editUndoAvailable = false;
     }
     return patch;
 }
@@ -711,13 +731,40 @@ const queuePublicImages = createMarkerQueue<UGCImage>({
         expiresAt: Date.now() + (images.length ? PUBLIC_IMAGE_CACHE_POSITIVE_TTL_MS : IMAGE_CACHE_EMPTY_TTL_MS), images,
     }),
 });
-const queueComments = createMarkerQueue<UGCComment>({
-    read: (ids) => readMarkerBatch(`/comments?markerIds=${encodeURIComponent(ids.join(','))}&limit=20&replyLimit=10&scope=${batchScope}`),
-    normalize: normalizeUGCComment,
-    store: (markerId, comments) => commentCache.set(markerId, {
-        expiresAt: Date.now() + (comments.length ? COMMENT_CACHE_POSITIVE_TTL_MS : COMMENT_CACHE_EMPTY_TTL_MS), comments,
-    }),
-});
+// Each session gets its own in-flight deduplication. An old queued read must
+// neither use a new account's credentials nor populate its comment cache.
+let queueComments = createCommentQueue(commentAccountVersion);
+function createCommentQueue(version: number) {
+    const assertCurrent = () => {
+        if (useAuthStore.getState().sessionVersion !== version)
+            throw new UGCClientError(
+                'Session changed during comment read.',
+                'SESSION_CHANGED',
+            );
+    };
+    return createMarkerQueue<UGCCommentNode>({
+        read: async (ids) => {
+            assertCurrent();
+            const payload = await readMarkerBatch<UGCCommentNode>(
+                `/comments?markerIds=${encodeURIComponent(ids.join(','))}&limit=20&replyLimit=10&scope=${batchScope}`,
+            );
+            assertCurrent();
+            return payload;
+        },
+        normalize: (comment) => comment,
+        store: (markerId, comments) => {
+            assertCurrent();
+            commentCache.set(markerId, {
+                expiresAt:
+                    Date.now() +
+                    (comments.length
+                        ? COMMENT_CACHE_POSITIVE_TTL_MS
+                        : COMMENT_CACHE_EMPTY_TTL_MS),
+                comments,
+            });
+        },
+    });
+}
 const queueSubmissions = createMarkerQueue<UGCSubmissionImage>({
     read: async (ids) => {
         const { items } = await readMarkerBatch<UGCSubmissionImage>(`/images/mine?markerIds=${encodeURIComponent(ids.join(','))}&limit=6&scope=${batchScope}`);
@@ -745,37 +792,12 @@ function normalizeUGCImage(image: UGCImage): UGCImage {
     };
 }
 
-function normalizeUGCComment(comment: UGCComment): UGCComment {
-    const status = comment.status;
-    const rawAvatar = comment.author?.avatar;
-    const avatar = Number.isFinite(rawAvatar) ? Math.floor(rawAvatar as number) : undefined;
-    const author = comment.author
-        ? {
-            ...comment.author,
-            ...(avatar !== undefined && avatar >= 1 ? { avatar } : { avatar: undefined }),
-        }
-        : comment.author;
-
-    return {
-        ...comment,
-        author,
-        parentId: comment.parentId ?? null,
-        depth: Number.isFinite(comment.depth) ? Math.max(0, Math.trunc(comment.depth)) : 0,
-        score: Number.isFinite(comment.score) ? Math.trunc(comment.score) : 0,
-        viewerVote: comment.viewerVote === -1 || comment.viewerVote === 1 ? comment.viewerVote : comment.viewerVote === 0 ? 0 : undefined,
-        flagged: comment.flagged,
-        recallRequested: Boolean(comment.recallRequested || status === 'remove_request'),
-        replyCount: Number.isFinite(comment.replyCount) ? Math.max(0, Math.trunc(comment.replyCount)) : comment.replies?.length ?? 0,
-        replies: (comment.replies ?? []).map(normalizeUGCComment),
-    };
-}
-
 function normalizeUGCSubmissionImage(image: UGCSubmissionImage): UGCSubmissionImage {
     if (!import.meta.env.DEV) {
         return image;
     }
 
-    const filePath = image.filePath ?? extractObjectPathFromUrl(image.url);
+    const filePath = image.filePath;
     if (!filePath) {
         return image;
     }
@@ -783,12 +805,12 @@ function normalizeUGCSubmissionImage(image: UGCSubmissionImage): UGCSubmissionIm
     return {
         ...image,
         filePath,
-        url: `${UGC_API_BASE}/${isPendingUGCStatus(image.status) ? 'file' : 'public-file'}/${encodeObjectPath(filePath)}`,
+        url: `${UGC_API_BASE}/${usesPrivateImageFile(image.status) ? 'file' : 'public-file'}/${encodeObjectPath(filePath)}`,
     };
 }
 
-function isPendingUGCStatus(status: UGCSubmissionStatus | undefined): boolean {
-    return status === 'pending_openai' || status === 'pending_audit';
+function usesPrivateImageFile(status: UGCSubmissionStatus | undefined): boolean {
+    return status === 'pending_openai' || status === 'pending_audit' || status === 'stale';
 }
 
 function extractObjectPathFromUrl(rawUrl: string): string | null {

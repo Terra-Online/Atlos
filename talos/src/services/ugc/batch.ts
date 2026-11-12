@@ -36,34 +36,18 @@ export async function runUGCBatches<T>(
     await Promise.all(jobs);
 }
 
-export type MarkerBatchPayload<T> = {
-    items?: T[];
-    partial?: boolean;
-    failedMarkerIds?: string[];
-};
+export type MarkerBatchPayload<T> = { items: T[] } & (
+    | { partial: true; failedMarkerIds: string[] }
+    | { partial?: false; failedMarkerIds?: never }
+);
 
 export function failedBatchMarkers<T extends { markerId: string }>(
     payload: MarkerBatchPayload<T>,
     markerIds: string[],
 ): Set<string> {
-    if (
-        Array.isArray(payload.failedMarkerIds) &&
-        payload.failedMarkerIds.length > 0
-    ) {
-        return new Set(
-            payload.failedMarkerIds.filter(
-                (id) => typeof id === 'string' && markerIds.includes(id),
-            ),
-        );
-    }
-    // Older servers cannot identify failed markers. Nonempty results can still
-    // be shown, but absent items in a partial response must not become negatives.
-    const returned = new Set(
-        (payload.items ?? []).map((item) => item.markerId),
-    );
     return new Set(
-        payload.partial === true
-            ? markerIds.filter((id) => !returned.has(id))
+        payload.partial
+            ? payload.failedMarkerIds.filter((id) => markerIds.includes(id))
             : [],
     );
 }
@@ -93,7 +77,7 @@ export function createMarkerQueue<T extends { markerId: string }>(
             const payload = await options.read(markerIds);
             const failed = failedBatchMarkers(payload, markerIds);
             const grouped = new Map(markerIds.map((id) => [id, [] as T[]]));
-            (payload.items ?? []).map(options.normalize).forEach((item) => {
+            payload.items.map(options.normalize).forEach((item) => {
                 grouped.get(item.markerId)?.push(item);
             });
             requests.forEach(({ markerId, resolve, reject }) => {

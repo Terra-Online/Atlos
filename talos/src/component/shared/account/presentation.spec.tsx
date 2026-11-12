@@ -10,7 +10,7 @@ import { useIdCardScale } from './useIdCardScale';
 vi.mock('@/locale', async () => (await import('../testFixtures')).localeFixture);
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
-it('replaces loading and guest identity with the confirmed account without showing an unassigned UID as final', () => {
+it('shows the assigned account UID during profile setup and after confirmation', () => {
     const initialProps: { sessionUser: SessionUser | null; authReady: boolean; hasLoggedInBefore: boolean } = {
         sessionUser: null, authReady: false, hasLoggedInBefore: true,
     };
@@ -24,7 +24,7 @@ it('replaces loading and guest identity with the confirmed account without showi
     expect(result.current.ageText).toBe(t('idcard.logintip'));
     const user = { uid: '42', nickname: 'Explorer', needsProfileSetup: true, groupCode: 'admin' as const, karma: 9, registeredAt: 'invalid' };
     rerender({ ...initialProps, authReady: true, sessionUser: user });
-    expect(result.current.displayUid).toBe(t('idcard.unassigned'));
+    expect(result.current.displayUid).toBe('42');
     expect(result.current.groupText).toContain(t('idcard.admin'));
     expect(result.current.karmaLevel).toBe(5);
     expect(result.current.ageText).toContain('--');

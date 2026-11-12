@@ -1,8 +1,12 @@
+import { useReportSync } from '@/component/ugc/useReportSync';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { openOemAuthModal } from '@/component/shared/account/authEvents';
 import {
-    recallUGCImage,
+    deleteUGCImage,
+    invalidateUGCImageCache,
+    invalidateUGCPublicImageCache,
+    invalidateUGCSubmissionCache,
     toggleUGCImageFlag,
     toggleUGCImageUpvote,
     type UGCImageActionPatch,
@@ -11,8 +15,8 @@ import { getUpvoteCount, type PointImagesState } from '@/pages/uploader/useUGCPo
 import type { UploadState } from '@/pages/uploader/useUGCUpload';
 
 const TOGGLE_SYNC_DELAY_MS = 300;
-const RECALL_CONFIRM_MIN_DELAY_MS = 1_000;
-const RECALL_CONFIRM_EXPIRE_MS = 5_000;
+const DELETE_CONFIRM_MIN_DELAY_MS = 1_000;
+const DELETE_CONFIRM_EXPIRE_MS = 5_000;
 
 type ToggleTask = {
     desired: boolean;
@@ -39,26 +43,25 @@ const getToggleTask = (
 
 export type ImageActionsState = {
     actionPending: boolean;
-    recallConfirming: boolean;
-    cancelRecallConfirmation: () => void;
+    deleteConfirming: boolean;
+    cancelDeleteConfirmation: () => void;
     handleToggleUpvote: () => void;
     handleToggleFlag: () => void;
-    handleToggleRecall: () => Promise<void>;
+    handleDelete: () => Promise<void>;
 };
 
 const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadState): ImageActionsState => {
     const user = useAuthStore((state) => state.sessionUser);
+    const accountVersion = useAuthStore((state) => state.sessionVersion);
     const isAuthenticated = Boolean(user);
     const [actionPending, setActionPending] = useState(false);
-    const [recallConfirmation, setRecallConfirmation] = useState<{
+    const [deleteConfirmation, setDeleteConfirmation] = useState<{
         imageId: string;
         armedAt: number;
     } | null>(null);
-    const cancelRecallConfirmation = useCallback(() => setRecallConfirmation(null), []);
+    const cancelDeleteConfirmation = useCallback(() => setDeleteConfirmation(null), []);
     const upvoteTasksRef = useRef(new Map<string, ToggleTask>());
-    const flagTasksRef = useRef(new Map<string, ToggleTask>());
-    const sessionVersion = useAuthStore((state) => state.sessionVersion);
-    const scope = useMemo(() => ({ uid: user?.uid, pointId: imageState.target?.id, sessionVersion }), [user?.uid, imageState.target?.id, sessionVersion]);
+    const scope = useMemo(() => ({ uid: user?.uid, pointId: imageState.target?.id, sessionVersion: accountVersion }), [user?.uid, imageState.target?.id, accountVersion]);
     const currentScopeRef = useRef<typeof scope | null>(scope);
     currentScopeRef.current = scope;
     const isCurrent = useCallback(() => currentScopeRef.current === scope
@@ -116,7 +119,6 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
                         return {
                             ...image,
                             upvoted: task.lastSynced,
-                            upvotes: nextCount,
                             upvoteCount: nextCount,
                         };
                     });
@@ -131,81 +133,51 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         }, TOGGLE_SYNC_DELAY_MS);
     }, [applyServerImage, isCurrent, patchImageById]);
 
-    const scheduleFlagSync = useCallback((imageId: string) => {
-        const task = flagTasksRef.current.get(imageId);
-        if (!task) return;
-        if (task.timer) {
-            window.clearTimeout(task.timer);
-        }
-        task.timer = window.setTimeout(() => {
-            task.timer = undefined;
-            if (!isCurrent()) return;
-            if (task.inFlight) return;
-            if (task.desired === task.lastSynced) return;
-
-            const sentState = task.desired;
-            task.inFlight = true;
-            void toggleUGCImageFlag(imageId, sentState)
-                .then((serverImage: UGCImageActionPatch) => {
-                    if (flagTasksRef.current.get(imageId) !== task || !isCurrent()) return;
-                    task.lastSynced = sentState;
-                    if (task.desired === sentState) {
-                        applyServerImage(serverImage);
-                    }
-                })
-                .catch(() => {
-                    if (flagTasksRef.current.get(imageId) !== task || !isCurrent()) return;
-                    if (task.desired !== sentState) return;
-                    task.desired = task.lastSynced;
-                    patchImageById(imageId, (image) => ({
-                        ...image,
-                        flagged: task.lastSynced,
-                        status: task.lastSynced ? 'flagged' : image.status === 'flagged' ? 'active' : image.status,
-                    }));
-                })
-                .finally(() => {
-                    if (flagTasksRef.current.get(imageId) !== task || !isCurrent()) return;
-                    task.inFlight = false;
-                    if (task.desired !== task.lastSynced) {
-                        scheduleFlagSync(imageId);
-                    }
-                });
-        }, TOGGLE_SYNC_DELAY_MS);
-    }, [applyServerImage, isCurrent, patchImageById]);
+    const { start: syncFlag } = useReportSync({
+        scope: `${active?.markerId ?? ''}:${accountVersion}`,
+        delay: TOGGLE_SYNC_DELAY_MS,
+        send: (target, desired) => toggleUGCImageFlag(target.id, desired),
+        apply: (target, patch) => patchImageById(target.id, (image) => ({
+            ...image,
+            ...patch,
+            status: image.status === 'active' || image.status === 'flagged' ? patch.status ?? image.status : image.status,
+        })),
+        rollback: (target, original) => patchImageById(target.id, (image) => ({
+            ...image,
+            flagged: original.flagged,
+            status: image.status === 'active' || image.status === 'flagged' ? original.status : image.status,
+        })),
+    });
 
     useEffect(() => {
         currentScopeRef.current = scope;
         setActionPending(false);
-        cancelRecallConfirmation();
-        const upvotes = upvoteTasksRef.current, flags = flagTasksRef.current;
+        cancelDeleteConfirmation();
+        const upvotes = upvoteTasksRef.current;
         return () => {
             if (currentScopeRef.current === scope) currentScopeRef.current = null;
-            // A queued action must not be sent with the next account's credentials.
-            // Removing its task also invalidates already in-flight completions.
-            for (const tasks of [upvotes, flags]) {
-                tasks.forEach((task) => { if (task.timer) window.clearTimeout(task.timer); });
-                tasks.clear();
-            }
+            upvotes.forEach((task) => { if (task.timer) window.clearTimeout(task.timer); });
+            upvotes.clear();
         };
-    }, [scope, cancelRecallConfirmation]);
+    }, [scope, cancelDeleteConfirmation]);
 
     useEffect(() => {
-        cancelRecallConfirmation();
-    }, [active?.id, cancelRecallConfirmation]);
+        cancelDeleteConfirmation();
+    }, [active?.id, cancelDeleteConfirmation]);
 
     useEffect(() => {
-        if (!viewerOpen) cancelRecallConfirmation();
-    }, [cancelRecallConfirmation, viewerOpen]);
+        if (!viewerOpen) cancelDeleteConfirmation();
+    }, [cancelDeleteConfirmation, viewerOpen]);
 
     useEffect(() => {
-        if (!recallConfirmation) return undefined;
-        const remaining = RECALL_CONFIRM_EXPIRE_MS - (Date.now() - recallConfirmation.armedAt);
+        if (!deleteConfirmation) return undefined;
+        const remaining = DELETE_CONFIRM_EXPIRE_MS - (Date.now() - deleteConfirmation.armedAt);
         const timer = window.setTimeout(
-            () => setRecallConfirmation(null),
+            () => setDeleteConfirmation(null),
             Math.max(0, remaining),
         );
         return () => window.clearTimeout(timer);
-    }, [recallConfirmation]);
+    }, [deleteConfirmation]);
 
     const handleToggleUpvote = useCallback(() => {
         if (!active || !isCurrent()) return;
@@ -219,7 +191,6 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         patchImageById(imageId, (image) => ({
             ...image,
             upvoted: nextUpvoted,
-            upvotes: Math.max(0, getUpvoteCount(image) + delta),
             upvoteCount: Math.max(0, getUpvoteCount(image) + delta),
         }));
         const task = getToggleTask(upvoteTasksRef.current, imageId, Boolean(active.upvoted));
@@ -240,24 +211,22 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
             flagged: nextFlagged,
             status: nextFlagged ? 'flagged' : image.status === 'flagged' ? 'active' : image.status,
         }));
-        const task = getToggleTask(flagTasksRef.current, imageId, Boolean(active.flagged));
-        task.desired = nextFlagged;
-        scheduleFlagSync(imageId);
-    }, [active, isAuthenticated, isCurrent, isOwnActive, patchImageById, scheduleFlagSync]);
+        syncFlag({ id: imageId }, { flagged: Boolean(active.flagged), status: active.status }, nextFlagged);
+    }, [active, isAuthenticated, isCurrent, isOwnActive, patchImageById, syncFlag]);
 
-    const handleToggleRecall = useCallback(async () => {
+    const handleDelete = useCallback(async () => {
         if (!active || actionPending || !isOwnActive || !isCurrent()) return;
         if (!isAuthenticated) {
             openOemAuthModal('login');
             return;
         }
         const now = Date.now();
-        if (recallConfirmation?.imageId !== active.id) {
-            setRecallConfirmation({ imageId: active.id, armedAt: now });
+        if (deleteConfirmation?.imageId !== active.id) {
+            setDeleteConfirmation({ imageId: active.id, armedAt: now });
             return;
         }
-        if (now - recallConfirmation.armedAt < RECALL_CONFIRM_MIN_DELAY_MS) return;
-        setRecallConfirmation(null);
+        if (now - deleteConfirmation.armedAt < DELETE_CONFIRM_MIN_DELAY_MS) return;
+        setDeleteConfirmation(null);
 
         const previousSubmission = lastSubmission;
         const previousImages = images;
@@ -273,7 +242,10 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         setViewerOpen(false);
         setActionPending(true);
         try {
-            await recallUGCImage(active.id);
+            await deleteUGCImage(active.id);
+            invalidateUGCImageCache(active.markerId);
+            invalidateUGCPublicImageCache(active.markerId);
+            invalidateUGCSubmissionCache(active.markerId);
         } catch {
             if (!isCurrent()) return;
             setLastSubmission(previousSubmission);
@@ -285,15 +257,15 @@ const useUGCImageActions = (imageState: PointImagesState, uploadState: UploadSta
         } finally {
             if (isCurrent()) setActionPending(false);
         }
-    }, [actionPending, active, images, isAuthenticated, isCurrent, isOwnActive, lastSubmission, myImages, recallConfirmation, requestedImage, selectedImageId, setImages, setLastSubmission, setMyImages, setRequestedImage, setSelectedImageId, setViewerOpen, viewerOpen]);
+    }, [actionPending, active, images, isAuthenticated, isCurrent, isOwnActive, lastSubmission, myImages, deleteConfirmation, requestedImage, selectedImageId, setImages, setLastSubmission, setMyImages, setRequestedImage, setSelectedImageId, setViewerOpen, viewerOpen]);
 
     return {
         actionPending,
-        recallConfirming: Boolean(active && recallConfirmation?.imageId === active.id),
-        cancelRecallConfirmation,
+        deleteConfirming: Boolean(active && deleteConfirmation?.imageId === active.id),
+        cancelDeleteConfirmation,
         handleToggleUpvote,
         handleToggleFlag,
-        handleToggleRecall,
+        handleDelete,
     };
 };
 

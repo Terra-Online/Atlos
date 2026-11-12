@@ -42,11 +42,7 @@ const PREVIEW_FETCH_DELAY_MS = 80;
 const PREVIEW_BATCH_SIZE = 10;
 
 const getPreviewUpvoteCount = (image: UGCImage): number => (
-    Number.isFinite(image.upvotes)
-        ? Math.max(0, image.upvotes as number)
-        : Number.isFinite(image.upvoteCount)
-            ? Math.max(0, image.upvoteCount as number)
-            : 0
+    Number.isFinite(image.upvoteCount) ? Math.max(0, image.upvoteCount as number) : 0
 );
 
 const getPreviewCreatedAtTime = (image: UGCImage): number => {

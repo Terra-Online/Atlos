@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/store/auth';
 import type { IMarkerData } from '@/data/marker';
 import type { SessionUser } from '@/services/auth';
 import {
@@ -5,6 +6,7 @@ import {
     submitUGCComment,
     UGCClientError,
     type UGCComment,
+    type UGCCommentNode,
 } from '@/services/ugc/client';
 import {
     LOCAL_PENDING_COMMENT_PREFIX,
@@ -48,6 +50,16 @@ const submissionTasks = new Map<string, CommentSubmissionTask[]>();
 const submissionSnapshots = new Map<string, CommentSubmissionSnapshot>();
 const submissionErrors = new Map<string, CommentSubmissionError>();
 const submissionListeners = new Set<() => void>();
+// This cache survives point navigation, but its private overlay belongs to the
+// current account. Completed network reads are isolated separately in client.ts.
+useAuthStore.subscribe((state, previous) => {
+    if (state.sessionUser?.uid === previous.sessionUser?.uid) return;
+    submissionTasks.clear();
+    submissionSnapshots.clear();
+    submissionErrors.clear();
+    submissionListeners.forEach(listener => listener());
+});
+
 let nextLocalCommentId = 1;
 let nextSubmissionErrorId = 1;
 
@@ -68,15 +80,15 @@ export const getCommentSubmissionSnapshot = (markerId: string): CommentSubmissio
 };
 
 export const mergeCommentSubmissions = (
-    comments: UGCComment[],
+    comments: UGCCommentNode[],
     snapshot: CommentSubmissionSnapshot,
-): UGCComment[] => (
+): UGCCommentNode[] => (
     snapshot.comments.reduce((current, comment) => (
         hasComment(current, comment.id) ? current : appendItem(current, comment)
     ), comments)
 );
 
-export const syncCommentSubmissions = (markerId: string, serverComments: UGCComment[]): void => {
+export const syncCommentSubmissions = (markerId: string, serverComments: UGCCommentNode[]): void => {
     const tasks = submissionTasks.get(markerId);
     if (!tasks?.length) return;
 
@@ -224,7 +236,7 @@ const removeSubmissionTask = (markerId: string, localId: string): void => {
     }
 };
 
-const hasComment = (comments: UGCComment[], commentId: string): boolean => (
+const hasComment = (comments: UGCCommentNode[], commentId: string): boolean => (
     comments.some((comment) => (
         comment.id === commentId || hasComment(comment.replies, commentId)
     ))

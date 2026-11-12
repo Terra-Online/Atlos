@@ -17,7 +17,7 @@ const setup = (initial = '') => {
         return createElement(CommentEditor, {
             ref, value, onChange, maxLength: 500, placeholder: 'Comment', disabled: false,
             editorElementRef: createRef<HTMLDivElement>(), onEditorReady: () => {},
-            onKeyDown: () => {}, onSubmit,
+            onKeyDown: () => {}, onSubmit: () => { onSubmit(ref.current?.getValue()); },
         });
     };
     render(createElement(Harness));
@@ -67,7 +67,7 @@ it('preserves an over-limit paste, shows the count, and allows submission after 
     expect(input.lastElementChild?.getAttribute('data-comment-length')).toBe('(500/500)');
     expect(input.hasAttribute('data-over-limit')).toBe(false);
     fireEvent.keyDown(input, { key: 'Enter' });
-    expect(onSubmit).toHaveBeenCalledOnce();
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith('a'.repeat(500));
 });
 
 it('caps editor input at 550 while keeping the 500-character submit limit', async () => {
@@ -125,7 +125,7 @@ it('counts each custom emoji as two characters for the limit, highlighting and s
     expect(input.hasAttribute('data-over-limit')).toBe(false);
     act(() => ref.current?.focusEnd());
     fireEvent.keyDown(input, { key: 'Enter' });
-    expect(onSubmit).toHaveBeenCalledOnce();
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith(`${'a'.repeat(498)}:sns_001:`);
     act(() => ref.current?.insertEmoji('002'));
     await waitFor(() => expect(input.lastElementChild?.getAttribute('data-comment-length')).toBe('(502/500)'));
     expect(input.hasAttribute('data-over-limit')).toBe(true);

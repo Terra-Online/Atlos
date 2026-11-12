@@ -43,7 +43,6 @@
       "pending_audit": "Oczekuje na ręczną weryfikację",
       "active": "Publiczne",
       "flagged": "Oznaczone",
-      "remove_request": "Zgłoszono do usunięcia",
       "stale": "Niedostępne"
     },
     "contentHint": "Przeglądaj swoje materiały i stan ich weryfikacji.",

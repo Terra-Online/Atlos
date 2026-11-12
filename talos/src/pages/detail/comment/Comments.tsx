@@ -8,6 +8,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState, useSync
 import classNames from 'classnames';
 import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
 import styles from '@/pages/detail/comment/comments.module.scss';
+import CommentPlaceholder from './CommentPlaceholder';
 import { openOemAuthModal } from '@/component/shared/account/authEvents';
 import { useAuthStore } from '@/store/auth';
 import { useLocale, useTranslateUI } from '@/locale';
@@ -16,8 +17,12 @@ import { docsLink, linkTpl } from '@/lib/i18n/docsLink';
 import type { IMarkerData } from '@/data/marker';
 import {
     editUGCComment,
+    toggleUGCCommentFlag,
+    invalidateUGCCommentCache,
+    UGCClientError,
     listUGCComments,
     type UGCComment,
+    type UGCCommentNode,
     type UGCCommentVoteValue,
 } from '@/services/ugc/client';
 import ActionBar, { type ActionBarItem } from '@/component/actionBar/ActionBar';
@@ -57,9 +62,10 @@ import {
     statusLabel,
     transNote,
 } from '@/pages/detail/comment/commentsUtils';
-import { useFlagSync, useVoteSync } from '@/pages/detail/comment/useActionSync';
+import { useVoteSync } from '@/pages/detail/comment/useActionSync';
 import { useInputLayout } from '@/pages/detail/comment/useInputLayout';
-import { useRecall } from '@/pages/detail/comment/useRecall';
+import { useDeleteComment } from '@/pages/detail/comment/useDeleteComment';
+import { useReportSync } from '@/component/ugc/useReportSync';
 import { useReplyQuote } from '@/pages/detail/comment/useReplyQuote';
 import { useTrans } from '@/pages/detail/comment/useTrans';
 import { useAutoTrans } from '@/pages/detail/comment/useAutoTrans';
@@ -78,8 +84,8 @@ type Props = {
 const COMMENT_MAX_LENGTH = 500;
 const COMMENT_TOGGLE_SYNC_DELAY_MS = 300;
 const COMMENT_REPLY_QUOTE_TRANSITION_MS = 180;
-const RECALL_CONFIRM_MIN_DELAY_MS = 1_000;
-const RECALL_CONFIRM_EXPIRE_MS = 5_000;
+const DELETE_CONFIRM_MIN_DELAY_MS = 1_000;
+const DELETE_CONFIRM_EXPIRE_MS = 5_000;
 const COMMENT_EMOJI_HOVER_DELAY_MS = 200;
 const COMMENT_EMOJI_CLOSE_DELAY_MS = 120;
 const COMMENT_EMOJI_ANIMATION_MS = 180;
@@ -159,12 +165,11 @@ type CommentItemProps = {
     canEditOthers: boolean;
     canInteract: boolean;
     actionPending: boolean;
-    isEditing: boolean;
-    recallConfirming: boolean;
+    deleteConfirming: boolean;
     onVote: (comment: UGCComment, value: 1 | -1) => void;
     onFlag: (comment: UGCComment) => void;
     onEdit: (comment: UGCComment) => void;
-    onRecall: (comment: UGCComment) => void;
+    onDelete: (comment: UGCComment) => void;
     onTranslate: (comment: UGCComment) => void;
     onReply: (comment: UGCComment) => void;
     onToolbarDismiss: () => void;
@@ -179,19 +184,18 @@ const CommentItem = memo(({
     canEditOthers,
     canInteract,
     actionPending,
-    isEditing,
-    recallConfirming,
+    deleteConfirming,
     onVote,
     onFlag,
     onEdit,
-    onRecall,
+    onDelete,
     onTranslate,
     onReply,
     onToolbarDismiss,
 }: CommentItemProps) => {
     const tUI = useTranslateUI();
     const canModerate = isVisible(comment.status);
-    const canEdit = canModerate || isReviewing(comment.status);
+    const canEdit = Boolean(comment.snapshotId) && (comment.status === 'active' || comment.status === 'flagged');
     const translationVisible = isTransShown(comment);
     const { copyPointShareUrl, copiedPopupVisible } = usePointShareLink(point, { content: { kind: 'comment', id: comment.id } });
     const actions = useMemo<ActionBarItem[]>(() => {
@@ -246,18 +250,15 @@ const CommentItem = memo(({
 
         if (isOwn) {
             items.push({
-                id: 'recall',
-                label: tUI(recallConfirming
+                id: 'delete',
+                label: tUI(deleteConfirming
                     ? 'common.confirmAgain'
-                    : (isEditing || comment.editUndoAvailable
-                        ? 'detail.comments.undoEdit'
-                        : 'detail.comments.recall')),
+                    : 'common.delete'),
                 icon: <RecallIcon />,
-                active: Boolean(comment.recallRequested || comment.status === 'remove_request'),
-                confirming: recallConfirming,
-                tooltipKey: `recall:${recallConfirming ? 'confirm' : 'idle'}:${comment.id}`,
-                disabled: !canInteract || actionPending || comment.status === 'stale',
-                onClick: () => onRecall(comment),
+                confirming: deleteConfirming,
+                tooltipKey: `delete:${deleteConfirming ? 'confirm' : 'idle'}:${comment.id}`,
+                disabled: !canInteract || actionPending,
+                onClick: () => onDelete(comment),
             });
         }
 
@@ -288,12 +289,11 @@ const CommentItem = memo(({
         canModerate,
         canEditOthers,
         comment,
-        isEditing,
         isOwn,
-        recallConfirming,
+        deleteConfirming,
         onFlag,
         onEdit,
-        onRecall,
+        onDelete,
         onReply,
         onTranslate,
         onVote,
@@ -326,13 +326,15 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
     const tUI = useTranslateUI();
     const locale = useLocale();
     const user = useAuthStore((state) => state.sessionUser);
+    const accountVersion = useAuthStore((state) => state.sessionVersion);
     const userUid = user?.uid;
+    const ownerVersion = useAuthStore((state) => state.sessionOwnerVersion);
     const isAuthenticated = Boolean(user);
-    const [comments, setComments] = useState<UGCComment[]>([]);
+    const [comments, setComments] = useState<UGCCommentNode[]>([]);
     const [loading, setLoading] = useState(true);
     const [inputValue, setInputValue] = useState('');
     const [editTarget, setEditTarget] = useState<UGCComment | null>(null);
-    const [recallConfirmation, setRecallConfirmation] = useState<{
+    const [deleteConfirmation, setDeleteConfirmation] = useState<{
         key: string;
         armedAt: number;
     } | null>(null);
@@ -340,7 +342,7 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
     const [error, setError] = useState('');
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
     const { present: emojiPickerMounted, visible: emojiPickerVisible } = usePresence({ open: emojiPickerOpen, exitDuration: COMMENT_EMOJI_ANIMATION_MS, ownerDocument });
-    const clearRecallConfirmation = useCallback(() => setRecallConfirmation(null), []);
+    const clearDeleteConfirmation = useCallback(() => setDeleteConfirmation(null), []);
     const inputRef = useRef<CommentEditorHandle | null>(null);
     const inputSurfaceRef = useRef<HTMLDivElement | null>(null);
     const inputBarRef = useRef<HTMLDivElement | null>(null);
@@ -432,8 +434,29 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
         return false;
     }, [isAuthenticated]);
 
+    // Each mounted point/session lifetime has its own token, including A → B → A.
+    const editScopeRef = useRef<object | null>(null);
+    useEffect(() => {
+        editScopeRef.current = {};
+        return () => { editScopeRef.current = null; };
+    }, [point.id, ownerVersion]);
+
     const { start: syncVote, clear: clearVote } = useVoteSync(COMMENT_TOGGLE_SYNC_DELAY_MS, patchComment);
-    const { start: syncFlag, clear: clearFlag } = useFlagSync(COMMENT_TOGGLE_SYNC_DELAY_MS, patchComment);
+    const { start: syncFlag, clear: clearFlag } = useReportSync({
+        scope: `${point.id}:${accountVersion}`,
+        delay: COMMENT_TOGGLE_SYNC_DELAY_MS,
+        send: (target, desired) => toggleUGCCommentFlag(target.id, desired),
+        apply: (target, patch) => patchComment(target.id, (item) => ({
+            ...item,
+            ...patch,
+            status: isVisible(item.status) ? patch.status ?? item.status : item.status,
+        })),
+        rollback: (target, original) => patchComment(target.id, (item) => ({
+            ...item,
+            flagged: original.flagged,
+            status: isVisible(item.status) ? original.status : item.status,
+        })),
+    });
     const clearSync = useCallback((commentIds: Set<string>) => {
         clearVote(commentIds);
         clearFlag(commentIds);
@@ -470,7 +493,7 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
         setReply: setReplyTarget,
         setRendered: setRenderedReply,
     });
-    const recallComment = useRecall({
+    const deleteComment = useDeleteComment({
         markerId: point.id,
         comments,
         busyIds: actionPendingIds,
@@ -518,27 +541,30 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
         return () => {
             disposed = true;
         };
-    }, [point.id]);
+    }, [point.id, accountVersion]);
 
     useEffect(() => {
         clearReply();
+        setRenderedReply(null);
         setEditTarget(null);
         setInputValue('');
-        setRecallConfirmation(null);
+        setError('');
+        setActionPendingIds(new Set());
+        setDeleteConfirmation(null);
         closeEmojiPicker();
-    }, [clearReply, closeEmojiPicker, point.id]);
+    }, [ownerVersion, clearReply, closeEmojiPicker, point.id, setRenderedReply]);
 
     useEffect(() => () => clearEmojiTimers(), [clearEmojiTimers]);
 
     useEffect(() => {
-        if (!recallConfirmation) return undefined;
-        const remaining = RECALL_CONFIRM_EXPIRE_MS - (Date.now() - recallConfirmation.armedAt);
+        if (!deleteConfirmation) return undefined;
+        const remaining = DELETE_CONFIRM_EXPIRE_MS - (Date.now() - deleteConfirmation.armedAt);
         const timer = window.setTimeout(
-            () => setRecallConfirmation(null),
+            () => setDeleteConfirmation(null),
             Math.max(0, remaining),
         );
         return () => window.clearTimeout(timer);
-    }, [recallConfirmation]);
+    }, [deleteConfirmation]);
 
     useEffect(() => {
         const lastError = submissionSnapshot.lastError;
@@ -558,8 +584,10 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
     }, [setReplyTarget]);
 
     const handleEdit = useCallback((comment: UGCComment) => {
+        if (!comment.snapshotId || (comment.status !== 'active' && comment.status !== 'flagged')) return;
         clearReply();
-        setEditTarget(comment);
+        // Keep the displayed immutable version as the baseline for this editor session.
+        setEditTarget({ ...comment });
         setInputValue(comment.content);
         window.requestAnimationFrame(() => {
             inputRef.current?.focusEnd();
@@ -571,42 +599,43 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
         inputRef.current?.insertEmoji(id);
     }, [inputDisabled]);
 
-    const executeRecall = useCallback((comment: UGCComment) => {
+    const executeDelete = useCallback((comment: UGCComment) => {
         if (editTarget?.id === comment.id) {
             setEditTarget(null);
             setInputValue('');
-            return;
         }
-        recallComment(comment);
-    }, [editTarget, recallComment]);
+        deleteComment(comment);
+    }, [editTarget, deleteComment]);
 
-    const handleRecall = useCallback((comment: UGCComment) => {
-        const mode = editTarget?.id === comment.id || comment.editUndoAvailable ? 'undo' : 'recall';
-        const key = `${comment.id}:${mode}`;
+    const handleDelete = useCallback((comment: UGCComment) => {
+        const key = comment.id;
         const now = Date.now();
-        if (recallConfirmation?.key !== key) {
-            setRecallConfirmation({ key, armedAt: now });
+        if (deleteConfirmation?.key !== key) {
+            setDeleteConfirmation({ key, armedAt: now });
             return;
         }
-        if (now - recallConfirmation.armedAt < RECALL_CONFIRM_MIN_DELAY_MS) return;
+        if (now - deleteConfirmation.armedAt < DELETE_CONFIRM_MIN_DELAY_MS) return;
 
-        setRecallConfirmation(null);
-        executeRecall(comment);
-    }, [editTarget, executeRecall, recallConfirmation]);
+        setDeleteConfirmation(null);
+        executeDelete(comment);
+    }, [executeDelete, deleteConfirmation]);
 
     const handleSubmit = useCallback(async () => {
-        const content = inputValue.trim();
-        if (!content || getCommentLength(inputValue) > COMMENT_MAX_LENGTH) return;
+        // Lexical can commit visible text before React echoes onChange into inputValue.
+        const source = inputRef.current?.getValue() ?? inputValue;
+        const content = source.trim();
+        if (!content || getCommentLength(source) > COMMENT_MAX_LENGTH) return;
         if (!requireAuth()) return;
 
         setError('');
         if (editTarget) {
-            if (content === editTarget.content) {
-                setEditTarget(null);
-                setInputValue('');
-                return;
-            }
+            if (!editTarget.snapshotId) return;
 
+            const scope = editScopeRef.current;
+            const sessionVersion = useAuthStore.getState().sessionVersion;
+            const current = () => scope !== null
+                && editScopeRef.current === scope
+                && useAuthStore.getState().sessionVersion === sessionVersion;
             const previousComments = comments;
             const pendingComment: UGCComment = {
                 ...editTarget,
@@ -616,35 +645,78 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
                 translationTargetLanguage: undefined,
                 translationHidden: undefined,
                 translationStatus: undefined,
-                flagged: false,
-                recallRequested: false,
+                // A local draft has no server version until the append commits.
+                snapshotId: undefined,
                 status: 'pending_openai',
-                editUndoAvailable: true,
             };
-            const previousSubmission = removeCommentSubmission(point.id, editTarget.id);
+            const previousSubmission = removeCommentSubmission(
+                point.id,
+                editTarget.id,
+            );
             restoreCommentSubmission(point.id, pendingComment);
-            patchComment(editTarget.id, () => pendingComment);
+            patchComment(editTarget.id, (current) => ({
+                ...pendingComment,
+                replies: current.replies,
+                replyCount: current.replyCount,
+                score: current.score,
+                viewerVote: current.viewerVote,
+            }));
             setCommentActionPending(editTarget.id, true);
             setEditTarget(null);
             setInputValue('');
             try {
-                const submission = await editUGCComment(editTarget.id, content);
+                const submission = await editUGCComment(
+                    editTarget.id,
+                    content,
+                    editTarget.snapshotId,
+                );
+                if (!current()) return;
                 removeCommentSubmission(point.id, editTarget.id);
-                restoreCommentSubmission(point.id, {
+                const committed = {
                     ...pendingComment,
+                    snapshotId: submission.snapshotId,
                     status: submission.status,
-                });
-            } catch {
+                };
+                restoreCommentSubmission(point.id, committed);
+                patchComment(editTarget.id, (current) => ({
+                    ...current,
+                    ...committed,
+                    replies: current.replies,
+                    replyCount: current.replyCount,
+                    score: current.score,
+                    viewerVote: current.viewerVote,
+                }));
+            } catch (error) {
+                if (!current()) return;
                 removeCommentSubmission(point.id, editTarget.id);
                 if (previousSubmission) {
                     restoreCommentSubmission(point.id, previousSubmission);
                 }
                 setComments(previousComments);
-                setEditTarget(editTarget);
-                setInputValue(content);
-                setError(tUI('detail.comments.editFailed'));
+                if (error instanceof UGCClientError && error.status === 409) {
+                    // A conflict ends this edit session. Reopening captures a new baseline;
+                    // never replay this draft over a version the author has not seen.
+                    setEditTarget(null);
+                    setInputValue('');
+                    removeCommentSubmission(point.id, editTarget.id);
+                    invalidateUGCCommentCache(point.id);
+                    setError(tUI('detail.comments.editConflict'));
+                    try {
+                        const refreshed = await listUGCComments(point.id);
+                        if (!current()) return;
+                        syncCommentSubmissions(point.id, refreshed);
+                        setComments(refreshed);
+                    } catch {
+                        if (!current()) return;
+                        setError(tUI('detail.comments.editConflictRefreshFailed'));
+                    }
+                } else {
+                    setEditTarget(editTarget);
+                    setInputValue(content);
+                    setError(tUI('detail.comments.editFailed'));
+                }
             } finally {
-                setCommentActionPending(editTarget.id, false);
+                if (current()) setCommentActionPending(editTarget.id, false);
             }
             return;
         }
@@ -652,7 +724,19 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
         submitCommentOptimistic(point, content, replyTarget, user);
         setInputValue('');
         clearReply();
-    }, [clearReply, comments, editTarget, inputValue, patchComment, point, replyTarget, requireAuth, setCommentActionPending, tUI, user]);
+    }, [
+        clearReply,
+        comments,
+        editTarget,
+        inputValue,
+        patchComment,
+        point,
+        replyTarget,
+        requireAuth,
+        setCommentActionPending,
+        tUI,
+        user,
+    ]);
 
     const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
         if (
@@ -690,7 +774,7 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
             flagged: nextFlagged,
             status: nextFlagged ? 'flagged' : item.status === 'flagged' ? 'active' : item.status,
         }));
-        syncFlag(comment.id, Boolean(comment.flagged), nextFlagged);
+        syncFlag({ id: comment.id }, { flagged: Boolean(comment.flagged), status: comment.status }, nextFlagged);
     }, [patchComment, requireAuth, syncFlag]);
 
     const ruleUrl = useMemo(() => docsLink(locale, 'communityGuidelines'), [locale]);
@@ -721,7 +805,9 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
                 onScroll={updateBlur}
             >
                 {displayComments.map(({ comment, displayDepth }) => (
-                    <CommentItem
+                    comment.type === 'placeholder' ? (
+                        <CommentPlaceholder key={comment.id} comment={comment} displayDepth={displayDepth} highlighted={highlightedId === comment.id} />
+                    ) : <CommentItem
                         point={point}
                         highlighted={highlightedId === comment.id}
                         key={comment.id}
@@ -731,17 +817,14 @@ const CommentsPanel = ({ point, pointName, active = true }: Props) => {
                         canEditOthers={canEditOthers}
                         canInteract={active}
                         actionPending={actionPendingIds.has(comment.id) || submittingCommentIds.has(comment.id)}
-                        isEditing={editTarget?.id === comment.id}
-                        recallConfirming={recallConfirmation?.key === `${comment.id}:${
-                            editTarget?.id === comment.id || comment.editUndoAvailable ? 'undo' : 'recall'
-                        }`}
+                        deleteConfirming={deleteConfirmation?.key === comment.id}
                         onVote={handleVote}
                         onFlag={handleFlag}
                         onEdit={handleEdit}
-                        onRecall={handleRecall}
+                        onDelete={handleDelete}
                         onTranslate={handleTranslate}
                         onReply={handleReply}
-                        onToolbarDismiss={clearRecallConfirmation}
+                        onToolbarDismiss={clearDeleteConfirmation}
                     />
                 ))}
                 {loading && comments.length === 0 && (

@@ -13,8 +13,8 @@ import first from './first.svg?url';
 import second from './second.svg?url';
 
 const images: UGCImage[] = [
-    { id: 'first', markerId: 'fixture', url: first, content: 'First fixture image', createdAt: '2026-05-21T03:28:31Z', author: { nickname: 'First author', publicUid: 'F-001' }, upvotes: 3 },
-    { id: 'second', markerId: 'fixture', url: second, content: 'Second fixture image', createdAt: '2026-05-22T03:28:31Z', author: { nickname: 'Second author', publicUid: 'F-002' }, upvotes: 7 },
+    { id: 'first', markerId: 'fixture', url: first, content: 'First fixture image', createdAt: '2026-05-21T03:28:31Z', author: { nickname: 'First author', publicUid: 'F-001' }, upvoteCount: 3 },
+    { id: 'second', markerId: 'fixture', url: second, content: 'Second fixture image', createdAt: '2026-05-22T03:28:31Z', author: { nickname: 'Second author', publicUid: 'F-002' }, upvoteCount: 7 },
 ];
 
 export default function Components() {

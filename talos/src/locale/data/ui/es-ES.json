@@ -64,11 +64,10 @@
       "flag": "Marcar como inexacto",
       "unflag": "Quitar marca",
       "uploadAno": "Subir otra",
-      "share": "Compartir",
-      "recall": "Solicitar retirada",
-      "unrecall": "Cancelar retirada"
+      "share": "Compartir"
     },
     "comments": {
+      "unavailable": "Comentario no disponible.",
       "copyLink": "Copiar enlace del comentario",
       "emojiPicker": "Elegir un emoji",
       "spoilerHidden": "Haz clic para ver el contenido con spoilers",
@@ -86,14 +85,14 @@
       "reply": "Responder",
       "edit": "Editar",
       "submitEdit": "Guardar cambios",
-      "undoEdit": "Deshacer cambios",
-      "recall": "Ocultar ahora",
       "reviewing": "En revisión",
       "emptyWithRule": "Aún no hay comentarios. Al publicar, sigue las <a href=\"{link}\">normas de la comunidad</a>.",
       "ruleOnly": "Al publicar, sigue las <a href=\"{link}\">normas de la comunidad</a>.",
       "loadFailed": "No se pudieron cargar los comentarios.",
       "submitFailed": "No se pudo publicar el comentario.",
-      "editFailed": "No se pudo actualizar el comentario."
+      "editFailed": "No se pudo actualizar el comentario.",
+      "editConflict": "El comentario cambió o ya no se puede editar. Revísalo y vuelve a abrir el editor.",
+      "editConflictRefreshFailed": "El comentario cambió. Recarga antes de editarlo."
     },
     "errors": {
       "unsupportedType": "Solo se admiten imágenes JPEG/PNG/WebP/AVIF/HEIC.",
@@ -498,6 +497,7 @@
     "close": "Cerrar",
     "skip": "Omitir",
     "clear": "Borrar",
+    "delete": "Eliminar",
     "all": "Todo",
     "selected": "Seleccionado",
     "confirm": "Confirmar",

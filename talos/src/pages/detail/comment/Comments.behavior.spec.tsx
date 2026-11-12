@@ -8,7 +8,7 @@ import type { UGCComment, UGCCommentSubmission } from '@/services/ugc/client';
 import { installResizeObserver } from '../../../../test-support/browser';
 import { deferred } from '../../../../test-support/pages';
 
-const api = vi.hoisted(() => ({ t: (key: string) => key, list: vi.fn(), submit: vi.fn(), edit: vi.fn(), vote: vi.fn(), flag: vi.fn(), recall: vi.fn(), auth: vi.fn() }));
+const api = vi.hoisted(() => ({ t: (key: string) => key, list: vi.fn(), submit: vi.fn(), edit: vi.fn(), vote: vi.fn(), flag: vi.fn(), auth: vi.fn() }));
 vi.mock('@/locale', () => ({ useTranslateUI: () => api.t, useLocale: () => 'en-US', getProjectLangNameKey: () => '' }));
 vi.mock('@/locale/useFontRegion', () => ({ useFontRegion: () => () => {} }));
 vi.mock('@/locale/fontLoader', () => ({ registerFontRegion: () => ({ update: () => {}, stop: () => {} }) }));
@@ -18,12 +18,12 @@ vi.mock('@/component/shared/account/authEvents', () => ({ openOemAuthModal: api.
 vi.mock('@/pages/detail/comment/useAutoTrans', () => ({ useAutoTrans: () => {} }));
 vi.mock('@/pages/detail/comment/useTrans', () => ({ useTrans: () => () => {} }));
 vi.mock('@/services/routing', () => ({ generatePointShareUrl: () => 'https://example.test/comment' }));
-vi.mock('@/services/ugc/client', async (original) => ({ ...await original<typeof import('@/services/ugc/client')>(), listUGCComments: api.list, submitUGCComment: api.submit, editUGCComment: api.edit, voteUGCComment: api.vote, toggleUGCCommentFlag: api.flag, recallUGCComment: api.recall, invalidateUGCCommentCache: () => {} }));
+vi.mock('@/services/ugc/client', async (original) => ({ ...await original<typeof import('@/services/ugc/client')>(), listUGCComments: api.list, submitUGCComment: api.submit, editUGCComment: api.edit, voteUGCComment: api.vote, toggleUGCCommentFlag: api.flag, invalidateUGCCommentCache: () => {} }));
 const auth = useAuthStore.getState(), markers = useMarkerStore.getState();
 const scrollTo = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollTo');
 let serial = 0;
 const point = (): IMarkerData => ({ id: `comment-ui-${++serial}`, type: 'crate_ii', subregId: 'VL_1', pos: [0, 0], x: 0, y: 0, z: 0, tier: 0 });
-const comment = (markerId: string, own = false): UGCComment => ({ id: `comment-${markerId}`, markerId, content: 'Original comment', parentId: null, depth: 0, replies: [], score: 2, replyCount: 0, viewerVote: 0, status: 'active', createdAt: '2026-10-27T00:00:00Z', author: { publicUid: own ? 'a' : 'other', nickname: own ? 'A' : 'Other' } });
+const comment = (markerId: string, own = false): UGCComment => ({ type: 'comment', id: `comment-${markerId}`, markerId, snapshotId: 'original-snapshot', content: 'Original comment', parentId: null, depth: 0, replies: [], score: 2, replyCount: 0, viewerVote: 0, status: 'active', createdAt: '2026-10-27T00:00:00Z', author: { publicUid: own ? 'a' : 'other', nickname: own ? 'A' : 'Other' } });
 beforeEach(() => {
     vi.clearAllMocks(); installResizeObserver(); useAuthStore.setState({ sessionUser: { uid: 'a', nickname: 'A' } }); useMarkerStore.setState({ commentOpenRequest: null }); api.list.mockResolvedValue([]); api.vote.mockRejectedValue(new Error('offline')); api.flag.mockResolvedValue({ flagged: true });
     Object.defineProperty(HTMLElement.prototype, 'scrollTo', { configurable: true, value: () => {} });
@@ -61,13 +61,18 @@ it('submits a reply with the actual parent, clears its quote, and keeps a pendin
 
 it('restores the editable draft and original comment when an edit fails without changing another comment', async () => {
     const marker = point(), own = comment(marker.id, true); api.list.mockResolvedValue([own]); api.edit.mockRejectedValue(new Error('offline'));
-    render(<Comments point={marker} pointName="Crate" />); await screen.findByText('Original comment'); fireEvent.click(screen.getByRole('button', { name: 'detail.comments.edit' }));
+    render(<Comments point={marker} pointName="Crate" />); await screen.findByText('Original comment'); fireEvent.click(await screen.findByRole('button', { name: 'detail.comments.edit' }));
     const editor = await screen.findByRole('textbox'); await waitFor(() => expect(editor.textContent).toBe('Original comment'));
     // Replace the controlled source through the real editor selection.
     act(() => { editor.focus(); }); const selection = window.getSelection(); const range = document.createRange(); range.selectNodeContents(editor); selection?.removeAllRanges(); selection?.addRange(range); fireEvent(document, new Event('selectionchange'));
-    fireEvent.paste(editor, { clipboardData: { getData: () => 'Edited comment' } }); await waitFor(() => expect(editor.textContent).toBe('Edited comment'));
-    fireEvent.click(screen.getByRole('button', { name: 'detail.comments.submitEdit' }));
-    await waitFor(() => expect(api.edit).toHaveBeenCalledExactlyOnceWith(own.id, 'Edited comment'));
+    await act(async () => {
+        fireEvent.paste(editor, { clipboardData: { getData: () => 'Edited comment' } });
+        // Lexical has committed the visible text while React still has its previous value.
+        await Promise.resolve();
+        expect(editor.textContent).toBe('Edited comment');
+        fireEvent.click(screen.getByRole('button', { name: 'detail.comments.submitEdit' }));
+    });
+    await waitFor(() => expect(api.edit).toHaveBeenCalledExactlyOnceWith(own.id, 'Edited comment', own.snapshotId));
     await waitFor(() => expect(screen.getByText('detail.comments.editFailed')).toBeTruthy());
     expect(document.querySelector(`[data-comment-id="${own.id}"]`)?.textContent).toContain('Original comment');
     await waitFor(() => expect(screen.getByRole('textbox').textContent).toBe('Edited comment'));
@@ -92,8 +97,9 @@ it('cancels an unsent vote on account changes and does not expose the previous a
     await act(async () => { await vi.advanceTimersByTimeAsync(300); }); expect(api.vote).not.toHaveBeenCalled();
     await act(async () => { pending.resolve({ id: 'private-result', markerId: marker.id, parentId: null, depth: 0, status: 'pending_audit', snapshotId: 's' }); await pending.promise; });
     expect(screen.queryByText('Private pending A')).toBeNull();
+    // Account switches discard the previous private overlay; returning must read it from the server.
     act(() => { useAuthStore.getState().setSessionUser({ uid: 'a', nickname: 'A' }); }); await act(async () => { await Promise.resolve(); });
-    expect(screen.getByText('Private pending A')).toBeTruthy();
+    expect(screen.queryByText('Private pending A')).toBeNull();
 });
 
 it('preserves a same-account draft when session metadata refreshes', async () => {

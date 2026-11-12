@@ -32,8 +32,15 @@ export const listRecordToolUGCImages = async (markerId: string): Promise<UGCImag
     );
     if (!response.ok) throw new Error(`Record tool image request failed: ${response.status}`);
 
-    const payload = await response.json() as { items?: UGCImage[] };
-    const images = (payload.items ?? []).filter((image) => image.markerId === normalizedId);
+    const payload = (await response.json()) as {
+        items: UGCImage[];
+        partial?: boolean;
+    };
+    if (payload.partial)
+        throw new Error('Record tool image request was incomplete.');
+    const images = payload.items.filter(
+        (image) => image.markerId === normalizedId,
+    );
     imageCache.set(normalizedId, {
         expiresAt: Date.now() + (images.length > 0 ? POSITIVE_TTL_MS : EMPTY_TTL_MS),
         images,

@@ -64,11 +64,10 @@
       "flag": "Tandai tidak akurat",
       "unflag": "Batalkan tanda",
       "uploadAno": "Unggah lainnya",
-      "share": "Bagikan",
-      "recall": "Minta penghapusan",
-      "unrecall": "Batalkan penghapusan"
+      "share": "Bagikan"
     },
     "comments": {
+      "unavailable": "Komentar tidak tersedia.",
       "copyLink": "Salin tautan komentar",
       "emojiPicker": "Pilih emoji",
       "spoilerHidden": "Klik untuk melihat spoiler",
@@ -86,14 +85,14 @@
       "reply": "Balas",
       "edit": "Edit",
       "submitEdit": "Simpan perubahan",
-      "undoEdit": "Batalkan perubahan",
-      "recall": "Sembunyikan sekarang",
       "reviewing": "Ditinjau",
       "emptyWithRule": "Belum ada komentar. Harap ikuti <a href=\"{link}\">pedoman komunitas</a> saat memposting.",
       "ruleOnly": "Harap ikuti <a href=\"{link}\">pedoman komunitas</a> saat memposting.",
       "loadFailed": "Komentar gagal dimuat.",
       "submitFailed": "Komentar gagal dikirim.",
-      "editFailed": "Komentar gagal diperbarui."
+      "editFailed": "Komentar gagal diperbarui.",
+      "editConflict": "Komentar berubah atau tak bisa diedit lagi. Periksa dan buka kembali editor.",
+      "editConflictRefreshFailed": "Komentar berubah. Muat ulang sebelum mengedit."
     },
     "errors": {
       "unsupportedType": "Hanya gambar JPEG/PNG/WebP/AVIF/HEIC yang didukung.",
@@ -498,6 +497,7 @@
     "close": "Tutup",
     "skip": "Lewati",
     "clear": "Hapus",
+    "delete": "Hapus",
     "all": "Semua",
     "selected": "Terpilih",
     "confirm": "Konfirmasi",

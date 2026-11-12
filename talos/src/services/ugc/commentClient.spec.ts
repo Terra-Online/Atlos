@@ -11,10 +11,10 @@ import { getUGCCommentById, listUGCCommentsByMarkerIds } from './client';
 
 afterEach(() => vi.unstubAllGlobals());
 
-it('requests marker-scoped context and normalizes flat public comments', async () => {
+it('requests marker-scoped context and reads canonical public comments', async () => {
     const fetch = vi.fn(() => Promise.resolve(new Response(JSON.stringify({ item: {
         targetId: 'reply/1',
-        path: [{ id: 'reply/1', markerId: 'marker', status: 'active' }],
+        path: [{ id: 'reply/1', snapshotId: 'snapshot-reply', markerId: 'marker', status: 'active', parentId: null, depth: 0, content: 'Reply', score: 2, replyCount: 0, replies: [], createdAt: '2026-10-01' }],
         replies: [],
         repliesTruncated: true,
     } }))));
@@ -28,7 +28,7 @@ it('requests marker-scoped context and normalizes flat public comments', async (
     );
     expect(result).toMatchObject({
         targetId: 'reply/1',
-        path: [{ replies: [], parentId: null, score: 0 }],
+        path: [{ snapshotId: 'snapshot-reply', replies: [], parentId: null, score: 2 }],
         repliesTruncated: true,
     });
 });
@@ -56,14 +56,6 @@ it('does not negative-cache a failed marker, while caching successful empty resu
     expect(fetch).toHaveBeenCalledTimes(2);
 });
 
-it('does not turn an older partial response into an empty cache hit', async () => {
-    const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(() => Promise.resolve(Response.json({ items: [], partial: true })));
-    vi.stubGlobal('fetch', fetch);
-    await expect(listUGCCommentsByMarkerIds(['legacy-partial'])).rejects.toMatchObject({ code: 'partialResponse' });
-    await expect(listUGCCommentsByMarkerIds(['legacy-partial'])).rejects.toMatchObject({ code: 'partialResponse' });
-    expect(fetch).toHaveBeenCalledTimes(2);
-});
-
 it('splits 201 missing markers without dropping any marker', async () => {
     const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(() => Promise.resolve(Response.json({ items: [] })));
     vi.stubGlobal('fetch', fetch);
@@ -74,4 +66,31 @@ it('splits 201 missing markers without dropping any marker', async () => {
     const sent = fetch.mock.calls.flatMap(([input]) => new URL(input instanceof Request ? input.url : input).searchParams.get('markerIds')!.split(','));
     expect(new Set(sent)).toEqual(new Set(ids));
     expect(fetch.mock.calls.every(([input]) => new URL(input instanceof Request ? input.url : input).searchParams.get('markerIds')!.split(',').length <= 100)).toBe(true);
+});
+
+
+it('sends the editor baseline and preserves the committed snapshot identity', async () => {
+    const { editUGCComment } = await import('./client');
+    const fetch = vi
+        .fn<typeof globalThis.fetch>()
+        .mockResolvedValue(
+            Response.json({
+                submission: {
+                    id: 'comment',
+                    markerId: 'marker',
+                    snapshotId: 'B',
+                    status: 'pending_openai',
+                },
+            }),
+        );
+    vi.stubGlobal('fetch', fetch);
+    expect(await editUGCComment('comment', 'New body', 'A')).toMatchObject({
+        snapshotId: 'B',
+    });
+    const body = fetch.mock.calls[0][1]?.body;
+    if (typeof body !== 'string') throw new Error('Expected JSON request body');
+    expect(JSON.parse(body)).toEqual({
+        content: 'New body',
+        parentSnapshotId: 'A',
+    });
 });

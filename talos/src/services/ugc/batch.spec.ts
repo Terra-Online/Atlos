@@ -41,15 +41,16 @@ describe('marker batches', () => {
         expect(read).toHaveBeenCalledTimes(2);
     });
 
-    it('does not cache failed markers as empty lists, including legacy partial responses', async () => {
+    it('does not cache failed markers as empty lists', async () => {
         const { createMarkerQueue } = await import('./batch');
         const read = vi
             .fn()
             .mockResolvedValueOnce({
                 items: [{ markerId: 'a' }],
                 partial: true,
+                failedMarkerIds: ['b'],
             })
-            .mockResolvedValueOnce({ items: [], failedMarkerIds: ['c'] })
+            .mockResolvedValueOnce({ items: [], partial: true, failedMarkerIds: ['c'] })
             .mockResolvedValue({ items: [] });
         const store = vi.fn();
         const queue = createMarkerQueue({

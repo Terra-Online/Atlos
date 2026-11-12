@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor, cleanup } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import type { UGCComment, UGCCommentContext } from '@/services/ugc/client';
+import type { UGCComment, UGCCommentContext, UGCCommentNode } from '@/services/ugc/client';
 
 vi.mock('@/store/marker', async () => {
     const { create } = await import('zustand');
@@ -15,7 +15,7 @@ import { useMarkerStore } from '@/store/marker';
 import { getUGCCommentById, UGCClientError } from '@/services/ugc/client';
 import { useCommentLink } from '@/pages/detail/comment/useCommentLink';
 
-const target: UGCComment = { id: 'target', parentId: null, markerId: '1', depth: 0, content: 'hello', createdAt: '', score: 0, replyCount: 0, replies: [], status: 'active' };
+const target: UGCComment = { type: 'comment', id: 'target', parentId: null, markerId: '1', depth: 0, content: 'hello', createdAt: '', score: 0, replyCount: 0, replies: [], status: 'active' };
 const context: UGCCommentContext = { targetId: 'target', path: [target], replies: [], repliesTruncated: false };
 let list: HTMLDivElement;
 let scrollTo: ReturnType<typeof vi.fn>;
@@ -29,7 +29,7 @@ beforeEach(() => {
     useMarkerStore.setState({ commentOpenRequest: { markerId: '1', commentId: 'target' } });
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
-const mount = (initial = [target]) => {
+const mount = (initial: UGCCommentNode[] = [target]) => {
     const listRef = { current: list };
     return renderHook(({ markerId, active }) => {
         const [comments, setComments] = useState(initial);

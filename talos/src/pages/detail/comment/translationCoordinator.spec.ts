@@ -15,6 +15,7 @@ vi.mock('@/services/ugc/client', () => ({
 
 const cacheMiss = (commentId: string, targetLanguage: string) => ({
     commentId,
+    snapshotId: `snapshot-${commentId}`,
     targetLanguage,
     provider: 'google_cloud_translation_v3',
     glossaryApplied: false,
@@ -24,6 +25,7 @@ const cacheMiss = (commentId: string, targetLanguage: string) => ({
 
 const translated = (commentId: string, targetLanguage: string) => ({
     commentId,
+    snapshotId: `snapshot-${commentId}`,
     translatedContent: `translated:${commentId}`,
     sourceLanguage: 'en',
     targetLanguage,
@@ -47,7 +49,7 @@ describe('comment translation coordinator', () => {
         const { requestCommentTranslations } = await import('@/pages/detail/comment/translationCoordinator');
 
         const result = await requestCommentTranslations(
-            [{ id: 'comment-1', content: 'Hello' }],
+            [{ id: 'comment-1', snapshotId: 'snapshot-comment-1', content: 'Hello' }],
             'zh-cn',
             { allowLive: false, liveAttemptPolicy: 'once' },
         );
@@ -74,7 +76,7 @@ describe('comment translation coordinator', () => {
         const { requestCommentTranslations } = await import('@/pages/detail/comment/translationCoordinator');
 
         const result = await requestCommentTranslations(
-            [{ id: 'comment-1', content: 'Hello' }],
+            [{ id: 'comment-1', snapshotId: 'snapshot-comment-1', content: 'Hello' }],
             'zh-cn',
             { allowLive: true, liveAttemptPolicy: 'once' },
         );
@@ -98,6 +100,7 @@ describe('comment translation coordinator', () => {
     it('does not turn non-cache errors into live translation requests', async () => {
         transUGCCommentsMock.mockResolvedValue([{
             commentId: 'comment-1',
+            snapshotId: 'snapshot-comment-1',
             targetLanguage: 'zh-cn',
             provider: 'google_cloud_translation_v3',
             glossaryApplied: false,
@@ -107,7 +110,7 @@ describe('comment translation coordinator', () => {
         const { requestCommentTranslations } = await import('@/pages/detail/comment/translationCoordinator');
 
         await requestCommentTranslations(
-            [{ id: 'comment-1', content: 'Hello' }],
+            [{ id: 'comment-1', snapshotId: 'snapshot-comment-1', content: 'Hello' }],
             'zh-cn',
             { allowLive: true, liveAttemptPolicy: 'once' },
         );
@@ -130,7 +133,7 @@ describe('comment translation coordinator', () => {
             options: { cachedOnly?: boolean },
         ) => options.cachedOnly ? cachePromise : livePromise);
         const { requestCommentTranslations } = await import('@/pages/detail/comment/translationCoordinator');
-        const input = [{ id: 'comment-1', content: 'Hello' }];
+        const input = [{ id: 'comment-1', snapshotId: 'snapshot-comment-1', content: 'Hello' }];
 
         const first = requestCommentTranslations(input, 'zh-cn', {
             allowLive: true,
@@ -163,7 +166,7 @@ describe('comment translation coordinator', () => {
             return Promise.reject(new Error('translation failed'));
         });
         const { requestCommentTranslations } = await import('@/pages/detail/comment/translationCoordinator');
-        const input = [{ id: 'comment-1', content: 'Hello' }];
+        const input = [{ id: 'comment-1', snapshotId: 'snapshot-comment-1', content: 'Hello' }];
 
         await expect(requestCommentTranslations(input, 'zh-cn', {
             allowLive: true,
@@ -198,7 +201,7 @@ describe('comment translation coordinator', () => {
                 : Promise.resolve(commentIds.map((commentId) => translated(commentId, targetLanguage)));
         });
         const { requestCommentTranslations } = await import('@/pages/detail/comment/translationCoordinator');
-        const input = [{ id: 'comment-1', content: 'Hello' }];
+        const input = [{ id: 'comment-1', snapshotId: 'snapshot-comment-1', content: 'Hello' }];
         const manual = { allowLive: true, liveAttemptPolicy: 'always' } as const;
 
         await expect(requestCommentTranslations(input, 'zh-hk', manual)).rejects.toThrow('temporary failure');
@@ -222,10 +225,10 @@ describe('comment translation coordinator', () => {
         const { requestCommentTranslations } = await import('@/pages/detail/comment/translationCoordinator');
 
         const once = { allowLive: true, liveAttemptPolicy: 'once' } as const;
-        await requestCommentTranslations([{ id: 'comment-1', content: 'Hello' }], 'zh-cn', once);
-        await requestCommentTranslations([{ id: 'comment-1', content: 'Hello' }], 'zh-cn', once);
-        await requestCommentTranslations([{ id: 'comment-1', content: 'Edited' }], 'zh-cn', once);
-        await requestCommentTranslations([{ id: 'comment-1', content: 'Edited' }], 'ja-jp', once);
+        await requestCommentTranslations([{ id: 'comment-1', snapshotId: 'snapshot-comment-1', content: 'Hello' }], 'zh-cn', once);
+        await requestCommentTranslations([{ id: 'comment-1', snapshotId: 'snapshot-comment-1', content: 'Hello' }], 'zh-cn', once);
+        await requestCommentTranslations([{ id: 'comment-1', snapshotId: 'snapshot-comment-1', content: 'Edited' }], 'zh-cn', once);
+        await requestCommentTranslations([{ id: 'comment-1', snapshotId: 'snapshot-comment-1', content: 'Edited' }], 'ja-jp', once);
 
         expect(transUGCCommentsMock.mock.calls.filter((call) => !call[2]?.cachedOnly)).toHaveLength(3);
     });
@@ -246,6 +249,7 @@ describe('comment translation coordinator', () => {
         } = await import('@/pages/detail/comment/translationCoordinator');
         const comments = Array.from({ length: 2_001 }, (_, index) => ({
             id: `comment-${index}`,
+            snapshotId: `snapshot-comment-${index}`,
             content: `Content ${index}`,
         }));
 

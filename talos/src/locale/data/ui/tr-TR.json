@@ -64,11 +64,10 @@
       "flag": "Hatalı Olarak İşaretle",
       "unflag": "İşareti Kaldır",
       "uploadAno": "Başka Yükle",
-      "share": "Paylaş",
-      "recall": "Geri Çek",
-      "unrecall": "Geri Çekmeyi İptal Et"
+      "share": "Paylaş"
     },
     "comments": {
+      "unavailable": "Yorum görüntülenemiyor.",
       "copyLink": "Yorum bağlantısını kopyala",
       "emojiPicker": "Emoji seç",
       "spoilerHidden": "Spoiler içeriğini görmek için tıklayın",
@@ -86,14 +85,14 @@
       "reply": "Yanıtla",
       "edit": "Düzenle",
       "submitEdit": "Düzenlemeyi Kaydet",
-      "undoEdit": "Düzenlemeyi Geri Al",
-      "recall": "Hemen gizle",
       "reviewing": "İnceleniyor",
       "emptyWithRule": "Henüz yorum yok. Gönderi paylaşırken lütfen <a href=\"{link}\">topluluk kurallarına</a> uyun.",
       "ruleOnly": "Gönderi paylaşırken lütfen <a href=\"{link}\">topluluk kurallarına</a> uyun.",
       "loadFailed": "Yorumlar yüklenemedi.",
       "submitFailed": "Yorum gönderilemedi.",
-      "editFailed": "Yorum güncellenemedi."
+      "editFailed": "Yorum güncellenemedi.",
+      "editConflict": "Yorum değişti veya artık düzenlenemiyor. Kontrol edip düzenleyiciyi yeniden açın.",
+      "editConflictRefreshFailed": "Yorum değişti. Düzenlemeden önce yeniden yükleyin."
     },
     "errors": {
       "unsupportedType": "Yalnızca JPEG/PNG/WebP/AVIF/HEIC görselleri desteklenir.",
@@ -498,6 +497,7 @@
     "close": "Kapat",
     "skip": "Atla",
     "clear": "Temizle",
+    "delete": "Sil",
     "all": "Tümü",
     "selected": "Seçili",
     "confirm": "Onayla",
