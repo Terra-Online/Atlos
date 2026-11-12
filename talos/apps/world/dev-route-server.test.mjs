@@ -227,7 +227,11 @@ test(
             assert.equal(result.body.status, 'building-ground');
             assert.equal(result.body.retryAfter, 1000);
             result = await poll();
-            assert.equal(result.body.status, 'candidate', JSON.stringify(result.body));
+            assert.equal(
+                result.body.status,
+                'candidate',
+                JSON.stringify(result.body),
+            );
             assert.equal(result.body.partial, true);
             assert.equal(result.body.optimizing, true);
             assert.match(result.body.title, /Partial/);
@@ -354,79 +358,3 @@ test('serves retained task logs while rejecting paths outside the task directori
         await rm(directory, { recursive: true, force: true });
     }
 });
-
-for (const scenario of ['unmapped', 'disconnected']) {
-    test(`global candidate rejects ${scenario} nearest anchor and selects a connected scene anchor`, async () => {
-        const directory = await mkdtemp(
-            join(tmpdir(), 'world-global-arrivals-'),
-        );
-        const source = { buildGuid: 'fixture', contentHash: 'fixture' };
-        const { candidateJobs } = await import('./candidate-job.ts');
-        const jobs = candidateJobs(directory);
-        try {
-            const surfaces = [
-                {
-                    id: 'floor',
-                    vertices: [
-                        [0, 0, 0],
-                        [8, 0, 0],
-                        [8, 0, 4],
-                        [0, 0, 4],
-                    ],
-                },
-            ];
-            if (scenario === 'disconnected')
-                surfaces.push({
-                    id: 'upper',
-                    vertices: [
-                        [4, 2, 0],
-                        [8, 2, 0],
-                        [8, 2, 4],
-                        [4, 2, 4],
-                    ],
-                });
-            await writeFile(
-                join(directory, 'map01-ground-all.json'),
-                JSON.stringify({
-                    source,
-                    surfaces,
-                    options: {
-                        speed: 5,
-                        maxVertical: 0.5,
-                        walls: [],
-                        profile: { radius: 0.35, height: 1.66 },
-                    },
-                }),
-            );
-            const job = jobs.start({
-                scene: 'map01',
-                source,
-                target: [6, 0, 1],
-                arrivals: [
-                    {
-                        id: 'bad',
-                        position: [5, 2, 1],
-                        cost: 0,
-                        state: 'available',
-                    },
-                    {
-                        id: 'good',
-                        position: [1, 0, 1],
-                        cost: 0,
-                        state: 'available',
-                    },
-                ],
-            });
-            const deadline = Date.now() + 3000;
-            while (job.status === 'pending' && Date.now() < deadline)
-                await new Promise((resolve) => setTimeout(resolve, 10));
-            assert.equal(job.status, 'ready');
-            assert.equal(job.result.status, 'candidate');
-            assert.equal(job.result.arrival.id, 'good');
-            assert.deepEqual(job.result.points.at(-1), [6, 0, 1]);
-        } finally {
-            jobs.close();
-            await rm(directory, { recursive: true, force: true });
-        }
-    });
-}

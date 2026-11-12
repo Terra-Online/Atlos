@@ -1,4 +1,3 @@
-import { candidateJobs } from './candidate-job.ts';
 import { setTimeout as delay } from 'node:timers/promises';
 import {
     prepareRouteSolver,
@@ -125,7 +124,7 @@ export function routeServer(
 ): Plugin {
     const cache = new Map<string, Promise<IndexedData>>();
     const builder = physicalRouteBuilder({ ...build, directory });
-    const globalJobs = candidateJobs(directory, build.node);
+    const solvers = new Map<Data, ReturnType<typeof prepareRouteSolver>>();
     let travel: Promise<{ source: Source; points: TravelPoint[] }> | undefined;
     let terminalCatalog: Promise<TerminalCatalog | null> | undefined;
     let movementHash: Promise<string> | undefined;
@@ -139,7 +138,6 @@ export function routeServer(
     const running = new Set<Promise<unknown>>();
     const close = async () => {
         shutdown.abort();
-        globalJobs.close();
         const drained = builder.close();
         cache.clear();
         interactionCache.clear();
@@ -149,10 +147,89 @@ export function routeServer(
         movementHash = undefined;
         removeCloseListener();
         await Promise.allSettled(running);
+        await Promise.allSettled(
+            [...solvers.values()].map(async (pending) =>
+                (await pending).close(),
+            ),
+        );
+        solvers.clear();
         await drained;
     };
+    const readBytes = (name: string) => readFile(resolve(directory!, name));
     const read = async (name: string): Promise<unknown> =>
-        JSON.parse(await readFile(resolve(directory!, name), 'utf8'));
+        JSON.parse((await readBytes(name)).toString());
+    const sceneSolver = (data: Data, locomotion: LocomotionOptions) => {
+        let pending = solvers.get(data);
+        if (!pending) {
+            const { scene, source } = data;
+            const resources: SceneResources<
+                Source,
+                Awaited<ReturnType<typeof builder.query>> & {}
+            > = {
+                query: builder.query,
+                solve: builder.solve,
+                key: (job) => job.output,
+                ground: async (job) =>
+                    JSON.parse(await readFile(job.output, 'utf8')) as {
+                        surfaces: Surface[];
+                        options: GroundOptions;
+                    },
+                route: (job) =>
+                    job.result as { route?: Route; reason?: string },
+                wait: async (signal) => {
+                    if (!signal?.aborted)
+                        await delay(25, undefined, { signal }).catch(
+                            (error) => {
+                                if (!signal?.aborted) throw error;
+                            },
+                        );
+                },
+                terminals: async (query) => {
+                    terminalCatalog ??= read('terminal-routes.json')
+                        .then((value) => value as TerminalCatalog)
+                        .catch((error: unknown) => {
+                            if (
+                                error instanceof Error &&
+                                'code' in error &&
+                                error.code === 'ENOENT'
+                            )
+                                return null;
+                            terminalCatalog = undefined;
+                            throw error;
+                        });
+                    movementHash ??= readBytes(
+                        'movement-settings-current.json',
+                    ).then((bytes) =>
+                        createHash('sha256').update(bytes).digest('hex'),
+                    );
+                    return matchingTerminals(await terminalCatalog, {
+                        scene,
+                        source,
+                        generator: (data as Data & { generator?: string })
+                            .generator,
+                        solver: build.solver,
+                        movementHash: await movementHash,
+                        target: query.goal,
+                        interaction: query.interaction,
+                    });
+                },
+            };
+            pending = prepareRouteSolver(gangliaV1Defaults, {
+                kind: 'scene',
+                scene: {
+                    scene,
+                    source,
+                    walls: data.options.walls,
+                    navigation: data,
+                },
+                resources,
+                locomotion,
+            });
+            solvers.set(data, pending);
+            pending.catch(() => solvers.delete(data));
+        }
+        return pending;
+    };
     const sceneData = (scene: string) => {
         let pending = cache.get(scene);
         if (!pending) {
@@ -584,93 +661,9 @@ export function routeServer(
                         throw new Error(
                             'Movement settings do not match scene build',
                         );
-                    const resources: SceneResources<
-                        Source,
-                        Awaited<ReturnType<typeof builder.query>> & {}
-                    > = {
-                        query: builder.query,
-                        solve: builder.solve,
-                        key: (job) => job.output,
-                        ground: async (job) =>
-                            JSON.parse(await readFile(job.output, 'utf8')) as {
-                                surfaces: Surface[];
-                                options: GroundOptions;
-                            },
-                        route: (job) =>
-                            job.result as { route?: Route; reason?: string },
-                        wait: async (signal) => {
-                            if (!signal?.aborted)
-                                await delay(25, undefined, { signal }).catch(
-                                    (error) => {
-                                        if (!signal?.aborted) throw error;
-                                    },
-                                );
-                        },
-                        plan: async (starts, target, excludedEdges, signal) => {
-                            const job = globalJobs.start({
-                                scene,
-                                source,
-                                arrivals: starts,
-                                target,
-                                excludedEdges,
-                            });
-                            while (job.status === 'pending' && !signal?.aborted)
-                                await resources.wait(signal);
-                            if (signal?.aborted) return { status: 'cancelled' };
-                            if (job.status === 'failed')
-                                throw new Error(
-                                    job.error ?? 'Candidate search failed',
-                                );
-                            if (!job.result)
-                                throw new Error(
-                                    'Candidate worker omitted result',
-                                );
-                            return job.result;
-                        },
-                        terminals: async (query) => {
-                            terminalCatalog ??= read('terminal-routes.json')
-                                .then((value) => value as TerminalCatalog)
-                                .catch((error: unknown) => {
-                                    if (
-                                        error instanceof Error &&
-                                        'code' in error &&
-                                        error.code === 'ENOENT'
-                                    )
-                                        return null;
-                                    terminalCatalog = undefined;
-                                    throw error;
-                                });
-                            movementHash ??= readFile(
-                                resolve(
-                                    directory,
-                                    'movement-settings-current.json',
-                                ),
-                            ).then((bytes) =>
-                                createHash('sha256')
-                                    .update(bytes)
-                                    .digest('hex'),
-                            );
-                            return matchingTerminals(await terminalCatalog, {
-                                scene,
-                                source,
-                                generator: (
-                                    data as Data & { generator?: string }
-                                ).generator,
-                                solver: build.solver,
-                                movementHash: await movementHash,
-                                target: query.goal,
-                                interaction: query.interaction,
-                            });
-                        },
-                    };
-                    const solver = await prepareRouteSolver(
-                        gangliaV1Defaults,
-                        {
-                            kind: 'scene',
-                            scene: { scene, source, walls: data.options.walls },
-                            resources,
-                            locomotion: movement.sustainedSprint,
-                        },
+                    const solver = await sceneSolver(
+                        data,
+                        movement.sustainedSprint,
                     );
                     const display = (
                         result: RouteResult,
@@ -720,59 +713,55 @@ export function routeServer(
                         fallback = candidate;
                         reply(candidate);
                     };
+                    const solving = solver.solve(
+                        {
+                            starts: candidates,
+                            goal: goal?.position ?? target,
+                            interaction: goal?.interaction,
+                        },
+                        {
+                            signal: shutdown.signal,
+                            onEvent: (event) => {
+                                if (event.type === 'candidate')
+                                    display(event.result, event.optimizing);
+                                else if (entry.candidate) {
+                                    entry.candidate = {
+                                        ...entry.candidate,
+                                        optimizing: true,
+                                        optimizationMessage:
+                                            'Connecting the route…',
+                                    };
+                                    reply(entry.candidate);
+                                } else
+                                    reply({
+                                        status: 'building-ground',
+                                        message:
+                                            'Finding and validating route corridors…',
+                                        retryAfter: 1000,
+                                    });
+                            },
+                        },
+                    );
+                    running.add(solving);
+                    let result: RouteResult;
                     try {
-                        const solving = solver.solve(
-                            {
-                                starts: candidates,
-                                goal: goal?.position ?? target,
-                                interaction: goal?.interaction,
-                            },
-                            {
-                                signal: shutdown.signal,
-                                onEvent: (event) => {
-                                    if (event.type === 'candidate')
-                                        display(event.result, event.optimizing);
-                                    else if (entry.candidate) {
-                                        entry.candidate = {
-                                            ...entry.candidate,
-                                            optimizing: true,
-                                            optimizationMessage:
-                                                'Connecting the route…',
-                                        };
-                                        reply(entry.candidate);
-                                    } else
-                                        reply({
-                                            status: 'building-ground',
-                                            message:
-                                                'Finding and validating route corridors…',
-                                            retryAfter: 1000,
-                                        });
-                                },
-                            },
-                        );
-                        running.add(solving);
-                        let result: RouteResult;
-                        try {
-                            result = await solving;
-                        } finally {
-                            running.delete(solving);
-                        }
-                        if (result.route.status === 'complete')
-                            display(result, false, result.reason);
-                        else {
-                            entry.candidate = undefined;
-                            reply({
-                                status: 'unavailable',
-                                category:
-                                    result.reason === 'no-global-candidate'
-                                        ? 'candidate-search'
-                                        : 'window-route',
-                                message: result.reason,
-                                diagnostics: result.diagnostics,
-                            });
-                        }
+                        result = await solving;
                     } finally {
-                        await solver.close();
+                        running.delete(solving);
+                    }
+                    if (result.route.status === 'complete')
+                        display(result, false, result.reason);
+                    else {
+                        entry.candidate = undefined;
+                        reply({
+                            status: 'unavailable',
+                            category:
+                                result.reason === 'no-global-candidate'
+                                    ? 'candidate-search'
+                                    : 'window-route',
+                            message: result.reason,
+                            diagnostics: result.diagnostics,
+                        });
                     }
                     return;
                 })().catch((error: unknown) => {

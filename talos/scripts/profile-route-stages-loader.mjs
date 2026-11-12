@@ -67,7 +67,7 @@ const ioModules = new Set([
 ]);
 
 function selection(path) {
-    const sdk = path.match(/\/(?:@opendfieldmap|\.cache)\/ganglia\/src\/(?:geo\/|reach\/|motion\/|search\/|resource\/|route\/)?([^/]+)$/);
+    const sdk = path.match(/\/(?:@opendfieldmap|\.cache)\/ganglia\/src\/(?:v1\/)?(?:geo\/|reach\/|motion\/|search\/|resource\/|route\/)?([^/]+)$/);
     if (sdk && ganglia[sdk[1]]) return { module: `ganglia/${sdk[1]}`, names: new Set(ganglia[sdk[1]]) };
     const source = path.match(/\/packages\/extractor\/src\/(.+)$/);
     if (source && extractor[source[1]]) return { module: `extractor/${source[1]}`,
@@ -88,9 +88,8 @@ function functionName(node) {
  * arguments and return/throw behavior. Constructors and generators are excluded. */
 export function transformSource(source, path, options = {}) {
     const selected = options.selection ?? selection(path);
-    const candidate = options.candidatePath === path;
-    if (!selected && !candidate) return { source, labels: [] };
-    const config = selected ?? { module: 'world/candidate-worker.ts', names: new Set(['plan']) };
+    if (!selected) return { source, labels: [] };
+    const config = selected;
     const tree = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true,
         path.endsWith('.ts') ? ts.ScriptKind.TS : ts.ScriptKind.JS);
     const edits = [], labels = [];
@@ -132,10 +131,6 @@ export function transformSource(source, path, options = {}) {
                 edits.push({ start: node.body.end, end: node.body.end, text: '));}' });
             }
         }
-        if (candidate && ts.isIfStatement(node) && node.expression.getText(tree) === 'process.send') {
-            edits.push({ start: node.getStart(tree), end: node.end, text: 'export { plan as profileCandidatePlan };' });
-            return;
-        }
         const className = (ts.isClassDeclaration(node) || ts.isClassExpression(node)) && node.name?.text;
         const scope = name ?? className;
         ts.forEachChild(node, child => visit(child, scope ? [...parents, scope] : parents));
@@ -147,7 +142,7 @@ export function transformSource(source, path, options = {}) {
     return { source: transformed, labels };
 }
 
-export function installStageHooks(profiler, { candidatePath, instrument = true } = {}) {
+export function installStageHooks(profiler, { instrument = true } = {}) {
     globalThis[profilerKey] = profiler;
     const modules = [];
     const hooks = registerHooks({
@@ -157,12 +152,11 @@ export function installStageHooks(profiler, { candidatePath, instrument = true }
             const path = fileURLToPath(url);
             const source = typeof loaded.source === 'string' ? loaded.source : Buffer.from(loaded.source).toString('utf8');
             const identity = { path, bytes: Buffer.byteLength(source), sha256: createHash('sha256').update(source).digest('hex') };
-            if (!selection(path) && path !== candidatePath) {
+            if (!selection(path)) {
                 modules.push({ ...identity, labels: [] });
                 return loaded;
             }
             const result = transformSource(source, path, {
-                candidatePath,
                 ...(!instrument ? { selection: { module: '', names: new Set() } } : {}),
             });
             modules.push({ ...identity, labels: result.labels });
