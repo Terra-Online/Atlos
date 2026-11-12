@@ -1,5 +1,6 @@
 import type { Corridor } from '@opendfieldmap/ganglia/solver';
-import { routeFrom, type Surface, type Vec3 } from '@opendfieldmap/ganglia';
+import { routeFrom } from '@opendfieldmap/ganglia/solver/host';
+import { type Surface, type Vec3 } from '@opendfieldmap/ganglia';
 
 type Data = {
     surfaces: Surface[];

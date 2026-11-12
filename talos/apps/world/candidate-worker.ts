@@ -1,5 +1,6 @@
 import { readFile, stat } from 'node:fs/promises';
-import { createCandidatePlanner, type Vec3 } from '@opendfieldmap/ganglia';
+import { createCandidatePlanner } from '@opendfieldmap/ganglia/solver/host';
+import { type Vec3 } from '@opendfieldmap/ganglia';
 
 type Input = {
     navigation: string;

@@ -199,21 +199,13 @@ diff --git a/packages/extractor/src/game/physical-input.ts b/packages/extractor/
 new file mode 100644
 --- /dev/null
 +++ b/packages/extractor/src/game/physical-input.ts
-@@ -0,0 +1,378 @@
+@@ -0,0 +1,370 @@
 +import { gangliaV1Defaults } from '@opendfieldmap/ganglia/solver';
 +import { readFile } from 'node:fs/promises';
 +import { isDeepStrictEqual } from 'node:util';
 +import { isObject, numberField } from '@endfield-noclip/formats/unity/values';
-+import {
-+	retimeGroundRoute,
-+	type GroundArrival,
-+	type GroundOptions,
-+	type InteractionGoal,
-+	type LocomotionOptions,
-+	type Surface,
-+	type Vec3,
-+	type Wall,
-+} from '@opendfieldmap/ganglia';
++import { retimeGroundRoute } from "@opendfieldmap/ganglia/solver/host";
++import { type GroundArrival, type GroundOptions, type InteractionGoal, type LocomotionOptions, type Surface, type Vec3, type Wall } from "@opendfieldmap/ganglia";
 +import type {
 +	BuildOptions,
 +	CollisionGeometry,
@@ -582,7 +574,7 @@ diff --git a/packages/extractor/src/game/traversal-links.ts b/packages/extractor
 new file mode 100644
 --- /dev/null
 +++ b/packages/extractor/src/game/traversal-links.ts
-@@ -0,0 +1,307 @@
+@@ -0,0 +1,305 @@
 +import {
 +	trsMatrix,
 +	transformPoint,
@@ -591,10 +583,8 @@ new file mode 100644
 +import type { TypeTreeObject } from '@endfield-noclip/formats/unity/type-tree';
 +import { isObject, numberField } from '@endfield-noclip/formats/unity/values';
 +
-+import {
-+	createDeviceConnections,
-+	type DeviceFacts,
-+} from '@opendfieldmap/ganglia/solver';
++import { createDeviceConnections } from "@opendfieldmap/ganglia/solver/host";
++import { type DeviceFacts } from "@opendfieldmap/ganglia/solver";
 +import type { Surface, Vec3, Wall } from '@opendfieldmap/ganglia';
 +import type { CollisionWorld } from '@opendfieldmap/ganglia/collision';
 +
@@ -894,15 +884,9 @@ diff --git a/packages/extractor/src/game/swept-supports.ts b/packages/extractor/
 new file mode 100644
 --- /dev/null
 +++ b/packages/extractor/src/game/swept-supports.ts
-@@ -0,0 +1,8 @@
-+export {
-+	sweepSupports,
-+	supportBounds,
-+	supportEndpoints,
-+	type SweptSupport,
-+	type PoseBounds,
-+	type PoseSpan,
-+} from '@opendfieldmap/ganglia/solver';
+@@ -0,0 +1,2 @@
++export { sweepSupports, supportBounds, supportEndpoints } from "@opendfieldmap/ganglia/solver/host";
++export { type SweptSupport, type PoseBounds, type PoseSpan } from "@opendfieldmap/ganglia/solver";
 diff --git a/packages/extractor/src/commands/player-route.ts b/packages/extractor/src/commands/player-route.ts
 new file mode 100644
 --- /dev/null

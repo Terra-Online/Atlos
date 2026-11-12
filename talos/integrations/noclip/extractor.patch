@@ -2946,7 +2946,7 @@ index 00000000..57d5acf6
 +import { readFile, writeFile } from 'node:fs/promises';
 +import { parseArgs } from 'node:util';
 +
-+import { createGroundPlanner } from '@opendfieldmap/ganglia';
++import { createGroundPlanner } from "@opendfieldmap/ganglia/solver/host";
 +
 +import { groundData } from '../game/ground-data.ts';
 +
@@ -4160,7 +4160,7 @@ index 00000000..26a2a4de
 +import type { ColliderShape, EcsCollider } from '@endfield-noclip/formats/endfield/ecs-collider';
 +import type { CollisionMesh } from '@endfield-noclip/formats/unity/collision-mesh';
 +
-+import { createWallChecker } from '@opendfieldmap/ganglia';
++import { createWallChecker } from "@opendfieldmap/ganglia/solver/host";
 +import { createCollisionWorld } from '@opendfieldmap/ganglia/collision';
 +
 +import { collisionGeometry, walkableCollisionIndices, type CollisionInputs } from './collision-ground.ts';
@@ -6162,7 +6162,7 @@ index 00000000..1daab090
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
-+import { createGroundPlanner } from '@opendfieldmap/ganglia';
++import { createGroundPlanner } from "@opendfieldmap/ganglia/solver/host";
 +
 +import { groundData } from './ground-data.ts';
 +
@@ -6833,11 +6833,12 @@ new file mode 100644
 index 00000000..8b0492a2
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-refinement.test.ts
-@@ -0,0 +1,76 @@
+@@ -0,0 +1,77 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
-+import { createGoalProjector, type Surface, type Vec3 } from '@opendfieldmap/ganglia';
++import { createGoalProjector } from "@opendfieldmap/ganglia/solver/host";
++import { type Surface, type Vec3 } from "@opendfieldmap/ganglia";
 +import { buildGroundSurfaces } from '@opendfieldmap/ganglia/build';
 +import { createCollisionWorld } from '@opendfieldmap/ganglia/collision';
 +
@@ -6915,7 +6916,7 @@ new file mode 100644
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-refinement.ts
 @@ -0,0 +1 @@
-+export { refineGoalGround } from '@opendfieldmap/ganglia/solver';
++export { refineGoalGround } from '@opendfieldmap/ganglia/solver/host';
 diff --git a/packages/extractor/src/game/ground-tile-cache.test.ts b/packages/extractor/src/game/ground-tile-cache.test.ts
 new file mode 100644
 index 00000000..2892d25e
@@ -9855,11 +9856,12 @@ new file mode 100644
 index 00000000..a4eaf9ee
 --- /dev/null
 +++ b/packages/extractor/src/game/round-exclusions.test.ts
-@@ -0,0 +1,45 @@
+@@ -0,0 +1,46 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
-+import { createWallChecker, type Wall } from '@opendfieldmap/ganglia';
++import { createWallChecker } from "@opendfieldmap/ganglia/solver/host";
++import { type Wall } from "@opendfieldmap/ganglia";
 +
 +import { roundExclusions } from './round-exclusions.ts';
 +
@@ -11672,11 +11674,12 @@ new file mode 100644
 index 00000000..281feda9
 --- /dev/null
 +++ b/packages/extractor/src/game/traversal-links.test.ts
-@@ -0,0 +1,260 @@
+@@ -0,0 +1,261 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
-+import { createGroundPlanner, jumpDuration, type Surface, type Vec3, type Wall } from '@opendfieldmap/ganglia';
++import { createGroundPlanner, jumpDuration } from "@opendfieldmap/ganglia/solver/host";
++import { type Surface, type Vec3, type Wall } from "@opendfieldmap/ganglia";
 +import { createCollisionWorld } from '@opendfieldmap/ganglia/collision';
 +
 +import { traversalDevice } from './traversal-devices.ts';
