@@ -74,6 +74,10 @@ interface CategoryFeed {
     error: boolean;
 }
 
+interface PendingPage {
+    changes: (NotificationReadUpdate | NotificationLiveUpdate)[];
+}
+
 interface SocialLink {
     icon: React.FC<React.SVGProps<SVGSVGElement>>;
     url: string;
@@ -490,9 +494,11 @@ const NotifyModal: React.FC<NotifyProps> = ({
     const [markingAll, setMarkingAll] = useState(false);
     const [syncVersion, setSyncVersion] = useState(0);
     const handledSyncVersionRef = useRef(0);
-    // Replay only live changes received while each HTTP page is in flight.
-    const pendingLiveChanges = useRef(new Set<(NotificationReadUpdate | NotificationLiveUpdate)[]>());
-    const loadSequenceRef = useRef({ community: 0, system: 0 });
+    // Only the latest request in each category can update its feed.
+    const pendingPages = useRef<Record<NotificationCategory, PendingPage | null>>({
+        community: null,
+        system: null,
+    });
     const liveRevisionRef = useRef(0);
     const sessionRevisionRef = useRef(0);
     const readIdsRef = useRef(new Set<string>());
@@ -520,10 +526,9 @@ const NotifyModal: React.FC<NotifyProps> = ({
         async (category: NotificationCategory, append = false) => {
             if (!sessionUid) return;
             if (!isCurrentSession(sessionRevisionRef.current, sessionVersion)) return;
-            const sequence = ++loadSequenceRef.current[category];
             const cursor = append ? feeds[category].nextCursor : null;
-            const changes: (NotificationReadUpdate | NotificationLiveUpdate)[] = [];
-            pendingLiveChanges.current.add(changes);
+            const page: PendingPage = { changes: [] };
+            pendingPages.current[category] = page;
             const startLiveRevision = liveRevisionRef.current;
             const startSessionRevision = sessionRevisionRef.current;
             setFeeds((current) => ({
@@ -541,10 +546,10 @@ const NotifyModal: React.FC<NotifyProps> = ({
                     limit: 20,
                 });
                 if (!isCurrentSession(startSessionRevision, sessionVersion) ||
-                    sequence !== loadSequenceRef.current[category]) return;
-                const items = changes.reduce((items, change) => {
+                    pendingPages.current[category] !== page) return;
+                // Keep live changes that arrived after this HTTP request started.
+                const items = page.changes.reduce((items, change) => {
                     if ('notification' in change) {
-                        if (notificationCategoryForType(change.notification.type) !== category) return items;
                         return upsertItem(items, change.notification);
                     }
                     return applyNotificationRead(items, change);
@@ -570,7 +575,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
                 if (!receivedLiveUpdate) publishUnread(result.unread);
             } catch {
                 if (!isCurrentSession(startSessionRevision, sessionVersion) ||
-                    sequence !== loadSequenceRef.current[category]) return;
+                    pendingPages.current[category] !== page) return;
                 setFeeds((current) => ({
                     ...current,
                     [category]: {
@@ -581,7 +586,9 @@ const NotifyModal: React.FC<NotifyProps> = ({
                     },
                 }));
             } finally {
-                pendingLiveChanges.current.delete(changes);
+                // An older request must not clear its replacement.
+                if (pendingPages.current[category] === page)
+                    pendingPages.current[category] = null;
             }
         },
         [feeds, isCurrentSession, publishUnread, sessionUid, sessionVersion],
@@ -593,6 +600,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
         setExpandedIds(new Set());
         setMarkingAll(false);
         readIdsRef.current.clear();
+        pendingPages.current = { community: null, system: null };
         liveRevisionRef.current = 0;
         publishUnread(EMPTY_UNREAD);
         return () => { sessionRevisionRef.current += 1; };
@@ -647,16 +655,16 @@ const NotifyModal: React.FC<NotifyProps> = ({
                 if (!active()) return;
                 liveRevisionRef.current++;
                 readIdsRef.current.delete(update.notification.id);
-                pendingLiveChanges.current.forEach((changes) => changes.push(update));
-                publishUnread(update.unread);
                 const category = notificationCategoryForType(update.notification.type);
+                pendingPages.current[category]?.changes.push(update);
+                publishUnread(update.unread);
                 setFeeds((current) => ({ ...current, [category]: { ...current[category],
                     items: upsertItem(current[category].items, update.notification) } }));
             },
             onRead: (change) => {
                 if (!active()) return;
                 liveRevisionRef.current++;
-                pendingLiveChanges.current.forEach((changes) => changes.push(change));
+                pendingPages.current[change.category]?.changes.push(change);
                 publishUnread(change.unread);
                 setFeeds((current) => ({ ...current, [change.category]: { ...current[change.category],
                     items: applyNotificationRead(current[change.category].items, change) } }));

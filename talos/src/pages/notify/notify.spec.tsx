@@ -241,3 +241,23 @@ it('ignores a pre-reconnect page that resolves after the refreshed page', async 
     await act(async () => { stale.resolve(result([item('recovered')])); await stale.promise; });
     expect(document.querySelector('[data-notification-id="recovered"]')?.getAttribute('data-unread')).toBe('false');
 });
+
+it('keeps recording live changes for a replacement page when the older request finishes', async () => {
+    const stale = deferred<NotificationListResult>(), refreshed = deferred<NotificationListResult>();
+    api.list.mockImplementation((category: string) => category === 'community' ? stale.promise : Promise.resolve(result()));
+    const unread = vi.fn();
+    render(<NotifyModal open onClose={vi.fn()} onUnreadChange={unread} />); await flush();
+    api.list.mockImplementation((category: string) => category === 'community' ? refreshed.promise : Promise.resolve(result()));
+    act(() => { api.live!.onOpen!(); }); await flush();
+    await act(async () => { stale.resolve(result([item('obsolete')])); await stale.promise; });
+    act(() => {
+        api.live!.onRead!(readChange(['recovered']));
+        api.live!.onUpdate({ notification: item('live'), unread: counts(1) });
+    });
+    await act(async () => { refreshed.resolve(result([item('recovered')])); await refreshed.promise; });
+    expect(document.querySelector('[data-notification-id="obsolete"]')).toBeNull();
+    expect(document.querySelector('[data-notification-id="recovered"]')?.getAttribute('data-unread')).toBe('false');
+    expect(document.querySelector('[data-notification-id="live"]')?.getAttribute('data-unread')).toBe('true');
+    expect(unread).toHaveBeenLastCalledWith(counts(1));
+    expect(api.list).toHaveBeenCalledTimes(4);
+});
