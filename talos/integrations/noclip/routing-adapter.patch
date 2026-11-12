@@ -199,7 +199,8 @@ diff --git a/packages/extractor/src/game/physical-input.ts b/packages/extractor/
 new file mode 100644
 --- /dev/null
 +++ b/packages/extractor/src/game/physical-input.ts
-@@ -0,0 +1,377 @@
+@@ -0,0 +1,378 @@
++import { gangliaV1Defaults } from '@opendfieldmap/ganglia/solver';
 +import { readFile } from 'node:fs/promises';
 +import { isDeepStrictEqual } from 'node:util';
 +import { isObject, numberField } from '@endfield-noclip/formats/unity/values';
@@ -219,7 +220,7 @@ new file mode 100644
 +} from '@opendfieldmap/ganglia/build';
 +import {
 +	type PhysicalInput,
-+	type PhysicalConfig,
++	type PhysicalMovement,
 +} from '@opendfieldmap/ganglia/solver';
 +import {
 +	createPhysicalPreparation,
@@ -269,7 +270,7 @@ new file mode 100644
 +	interaction?: InteractionGoal;
 +	walls: Wall[];
 +	waypoints?: Vec3[];
-+	config?: import('@opendfieldmap/ganglia/solver').RouteQuery['config'];
++	solverConfig?: import('@opendfieldmap/ganglia/solver').SolverConfig;
 +};
 +
 +const vector = (point: unknown): point is Vec3 =>
@@ -430,7 +431,7 @@ new file mode 100644
 +		throw new Error('missing default movement settings');
 +	}
 +	const settings = defaults.settings;
-+	const config: PhysicalConfig = {
++	const physicalMovement: PhysicalMovement = {
 +		get model() {
 +			return {
 +				gravity: numberField(settings, '_gravity'),
@@ -509,7 +510,7 @@ new file mode 100644
 +				collision.coverage,
 +			);
 +		},
-+		config,
++		movement: physicalMovement,
 +		locomotion: movement.sustainedSprint,
 +		devices: physicalDevices,
 +	};
@@ -556,10 +557,10 @@ new file mode 100644
 +						goal: request.target,
 +						interaction: request.interaction,
 +						waypoints: request.waypoints,
-+						config: request.config,
 +					},
 +					{
 +						binding: JSON.stringify([generation, request.walls]),
++						config: request.solverConfig ?? gangliaV1Defaults,
 +						work: options.work,
 +						signal: options.signal,
 +						onProgress: options.onProgress,

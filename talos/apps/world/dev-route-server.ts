@@ -1,7 +1,8 @@
 import { candidateJobs } from './candidate-job.ts';
 import { setTimeout as delay } from 'node:timers/promises';
 import {
-    prepareSceneRouteSolver,
+    prepareRouteSolver,
+    gangliaV1Defaults,
     type RouteResult,
     type SceneResources,
 } from '@opendfieldmap/ganglia/solver';
@@ -662,14 +663,12 @@ export function routeServer(
                             });
                         },
                     };
-                    const solver = prepareSceneRouteSolver(
-                        { scene, source, walls: data.options.walls },
-                        resources,
+                    const solver = await prepareRouteSolver(
+                        gangliaV1Defaults,
                         {
-                            tileSpan: 38.4,
-                            gridSpan: 32,
-                            maxTiles: 16,
-                            margin: 8,
+                            kind: 'scene',
+                            scene: { scene, source, walls: data.options.walls },
+                            resources,
                             locomotion: movement.sustainedSprint,
                         },
                     );

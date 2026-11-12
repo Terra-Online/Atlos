@@ -50,7 +50,7 @@ export type RouteRequest = {
     interaction?: InteractionGoal;
     walls: Wall[];
     waypoints?: Vec3[];
-    config?: import('@opendfieldmap/ganglia/solver').RouteQuery['config'];
+    solverConfig?: import('@opendfieldmap/ganglia/solver').SolverConfig;
 };
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     value !== null && typeof value === 'object' && !Array.isArray(value);
