@@ -220,7 +220,7 @@ index 112457bd..624528c3 100644
   *
   * @module
 diff --git a/packages/viewer/src/environment/derive.ts b/packages/viewer/src/environment/derive.ts
-index 8a633c7a..c15ffd4c 100644
+index 3dd31346..47f450e7 100644
 --- a/packages/viewer/src/environment/derive.ts
 +++ b/packages/viewer/src/environment/derive.ts
 @@ -6,10 +6,12 @@
@@ -266,10 +266,10 @@ index 00000000..ed61d7ae
 +export { useViewerState } from './ui/use-viewer.ts';
 +export { Panel, PanelProvider, type PanelProps } from './ui/panel.tsx';
 diff --git a/packages/viewer/src/looks/lit-look.test.ts b/packages/viewer/src/looks/lit-look.test.ts
-index e36de382..4d53e872 100644
+index 401b72be..b82d19bd 100644
 --- a/packages/viewer/src/looks/lit-look.test.ts
 +++ b/packages/viewer/src/looks/lit-look.test.ts
-@@ -486,3 +486,23 @@ test('foliage: leaves and grass fill the foliage rows, and surfaces keeping lit
+@@ -524,3 +524,23 @@ test('foliage: leaves and grass fill the foliage rows, and surfaces keeping lit
  	assert.deepEqual(row(grass, LookRow.foliage2), [0.1, 3, 4, 0.25].map(Math.fround));
  	assert.equal(grass.params[LookRow.detail2 + 3], 0);
  });
@@ -294,10 +294,10 @@ index e36de382..4d53e872 100644
 +	);
 +});
 diff --git a/packages/viewer/src/looks/look.ts b/packages/viewer/src/looks/look.ts
-index 30ab9878..89551aee 100644
+index 35a5cc3b..0d07f640 100644
 --- a/packages/viewer/src/looks/look.ts
 +++ b/packages/viewer/src/looks/look.ts
-@@ -122,6 +122,8 @@ export interface MaterialLook {
+@@ -123,6 +123,8 @@ export interface MaterialLook {
  	unsupported: boolean;
  	/** the draws the look's meshes join, which decide their pass and pipelines */
  	queue: LookQueue;
@@ -306,7 +306,7 @@ index 30ab9878..89551aee 100644
  	/** the faces the game culls, for unmirrored instances */
  	cull: MaterialCull;
  	/** whether the material draws into shadow maps */
-@@ -322,6 +324,7 @@ export const emptyLook = ({ drawn }: { drawn: boolean }): MaterialLook => ({
+@@ -328,6 +330,7 @@ export const emptyLook = ({ drawn }: { drawn: boolean }): MaterialLook => ({
  	drawn,
  	unsupported: false,
  	queue: 'opaque',
@@ -369,10 +369,10 @@ index 19a0feb9..d84e8ced 100644
  	textures: effect.textures,
 diff --git a/packages/viewer/src/package/decode-data.test.ts b/packages/viewer/src/package/decode-data.test.ts
 new file mode 100644
-index 00000000..3f627456
+index 00000000..a4b86d04
 --- /dev/null
 +++ b/packages/viewer/src/package/decode-data.test.ts
-@@ -0,0 +1,62 @@
+@@ -0,0 +1,66 @@
 +import assert from 'node:assert/strict';
 +import { it } from 'node:test';
 +
@@ -414,6 +414,8 @@ index 00000000..3f627456
 +		decals: { rows: new Uint32Array(), values: new Float32Array() },
 +		spins: { rows: new Uint32Array(), values: new Float32Array() },
 +		floaters: { rows: new Uint32Array(), values: new Uint32Array() },
++		rides: { rows: new Uint32Array([0]), values: new Uint32Array([0]) },
++		paths: [{ frameRate: 1, offsets: new Float32Array([0, 0, 0, 2, 0, 0]) }],
 +	});
 +	const decoded = await decodeData(
 +		{
@@ -433,14 +435,16 @@ index 00000000..3f627456
 +	if (decoded.response.kind === 'instances') {
 +		assert.deepEqual(decoded.response.origin, [12, 3, 45]);
 +		assert.deepEqual([...decoded.response.runs], [0, 0, 1]);
++		assert.deepEqual([...decoded.response.rides!.pathOf], [0]);
++		assert.ok(decoded.transfer.includes(decoded.response.rides!.paths[0].offsets.buffer));
 +	}
 +});
 diff --git a/packages/viewer/src/package/decode-data.ts b/packages/viewer/src/package/decode-data.ts
 new file mode 100644
-index 00000000..51a10e5b
+index 00000000..bb28ebe5
 --- /dev/null
 +++ b/packages/viewer/src/package/decode-data.ts
-@@ -0,0 +1,427 @@
+@@ -0,0 +1,436 @@
 +import { BlobCodec } from '@endfield-noclip/package-format/blobs';
 +import {
 +	decodeGeometryBlob,
@@ -848,6 +852,15 @@ index 00000000..51a10e5b
 +								built.spins.runs.buffer,
 +							]),
 +					...(built.floaters === null ? [] : [built.floaters.rows.buffer, built.floaters.volumes.buffer]),
++					...(built.rides === null
++						? []
++						: [
++							built.rides.rows.buffer,
++							built.rides.pathOf.buffer,
++							built.rides.base.buffer,
++							built.rides.runs.buffer,
++							...built.rides.paths.map((path) => path.offsets.buffer),
++						]),
 +				],
 +			};
 +		}
@@ -4194,17 +4207,17 @@ index 00000000..3091b653
 +});
 diff --git a/packages/viewer/src/scene/point-view.ts b/packages/viewer/src/scene/point-view.ts
 new file mode 100644
-index 00000000..b9b4ff5e
+index 00000000..0381eea2
 --- /dev/null
 +++ b/packages/viewer/src/scene/point-view.ts
-@@ -0,0 +1,583 @@
+@@ -0,0 +1,587 @@
 +/* oxlint-disable no-await-in-loop -- avoid a burst of requests while examining local instances */
 +import { DrawRole } from '@endfield-noclip/package-format/instances';
 +import { CORE_ARCHIVE_INDEX } from '@endfield-noclip/package-format/manifest';
 +import { ContentKind } from '@endfield-noclip/package-format/tree';
 +import type { Vec3 } from '@endfield-noclip/package-format/values';
 +
-+import { RowKind, ROW_WORDS } from '../content/instance-rows.ts';
++import { rideRows, RowKind, ROW_WORDS } from '../content/instance-rows.ts';
 +import { LookFlags } from '../looks/look.ts';
 +import { materialLooks } from '../looks/material-looks.ts';
 +import { SharedBytes, type DecodePool } from '../package/decode-pool.ts';
@@ -4618,7 +4631,11 @@ index 00000000..b9b4ff5e
 +		}
 +		const block = await pending;
 +		remember(pkg, ref.blob, block);
-+		const rows = new Float32Array(block.rows.buffer);
++		// Offline poses use the animation's initial frame, preserving cached decoded rows.
++		const rows = new Float32Array(block.rides === null ? block.rows.buffer : block.rows.buffer.slice(0));
++		if (block.rides !== null) {
++			rideRows(rows, block.rides, 0);
++		}
 +		for (let run = 0; run < block.runs.length; run += 3) {
 +			const chain = pkg.chains[block.runs[run]],
 +				first = Math.max(ref.first, block.runs[run + 1]),
@@ -5402,7 +5419,7 @@ index 5804e4ac..f9112494 100644
  		times.span('encode');
  		this.device.queue.submit([encoder.finish()]);
 diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/viewer.ts
-index 4a9eca6d..df7f3683 100644
+index 96234c65..67207bb4 100644
 --- a/packages/viewer/src/viewer/viewer.ts
 +++ b/packages/viewer/src/viewer/viewer.ts
 @@ -1,4 +1,19 @@

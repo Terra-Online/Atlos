@@ -1,5 +1,5 @@
 diff --git a/packages/extractor/package.json b/packages/extractor/package.json
-index fa7c03a9..514212ed 100644
+index fa7c03a9..1b5a01f1 100644
 --- a/packages/extractor/package.json
 +++ b/packages/extractor/package.json
 @@ -13,6 +13,7 @@
@@ -7033,10 +7033,10 @@ index 00000000..119666ab
 +};
 diff --git a/packages/extractor/src/game/following-route.test.ts b/packages/extractor/src/game/following-route.test.ts
 new file mode 100644
-index 00000000..aaa23b3c
+index 00000000..6a6876c2
 --- /dev/null
 +++ b/packages/extractor/src/game/following-route.test.ts
-@@ -0,0 +1,310 @@
+@@ -0,0 +1,319 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
@@ -7263,8 +7263,17 @@ index 00000000..aaa23b3c
 +			floor('upper', 10, 15, 2.5, -0.5, 0.5),
 +		],
 +	});
-+	assert.equal(result.route.status, 'no-verified-route');
 +	assert.ok(result.diagnostics.outcomes.some((outcome) => outcome.reason === 'placement-base-unsupported'));
++	// A jump may cross the gap to a fully supported placement on the right floor.
++	// Reject unsupported footprints rather than assuming the whole route is impossible.
++	for (const box of result.supportBoxes) {
++		assert.equal(box.min[1], 0);
++		assert.ok(box.min[2] >= -1 && box.max[2] <= 1);
++		assert.ok(
++			(box.min[0] >= -8 && box.max[0] <= 7.9) ||
++				(box.min[0] >= 9.5 && box.max[0] <= 18),
++		);
++	}
 +});
 +
 +test('rotated source boxes retain their real roof and unsupported geometry is rejected', async () => {
@@ -10733,7 +10742,7 @@ index 418803cc..b4a54172 100644
  // `state` itself
  const jumpPad: MemoryPackValue = {
 diff --git a/packages/extractor/src/game/interactives/interactive-facilities.ts b/packages/extractor/src/game/interactives/interactive-facilities.ts
-index 86df2d06..34630da6 100644
+index 92cef19f..859f9617 100644
 --- a/packages/extractor/src/game/interactives/interactive-facilities.ts
 +++ b/packages/extractor/src/game/interactives/interactive-facilities.ts
 @@ -3,7 +3,7 @@ import type { Vec3 } from '@endfield-noclip/package-format/values';
@@ -10812,7 +10821,7 @@ index 86df2d06..34630da6 100644
 +			alternatives: baseGate(visibility).alternatives.map((requirements) => [...requirements, ...gates]),
 +		});
  		// oxlint-disable-next-line no-await-in-loop -- splines are read once per level
- 		const ride = await platforms.rideOf(row, levelId);
+ 		const ride = await platforms.rideOf(entry);
  		// oxlint-disable-next-line no-await-in-loop -- locks are read once per level
 diff --git a/packages/extractor/src/game/interactives/template-traits.ts b/packages/extractor/src/game/interactives/template-traits.ts
 index d60d08f6..6f730d05 100644
@@ -16951,10 +16960,10 @@ index 00000000..6cbc15b8
 +	};
 +};
 diff --git a/packages/extractor/src/game/world/world-index.ts b/packages/extractor/src/game/world/world-index.ts
-index 132860c4..e194b874 100644
+index 34a06000..58322140 100644
 --- a/packages/extractor/src/game/world/world-index.ts
 +++ b/packages/extractor/src/game/world/world-index.ts
-@@ -100,7 +100,7 @@ export class WorldIndex {
+@@ -103,7 +103,7 @@ export class WorldIndex {
  	#stringPool: Promise<StringPool> | undefined;
  	#names: Promise<Map<string, string>> | undefined;
  	#english: Promise<Map<bigint, string>> | undefined;
@@ -16963,7 +16972,7 @@ index 132860c4..e194b874 100644
  	readonly #missions = new Map<string, Promise<MissionRuntime | undefined>>();
  	#chunkFiles: Promise<ChunkFile[]> | undefined;
  	readonly #mapConfigs = new Map<string, Promise<MapConfig | undefined>>();
-@@ -292,13 +292,29 @@ export class WorldIndex {
+@@ -295,13 +295,29 @@ export class WorldIndex {
  	}
  
  	/**
@@ -16996,7 +17005,7 @@ index 132860c4..e194b874 100644
  			const ids = new Map<string, bigint>();
  			for (const [key, value] of parseSparkTable(
  				await this.#read(VfsGroup.Table, 'Data/TableCfg/TextTable.bytes'),
-@@ -309,10 +325,11 @@ export class WorldIndex {
+@@ -312,10 +328,11 @@ export class WorldIndex {
  			}
  			return (key: string) => {
  				const id = ids.get(key);

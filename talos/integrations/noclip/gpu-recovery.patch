@@ -94,7 +94,7 @@ index 00000000..6b06d53b
 +    }
 +}
 diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/viewer.ts
-index df7f3683..a08a148d 100644
+index 67207bb4..1eb5cbd9 100644
 --- a/packages/viewer/src/viewer/viewer.ts
 +++ b/packages/viewer/src/viewer/viewer.ts
 @@ -20,6 +20,7 @@ import type { WaterSurfaceEntry } from '@endfield-noclip/package-format/water';

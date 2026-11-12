@@ -27,11 +27,13 @@ configure route data and the private game configuration. Neither keys nor game c
 
 ## updating
 
-The current pin uses package format v102, including upstream foliage lighting, local-light shadows
-and texture-driven cloth offsets. Existing v98 archives must be repacked before using this viewer.
-Point coordinates and navigation exports do not need recomputing for this renderer update; retained
-companion metadata must be checked against the new package states, source fingerprint and levels,
-and its catalog and navigation generation bindings updated before publication.
+The current pin uses package format v104, including upstream terrain-hole fixes, emissive albedo
+and moving-platform instance paths. Older archives must be repacked before using this viewer.
+Export companion and navigation metadata against the new states before rebaking point views with
+`oem-views --rebuild`. Offline decoding retains moving-row buffers and frames their initial path pose
+without mutating shared decoded rows. Publish the resulting immutable catalog only after `oem-check`
+confirms complete pose coverage and generation/visibility bindings. A context-only fallback remains
+an unconfirmed view, not proof that the target is visible.
 
 1. Fast-forward the clean upstream noclip checkout to `upstream/trunk`.
 2. Regenerate `upstream.tar.gz` with `git archive --format=tar.gz upstream/trunk`, record its commit

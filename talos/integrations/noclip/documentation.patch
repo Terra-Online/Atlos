@@ -18,7 +18,7 @@ index 9594f135..50ac16c7 100644
  install (Endfield_Data)                      local, read-only
    │  VFS catalogs + chunks → HG bundles → Unity SerializedFiles, world data, tables
 diff --git a/docs/extraction.md b/docs/extraction.md
-index d51c97a3..a9500f64 100644
+index c1d2bd16..3664341d 100644
 --- a/docs/extraction.md
 +++ b/docs/extraction.md
 @@ -24,12 +24,13 @@ pnpm extract --help
@@ -41,7 +41,7 @@ index d51c97a3..a9500f64 100644
  
  | command    | what it does                                                                                                                                                                                                                                                                                                                                                              |
  | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-@@ -111,6 +112,21 @@ with `--class`, it selects objects of that class in matching SerializedFiles. `-
+@@ -112,6 +113,21 @@ with `--class`, it selects objects of that class in matching SerializedFiles. `-
  `selection` object of sorted area ids and chunk file names to the variants object, without trailing
  text.
  
@@ -63,7 +63,7 @@ index d51c97a3..a9500f64 100644
  ## local config and keys
  
  `endfield.local.json` holds the install path (`gameData`, the `Endfield_Data` directory) and the key
-@@ -270,6 +286,19 @@ booleans. code: [serialized-file.ts](../packages/formats/src/unity/serialized-fi
+@@ -271,6 +287,19 @@ booleans. code: [serialized-file.ts](../packages/formats/src/unity/serialized-fi
  [values.ts](../packages/formats/src/unity/values.ts),
  [plain-object.ts](../packages/formats/src/unity/plain-object.ts).
  
@@ -83,7 +83,7 @@ index d51c97a3..a9500f64 100644
  ## decoders
  
  `formats` modules validate layouts while decoding and throw on a mismatch. the linked game-data
-@@ -298,6 +327,18 @@ mesh any swaying material draws is converted with the strongest of their sways,
+@@ -299,6 +328,18 @@ mesh any swaying material draws is converted with the strongest of their sways,
  weights in position W and grows its bounds, and a mesh any material offsets by a texture with the
  farthest of their offsets ([swaying geometry](package-format.md#geometry-blob-mesh-efgm)).
  
@@ -102,7 +102,7 @@ index d51c97a3..a9500f64 100644
  **skin pose.** [skin-pose.ts](../packages/formats/src/unity/skin-pose.ts) bakes linear blend
  skinning into a new static mesh: positions, normals, tangents and bounds move into the space of the
  supplied pose (bone matrix × bind pose per bone). it throws on missing influences, bad bone indices
-@@ -731,3 +772,23 @@ ignores:
+@@ -737,3 +778,23 @@ ignores:
  start from these when something is missing in the viewer: `instances.jsonl` maps a drawn block back
  to entities and chunk files, and `assets.json` says why an asset didn't convert. what the extractor
  lacks is listed in [status.md](status.md#packaging).
@@ -127,7 +127,7 @@ index d51c97a3..a9500f64 100644
 +scopes; see [movement devices](navigation.md#movement-devices). its candidate connections still
 +require grounded endpoints, active state and motion validation.
 diff --git a/docs/extraction/scene-controls.md b/docs/extraction/scene-controls.md
-index 17531533..d44f2c69 100644
+index c610d3a5..c68d6881 100644
 --- a/docs/extraction/scene-controls.md
 +++ b/docs/extraction/scene-controls.md
 @@ -34,6 +34,7 @@ the package side of [the selectors](../game-data/scene-states.md#the-selectors-a
@@ -1349,10 +1349,10 @@ index 00000000..37f79965
 +ordinary-area-only routing has so far established only a short local approach. no all-point routing
 +bake, in-game traversal validation or browser screenshot comparison has been completed.
 diff --git a/docs/package-format.md b/docs/package-format.md
-index 14da7606..9f9bdf1b 100644
+index 391150c6..e7f3f8c7 100644
 --- a/docs/package-format.md
 +++ b/docs/package-format.md
-@@ -537,6 +537,9 @@ material is ready or an `UnconvertedEntry`, as in the [asset tables](#asset-tabl
+@@ -547,6 +547,9 @@ material is ready or an `UnconvertedEntry`, as in the [asset tables](#asset-tabl
  
  ### materials
  
@@ -1363,7 +1363,7 @@ index 14da7606..9f9bdf1b 100644
  state ([material and shader](game-data/assets.md#material-and-shader), decoded as
  [extraction.md](extraction.md#asset-classes) describes) into what it draws
 diff --git a/docs/status.md b/docs/status.md
-index 91823220..e6aede15 100644
+index a9734f6a..e48bad65 100644
 --- a/docs/status.md
 +++ b/docs/status.md
 @@ -42,6 +42,14 @@ packs or renders correctly.
@@ -1378,10 +1378,10 @@ index 91823220..e6aede15 100644
 +  remain unsupported. external-LUT colour-space parity still needs an in-game comparison
 +  ([photo filters](viewer/post-processing.md#photo-filters))
 +
- - ambient ([ambient](viewer/lighting.md#ambient)): GI brightness is unchecked against in-game shots;
-   the native scalar on all diffuse ambient, the specular ambient's scale (taken as
-   `indirectSpecularFactor`) and the volume's default SH aren't recovered
-@@ -722,3 +730,77 @@ an entry when it's done or ruled out.
+ - ambient ([ambient](viewer/lighting.md#ambient)): checked against an in-game shot only at Jingyu's
+   cave arch; the volume's default SH isn't recovered ([open](game-data/lighting.md#open)); the
+   lookup has no jitter or forward-shifted clipmap centres; the AO multi-bounce fit uses the albedo's
+@@ -723,3 +731,77 @@ an entry when it's done or ruled out.
  - `world vars <scene>`: join AutoName, MapConfig, LevelData and DynamicStreaming variables
  - `world scripts find <type>`: print level-script nodes of a type
  - `vfs table <name>`: dump a config table
