@@ -31,8 +31,6 @@ import { modKey } from '@/platform/shortcuts';
 import { openOemAccountModal } from '@/component/shared/account/authEvents';
 import { useAuthStore } from '@/store/auth';
 import {
-    subscribeNotificationLive,
-    type NotificationLiveUpdate,
     type NotificationUnreadCounts,
 } from '@/services/notifications/client';
 
@@ -83,14 +81,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     } = useAnnouncementFlow(locale);
     const { isMobile } = useDevice();
     const sessionUser = useAuthStore((state) => state.sessionUser);
-    const sessionUid = sessionUser?.uid;
     const [notificationUnread, setNotificationUnread] = useState<NotificationUnreadCounts>({
         system: 0,
         community: 0,
         total: 0,
     });
-    const [notificationLiveUpdate, setNotificationLiveUpdate] = useState<NotificationLiveUpdate | null>(null);
-    const [notificationSyncVersion, setNotificationSyncVersion] = useState(0);
     const pictureInPicture = useAppPictureInPicture(map);
     const setIsUserGuideOpen = useSetIsUserGuideOpen();
     const isUserGuideOpen = useIsUserGuideOpen();
@@ -129,34 +124,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
         onToggleUI?.();
     };
     const handleNotification = () => setNotifyOpen(true);
-
-    useEffect(() => {
-        if (!sessionUid) {
-            setNotificationUnread({ system: 0, community: 0, total: 0 });
-            setNotificationLiveUpdate(null);
-            return;
-        }
-        let disposed = false;
-        const unsubscribe = subscribeNotificationLive({
-            onUpdate: (update) => {
-                if (disposed) return;
-                setNotificationUnread(update.unread);
-                setNotificationLiveUpdate(update);
-            },
-            onReady: (unread) => {
-                if (disposed) return;
-                setNotificationUnread(unread);
-            },
-            onOpen: () => {
-                if (disposed) return;
-                setNotificationSyncVersion((version) => version + 1);
-            },
-        });
-        return () => {
-            disposed = true;
-            unsubscribe();
-        };
-    }, [sessionUid]);
 
     const [isDark, setIsDark] = useState(false);
 
@@ -325,8 +292,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                 onClose={() => setNotifyOpen(false)}
                 onChange={(o) => setNotifyOpen(o)}
                 onUnreadChange={setNotificationUnread}
-                liveUpdate={notificationLiveUpdate}
-                syncVersion={notificationSyncVersion}
             />
 
             {/* Settings Modal */}
