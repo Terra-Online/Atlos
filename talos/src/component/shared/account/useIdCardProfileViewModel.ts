@@ -118,6 +118,8 @@ export const useIdCardProfileViewModel = ({
 
     const displayUid = isGuest
       ? buildGuestId()
+      : sessionUser?.needsProfileSetup
+      ? t('idcard.unassigned')
       : sessionUser?.uid || fallbackUid || DEFAULT_UID;
 
     const groupCode = isGuest
