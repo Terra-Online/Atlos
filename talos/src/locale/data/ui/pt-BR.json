@@ -64,11 +64,10 @@
       "flag": "Marcar como impreciso",
       "unflag": "Remover marcação",
       "uploadAno": "Enviar outro",
-      "share": "Compartilhar",
-      "delete": "Delete"
+      "share": "Compartilhar"
     },
     "comments": {
-            "unavailable": "Este comentário não está disponível.",
+      "unavailable": "Comentário indisponível.",
       "copyLink": "Copiar link do comentário",
       "emojiPicker": "Escolher um emoji",
       "spoilerHidden": "Clique para revelar o spoiler",
@@ -86,15 +85,14 @@
       "reply": "Responder",
       "edit": "Editar",
       "submitEdit": "Salvar alterações",
-      "delete": "Delete",
       "reviewing": "Em análise",
       "emptyWithRule": "Ainda não há comentários. Ao publicar, siga as <a href=\"{link}\">diretrizes da comunidade</a>.",
       "ruleOnly": "Ao publicar, siga as <a href=\"{link}\">diretrizes da comunidade</a>.",
       "loadFailed": "Falha ao carregar comentários.",
       "submitFailed": "Falha ao enviar comentário.",
       "editFailed": "Não foi possível atualizar o comentário.",
-      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
-      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
+      "editConflict": "O comentário mudou ou não pode mais ser editado. Confira e reabra o editor.",
+      "editConflictRefreshFailed": "O comentário mudou. Recarregue antes de editar."
     },
     "errors": {
       "unsupportedType": "Apenas imagens JPEG/PNG/WebP/AVIF/HEIC são suportadas.",
@@ -499,6 +497,7 @@
     "close": "Fechar",
     "skip": "Pular",
     "clear": "Limpar",
+    "delete": "Excluir",
     "all": "Tudo",
     "selected": "Selecionado",
     "confirm": "Confirmar",

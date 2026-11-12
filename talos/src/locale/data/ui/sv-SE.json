@@ -64,11 +64,10 @@
       "flag": "Markera som felaktig",
       "unflag": "Ta bort markering",
       "uploadAno": "Ladda upp",
-      "share": "Dela",
-      "delete": "Delete"
+      "share": "Dela"
     },
     "comments": {
-            "unavailable": "Den här kommentaren är inte tillgänglig.",
+      "unavailable": "Kommentaren är inte tillgänglig.",
       "copyLink": "Kopiera kommentarlänk",
       "emojiPicker": "Välj en emoji",
       "spoilerHidden": "Klicka för att visa spoilern",
@@ -86,15 +85,14 @@
       "reply": "Svara",
       "edit": "Redigera",
       "submitEdit": "Spara ändringar",
-      "delete": "Delete",
       "reviewing": "Granskas",
       "emptyWithRule": "Inga kommentarer ännu. Följ <a href=\"{link}\">communityriktlinjerna</a> när du publicerar.",
       "ruleOnly": "Följ <a href=\"{link}\">communityriktlinjerna</a> när du publicerar.",
       "loadFailed": "Kommentarer kunde inte läsas in.",
       "submitFailed": "Kommentaren kunde inte skickas.",
       "editFailed": "Kommentaren kunde inte uppdateras.",
-      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
-      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
+      "editConflict": "Kommentaren har ändrats eller kan inte redigeras. Kontrollera den och öppna redigeraren igen.",
+      "editConflictRefreshFailed": "Kommentaren har ändrats. Ladda om innan du redigerar."
     },
     "errors": {
       "unsupportedType": "Endast JPEG/PNG/WebP/AVIF/HEIC-bilder stöds.",
@@ -499,6 +497,7 @@
     "close": "Stäng",
     "skip": "Hoppa över",
     "clear": "Rensa",
+    "delete": "Ta bort",
     "all": "Alla",
     "selected": "Valda",
     "confirm": "Bekräfta",

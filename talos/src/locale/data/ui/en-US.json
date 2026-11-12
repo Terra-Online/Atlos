@@ -64,11 +64,10 @@
       "flag": "Flag as Inaccurate",
       "unflag": "Unflag",
       "uploadAno": "Upload Another",
-      "share": "Share",
-      "delete": "Delete"
+      "share": "Share"
     },
     "comments": {
-            "unavailable": "This comment is unavailable.",
+      "unavailable": "Comment unavailable.",
       "copyLink": "Copy comment link",
       "emojiPicker": "Choose an emoji",
       "spoilerHidden": "Click to reveal spoiler content",
@@ -86,15 +85,14 @@
       "reply": "Reply",
       "edit": "Edit",
       "submitEdit": "Submit Edit",
-      "delete": "Delete",
       "reviewing": "Reviewing",
       "emptyWithRule": "No comments yet. Please follow <a href=\"{link}\">community guidelines</a> when posting.",
       "ruleOnly": "Please follow <a href=\"{link}\">community guidelines</a> when posting.",
       "loadFailed": "Comments failed to load.",
       "submitFailed": "Comment failed to submit.",
       "editFailed": "Comment failed to update.",
-      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
-      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
+      "editConflict": "Comment changed or can't be edited. Check it and reopen the editor.",
+      "editConflictRefreshFailed": "Comment changed. Reload before editing again."
     },
     "errors": {
       "unsupportedType": "Only JPEG/PNG/WebP/AVIF/HEIC images are supported.",
@@ -499,6 +497,7 @@
     "close": "Close",
     "skip": "Skip",
     "clear": "Clear",
+    "delete": "Delete",
     "all": "All",
     "selected": "Selected",
     "confirm": "Confirm",

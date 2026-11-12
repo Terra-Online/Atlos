@@ -66,9 +66,9 @@ it('navigates only within the carousel hit zones and keeps the click inside the 
 it('gates actions by permissions, pending state and callbacks without losing action targets', () => {
     const callbacks = { onToggleUpvote: vi.fn(), onToggleFlag: vi.fn(), onShare: vi.fn(), onDelete: vi.fn(), onDeleteBlur: vi.fn(), onRequestUpload: vi.fn() };
     const view = render(<Viewer open imageUrl="/one.webp" alt="One" canDelete canAppendUpload {...callbacks} onClose={() => {}} />);
-    for (const name of ['Upvote', 'Flag', 'Share', 'detail.viewer.delete', 'detail.viewer.uploadAno']) fireEvent.click(screen.getByRole('button', { name }));
+    for (const name of ['Upvote', 'Flag', 'Share', 'common.delete', 'detail.viewer.uploadAno']) fireEvent.click(screen.getByRole('button', { name }));
     for (const callback of Object.values(callbacks).filter((fn) => fn !== callbacks.onDeleteBlur)) expect(callback).toHaveBeenCalledOnce();
-    fireEvent.blur(screen.getByRole('button', { name: 'detail.viewer.delete' }));
+    fireEvent.blur(screen.getByRole('button', { name: 'common.delete' }));
     expect(callbacks.onDeleteBlur).toHaveBeenCalledOnce();
     view.rerender(<Viewer open imageUrl="/one.webp" alt="One" canFlag={false} canDelete actionPending deleteConfirming shareCopied onClose={() => {}} />);
     expect(screen.queryByRole('button', { name: 'Flag' })).toBeNull();
@@ -76,7 +76,7 @@ it('gates actions by permissions, pending state and callbacks without losing act
     view.rerender(<Viewer open imageUrl="/one.webp" alt="One" canDelete ownerActionsOnly onClose={() => {}} />);
     expect(screen.queryByRole('button', { name: 'Upvote' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Share' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'detail.viewer.delete' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'common.delete' })).toBeTruthy();
 });
 
 it('uses fallback metadata for a single image and cancels an interrupted exit', async () => {

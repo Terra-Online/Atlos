@@ -64,11 +64,10 @@
       "flag": "Segnala come impreciso",
       "unflag": "Rimuovi segnalazione",
       "uploadAno": "Carica altro",
-      "share": "Condividi",
-      "delete": "Delete"
+      "share": "Condividi"
     },
     "comments": {
-            "unavailable": "Questo commento non è disponibile.",
+      "unavailable": "Commento non disponibile.",
       "copyLink": "Copia link del commento",
       "emojiPicker": "Scegli un'emoji",
       "spoilerHidden": "Fai clic per leggere lo spoiler",
@@ -86,15 +85,14 @@
       "reply": "Rispondi",
       "edit": "Modifica",
       "submitEdit": "Salva modifiche",
-      "delete": "Delete",
       "reviewing": "In revisione",
       "emptyWithRule": "Non ci sono ancora commenti. Quando pubblichi, segui le <a href=\"{link}\">linee guida della community</a>.",
       "ruleOnly": "Quando pubblichi, segui le <a href=\"{link}\">linee guida della community</a>.",
       "loadFailed": "Caricamento dei commenti non riuscito.",
       "submitFailed": "Invio del commento non riuscito.",
       "editFailed": "Impossibile aggiornare il commento.",
-      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
-      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
+      "editConflict": "Il commento è cambiato o non è più modificabile. Controllalo e riapri l’editor.",
+      "editConflictRefreshFailed": "Il commento è cambiato. Ricarica prima di modificarlo."
     },
     "errors": {
       "unsupportedType": "Sono supportate solo immagini JPEG/PNG/WebP/AVIF/HEIC.",
@@ -499,6 +497,7 @@
     "close": "Chiudi",
     "skip": "Salta",
     "clear": "Cancella",
+    "delete": "Elimina",
     "all": "Tutto",
     "selected": "Selezionato",
     "confirm": "Conferma",

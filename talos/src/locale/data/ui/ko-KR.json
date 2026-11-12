@@ -64,11 +64,10 @@
       "flag": "부정확한 정보로 신고",
       "unflag": "신고 취소",
       "uploadAno": "다른 이미지 업로드",
-      "share": "공유",
-      "delete": "Delete"
+      "share": "공유"
     },
     "comments": {
-            "unavailable": "이 댓글을 볼 수 없습니다.",
+      "unavailable": "댓글을 볼 수 없습니다.",
       "copyLink": "댓글 링크 복사",
       "emojiPicker": "이모지 선택",
       "spoilerHidden": "클릭하여 스포일러 보기",
@@ -86,15 +85,14 @@
       "reply": "답글",
       "edit": "수정",
       "submitEdit": "수정 내용 저장",
-      "delete": "Delete",
       "reviewing": "검토 중",
       "emptyWithRule": "아직 댓글이 없습니다. 게시 시 <a href=\"{link}\">커뮤니티 가이드라인</a>을 따라 주세요.",
       "ruleOnly": "게시 시 <a href=\"{link}\">커뮤니티 가이드라인</a>을 따라 주세요.",
       "loadFailed": "댓글을 불러오지 못했습니다.",
       "submitFailed": "댓글을 게시하지 못했습니다.",
       "editFailed": "댓글을 수정하지 못했습니다.",
-      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
-      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
+      "editConflict": "댓글이 변경되었거나 수정할 수 없습니다. 내용을 확인하고 편집기를 다시 열어 주세요.",
+      "editConflictRefreshFailed": "댓글이 변경되었습니다. 새로고침 후 수정해 주세요."
     },
     "errors": {
       "unsupportedType": "JPEG/PNG/WebP/AVIF/HEIC 이미지만 지원됩니다.",
@@ -499,6 +497,7 @@
     "close": "닫기",
     "skip": "건너뛰기",
     "clear": "지우기",
+    "delete": "삭제",
     "all": "모두",
     "selected": "선택됨",
     "confirm": "확인",

@@ -253,7 +253,7 @@ const CommentItem = memo(({
                 id: 'delete',
                 label: tUI(deleteConfirming
                     ? 'common.confirmAgain'
-                    : 'detail.comments.delete'),
+                    : 'common.delete'),
                 icon: <RecallIcon />,
                 confirming: deleteConfirming,
                 tooltipKey: `delete:${deleteConfirming ? 'confirm' : 'idle'}:${comment.id}`,

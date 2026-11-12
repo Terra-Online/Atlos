@@ -140,7 +140,7 @@ const Viewer: React.FC<ViewerProps> = ({
     const flagLabel = currentFlagged ? tUI('detail.viewer.unflag') : tUI('detail.viewer.flag');
     const deleteLabel = deleteConfirming
         ? tUI('common.confirmAgain')
-        : tUI('detail.viewer.delete');
+        : tUI('common.delete');
     const uploadLabel = tUI('detail.viewer.uploadAno');
     const viewerActionBar = useMemo<ActionBarItem[]>(() => (
         [{

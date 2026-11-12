@@ -64,11 +64,10 @@
       "flag": "Đánh dấu không chính xác",
       "unflag": "Bỏ đánh dấu",
       "uploadAno": "Tải lên khác",
-      "share": "Chia sẻ",
-      "delete": "Delete"
+      "share": "Chia sẻ"
     },
     "comments": {
-            "unavailable": "Bình luận này không còn khả dụng.",
+      "unavailable": "Bình luận không khả dụng.",
       "copyLink": "Sao chép liên kết bình luận",
       "emojiPicker": "Chọn biểu tượng cảm xúc",
       "spoilerHidden": "Nhấp để xem nội dung tiết lộ cốt truyện",
@@ -86,15 +85,14 @@
       "reply": "Trả lời",
       "edit": "Chỉnh sửa",
       "submitEdit": "Lưu chỉnh sửa",
-      "delete": "Delete",
       "reviewing": "Đang duyệt",
       "emptyWithRule": "Chưa có bình luận nào. Vui lòng tuân thủ <a href=\"{link}\">nguyên tắc cộng đồng</a> khi đăng.",
       "ruleOnly": "Vui lòng tuân thủ <a href=\"{link}\">nguyên tắc cộng đồng</a> khi đăng.",
       "loadFailed": "Không tải được bình luận.",
       "submitFailed": "Không gửi được bình luận.",
       "editFailed": "Không thể cập nhật bình luận.",
-      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
-      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
+      "editConflict": "Bình luận đã thay đổi hoặc không thể sửa. Hãy kiểm tra và mở lại trình chỉnh sửa.",
+      "editConflictRefreshFailed": "Bình luận đã thay đổi. Hãy tải lại trước khi chỉnh sửa."
     },
     "errors": {
       "unsupportedType": "Chỉ hỗ trợ ảnh JPEG/PNG/WebP/AVIF/HEIC.",
@@ -499,6 +497,7 @@
     "close": "Đóng",
     "skip": "Bỏ qua",
     "clear": "Xóa",
+    "delete": "Xóa",
     "all": "Tất cả",
     "selected": "Đã chọn",
     "confirm": "Xác nhận",

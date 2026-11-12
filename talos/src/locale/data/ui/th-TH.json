@@ -64,11 +64,10 @@
       "flag": "รายงานว่าไม่ถูกต้อง",
       "unflag": "ยกเลิกการรายงาน",
       "uploadAno": "อัปโหลดเพิ่ม",
-      "share": "แชร์",
-      "delete": "Delete"
+      "share": "แชร์"
     },
     "comments": {
-            "unavailable": "ความคิดเห็นนี้ไม่พร้อมใช้งาน",
+      "unavailable": "ไม่สามารถดูความคิดเห็นนี้ได้",
       "copyLink": "คัดลอกลิงก์ความคิดเห็น",
       "emojiPicker": "เลือกอีโมจิ",
       "spoilerHidden": "คลิกเพื่อดูเนื้อหาสปอยล์",
@@ -86,15 +85,14 @@
       "reply": "ตอบกลับ",
       "edit": "แก้ไข",
       "submitEdit": "บันทึกการแก้ไข",
-      "delete": "Delete",
       "reviewing": "รอตรวจสอบ",
       "emptyWithRule": "ยังไม่มีความคิดเห็น โปรดปฏิบัติตาม<a href=\"{link}\">แนวทางชุมชน</a>เมื่อโพสต์",
       "ruleOnly": "โปรดปฏิบัติตาม<a href=\"{link}\">แนวทางชุมชน</a>เมื่อโพสต์",
       "loadFailed": "โหลดความคิดเห็นไม่สำเร็จ",
       "submitFailed": "ส่งความคิดเห็นไม่สำเร็จ",
       "editFailed": "แก้ไขความคิดเห็นไม่สำเร็จ",
-      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
-      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
+      "editConflict": "ความคิดเห็นเปลี่ยนไปหรือแก้ไขไม่ได้แล้ว โปรดตรวจสอบและเปิดช่องแก้ไขอีกครั้ง",
+      "editConflictRefreshFailed": "ความคิดเห็นเปลี่ยนไป โปรดโหลดใหม่ก่อนแก้ไข"
     },
     "errors": {
       "unsupportedType": "รองรับเฉพาะรูปภาพ JPEG/PNG/WebP/AVIF/HEIC",
@@ -499,6 +497,7 @@
     "close": "ปิด",
     "skip": "ข้าม",
     "clear": "ล้าง",
+    "delete": "ลบ",
     "all": "ทั้งหมด",
     "selected": "ที่เลือก",
     "confirm": "ยืนยัน",

@@ -64,11 +64,10 @@
       "flag": "Tandakan sebagai tidak tepat",
       "unflag": "Buang tanda",
       "uploadAno": "Muat naik lain",
-      "share": "Kongsi",
-      "delete": "Delete"
+      "share": "Kongsi"
     },
     "comments": {
-            "unavailable": "Komen ini tidak tersedia.",
+      "unavailable": "Komen tidak tersedia.",
       "copyLink": "Salin pautan komen",
       "emojiPicker": "Pilih emoji",
       "spoilerHidden": "Klik untuk melihat spoiler",
@@ -86,15 +85,14 @@
       "reply": "Balas",
       "edit": "Edit",
       "submitEdit": "Simpan perubahan",
-      "delete": "Delete",
       "reviewing": "Disemak",
       "emptyWithRule": "Belum ada komen. Sila ikut <a href=\"{link}\">garis panduan komuniti</a> semasa menyiarkan.",
       "ruleOnly": "Sila ikut <a href=\"{link}\">garis panduan komuniti</a> semasa menyiarkan.",
       "loadFailed": "Komen gagal dimuatkan.",
       "submitFailed": "Komen gagal dihantar.",
       "editFailed": "Komen gagal dikemas kini.",
-      "editConflict": "This comment changed or can no longer be edited. Review the current content and reopen the editor to try again.",
-      "editConflictRefreshFailed": "This comment changed. Reload the comments before editing again."
+      "editConflict": "Komen berubah atau tidak boleh diedit lagi. Semak dan buka semula editor.",
+      "editConflictRefreshFailed": "Komen berubah. Muat semula sebelum mengedit."
     },
     "errors": {
       "unsupportedType": "Hanya imej JPEG/PNG/WebP/AVIF/HEIC disokong.",
@@ -499,6 +497,7 @@
     "close": "Tutup",
     "skip": "Langkau",
     "clear": "Kosongkan",
+    "delete": "Padam",
     "all": "Semua",
     "selected": "Dipilih",
     "confirm": "Sahkan",

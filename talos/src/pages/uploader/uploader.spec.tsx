@@ -86,7 +86,7 @@ it('requires a delayed delete confirmation and restores the own image and viewer
     render(<Uploader point={marker} pointName="Crate" />); await flush();
     fireEvent.click(screen.getByAltText('Image first'));
     expect(within(screen.getByRole('dialog')).queryByRole('button', { name: 'Upvote' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'detail.viewer.delete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'common.delete' }));
     fireEvent.click(screen.getByRole('button', { name: 'common.confirmAgain' })); expect(api.delete).not.toHaveBeenCalled();
     act(() => { vi.advanceTimersByTime(1000); });
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'common.confirmAgain' })); await Promise.resolve(); });
@@ -124,7 +124,7 @@ it.each(['point round trip', 'same account login'] as const)('does not restore a
     const view = render(<Uploader point={marker} pointName="Crate" />);
     await flush();
     fireEvent.click(screen.getByAltText('Image first'));
-    fireEvent.click(screen.getByRole('button', { name: 'detail.viewer.delete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'common.delete' }));
     await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
     fireEvent.click(screen.getByRole('button', { name: 'common.confirmAgain' }));
     expect(api.delete).toHaveBeenCalledOnce();
