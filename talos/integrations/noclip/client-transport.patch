@@ -1,7 +1,8 @@
 diff --git a/packages/viewer/src/package/package-source.ts b/packages/viewer/src/package/package-source.ts
+index d01cf7a0..97b0587b 100644
 --- a/packages/viewer/src/package/package-source.ts
 +++ b/packages/viewer/src/package/package-source.ts
-@@ -54,10 +54,10 @@
+@@ -54,10 +54,10 @@ const checkSize = (path: string, actual: number, expected: number): void => {
   * @param baseUrl the package directory's URL; a trailing slash is added if missing
   * @returns a source issuing one HTTP range request per read
   */

@@ -1,4 +1,5 @@
 diff --git a/packages/extractor/package.json b/packages/extractor/package.json
+index 2d8701e4..7e04039a 100644
 --- a/packages/extractor/package.json
 +++ b/packages/extractor/package.json
 @@ -15,5 +15,13 @@
@@ -15,7 +16,42 @@ diff --git a/packages/extractor/package.json b/packages/extractor/package.json
 +		"typescript": "7.0.2"
  	}
  }
+diff --git a/packages/extractor/src/pack/debug.ts b/packages/extractor/src/pack/debug.ts
+index 3db3790f..8877b16b 100644
+--- a/packages/extractor/src/pack/debug.ts
++++ b/packages/extractor/src/pack/debug.ts
+@@ -104,7 +104,7 @@ export class DebugLog {
+ 			group.files[i],
+ 		]);
+ 		if (!this.#stream.write(`${JSON.stringify({ blob, rows })}\n`)) {
+-			await new Promise((resolve) => this.#stream.once('drain', resolve));
++			await new Promise<void>((resolve) => this.#stream.once('drain', resolve));
+ 		}
+ 	}
+ 
+diff --git a/packages/extractor/src/pack/store/blob-store.ts b/packages/extractor/src/pack/store/blob-store.ts
+index a1152bcd..b2f45ad9 100644
+--- a/packages/extractor/src/pack/store/blob-store.ts
++++ b/packages/extractor/src/pack/store/blob-store.ts
+@@ -2,7 +2,6 @@ import { createHash } from 'node:crypto';
+ import { constants, createReadStream, createWriteStream } from 'node:fs';
+ import { copyFile, link, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+ import { dirname, join } from 'node:path';
+-import { Readable } from 'node:stream';
+ import { pipeline } from 'node:stream/promises';
+ import { crc32 } from 'node:zlib';
+ 
+@@ -331,7 +330,7 @@ export class BlobStore {
+ 				}
+ 			}
+ 			const stream = encodeArchiveStream(plan, (source) => createReadStream(this.#blobPath(source.index)));
+-			await pipeline(Readable.fromWeb(stream), createWriteStream(target));
++			await pipeline(stream, createWriteStream(target));
+ 			return describe(false);
+ 		});
+ 		return new Map(written.map((archive) => [archive.name, archive]));
 diff --git a/packages/extractor/tsconfig.json b/packages/extractor/tsconfig.json
+index 30e16800..654dc085 100644
 --- a/packages/extractor/tsconfig.json
 +++ b/packages/extractor/tsconfig.json
 @@ -2,8 +2,9 @@
@@ -30,35 +66,3 @@ diff --git a/packages/extractor/tsconfig.json b/packages/extractor/tsconfig.json
  		"moduleDetection": "force",
  		"module": "preserve",
  		"moduleResolution": "bundler",
-diff --git a/packages/extractor/src/pack/debug.ts b/packages/extractor/src/pack/debug.ts
---- a/packages/extractor/src/pack/debug.ts
-+++ b/packages/extractor/src/pack/debug.ts
-@@ -104,7 +104,7 @@
- 			group.files[i],
- 		]);
- 		if (!this.#stream.write(`${JSON.stringify({ blob, rows })}\n`)) {
--			await new Promise((resolve) => this.#stream.once('drain', resolve));
-+			await new Promise<void>((resolve) => this.#stream.once('drain', resolve));
- 		}
- 	}
- 
-diff --git a/packages/extractor/src/pack/store/blob-store.ts b/packages/extractor/src/pack/store/blob-store.ts
---- a/packages/extractor/src/pack/store/blob-store.ts
-+++ b/packages/extractor/src/pack/store/blob-store.ts
-@@ -2,7 +2,6 @@
- import { constants, createReadStream, createWriteStream } from 'node:fs';
- import { copyFile, link, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
- import { dirname, join } from 'node:path';
--import { Readable } from 'node:stream';
- import { pipeline } from 'node:stream/promises';
- import { crc32 } from 'node:zlib';
- 
-@@ -331,7 +330,7 @@
- 				}
- 			}
- 			const stream = encodeArchiveStream(plan, (source) => createReadStream(this.#blobPath(source.index)));
--			await pipeline(Readable.fromWeb(stream), createWriteStream(target));
-+			await pipeline(stream, createWriteStream(target));
- 			return describe(false);
- 		});
- 		return new Map(written.map((archive) => [archive.name, archive]));

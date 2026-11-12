@@ -50,10 +50,10 @@ index f1ffcbb3..e92e2e9a 100644
  			)}
  			{viewer !== null && (
 diff --git a/packages/viewer/src/gfx/device.ts b/packages/viewer/src/gfx/device.ts
-index d30e5f51..7a2394d6 100644
+index 130c71a1..e6801164 100644
 --- a/packages/viewer/src/gfx/device.ts
 +++ b/packages/viewer/src/gfx/device.ts
-@@ -36,9 +36,11 @@ export const createGfxDevice = async (onLost: (reason: string) => void): Promise
+@@ -44,9 +44,11 @@ export const createGfxDevice = async (onLost: (reason: string) => void): Promise
  	if (!('gpu' in navigator)) {
  		throw new GfxUnsupportedError(`this browser doesn't support WebGPU`);
  	}
@@ -67,7 +67,7 @@ index d30e5f51..7a2394d6 100644
  	}
  
  	const has = (feature: GPUFeatureName): boolean => adapter.features.has(feature);
-@@ -82,7 +84,8 @@ export const createGfxDevice = async (onLost: (reason: string) => void): Promise
+@@ -94,7 +96,8 @@ export const createGfxDevice = async (onLost: (reason: string) => void): Promise
  	device.lost
  		.then((info) => {
  			if (info.reason !== 'destroyed') {
@@ -94,7 +94,7 @@ index 00000000..6b06d53b
 +    }
 +}
 diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/viewer.ts
-index df7f3683..a08a148d 100644
+index 67207bb4..1eb5cbd9 100644
 --- a/packages/viewer/src/viewer/viewer.ts
 +++ b/packages/viewer/src/viewer/viewer.ts
 @@ -20,6 +20,7 @@ import type { WaterSurfaceEntry } from '@endfield-noclip/package-format/water';
