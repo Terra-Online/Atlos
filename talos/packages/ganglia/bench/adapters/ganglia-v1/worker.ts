@@ -45,6 +45,14 @@ process.once('message', async (message: WorkerRequest) => {
       process.disconnect();
       return;
     }
+    if (message.type === 'verify') {
+      send({
+        type: 'verified',
+        id: message.id,
+        evaluation: await scene.verify(message.query, message.route),
+      });
+      return;
+    }
     if (message.type === 'catalog-phase' || message.type === 'benchmark-phase') {
       if (message.type === 'catalog-phase') setActionCatalogPhase(message.phase);
       else if (process.env.GANGLIA_PROFILE)

@@ -33,10 +33,10 @@ Rust migration. Native prototype hooks now attach to the owning shared modules.
 `src/evaluation/route.ts` checks trace timing, continuity, available starts,
 ordered waypoints and terminal query geometry, and independently recomputes time
 and length. Benchmark scoring rejects inconsistent completed traces. Reports
-identify this scope as `route-contract`. Full physical certification still needs
-world coverage and control witnesses for authored/device/airborne segments;
+identified this extraction checkpoint as `route-contract`. Physical certification
+required world coverage and control witnesses for authored/device/airborne segments;
 route samples alone do not certify resource feasibility or collision-free motion.
-The extracted model supplies the common implementation for that replay work.
+The subsequent physical-verification checkpoint below supplies that replay.
 
 The process harness accepts an adapter module through `--adapter`; the default
 V1 adapter owns scene preparation, exporter integration and catalog operations
@@ -58,6 +58,47 @@ cases. Five unrelated candidate-search cases fail because the retained native
 artifact lacks `CandidateSearchIndex`; no Rust artifact was rebuilt. Evidence is
 in `.local/research/ts-decoupling/accepted-serial.json` and its validation summary. These checks establish refactor behavior and
 evaluation scope; full-map coverage remains open.
+
+## Independent physical verification, 2026-11-14
+
+`src/evaluation/physical.ts` verifies execution against provider-owned normalized
+`PhysicalInput` snapshots. It imports shared model rules and public contracts,
+with no V1 search dependency. `src/model/world.ts` owns sparse source coverage,
+raw collision support, capsule sweeps and support-following walks. Navigation
+polygons guide search; they do not establish physical support. Every submitted
+walk must coincide with supported feet and charge its actual geometric length.
+Flight controls are replayed with trusted movement/device parameters. Submitted
+geometry also receives collision checks, so representation tolerance cannot
+permit wall penetration. Equivalent segment splits and knot densities are
+accepted through timed trajectory comparison.
+
+The replay checks whole-route stamina, sprint/dash choices, boost triggers and
+expiry, directed device entry/exit, launch/rope motion, terminal first-goal events,
+and placement geometry. Moving supports retain the exported phase-free swept
+support assumption. Following placements retain the exported activity-range
+assumption and flat-cuboid eligibility; their complete body must clear terrain,
+other bodies and exclusions. An unused unsupported convex body remains an
+obstacle and supplies no additional walkable roof.
+
+V1 publishes execution controls, selected placements and flight witnesses. Before
+resource scheduling, `src/v1/solver/physical/execution.ts` constructs its actual
+support-following walking geometry. This is solver-side candidate construction;
+the independent verifier rejects inconsistent submissions rather than repairing
+them. TS shared collision execution is retained independently of native search
+prototype hooks.
+
+Schema 10 adds a post-batch physical-verification RPC to the default adapter.
+The adapter captures normalized facts before search and lazily builds separate
+verifier indices outside query timing. Recovery can regenerate normalized facts
+through the exporter using a no-search capture sink. Raw collision and declared
+sparse tile coverage remain the authority. Verification contributes to observed
+end-to-end time, while batch/service latency covers solving. Other adapters can
+supply the same verification protocol; the harness always checks route/query
+consistency independently.
+
+Validation results and real replay measurements are recorded in the matching
+history entry. The retained six-query workload remains the finite acceptance
+control; full-map performance is a separate outstanding workload.
 
 ## Benchmark lifecycle, 2026-11-14
 

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import type { Vec3 } from '#@/src/index.ts';
-import { supportEndpoints, sweepSupports } from '#@/src/v1/solver/physical/supports.ts';
+import { supportEndpoints, sweepSupports } from '#@/src/model/supports.ts';
 
 const box = (x: number, y: number, z: number): Vec3[] =>
   Array.from({ length: 8 }, (_, bits) => [

@@ -4,10 +4,10 @@ import { test } from 'node:test';
 import { createCollisionWorld } from '#@/src/collision.ts';
 import type { Surface, Vec3 } from '#@/src/index.ts';
 import { createGoalProjector } from '#@/src/model/goals.ts';
+import { sweepSupports } from '#@/src/model/supports.ts';
 import type { SweptSupport } from '#@/src/solver/physical.ts';
 import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { movingGround } from '#@/src/v1/solver/physical/moving-ground.ts';
-import { sweepSupports } from '#@/src/v1/solver/physical/supports.ts';
 
 const floor = (id: string, x0: number, x1: number, y: number, z0 = -3, z1 = 3): Surface => ({
   id,

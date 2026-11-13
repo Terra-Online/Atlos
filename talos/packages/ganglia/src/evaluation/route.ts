@@ -15,7 +15,14 @@ const equal = (a: number, b: number) =>
 /** Evaluate the submitted trace without searching, retiming or repairing it.
  * This checks representation and recomputes the objective. Physical feasibility
  * additionally needs world coverage and the controls that produced the trace. */
-export function evaluateRoute(route: Route) {
+export interface Evaluation {
+  scope: 'route-contract' | 'physical';
+  valid: boolean;
+  issues: string[];
+  costSeconds: number | null;
+  length: number | null;
+}
+export function evaluateRoute(route: Route): Evaluation {
   const issues: string[] = [];
   if (route.status !== 'complete')
     return {

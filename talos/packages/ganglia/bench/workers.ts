@@ -12,6 +12,8 @@ import type {
 import { sceneIdentity, type SceneMetadata, type CatalogStats } from '#@/bench/adapter.ts';
 import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { createTimings, mergeTimings, type Timings } from '#@/bench/timings.ts';
+import type { Evaluation } from '#@/src/evaluation/route.ts';
+import { verifyRoute } from '#@/src/evaluation/route.ts';
 import type { SolverSettings } from '#@/src/solver/contract.ts';
 
 type Control =
@@ -45,6 +47,7 @@ export interface WorkerSetup {
 export type WorkerRequest =
   | { type: 'setup'; setup: WorkerSetup }
   | { type: 'solve'; id: number; query: RouteQuery; events: boolean }
+  | { type: 'verify'; id: number; query: RouteQuery; route: RouteResult['route'] }
   | (Control & { id: number })
   | { type: 'close' };
 export type WorkerReply =
@@ -66,6 +69,7 @@ export type WorkerReply =
       metadata?: SceneMetadata;
       catalog?: CatalogStats;
     }
+  | { type: 'verified'; id: number; evaluation: Evaluation }
   | { type: 'event'; id: number; event: RouteEvent }
   | { type: 'region'; files: RegionFiles }
   | { type: 'control'; id: number; catalog?: CatalogStats; memory?: Memory }
@@ -148,6 +152,15 @@ export async function prepareWorkerSolver(options: {
   let closing: Promise<void> | undefined;
   let notifyDrained: (() => void) | undefined;
   const restored = new Set<() => void>();
+  const owners = new WeakMap<RouteResult, number>();
+  const verifications = new Map<
+    number,
+    {
+      resolve: (value: Evaluation) => void;
+      reject: (error: Error) => void;
+      timer: ReturnType<typeof setTimeout>;
+    }
+  >();
   const controls = new Map<number, { resolve: () => void; reject: (error: Error) => void }>();
   let catalogPhase: CatalogStats['phase'] = 'disabled';
   const activeCount = () => slots.filter((slot) => slot.active).length;
@@ -188,6 +201,11 @@ export async function prepareWorkerSolver(options: {
     paused = false;
     for (const control of controls.values()) control.reject(failure);
     controls.clear();
+    for (const pending of verifications.values()) {
+      clearTimeout(pending.timer);
+      pending.reject(failure);
+    }
+    verifications.clear();
     for (const task of queued.splice(0)) {
       clean(task);
       task.reject(failure);
@@ -310,6 +328,16 @@ export async function prepareWorkerSolver(options: {
             controls.delete(message.id);
             return;
           }
+          if (message.type === 'verified') {
+            const pending = verifications.get(message.id);
+            if (!pending) throw new Error('Unexpected verifier response');
+            if (message.evaluation.scope !== 'physical')
+              throw new Error('Adapter did not run physical verification');
+            clearTimeout(pending.timer);
+            verifications.delete(message.id);
+            pending.resolve(message.evaluation);
+            return;
+          }
           if (message.type === 'region') {
             options.onRegion?.(message.files);
             return;
@@ -337,7 +365,9 @@ export async function prepareWorkerSolver(options: {
             slot.catalog = message.catalog;
             sample(slot, message.memory);
             mergeTimings(timings, message.timings);
-            task.resolve(measured(message.result, task));
+            const result = measured(message.result, task);
+            owners.set(result, slot.index);
+            task.resolve(result);
           }
           dispatch();
         } catch (error) {
@@ -535,6 +565,29 @@ export async function prepareWorkerSolver(options: {
   };
   return {
     solver,
+    async verify(query: RouteQuery, result: RouteResult): Promise<Evaluation> {
+      const contract = verifyRoute(query, result.route, prepared!.metadata.rules);
+      if (!contract.valid || result.partial) return contract;
+      if (activeCount() || queued.length || recovering || closed)
+        throw new Error('Verify between batches before closing');
+      const index = owners.get(result);
+      if (index === undefined || !slots[index].ready)
+        throw new Error('Physical verifier worker unavailable');
+      return new Promise<Evaluation>((resolve, reject) => {
+        const id = ++serial;
+        const timer = setTimeout(
+          () => fail(new Error('Physical verification exceeded its deadline')),
+          QUERY_SLO_MS,
+        );
+        verifications.set(id, { resolve, reject, timer });
+        slots[index].worker!.send(
+          { type: 'verify', id, query, route: result.route } satisfies WorkerRequest,
+          (error) => {
+            if (error) fail(error);
+          },
+        );
+      });
+    },
     // Every prepared process sees the same declared training set in the same
     // order. Splitting training across lanes would benchmark different catalogs.
     async train(queries: readonly RouteQuery[]) {

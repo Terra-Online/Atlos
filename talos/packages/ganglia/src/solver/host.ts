@@ -18,11 +18,7 @@ export { createWallChecker } from '#@/src/model/walls.ts';
 export { jumpDuration } from '#@/src/v1/motion/jumps.ts';
 export { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
 export { createDeviceConnections } from '#@/src/v1/solver/physical/devices.ts';
-export {
-  sweepSupports,
-  supportBounds,
-  supportEndpoints,
-} from '#@/src/v1/solver/physical/supports.ts';
+export { sweepSupports, supportBounds, supportEndpoints } from '#@/src/model/supports.ts';
 export type { WindowResources } from '#@/src/solver/resources.ts';
 
 export { refineGoalGround } from '#@/src/v1/solver/ground-refinement.ts';

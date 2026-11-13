@@ -25,6 +25,7 @@ export interface Node {
 }
 
 export interface Edge {
+  flight?: Segment['flight'];
   traversal?: Segment['traversal'];
   from: string;
   to: string;

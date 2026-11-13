@@ -336,6 +336,7 @@ export function retimeGroundRoute(route: Route, options: LocomotionOptions): Rou
   const result: Extract<Route, { status: 'complete' }> = {
     ...route,
     segments,
+    schedule: blocks.map((segments, index) => ({ segments, ...decision.choices[index] })),
     points,
     ...(goalHit ? { goalHit } : {}),
     cost: route.arrivalCost + best.duration,

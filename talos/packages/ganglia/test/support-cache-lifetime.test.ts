@@ -93,8 +93,8 @@ test('host preparation keeps a repeated region warm and rebuilds retired regions
     });
     assert.equal(result.route.status, 'complete');
     if (result.route.status === 'complete') {
-      assert.deepEqual(result.route.points[0], query(x).starts[0].position);
-      assert.deepEqual(result.route.points.at(-1), query(x).goal);
+      assert.deepEqual(result.route.points[0], [x + 1, 0.005, 1]);
+      assert.deepEqual(result.route.points.at(-1), [query(x).goal[0], 0.005, query(x).goal[2]]);
       assert.equal(result.route.arrivalCost, 3);
     }
     return result.route;

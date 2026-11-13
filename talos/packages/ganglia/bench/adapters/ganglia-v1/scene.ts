@@ -22,6 +22,9 @@ import {
   type RegionBuild,
 } from '#@/bench/scene-data.ts';
 import { createTimings } from '#@/bench/timings.ts';
+import { createPhysicalVerifier } from '#@/src/evaluation/physical.ts';
+import { createPhysicalWorld } from '#@/src/model/world.ts';
+import type { PhysicalInput } from '#@/src/solver/physical.ts';
 
 type Report = {
   status?: 'candidate' | 'unavailable';
@@ -103,6 +106,7 @@ export async function loadScene(
     inputLoadMs,
     timings: prepared.timings,
     verifyInputs: prepared.verifyInputs,
+    verify: prepared.verify,
     metadata: {
       scene: dataset.navigation.scene,
       source: dataset.navigation.source,
@@ -144,12 +148,90 @@ export function prepareSceneResources(
     processRssSampledPeakBytes = Math.max(processRssSampledPeakBytes, memory.rss);
     mainHeapUsedSampledPeakBytes = Math.max(mainHeapUsedSampledPeakBytes, memory.heapUsed);
   };
+  const physicalInputs = new Map<
+    string,
+    {
+      input: PhysicalInput;
+      region: PhysicalRegion;
+      verifier?: ReturnType<typeof createPhysicalWorld>;
+    }
+  >();
+  const evaluatePhysical = createPhysicalVerifier(() =>
+    [...physicalInputs.values()].map(
+      (entry) =>
+        (entry.verifier ??= createPhysicalWorld(entry.input, {
+          bounds: entry.region.ground.build.bounds,
+          tiles: entry.region.ground.tiles,
+          tileSpan: entry.region.ground.build.cellSize * entry.region.ground.build.tileCells,
+        })),
+    ),
+  );
+  const verify = async (query: import('#@/src/solver/contract.ts').RouteQuery, route: Route) => {
+    if (route.status === 'complete')
+      for (const segment of route.segments) {
+        const seeds = [
+          ...segment.points,
+          ...(segment.flight ? [segment.flight.start, segment.flight.end] : []),
+        ];
+        const region = dataset.regions.find((region) =>
+          seeds.every(
+            (point) =>
+              point[0] >= region.ground.build.bounds.min[0] &&
+              point[0] <= region.ground.build.bounds.max[0] &&
+              point[2] >= region.ground.build.bounds.min[1] &&
+              point[2] <= region.ground.build.bounds.max[1],
+          ),
+        );
+        if (!region || [...physicalInputs.values()].some((entry) => entry.region === region))
+          continue;
+        // The exporter normalizes through its preparation seam. A no-search sink
+        // captures those immutable facts even after a timed-out worker was replaced.
+        // It never invokes the V1 implementation or accepts a solver verdict.
+        const captured = new Error('Normalized verifier input captured');
+        let input: PhysicalInput | undefined;
+        const normalized = await preparePhysicalRoute(
+          region.files,
+          {
+            scene: dataset.navigation.scene,
+            source: dataset.navigation.source,
+            arrival: query.starts[0],
+            target: query.goal,
+            interaction: query.interaction,
+            walls: [],
+            waypoints: query.waypoints,
+          },
+          {
+            cache: {
+              begin: async () => region.binding,
+              read: async (_slot: string, path: string) => {
+                if (!dataset.inputs.has(path)) throw new Error('Verifier input was not preloaded');
+                return dataset.inputs.get(path);
+              },
+              preparation: {
+                solve: async (value: PhysicalInput) => {
+                  input = value;
+                  throw captured;
+                },
+              },
+            },
+          },
+        );
+        try {
+          await normalized.solve({ work: { version: 1, step: 0 } });
+        } catch (error) {
+          if (error !== captured) throw error;
+        }
+        if (!input) throw new Error('Exporter did not provide normalized verifier input');
+        physicalInputs.set(region.binding, { input, region });
+      }
+    return evaluatePhysical(query, route);
+  };
   const preparationStarted = performance.now();
   // Lane-local caches keep mutable preparation isolated across concurrent solves.
   // Timed input reads are served from the preloaded snapshot.
   const caches = Array.from({ length: concurrency }, () => {
     const preparation = createPhysicalPreparation();
-    return {
+    const cache = {
       region: undefined as PhysicalRegion | undefined,
       async begin(files: PhysicalFiles) {
         if (
@@ -165,9 +247,20 @@ export function prepareSceneResources(
         if (!dataset.inputs.has(path)) throw new Error(`Physical input was not preloaded: ${path}`);
         return dataset.inputs.get(path);
       },
-      preparation,
+      preparation: {
+        ...preparation,
+        solve: (...args: Parameters<typeof preparation.solve>) => {
+          if (!thisRegion()) throw new Error('Missing verifier input region');
+          const region = thisRegion()!;
+          const key = region.binding + JSON.stringify(args[0].ground.options.walls);
+          if (!physicalInputs.has(key)) physicalInputs.set(key, { input: args[0], region });
+          return preparation.solve(...args);
+        },
+      },
       clear: preparation.clear,
     };
+    const thisRegion = () => cache.region;
+    return cache;
   });
   const idle = [...caches];
   const waiting: ((cache: (typeof caches)[number]) => void)[] = [];
@@ -261,6 +354,7 @@ export function prepareSceneResources(
   };
   return {
     resources,
+    verify,
     timings,
     verifyInputs() {
       // A scene solver may preserve a validated tail after a provider error.

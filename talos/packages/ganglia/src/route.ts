@@ -4,6 +4,9 @@ import type { BoostUse, Segment, MovementMode, LocomotionOptions } from '#@/src/
 export type Route =
   | {
       status: 'complete';
+      /** Chosen resource controls, replayed without running a scheduler search. */
+      schedule?: { segments: Segment[]; allowSprint: boolean; allowDash: boolean }[];
+      placements?: { device: string; position: Vec3 }[];
       boosts?: (BoostUse & { position: Vec3; elapsed: number })[];
       start: string;
       cost: number;
@@ -39,6 +42,7 @@ export interface GroundArrival {
 }
 
 export interface GroundConnection {
+  flight?: Segment['flight'];
   traversal?: 'moving-support';
   /** A collection action ends in flight and cannot be used as a transfer. */
   terminal?: true;

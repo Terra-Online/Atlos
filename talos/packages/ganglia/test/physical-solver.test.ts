@@ -26,7 +26,7 @@ const input: PhysicalInput = {
     ],
     options: { walls: [], profile: { radius: 0.2, height: 1.6 }, speed: 1, maxVertical: 0.5 },
   },
-  collision: { positions: [0, 0, 0, 0, 0, 10, 10, 0, 10], indices: [0, 1, 2] },
+  collision: { positions: [0, 0, 0, 0, 0, 10, 10, 0, 10, 10, 0, 0], indices: [0, 1, 2, 0, 2, 3] },
   movement: {
     model: {
       gravity: 10,
@@ -130,8 +130,8 @@ test('physical jump planning continues its raw ground solve without repeating th
     assert.equal(first.route.status, 'complete');
     if (first.route.status === 'complete') {
       assert.equal(first.route.arrivalCost, 3);
-      assert.deepEqual(first.route.points[0], [1, 0, 1]);
-      assert.deepEqual(first.route.points.at(-1), [9, 0, 1]);
+      assert.deepEqual(first.route.points[0], [1, 0.005, 1]);
+      assert.deepEqual(first.route.points.at(-1), [9, 0.005, 1]);
       assert.ok(first.route.cost > 3);
     }
     assert.equal(calls, 1);

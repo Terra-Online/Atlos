@@ -29,7 +29,7 @@ export type PhysicalQuery = {
 
 export interface PhysicalCache {
   memo<T>(
-    slot: 'ground' | 'collision' | 'devices' | 'moving' | 'refinement',
+    slot: 'ground' | 'collision' | 'devices' | 'moving' | 'refinement' | 'execution',
     key: string,
     create: () => T | Promise<T>,
   ): Promise<{ value: T; reused: boolean }>;

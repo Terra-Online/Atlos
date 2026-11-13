@@ -48,6 +48,7 @@ export const noteActionCatalogResult = (complete: boolean) => {
 
 const copy = (action: GroundConnection): GroundConnection => ({
   ...action,
+  ...(action.flight ? { flight: structuredClone(action.flight) } : {}),
   points: action.points.map((point): Vec3 => [...point]),
   times: [...action.times],
 });
