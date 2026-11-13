@@ -16,7 +16,30 @@ The benchmark uses a local Wuling region from `map02` covering approximately 100
 
 Before scoring begins, each worker trains on 10 requests and freezes the resulting action catalog. Training is included in service preparation time. The worker then warms up on two separate requests that are excluded from scoring.
 
-Both configurations use `--catalog-train 10 --offset 10 --limit 6 --rounds 2`. The serial run uses `--workers 1 --concurrency 1`. The parallel run uses `--workers 2 --concurrency 2`, allowing two requests to run concurrently.
+The single-worker run uses the following command from the repository root. The `.local` paths identify the input files used for this measurement.
+
+```bash
+cd talos/packages/ganglia
+LOCAL="$(git rev-parse --show-toplevel)/.local"
+
+GANGLIA_RUST_COLLISION=1 \
+GANGLIA_RUST_LOCOMOTION=1 \
+GANGLIA_RUST_GROUND_TRACE=1 \
+GANGLIA_RUST_GOALS=1 \
+GANGLIA_LOCOMOTION_LABELS=64 \
+node --max-old-space-size=6144 \
+  --import ./prototype/rust-kernel/register.ts bench/cli.ts \
+  --workload "$LOCAL/research/resource-relocation/workload.json" \
+  --config "$LOCAL/research/resource-relocation/config.json" \
+  --data-root "$LOCAL/data" \
+  --extractor "$LOCAL/research/migration-adapter" \
+  --catalog-train 10 --offset 10 --limit 6 --rounds 2 \
+  --warmup-workload "$LOCAL/research/benchmark-lifecycle/warmup.json" \
+  --workers 1 --concurrency 1 \
+  --reference "$LOCAL/research/migration-validation.json" --json
+```
+
+The two-worker run uses the same command with `--workers 1 --concurrency 1` replaced by `--workers 2 --concurrency 2`, allowing two requests to run concurrently.
 
 Both runs use Node v26.13.0 with a 6144 MiB old-space limit per process. The single-worker run takes 36.37 seconds from process startup through solver shutdown. All 12 scored solves succeed, so its end-to-end successful throughput is 12 divided by 36.37, or 0.330 queries per second. The two-worker run takes 38.46 seconds over the same lifecycle and completes all 12 scored solves, giving 0.312 queries per second.
 
