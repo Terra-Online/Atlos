@@ -45,13 +45,23 @@ paths; set them in each terminal that needs them:
 export TALOS=/absolute/path/Atlos/talos
 export GANGLIA="$TALOS/packages/ganglia"
 export NOCLIP="$TALOS/.cache/noclip"
-export CLIENT=/absolute/path/client
-export DATA=/absolute/path/local-world-data
-export GAME_CONFIG="$DATA/endfield.local.json"
-mkdir -p "$DATA/packages" "$DATA/releases" "$DATA/routing"
+export LOCAL="$TALOS/../.local"
+export DATA="$LOCAL/data"
+export CLIENT="$DATA/client"
+export GAME_CONFIG="$LOCAL/config/endfield.local.json"
+mkdir -p "$DATA/packages" "$DATA/releases" "$DATA/routing" "$LOCAL/config" "$LOCAL/downloads"
 ```
 
-Keep game files, keys, local configs, download manifests and exports outside Git.
+Keep game files, keys, local configs, download manifests and exports in the ignored
+Atlos root `.local/`. Store benchmark evidence in `.local/research/`, dependency
+checkouts in `.local/repos/`, and rebuildable artifacts in `.local/cache/`.
+Explicit external paths are also supported. The generated noclip source stays in
+`talos/.cache/noclip`.
+
+When relocating existing resources, move the directories together and preserve
+dataset names, hard links and provenance. Update private configuration, executable
+paths and internal links to the new root. Keep historical reports and input hashes
+unchanged; use explicit paths to select a frozen dataset for replay.
 
 ## Prepare the client files and extraction keys
 
@@ -71,12 +81,12 @@ also supported and skips the selective-download step.
 
 ```sh
 cd "$TALOS"
-python3 scripts/noclip-download.py --links "$DATA/client-links.json" \
-  --cache "$DATA/download-cache" --list > "$DATA/client-files.txt"
+python3 scripts/noclip-download.py --links "$LOCAL/downloads/client-links.json" \
+  --cache "$LOCAL/downloads/ranges" --list > "$LOCAL/downloads/client-files.txt"
 # Copy required exact archive paths into required-files.txt, one per line.
-python3 scripts/noclip-download.py --links "$DATA/client-links.json" \
-  --cache "$DATA/download-cache" --out "$CLIENT" \
-  --file-list "$DATA/required-files.txt"
+python3 scripts/noclip-download.py --links "$LOCAL/downloads/client-links.json" \
+  --cache "$LOCAL/downloads/ranges" --out "$CLIENT" \
+  --file-list "$LOCAL/downloads/required-files.txt"
 ```
 
 Initially select `GameAssembly.dll`,
@@ -86,8 +96,8 @@ For a missing chunk, use its exact filename from the error, then rerun the faile
 extractor command:
 
 ```sh
-python3 scripts/noclip-download.py --links "$DATA/client-links.json" \
-  --cache "$DATA/download-cache" --out "$CLIENT" MISSING_HASH.chk
+python3 scripts/noclip-download.py --links "$LOCAL/downloads/client-links.json" \
+  --cache "$LOCAL/downloads/ranges" --out "$CLIENT" MISSING_HASH.chk
 ```
 
 Unique suffixes are accepted; ambiguous names fail. For unattended export,

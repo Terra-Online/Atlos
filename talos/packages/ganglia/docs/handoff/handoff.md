@@ -6,10 +6,12 @@ Ganglia source and all tracked documentation were imported from standalone
 commit `a2faa25` into Atlos's editable `talos/packages/ganglia` package. World and
 the maintained noclip extractor resolve that workspace package directly; archive
 preparation is no longer part of the local integration. The solver contracts,
-algorithm and benchmark measurement policy are unchanged. Existing verified
-datasets remain external inputs; pass their locations explicitly rather than
-copying them with the source. Historical sections below retain their original
-code and measurement scope.
+algorithm and benchmark measurement policy are unchanged. Local development
+resources live under the Atlos root `.local/`; the
+[development guide](../contributing.md) defines the layout and relocation rules.
+Benchmark defaults resolve data from that root independently of the working
+directory. Historical sections below retain their original code and measurement
+scope.
 
 The `feat/3d-preview` integration at `162ca793` uses indexed open-traversal
 state picks for offline point framing and validation, matching World's default

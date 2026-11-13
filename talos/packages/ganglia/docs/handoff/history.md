@@ -196,7 +196,7 @@ The next report should state what changed, its implementation/experiment status,
 
 ### Maintained measurement entry point
 
-Use Atlos's versioned [profile-route-stages.mjs](../../../Atlos/talos/scripts/profile-route-stages.mjs) and its loader rather than treating `/tmp` trial scripts/hooks as maintained tools. The [noclip integration README](../../../Atlos/talos/integrations/noclip/README.md) requires Node 26. With Node 26 selected, an existing parent output directory, and a **new, nonexistent** run directory, the minimal low-overhead template from the Atlos root is:
+Use Atlos's versioned [profile-route-stages.mjs](../../../../scripts/profile-route-stages.mjs) and its loader rather than treating `/tmp` trial scripts/hooks as maintained tools. The [noclip integration README](../../../../integrations/noclip/README.md) requires Node 26. With Node 26 selected, an existing parent output directory, and a **new, nonexistent** run directory, the minimal low-overhead template from the Atlos root is:
 
 ```sh
 node --max-old-space-size=4096 talos/scripts/profile-route-stages.mjs \
@@ -1711,3 +1711,31 @@ within the 300-second SLO, and matched all six retained reference outcomes and
 modeled route costs exactly. Its single measured batch took 2.128 seconds. This
 run establishes execution and route equivalence; it is not a controlled timing
 comparison. Existing datasets and native artifacts remain local external inputs.
+
+
+## Local resource relocation, 2026-11-14
+
+The standalone checkout's ignored `.local/` resource directory was moved directly
+into the Atlos repository root on the same filesystem. Directory identity and
+hard links were retained; no compatibility link was left at the old resource
+root. The packed and SLO snapshot datasets retain 242 shared ordinary-file inodes
+(19,311,659,042 logical bytes), including all 119 ground/collision region pairs.
+Private configuration, executable local helpers, existing internal links and a
+Git object alternate were rebound. All 23 archived experiment worktrees retain
+their original standalone Git ownership with repaired worktree registration;
+tracked working-tree statuses of those worktrees and seven dependency checkouts
+are preserved, including uncommitted drafts. Historical reports, provenance and
+frozen source contents retain their original measurement bindings. The current
+noclip generated tree was moved to Atlos's `talos/.cache/noclip` and verified
+against the maintained integration inputs.
+
+Frozen-lockfile offline installation, noclip preparation verification and Ganglia
+formatting, lint, typecheck and all 411 tests passed. Four retained real-scene input
+SHA-256 values match the migration reference. A fresh native-backed six-query
+replay uses the Atlos workspace solver, ten catalog training queries, holdout
+offset ten and label limit 64. All six routes complete within the 300-second SLO;
+all six outcome hashes and modeled costs match `migration-validation.json`
+exactly, with no lost solutions or timeouts. Evidence is retained under
+`.local/research/resource-relocation/`. This verifies relocation and execution,
+with no algorithm, benchmark-policy or performance improvement claim. The full
+long-range workload was not replayed and its recorded coverage gap remains open.
