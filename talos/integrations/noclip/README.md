@@ -39,7 +39,8 @@ and its catalog and navigation generation bindings updated before publication.
    before replacing the active viewer; a breaking format requires repacking the retained maps.
 3. Run preparation, installation, World tests/type checking/build and the generated extractor tests.
    Check a real map, target framing, navigation and photography before accepting the migration.
-4. Keep one current upstream archive and one Ganglia package. Remove replaced artifacts after
+4. Keep one current upstream archive. Ganglia is the editable `packages/ganglia` workspace
+   package, shared by World and the extractor. Remove replaced upstream artifacts after
    validation; do not add old-format readers or keep backup source trees.
 
 The patches migrate the previously committed implementation recorded by `migratedFrom` in

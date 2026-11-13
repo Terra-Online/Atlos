@@ -393,7 +393,13 @@ test('CI check builds all targets after preparing types only once and covers sta
     await runTask(['check', '--build', '--source-only', '--skip-subset'], f);
     assert.equal(countScript(f.calls, 'build-marker-version-new.mjs'), 1);
     assert.equal(countScript(f.calls, 'build-relink-preview.mjs'), 1);
-    assert.equal(f.calls.filter(({ args }) => args.includes('tsc')).length, 8);
+    assert.equal(f.calls.filter(({ args }) => args.includes('tsc')).length, 9);
+    assert.ok(f.calls.some(({ args }) =>
+        args.includes('@opendfieldmap/ganglia') && args.includes('tsc'),
+    ));
+    assert.ok(f.calls.some(({ args }) =>
+        args.includes('@opendfieldmap/ganglia') && args.includes('test'),
+    ));
     assert.ok(f.calls.some(({ args }) =>
         args.includes('@atlos/world') && args.includes('tsconfig.worker.json'),
     ));

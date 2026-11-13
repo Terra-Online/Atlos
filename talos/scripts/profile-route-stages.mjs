@@ -212,7 +212,7 @@ export async function main(argv = process.argv.slice(2)) {
         cache = createRouteCache();
     }
     const setupMs = performance.now() - setupStart;
-    const sdkModule = hooks.modules.find(module => /\/(?:@opendfieldmap|\.cache)\/ganglia\/src\//.test(module.path));
+    const sdkModule = hooks.modules.find(module => /\/(?:@opendfieldmap|packages)\/ganglia\/src\//.test(module.path));
     const sdkPath = sdkModule?.path.slice(0, sdkModule.path.lastIndexOf('/src/'));
     const sdk = sdkPath ? { path: sdkPath, ...JSON.parse(await readFile(resolve(sdkPath, 'package.json'), 'utf8')) } : null;
     const runtime = { node: process.version, execPath: process.execPath, execArgv: process.execArgv,

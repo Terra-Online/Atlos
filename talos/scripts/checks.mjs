@@ -70,6 +70,7 @@ export const typeCheck = async (runner, app = 'all', prepare = true) => {
         'user-hub': 'apps/user-hub',
         world: 'apps/world',
         extractor: '.cache/noclip/packages/extractor',
+        ganglia: 'packages/ganglia',
         search: 'oem-search',
         relink: 'oem-relink',
     };
@@ -80,7 +81,8 @@ export const typeCheck = async (runner, app = 'all', prepare = true) => {
         if (app !== 'all' && app !== name) continue;
         const packageName = name === 'world'
             ? '@atlos/world'
-            : name === 'extractor' ? '@endfield-noclip/extractor' : null;
+            : name === 'extractor' ? '@endfield-noclip/extractor'
+            : name === 'ganglia' ? '@opendfieldmap/ganglia' : null;
         await runner.run('pnpm', [
             ...(packageName ? ['--filter', packageName] : []),
             'exec',
@@ -95,11 +97,11 @@ export const typeCheck = async (runner, app = 'all', prepare = true) => {
 
 export const test = async (runner, app = 'all') => {
     if (
-        !['all', 'main', 'intel', 'user-hub', 'scripts', 'relink', 'world'].includes(app)
+        !['all', 'main', 'intel', 'user-hub', 'scripts', 'relink', 'world', 'ganglia'].includes(app)
     )
         throw new Error(`Unknown test app: ${app}`);
     if (app === 'all' || app === 'scripts')
-        await runner.run('node', ['--test', './scripts/tasks.spec.mjs', './scripts/closure.spec.mjs', './scripts/package-pages.spec.mjs', './scripts/map-tiles.spec.mjs', './scripts/noclip.test.mjs', './scripts/ganglia.test.mjs']);
+        await runner.run('node', ['--test', './scripts/tasks.spec.mjs', './scripts/closure.spec.mjs', './scripts/package-pages.spec.mjs', './scripts/map-tiles.spec.mjs', './scripts/noclip.test.mjs']);
     if (app === 'all' || app === 'main' || app === 'relink') {
         await runner.run('pnpm', [
             'exec',
@@ -112,6 +114,8 @@ export const test = async (runner, app = 'all') => {
                   : ['oem-relink']),
         ]);
     }
+    if (app === 'all' || app === 'ganglia')
+        await runner.run('pnpm', ['--filter', '@opendfieldmap/ganglia', 'test']);
     if (app === 'all' || app === 'world') {
         await runner.run('pnpm', ['exec', 'vitest', 'run', '--config', 'apps/world/vitest.config.ts']);
         await runner.run('node', ['--test', 'apps/world/dev-route-server.test.mjs', 'apps/world/route-worker.test.mjs', 'apps/world/bench/network.test.mjs']);

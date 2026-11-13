@@ -2,3 +2,5 @@
 build
 coverage
 dist
+
+packages/ganglia/

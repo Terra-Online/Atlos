@@ -14,6 +14,8 @@ export default [
       '**/node_modules/**', '**/dist/**', '**/build/**', '**/coverage/**',
       '.pages-dist/**', '.cache/**', '.vite/**', '**/.wrangler/**',
       'performance/**', 'public/**', 'originData/**',
+      // Ganglia owns its stricter native TypeScript lint configuration.
+      'packages/ganglia/**',
       '**/*.generated.*', 'apps/*/src/data/generated/**',
     ],
   },

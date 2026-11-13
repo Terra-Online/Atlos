@@ -23,6 +23,10 @@ test(
             };
             const anchor = {
                 id: 'tp',
+                // An explicit support range requires prefix projection verification,
+                // so a tail covering the same coordinates remains provisional.
+                groundRange: [0, 0],
+                requiresGroundProjection: true,
                 position: [0.5, 0, 0.5],
                 cost: 0,
                 state: 'available',

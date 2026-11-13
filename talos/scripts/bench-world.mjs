@@ -78,9 +78,16 @@ sourceHash.update(
 const viewerBinding = JSON.parse(
     await readFile('.cache/noclip/.generated.json', 'utf8'),
 );
-const solverBinding = JSON.parse(
-    await readFile('.cache/ganglia/.generated.json', 'utf8'),
-);
+const solverHash = createHash('sha256');
+for (const name of (
+    await readdir('packages/ganglia/src', { recursive: true })
+).sort()) {
+    if (!name.endsWith('.ts')) continue;
+    solverHash
+        .update(name + '\0')
+        .update(await readFile('packages/ganglia/src/' + name));
+}
+const solverBinding = { sourceSha256: solverHash.digest('hex') };
 const browser = await chromium.launch({
     channel: 'chrome',
     headless: !values.headed,
@@ -273,7 +280,14 @@ try {
                                 (n, r) => n + r.responseBytes,
                                 0,
                             ),
-                            pageNetworkTransferBytes: requests.some((r) => r.transferBytes === null) ? null : requests.reduce((n, r) => n + r.transferBytes, 0),
+                            pageNetworkTransferBytes: requests.some(
+                                (r) => r.transferBytes === null,
+                            )
+                                ? null
+                                : requests.reduce(
+                                      (n, r) => n + r.transferBytes,
+                                      0,
+                                  ),
                             requests: requests.length,
                         },
                     };

@@ -1,0 +1,4 @@
+node_modules/
+.local/
+prototype/rust-kernel/target/
+.DS_Store

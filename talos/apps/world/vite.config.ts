@@ -1,6 +1,6 @@
 import { sceneCatalog } from './scene-resources';
 import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { hashFiles } from '../../scripts/release-snapshot.mjs';
 import { resolve } from 'node:path';
 import { defineConfig, loadEnv, type UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -8,7 +8,6 @@ import svgr from 'vite-plugin-svgr';
 import { fontShardsPlugin } from '../../scripts/fonts/vite-plugin.mjs';
 import { resourceConfig } from '../../scripts/release-artifact.mjs';
 import { routeServer } from './dev-route-server';
-import worldPackage from './package.json';
 import { getDeployChannel } from '../../scripts/release-channel.js';
 
 export default defineConfig(async ({ command, mode }): Promise<UserConfig> => {
@@ -43,16 +42,12 @@ export default defineConfig(async ({ command, mode }): Promise<UserConfig> => {
                 config: env.WORLD_GAME_CONFIG,
                 node: env.WORLD_EXTRACTOR_NODE,
                 solver:
-                    worldPackage.dependencies['@opendfieldmap/ganglia'] +
-                    '#' +
+                    'workspace:' +
                     createHash('sha256')
                         .update(
-                            await readFile(
-                                resolve(
-                                    import.meta.dirname,
-                                    worldPackage.dependencies[
-                                        '@opendfieldmap/ganglia'
-                                    ].slice('file:'.length),
+                            JSON.stringify(
+                                await hashFiles(
+                                    resolve(root, 'packages/ganglia/src'),
                                 ),
                             ),
                         )

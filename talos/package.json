@@ -29,7 +29,7 @@
     "dev:world": "node ./scripts/dev-app.mjs world",
     "world:build": "node ./scripts/world.mjs build",
     "world:deploy": "node ./scripts/world.mjs deploy",
-    "noclip:prepare": "node ./scripts/ganglia.mjs && node ./scripts/noclip.mjs prepare",
+    "noclip:prepare": "node ./scripts/noclip.mjs prepare",
     "bench:world": "node scripts/bench-world.mjs"
   },
   "browserslist": [
