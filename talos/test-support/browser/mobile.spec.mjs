@@ -34,6 +34,37 @@ test('TEST-BROWSER-MOBILE-MAP-001 search expands the drawer and Enter preserves 
     await attachment(page, testInfo, 'mobile-map-detail');
 });
 
+test('TEST-BROWSER-MOBILE-SIDEBAR-001 cards reflow into full columns when the drawer narrows', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 600, height: 1000 });
+    await page.goto('/');
+    const sidebar = page.locator('[data-sidebar-layout="mobile"]');
+    const drawer = sidebar.locator('[data-font-region="drawer"]').first();
+    const handle = drawer.getByRole('separator', { name: 'Drawer drag handle', exact: true });
+    await handle.tap();
+    await expect(drawer).toHaveAttribute('data-snap', '1');
+    await handle.tap();
+    await expect(drawer).toHaveAttribute('data-snap', '2');
+    const category = sidebar.locator('[data-category="collection"]');
+    await category.locator('[data-filter-header]').tap();
+    const grid = category.locator('[data-sidebar-rows]');
+    await expect(grid.locator('[data-mark-selector-item]').first()).toBeVisible();
+
+    const layout = () => grid.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        const cards = [...element.querySelectorAll('[data-mark-selector-item]')].map((card) => card.getBoundingClientRect());
+        return {
+            columns: cards.filter((card) => Math.abs(card.top - cards[0].top) < 1).length,
+            fullWidth: cards.length > 0 && cards.every((card) => card.width > 0 && Math.abs(card.width - cards[0].width) < 1 && card.left >= bounds.left - 1 && card.right <= bounds.right + 1),
+        };
+    });
+    await expect.poll(layout).toEqual({ columns: 3, fullWidth: true });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect.poll(layout).toEqual({ columns: 2, fullWidth: true });
+    await attachment(page, testInfo, 'mobile-sidebar-narrowed');
+    await page.setViewportSize({ width: 600, height: 1000 });
+    await expect.poll(layout).toEqual({ columns: 3, fullWidth: true });
+});
+
 test('TEST-BROWSER-MOBILE-HEADBAR-001 expanded header opens language modal and returns to the map', async ({ page }, testInfo) => {
     await page.goto('/');
     await expect(page.locator('[data-search-input="true"]')).toBeVisible();

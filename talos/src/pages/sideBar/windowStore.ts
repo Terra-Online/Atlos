@@ -114,7 +114,10 @@ export class WindowStore {
                 const rect = block.element.getBoundingClientRect();
                 block.active = rect.width > 0 && rect.height > 0;
                 const style = view.getComputedStyle(block.element);
-                block.columns = columnCount(style.gridTemplateColumns, block.fallbackColumns);
+                // Resolved tracks include implicit columns left by positioned cards
+                // from the wider layout. Read the declaration so those columns can disappear.
+                const template = (!block.compact && style.getPropertyValue('--mark-filter-columns').trim()) || block.element.style.gridTemplateColumns;
+                block.columns = columnCount(template, block.fallbackColumns);
                 block.rowHeight = parseFloat(style.gridAutoRows) || parseFloat(view.getComputedStyle(scroll.ownerDocument.documentElement).fontSize) * (block.compact ? 3.2 : 3.95);
                 block.gap = parseFloat(style.columnGap) || 0;
                 const bounds = viewport ?? scroll.getBoundingClientRect();
