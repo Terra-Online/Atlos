@@ -1,4 +1,5 @@
 import type { Surface, Vec3 } from '#@/src/geometry.ts';
+import { createGoalProjector } from '#@/src/model/goals.ts';
 import type { LocomotionOptions } from '#@/src/movement.ts';
 import type { GroundOptions, Route } from '#@/src/route.ts';
 import type {
@@ -7,7 +8,6 @@ import type {
   Corridor,
   WindowResources,
 } from '#@/src/solver/resources.ts';
-import { createGoalProjector } from '#@/src/v1/motion/goals.ts';
 import { catalogEvidenceRevision, isActionCatalogFrozen } from '#@/src/v1/route/action-catalog.ts';
 import { pruneGroundDetours } from '#@/src/v1/route/ground-detours.ts';
 import { createGroundPlanner } from '#@/src/v1/route/ground.ts';

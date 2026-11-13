@@ -1,8 +1,8 @@
 import type { Surface, Vec3 } from '#@/src/geometry.ts';
+import { createGoalProjector } from '#@/src/model/goals.ts';
 import type { GroundConnection, Route } from '#@/src/route.ts';
 import type { PoseBounds, PoseSpan, SweptSupport } from '#@/src/solver/physical.ts';
 import { projectPoint } from '#@/src/v1/geo/surfaces.ts';
-import { createGoalProjector } from '#@/src/v1/motion/goals.ts';
 import type { SourceFace } from '#@/src/v1/solver/physical/moving-ground.ts';
 
 /** a selected route's actual contact pose, independent of its navigation model */

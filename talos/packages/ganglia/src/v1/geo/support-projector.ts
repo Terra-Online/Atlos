@@ -1,5 +1,5 @@
 import type { Surface, Vec3 } from '#@/src/geometry.ts';
-import { createBoundsIndex } from '#@/src/v1/geo/bounds.ts';
+import { createBoundsIndex } from '#@/src/model/bounds.ts';
 import { projectPoint } from '#@/src/v1/geo/surfaces.ts';
 
 type Projection = ReturnType<typeof projectPoint>;

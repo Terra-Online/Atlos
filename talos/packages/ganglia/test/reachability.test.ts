@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
+import { createBoundsIndex } from '#@/src/model/bounds.ts';
 import type { JumpModel } from '#@/src/movement.ts';
-import { createBoundsIndex } from '#@/src/v1/geo/bounds.ts';
 import { jumpDuration, jumpTravel } from '#@/src/v1/motion/jumps.ts';
 import {
   type EnvelopeOptions,

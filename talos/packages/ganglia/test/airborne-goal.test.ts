@@ -3,8 +3,8 @@ import { test } from 'node:test';
 
 import { createCollisionWorld } from '#@/src/collision.ts';
 import type { Surface, Vec3 } from '#@/src/geometry.ts';
+import { findGoalHit } from '#@/src/model/goals.ts';
 import type { GroundArrival } from '#@/src/route.ts';
-import { findGoalHit } from '#@/src/v1/motion/goals.ts';
 import { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
 import { planAirborneGoal, findGoalFlights } from '#@/src/v1/route/airborne-goal.ts';
 import { planJumpRoute, type JumpRouteOptions } from '#@/src/v1/route/jump-planner.ts';

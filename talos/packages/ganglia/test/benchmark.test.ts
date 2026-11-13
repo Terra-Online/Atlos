@@ -9,7 +9,10 @@ import { gangliaV1Defaults } from '#@/src/solver/index.ts';
 test('every scored batch is timed, keeps input order and closes once', async () => {
   const cases: readonly { id: string; query: RouteQuery }[] = [1, 2, 3].map((id) => ({
     id: String(id),
-    query: { starts: [], goal: [id, 0, 0] },
+    query: {
+      starts: [{ id: 'player', position: [id, 0, 0], cost: id, state: 'available' }],
+      goal: [id, 0, 0],
+    },
   }));
   let closes = 0,
     batches = 0;
@@ -30,7 +33,7 @@ test('every scored batch is timed, keeps input order and closes once', async () 
                 status: 'complete' as const,
                 cost: query.goal[0],
                 start: 'player',
-                arrivalCost: 0,
+                arrivalCost: query.goal[0],
                 length: 0,
                 points: [query.goal],
                 segments: [],
@@ -47,6 +50,7 @@ test('every scored batch is timed, keeps input order and closes once', async () 
       },
     },
     cases,
+    { maxVertical: 0.5 },
     (phase) => {
       phases.push(phase);
     },
@@ -91,6 +95,7 @@ test('the benchmark closes the adapter after a failed batch', async () => {
         },
       },
       [{ id: 'failure', query: { starts: [], goal: [0, 0, 0] } }],
+      { maxVertical: 0.5 },
     ),
     /worker failed/,
   );
@@ -103,12 +108,9 @@ test('independent warmup results are reported separately from the measured probl
       status: 'complete',
       start: 'a',
       cost: 1,
-      arrivalCost: 0,
-      length: 1,
-      points: [
-        [0, 0, 0],
-        [1, 0, 0],
-      ],
+      arrivalCost: 1,
+      length: 0,
+      points: [[1, 0, 0]],
       segments: [],
     },
     connections: [],
@@ -124,7 +126,16 @@ test('independent warmup results are reported separately from the measured probl
       solveBatch: async () => [{ ...result, partial: ++batch === 1 }],
       close: async () => {},
     },
-    [{ id: 'same-geometry', query: { starts: [], goal: [1, 0, 0] } }],
+    [
+      {
+        id: 'same-geometry',
+        query: {
+          starts: [{ id: 'a', position: [1, 0, 0], cost: 1, state: 'available' }],
+          goal: [1, 0, 0],
+        },
+      },
+    ],
+    { maxVertical: 0.5 },
     undefined,
     1,
     undefined,
@@ -138,7 +149,10 @@ test('independent warmup results are reported separately from the measured probl
 test('a middle-round lost or changed route and truncation remain unstable after recovery', async () => {
   const cases: { id: string; query: RouteQuery }[] = [1, 2, 3].map((id) => ({
     id: String(id),
-    query: { starts: [], goal: [id, 0, 0] },
+    query: {
+      starts: [{ id: 'player', position: [id, 0, 0], cost: 1, state: 'available' }],
+      goal: [id, 0, 0],
+    },
   }));
   let batches = 0,
     closes = 0;
@@ -157,10 +171,10 @@ test('a middle-round lost or changed route and truncation remain unstable after 
               : {
                   status: 'complete',
                   start: 'player',
-                  arrivalCost: 0,
+                  arrivalCost: 1,
                   cost: 1,
-                  length: 1,
-                  points: [query.goal, broken && index === 1 ? [99, 0, 0] : [0, 0, 0]],
+                  length: 0,
+                  points: [broken && index === 1 ? [99, 0, 0] : query.goal],
                   segments: [],
                 },
           connections: [],
@@ -172,6 +186,7 @@ test('a middle-round lost or changed route and truncation remain unstable after 
       },
     },
     cases,
+    { maxVertical: 0.5 },
     undefined,
     3,
   );
@@ -214,6 +229,7 @@ test('a later measured batch failure closes the solver without running more roun
         },
       },
       [{ id: 'failure', query: { starts: [], goal: [0, 0, 0] } }],
+      { maxVertical: 0.5 },
       undefined,
       4,
     ),
@@ -229,10 +245,10 @@ test('SLO accounting preserves a middle-round timeout and counts actual successf
     route: {
       status: 'complete',
       start: 'player',
-      arrivalCost: 0,
+      arrivalCost: 1,
       cost: 1,
-      length: 1,
-      points: [],
+      length: 0,
+      points: [[0, 0, 0]],
       segments: [],
     },
     connections: [],
@@ -253,7 +269,16 @@ test('SLO accounting preserves a middle-round timeout and counts actual successf
       solveBatch: async () => [++batches === 2 ? timeout : complete],
       close: async () => {},
     },
-    [{ id: 'intermittent', query: { starts: [], goal: [0, 0, 0] } }],
+    [
+      {
+        id: 'intermittent',
+        query: {
+          starts: [{ id: 'player', position: [0, 0, 0], cost: 1, state: 'available' }],
+          goal: [0, 0, 0],
+        },
+      },
+    ],
+    { maxVertical: 0.5 },
     undefined,
     3,
   );
@@ -290,6 +315,7 @@ test('replacement setup is explained separately while remaining in measured wall
       close: async () => {},
     },
     [{ id: 'restart', query: { starts: [], goal: [0, 0, 0] } }],
+    { maxVertical: 0.5 },
     undefined,
     2,
     () => recoverySetupMs,
@@ -331,6 +357,7 @@ test('renaming a measured query cannot leak it into warmup, and invalid runs clo
         },
       },
       [{ id: 'holdout', query }],
+      { maxVertical: 0.5 },
       undefined,
       1,
       undefined,
@@ -348,4 +375,45 @@ test('renaming a measured query cannot leak it into warmup, and invalid runs clo
   );
   assert.equal(calls, 0);
   assert.equal(closes, 1);
+});
+
+test('a solver cannot improve benchmark quality by understating the trace cost', async () => {
+  const result: RouteResult = {
+    route: {
+      status: 'complete',
+      start: 'start',
+      arrivalCost: 0,
+      cost: 0.01,
+      length: 1,
+      points: [
+        [0, 0, 0],
+        [1, 0, 0],
+      ],
+      segments: [
+        {
+          mode: 'walk',
+          points: [
+            [0, 0, 0],
+            [1, 0, 0],
+          ],
+          times: [0, 1],
+        },
+      ],
+    },
+    connections: [],
+    diagnostics: { truncated: false },
+  };
+  const report = await runBenchmark(
+    {
+      config: { algorithm: 'test', batchConcurrency: 1 },
+      solve: async () => result,
+      solveBatch: async () => [result],
+      close: async () => {},
+    },
+    [{ id: 'one', query: { starts: [], goal: [1, 0, 0] } }],
+    { maxVertical: 0.5 },
+  );
+  assert.equal(report.batch.results[0].status, 'invalid-route');
+  assert.equal(report.batch.results[0].cost, null);
+  assert.equal(qualityGate(report.batch.results, undefined).passed, false);
 });

@@ -6,10 +6,10 @@ import { test } from 'node:test';
 
 import type { Corridor, WindowRequest } from '@opendfieldmap/ganglia/solver';
 
+import { prepareSceneResources, type GameAdapter } from '#@/bench/adapters/ganglia-v1/scene.ts';
 import { prepareCoverage, type CoveragePass } from '#@/bench/prepare-coverage.ts';
 import { exportPhysicalRegion } from '#@/bench/prepare-region.ts';
 import { loadSceneData } from '#@/bench/scene-data.ts';
-import { prepareSceneResources, type GameAdapter } from '#@/bench/scene.ts';
 
 const source = { buildGuid: 'build', contentHash: 'content' };
 const profile = { radius: 0.35, height: 1.8 };

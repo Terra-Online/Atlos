@@ -1,8 +1,8 @@
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { Vec3, Surface } from '#@/src/geometry.ts';
+import { findGoalHit, trimGoalFlight } from '#@/src/model/goals.ts';
 import type { SpeedBoost } from '#@/src/movement.ts';
 import type { GroundArrival, Route } from '#@/src/route.ts';
-import { findGoalHit, trimGoalFlight } from '#@/src/v1/motion/goals.ts';
 import { jumpConnection } from '#@/src/v1/motion/jumps.ts';
 import { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
 import type { JumpDiagnostics, PlannerOptions, JumpResult } from '#@/src/v1/route/jump-planner.ts';

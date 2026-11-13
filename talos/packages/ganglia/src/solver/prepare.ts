@@ -1,10 +1,11 @@
-import type { SolverInput, SolverConfig, PreparedRouteSolver } from '#@/src/solver/contract.ts';
+import type { SolverInput, PreparedRouteSolver } from '#@/src/solver/contract.ts';
+import type { GangliaV1Config as SolverConfig } from '#@/src/solver/ganglia-v1.ts';
 import type { WindowJob } from '#@/src/solver/resources.ts';
 import { prepareGangliaV1 } from '#@/src/v1/prepare.ts';
 export async function prepareRouteSolver<Source, Job extends WindowJob>(
   config: SolverConfig,
   input: SolverInput<Source, Job>,
-): Promise<PreparedRouteSolver> {
+): Promise<PreparedRouteSolver<SolverConfig>> {
   switch (config.algorithm) {
     case 'ganglia-v1':
       return prepareGangliaV1(config, input);

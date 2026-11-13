@@ -55,7 +55,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
   resources: SceneResources<Source, Job>,
   config: GangliaV1Config,
   locomotion: LocomotionOptions,
-): PreparedRouteSolver {
+): PreparedRouteSolver<GangliaV1Config> {
   const { navigation, ...scene } = input;
   const planner = createCandidatePlanner(navigation);
   const groundCache = createWindowGroundCache();

@@ -1806,3 +1806,67 @@ Unchanged kernel SHA-256:
 `c0d0ab7702e048104a7e999d8d060e2ff4ac794cc796cfb04e325695eef92b55`.
 Game adapter SHA-256:
 `2c932f2ca8e668f8f4ee6937633d9c77e240986241e2a530f908fbb2cc88c623`.
+
+
+## Shared TypeScript model and independent evaluation, 2026-11-14
+
+Starting from Atlos `3111de4`, extracted collision, walls, spatial/support geometry,
+goal predicates, flight-control execution and locomotion state transitions into
+`src/model/`. Preserved the numerical code and native hook ownership. V1 retains
+candidate enumeration, control selection, graph search, resource dominance and
+bounded schedule optimization. No algorithm or search budget was replaced.
+The generic prepared-solver contract accepts a solver-specific configuration;
+`SolverSettings` carries execution identity while public `SolverConfig` retains
+its V1 integration meaning. Model rules exclude locomotion search budgets.
+
+Moved scene/exporter preparation and the solving worker into the V1 benchmark
+adapter. `--adapter` selects another process entry and policy defaults without
+editing the measurement harness. Catalog statistics are optional IPC data; only
+catalog-enabled preparation requires them. An independent worker fixture has no
+V1 imports and passes the same ordered batch, timing and quality path.
+
+Independent evaluation rejects malformed/discontinuous traces, recomputes modeled
+time and length, and verifies available starts, ordered waypoints and terminal
+geometry from the query and snapshot projection tolerance. It never repairs or
+optimizes a submitted route. Invalid completed traces cannot improve completion
+or objective statistics. Synthetic timing fixtures now represent their fixed
+cost as arrival overhead and supply consistent zero-length traces; their timing,
+SLO and stability assertions remain unchanged. Schema 9 records `route-contract`
+evaluation scope. This scope does not certify complete physical execution:
+control witnesses and whole-world coverage remain necessary for independent
+capsule/resource/device/boost replay. Shared rules provide that implementation
+boundary without adopting V1 search policy as a universal contract.
+
+Validation: package formatting, lint, typecheck and all 424 tests pass. World
+application and worker typechecks and seven integration tests pass. Native parity passes seven transfer,
+collision, ground, goal and locomotion cases; five candidate-index cases fail
+because the retained native library has no `CandidateSearchIndex` export. That
+prototype path is unchanged and disabled in the real replay. No native artifact
+or physical input was rebuilt.
+
+Real replay uses Node v26.13.0 with a 6144 MiB heap, retained native transfers,
+collision/locomotion/ground/goal hooks and locomotion label limit 64. The exact
+command is the retained resource-relocation workload/config with map02 data,
+migration-adapter, ten training queries, holdout offset ten, six scored requests,
+two disjoint warmup queries, two rounds, one worker and one lane. All twelve
+attempts complete within the SLO. Six ordered outcome hashes match
+`migration-validation.json`; truncation is stable, the quality gate passes and
+recomputed costs differ from the reference by at most 2.67e-15 seconds.
+Evidence is retained under `.local/research/ts-decoupling/`, including the JSON
+report with complete input/query/config/source bindings and native parity log.
+This is refactor validation; no baseline rerun or full-map experiment was added.
+
+
+Review made query-rule context mandatory for every benchmark adapter and added
+wrong-goal rejection to the independent-process fixture. Ordered-waypoint checks
+intersect horizontal and vertical tolerance intervals and retain the earliest
+admissible point, including vertical and zero-length traces. These fixes were
+rechecked through the focused evaluator/adapter cases and the 424-test package
+pass. Seven World integration cases and both World typechecks pass.
+
+The accepted replay is `accepted-serial.json`; earlier intermediate replays are
+retained separately. Its source/benchmark SHA-256 is `a4613c71a43041e9ae151a722f586066480dc923cc1c268607348865c793fadd`, and its kernel SHA-256
+is `f93095f611537bbb38513b7b65450be4a0b2427d86a9ff42f78a0201d84fc39d`. The unchanged game-adapter SHA-256 is `2c932f2ca8e668f8f4ee6937633d9c77e240986241e2a530f908fbb2cc88c623`.
+Mean serial service time is 477.232 ms/query, service readiness is 26.667 s and
+end-to-end time is 33.187 s. All 12 attempts succeed. The report retains complete
+input/config/query bindings; `validation-summary.json` indexes this evidence.

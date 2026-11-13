@@ -1,9 +1,9 @@
 import type { BuildOptions } from '#@/src/build.ts';
 import type { CollisionGeometry, Surface, Vec3 } from '#@/src/geometry.ts';
+import { type GoalProjector, createGoalProjector } from '#@/src/model/goals.ts';
 import type { InteractionGoal, JumpModel } from '#@/src/movement.ts';
 import { buildGroundSurfaces } from '#@/src/v1/geo/build.ts';
 import { surfaceGraph } from '#@/src/v1/geo/surfaces.ts';
-import { type GoalProjector, createGoalProjector } from '#@/src/v1/motion/goals.ts';
 import { jumpDuration } from '#@/src/v1/motion/jumps.ts';
 type Options = {
   build: BuildOptions;

@@ -6,6 +6,7 @@ import type { PreparedRouteSolver, RouteQuery, RouteResult } from '@opendfieldma
 
 import { summarizeQuality } from '#@/bench/quality.ts';
 import { QUERY_SLO_MS } from '#@/bench/slo.ts';
+import { evaluateRoute, verifyRoute } from '#@/src/evaluation/route.ts';
 
 const digest = (value: unknown): string =>
   createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -15,18 +16,20 @@ const outcome = (result: RouteResult) => ({
   ...(result.partial ? { partial: true } : {}),
   ...(result.reason === 'timeout' ? { timedOut: true } : {}),
 });
-const summarize = (result: RouteResult) => {
+const summarize = (result: RouteResult, evaluation = evaluateRoute(result.route)) => {
   const complete = result.route.status === 'complete' ? result.route : null;
+  const invalid = complete !== null && !evaluation.valid;
   const wallMs =
     'solveWallMs' in result.diagnostics && typeof result.diagnostics.solveWallMs === 'number'
       ? result.diagnostics.solveWallMs
       : undefined;
   return {
-    status: result.route.status,
+    status: invalid ? 'invalid-route' : result.route.status,
+    evaluation,
     partial: result.partial === true,
-    reason: result.reason ?? null,
-    cost: complete?.cost ?? null,
-    length: complete?.length ?? null,
+    reason: invalid ? evaluation.issues.join('; ') : (result.reason ?? null),
+    cost: evaluation.costSeconds,
+    length: evaluation.length,
     jumps: complete?.segments?.filter((segment) => segment.mode === 'jump').length ?? 0,
     drops: complete?.segments?.filter((segment) => segment.mode === 'drop').length ?? 0,
     truncated: result.diagnostics.truncated,
@@ -66,11 +69,14 @@ export function validateWarmup(cases: readonly Case[], warmup: readonly Case[]) 
 export async function runBenchmark(
   solver: PreparedRouteSolver,
   cases: readonly Case[],
+  rules: { maxVertical: number },
   onPhase?: (phase: 'prewarm' | 'batch') => void | Promise<void>,
   rounds = 1,
   recoverySetup = () => 0,
   warmupCases: readonly Case[] = [],
 ) {
+  const evaluate = (query: RouteQuery, result: RouteResult) =>
+    result.partial ? evaluateRoute(result.route) : verifyRoute(query, result.route, rules);
   const intervals = {
     warmup: { startedMs: 0, endedMs: 0 },
     queries: { startedMs: 0, endedMs: 0 },
@@ -95,7 +101,10 @@ export async function runBenchmark(
       wallMs: performance.now() - warmupStarted,
       recoverySetupMs: recoverySetup() - recoveryBefore,
       quality: summarizeQuality(
-        warm.map((result, i) => ({ id: warmupCases[i].id, ...summarize(result) })),
+        warm.map((result, i) => ({
+          id: warmupCases[i].id,
+          ...summarize(result, evaluate(warmupCases[i].query, result)),
+        })),
       ),
     };
     intervals.warmup.endedMs = performance.now();
@@ -118,7 +127,10 @@ export async function runBenchmark(
       samples.push({
         wallMs,
         recoverySetupMs,
-        results: batch.map((result, i) => ({ id: cases[i].id, ...summarize(result) })),
+        results: batch.map((result, i) => ({
+          id: cases[i].id,
+          ...summarize(result, evaluate(cases[i].query, result)),
+        })),
       });
     }
     intervals.queries.endedMs = performance.now();

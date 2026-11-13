@@ -1,5 +1,5 @@
 import type { Wall, Vec3 } from '#@/src/geometry.ts';
-import type { Bounds } from '#@/src/v1/geo/bounds.ts';
+import type { Bounds } from '#@/src/model/bounds.ts';
 
 type Point2 = readonly number[];
 type Profile = { radius: number; height: number };

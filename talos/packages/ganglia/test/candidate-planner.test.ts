@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import type { Portal, Surface, Vec3, Wall } from '#@/src/geometry.ts';
+import { blockedByWalls } from '#@/src/model/walls.ts';
 import type { GroundArrival, GroundOptions } from '#@/src/route.ts';
-import { blockedByWalls } from '#@/src/v1/geo/walls.ts';
 import { type CandidateEdge, createCandidatePlanner } from '#@/src/v1/search/candidate-planner.ts';
 import { expectStatus } from '#@/test/assertions.ts';
 const square = (id: string, x: number, z: number): Surface => ({

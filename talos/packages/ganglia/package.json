@@ -17,6 +17,8 @@
     ".": "./src/index.ts",
     "./build": "./src/build.ts",
     "./collision": "./src/collision.ts",
+    "./model": "./src/model/index.ts",
+    "./evaluation": "./src/evaluation/route.ts",
     "./solver": "./src/solver/index.ts",
     "./solver/host": "./src/solver/host.ts"
   },

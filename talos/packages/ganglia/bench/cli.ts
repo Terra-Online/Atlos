@@ -5,8 +5,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, isDeepStrictEqual } from 'node:util';
 
-import { gangliaV1Defaults, type SolverConfig } from '@opendfieldmap/ganglia';
-
+import { loadAdapter } from '#@/bench/adapter.ts';
 import { benchmarkMarkdown } from '#@/bench/markdown.ts';
 import { compareQuality, qualityGate, readReference, summarizeQuality } from '#@/bench/quality.ts';
 import { runBenchmark, validateWarmup } from '#@/bench/run.ts';
@@ -15,6 +14,7 @@ import { sourceHash } from '#@/bench/source.ts';
 import { resetTimings } from '#@/bench/timings.ts';
 import { prepareWorkerSolver } from '#@/bench/workers.ts';
 import { readWorkload } from '#@/bench/workload.ts';
+import type { SolverSettings } from '#@/src/solver/contract.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const { values } = parseArgs({
@@ -22,6 +22,7 @@ const { values } = parseArgs({
     json: { type: 'boolean' },
     markdown: { type: 'boolean' },
     help: { type: 'boolean' },
+    adapter: { type: 'string' },
     'data-root': { type: 'string' },
     scene: { type: 'string', default: 'map02' },
     extractor: { type: 'string', default: resolve(root, '../../.cache/noclip') },
@@ -41,11 +42,12 @@ const { values } = parseArgs({
 });
 if (values.help) {
   console.log(
-    'Usage: pnpm benchmark:full [--json | --markdown] [--data-root <path>] [--scene <name; default map02>] [--extractor <path>] [--workload <json-file | map02-long-range | map02-long-detours | map02-stress>] [--offset <index>] [--catalog-train <count; opt-in approximate static-action algorithm>] [--limit <count>] [--concurrency <scene-lanes>] [--workers <prepared solver processes; default 1>] [--rounds <measured batches; default 1>] [--config <json-file>] [--reference <benchmark-json>] [--max-mean-cost-ratio <ratio; default 1.01>] [--max-worst-cost-ratio <ratio; default 1.05>]. Every query has a hard 300-second SLO; timeouts count as failures. Reference comparisons reject lost solutions or excess modeled route cost; stability is checked across measured rounds. --warmup-workload <json-file> supplies disjoint runtime warmup queries; omitted means no runtime warmup.',
+    'Usage: pnpm benchmark:full [--adapter <module-path>] [--json | --markdown] [--data-root <path>] [--scene <name; default map02>] [--extractor <path>] [--workload <json-file | map02-long-range | map02-long-detours | map02-stress>] [--offset <index>] [--catalog-train <count; opt-in approximate static-action algorithm>] [--limit <count>] [--concurrency <scene-lanes>] [--workers <prepared solver processes; default 1>] [--rounds <measured batches; default 1>] [--config <json-file>] [--reference <benchmark-json>] [--max-mean-cost-ratio <ratio; default 1.01>] [--max-worst-cost-ratio <ratio; default 1.05>]. Every query has a hard 300-second SLO; timeouts count as failures. Reference comparisons reject lost solutions or excess modeled route cost; stability is checked across measured rounds. --warmup-workload <json-file> supplies disjoint runtime warmup queries; omitted means no runtime warmup.',
   );
   console.log('GANGLIA_BENCHMARK_HEAP_MB sets the Node heap cap in MiB (default 6144).');
 } else {
   try {
+    const adapter = await loadAdapter(values.adapter);
     if (values.json && values.markdown) throw new Error('Choose --json or --markdown');
     const rounds = Number(values.rounds);
     if (!Number.isSafeInteger(rounds) || rounds < 1) throw new Error('Invalid benchmark rounds');
@@ -110,9 +112,9 @@ if (values.help) {
     }
     if (new Set(selected.map((item) => item.id)).size !== selected.length)
       throw new Error('Duplicate workload query id');
-    const config: SolverConfig = values.config
+    const config: SolverSettings = values.config
       ? JSON.parse(await readFile(values.config, 'utf8'))
-      : { ...gangliaV1Defaults };
+      : { ...adapter.defaults };
     const workers = Number(values.workers);
     if (!Number.isSafeInteger(workers) || workers < 1) throw new Error('Invalid worker count');
     const concurrency =
@@ -143,6 +145,7 @@ if (values.help) {
     const started = performance.now();
     const prepared = await prepareWorkerSolver({
       count: workers,
+      entry: adapter.entry,
       config: fixed,
       dataRoot,
       extractor: values.extractor,
@@ -157,6 +160,7 @@ if (values.help) {
       // Reject incompatible references before spending time on prewarm and search.
       let catalogTraining;
       if (trainingCount) {
+        if (!adapter.catalogTraining) throw new Error('Adapter does not support catalog training');
         console.error(JSON.stringify({ phase: 'catalog-training', queries: training.length }));
         await prepared.setCatalogPhase('training');
         const trainingStarted = performance.now();
@@ -187,6 +191,7 @@ if (values.help) {
       const report = await runBenchmark(
         solver,
         selected,
+        metadata.rules,
         async (phase) => {
           console.error(
             JSON.stringify({
@@ -226,21 +231,21 @@ if (values.help) {
       const comparablePolicy =
         gate.passed &&
         comparableSpeed &&
-        referenceReport?.schemaVersion === 8 &&
+        referenceReport?.schemaVersion === 9 &&
         isDeepStrictEqual(referenceReport.measurement, measurement);
       const timingUnavailableReason = !gate.passed
         ? 'Quality or SLO gate failed'
         : !comparableSpeed
           ? 'The set of complete routes changed'
-          : referenceReport?.schemaVersion !== 8
-            ? 'Reference uses an earlier timing contract; rerun the baseline with schema 8'
+          : referenceReport?.schemaVersion !== 9
+            ? 'Reference uses an earlier timing contract; rerun the baseline with schema 9'
             : !isDeepStrictEqual(referenceReport.measurement, measurement)
               ? 'Preparation, warmup or execution settings differ from the reference'
               : undefined;
       const referenceBatchMs = referenceReport?.batch.wallMs;
       const referenceEndToEndMs = referenceReport?.lifecycle?.endToEndMs;
       const output = {
-        schemaVersion: 8,
+        schemaVersion: 9,
         measurement,
         lifecycle: {
           workerReadyMs,

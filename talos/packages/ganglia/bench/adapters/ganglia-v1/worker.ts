@@ -1,7 +1,7 @@
 import { prepareRouteSolver } from '@opendfieldmap/ganglia';
 
+import { loadScene } from '#@/bench/adapters/ganglia-v1/scene.ts';
 import { exportPhysicalRegion } from '#@/bench/prepare-region.ts';
-import { loadScene } from '#@/bench/scene.ts';
 import { resetTimings } from '#@/bench/timings.ts';
 import { workerMemory, type WorkerRequest, type WorkerReply } from '#@/bench/workers.ts';
 import { actionCatalogStats, setActionCatalogPhase } from '#@/src/v1/route/action-catalog.ts';
@@ -33,7 +33,10 @@ process.once('message', async (message: WorkerRequest) => {
       : undefined,
   );
   const preparationStarted = performance.now();
-  const solver = await prepareRouteSolver(setup.config, scene.input);
+  const solver = await prepareRouteSolver(
+    setup.config as import('#@/src/solver/ganglia-v1.ts').GangliaV1Config,
+    scene.input,
+  );
   const preparationMs = scene.timings.preparationMs + performance.now() - preparationStarted;
   process.on('message', async (message: WorkerRequest) => {
     if (message.type === 'close') {

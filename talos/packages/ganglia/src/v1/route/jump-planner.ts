@@ -1,8 +1,8 @@
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { Vec3, Surface } from '#@/src/geometry.ts';
+import { createGoalProjector, findGoalHit, markTerminalGoal } from '#@/src/model/goals.ts';
 import type { InteractionGoal, JumpModel, SpeedBoost } from '#@/src/movement.ts';
 import type { GroundOptions, GroundArrival, GroundConnection, Route } from '#@/src/route.ts';
-import { createGoalProjector, findGoalHit, markTerminalGoal } from '#@/src/v1/motion/goals.ts';
 import {
   rememberCatalogAction,
   selectCatalogActions,

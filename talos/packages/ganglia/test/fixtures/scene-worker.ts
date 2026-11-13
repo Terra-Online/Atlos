@@ -26,6 +26,7 @@ process.once('message', async (message: WorkerRequest) => {
     gameAdapterSha256: 'adapter',
     kernelSha256: 'kernel',
     resolvedKernel: 'fixture',
+    rules: { maxVertical: 0.5 },
     inputBytes: 1,
     execution: {
       mode: 'inline',
@@ -89,7 +90,7 @@ process.once('message', async (message: WorkerRequest) => {
       route: {
         status: 'complete',
         start: query.starts[0].id,
-        arrivalCost: 0,
+        arrivalCost: 1,
         cost: 1,
         length: 1,
         points: [query.goal],

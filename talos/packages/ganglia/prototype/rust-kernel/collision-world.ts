@@ -1,6 +1,6 @@
 import { CollisionIndex } from '#@/prototype/rust-kernel/collision-binding.ts';
 import type { CollisionWorld } from '#@/src/collision.ts';
-import { createTypeScriptCollisionWorld } from '#@/src/v1/geo/collision.ts';
+import { createTypeScriptCollisionWorld } from '#@/src/model/collision.ts';
 
 type Factory = typeof createTypeScriptCollisionWorld;
 const point = (value: unknown) =>

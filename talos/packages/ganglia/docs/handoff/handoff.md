@@ -20,6 +20,45 @@ maintained in the renderer patch. Noclip remains pinned to `978acf5`, which is
 newer than that base branch's pin; the solver and World routing source are
 unchanged by this merge.
 
+## Shared TypeScript model and evaluation, 2026-11-14
+
+`src/model/` owns collision and wall queries, support/interaction geometry,
+execution of supplied flight controls and deterministic locomotion transitions.
+`LocomotionModel` contains movement rules; `LocomotionOptions.search` adds V1
+search budgets. Candidate enumeration, graph search, dominance pruning, resource
+allocation and device discovery remain under `src/v1/`. Public `./model` and
+`./evaluation` entries expose the shared boundary for another solver and a later
+Rust migration. Native prototype hooks now attach to the owning shared modules.
+
+`src/evaluation/route.ts` checks trace timing, continuity, available starts,
+ordered waypoints and terminal query geometry, and independently recomputes time
+and length. Benchmark scoring rejects inconsistent completed traces. Reports
+identify this scope as `route-contract`. Full physical certification still needs
+world coverage and control witnesses for authored/device/airborne segments;
+route samples alone do not certify resource feasibility or collision-free motion.
+The extracted model supplies the common implementation for that replay work.
+
+The process harness accepts an adapter module through `--adapter`; the default
+V1 adapter owns scene preparation, exporter integration and catalog operations
+under `bench/adapters/ganglia-v1/`. A separate-process fixture with its own
+algorithm and no catalog exercises the same timing, SLO and scoring path.
+`SolverSettings` describes the generic execution identity; the existing public
+`SolverConfig` remains the V1 policy type for integration compatibility.
+Schema 9 adds independent evaluation. Evaluation happens after each timed batch,
+contributes to end-to-end time, and is outside per-query service time. Historical
+schema-8 timing claims retain their original scope.
+
+Validation: package formatting, lint, typecheck and all 424 tests pass. World
+application and worker typechecks and seven integration tests pass. A native-backed map02 replay completes
+all 12 measured attempts across six requests and two rounds, with six identical
+reference route hashes, stable truncation and no timeouts or lost routes. Cost
+recomputation differs only by floating-point summation, below 3e-15 seconds.
+Native parity passes the seven transfer, collision, ground, goal and locomotion
+cases. Five unrelated candidate-search cases fail because the retained native
+artifact lacks `CandidateSearchIndex`; no Rust artifact was rebuilt. Evidence is
+in `.local/research/ts-decoupling/accepted-serial.json` and its validation summary. These checks establish refactor behavior and
+evaluation scope; full-map coverage remains open.
+
 ## Benchmark lifecycle, 2026-11-14
 
 Schema 8 measures one algorithm and preparation recipe for every deployment
@@ -147,8 +186,8 @@ Ganglia owns the geometry, directed passages, collision queries, movement candid
 | Ground query and geometry preparation | [`src/v1/route/ground.ts`](../../src/v1/route/ground.ts), [`src/v1/geo/surfaces.ts`](../../src/v1/geo/surfaces.ts), [`src/v1/route/straighten.ts`](../../src/v1/route/straighten.ts), [`src/v1/route/movement-geometry.ts`](../../src/v1/route/movement-geometry.ts) |
 | Movement search | [`src/v1/route/jump-planner.ts`](../../src/v1/route/jump-planner.ts), [`src/v1/search/traversal.ts`](../../src/v1/search/traversal.ts), [`src/v1/search/shortcuts.ts`](../../src/v1/search/shortcuts.ts), [`src/v1/route/route-shortcuts.ts`](../../src/v1/route/route-shortcuts.ts) |
 | Dynamics and pruning | [`src/v1/motion/jumps.ts`](../../src/v1/motion/jumps.ts), [`src/v1/reach/reachability.ts`](../../src/v1/reach/reachability.ts), [`src/v1/reach/motion-bounds.ts`](../../src/v1/reach/motion-bounds.ts), [`src/v1/motion/flight-steering.ts`](../../src/v1/motion/flight-steering.ts), [`src/v1/search/candidate-bounds.ts`](../../src/v1/search/candidate-bounds.ts) |
-| Airborne objectives and boosts | [`src/v1/route/airborne-goal.ts`](../../src/v1/route/airborne-goal.ts), [`src/v1/route/boosted-route.ts`](../../src/v1/route/boosted-route.ts), [`src/v1/motion/goals.ts`](../../src/v1/motion/goals.ts) |
-| Collision and resources | [`src/v1/geo/collision.ts`](../../src/v1/geo/collision.ts), [`src/v1/resource/locomotion.ts`](../../src/v1/resource/locomotion.ts), [`src/v1/resource/resource-search.ts`](../../src/v1/resource/resource-search.ts) |
+| Airborne objectives and boosts | [`src/v1/route/airborne-goal.ts`](../../src/v1/route/airborne-goal.ts), [`src/v1/route/boosted-route.ts`](../../src/v1/route/boosted-route.ts), [`src/model/goals.ts`](../../src/model/goals.ts) |
+| Collision and resources | [`src/model/collision.ts`](../../src/model/collision.ts), [`src/v1/resource/locomotion.ts`](../../src/v1/resource/locomotion.ts), [`src/v1/resource/resource-search.ts`](../../src/v1/resource/resource-search.ts) |
 | Atlos ordinary request | [`dev-route-server.ts`](../../../../apps/world/dev-route-server.ts), [`travel-arrivals.ts`](../../../../apps/world/travel-arrivals.ts) |
 | Atlos resource scheduling | [`physical-route-builder.ts`](../../../../apps/world/physical-route-builder.ts), [`route-worker.ts`](../../../../apps/world/route-worker.ts), [`window-route.ts`](../../../../apps/world/window-route.ts) |
 | Atlos terminal assets | [`terminal-routes.ts`](../../../../apps/world/terminal-routes.ts) |
@@ -164,14 +203,14 @@ bindings. Navigation and physical export revisions are separate data bindings.
 
 The 2026-11-11 source reorganization uses these ownership boundaries. Public entry points separate playback, solver creation, host integration, build
 and collision. Their shared data contracts live outside `src/v1/`. V1 consumers
-import owning modules directly; public build and collision entries forward to the
-v1 implementations.
+import owning modules directly. Public build forwards to V1 support construction;
+collision forwards to the shared model.
 
 | Directory | Responsibility and modules |
 | --- | --- |
-| `geo` | Scene representation and support construction. `surfaces`, `bounds`, `walls`, `collision`, `build`, `clip-surface`, `support-field`, `support-projector`, `support-snapshot` |
+| `geo` | Scene representation and support construction. `surfaces`, `build`, `clip-surface`, `support-field`, `support-projector` |
 | `reach` | Directed connectivity and conservative reach information. `connectivity`, `distance-field`, `reachability`, `motion-bounds` |
-| `motion` | Motion models, landing witnesses and interaction geometry. `jumps`, `flight-steering`, `landings`, `motion`, `goals` |
+| `motion` | Motion candidate controls, landing witnesses and graph conversion. `jumps`, `flight-steering`, `landings`, `motion` |
 | `search` | Implicit successors, proposal search and discovery. `candidate-planner`, `candidate-transfers`, `candidate-bounds`, `lazy-route`, `shortcuts`, `traversal`, `boundary-order`, `heap` |
 | `resource` | Continuation-state search and fixed-route scheduling. `resource-search`, `locomotion` |
 | `route` | Route orchestration, prepared planning context and improvement. `routes`, `ground`, `jump-planner`, `airborne-goal`, `boosted-route`, `route-shortcuts`, `ground-detours`, `straighten`, `movement-geometry` |
@@ -180,8 +219,8 @@ The directories under `src/v1/` describe the ganglia-v1 implementation. Shared c
 remain explicit. `route/movement-geometry` assembles geometry with ground-planner
 preparation and discovery boundaries. It retains the existing runtime dependency
 cycle with `search/traversal`. `traversal` also owns `standingFoot` and discovery
-validation shared by motion callers. `motion/goals` combines support projection
-with terminal flight clipping. The generic `search/heap` is used by distance and
+validation shared by motion callers. `src/model/goals` owns support projection
+and terminal flight clipping. The generic `search/heap` is used by distance and
 resource searches. Future extraction of these mixed responsibilities must preserve
 snapshot ownership and avoid a second implementation of support or goal semantics.
 

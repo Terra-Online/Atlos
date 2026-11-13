@@ -1,6 +1,6 @@
 import type { Vec3, Surface } from '#@/src/geometry.ts';
+import { type GoalProjection, closestOnSurface } from '#@/src/model/goals.ts';
 import type { JumpModel } from '#@/src/movement.ts';
-import { type GoalProjection, closestOnSurface } from '#@/src/v1/motion/goals.ts';
 import { jumpDuration } from '#@/src/v1/motion/jumps.ts';
 import type { Boundary } from '#@/src/v1/search/traversal.ts';
 

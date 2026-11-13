@@ -1,4 +1,5 @@
-import type { RouteQuery, RouteResult, SolverConfig } from '#@/src/solver/contract.ts';
+import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
+import type { GangliaV1Config as SolverConfig } from '#@/src/solver/ganglia-v1.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 import { snapshotGangliaV1Config } from '#@/src/v1/prepare.ts';
 import { createPhysicalCache } from '#@/src/v1/solver/physical/preparation.ts';

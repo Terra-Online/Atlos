@@ -3,8 +3,8 @@ import { test } from 'node:test';
 
 import { createCollisionWorld, type Capsule, type CollisionWorld } from '#@/src/collision.ts';
 import type { Surface, Vec3, Wall } from '#@/src/geometry.ts';
+import { createGoalProjector } from '#@/src/model/goals.ts';
 import type { GroundConnection } from '#@/src/route.ts';
-import { createGoalProjector } from '#@/src/v1/motion/goals.ts';
 import { jumpConnection } from '#@/src/v1/motion/jumps.ts';
 import { planGroundRoute, createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import {

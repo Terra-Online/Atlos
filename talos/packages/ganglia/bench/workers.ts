@@ -7,15 +7,13 @@ import type {
   RouteQuery,
   RouteResult,
   SolveOptions,
-  SolverConfig,
 } from '@opendfieldmap/ganglia';
 
-import { sceneIdentity, type SceneMetadata } from '#@/bench/scene.ts';
+import { sceneIdentity, type SceneMetadata, type CatalogStats } from '#@/bench/adapter.ts';
 import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { createTimings, mergeTimings, type Timings } from '#@/bench/timings.ts';
-import { actionCatalogStats } from '#@/src/v1/route/action-catalog.ts';
+import type { SolverSettings } from '#@/src/solver/contract.ts';
 
-type CatalogStats = ReturnType<typeof actionCatalogStats>;
 type Control =
   | { type: 'catalog-phase'; phase: CatalogStats['phase'] }
   | { type: 'benchmark-phase'; phase: 'prewarm' | 'batch' };
@@ -36,7 +34,7 @@ export type WorkerResult = RouteResult & {
 };
 type RegionFiles = { ground: string; collision: string };
 export interface WorkerSetup {
-  config: SolverConfig;
+  config: SolverSettings;
   dataRoot: string;
   extractor: string;
   scene?: string;
@@ -52,7 +50,7 @@ export type WorkerRequest =
 export type WorkerReply =
   | {
       type: 'ready';
-      config: SolverConfig;
+      config: SolverSettings;
       metadata: SceneMetadata;
       inputLoadMs: number;
       preparationMs: number;
@@ -70,7 +68,7 @@ export type WorkerReply =
     }
   | { type: 'event'; id: number; event: RouteEvent }
   | { type: 'region'; files: RegionFiles }
-  | { type: 'control'; id: number; catalog: CatalogStats; memory?: Memory }
+  | { type: 'control'; id: number; catalog?: CatalogStats; memory?: Memory }
   | { type: 'error'; id: number; error: string }
   | { type: 'closed' };
 type Task = {
@@ -105,7 +103,7 @@ type Slot = {
  * synchronous JS or native search cannot yield to an AbortSignal. */
 export async function prepareWorkerSolver(options: {
   count: number;
-  config: SolverConfig;
+  config: SolverSettings;
   dataRoot: string;
   extractor: string;
   scene?: string;
@@ -259,11 +257,15 @@ export async function prepareWorkerSolver(options: {
   };
   const start = (slot: Slot) =>
     new Promise<void>((resolve, reject) => {
-      const worker = fork(options.entry ?? new URL('./worker.ts', import.meta.url), [], {
-        serialization: 'advanced',
-        detached: process.platform !== 'win32',
-        stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
-      });
+      const worker = fork(
+        options.entry ?? new URL('./adapters/ganglia-v1/worker.ts', import.meta.url),
+        [],
+        {
+          serialization: 'advanced',
+          detached: process.platform !== 'win32',
+          stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
+        },
+      );
       slot.worker = worker;
       slot.retired = false;
       slot.ready = false;
@@ -278,6 +280,12 @@ export async function prepareWorkerSolver(options: {
         if (slot.worker !== worker || slot.retired) return;
         try {
           if (message.type === 'ready') {
+            if (
+              !message.metadata.rules ||
+              !Number.isFinite(message.metadata.rules.maxVertical) ||
+              message.metadata.rules.maxVertical < 0
+            )
+              throw new Error('Adapter requires the snapshot projection tolerance');
             metadata(message.metadata);
             prepared ??= message;
             inputLoadMs = Math.max(inputLoadMs, message.inputLoadMs);
@@ -544,8 +552,15 @@ export async function prepareWorkerSolver(options: {
       await control({ type: 'catalog-phase', phase });
     },
     setBenchmarkPhase: (phase: 'prewarm' | 'batch') => control({ type: 'benchmark-phase', phase }),
-    catalogStats: () => slots[0].catalog ?? actionCatalogStats(),
-    catalogStatsAll: () => slots.map((slot) => slot.catalog ?? actionCatalogStats()),
+    catalogStats: () => {
+      if (!slots[0].catalog) throw new Error('Adapter does not provide catalog statistics');
+      return slots[0].catalog;
+    },
+    catalogStatsAll: () =>
+      slots.map((slot) => {
+        if (!slot.catalog) throw new Error('Adapter does not provide catalog statistics');
+        return slot.catalog;
+      }),
     inputLoadMs,
     timings,
     get recoverySetupMs() {

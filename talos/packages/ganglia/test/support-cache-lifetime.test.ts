@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import type { Vec3 } from '#@/src/geometry.ts';
+import { createGoalProjector } from '#@/src/model/goals.ts';
 import { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 import { verticalProjectionCandidates } from '#@/src/v1/geo/support-projector.ts';
-import { createGoalProjector } from '#@/src/v1/motion/goals.ts';
 import { landingCandidates } from '#@/src/v1/motion/landings.ts';
 import { createPhysicalPreparation } from '#@/src/v1/solver/physical/host.ts';
 import { preparePhysicalSolver } from '#@/src/v1/solver/physical/prepared.ts';

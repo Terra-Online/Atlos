@@ -1,9 +1,9 @@
 import type { Surface, Vec3 } from '#@/src/geometry.ts';
-import type { BoundsIndex } from '#@/src/v1/geo/bounds.ts';
+import type { BoundsIndex } from '#@/src/model/bounds.ts';
+import { createGoalProjector } from '#@/src/model/goals.ts';
+import { createWallChecker } from '#@/src/model/walls.ts';
 import { createSupportProjector } from '#@/src/v1/geo/support-projector.ts';
 import { surfaceGraph, surfacePortals } from '#@/src/v1/geo/surfaces.ts';
-import { createWallChecker } from '#@/src/v1/geo/walls.ts';
-import { createGoalProjector } from '#@/src/v1/motion/goals.ts';
 import { type GroundTopology, groundComponents } from '#@/src/v1/reach/connectivity.ts';
 import { groundPreparation } from '#@/src/v1/route/ground.ts';
 import type { Graph } from '#@/src/v1/route/routes.ts';

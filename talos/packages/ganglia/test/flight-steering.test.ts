@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import type { Vec3 } from '#@/src/geometry.ts';
+import { findGoalHit } from '#@/src/model/goals.ts';
 import type { JumpModel } from '#@/src/movement.ts';
 import { mayReachGoal } from '#@/src/v1/motion/flight-steering.ts';
-import { findGoalHit } from '#@/src/v1/motion/goals.ts';
 import {
   type MotionControl,
   jumpConnection,

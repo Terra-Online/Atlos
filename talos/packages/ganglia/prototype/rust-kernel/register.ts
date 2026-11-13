@@ -4,7 +4,7 @@ import { installTransferPrototype } from '#@/src/v1/search/candidate-transfers.t
 installTransferPrototype(createRustTransferQuery);
 
 import { createRustCollisionWorld } from '#@/prototype/rust-kernel/collision-world.ts';
-import { installCollisionPrototype } from '#@/src/v1/geo/collision.ts';
+import { installCollisionPrototype } from '#@/src/model/collision.ts';
 
 if (process.env.GANGLIA_RUST_COLLISION === '1') installCollisionPrototype(createRustCollisionWorld);
 
@@ -36,7 +36,7 @@ if (process.env.GANGLIA_RUST_GROUND_TRACE === '1')
   installGroundTracePrototype(createRustGroundTracer);
 
 import { createRustGoalGeometry } from '#@/prototype/rust-kernel/goal-binding.ts';
-import { installGoalGeometryPrototype } from '#@/src/v1/motion/goals.ts';
+import { installGoalGeometryPrototype } from '#@/src/model/goals.ts';
 
 if (process.env.GANGLIA_RUST_GOALS === '1') installGoalGeometryPrototype(createRustGoalGeometry);
 

@@ -1,6 +1,6 @@
 import type { Vec3 } from '#@/src/geometry.ts';
+import type { Bounds } from '#@/src/model/bounds.ts';
 import type { JumpModel } from '#@/src/movement.ts';
-import type { Bounds } from '#@/src/v1/geo/bounds.ts';
 import { jumpDuration } from '#@/src/v1/motion/jumps.ts';
 const horizontalGap = (a: Bounds, b: Bounds) =>
   Math.hypot(

@@ -1,5 +1,5 @@
 import type { Vec3 } from '#@/src/geometry.ts';
-export { createCollisionWorld } from '#@/src/v1/geo/collision.ts';
+export { createCollisionWorld } from '#@/src/model/collision.ts';
 
 export interface CollisionOptions {
   /** Inclusive XZ rectangle in world metres, retaining full vertical coverage.

@@ -13,8 +13,8 @@ export {
 export type { PhysicalWork } from '#@/src/solver/resources.ts';
 export { createGroundPlanner } from '#@/src/v1/route/ground.ts';
 export { routeFrom } from '#@/src/v1/route/routes.ts';
-export { createGoalProjector } from '#@/src/v1/motion/goals.ts';
-export { createWallChecker } from '#@/src/v1/geo/walls.ts';
+export { createGoalProjector } from '#@/src/model/goals.ts';
+export { createWallChecker } from '#@/src/model/walls.ts';
 export { jumpDuration } from '#@/src/v1/motion/jumps.ts';
 export { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
 export { createDeviceConnections } from '#@/src/v1/solver/physical/devices.ts';

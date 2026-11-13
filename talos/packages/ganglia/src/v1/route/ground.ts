@@ -1,4 +1,5 @@
 import type { Vec3, Surface } from '#@/src/geometry.ts';
+import { type GoalProjector, createGoalProjector } from '#@/src/model/goals.ts';
 import type { InteractionGoal, Segment } from '#@/src/movement.ts';
 import type {
   GroundArrival,
@@ -9,7 +10,6 @@ import type {
 } from '#@/src/route.ts';
 import { createSupportProjector } from '#@/src/v1/geo/support-projector.ts';
 import { type SharedPortal, surfaceGraph, surfacePortals } from '#@/src/v1/geo/surfaces.ts';
-import { type GoalProjector, createGoalProjector } from '#@/src/v1/motion/goals.ts';
 import { validateMotion } from '#@/src/v1/motion/motion.ts';
 import { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
 import {

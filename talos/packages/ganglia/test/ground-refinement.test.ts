@@ -4,9 +4,9 @@ import { test } from 'node:test';
 import { buildGroundSurfaces } from '#@/src/build.ts';
 import { createCollisionWorld } from '#@/src/collision.ts';
 import type { Surface, Vec3 } from '#@/src/index.ts';
+import { createGoalProjector } from '#@/src/model/goals.ts';
 import { createPhysicalPreparation } from '#@/src/solver/host.ts';
 import { type PhysicalInput, gangliaV1Defaults } from '#@/src/solver/index.ts';
-import { createGoalProjector } from '#@/src/v1/motion/goals.ts';
 import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { refineGoalGround } from '#@/src/v1/solver/ground-refinement.ts';
 

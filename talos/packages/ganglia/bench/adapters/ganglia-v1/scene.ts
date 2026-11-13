@@ -41,12 +41,6 @@ export type GameAdapter = {
   ): Promise<{ solve(options: { work: PhysicalWork }): Promise<Report> }>;
 };
 
-export const sceneIdentity = (metadata: {
-  hashes: Record<string, string>;
-  gameAdapterSha256: string;
-  kernelSha256: string;
-}) => JSON.stringify([metadata.hashes, metadata.gameAdapterSha256, metadata.kernelSha256]);
-
 export async function loadScene(
   dataRoot: string,
   extractor: string,
@@ -59,7 +53,7 @@ export async function loadScene(
   const entry = resolve(extractor, 'packages/extractor/src/game/physical-input.ts');
   const resolvedKernel = createRequire(entry).resolve('@opendfieldmap/ganglia/solver');
   const kernelRoot = resolve(dirname(resolvedKernel), '../..');
-  const sourceRoot = fileURLToPath(new URL('../', import.meta.url));
+  const sourceRoot = fileURLToPath(new URL('../../../', import.meta.url));
   const kernelDigest = async (base: string) => {
     const hash = createHash('sha256');
     for (const name of (await readdir(resolve(base, 'src'), { recursive: true })).sort()) {
@@ -116,6 +110,7 @@ export async function loadScene(
       gameAdapterSha256,
       kernelSha256,
       resolvedKernel,
+      rules: { maxVertical: dataset.navigation.options.maxVertical },
       get inputBytes() {
         return dataset.inputBytes;
       },
@@ -278,5 +273,3 @@ export function prepareSceneResources(
     },
   };
 }
-
-export type SceneMetadata = Awaited<ReturnType<typeof loadScene>>['metadata'];

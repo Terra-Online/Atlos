@@ -5,6 +5,7 @@ export type {
   Segment,
   SpeedBoost,
   LocomotionOptions,
+  LocomotionModel,
   InteractionGoal,
   JumpModel,
 } from '#@/src/movement.ts';
@@ -13,6 +14,7 @@ export { prepareRouteSolver, gangliaV1Defaults } from '#@/src/solver/index.ts';
 export type {
   PreparedRouteSolver,
   SolverConfig,
+  SolverSettings,
   GangliaV1Config,
   SolverInput,
   SceneInput,

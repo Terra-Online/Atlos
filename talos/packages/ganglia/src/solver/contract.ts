@@ -2,7 +2,6 @@ import type { CollisionOptions } from '#@/src/collision.ts';
 import type { Vec3, Surface, CollisionGeometry, Portal, Wall } from '#@/src/geometry.ts';
 import type { InteractionGoal, JumpModel, LocomotionOptions, SpeedBoost } from '#@/src/movement.ts';
 import type { GroundArrival, GroundConnection, Route } from '#@/src/route.ts';
-import type { GangliaV1Config } from '#@/src/solver/ganglia-v1.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 import type { WindowJob, SceneResources, SceneNavigation } from '#@/src/solver/resources.ts';
 
@@ -29,7 +28,11 @@ export interface SceneInput {
   };
 }
 
-export type SolverConfig = GangliaV1Config;
+/** Execution identity shared by solver implementations. Algorithm policy is adapter-owned. */
+export interface SolverSettings {
+  readonly algorithm: string;
+  readonly batchConcurrency: number;
+}
 
 export interface RouteQuery {
   starts: GroundArrival[];
@@ -70,8 +73,8 @@ export interface SolveOptions {
   onEvent?: (event: RouteEvent) => void;
 }
 
-export interface PreparedRouteSolver {
-  readonly config: SolverConfig;
+export interface PreparedRouteSolver<Config extends SolverSettings = SolverSettings> {
+  readonly config: Config;
   /** Fresh search state; immutable preparation and geometry proofs may be reused.
    * No completed-route cache. Inputs remain unchanged until the promise settles. */
   solve(query: RouteQuery, options?: SolveOptions): Promise<RouteResult>;

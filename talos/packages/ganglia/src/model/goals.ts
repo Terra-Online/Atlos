@@ -1,9 +1,9 @@
 import type { Vec3, Surface } from '#@/src/geometry.ts';
+import { type Bounds, createBoundsIndex } from '#@/src/model/bounds.ts';
+import { supportSnapshot } from '#@/src/model/support-snapshot.ts';
+import { projectPoint } from '#@/src/model/support.ts';
 import type { InteractionGoal } from '#@/src/movement.ts';
 import type { Route } from '#@/src/route.ts';
-import { type Bounds, createBoundsIndex } from '#@/src/v1/geo/bounds.ts';
-import { supportSnapshot } from '#@/src/v1/geo/support-snapshot.ts';
-import { projectPoint } from '#@/src/v1/geo/surfaces.ts';
 
 export type GoalProjectionOptions =
   | { maxVertical: number; interaction?: InteractionGoal }

@@ -1,7 +1,7 @@
 import type { Vec3 } from '#@/src/geometry.ts';
+import { hasTerminalGroundEvent, markTerminalGoal } from '#@/src/model/goals.ts';
 import type { Segment, LocomotionOptions } from '#@/src/movement.ts';
 import type { Route } from '#@/src/route.ts';
-import { hasTerminalGroundEvent, markTerminalGoal } from '#@/src/v1/motion/goals.ts';
 import {
   type CondensedTopology,
   groundComponents,

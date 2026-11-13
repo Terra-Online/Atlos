@@ -4,17 +4,18 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-import { gangliaV1Defaults, type SolverConfig } from '@opendfieldmap/ganglia';
-
+import { loadAdapter } from '#@/bench/adapter.ts';
 import { prepareCoverage, type CoveragePass } from '#@/bench/prepare-coverage.ts';
 import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { prepareWorkerSolver } from '#@/bench/workers.ts';
 import { readWorkload } from '#@/bench/workload.ts';
+import type { SolverSettings } from '#@/src/solver/contract.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const { values } = parseArgs({
   options: {
     help: { type: 'boolean' },
+    adapter: { type: 'string' },
     config: { type: 'string' },
     workload: { type: 'string' },
     offset: { type: 'string', default: '0' },
@@ -27,10 +28,11 @@ const { values } = parseArgs({
 });
 if (values.help) {
   console.log(
-    'Usage: node bench/prepare.ts --config <exporter-config> --workload <json-file | map02-long-range | map02-long-detours | map02-stress> [--offset <index>] [--limit <count>] [--scene <name; default map02>] [--data-root <path>] [--extractor <path>] [--solver-config <json-file>]. Builds missing physical regions through the real solver with batchConcurrency=1 and a hard 300-second per-query SLO. Timeouts count as failed routes. This is data preparation, not a performance run.',
+    'Usage: node bench/prepare.ts [--adapter <module-path>] --config <exporter-config> --workload <json-file | map02-long-range | map02-long-detours | map02-stress> [--offset <index>] [--limit <count>] [--scene <name; default map02>] [--data-root <path>] [--extractor <path>] [--solver-config <json-file>]. Builds missing physical regions through the real solver with batchConcurrency=1 and a hard 300-second per-query SLO. Timeouts count as failed routes. This is data preparation, not a performance run.',
   );
 } else {
   try {
+    const adapter = await loadAdapter(values.adapter);
     if (!values.config || !values.workload)
       throw new Error('Preparation requires --config and --workload');
     const extractor = resolve(values.extractor);
@@ -55,9 +57,9 @@ if (values.help) {
       workload.some((item) => !item || typeof item.id !== 'string' || !item.query)
     )
       throw new Error('Invalid preparation workload');
-    const solverConfig: SolverConfig = values['solver-config']
+    const solverConfig: SolverSettings = values['solver-config']
       ? JSON.parse(await readFile(values['solver-config'], 'utf8'))
-      : { ...gangliaV1Defaults };
+      : { ...adapter.defaults };
     const devicesFile = resolve(dataRoot, `routing/${values.scene}-traversal-devices.json`);
     let devices: string | undefined = devicesFile;
     try {
@@ -75,6 +77,7 @@ if (values.help) {
     );
     const prepared = await prepareWorkerSolver({
       count: 1,
+      entry: adapter.entry,
       config: { ...solverConfig, batchConcurrency: 1 },
       dataRoot,
       extractor,

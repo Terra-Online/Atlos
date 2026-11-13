@@ -1,5 +1,5 @@
 import { loadNativeLibrary } from '#@/prototype/rust-kernel/native.ts';
-import type { GoalClip, GoalGeometryFactory } from '#@/src/v1/motion/goals.ts';
+import type { GoalClip, GoalGeometryFactory } from '#@/src/model/goals.ts';
 
 interface NativeGoalProjectionIndex {
   projectPoint(target: Float64Array, candidates: Uint32Array, maxVertical: number): Float64Array;

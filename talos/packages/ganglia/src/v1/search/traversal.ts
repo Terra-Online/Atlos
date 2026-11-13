@@ -1,10 +1,10 @@
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { Vec3, Surface, Portal, Wall } from '#@/src/geometry.ts';
+import { type Bounds, createBoundsIndex } from '#@/src/model/bounds.ts';
+import { createWallChecker } from '#@/src/model/walls.ts';
 import type { InteractionGoal, JumpModel } from '#@/src/movement.ts';
 import type { GroundConnection } from '#@/src/route.ts';
-import { type Bounds, createBoundsIndex } from '#@/src/v1/geo/bounds.ts';
 import { type SharedPortal, surfacePortals, directedPortals } from '#@/src/v1/geo/surfaces.ts';
-import { createWallChecker } from '#@/src/v1/geo/walls.ts';
 import { discoveryEvidence } from '#@/src/v1/motion/evidence.ts';
 import { jumpConnection, jumpDuration } from '#@/src/v1/motion/jumps.ts';
 import { landingCandidates } from '#@/src/v1/motion/landings.ts';

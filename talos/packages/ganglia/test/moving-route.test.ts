@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import type { GroundConnection, Route, Surface, Vec3 } from '#@/src/index.ts';
+import { createGoalProjector } from '#@/src/model/goals.ts';
 import type { SweptSupport } from '#@/src/solver/physical.ts';
-import { createGoalProjector } from '#@/src/v1/motion/goals.ts';
 import { createMovingRouteAnnotator } from '#@/src/v1/solver/physical/moving-route.ts';
 import { sweepSupports } from '#@/src/v1/solver/physical/supports.ts';
 

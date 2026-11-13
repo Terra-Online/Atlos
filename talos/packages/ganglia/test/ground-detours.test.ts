@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import type { Surface, Vec3, Wall } from '#@/src/geometry.ts';
+import { blockedByWalls } from '#@/src/model/walls.ts';
 import type { LocomotionOptions, MovementMode, Segment } from '#@/src/movement.ts';
 import type { Route } from '#@/src/route.ts';
-import { blockedByWalls } from '#@/src/v1/geo/walls.ts';
 import {
   chooseTypeScriptSchedule,
   installSchedulePrototype,

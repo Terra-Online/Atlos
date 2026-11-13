@@ -1,7 +1,7 @@
 import type { Vec3, Wall } from '#@/src/geometry.ts';
+import { createWallChecker } from '#@/src/model/walls.ts';
 import type { MovementMode, Segment, LocomotionOptions } from '#@/src/movement.ts';
 import type { Route } from '#@/src/route.ts';
-import { createWallChecker } from '#@/src/v1/geo/walls.ts';
 import { validateMotion, routeSegment } from '#@/src/v1/motion/motion.ts';
 import {
   type CondensedTopology,

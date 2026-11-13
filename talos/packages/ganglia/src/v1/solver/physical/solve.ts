@@ -1,9 +1,9 @@
 import type { Surface, Vec3, Wall } from '#@/src/geometry.ts';
+import { createCollisionWorld } from '#@/src/model/collision.ts';
 import type { SpeedBoost, InteractionGoal } from '#@/src/movement.ts';
 import type { GroundArrival, GroundConnection, GroundOptions, Route } from '#@/src/route.ts';
-import type { SolverConfig } from '#@/src/solver/contract.ts';
+import type { GangliaV1Config as SolverConfig } from '#@/src/solver/ganglia-v1.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
-import { createCollisionWorld } from '#@/src/v1/geo/collision.ts';
 import { verticalProjectionCandidates } from '#@/src/v1/geo/support-projector.ts';
 import { projectPoint } from '#@/src/v1/geo/surfaces.ts';
 import { jumpDuration } from '#@/src/v1/motion/jumps.ts';

@@ -7,7 +7,7 @@ import { prepareSceneRouteSolver } from '#@/src/v1/solver/scene/prepared.ts';
 export async function prepareGangliaV1<Source, Job extends WindowJob>(
   config: GangliaV1Config,
   input: SolverInput<Source, Job>,
-): Promise<PreparedRouteSolver> {
+): Promise<PreparedRouteSolver<GangliaV1Config>> {
   const fixed = snapshotGangliaV1Config(config);
   switch (input.kind) {
     case 'surfaces':

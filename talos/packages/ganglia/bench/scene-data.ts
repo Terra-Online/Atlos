@@ -6,7 +6,8 @@ import { deserialize } from 'node:v8';
 
 import type { GroundOptions, Surface } from '@opendfieldmap/ganglia';
 import type { Corridor, SceneNavigation } from '@opendfieldmap/ganglia/solver';
-import { physicalCoverage, physicalTileSpan } from '@opendfieldmap/ganglia/solver/host';
+
+import { physicalCoverage, physicalTileSpan } from '#@/src/model/coverage.ts';
 
 export type Source = { buildGuid: string; contentHash: string };
 type Bounds = { min: [number, number]; max: [number, number] };

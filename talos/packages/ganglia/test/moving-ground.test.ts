@@ -3,8 +3,8 @@ import { test } from 'node:test';
 
 import { createCollisionWorld } from '#@/src/collision.ts';
 import type { Surface, Vec3 } from '#@/src/index.ts';
+import { createGoalProjector } from '#@/src/model/goals.ts';
 import type { SweptSupport } from '#@/src/solver/physical.ts';
-import { createGoalProjector } from '#@/src/v1/motion/goals.ts';
 import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { movingGround } from '#@/src/v1/solver/physical/moving-ground.ts';
 import { sweepSupports } from '#@/src/v1/solver/physical/supports.ts';

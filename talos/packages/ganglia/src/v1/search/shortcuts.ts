@@ -1,9 +1,9 @@
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { Vec3, Surface } from '#@/src/geometry.ts';
+import { type Bounds, type BoundsIndex, createBoundsIndex } from '#@/src/model/bounds.ts';
+import type { GoalProjection } from '#@/src/model/goals.ts';
 import type { GroundConnection, GroundOptions, Route } from '#@/src/route.ts';
-import { type Bounds, type BoundsIndex, createBoundsIndex } from '#@/src/v1/geo/bounds.ts';
 import { discoveryEvidence } from '#@/src/v1/motion/evidence.ts';
-import type { GoalProjection } from '#@/src/v1/motion/goals.ts';
 import {
   type Arc,
   type ApproachCache,

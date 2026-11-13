@@ -98,7 +98,7 @@ test('seeded fractional, boundary and near-duplicate geometry matches TypeScript
 });
 
 import { createRustCollisionWorld } from '#@/prototype/rust-kernel/collision-world.ts';
-import { createTypeScriptCollisionWorld } from '#@/src/v1/geo/collision.ts';
+import { createTypeScriptCollisionWorld } from '#@/src/model/collision.ts';
 
 test('native BVH queries preserve TypeScript hits and numeric results on seeded mixed geometry', () => {
   let state = 63827;
@@ -199,8 +199,8 @@ test('native ground traces preserve supported crossings and wall rejection acros
 });
 
 import { createRustGoalGeometry } from '#@/prototype/rust-kernel/goal-binding.ts';
+import { type GoalClip, closestOnSurface } from '#@/src/model/goals.ts';
 import { projectPoint } from '#@/src/v1/geo/surfaces.ts';
-import { type GoalClip, closestOnSurface } from '#@/src/v1/motion/goals.ts';
 
 test('native goal geometry preserves seeded clipping witnesses and surface ties across scales', () => {
   let seed = 0x746ad1ff;

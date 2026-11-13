@@ -362,7 +362,18 @@ Interpret the results according to the intended deployment:
 
 Recovery remains in actual batch wall time. The five-minute service SLO excludes
 queueing and initial worker setup. References bind exact queries, game adapter
-and all input content hashes. Quality and the SLO precede speed. Schema 8 reports
+and all input content hashes. Quality and the SLO precede speed. Schema 9 reports
 compare batch and end-to-end speed only when preparation/training, warmup, rounds,
 workers and concurrency agree. Older reports can provide quality references,
 with no speed ratio across the changed measurement contract.
+
+
+The `--adapter <module-path>` option loads an exported `adapter` with solver
+settings and a child-process entry implementing the benchmark IPC protocol.
+The default adapter lives in `bench/adapters/ganglia-v1/`. Every adapter supplies
+the dataset's projection tolerance in `metadata.rules`; the harness applies the
+same query and trace checks to every scored solver. Schema 9 recomputes route
+time and length and reports `route-contract` evaluation scope. This evaluates
+trace consistency and query geometry; full physical replay additionally requires
+world coverage and motion-control witnesses. Evaluation follows the timed batch
+and contributes to end-to-end time, outside per-query service latency.

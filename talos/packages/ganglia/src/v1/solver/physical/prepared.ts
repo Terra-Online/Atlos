@@ -3,8 +3,8 @@ import type {
   RouteQuery,
   RouteResult,
   SolveOptions,
-  SolverConfig,
 } from '#@/src/solver/contract.ts';
+import type { GangliaV1Config as SolverConfig } from '#@/src/solver/ganglia-v1.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 import { validateWaypoints } from '#@/src/v1/route/jump-planner.ts';
 import { createPhysicalCache } from '#@/src/v1/solver/physical/preparation.ts';
@@ -25,7 +25,7 @@ export async function preparePhysicalSolver(
       diagnostics: unknown,
     ) => void | Promise<void>;
   } = {},
-): Promise<PreparedRouteSolver> {
+): Promise<PreparedRouteSolver<SolverConfig>> {
   let scene: PhysicalInput | null = input;
   const ownedCache = context.cache ? undefined : createPhysicalCache();
   let cache: PhysicalCache | null = context.cache ?? ownedCache!;

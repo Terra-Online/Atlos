@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import type { Vec3, Wall } from '#@/src/geometry.ts';
-import { blockedByWalls, createWallChecker } from '#@/src/v1/geo/walls.ts';
+import { blockedByWalls, createWallChecker } from '#@/src/model/walls.ts';
 import { route, type Graph } from '#@/src/v1/route/routes.ts';
 
 const wall: Wall = { min: [0, 0, -2], max: [0.2, 3, 2], state: 'unknown' };

@@ -1,13 +1,13 @@
 import type { BuildOptions } from '#@/src/build.ts';
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { CollisionGeometry, Portal, Surface, Vec3, Wall } from '#@/src/geometry.ts';
+import { createCollisionWorld } from '#@/src/model/collision.ts';
+/* oxlint-disable no-await-in-loop -- each bounded native build is completed before allocating the next */
+import { createGoalProjector } from '#@/src/model/goals.ts';
+import { createWallChecker } from '#@/src/model/walls.ts';
 import type { GroundConnection } from '#@/src/route.ts';
 import type { SweptSupport } from '#@/src/solver/physical.ts';
 import { buildGroundSurfaces } from '#@/src/v1/geo/build.ts';
-import { createCollisionWorld } from '#@/src/v1/geo/collision.ts';
-import { createWallChecker } from '#@/src/v1/geo/walls.ts';
-/* oxlint-disable no-await-in-loop -- each bounded native build is completed before allocating the next */
-import { createGoalProjector } from '#@/src/v1/motion/goals.ts';
 
 type Bounds = NonNullable<BuildOptions['bounds']>;
 type Bake = { bounds: Bounds; height: [number, number]; roofs: number; triangles: number };

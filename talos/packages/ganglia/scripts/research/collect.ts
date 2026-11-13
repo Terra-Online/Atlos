@@ -91,8 +91,8 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, isDeepStrictEqual } from 'node:util';
 
-import { createWallChecker } from '#@/src/v1/geo/walls.ts';
-import { createGoalProjector } from '#@/src/v1/motion/goals.ts';
+import { createGoalProjector } from '#@/src/model/goals.ts';
+import { createWallChecker } from '#@/src/model/walls.ts';
 import { createGroundStraightener } from '#@/src/v1/route/straighten.ts';
 import { standingFoot } from '#@/src/v1/search/traversal.ts';
 

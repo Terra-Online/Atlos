@@ -6,7 +6,7 @@ import {
   type GoalProjectionOptions,
   createGoalProjector,
   projectGoal,
-} from '#@/src/v1/motion/goals.ts';
+} from '#@/src/model/goals.ts';
 
 const ground = (id: string, x0: number, x1: number, z0 = 0, z1 = 2, y = 0): Surface => ({
   id,

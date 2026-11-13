@@ -1,13 +1,13 @@
 import type { BuildOptions } from '#@/src/build.ts';
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { CollisionGeometry, Surface, Vec3 } from '#@/src/geometry.ts';
+import { createCollisionWorld } from '#@/src/model/collision.ts';
+/* oxlint-disable no-await-in-loop -- each bounded layout is baked and queried in isolation */
+import { createGoalProjector } from '#@/src/model/goals.ts';
+import { createWallChecker } from '#@/src/model/walls.ts';
 import type { GroundArrival, GroundConnection, Route } from '#@/src/route.ts';
 import type { FollowingSupport, PoseBounds } from '#@/src/solver/physical.ts';
 import { buildGroundSurfaces } from '#@/src/v1/geo/build.ts';
-import { createCollisionWorld } from '#@/src/v1/geo/collision.ts';
-import { createWallChecker } from '#@/src/v1/geo/walls.ts';
-/* oxlint-disable no-await-in-loop -- each bounded layout is baked and queried in isolation */
-import { createGoalProjector } from '#@/src/v1/motion/goals.ts';
 import { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
 import { planJumpRoute, type JumpRouteOptions } from '#@/src/v1/route/jump-planner.ts';
 import type { SupportBox } from '#@/src/v1/solver/physical/moving-route.ts';

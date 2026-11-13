@@ -140,6 +140,13 @@ test('markdown exposes timeout failures and successful throughput without claimi
         drops: 0,
         truncated: true,
         outcomeSha256: 'timeout',
+        evaluation: {
+          scope: 'route-contract' as const,
+          valid: false,
+          issues: [],
+          costSeconds: null,
+          length: null,
+        },
         queueMs: null,
         responseMs: null,
         wallSamplesMs: [300_000],

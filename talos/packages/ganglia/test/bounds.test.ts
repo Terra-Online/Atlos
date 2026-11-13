@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import type { Vec3 } from '#@/src/geometry.ts';
-import { type Bounds, createBoundsIndex } from '#@/src/v1/geo/bounds.ts';
+import { type Bounds, createBoundsIndex } from '#@/src/model/bounds.ts';
 
 test('nearest bounds traversal orders in 3D and retains rectangle exclusions', () => {
   const entries = Array.from({ length: 40 }, (_, index) => ({

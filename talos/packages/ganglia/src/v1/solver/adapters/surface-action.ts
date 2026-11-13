@@ -1,19 +1,19 @@
 import type { CollisionWorld } from '#@/src/collision.ts';
+import { createCollisionWorld } from '#@/src/model/collision.ts';
 import type {
   PreparedRouteSolver,
   RouteQuery,
   RouteResult,
   SceneInput,
-  SolverConfig,
 } from '#@/src/solver/contract.ts';
-import { createCollisionWorld } from '#@/src/v1/geo/collision.ts';
+import type { GangliaV1Config as SolverConfig } from '#@/src/solver/ganglia-v1.ts';
 import { type GroundPlanner, createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { planJumpRoute, type JumpRouteOptions } from '#@/src/v1/route/jump-planner.ts';
 
 export async function prepareSurfaceActionSolver(
   input: SceneInput,
   config: SolverConfig,
-): Promise<PreparedRouteSolver> {
+): Promise<PreparedRouteSolver<SolverConfig>> {
   const options = {
     ...input.movement,
     ...config,

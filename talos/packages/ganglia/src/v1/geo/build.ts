@@ -9,7 +9,7 @@ import {
 
 import type { BuildOptions, TileBuildOptions, TileBuildResult } from '#@/src/build.ts';
 import type { CollisionGeometry, Vec3, Surface, Portal } from '#@/src/geometry.ts';
-import { createBoundsIndex } from '#@/src/v1/geo/bounds.ts';
+import { createBoundsIndex } from '#@/src/model/bounds.ts';
 import { clipSurface, tolerance } from '#@/src/v1/geo/clip-surface.ts';
 import { buildSupportField } from '#@/src/v1/geo/support-field.ts';
 

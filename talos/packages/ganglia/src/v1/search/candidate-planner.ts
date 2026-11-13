@@ -1,9 +1,9 @@
 import type { Vec3 } from '#@/src/geometry.ts';
+import { createBoundsIndex } from '#@/src/model/bounds.ts';
+import { type GoalProjection, closestOnSurface } from '#@/src/model/goals.ts';
 import type { GroundArrival } from '#@/src/route.ts';
 import type { SceneNavigation } from '#@/src/solver/resources.ts';
-import { createBoundsIndex } from '#@/src/v1/geo/bounds.ts';
 import { surfaceGraph, surfacePortals } from '#@/src/v1/geo/surfaces.ts';
-import { type GoalProjection, closestOnSurface } from '#@/src/v1/motion/goals.ts';
 import { groundComponents } from '#@/src/v1/reach/connectivity.ts';
 import { createGroundStraightener } from '#@/src/v1/route/straighten.ts';
 import { createCandidateSearch } from '#@/src/v1/search/candidate-search.ts';

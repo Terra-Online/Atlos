@@ -1,10 +1,10 @@
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { Surface, Vec3, Wall } from '#@/src/geometry.ts';
+import { createGoalProjector } from '#@/src/model/goals.ts';
+import { createWallChecker } from '#@/src/model/walls.ts';
 import type { SpeedBoost } from '#@/src/movement.ts';
 import type { GroundConnection } from '#@/src/route.ts';
 import type { DeviceFacts } from '#@/src/solver/physical.ts';
-import { createWallChecker } from '#@/src/v1/geo/walls.ts';
-import { createGoalProjector } from '#@/src/v1/motion/goals.ts';
 import { jumpConnection, jumpDuration } from '#@/src/v1/motion/jumps.ts';
 interface Options {
   surfaces: Surface[];

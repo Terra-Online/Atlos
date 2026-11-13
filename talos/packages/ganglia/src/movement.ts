@@ -46,9 +46,7 @@ export interface InteractionGoal {
 }
 
 /** Explicit movement policy. No unverified game-specific energy defaults are inferred. */
-export interface LocomotionOptions {
-  /** Explicit limits for resource-state fallback search. */
-  search?: { maxLabels?: number; maxExpanded?: number };
+export interface LocomotionModel {
   speed: number;
   sprintSpeed: number;
   sprintAcceleration: number;
@@ -72,4 +70,9 @@ export interface LocomotionOptions {
 export interface SpeedBoost extends BoostUse {
   position: Vec3;
   interaction: InteractionGoal;
+}
+
+/** Search budgets belong to solver policy; shared rules consume LocomotionModel. */
+export interface LocomotionOptions extends LocomotionModel {
+  search?: { maxLabels?: number; maxExpanded?: number };
 }

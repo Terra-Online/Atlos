@@ -1,7 +1,8 @@
 import type { Vec3, Surface, Wall } from '#@/src/geometry.ts';
 import type { InteractionGoal } from '#@/src/movement.ts';
 import type { GroundArrival, GroundOptions, Route } from '#@/src/route.ts';
-import type { RouteQuery, RouteResult, SolverConfig } from '#@/src/solver/contract.ts';
+import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
+import type { GangliaV1Config as SolverConfig } from '#@/src/solver/ganglia-v1.ts';
 /** Serialized work selected by Ganglia's orchestration. Resource adapters pass it
  * through unchanged and use the plan only for resource loading and scheduling. */
 export type PhysicalWork = { readonly version: 1; readonly step: 0 | 1 | 2 };

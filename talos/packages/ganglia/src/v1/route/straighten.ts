@@ -1,13 +1,13 @@
 import type { Vec3, Surface } from '#@/src/geometry.ts';
-import type { GroundOptions } from '#@/src/route.ts';
-import { createBoundsTree } from '#@/src/v1/geo/bounds.ts';
+import { createBoundsTree } from '#@/src/model/bounds.ts';
 import {
   type SupportTriangle,
   supportSnapshot,
   supportTriangles,
-} from '#@/src/v1/geo/support-snapshot.ts';
+} from '#@/src/model/support-snapshot.ts';
+import { createWallChecker } from '#@/src/model/walls.ts';
+import type { GroundOptions } from '#@/src/route.ts';
 import { type SharedPortal, surfacePortals, directedPortals } from '#@/src/v1/geo/surfaces.ts';
-import { createWallChecker } from '#@/src/v1/geo/walls.ts';
 
 interface Triangle extends Pick<SupportTriangle, 'vertices' | 'min' | 'max' | 'determinant'> {
   id: number;

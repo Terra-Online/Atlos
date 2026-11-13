@@ -1,10 +1,10 @@
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { Vec3, Surface } from '#@/src/geometry.ts';
+import { createGoalProjector, findGoalHit, trimGoalFlight } from '#@/src/model/goals.ts';
+import { createWallChecker } from '#@/src/model/walls.ts';
 import type { InteractionGoal } from '#@/src/movement.ts';
 import type { GroundArrival, GroundConnection, Route } from '#@/src/route.ts';
-import { createWallChecker } from '#@/src/v1/geo/walls.ts';
 import { mayReachGoal } from '#@/src/v1/motion/flight-steering.ts';
-import { createGoalProjector, findGoalHit, trimGoalFlight } from '#@/src/v1/motion/goals.ts';
 import {
   type MotionControl,
   type Arc,
