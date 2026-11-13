@@ -437,7 +437,7 @@ index 00000000..e04651d0
 +
 +## reproducible route export
 +
-+install the checked-in Ganglia alpha archive with the workspace dependencies. then run:
++install Atlos's workspace dependencies, including its editable Ganglia package. then run:
 +
 +```sh
 +pnpm extract navmesh map01 -o /tmp/navigation.json --config endfield.local.json
@@ -1395,7 +1395,7 @@ index 055739b3..ada2fc0e 100644
 +  runtime availability, script changes and interaction visibility remain separate conditions.
 +
 +- navigation topology, current air-wall geometry and teleport/base seeds can be exported and fed to
-+  the Ganglia alpha package; route-bound camera candidates and forced cache rebuilding are available
++  the Ganglia workspace package; route-bound camera candidates and forced cache rebuilding are available
 +  ([navigation](navigation.md), [precompute](oem-precompute.md#arrival-route-constraints))
 +- dynamic-state selection, complete player area coverage and missing industrial ground remain
 +  unresolved. matching partial portals and authored directed seams are imported; the example point's
