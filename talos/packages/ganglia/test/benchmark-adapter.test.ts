@@ -26,6 +26,10 @@ for (const goal of [1, 2])
       ],
       { maxVertical: 0.5 },
       prepared.setBenchmarkPhase,
+      1,
+      undefined,
+      [],
+      prepared.verify,
     );
     assert.equal(qualityGate(report.batch.results, undefined).passed, goal === 1);
     assert.equal(report.batch.results[0].cost, goal === 1 ? 1 : null);

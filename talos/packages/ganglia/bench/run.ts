@@ -9,7 +9,13 @@ import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { evaluateRoute, verifyRoute } from '#@/src/evaluation/route.ts';
 
 const digest = (value: unknown): string =>
-  createHash('sha256').update(JSON.stringify(value)).digest('hex');
+  createHash('sha256')
+    .update(
+      JSON.stringify(value, (key, value) =>
+        ['flight', 'schedule', 'placements'].includes(key) ? undefined : value,
+      ),
+    )
+    .digest('hex');
 const outcome = (result: RouteResult) => ({
   route: result.route,
   connections: result.connections,
@@ -74,9 +80,17 @@ export async function runBenchmark(
   rounds = 1,
   recoverySetup = () => 0,
   warmupCases: readonly Case[] = [],
+  verifyPhysical?: (
+    query: RouteQuery,
+    result: RouteResult,
+  ) => Promise<ReturnType<typeof evaluateRoute>>,
 ) {
-  const evaluate = (query: RouteQuery, result: RouteResult) =>
-    result.partial ? evaluateRoute(result.route) : verifyRoute(query, result.route, rules);
+  const evaluate = async (query: RouteQuery, result: RouteResult) =>
+    result.partial
+      ? evaluateRoute(result.route)
+      : verifyPhysical
+        ? verifyPhysical(query, result)
+        : verifyRoute(query, result.route, rules);
   const intervals = {
     warmup: { startedMs: 0, endedMs: 0 },
     queries: { startedMs: 0, endedMs: 0 },
@@ -101,10 +115,12 @@ export async function runBenchmark(
       wallMs: performance.now() - warmupStarted,
       recoverySetupMs: recoverySetup() - recoveryBefore,
       quality: summarizeQuality(
-        warm.map((result, i) => ({
-          id: warmupCases[i].id,
-          ...summarize(result, evaluate(warmupCases[i].query, result)),
-        })),
+        await Promise.all(
+          warm.map(async (result, i) => ({
+            id: warmupCases[i].id,
+            ...summarize(result, await evaluate(warmupCases[i].query, result)),
+          })),
+        ),
       ),
     };
     intervals.warmup.endedMs = performance.now();
@@ -127,10 +143,12 @@ export async function runBenchmark(
       samples.push({
         wallMs,
         recoverySetupMs,
-        results: batch.map((result, i) => ({
-          id: cases[i].id,
-          ...summarize(result, evaluate(cases[i].query, result)),
-        })),
+        results: await Promise.all(
+          batch.map(async (result, i) => ({
+            id: cases[i].id,
+            ...summarize(result, await evaluate(cases[i].query, result)),
+          })),
+        ),
       });
     }
     intervals.queries.endedMs = performance.now();

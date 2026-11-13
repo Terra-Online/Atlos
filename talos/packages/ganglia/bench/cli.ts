@@ -208,6 +208,7 @@ if (values.help) {
         rounds,
         () => prepared.recoverySetupMs,
         warmupCases,
+        prepared.verify,
       );
       const endToEndMs = performance.now();
       if (
@@ -231,21 +232,21 @@ if (values.help) {
       const comparablePolicy =
         gate.passed &&
         comparableSpeed &&
-        referenceReport?.schemaVersion === 9 &&
+        referenceReport?.schemaVersion === 10 &&
         isDeepStrictEqual(referenceReport.measurement, measurement);
       const timingUnavailableReason = !gate.passed
         ? 'Quality or SLO gate failed'
         : !comparableSpeed
           ? 'The set of complete routes changed'
-          : referenceReport?.schemaVersion !== 9
-            ? 'Reference uses an earlier timing contract; rerun the baseline with schema 9'
+          : referenceReport?.schemaVersion !== 10
+            ? 'Reference uses an earlier timing contract; rerun the baseline with schema 10'
             : !isDeepStrictEqual(referenceReport.measurement, measurement)
               ? 'Preparation, warmup or execution settings differ from the reference'
               : undefined;
       const referenceBatchMs = referenceReport?.batch.wallMs;
       const referenceEndToEndMs = referenceReport?.lifecycle?.endToEndMs;
       const output = {
-        schemaVersion: 9,
+        schemaVersion: 10,
         measurement,
         lifecycle: {
           workerReadyMs,

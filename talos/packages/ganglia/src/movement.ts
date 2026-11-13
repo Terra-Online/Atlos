@@ -8,7 +8,26 @@ export interface BoostUse {
   duration: number;
 }
 
+/** Reproducible control input. Model values are checked against scene rules by the verifier. */
+export interface Flight {
+  kind: 'flight' | 'run-off';
+  start: Vec3;
+  end: Vec3;
+  model: JumpModel;
+  control: {
+    mode: 'jump' | 'drop';
+    exit?: [number, number];
+    speedFraction?: number;
+    terminal?: 'average' | 'balanced' | 'fast';
+    horizontalSplit?: number;
+    horizontalWaypoint?: [number, number];
+    expireAfter?: number;
+    expiredHorizontalSpeed?: number;
+  };
+}
+
 export interface Segment {
+  flight?: Flight;
   /** Authored traversal semantics; connection identifiers remain opaque to renderers. */
   traversal?: 'moving-support';
   boostExpiry?: number;

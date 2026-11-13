@@ -1,3 +1,4 @@
+import { createPhysicalWorld } from '#@/src/model/world.ts';
 import type {
   PreparedRouteSolver,
   RouteQuery,
@@ -7,6 +8,7 @@ import type {
 import type { GangliaV1Config as SolverConfig } from '#@/src/solver/ganglia-v1.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 import { validateWaypoints } from '#@/src/v1/route/jump-planner.ts';
+import { executeRoute } from '#@/src/v1/solver/physical/execution.ts';
 import { createPhysicalCache } from '#@/src/v1/solver/physical/preparation.ts';
 import {
   solvePhysicalRoute,
@@ -40,6 +42,7 @@ export async function preparePhysicalSolver(
       connections: [],
       diagnostics: { truncated: false },
     };
+    let execution: ReturnType<typeof createPhysicalWorld> | undefined;
     let truncated = false;
     for (const [index, arrival] of query.starts.entries()) {
       await solvePhysicalRoute(
@@ -75,7 +78,17 @@ export async function preparePhysicalSolver(
           },
           async emit(result, optimizing, diagnostics) {
             truncated ||= diagnostics.truncated === true;
-            const route = result.route;
+            let route = result.route;
+            if (route?.status === 'complete') {
+              execution ??= (
+                await preparation.memo(
+                  'execution',
+                  JSON.stringify([context.generation, fixed.ground.options.walls]),
+                  () => createPhysicalWorld(fixed, 'complete'),
+                )
+              ).value;
+              route = executeRoute(route, query, execution);
+            }
             if (
               best.route.status !== 'complete' &&
               result.reason &&

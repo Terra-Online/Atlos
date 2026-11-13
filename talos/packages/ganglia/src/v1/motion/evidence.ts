@@ -8,7 +8,12 @@ type Foot = ReturnType<typeof standingFoot>;
 
 const copyPoints = (points: Vec3[]) => points.map((point): Vec3 => [...point]);
 const copyArc = (arc: Arc | null): Arc | null =>
-  arc && { ...arc, points: copyPoints(arc.points), times: [...arc.times] };
+  arc && {
+    ...arc,
+    ...(arc.flight ? { flight: structuredClone(arc.flight) } : {}),
+    points: copyPoints(arc.points),
+    times: [...arc.times],
+  };
 const copyApproach = (approach: Approach | null): Approach | null =>
   approach && {
     launch: [...approach.launch],

@@ -16,6 +16,7 @@ export function routeSegment(edge: Edge): Segment {
   }
   return {
     mode: edge.mode ?? 'walk',
+    ...(edge.flight ? { flight: structuredClone(edge.flight) } : {}),
     ...(edge.traversal === undefined ? {} : { traversal: edge.traversal }),
     points: edge.points.map((p): Vec3 => [...p]),
     times,

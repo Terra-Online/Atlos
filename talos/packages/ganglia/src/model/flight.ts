@@ -1,10 +1,12 @@
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { Vec3, Wall } from '#@/src/geometry.ts';
+import { findGoalHit } from '#@/src/model/goals.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
-import type { JumpModel } from '#@/src/movement.ts';
+import type { InteractionGoal, JumpModel, Flight } from '#@/src/movement.ts';
 
 export interface Arc {
   mode: 'jump' | 'drop';
+  flight?: Flight;
   points: Vec3[];
   times: number[];
   motionValidation: 'model-based';
@@ -16,6 +18,7 @@ export type JumpOptions = JumpModel & {
   sweep: CollisionWorld['sweepCapsule'];
   walls: Wall[];
   clearance?: number;
+  collection?: { target: Vec3; interaction: InteractionGoal };
   /** Fraction of displacement completed early, followed by a stop and late completion.
    * Requires explicit airAcceleration and airDeceleration. Omit for constant speed.
    */
@@ -62,6 +65,7 @@ export type ExitCache = Map<string, [number, number] | null>;
 export type RunOffOptions = Omit<JumpOptions, 'mode'> &
   Partial<MotionControl> & { world: CollisionWorld; maxSlope: number };
 interface SweepOptions {
+  collection?: JumpOptions['collection'];
   profile: JumpOptions['profile'];
   clearance: number;
   wallCheck: NonNullable<JumpOptions['wallCheck']>;
@@ -427,7 +431,7 @@ export function jumpConnection(start: Vec3, end: Vec3, options: JumpOptions): Ar
     horizontalAcceleration = Math.max(airAcceleration!, airDeceleration!);
     peakHorizontalSpeed = Math.max(first.peak, last.peak);
   }
-  return sweepTrajectory(start, end, trajectory, {
+  const arc = sweepTrajectory(start, end, trajectory, {
     profile,
     clearance,
     wallCheck,
@@ -436,7 +440,9 @@ export function jumpConnection(start: Vec3, end: Vec3, options: JumpOptions): Ar
     horizontalAcceleration,
     peakHorizontalSpeed,
     mode,
+    collection: options.collection,
   });
+  return arc ? { ...arc, flight: flightRecord(start, end, options, 'flight') } : null;
 }
 function sweepTrajectory(
   start: Vec3,
@@ -451,18 +457,21 @@ function sweepTrajectory(
     horizontalAcceleration,
     peakHorizontalSpeed,
     mode,
+    collection,
   }: SweepOptions,
 ): Arc | null {
   const points: Vec3[] = [[...start]],
     times = [0];
-  let elapsed = 0;
+  let elapsed = 0,
+    collected = false;
   for (let phaseIndex = 0; phaseIndex < phases.length; phaseIndex++) {
     const phase = phases[phaseIndex],
       count = Math.ceil(phase.duration / maximumStep);
     const advance = (previousTime: number, localTime: number, last: boolean): boolean => {
-      const time = elapsed + localTime;
+      if (collected) return true;
+      let time = elapsed + localTime;
       const horizontal = horizontalAt(time);
-      const point: Vec3 = last
+      let point: Vec3 = last
         ? [...end]
         : [
             horizontal[0],
@@ -473,6 +482,12 @@ function sweepTrajectory(
       const inflation =
         clearance + (Math.hypot(phase.acceleration, horizontalAcceleration) * delta * delta) / 8;
       const previous = points.at(-1)!;
+      const hit =
+        collection && findGoalHit([previous, point], collection.target, collection.interaction);
+      if (hit) {
+        point = hit.position;
+        time = times.at(-1)! + hit.fraction * (time - times.at(-1)!);
+      }
       const blocked =
         wallCheck(previous, point, inflation) ||
         sweep(previous, point, { ...profile, inflation }) !== null;
@@ -485,6 +500,7 @@ function sweepTrajectory(
       }
       points.push(point);
       times.push(time);
+      if (hit) collected = true;
       return true;
     };
     for (let step = 1; step <= count; step++) {
@@ -498,6 +514,7 @@ function sweepTrajectory(
         return null;
     }
     elapsed += phase.duration;
+    if (collected) break;
   }
   return {
     mode,
@@ -513,7 +530,7 @@ function sweepTrajectory(
  * cannot bridge a missing support interval or step through an obstacle.
  * Internal discovery helper; callers supply validated world/model options.
  */
-export function runOffConnection(
+function executeRunOff(
   start: Vec3,
   end: Vec3,
   options: RunOffOptions,
@@ -730,6 +747,7 @@ function steerDrop(
     horizontalAcceleration,
     peakHorizontalSpeed,
     mode: 'drop',
+    collection: options.collection,
   });
   if (!arc) return null;
   const approachTime = distances.at(-1)! / speed;
@@ -741,4 +759,52 @@ function steerDrop(
       ...arc.times.slice(1).map((time) => approachTime + time),
     ],
   };
+}
+
+function flightRecord(
+  start: Vec3,
+  end: Vec3,
+  options: JumpOptions | RunOffOptions,
+  kind: Flight['kind'],
+): Flight {
+  const model: JumpModel = {
+    gravity: options.gravity,
+    fallingGravity: options.fallingGravity,
+    maxJumpHeight: options.maxJumpHeight,
+    maxFallingSpeed: options.maxFallingSpeed,
+    apexTime: options.apexTime,
+    maxHorizontalSpeed: options.maxHorizontalSpeed,
+  };
+  for (const key of [
+    'airAcceleration',
+    'airDeceleration',
+    'startHorizontalSpeed',
+    'airOverspeedDeceleration',
+  ] as const)
+    if (options[key] !== undefined) model[key] = options[key];
+  const control: Flight['control'] = {
+    mode: kind === 'run-off' ? 'drop' : (options as JumpOptions).mode,
+  };
+  for (const key of [
+    'exit',
+    'speedFraction',
+    'terminal',
+    'horizontalSplit',
+    'horizontalWaypoint',
+    'expireAfter',
+    'expiredHorizontalSpeed',
+  ] as const)
+    if (key in options) Object.assign(control, { [key]: (options as RunOffOptions)[key] });
+  return { kind, start: [...start], end: [...end], model, control };
+}
+
+export function runOffConnection(
+  start: Vec3,
+  end: Vec3,
+  options: RunOffOptions,
+  cache?: ApproachCache,
+  proof?: ApproachProof,
+): Arc | null {
+  const arc = executeRunOff(start, end, options, cache, proof);
+  return arc ? { ...arc, flight: flightRecord(start, end, options, 'run-off') } : null;
 }

@@ -1898,3 +1898,65 @@ is `f93095f611537bbb38513b7b65450be4a0b2427d86a9ff42f78a0201d84fc39d`. The uncha
 Mean serial service time is 477.232 ms/query, service readiness is 26.667 s and
 end-to-end time is 33.187 s. All 12 attempts succeed. The report retains complete
 input/config/query bindings; `validation-summary.json` indexes this evidence.
+
+
+## Independent physical execution verifier, 2026-11-14
+
+Added a search-independent physical evaluator over provider-owned normalized
+`PhysicalInput` snapshots. Shared `model/world.ts` owns source coverage, support,
+capsule motion and support-following walking. Shared placement geometry was
+extracted from the V1 following-route implementation. `evaluation/physical.ts`
+uses public contracts and shared numerical rules, without V1 candidate discovery,
+search, catalog or schedule selection.
+
+Acceptance re-executes submitted whole-route resource controls and flight
+witnesses against trusted movement/device facts, checks authored/device timing,
+boost pickup and expiry, placement body clearance and terminal first-goal events.
+Sparse source tile holes are rejected. Existing exported moving-support
+phase-free and following-support activity-range assumptions are retained. Convex
+bodies outside flat placement eligibility remain obstacles without extra roof
+support. V1 emits controls and first constructs physically supported walking
+geometry before resource scheduling; the verifier never corrects a submission.
+
+Review counterexamples drove the final physical checks. Projection truthiness
+accepted airborne takeoffs and floating walks; length-only support correction
+missed constant-height offsets, while nominal slope chords undercharged actual
+travel. Acceptance now requires supported feet and actual supported length,
+including stationary origins. A 4 mm flight deviation remained inside the timed
+replay tolerance but penetrated a wall with 2 mm nominal clearance; submitted
+geometry is now swept independently. Placed cuboids are checked against complete
+terrain and other bodies rather than only footprint corners. Equivalent knot
+density and semantic segment splits continue to pass without sample alignment.
+
+Schema 10 performs physical-verification RPCs after timed batches. Scene adapters
+capture normalized facts before search; separate TS verifier indexes are built
+lazily outside solve timing. Replacement workers can recover facts through a
+no-search exporter capture sink. Evaluation cost remains in end-to-end time.
+The outcome digest excludes witnesses/controls so adding execution evidence does
+not itself change the identity of an otherwise identical route.
+
+Package formatting, lint, typecheck and all 438 tests pass. Both World application
+and worker typechecks pass; the seven World integration tests passed during this
+milestone before the final focused evaluator regressions. Read-only Standards
+and Spec rechecks found no remaining required issues within the exported model
+assumptions.
+
+A minimal Node v26.13.0 native-backed CPU-profiled diagnostic trained one catalog request and
+measured one holdout request. Physical evaluation passed without timeout. Service
+preparation took 86.981 s and observed end-to-end time was 93.573 s. A CPU profile
+identified active geometry construction/search and 20.695 s of GC, including
+8.245 s in shared TS physical-world construction. The long preparation was not an
+IPC deadlock. Stricter supported-foot candidate construction rejects nominal
+navigation trajectories and can trigger additional search/refinement. This
+one-request diagnostic establishes execution only; it is not a six-query quality
+or repeatability result. Its validated report is
+`.local/research/physical-verifier/minimal.json`. A second instrumented profile
+was discarded because removing its instrumentation changed source during the
+run. The ten-training/six-holdout/two-round control was canceled after 20 min 28 s
+before service readiness. It produced no scored attempts and establishes no
+query SLO or quality result. Evidence is `train10-incomplete-summary.json` in the
+same directory. A smaller declared preparation recipe, one training request,
+no runtime warmup, six holdout requests and two rounds, remains in progress at
+this feature checkpoint. Its original 1.01 geometric-mean and 1.05 worst-route
+cost gates are unchanged. Performance validation is pending; no improvement or
+six-query acceptance is claimed.

@@ -362,7 +362,7 @@ Interpret the results according to the intended deployment:
 
 Recovery remains in actual batch wall time. The five-minute service SLO excludes
 queueing and initial worker setup. References bind exact queries, game adapter
-and all input content hashes. Quality and the SLO precede speed. Schema 9 reports
+and all input content hashes. Quality and the SLO precede speed. Schema 10 reports
 compare batch and end-to-end speed only when preparation/training, warmup, rounds,
 workers and concurrency agree. Older reports can provide quality references,
 with no speed ratio across the changed measurement contract.
@@ -372,8 +372,21 @@ The `--adapter <module-path>` option loads an exported `adapter` with solver
 settings and a child-process entry implementing the benchmark IPC protocol.
 The default adapter lives in `bench/adapters/ganglia-v1/`. Every adapter supplies
 the dataset's projection tolerance in `metadata.rules`; the harness applies the
-same query and trace checks to every scored solver. Schema 9 recomputes route
-time and length and reports `route-contract` evaluation scope. This evaluates
-trace consistency and query geometry; full physical replay additionally requires
-world coverage and motion-control witnesses. Evaluation follows the timed batch
-and contributes to end-to-end time, outside per-query service latency.
+same query and trace checks to every scored solver. Schema 10 recomputes route
+time and length and adds post-batch physical verification for the default adapter.
+The physical verifier consumes provider-owned normalized `PhysicalInput` and
+source coverage, never a search verdict. It replays whole-route resource choices,
+flight controls and device actions against the shared TS model, and checks
+supported walking, collision sweeps, placements and first-goal events. Solvers
+submit `schedule`, flight witnesses and selected `placements`; representation may
+use different knot density or equivalent segment splits. Source tile holes remain
+unknown space. Moving and following support behavior follows the assumptions in
+the exported snapshot.
+
+Evaluation follows the timed batch and contributes to end-to-end time, outside
+per-query service latency. The adapter captures normalized facts before search
+and creates verifier indices lazily during evaluation. After worker recovery it
+can normalize the same preloaded source through a no-search exporter sink.
+`physical` identifies this replay scope; `route-contract` identifies query/trace
+evaluation from an adapter without physical replay. Reports retain their actual
+scope and schema when used as historical timing references.

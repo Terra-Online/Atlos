@@ -267,6 +267,7 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
         points,
         times,
         connection: id,
+        ...(connection.flight ? { flight: connection.flight } : {}),
         ...(requiredGait === undefined ? {} : { requiredGait }),
         ...(connection.traversal === undefined ? {} : { traversal: connection.traversal }),
       });

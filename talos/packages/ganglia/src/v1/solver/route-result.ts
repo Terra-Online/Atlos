@@ -40,6 +40,7 @@ export function composeRoutes(pieces: readonly Complete[], locomotion: Locomotio
       length: pieces.reduce((sum, piece) => sum + piece.length, 0),
       points: pieces.flatMap((piece, i) => (i ? piece.points.slice(1) : piece.points)),
       segments,
+      placements: pieces.flatMap((piece) => piece.placements ?? []),
       boosts: pieces.flatMap((piece) => piece.boosts ?? []),
       ...(last.goalHit
         ? {

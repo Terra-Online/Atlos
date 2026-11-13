@@ -25,7 +25,8 @@ export function createPhysicalCache() {
       const found = slots.get(slot);
       if (found?.key === key) return { value: found.value as T, reused: true };
       slots.delete(slot);
-      if (slot === 'ground') for (const dependent of ['devices', 'moving']) slots.delete(dependent);
+      if (slot === 'ground')
+        for (const dependent of ['devices', 'moving', 'execution']) slots.delete(dependent);
       if (slot === 'ground' || slot === 'moving') refinements.clear();
       const value = await create();
       slots.set(slot, { key, value });
