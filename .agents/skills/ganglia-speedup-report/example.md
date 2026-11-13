@@ -12,10 +12,15 @@ Route results, modeled costs and truncation status agree across both scheduling 
 <details>
 <summary>Workload, parameters and supporting metrics</summary>
 
-- Local Wuling input from `map02`, approximately 100 × 120 m; 6 distinct requests covering two starts excluded from training and three new goals. Two rounds produce 12 scored solves.
-- Each worker trains on 10 requests and freezes its catalog; 2 separate, unscored requests provide warmup. Training counts toward service preparation.
-- Key parameters: `--catalog-train 10 --offset 10 --limit 6 --rounds 2`, with workers/concurrency set to 1/1 and 2/2 respectively.
-- Node v26.13.0, 6144 MiB heap. Single-/dual-worker total wall time is 36.37 / 38.46 s, with successful end-to-end throughput of 0.330 / 0.312 queries/s.
+The benchmark uses a local Wuling region from `map02` covering approximately 100 × 120 m. Its six distinct requests combine two starts excluded from training with three new goals. Each request is measured twice, giving 12 scored solves per configuration.
+
+Before scoring begins, each worker trains on 10 requests and freezes the resulting action catalog. Training is included in service preparation time. The worker then warms up on two separate requests that are excluded from scoring.
+
+Both configurations use `--catalog-train 10 --offset 10 --limit 6 --rounds 2`. The serial run uses `--workers 1 --concurrency 1`. The parallel run uses `--workers 2 --concurrency 2`, allowing two requests to run concurrently.
+
+Both runs use Node v26.13.0 with a 6144 MiB old-space limit per process. The single-worker run takes 36.37 seconds from process startup through solver shutdown. All 12 scored solves succeed, so its end-to-end successful throughput is 12 divided by 36.37, or 0.330 queries per second. The two-worker run takes 38.46 seconds over the same lifecycle and completes all 12 scored solves, giving 0.312 queries per second.
+
+The query-throughput column measures the scoring portion of each run. End-to-end throughput also includes startup, training, warmup and shutdown. Two workers complete the scoring portion faster, but their longer preparation makes the total run slightly slower for this 12-solve workload.
 
 </details>
 
@@ -30,8 +35,10 @@ The comparison covers 4/6 of the scored requests.
 <details>
 <summary>Pairing, calculation and timing differences</summary>
 
-All four requests match in starts, goals, input hashes, adapter and Config. The original uses serial batch wall time divided by request count; the candidate uses per-request service time averaged over two rounds. The original warms up on scored requests, while the candidate uses independent warmup requests.
+The comparison pairs four requests with identical starts, goals, input hashes, adapter and configuration. For the original baseline, average query time is the serial batch wall time divided by the number of requests. For the candidate, each request's service time is averaged over two rounds before calculating the cohort average. The baseline warms up on the scored requests; the candidate warms up on separate requests.
 
-Total time for the same request cohort is 18822.455 → 2939.297 ms, giving a cumulative speedup of **6.4037×**. The geometric mean cost ratio is 0.9846 and the worst ratio is 1.0000, passing the original quality gate.
+The baseline takes a total of 18822.455 ms for these four requests, or 4705.6 ms per request. The candidate's four per-request averages sum to 2939.297 ms, or 734.8 ms per request. Dividing 18822.455 by 2939.297 gives a cumulative query speedup of **6.4037×**, shown as **6.40×** in the table.
+
+Quality is evaluated using the candidate's modeled route cost divided by the baseline cost for each matched request. The geometric mean of these ratios is 0.9846, and the highest ratio is 1.0000. Both pass the original cost gate, which allows up to a 1% increase in the geometric mean and a 5% increase for any individual request.
 
 </details>
