@@ -51,7 +51,7 @@ export const SidebarFilters = memo(function SidebarFilters({ preparedCount, colu
         {VERSION_NEW_FILTER_GROUPS.slice(0, preparedCount).map(group => {
             const items = model.version.get(group.key) ?? [];
             return <MarkFilter key={group.key} idKey={group.key} title={t(group.titleKey)} dataCategory="versionNew"
-                columns={columns} itemCount={items.length} initialEmpty={items.length === 0} variant="versionNew" reorderable={false} typeKeys={group.types.map(type => type.key)}>
+                columns={columns} itemCount={items.length} initialEmpty={items.length === 0} variant="versionNew" reorderable={false} typeKeys={items.map(item => item.typeInfo.key)}>
                 {renderRows(items)}
             </MarkFilter>;
         })}
@@ -66,7 +66,8 @@ export const SidebarFilters = memo(function SidebarFilters({ preparedCount, colu
                     {isCJK ? '「' : '('}{String(t('markFilter.archiveHub'))}{isCJK ? '」' : ')'}
                 </a> : undefined}
                 icon={icons[category]} dataCategory={category} columns={columns} binderMode={!!binderData}
-                itemCount={items.length + binders.reduce((count, item) => count + 1 + (item.collapseChildren ? 0 : item.children.length), 0)} initialEmpty={items.length === 0 && binders.length === 0} typeKeys={types.map(type => type.key)}>
+                itemCount={items.length + binders.reduce((count, item) => count + 1 + (item.collapseChildren ? 0 : item.children.length), 0)} initialEmpty={items.length === 0 && binders.length === 0}
+                typeKeys={types.filter(type => model.selectors.get(type.key)?.visible).map(type => type.key)}>
                 {binderData ? <>
                     <div className={styles.binderSection}>
                         {[binderColumns.left, ...(mobile ? [] : [binderColumns.right])].map((groups, index) => <div className={styles.binderColumn} key={index}>

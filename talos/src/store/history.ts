@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { useMarkerStore } from '@/store/marker';
+import { filterMarkerTypes, useMarkerStore } from '@/store/marker';
 import { useUserRecordStore } from '@/store/userRecord';
 
 export type PointProgressDelta = {
@@ -125,7 +125,7 @@ const applyMarkerFilterDelta = (delta: MarkerFilterDelta): MarkerFilterHistoryEn
     const current = markerStore.filter;
     const currentSet = new Set(current);
     const deactivateSet = new Set(normalizePointIds(delta.deactivate));
-    const activateKeys = normalizePointIds(delta.activate);
+    const activateKeys = filterMarkerTypes(normalizePointIds(delta.activate));
     const next = current.filter((key) => !deactivateSet.has(key));
     const nextSet = new Set(next);
 

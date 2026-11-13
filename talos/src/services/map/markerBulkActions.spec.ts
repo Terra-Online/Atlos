@@ -11,6 +11,10 @@ const markers = [
 
 vi.mock('@/data/marker', async (importOriginal) => ({
     ...await importOriginal<typeof import('@/data/marker')>(),
+    MARKER_TYPE_DICT: {
+        'type-a': { key: 'type-a', category: { main: 'poi', sub: 'collection' } },
+        'type-b': { key: 'type-b', category: { main: 'poi', sub: 'collection' } },
+    },
     getLoadedSubregionMarkers: (id: string) => markers.filter((marker) => marker.subregId === id),
     getLoadedRegionMarkers: () => markers,
 }));

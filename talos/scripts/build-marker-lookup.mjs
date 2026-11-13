@@ -37,7 +37,7 @@ export const buildMarkerLookup = (markers, sourceById, typeMap) => {
         sourceAtPosition.set(key, source);
     }
     for (const marker of deduplicateMarkersByPositionAndType(markers)) {
-        if (!marker.type) continue;
+        if (!Object.hasOwn(typeMap, marker.type)) continue;
         (representatives[marker.type] ??= []).push(marker.id);
     }
     return { subregions, points, firstTypes, archives, moved, representatives };

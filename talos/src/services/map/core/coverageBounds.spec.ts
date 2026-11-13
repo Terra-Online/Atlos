@@ -34,6 +34,23 @@ it('keeps rebound visible and constrains movement even with maxBounds removed', 
     expect(isMapOverdragged(map)).toBe(false);
 });
 
+it('allows dragging and zooming across large holes and open bays while keeping the outer boundary', () => {
+    const { map, constraint } = fixture();
+    constraint.setCoverage({ coverage: { zooms: { '0': { '': {
+        '0': [0, 9], '1': [0, 0, 9, 9], '2': [0, 0, 9, 9], '3': [0, 0, 9, 9],
+    } } } }, suffixes: [''], tileSize: 200, maxNativeZoom: 0 });
+    for (const zoom of [0, 0.37, 2, 3.5]) {
+        map.setView([-400, 300], zoom, { animate: false });
+        const target = L.latLng(-400, 1700);
+        expect(constraint.pan(target, zoom, false).center.equals(target)).toBe(true);
+        expect(constraint.zoom(target, zoom).equals(target)).toBe(true);
+        map.setView([-400, 600], zoom, { animate: false });
+        expect(map.getCenter().equals([-400, 600])).toBe(true);
+        expect(constraint.isOverdragged()).toBe(false);
+        expect(constraint.isVisible(L.latLng(-10000, 10000), zoom)).toBe(false);
+    }
+});
+
 it('admits raw native dragging before the pane position changes', () => {
     const { map, constraint } = fixture();
     const dragging = map.dragging as L.Handler & { _draggable: L.Evented & { _newPos: L.Point } };

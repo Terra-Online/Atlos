@@ -1,6 +1,6 @@
 import L from 'leaflet';
 import type { RegionTileCoverage } from '@/services/map/tileCoverage';
-import { cameraRects, contains, coverageRects, coverageRows, nearest, slide, sweep, visiblePatch, type Rect } from './coverageGeometry';
+import { cameraRects, coverageEnvelope, contains, coverageRects, coverageRows, nearest, slide, sweep, visiblePatch, type Rect } from './coverageGeometry';
 
 interface Options {
     coverage: RegionTileCoverage;
@@ -206,13 +206,14 @@ export class CoverageBounds {
         const options = this.options;
         const size = this.map.getSize();
         if (!options || size.x <= 0 || size.y <= 0) return undefined;
-        const level = Math.max(0, Math.min(options.maxNativeZoom, Math.round(zoom)));
+        // Keep the envelope fixed in map space across zoom changes.
+        const level = options.maxNativeZoom;
         const scale = options.tileSize * 2 ** (zoom - level);
         const key = `${level}/${scale}/${size.x}/${size.y}`;
         if (this.frame?.key === key) return this.frame;
         let rows = this.levels.get(level);
         if (!rows) {
-            rows = coverageRects(coverageRows(options.coverage.zooms[String(level)] ?? {}, options.suffixes));
+            rows = coverageRects(coverageEnvelope(coverageRows(options.coverage.zooms[String(level)] ?? {}, options.suffixes)));
             this.levels.set(level, rows);
         }
         const viewport = size.divideBy(scale);

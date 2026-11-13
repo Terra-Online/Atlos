@@ -14,7 +14,7 @@ describe('sidebar visibility model', () => {
         expect(selectorItem(info, { total: 0, collected: 0 }, '档案', translate).visible).toBe(false);
         expect(selectorItem(info, { total: 1, collected: 0 }, 'missing', translate).visible).toBe(false);
     });
-    it('sorts completed children stably and keeps aggregate counts independent of search', () => {
+    it('sorts completed children stably and sums the visible selectors', () => {
         const types = ['first', 'second', 'third'].map(key => type(key));
         const group: BinderGroup = { id: 'drop:fixture', dropKey: 'fixture', dropName: 'Fixture', types, sharedKey: 'drop' };
         const items = new Map(types.map((info, index) => [info.key, selectorItem(info, { total: 2, collected: index === 1 ? 2 : 0 }, '', translate)]));
@@ -23,6 +23,15 @@ describe('sidebar visibility model', () => {
         expect(item.count).toEqual({ total: 6, collected: 2 });
         expect(item.visible).toBe(true);
         expect(item.collapseChildren).toBe(false);
+    });
+    it('uses the same visible children for binder totals and selection under search', () => {
+        const types = ['first', 'second', 'unavailable'].map(key => type(key));
+        const group: BinderGroup = { id: 'drop:fixture', dropKey: 'fixture', dropName: 'Fixture', types, sharedKey: 'drop' };
+        const items = new Map(types.map((info, index) => [info.key, selectorItem(info, { total: index === 2 ? 0 : 2, collected: 1 }, 'second', translate)]));
+        const item = binderItem(group, items, 'second', translate, false);
+        expect(item.children.map(child => child.typeInfo.key)).toEqual(['second']);
+        expect(item.count).toEqual({ total: 2, collected: 1 });
+        expect(item.visible).toBe(true);
     });
     it('keeps desktop single-type binder collapsed and mobile children visible', () => {
         const info = type('only'), group: BinderGroup = { id: 'drop:fixture', dropKey: 'fixture', dropName: 'Fixture', types: [info], sharedKey: 'drop' };

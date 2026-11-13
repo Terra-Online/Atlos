@@ -5,6 +5,7 @@ import useRegion from './region';
 import { useEffect, useMemo } from 'react';
 import { CollectedCountCache } from './collectedCountCache';
 import {
+    MARKER_TYPE_DICT,
     getLoadedRegionMarkers,
     getLoadedSubregionMarkers,
     getWorldMarkerTypes,
@@ -58,6 +59,9 @@ interface IMarkerStore {
     bumpMarkerDataVersion: () => void;
 }
 
+export const filterMarkerTypes = (keys: Iterable<string>): string[] =>
+    [...new Set(keys)].filter((key) => Object.prototype.hasOwnProperty.call(MARKER_TYPE_DICT, key));
+
 export const useMarkerStore = create<IMarkerStore>()(
     persist(
         (set, get) => ({
@@ -104,6 +108,7 @@ export const useMarkerStore = create<IMarkerStore>()(
                 }
             },
             switchFilter: (typeKey) => {
+                if (!filterMarkerTypes([typeKey]).length) return;
                 set((state) => {
                     const newFilter = state.filter.includes(typeKey)
                         ? state.filter.filter((key) => key !== typeKey)
@@ -115,7 +120,7 @@ export const useMarkerStore = create<IMarkerStore>()(
             batchToggleFilter: (typeKeys: string[]) => {
                 set((state) => {
                     let newFilter = [...state.filter];
-                    typeKeys.forEach(key => {
+                    filterMarkerTypes(typeKeys).forEach(key => {
                         if (newFilter.includes(key)) {
                             newFilter = newFilter.filter(k => k !== key);
                         } else {
@@ -128,7 +133,7 @@ export const useMarkerStore = create<IMarkerStore>()(
             setFilterKeys: (typeKeys: string[], active: boolean) => {
                 set((state) => {
                     if (active) {
-                        const extra = typeKeys.filter((k) => !state.filter.includes(k));
+                        const extra = filterMarkerTypes(typeKeys).filter((k) => !state.filter.includes(k));
                         return extra.length ? { filter: [...state.filter, ...extra] } : {};
                     } else {
                         const next = state.filter.filter((k) => !typeKeys.includes(k));
@@ -137,7 +142,7 @@ export const useMarkerStore = create<IMarkerStore>()(
                 });
             },
             setFilter: (newFilter: string[]) => {
-                set({ filter: newFilter });
+                set({ filter: filterMarkerTypes(newFilter) });
             },
             searchString: '',
             setSearchString: (value: string) => {
@@ -203,6 +208,14 @@ export const useMarkerStore = create<IMarkerStore>()(
         {
             name: 'marker-filter',
             partialize: (state) => ({ filter: state.filter, selectedPoints: state.selectedPoints }),
+            merge: (persisted, current) => {
+                const saved = persisted as Partial<Pick<IMarkerStore, 'filter' | 'selectedPoints'>> | null;
+                return {
+                    ...current,
+                    ...saved,
+                    filter: filterMarkerTypes(Array.isArray(saved?.filter) ? saved.filter : []),
+                };
+            },
         },
     ),
 );

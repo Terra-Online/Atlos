@@ -30,7 +30,7 @@ beforeEach(() => { resize = installResizeObserver(); useMarkerStore.setState({ f
 afterEach(() => { cleanup(); useMarkerStore.setState(initialMarkers, true); useUiPrefsStore.setState(initialPrefs, true); vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); });
 
 it.each([false, true])('keeps binder/selector/filter-list selection consistent in the %s mobile layout', (mobile) => {
-    const outside = 'unrelated-existing-filter';
+    const outside = Object.values(MARKER_TYPE_DICT).find(type => type.category.main !== 'files' && !ordinary.includes(type))!.key;
     useMarkerStore.setState({ filter: [outside, fileType.key] });
     const view = render(<><MarkBinder item={binder} mobile={mobile} />{mobile ? <FilterListMobile /> : <FilterListDesktop isSidebarOpen />}</>);
     const header = screen.getByAltText('Ore group').closest('[data-binder-wrap]')!;

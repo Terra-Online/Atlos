@@ -1,4 +1,5 @@
 import L from 'leaflet';
+import { polygonHull } from 'd3';
 import type { ZoomTileCoverage } from '@/services/map/tileCoverage';
 
 export interface Rect {
@@ -52,6 +53,38 @@ const intersect = (a: Interval[], b: Interval[]): Interval[] => {
     }
     return result;
 };
+
+/** Fill the region's convex envelope, including holes and open inland bays.
+ * Round each horizontal strip out to tile edges so original coverage is retained.
+ */
+export function coverageEnvelope(rows: CoverageRows): CoverageRows {
+    const corners: [number, number][] = [];
+    for (const [y, intervals] of rows) {
+        for (const [left, right] of intervals) {
+            corners.push([left, y], [right, y], [left, y + 1], [right, y + 1]);
+        }
+    }
+    const hull = polygonHull(corners);
+    const filled: CoverageRows = new Map();
+    if (!hull) return filled;
+    const top = Math.min(...hull.map(([, y]) => y));
+    const bottom = Math.max(...hull.map(([, y]) => y));
+    for (let y = top; y < bottom; y++) {
+        const xs: number[] = [];
+        for (let i = 0; i < hull.length; i++) {
+            let [a, b] = [hull[i], hull[(i + 1) % hull.length]];
+            if (a[1] > b[1]) [a, b] = [b, a];
+            if (b[1] < y || a[1] > y + 1) continue;
+            if (a[1] === b[1]) xs.push(a[0], b[0]);
+            else {
+                const xAt = (row: number) => a[0] + (b[0] - a[0]) * (row - a[1]) / (b[1] - a[1]);
+                xs.push(xAt(Math.max(y, a[1])), xAt(Math.min(y + 1, b[1])));
+            }
+        }
+        filled.set(y, [[Math.floor(Math.min(...xs) + EPSILON), Math.ceil(Math.max(...xs) - EPSILON)]]);
+    }
+    return filled;
+}
 
 /** All maximal covered rectangles, prepared once per tile level. */
 export function coverageRects(rows: CoverageRows): Rect[] {

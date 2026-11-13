@@ -30,7 +30,7 @@ const MarkBinder = ({ item, mobile = false }: MarkBinderProps) => {
         [group.dropKey, group.sharedKey],
     );
 
-    const typeKeys = useMemo(() => group.types.map(type => type.key), [group.types]);
+    const typeKeys = sortedRenderedTypes.map(item => item.typeInfo.key);
     const allActive = useMarkerStore(state => typeKeys.length > 0 && typeKeys.every(key => state.filter.includes(key)));
     const renderedSignature = sortedRenderedTypes.map(({ typeInfo }) => typeInfo.key).join(',');
 
