@@ -68,11 +68,10 @@
       "flag": "標記為不準確",
       "unflag": "取消標記",
       "uploadAno": "上載另一張圖片",
-      "share": "分享此點位",
-      "recall": "撤回此圖片",
-      "unrecall": "取消撤回"
+      "share": "分享此點位"
     },
     "comments": {
+      "unavailable": "此條留言業已失效。",
       "copyLink": "複製留言連結",
       "emojiPicker": "選擇表情符號",
       "spoilerHidden": "點擊以查看劇透內容",
@@ -90,14 +89,14 @@
       "reply": "回覆帖文",
       "edit": "編輯留言",
       "submitEdit": "提交編輯內容",
-      "undoEdit": "撤銷編輯",
-      "recall": "撤回此留言",
       "reviewing": "審核中",
       "emptyWithRule": "暫無留言。發布內容請遵循<a href=\"{link}\">社羣守則</a>。",
       "ruleOnly": "發布內容請遵循<a href=\"{link}\">社羣守則</a>。",
       "loadFailed": "留言載入失敗。",
       "submitFailed": "留言發布失敗。",
-      "editFailed": "留言編輯失敗。"
+      "editFailed": "留言編輯失敗。",
+      "editConflict": "留言已變更或無法繼續編輯。請查看目前內容，重新開啟編輯器後再試。",
+      "editConflictRefreshFailed": "留言已變更。請重新載入後再試。"
     },
     "errors": {
       "unsupportedType": "僅接收 JPEG/PNG/WebP/AVIF/HEIC 檔案",
@@ -502,6 +501,7 @@
     "close": "關閉",
     "skip": "跳過",
     "clear": "清除",
+    "delete": "刪除",
     "all": "全部",
     "selected": "選取項目",
     "confirm": "確認",

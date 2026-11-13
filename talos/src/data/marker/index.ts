@@ -92,7 +92,10 @@ const loadPromiseMap: Record<string, Promise<IMarkerData[]>> = {};
  */
 export const SUBREGION_MARKS_MAP = loadedSubregionMarksMap;
 
-export const MARKER_TYPE_DICT = markerTypeDict as Record<string, IMarkerType>;
+/** The catalog is a superset; user-facing types must have exported points. */
+export const MARKER_TYPE_DICT: Record<string, IMarkerType> = Object.fromEntries(
+    Object.entries(markerTypeDict).filter(([key]) => (markerStats.world as Record<string, number>)[key] > 0),
+);
 
 /**
  * 预计算每个子区域中各类型的数量。
@@ -127,7 +130,7 @@ export const loadSubregionMarkers = async (subregionId: string): Promise<IMarker
                 rawMarkers.map((marker) => normalizeMarker(marker, subregionId)),
                 manualOverrides,
                 { subregionId },
-            ) as IMarkerData[];
+            ).filter((marker: IMarkerData) => Object.prototype.hasOwnProperty.call(MARKER_TYPE_DICT, marker.type)) as IMarkerData[];
             loadedSubregionMarksMap[subregionId] = markers;
             return markers;
         }).catch((error: unknown) => {

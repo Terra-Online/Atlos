@@ -337,18 +337,19 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
                                 <PopoverTooltip
                                     placement="top"
                                     gap={8}
+                                    toggleOnClick
                                     content={(
                                         <span className={styles.deviceVerificationPopover}>
                                             注册/登录<span className="keyword">森空岛</span> » 右上角<span className="keyword">设置</span> » 通行证与账号安全 » 账号安全管理 » 设备管理 » 关闭<span className="keyword">新设备登录身份验证</span>
                                         </span>
                                     )}
                                 >
-                                    <a
-                                        href="#device-verification-help"
-                                        onClick={(event) => event.preventDefault()}
+                                    <button
+                                        type="button"
+                                        className={styles.deviceVerificationHelp}
                                     >
                                         如何解决？
-                                    </a>
+                                    </button>
                                 </PopoverTooltip>
                             </span>
                         </>

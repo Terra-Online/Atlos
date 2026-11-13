@@ -345,7 +345,9 @@
             },
             "Rope": {
                 "noFrame": true
-            }
+            },
+            "Bounce Device": {},
+            "Vortex": {}
         }
     },
     "enemy": {

@@ -43,7 +43,6 @@
       "pending_audit": "Menunggu semakan manual",
       "active": "Awam",
       "flagged": "Dilaporkan",
-      "remove_request": "Pemadaman diminta",
       "stale": "Tidak tersedia"
     },
     "contentHint": "Lihat hantaran dan status semakan.",

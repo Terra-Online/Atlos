@@ -4,7 +4,7 @@ import {
     openOemAuthModal,
 } from '@/component/shared/account/authEvents';
 import { getTargetLang } from '@/locale';
-import type { UGCComment } from '@/services/ugc/client';
+import type { UGCComment, UGCCommentNode } from '@/services/ugc/client';
 import { clearAllTrans, clearTrans, flatList } from '@/pages/detail/comment/commentsTree';
 import { isSameLangErr } from '@/pages/detail/comment/commentsUtils';
 import {
@@ -60,13 +60,13 @@ const removePendingTranslation = (): void => {
 
 type Args = {
     locale: string;
-    comments: UGCComment[];
+    comments: UGCCommentNode[];
     busyIds: Set<string>;
     isAuthenticated: boolean;
     patch: (commentId: string, patch: (comment: UGCComment) => UGCComment) => void;
     scopeKey: string;
     setBusy: (commentId: string, pending: boolean) => void;
-    setComments: Dispatch<SetStateAction<UGCComment[]>>;
+    setComments: Dispatch<SetStateAction<UGCCommentNode[]>>;
     setReply: Dispatch<SetStateAction<UGCComment | null>>;
     setRendered: Dispatch<SetStateAction<UGCComment | null>>;
 };
@@ -207,7 +207,7 @@ export const useTrans = ({
         }
 
         const current = flatList(comments).find((comment) => comment.id === pending.commentId);
-        if (!current) return;
+        if (!current || current.type === 'placeholder') { clearPending(); return; }
         if (getCommentTranslationKey(current, targetLang) !== pending.commentKey) {
             clearPending();
             return;

@@ -155,7 +155,7 @@
     }
 }
 
-.commentActions [data-label='recall'] {
+.commentActions [data-label='delete'] {
     > span {
         transform: scale(0.85);
     }
@@ -173,6 +173,7 @@
         transform: scale(0.9);
     }
 }
+
 
 .commentMeta {
     display: flex;
@@ -262,6 +263,14 @@
 
 
 
+
+
+.commentPlaceholder {
+    isolation: isolate;
+    color: var(--comment-muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
 
 
 @keyframes pendingTrans {

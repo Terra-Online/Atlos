@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { SidebarFilters, categoryCount } from './sidebarFilters';
 import { SelectorRows, SidebarWindow } from './sidebarWindow';
@@ -17,6 +17,7 @@ const data = vi.hoisted(() => ({
         { key: 'ore', category: { main: 'normal', sub: 'natural' } },
         { key: 'file_a', ctgr: 'records', category: { main: 'files', sub: 'archives' } },
         { key: 'file_b', ctgr: 'records', category: { main: 'files', sub: 'archives' } },
+        { key: 'unavailable', ctgr: 'records', category: { main: 'files', sub: 'archives' } },
     ],
     t: (key: string) => key,
 }));
@@ -26,9 +27,11 @@ vi.mock('@/platform/pictureInPicture', () => ({ useAppDocument: () => document }
 vi.mock('@/devtools/loadDevTool', () => ({ isRecordToolEnabled: () => false }));
 vi.mock('@/data/marker/diff.generated.json', () => ({ default: { types: [['ore', 'point-ore', 1]] } }));
 vi.mock('@/data/marker', async (original) => ({ ...await original<typeof import('@/data/marker')>(),
-    MARKER_TYPE_DICT: Object.fromEntries(data.types.map((type) => [type.key, type])), MARKER_TYPE_TREE: { natural: [data.types[0]], archives: data.types.slice(1) }, DEFAULT_SUBCATEGORY_ORDER: ['natural', 'archives'],
+    // The fixture catalog includes real virtual-scroll rows and a type available only elsewhere.
+    MARKER_TYPE_DICT: Object.fromEntries([...data.types, ...Array.from({ length: 20 }, (_, index) => ({ key: `row-${index}`, category: { main: 'normal', sub: 'natural' } }))].map(type => [type.key, type])),
+    MARKER_TYPE_TREE: { natural: [data.types[0]], archives: data.types.slice(1) }, DEFAULT_SUBCATEGORY_ORDER: ['natural', 'archives'],
     REGION_TYPE_COUNT_MAP: { Valley_4: { ore: 1, file_a: 1, file_b: 1 }, Dijiang: {} },
-    getLoadedRegionMarkers: () => data.types.map((type, index) => ({ id: `point-${type.key}`, type: type.key, subregId: 'VL_1', x: index, y: 0, z: 0, pos: [0, index], tier: 0 })),
+    getLoadedRegionMarkers: () => data.types.filter(type => type.key !== 'unavailable').map((type, index) => ({ id: `point-${type.key}`, type: type.key, subregId: 'VL_1', x: index, y: 0, z: 0, pos: [0, index], tier: 0 })),
 }));
 const markers = useMarkerStore.getState(), records = useUserRecordStore.getState(), prefs = useUiPrefsStore.getState(), region = useRegion.getState();
 let resize: ReturnType<typeof installResizeObserver>, pointer: () => void;
@@ -55,6 +58,29 @@ it('filters the same real model on query and region changes without silently cle
     expect(screen.queryByAltText('markerType.key.ore')).toBeNull(); expect(screen.getByAltText('markerType.key.file_a')).toBeTruthy();
     act(() => { useRegion.setState({ currentRegionKey: 'Dijiang' }); });
     expect(screen.queryByAltText('markerType.key.file_a')).toBeNull(); expect(useMarkerStore.getState().filter).toEqual(['ore']);
+});
+
+it.each([false, true])('selects exactly the visible category and binder types in mobile=%s', async (mobile) => {
+    render(<SidebarFilters preparedCount={categoryCount} columns={3} mobile={mobile} />);
+    const title = screen.getByText('markerType.category.archives');
+    fireEvent.contextMenu(title);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'contextMenu.selectAllCategoryFilters' }));
+    expect(useMarkerStore.getState().filter).toEqual(['file_a', 'file_b']);
+    expect(screen.queryByAltText('markerType.key.unavailable')).toBeNull();
+
+    act(() => { useMarkerStore.setState({ filter: [], searchString: 'file_a' }); });
+    const binder = screen.getByAltText('markerType.FileCtgr.records').closest('[data-binder-wrap]')!;
+    fireEvent.click(binder);
+    expect(useMarkerStore.getState().filter).toEqual(['file_a']);
+    expect(binder.querySelector('[data-binder-keys]')?.getAttribute('data-binder-keys')).toBe('file_a');
+    fireEvent.contextMenu(title);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'contextMenu.deselectAllCategoryFilters' }));
+    expect(useMarkerStore.getState().filter).toEqual([]);
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+    act(() => { useRegion.setState({ currentRegionKey: 'Dijiang' }); });
+    fireEvent.contextMenu(screen.getByText('sidebar.newlyAdded'));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'contextMenu.selectAllCategoryFilters' }));
+    expect(useMarkerStore.getState().filter).toEqual([]);
 });
 
 const rows: SelectorItem[] = Array.from({ length: 20 }, (_, index) => ({ typeInfo: { key: `row-${index}`, category: { main: 'normal', sub: 'natural' } }, name: `Row ${index}`, count: { total: 1, collected: 0 }, visible: true }));

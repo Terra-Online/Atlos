@@ -1,7 +1,7 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { getTargetLang } from '@/lib/i18n/lang';
-import type { UGCComment } from '@/services/ugc/client';
+import type { UGCComment, UGCCommentNode } from '@/services/ugc/client';
 import { flatList, isVisible } from '@/pages/detail/comment/commentsTree';
 import {
     getCommentTranslationKey,
@@ -46,11 +46,11 @@ const getAutoTransRequest = (locale: string): AutoTransRequest | null => {
 };
 
 const applyAutoTrans = (
-    comments: UGCComment[],
+    comments: UGCCommentNode[],
     trans: Awaited<ReturnType<typeof requestCommentTranslations>>,
     request: AutoTransRequest,
     requestedKeyById: Map<string, string>,
-): UGCComment[] => {
+): UGCCommentNode[] => {
     const transById = new Map(
         trans
             .filter((item) => (
@@ -61,11 +61,16 @@ const applyAutoTrans = (
     );
     if (transById.size === 0) return comments;
 
-    const applyTo = (items: UGCComment[]): UGCComment[] => {
+    const applyTo = (items: UGCCommentNode[]): UGCCommentNode[] => {
         let changed = false;
         const nextItems = items.map((comment) => {
             const transItem = transById.get(comment.id);
             const replies = comment.replies.length > 0 ? applyTo(comment.replies) : comment.replies;
+            if (comment.type === 'placeholder') {
+                if (replies === comment.replies) return comment;
+                changed = true;
+                return { ...comment, replies };
+            }
             const requestedKey = requestedKeyById.get(comment.id);
             if (
                 !transItem
@@ -103,15 +108,20 @@ const applyAutoTrans = (
 };
 
 const clearSkippedAutoTrans = (
-    comments: UGCComment[],
+    comments: UGCCommentNode[],
     request: AutoTransRequest,
-): UGCComment[] => {
+): UGCCommentNode[] => {
     if (!request.skipChineseSource) return comments;
 
-    const applyTo = (items: UGCComment[]): UGCComment[] => {
+    const applyTo = (items: UGCCommentNode[]): UGCCommentNode[] => {
         let changed = false;
         const nextItems = items.map((comment) => {
             const replies = comment.replies.length > 0 ? applyTo(comment.replies) : comment.replies;
+            if (comment.type === 'placeholder') {
+                if (replies === comment.replies) return comment;
+                changed = true;
+                return { ...comment, replies };
+            }
             const shouldClear = (
                 comment.translationTargetLanguage?.toLowerCase() === request.targetLang
                 && isChineseSource(comment.translationSourceLanguage)
@@ -146,11 +156,11 @@ export const useAutoTrans = ({
     scopeKey,
     setComments,
 }: {
-    comments: UGCComment[];
+    comments: UGCCommentNode[];
     enabled?: boolean;
     locale: string;
     scopeKey: string;
-    setComments: Dispatch<SetStateAction<UGCComment[]>>;
+    setComments: Dispatch<SetStateAction<UGCCommentNode[]>>;
 }) => {
     const isAuthenticated = useAuthStore((state) => Boolean(state.sessionUser));
     const requestRef = useRef('');
@@ -165,7 +175,7 @@ export const useAutoTrans = ({
 
         const { cacheOnly, targetLang } = request;
         const candidates = flatList(comments)
-            .filter((comment) => isVisible(comment.status))
+            .filter((comment): comment is UGCComment => comment.type === 'comment' && isVisible(comment.status))
             .filter((comment) => !(
                 comment.translatedContent
                 && comment.translationTargetLanguage?.toLowerCase() === targetLang

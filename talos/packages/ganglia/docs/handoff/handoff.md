@@ -11,6 +11,13 @@ datasets remain external inputs; pass their locations explicitly rather than
 copying them with the source. Historical sections below retain their original
 code and measurement scope.
 
+The `feat/3d-preview` integration at `162ca793` uses indexed open-traversal
+state picks for offline point framing and validation, matching World's default
+visibility. Moving-platform decode transfers and initial-pose framing are
+maintained in the renderer patch. Noclip remains pinned to `978acf5`, which is
+newer than that base branch's pin; the solver and World routing source are
+unchanged by this merge.
+
 ## Map-scale benchmark snapshot, 2026-11-13
 
 The long-range workload uses full Wuling navigation and physically grounded

@@ -18,7 +18,7 @@ vi.mock('@/pages/detail/comment/translationCoordinator', async (importOriginal) 
     };
 });
 
-const comment = (content = 'Hello'): UGCComment => ({
+const comment = (content = 'Hello'): UGCComment => ({ type: 'comment',
     id: 'comment-1',
     markerId: 'marker-1',
     parentId: null,

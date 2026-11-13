@@ -1,5 +1,20 @@
 # Route solver history and validation evidence
 
+## Atlos base integration, 2026-11-14
+
+Merged `feat/3d-preview` at `162ca793` into the editable workspace integration.
+Kept workspace Ganglia dependencies and solver-owned planning instead of the
+base branch's alpha.77 archive and World-owned candidate/window implementation.
+Retained the newer `978acf5` noclip pin. Imported open-traversal offline framing
+and validation, plus initial moving-platform pose framing. Removed the duplicate
+moving-row transfer patch because the renderer patch now carries that fix.
+Frozen-lockfile installation and source regeneration pass. World passes 56 UI
+and adapter tests, 8 server/worker/network tests, type checks, lint and its
+source-only production build. Related noclip tests pass 16 cases; script tests
+pass 45 cases with loopback access. Full font packaging and visual acceptance
+were not performed. Solver and World routing source are unchanged; no new
+performance measurement is claimed.
+
 Updated 2026-11-11. Read this with [the current handoff](handoff.md) before changing the solver. This file records what was implemented, measured, rejected or only proposed; the companion file owns the current architecture, model and next actions. Update both when a change alters their conclusions. Historical test passes and timings below apply to their named versions and inputs, not to a future checkout.
 
 The current objective is to reduce candidate-space and action-search cost to **at most 20% of the original cost**, while preserving feasibility and route quality. It is **not achieved**. For the retained heavy-action alpha.70 baseline, the latest bounded-top-K trial leaves 64.8% of command time and 63.7% of search time. The final installed direction replay is slower than its baseline. No map-wide speedup, continuous-space optimum or complete independent forward-replay acceptance is established.

@@ -68,11 +68,10 @@
       "flag": "不正確として報告",
       "unflag": "報告を取り消す",
       "uploadAno": "別の画像を投稿",
-      "share": "共有",
-      "recall": "取り下げを申請",
-      "unrecall": "取り下げ申請を取り消す"
+      "share": "共有"
     },
     "comments": {
+      "unavailable": "コメントを表示できません。",
       "copyLink": "コメントのリンクをコピー",
       "emojiPicker": "絵文字を選択",
       "spoilerHidden": "クリックしてネタバレを表示",
@@ -90,14 +89,14 @@
       "reply": "返信",
       "edit": "編集",
       "submitEdit": "変更を保存",
-      "undoEdit": "変更を破棄",
-      "recall": "削除を申請",
       "reviewing": "審査中",
       "emptyWithRule": "まだコメントはありません。投稿の際は<a href=\"{link}\">コミュニティガイドライン</a>をお守りください。",
       "ruleOnly": "投稿の際は<a href=\"{link}\">コミュニティガイドライン</a>をお守りください。",
       "loadFailed": "コメントの読み込みに失敗しました。",
       "submitFailed": "コメントの投稿に失敗しました。",
-      "editFailed": "コメントの更新に失敗しました。"
+      "editFailed": "コメントの更新に失敗しました。",
+      "editConflict": "コメントが変更されたか、編集できなくなりました。内容を確認し、編集画面を開き直してください。",
+      "editConflictRefreshFailed": "コメントが変更されました。再読み込みしてから編集してください。"
     },
     "errors": {
       "unsupportedType": "JPEG/PNG/WebP/AVIF/HEIC 画像のみ対応しています。",
@@ -502,6 +501,7 @@
     "close": "閉じる",
     "skip": "スキップ",
     "clear": "クリア",
+    "delete": "削除",
     "all": "すべて",
     "selected": "選択済み",
     "confirm": "確認",

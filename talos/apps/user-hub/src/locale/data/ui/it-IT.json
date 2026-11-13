@@ -43,7 +43,6 @@
       "pending_audit": "In attesa di revisione manuale",
       "active": "Pubblico",
       "flagged": "Segnalato",
-      "remove_request": "Rimozione richiesta",
       "stale": "Non disponibile"
     },
     "contentHint": "Visualizza i tuoi contributi e il loro stato di revisione.",

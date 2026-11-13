@@ -9,7 +9,7 @@ import { installResizeObserver } from '../../../test-support/browser';
 import { deferred } from '../../../test-support/pages';
 import type { UGCImageActionPatch } from '@/services/ugc/client';
 
-const api = vi.hoisted(() => ({ t: (key: string) => key, public: vi.fn(), detail: vi.fn(), byId: vi.fn(), upload: vi.fn(), upvote: vi.fn(), flag: vi.fn(), recall: vi.fn(), auth: vi.fn(), copy: vi.fn() }));
+const api = vi.hoisted(() => ({ t: (key: string) => key, public: vi.fn(), detail: vi.fn(), byId: vi.fn(), upload: vi.fn(), upvote: vi.fn(), flag: vi.fn(), delete: vi.fn(), auth: vi.fn(), copy: vi.fn() }));
 vi.mock('@/locale', () => ({ useTranslateUI: () => api.t, useLocale: () => 'en-US' }));
 vi.mock('@/locale/useFontRegion', () => ({ useFontRegion: () => () => {} }));
 vi.mock('@/locale/fontLoader', () => ({ registerFontRegion: () => ({ update: () => {}, stop: () => {} }) }));
@@ -18,15 +18,15 @@ vi.mock('@/component/shared/account/authEvents', () => ({ openOemAuthModal: api.
 vi.mock('@/platform/clipboard', () => ({ copyTextToClipboard: api.copy }));
 vi.mock('@/services/routing', () => ({ generatePointShareUrl: (point: IMarkerData, options: { content?: { id: string } }) => `https://example.test/${point.id}?image=${options.content?.id ?? ''}` }));
 vi.mock('@/services/ugc/client', async (original) => ({ ...await original<typeof import('@/services/ugc/client')>(), listPublicUGCImages: api.public, listUGCPointImages: api.detail, getUGCImageById: api.byId,
-    uploadUGCImage: api.upload, toggleUGCImageUpvote: api.upvote, toggleUGCImageFlag: api.flag, recallUGCImage: api.recall }));
+    uploadUGCImage: api.upload, toggleUGCImageUpvote: api.upvote, toggleUGCImageFlag: api.flag, deleteUGCImage: api.delete }));
 const auth = useAuthStore.getState(), markers = useMarkerStore.getState();
 let serial = 0;
 const point = (): IMarkerData => ({ id: `upload-ui-${++serial}`, type: 'crate_ii', subregId: 'VL_1', pos: [0, 0], x: 0, y: 0, z: 0, tier: 0 });
-const image = (markerId: string, id = 'first'): UGCImage => ({ id, markerId, content: `Image ${id}`, url: `/${id}.webp`, createdAt: '2026-10-27T00:00:00Z', status: 'active', upvotes: 2, author: { nickname: 'Author', publicUid: 'another-user' } });
+const image = (markerId: string, id = 'first'): UGCImage => ({ id, markerId, snapshotId: 'image-snapshot', content: `Image ${id}`, url: `/${id}.webp`, createdAt: '2026-10-27T00:00:00Z', status: 'active', upvoteCount: 2, author: { nickname: 'Author', publicUid: 'another-user' } });
 beforeEach(() => {
     vi.useFakeTimers(); vi.clearAllMocks(); installResizeObserver(); useAuthStore.setState({ sessionUser: { uid: 'user-a', nickname: 'User A' } }); useMarkerStore.setState({ imageOpenRequest: null });
-    api.public.mockResolvedValue([]); api.detail.mockResolvedValue({ images: [], myImages: [] }); api.copy.mockResolvedValue(true); api.recall.mockResolvedValue({ id: 'first' });
-    api.upvote.mockResolvedValue({ id: 'first', upvoted: true, upvotes: 3 }); api.flag.mockResolvedValue({ id: 'first', flagged: true });
+    api.public.mockResolvedValue([]); api.detail.mockResolvedValue({ images: [], myImages: [] }); api.copy.mockResolvedValue(true); api.delete.mockResolvedValue({ authorDeletedAt: '2026-11-09T00:00:00Z' });
+    api.upvote.mockResolvedValue({ id: 'first', upvoted: true, upvoteCount: 3 }); api.flag.mockResolvedValue({ id: 'first', flagged: true });
 });
 afterEach(() => { cleanup(); useAuthStore.setState(auth, true); useMarkerStore.setState(markers, true); vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 const flush = async () => act(async () => { await Promise.resolve(); });
@@ -80,17 +80,17 @@ it('debounces vote changes, rolls back a failed request, and leaves the other im
     expect(api.upvote).toHaveBeenCalledTimes(1);
 });
 
-it('requires a delayed recall confirmation and restores the own image and viewer when recall fails', async () => {
+it('requires a delayed delete confirmation and restores the own image and viewer when delete fails', async () => {
     const marker = point(); const own: UGCSubmissionImage = { ...image(marker.id), poiHash: 'hash', poiType: marker.type, snapshotId: 'snapshot', filePath: '/first.webp', status: 'pending_audit', author: { nickname: 'User A', publicUid: 'user-a' } };
-    api.detail.mockResolvedValue({ images: [], myImages: [own] }); api.recall.mockRejectedValueOnce(new Error('offline'));
+    api.detail.mockResolvedValue({ images: [], myImages: [own] }); api.delete.mockRejectedValueOnce(new Error('offline'));
     render(<Uploader point={marker} pointName="Crate" />); await flush();
     fireEvent.click(screen.getByAltText('Image first'));
     expect(within(screen.getByRole('dialog')).queryByRole('button', { name: 'Upvote' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'detail.viewer.recall' }));
-    fireEvent.click(screen.getByRole('button', { name: 'common.confirmAgain' })); expect(api.recall).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'common.delete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'common.confirmAgain' })); expect(api.delete).not.toHaveBeenCalled();
     act(() => { vi.advanceTimersByTime(1000); });
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'common.confirmAgain' })); await Promise.resolve(); });
-    expect(api.recall).toHaveBeenCalledExactlyOnceWith('first');
+    expect(api.delete).toHaveBeenCalledExactlyOnceWith('first');
     expect(screen.getByRole('dialog', { name: 'Image first' })).toBeTruthy();
     expect(screen.getAllByAltText('Image first')).toHaveLength(2);
 });
@@ -112,22 +112,22 @@ it('ignores a late vote response from the previous account after a fresh image l
     await act(async () => { await vi.advanceTimersByTimeAsync(300); });
     expect(api.upvote).toHaveBeenCalledOnce();
     act(() => { useAuthStore.setState({ sessionUser: { uid: 'user-b', nickname: 'User B' } }); }); await flush();
-    await act(async () => { pending.resolve({ id: 'first', upvoted: true, upvotes: 3 }); await pending.promise; });
+    await act(async () => { pending.resolve({ id: 'first', upvoted: true, upvoteCount: 3 }); await pending.promise; });
     expect(screen.getByRole('button', { name: 'detail.viewer.upvote' }).getAttribute('aria-pressed')).toBe('false');
 });
 
-it.each(['point round trip', 'same account login'] as const)('does not restore an old recall snapshot after a %s', async (mode) => {
-    const marker = point(), other = point(), pending = deferred<{ id: string }>();
+it.each(['point round trip', 'same account login'] as const)('does not restore an old delete snapshot after a %s', async (mode) => {
+    const marker = point(), other = point(), pending = deferred<{ authorDeletedAt: string }>();
     const own: UGCSubmissionImage = { ...image(marker.id), poiHash: 'hash', poiType: marker.type, snapshotId: 'snapshot', filePath: '/first.webp', status: 'pending_audit', author: { nickname: 'User A', publicUid: 'user-a' } };
     api.detail.mockResolvedValue({ images: [], myImages: [own] });
-    api.recall.mockReturnValueOnce(pending.promise);
+    api.delete.mockReturnValueOnce(pending.promise);
     const view = render(<Uploader point={marker} pointName="Crate" />);
     await flush();
     fireEvent.click(screen.getByAltText('Image first'));
-    fireEvent.click(screen.getByRole('button', { name: 'detail.viewer.recall' }));
+    fireEvent.click(screen.getByRole('button', { name: 'common.delete' }));
     await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
     fireEvent.click(screen.getByRole('button', { name: 'common.confirmAgain' }));
-    expect(api.recall).toHaveBeenCalledOnce();
+    expect(api.delete).toHaveBeenCalledOnce();
     await act(async () => { await vi.advanceTimersByTimeAsync(300); });
     if (mode === 'point round trip') {
         view.rerender(<Uploader point={other} pointName="Other" />);
@@ -142,7 +142,7 @@ it.each(['point round trip', 'same account login'] as const)('does not restore a
             useAuthStore.getState().setSessionUser({ uid: 'user-a', nickname: 'User A' });
         });
     }
-    await act(async () => { pending.reject(new Error('Old recall failed')); await Promise.resolve(); });
+    await act(async () => { pending.reject(new Error('Old delete failed')); await Promise.resolve(); });
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByAltText('Image first')).toBeNull();
 });

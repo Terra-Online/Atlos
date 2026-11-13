@@ -23,7 +23,7 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); popover.restore(); fixture.dispose(); vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 const marker = (id: string): IMarkerData => ({ id, type: 'crate_ii', subregId: 'VL_1', pos: [0, 0], x: 0, y: 0, z: 0, tier: 0 });
-const image = (id: string, upvotes: number, createdAt: string): UGCImage => ({ id, markerId: 'point', content: null, url: `/${id}.webp`, createdAt, upvotes });
+const image = (id: string, upvoteCount: number, createdAt: string): UGCImage => ({ id, markerId: 'point', content: null, url: `/${id}.webp`, createdAt, upvoteCount });
 function Preview() { return UsePreview(fixture.map).PreviewElement; }
 const enter = (point: IMarkerData) => act(() => { window.dispatchEvent(new CustomEvent(MARKER_PREVIEW_ENTER_EVENT, { detail: { marker: point } })); });
 const leave = (id: string) => act(() => { window.dispatchEvent(new CustomEvent(MARKER_PREVIEW_LEAVE_EVENT, { detail: { markerId: id } })); });

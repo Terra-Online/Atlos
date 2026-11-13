@@ -3,6 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { installResizeObserver } from '../../../../../test-support/browser';
 import { flush } from '../../testSetup';
 import Content from './content';
+import type { Contribution } from '../../types';
 
 const api = vi.hoisted(() => ({ pages: vi.fn() }));
 vi.mock('../../api/client', () => ({ getContributions: api.pages, isUnauthorized: () => false }));
@@ -27,7 +28,38 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 it('coordinates automatic pagination, retry UI and retained list items without duplicate near-viewport requests', async () => {
-    const item = { id: 'a', kind: 'image', markerId: '42', poiType: 'ore', content: null, status: 'active', visibility: 'public', createdAt: '2026-05-21T03:28:31Z' };
+    const item: Contribution = {
+        snapshotId: 'snapshot-a',
+        revision: 1,
+        reviewStatus: 'approved',
+        authorDeletedAt: null,
+        adminDeletedAt: null,
+        previewUrl: null,
+        review: {
+            events: [],
+            manual: false,
+            published: true,
+            path: [
+                { key: 'uploaded', at: '2026-05-21T03:28:31Z' },
+                { key: 'public', at: null },
+            ],
+            times: {
+                uploaded: '2026-05-21T03:28:31Z',
+                ai: null,
+                manual: null,
+                public: null,
+                archived: null,
+            },
+        },
+        id: 'a',
+        kind: 'image',
+        markerId: '42',
+        poiType: 'ore',
+        content: null,
+        status: 'active',
+        visibility: 'public',
+        createdAt: '2026-05-21T03:28:31Z',
+    };
     let failPage!: (reason: Error) => void;
     const page = new Promise<never>((_resolve, reject) => { failPage = reject; });
     api.pages.mockResolvedValueOnce({ items: [item], nextCursor: 'next' }).mockReturnValueOnce(page).mockResolvedValueOnce({ items: [{ ...item, id: 'b' }], nextCursor: null });

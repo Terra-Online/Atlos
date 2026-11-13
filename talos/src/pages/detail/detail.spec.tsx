@@ -28,7 +28,7 @@ vi.mock('@/services/progress', async (original) => ({ ...await original<typeof i
 const markerState = useMarkerStore.getState(), records = useUserRecordStore.getState(), auth = useAuthStore.getState(), history = useHistoryStore.getState(), region = useRegion.getState();
 const scrollTo = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollTo');
 const point = (id: string, type = 'crate_ii'): IMarkerData => ({ id, type, subregId: 'VL_1', pos: [0, 0], x: 0, y: 0, z: 0, tier: 0 });
-const comment = (id: string, content: string, score: number, replies: UGCComment[] = []): UGCComment => ({ id, markerId: 'detail-first', content, score, replies, status: 'active', depth: 0, parentId: null, createdAt: '2026-10-27T00:00:00Z', replyCount: replies.length });
+const comment = (id: string, content: string, score: number, replies: UGCComment[] = []): UGCComment => ({ type: 'comment', id, markerId: 'detail-first', content, score, replies, status: 'active', depth: 0, parentId: null, createdAt: '2026-10-27T00:00:00Z', replyCount: replies.length });
 beforeEach(() => {
     vi.clearAllMocks(); installResizeObserver(); api.locale = 'en-US'; api.comments.mockResolvedValue([]); api.images.mockResolvedValue([]); api.copy.mockResolvedValue(true); api.stats.mockRejectedValue(new Error('statistics unavailable')); api.archive.mockResolvedValue(new Response(JSON.stringify({ content: 'Archive text' }), { headers: { 'content-type': 'application/json' } }));
     useMarkerStore.setState({ currentActivePoint: null, commentOpenRequest: null, imageOpenRequest: null }); useUserRecordStore.setState({ activePoints: [] }); useAuthStore.setState({ sessionUser: null }); useHistoryStore.setState({ past: [], future: [] }); useRegion.setState({ currentRegionKey: 'Valley_4' });

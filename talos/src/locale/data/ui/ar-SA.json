@@ -68,11 +68,10 @@
       "flag": "إبلاغ عن خطأ",
       "unflag": "إلغاء الإبلاغ",
       "uploadAno": "رفع صورة أخرى",
-      "share": "مشاركة",
-      "recall": "تراجع",
-      "unrecall": "إلغاء التراجع"
+      "share": "مشاركة"
     },
     "comments": {
+      "unavailable": "التعليق غير متاح.",
       "copyLink": "نسخ رابط التعليق",
       "emojiPicker": "اختيار رمز تعبيري",
       "spoilerHidden": "انقر لعرض المحتوى الذي يكشف الأحداث",
@@ -90,14 +89,14 @@
       "reply": "رد",
       "edit": "تعديل",
       "submitEdit": "حفظ التعديل",
-      "undoEdit": "التراجع عن التعديل",
-      "recall": "إخفاء فورًا",
       "reviewing": "قيد المراجعة",
       "emptyWithRule": "لا توجد تعليقات بعد. يرجى الالتزام بـ<a href=\"{link}\">إرشادات المجتمع</a> عند النشر.",
       "ruleOnly": "يرجى الالتزام بـ<a href=\"{link}\">إرشادات المجتمع</a> عند النشر.",
       "loadFailed": "فشل تحميل التعليقات.",
       "submitFailed": "فشل إرسال التعليق.",
-      "editFailed": "تعذر تحديث التعليق."
+      "editFailed": "تعذر تحديث التعليق.",
+      "editConflict": "تغيّر التعليق أو تعذر تعديله. راجعه وأعد فتح المحرر.",
+      "editConflictRefreshFailed": "تغيّر التعليق. أعد التحميل قبل تعديله."
     },
     "errors": {
       "unsupportedType": "تُدعم فقط صور JPEG/PNG/WebP/AVIF/HEIC.",
@@ -502,6 +501,7 @@
     "close": "إغلاق",
     "skip": "تخطي",
     "clear": "مسح",
+    "delete": "حذف",
     "all": "الكل",
     "selected": "المُحدَّد",
     "confirm": "تأكيد",

@@ -47,7 +47,7 @@ for (const [subregionId, markers] of markersBySubregion) {
 
   for (const marker of markers) {
     const type = marker?.type || '';
-    if (!type) continue;
+    if (!Object.hasOwn(typeMap, type)) continue;
     increment(stats.world, type);
     increment(subregionCounts, type);
   }

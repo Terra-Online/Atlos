@@ -1000,7 +1000,7 @@ index 00000000..e183d3fb
 +};
 diff --git a/packages/extractor/src/commands/oem-check.ts b/packages/extractor/src/commands/oem-check.ts
 new file mode 100644
-index 00000000..145469f0
+index 00000000..38bf332e
 --- /dev/null
 +++ b/packages/extractor/src/commands/oem-check.ts
 @@ -0,0 +1,191 @@
@@ -1023,7 +1023,7 @@ index 00000000..145469f0
 +	isCompanion,
 +} from '@endfield-noclip/package-format/oem';
 +import type { StatesInfo } from '@endfield-noclip/package-format/states';
-+import { completedProgressionPicksByIndex } from '@endfield-noclip/package-format/story';
++import { openTraversalPicksByIndex } from '@endfield-noclip/package-format/story';
 +import { areasShownIn, zonesAt, zonesAround } from '@endfield-noclip/package-format/stream-areas';
 +
 +import { pointViewKey } from '../../../viewer/src/scene/point-view-cache.ts';
@@ -1114,7 +1114,7 @@ index 00000000..145469f0
 +				if (!point.view) {
 +					throw new Error(`missing baked view: ${point.id}`);
 +				}
-+				const completed = completedProgressionPicksByIndex(merged.controls);
++				const completed = openTraversalPicksByIndex(merged.controls);
 +				let visibleAreas: ReadonlySet<number> | null = null;
 +				const areas = merged.streamAreas;
 +				if (areas) {
@@ -1390,7 +1390,7 @@ index 00000000..86219bf7
 +};
 diff --git a/packages/extractor/src/commands/oem-views.ts b/packages/extractor/src/commands/oem-views.ts
 new file mode 100644
-index 00000000..b3405d0c
+index 00000000..6754bd7a
 --- /dev/null
 +++ b/packages/extractor/src/commands/oem-views.ts
 @@ -0,0 +1,426 @@
@@ -1414,7 +1414,7 @@ index 00000000..b3405d0c
 +	type Companion,
 +	type Point,
 +} from '@endfield-noclip/package-format/oem';
-+import { completedProgressionPicksByIndex } from '@endfield-noclip/package-format/story';
++import { openTraversalPicksByIndex } from '@endfield-noclip/package-format/story';
 +import { areasShownIn, zonesAt, zonesAround } from '@endfield-noclip/package-format/stream-areas';
 +import { isTerrainHole, TERRAIN_PAGE_SAMPLES, terrainHeight } from '@endfield-noclip/package-format/terrain';
 +import { tileAt, tileId } from '@endfield-noclip/package-format/tiles';
@@ -1670,7 +1670,7 @@ index 00000000..b3405d0c
 +					continue;
 +				}
 +				const states = companionStates(pkg.manifest.states, partition);
-+				const completed = completedProgressionPicksByIndex(states.controls);
++				const completed = openTraversalPicksByIndex(states.controls);
 +				const checkpoint = join(
 +					cache,
 +					`${scene}-${subregion}${routeBinding === 'none' ? '' : '-' + routeBinding}.json`,

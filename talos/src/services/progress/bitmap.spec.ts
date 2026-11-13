@@ -1,7 +1,12 @@
 import { createHash, webcrypto } from 'node:crypto';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import { getProgressMarkerIndex, encodeProgressPoints, decodeProgressPoints } from './bitmap';
-import { loadAllMarkers, SUBREGION_MARKS_MAP } from '@/data/marker';
+import { SUBREGION_MARKS_MAP } from '@/data/marker';
+import manualOverrides from '@/data/marker/manual/overrides.json';
+import { applyMarkerOverrides } from '@/data/marker/overrides.js';
+
+type RawMarker = [string | number, ...unknown[]] | { id: string | number };
+const shards = import.meta.glob<RawMarker[]>('../../data/marker/data/*.json', { eager: true, import: 'default' });
 
 beforeAll(() => vi.stubGlobal('crypto', webcrypto));
 afterAll(() => vi.unstubAllGlobals());
@@ -11,9 +16,11 @@ it('preserves every legacy bitmap position, hash and checksum without loading wo
     expect(Object.keys(SUBREGION_MARKS_MAP)).toEqual([]);
     expect(current.indexById.has('2800000983')).toBe(true);
 
-    // Compute the reference from the old full-data path, independent of lookup
-    // ordering. Numeric IDs keep their historical length + localeCompare sort.
-    const legacyIds = [...new Set((await loadAllMarkers()).map((point) => String(point.id)).filter(Boolean))]
+    // Read the raw storage records independently of the visible point loader.
+    // Numeric IDs keep their historical length + localeCompare sort.
+    const rows = Object.values(shards).flatMap(shard => shard.map(row => ({ id: String(Array.isArray(row) ? row[0] : row.id) })));
+    const legacy = applyMarkerOverrides(rows, manualOverrides) as { id: string }[];
+    const legacyIds = [...new Set(legacy.map(point => point.id).filter(Boolean))]
         .sort((a, b) => /^\d+$/.test(a) && /^\d+$/.test(b)
             ? a.length - b.length || a.localeCompare(b)
             : a.localeCompare(b));

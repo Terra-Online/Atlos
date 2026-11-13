@@ -1,6 +1,6 @@
 import L from 'leaflet';
 import { describe, expect, it } from 'vitest';
-import { cameraRects, contains, coverageRects, coverageRows, nearest, slide, sweep, visiblePatch } from './coverageGeometry';
+import { cameraRects, coverageEnvelope, contains, coverageRects, coverageRows, nearest, slide, sweep, visiblePatch } from './coverageGeometry';
 import type { ZoomTileCoverage } from '@/services/map/tileCoverage';
 import standard from '@/data/map/tileCoverage.json';
 import satellite from '@/data/map/satelliteCoverage.json';
@@ -9,6 +9,22 @@ const shape = (rows: Record<string, number[]>, viewport = L.point(1, 1)) =>
     cameraRects(coverageRects(coverageRows({ '': rows }, [''])), viewport, 0, L.point(Math.min(1, viewport.x), Math.min(1, viewport.y)));
 
 describe('coverage camera geometry', () => {
+    it('fills large holes and open bays inside the envelope while retaining the outer extents', () => {
+        const rows = coverageRows({ '': {
+            '0': [-4, 8], '1': [-4, -1, 5, 8], '2': [-4, -1, 5, 8], '3': [-4, -1, 5, 8], '4': [-4, 8],
+        } }, ['']);
+        const filled = coverageEnvelope(rows);
+        for (let y = 0; y < 5; y++) expect(filled.get(y)).toEqual([[-4, 9]]);
+        expect([...filled.keys()]).toEqual([0, 1, 2, 3, 4]);
+        expect(rows.get(1)).toEqual([[-4, 0], [5, 9]]);
+        rows.delete(4);
+        expect(coverageEnvelope(rows).get(3)).toEqual([[-4, 9]]);
+        const corner = coverageEnvelope(coverageRows({ '': { '0': [0, 8], '1': [0, 0], '2': [0, 0], '3': [0, 0] } }, ['']));
+        expect(corner.get(3)).toEqual([[0, 4]]);
+        expect(coverageEnvelope(new Map()).size).toBe(0);
+        expect(coverageEnvelope(coverageRows({ '': { '-2': [-5, -3] } }, [''])).get(-2)).toEqual([[-5, -2]]);
+    });
+
     it('retains every coverage interval regardless of its sign or distance from the origin', () => {
         const rows = coverageRows({ '': { '-12000': [-20000, -19999, 25000, 25002] } }, ['']);
         expect(rows.get(-12000)).toEqual([[-20000, -19998], [25000, 25003]]);

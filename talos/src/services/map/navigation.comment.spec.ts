@@ -5,6 +5,7 @@ import type { IMarkerData } from '@/data/marker';
 import type { MapCore } from '@/services/map/core/map';
 
 vi.mock('@/data/marker', () => ({
+    MARKER_TYPE_DICT: { test: { key: 'test', category: { main: 'poi', sub: 'collection' } } },
     findMarkerById: vi.fn(() => Promise.resolve({ id: '1', type: 'test', subregId: 'sub', pos: [1, 2] })),
 }));
 vi.mock('@/data/map', () => ({ REGION_DICT: { Valley_4: { subregions: ['sub'] } } }));

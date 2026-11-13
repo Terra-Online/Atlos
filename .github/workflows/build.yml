@@ -29,7 +29,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "26"
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -61,6 +61,12 @@ jobs:
         run: |
           cp config/config.template.json config/config.json
           cp config/config.r2.template.json config/config.r2.json
+        working-directory: ./talos
+
+      # These workspace packages are generated from the pinned archive and patches.
+      # They must exist before pnpm discovers and links workspace dependencies.
+      - name: Prepare pinned noclip workspace
+        run: node scripts/noclip.mjs prepare
         working-directory: ./talos
 
       - name: Install dependencies

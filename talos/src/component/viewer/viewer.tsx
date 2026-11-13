@@ -18,11 +18,7 @@ import ActionBar, { type ActionBarItem } from '@/component/actionBar/ActionBar';
 type CarouselDirection = 'previous' | 'next';
 
 const getViewerUpvoteCount = (image: UGCImage): number => (
-    Number.isFinite(image.upvotes)
-        ? Math.max(0, image.upvotes as number)
-        : Number.isFinite(image.upvoteCount)
-            ? Math.max(0, image.upvoteCount as number)
-            : 0
+    Number.isFinite(image.upvoteCount) ? Math.max(0, image.upvoteCount as number) : 0
 );
 
 const getCarouselDirection = (
@@ -59,18 +55,17 @@ interface ViewerProps {
     upvoteCount?: number;
     upvoted?: boolean;
     flagged?: boolean;
-    recallRequested?: boolean;
     canFlag?: boolean;
-    canRecall?: boolean;
-    recallOnly?: boolean;
+    canDelete?: boolean;
+    ownerActionsOnly?: boolean;
     actionPending?: boolean;
-    recallConfirming?: boolean;
+    deleteConfirming?: boolean;
     shareCopied?: boolean;
     onToggleUpvote?: () => void;
     onToggleFlag?: () => void;
     onShare?: () => void;
-    onToggleRecall?: () => void;
-    onRecallBlur?: () => void;
+    onDelete?: () => void;
+    onDeleteBlur?: () => void;
     onSelectedImageIdChange?: (imageId: string) => void;
     canAppendUpload?: boolean;
     onRequestUpload?: () => void;
@@ -90,18 +85,17 @@ const Viewer: React.FC<ViewerProps> = ({
     upvoteCount = 0,
     upvoted = false,
     flagged = false,
-    recallRequested = false,
     canFlag = true,
-    canRecall = false,
-    recallOnly = false,
+    canDelete = false,
+    ownerActionsOnly = false,
     actionPending = false,
-    recallConfirming = false,
+    deleteConfirming = false,
     shareCopied = false,
     onToggleUpvote,
     onToggleFlag,
     onShare,
-    onToggleRecall,
-    onRecallBlur,
+    onDelete,
+    onDeleteBlur,
     onSelectedImageIdChange,
     canAppendUpload = false,
     onRequestUpload,
@@ -134,10 +128,6 @@ const Viewer: React.FC<ViewerProps> = ({
     const currentUpvoteCount = selectedImage ? getViewerUpvoteCount(selectedImage) : upvoteCount;
     const currentUpvoted = selectedImage ? Boolean(selectedImage.upvoted) : upvoted;
     const currentFlagged = selectedImage ? Boolean(selectedImage.flagged) : flagged;
-    const currentRecallRequested = selectedImage
-        ? Boolean(selectedImage.recallRequested || selectedImage.status === 'remove_request')
-        : recallRequested;
-
     const createdAtDate = useMemo(() => parseTimestamp(currentCreatedAt), [currentCreatedAt]);
     const createdAtLabel = createdAtDate
         ? formatAbsoluteTime(createdAtDate, { locale, precision: 'dateTime' })
@@ -148,9 +138,9 @@ const Viewer: React.FC<ViewerProps> = ({
             : '');
     }, [createdAtDate, locale]);
     const flagLabel = currentFlagged ? tUI('detail.viewer.unflag') : tUI('detail.viewer.flag');
-    const recallLabel = recallConfirming
+    const deleteLabel = deleteConfirming
         ? tUI('common.confirmAgain')
-        : currentRecallRequested ? tUI('detail.viewer.unrecall') : tUI('detail.viewer.recall');
+        : tUI('common.delete');
     const uploadLabel = tUI('detail.viewer.uploadAno');
     const viewerActionBar = useMemo<ActionBarItem[]>(() => (
         [{
@@ -306,7 +296,7 @@ const Viewer: React.FC<ViewerProps> = ({
                         </div>
                     </div>
                     <div className={styles.viewerActions}>
-                        {!recallOnly && (
+                        {!ownerActionsOnly && (
                             <>
                                 <PopoverTooltip content={tUI('detail.viewer.upvote')} placement="top" gap={4}>
                                     <button
@@ -325,7 +315,7 @@ const Viewer: React.FC<ViewerProps> = ({
                                 <span className={styles.viewerActionDivider} aria-hidden="true"></span>
                             </>
                         )}
-                        {!recallOnly && canFlag && (
+                        {!ownerActionsOnly && canFlag && (
                             <PopoverTooltip key={`flag:${currentFlagged ? 'on' : 'off'}`} content={flagLabel} placement="top" gap={4}>
                                 <button
                                     type="button"
@@ -340,7 +330,7 @@ const Viewer: React.FC<ViewerProps> = ({
                                 </button>
                             </PopoverTooltip>
                         )}
-                        {!recallOnly && (
+                        {!ownerActionsOnly && (
                             <PopoverTooltip
                                 content={shareCopied ? tUI('common.copied') : tUI('detail.viewer.share')}
                                 placement="top"
@@ -358,26 +348,24 @@ const Viewer: React.FC<ViewerProps> = ({
                                 </button>
                             </PopoverTooltip>
                         )}
-                        {canRecall && (
+                        {canDelete && (
                             <>
-                                {!recallOnly && <span className={styles.viewerActionDivider} aria-hidden="true"></span>}
+                                {!ownerActionsOnly && <span className={styles.viewerActionDivider} aria-hidden="true"></span>}
                                 <PopoverTooltip
-                                    key={`recall:${recallConfirming ? 'confirm' : 'idle'}`}
-                                    content={recallLabel}
+                                    key={`delete:${deleteConfirming ? 'confirm' : 'idle'}`}
+                                    content={deleteLabel}
                                     placement="top"
                                     gap={4}
                                 >
                                     <button
                                         type="button"
                                         className={styles.viewerActionButton}
-                                        data-action="recall"
-                                        data-active={currentRecallRequested ? 'true' : 'false'}
-                                        data-confirming={recallConfirming ? 'true' : 'false'}
-                                        disabled={actionPending || !onToggleRecall}
-                                        onClick={onToggleRecall}
-                                        onBlur={onRecallBlur}
-                                        aria-pressed={currentRecallRequested}
-                                        aria-label={recallLabel}
+                                        data-action="delete"
+                                        data-confirming={deleteConfirming ? 'true' : 'false'}
+                                        disabled={actionPending || !onDelete}
+                                        onClick={onDelete}
+                                        onBlur={onDeleteBlur}
+                                        aria-label={deleteLabel}
                                     >
                                         <RecallIcon />
                                     </button>

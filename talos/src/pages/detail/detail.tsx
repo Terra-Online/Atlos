@@ -12,7 +12,6 @@ import Comments, { CommentExcerpt } from '@/pages/detail/comment/Comments';
 import { flatList } from '@/pages/detail/comment/commentsTree';
 import { useAutoTrans } from '@/pages/detail/comment/useAutoTrans';
 import { useGlobalCollectionRate } from '@/pages/detail/useGlobalCollectionRate';
-import NoclipPreview from '@/pages/detail/NoclipPreview';
 
 import parse from 'html-react-parser';
 import { getItemIconUrl, getFileContentUrl, fetchArchiveFile } from '@/services/assets/resource';
@@ -20,7 +19,7 @@ import { parseArchiveJsonResponse, createArchiveHtmlParserOptions, archiveVisibl
 import { getLoadedRegionMarkers, loadRegionMarkers, MARKER_TYPE_DICT } from '@/data/marker';
 import { usePointShareLink } from '@/pages/share/usePointShareLink';
 import useRegion from '@/store/region';
-import { listUGCComments, resolveUGCUploadTarget, type UGCComment } from '@/services/ugc/client';
+import { listUGCComments, resolveUGCUploadTarget, type UGCComment, type UGCCommentNode } from '@/services/ugc/client';
 
 import BossIcon from '@/assets/images/category/boss.svg?react';
 import CollectionIcon from '@/assets/images/category/collection.svg?react';
@@ -49,6 +48,11 @@ import { commitPointProgress } from '@/store/history';
 import { resolveMarkerBulkTargets } from '@/services/map/markerBulkActions';
 import classNames from 'classnames';
 import { useTranslateGame, useTranslateUI, useLocale } from '@/locale';
+
+// Keep the unreleased preview available locally without emitting its production chunk.
+const NoclipPreview = import.meta.env.DEV
+    ? React.lazy(() => import('@/pages/detail/NoclipPreview'))
+    : null;
 
 // Category icon mapping
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
@@ -102,8 +106,8 @@ const getElementNaturalHeight = (element: HTMLElement): number => {
     return paddingHeight + childrenHeight + gap * Math.max(0, children.length - 1);
 };
 
-const getTopRatedComment = (comments: UGCComment[]): UGCComment | null => {
-    const allComments = flatList(comments);
+const getTopRatedComment = (comments: UGCCommentNode[]): UGCComment | null => {
+    const allComments = flatList(comments).filter((comment): comment is UGCComment => comment.type === 'comment');
     if (allComments.length === 0) return null;
     return allComments.reduce((topComment, comment) => (
         comment.score > topComment.score ? comment : topComment
@@ -162,11 +166,11 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
         () => highlightComment ? [highlightComment] : [],
         [highlightComment],
     );
-    const setHighlightComments = useCallback((action: React.SetStateAction<UGCComment[]>) => {
+    const setHighlightComments = useCallback((action: React.SetStateAction<UGCCommentNode[]>) => {
         setHighlightComment((current) => {
             const currentItems = current ? [current] : [];
             const nextItems = typeof action === 'function' ? action(currentItems) : action;
-            return nextItems[0] ?? null;
+            return nextItems[0]?.type === 'comment' ? nextItems[0] : null;
         });
     }, []);
 
@@ -684,7 +688,11 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                                     </div>
                                 </>
                             )}
-                            <NoclipPreview pointId={currentPoint.id} />
+                            {NoclipPreview && (
+                                <React.Suspense fallback={null}>
+                                    <NoclipPreview pointId={currentPoint.id} />
+                                </React.Suspense>
+                            )}
                             <div className={styles.detailDivider} data-label={tUI('detail.label.url')}></div>
                             <div className={styles.detailAction} data-act="share">
                                 <PopoverTooltip

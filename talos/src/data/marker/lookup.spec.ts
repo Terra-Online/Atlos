@@ -27,11 +27,13 @@ it('resolves a startup region from the index before fetching point rows', async 
     expect(Object.keys(markers.SUBREGION_MARKS_MAP)).toEqual([]);
 });
 
-it('preserves legacy lookups for source rows without a registered marker type', async () => {
+it('keeps legacy storage IDs without exposing unregistered rows as user points', async () => {
     const markers = await import('./index');
     const point = await markers.findMarkerById('2800000983');
-    expect(point?.id).toBe('2800000983');
-    expect(point?.type).toBe('');
+    expect(point).toBeNull();
+    expect(await markers.getMarkerSubregion('2800000983')).toBe('VL_7');
+    expect(await markers.getMarkerIds()).toContain('2800000983');
+    expect(markers.getLoadedSubregionMarkers('VL_7').some(marker => marker.id === '2800000983')).toBe(false);
     expect(Object.keys(markers.SUBREGION_MARKS_MAP)).toEqual(['VL_7']);
 });
 

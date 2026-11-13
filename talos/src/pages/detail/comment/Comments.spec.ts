@@ -25,7 +25,6 @@ vi.mock('@/assets/images/UI/edit.svg?react', () => ({ default: () => null }));
 vi.mock('@/assets/images/UI/share.svg?react', () => ({ default: () => null }));
 vi.mock('progressive-blur', () => ({ LinearBlur: () => null }));
 vi.mock('@/services/http/authRuntime', () => ({ getAuthBase: () => '', getAuthHeaders: () => ({}) }));
-vi.mock('@/store/auth', () => ({ useAuthStore: () => null }));
 vi.mock('@/data/marker', () => ({ MARKER_TYPE_DICT: {} }));
 vi.mock('@/services/routing', () => ({ generatePointShareUrl: (_: unknown, options: { content: { id: string } }) => `https://oem.re/marker?commentId=${options.content.id}` }));
 vi.mock('@/locale', () => {
@@ -49,12 +48,15 @@ vi.mock('@/pages/detail/comment/useTrans', () => ({ useTrans: () => vi.fn() }));
 import Comments from '@/pages/detail/comment/Comments';
 import * as client from '@/services/ugc/client';
 import { useMarkerStore } from '@/store/marker';
+import { useAuthStore } from '@/store/auth';
+import { restoreCommentSubmission, getCommentSubmissionSnapshot } from './commentSubmissionStore';
 import { registerOverlay } from '@/lib/dom/overlay';
 
 const point = { id: '1', type: 'test', subregId: 'sub' } as IMarkerData;
-const comment: UGCComment = { id: 'reply', markerId: '1', content: 'A shareable comment', parentId: null, depth: 0, createdAt: '', score: 0, replyCount: 0, replies: [], status: 'active' };
+const comment: UGCComment = { type: 'comment', id: 'reply', markerId: '1', content: 'A shareable comment', parentId: null, depth: 0, createdAt: '', score: 0, replyCount: 0, replies: [], status: 'active' };
 let writeText: ReturnType<typeof vi.fn>;
 beforeEach(() => {
+    useAuthStore.getState().clearSessionUser();
     localeState.current = 'en-US';
     useMarkerStore.setState({ commentOpenRequest: null });
     vi.spyOn(client, 'listUGCComments').mockResolvedValue([comment]);
@@ -267,4 +269,617 @@ it('renders emoji tokens in loaded comments', async () => {
     expect(screen.getByText(/Hello/)).toBeTruthy();
     expect(screen.getByText(/:unknown:/)).toBeTruthy();
     expect(screen.getByText('bold italic').closest('strong')?.querySelector('em')).toBeTruthy();
+});
+
+it('replaces a mounted owner overlay with the public read after sign-out', async () => {
+    useAuthStore.setState({ sessionUser: { uid: 'owner', nickname: 'Owner' } });
+    vi.mocked(client.listUGCComments).mockResolvedValueOnce([{ ...comment, snapshotId: 'B', content: 'Private owner B', status: 'pending_audit' }]);
+    render(createElement(Comments, { point, pointName: 'Point', active: true }));
+    await screen.findByText('Private owner B');
+    vi.mocked(client.listUGCComments).mockResolvedValueOnce([{ ...comment, snapshotId: 'A', content: 'Published A' }]);
+    act(() => useAuthStore.getState().clearSessionUser());
+    await screen.findByText('Published A');
+    expect(screen.queryByText('Private owner B')).toBeNull();
+});
+
+it('clears a locally retained private submission when its account signs out', async () => {
+    useAuthStore.setState({ sessionUser: { uid: 'owner', nickname: 'Owner' } });
+    vi.mocked(client.listUGCComments).mockResolvedValue([]);
+    restoreCommentSubmission(point.id, {
+        ...comment,
+        id: 'private-local',
+        author: { publicUid: 'owner', nickname: 'Owner' },
+        snapshotId: 'B',
+        content: 'Private retained B',
+        status: 'pending_audit',
+    });
+    render(
+        createElement(Comments, { point, pointName: 'Point', active: true }),
+    );
+    await screen.findByText('Private retained B');
+    act(() => useAuthStore.getState().clearSessionUser());
+    await waitFor(() =>
+        expect(screen.queryByText('Private retained B')).toBeNull(),
+    );
+});
+
+
+it.each(['pending_openai', 'pending_audit', 'stale'] as const)(
+    'does not offer editing for an owner %s version',
+    async (status) => {
+        useAuthStore.setState({
+            sessionUser: { uid: 'owner', nickname: 'Owner' },
+        });
+        vi.mocked(client.listUGCComments).mockResolvedValue([
+            {
+                ...comment,
+                snapshotId: 'A',
+                status,
+                author: { publicUid: 'owner', nickname: 'Owner' },
+            },
+        ]);
+        render(
+            createElement(Comments, {
+                point,
+                pointName: 'Point',
+                active: true,
+            }),
+        );
+        expect(
+            (
+                await screen.findByRole('button', {
+                    name: 'detail.comments.edit',
+                })
+            ).hasAttribute('disabled'),
+        ).toBe(true);
+    },
+);
+
+it('does not edit an unsaved entry without a baseline', async () => {
+    useAuthStore.setState({ sessionUser: { uid: 'owner', nickname: 'Owner' } });
+    vi.mocked(client.listUGCComments).mockResolvedValue([
+        { ...comment, author: { publicUid: 'owner', nickname: 'Owner' } },
+    ]);
+    render(
+        createElement(Comments, { point, pointName: 'Point', active: true }),
+    );
+    expect(
+        (
+            await screen.findByRole('button', { name: 'detail.comments.edit' })
+        ).hasAttribute('disabled'),
+    ).toBe(true);
+});
+
+it('submits the baseline captured at editor open, rolls back a conflict and loads the actual new body', async () => {
+    useAuthStore.setState({ sessionUser: { uid: 'owner', nickname: 'Owner' } });
+    const published = {
+        ...comment,
+        snapshotId: 'A',
+        author: { publicUid: 'owner', nickname: 'Owner' },
+    };
+    vi.mocked(client.listUGCComments).mockResolvedValueOnce([published]);
+    const edit = vi
+        .spyOn(client, 'editUGCComment')
+        .mockRejectedValue(
+            new client.UGCClientError('Changed', 'COMMENT_EDIT_CONFLICT', 409),
+        );
+    const invalidate = vi.spyOn(client, 'invalidateUGCCommentCache');
+    render(
+        createElement(Comments, { point, pointName: 'Point', active: true }),
+    );
+    fireEvent.click(
+        await screen.findByRole('button', { name: 'detail.comments.edit' }),
+    );
+    const input = await screen.findByRole('textbox');
+    await waitFor(() => expect(input.textContent).toContain(comment.content));
+    userEvent.click(input);
+    fireEvent.paste(input, {
+        clipboardData: {
+            getData: (type: string) =>
+                type === 'text/plain' ? ' changed draft' : '',
+        },
+    });
+    await waitFor(() => expect(input.textContent).toContain('changed draft'));
+    vi.spyOn(client, 'getUGCCommentById').mockResolvedValue({
+        targetId: 'new-child',
+        path: [
+            {
+                ...published,
+                snapshotId: 'B',
+                content: 'Changed during editing B',
+            },
+            { ...comment, id: 'new-child', parentId: comment.id },
+        ],
+        replies: [],
+        repliesTruncated: false,
+    });
+    act(() =>
+        useMarkerStore.setState({
+            commentOpenRequest: { markerId: point.id, commentId: 'new-child' },
+        }),
+    );
+    await screen.findByText('Changed during editing B');
+    vi.mocked(client.listUGCComments).mockResolvedValueOnce([
+        { ...published, snapshotId: 'C', content: 'Actual current C' },
+    ]);
+    fireEvent.click(
+        screen.getByRole('button', { name: 'detail.comments.submitEdit' }),
+    );
+    await screen.findByText('Actual current C');
+    expect(edit).toHaveBeenCalledTimes(1);
+    expect(edit.mock.calls[0]).toEqual([
+        comment.id,
+        expect.stringContaining('changed draft'),
+        'A',
+    ]);
+    expect(invalidate).toHaveBeenCalledWith(point.id);
+    expect(screen.getByText('detail.comments.editConflict')).toBeTruthy();
+    expect(input.textContent).toBe('');
+    expect(
+        screen.queryByRole('button', { name: 'detail.comments.submitEdit' }),
+    ).toBeNull();
+});
+
+it('validates an unchanged edit on the server and keeps the committed body and identity with replies and reactions', async () => {
+    useAuthStore.setState({
+        sessionUser: { uid: 'editor-owner', nickname: 'Owner' },
+    });
+    const published: UGCComment = {
+        ...comment,
+        snapshotId: 'A',
+        author: { publicUid: 'editor-owner', nickname: 'Owner' },
+        flagged: true,
+        score: 7,
+        viewerVote: 1,
+        replyCount: 1,
+        replies: [
+            {
+                ...comment,
+                id: 'child',
+                snapshotId: 'child-A',
+                content: 'Keep this reply',
+            },
+        ],
+    };
+    vi.mocked(client.listUGCComments).mockResolvedValue([published]);
+    const edit = vi.spyOn(client, 'editUGCComment').mockResolvedValue({
+        id: comment.id,
+        markerId: point.id,
+        snapshotId: 'A',
+        parentId: null,
+        depth: 0,
+        status: 'flagged',
+    });
+    render(
+        createElement(Comments, { point, pointName: 'Point', active: true }),
+    );
+    fireEvent.click(
+        await screen.findByRole('button', { name: 'detail.comments.edit' }),
+    );
+    await waitFor(() =>
+        expect(screen.getByRole('textbox').textContent).toBe(comment.content),
+    );
+    fireEvent.click(
+        screen.getByRole('button', { name: 'detail.comments.submitEdit' }),
+    );
+    await waitFor(() =>
+        expect(edit).toHaveBeenCalledExactlyOnceWith(
+            comment.id,
+            comment.content,
+            'A',
+        ),
+    );
+    await waitFor(() =>
+        expect(
+            getCommentSubmissionSnapshot(point.id).comments[0],
+        ).toMatchObject({
+            snapshotId: 'A',
+            content: comment.content,
+            flagged: true,
+            status: 'flagged',
+            score: 7,
+            viewerVote: 1,
+            replyCount: 1,
+            replies: [{ id: 'child' }],
+        }),
+    );
+    expect(screen.getByText('Keep this reply')).toBeTruthy();
+});
+
+it('pairs an appended body with the returned snapshot and preserves its replies and reactions', async () => {
+    useAuthStore.setState({
+        sessionUser: { uid: 'append-owner', nickname: 'Owner' },
+    });
+    vi.mocked(client.listUGCComments).mockResolvedValue([
+        {
+            ...comment,
+            snapshotId: 'A',
+            author: { publicUid: 'append-owner', nickname: 'Owner' },
+            flagged: true,
+            score: 7,
+            viewerVote: 1,
+            replyCount: 1,
+            replies: [
+                {
+                    ...comment,
+                    id: 'child',
+                    snapshotId: 'child-A',
+                    content: 'Preserved reply',
+                },
+            ],
+        },
+    ]);
+    let commit!: (submission: client.UGCCommentSubmission) => void;
+    vi.spyOn(client, 'editUGCComment').mockImplementation(
+        () =>
+            new Promise((resolve) => {
+                commit = resolve;
+            }),
+    );
+    render(
+        createElement(Comments, { point, pointName: 'Point', active: true }),
+    );
+    fireEvent.click(
+        await screen.findByRole('button', { name: 'detail.comments.edit' }),
+    );
+    const input = await screen.findByRole('textbox');
+    await waitFor(() => expect(input.textContent).toContain(comment.content));
+    userEvent.click(input);
+    fireEvent.paste(input, {
+        clipboardData: {
+            getData: (type: string) =>
+                type === 'text/plain' ? ' new draft' : '',
+        },
+    });
+    await waitFor(() => expect(input.textContent).toContain('new draft'));
+    fireEvent.click(
+        screen.getByRole('button', { name: 'detail.comments.submitEdit' }),
+    );
+    expect(
+        getCommentSubmissionSnapshot(point.id).comments[0].snapshotId,
+    ).toBeUndefined();
+    await act(async () => {
+        commit({
+            id: comment.id,
+            markerId: point.id,
+            snapshotId: 'B',
+            parentId: null,
+            depth: 0,
+            status: 'pending_openai',
+        });
+        await Promise.resolve();
+    });
+    expect(getCommentSubmissionSnapshot(point.id).comments[0]).toMatchObject({
+        snapshotId: 'B',
+        flagged: true,
+        score: 7,
+        viewerVote: 1,
+        replyCount: 1,
+        replies: [{ id: 'child' }],
+    });
+    expect(
+        getCommentSubmissionSnapshot(point.id).comments[0].content,
+    ).toContain('new draft');
+    expect(
+        getCommentSubmissionSnapshot(point.id).comments[0].content,
+    ).toContain(comment.content);
+    expect(screen.getByText('Preserved reply')).toBeTruthy();
+    expect(
+        screen
+            .getByRole('button', { name: 'detail.comments.edit' })
+            .hasAttribute('disabled'),
+    ).toBe(true);
+});
+
+
+it.each(['success', 'failure', 'conflict'] as const)(
+    'discards a late edit %s after switching accounts away and back',
+    async (outcome) => {
+        useAuthStore
+            .getState()
+            .setSessionUser({ uid: 'owner', nickname: 'Owner' });
+        const published = {
+            ...comment,
+            snapshotId: 'A',
+            author: { publicUid: 'owner', nickname: 'Owner' },
+        };
+        vi.mocked(client.listUGCComments).mockResolvedValue([published]);
+        let resolve!: (value: client.UGCCommentSubmission) => void;
+        let reject!: (error: Error) => void;
+        const edit = vi.spyOn(client, 'editUGCComment').mockImplementation(
+            () =>
+                new Promise((yes, no) => {
+                    resolve = yes;
+                    reject = no;
+                }),
+        );
+        render(createElement(Comments, { point, pointName: 'Point' }));
+        fireEvent.click(
+            await screen.findByRole('button', { name: 'detail.comments.edit' }),
+        );
+        await waitFor(() =>
+            expect(screen.getByRole('textbox').textContent).toBe(
+                comment.content,
+            ),
+        );
+        const input = screen.getByRole('textbox');
+        userEvent.click(input);
+        fireEvent.paste(input, {
+            clipboardData: { getData: () => ' Private draft B' },
+        });
+        await waitFor(() =>
+            expect(input.textContent).toContain('Private draft B'),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'detail.comments.submitEdit' }),
+        );
+        expect(edit).toHaveBeenCalledTimes(1);
+        act(() => {
+            useAuthStore.getState().clearSessionUser();
+            useAuthStore
+                .getState()
+                .setSessionUser({ uid: 'owner', nickname: 'Owner' });
+        });
+        await waitFor(() =>
+            expect(getCommentSubmissionSnapshot(point.id).comments).toEqual([]),
+        );
+        await act(async () => {
+            await Promise.resolve();
+            if (outcome === 'success')
+                resolve({
+                    id: comment.id,
+                    markerId: point.id,
+                    snapshotId: 'B',
+                    parentId: null,
+                    depth: 0,
+                    status: 'pending_audit',
+                });
+            else
+                reject(
+                    new client.UGCClientError(
+                        'Failed',
+                        outcome === 'conflict'
+                            ? 'COMMENT_EDIT_CONFLICT'
+                            : 'FAILED',
+                        outcome === 'conflict' ? 409 : 500,
+                    ),
+                );
+        });
+        expect(getCommentSubmissionSnapshot(point.id).comments).toEqual([]);
+        expect(screen.getByRole('textbox').textContent).toBe('');
+        expect(screen.queryByText(/Private draft B/)).toBeNull();
+        expect(screen.queryByText('detail.comments.editFailed')).toBeNull();
+        expect(screen.queryByText('detail.comments.editConflict')).toBeNull();
+        expect(client.listUGCComments).toHaveBeenCalledTimes(2);
+        expect(
+            screen
+                .getByRole('button', { name: 'detail.comments.edit' })
+                .hasAttribute('disabled'),
+        ).toBe(false);
+    },
+);
+
+it.each(['success', 'failure'] as const)(
+    'ignores a conflict refresh %s after an account switch without clearing a new edit busy state',
+    async (outcome) => {
+        useAuthStore
+            .getState()
+            .setSessionUser({ uid: 'owner', nickname: 'Owner' });
+        const published = {
+            ...comment,
+            snapshotId: 'A',
+            author: { publicUid: 'owner', nickname: 'Owner' },
+        };
+        let refresh!: (comments: UGCComment[]) => void;
+        let failRefresh!: (error: Error) => void;
+        vi.mocked(client.listUGCComments).mockResolvedValue([published]);
+        const edit = vi
+            .spyOn(client, 'editUGCComment')
+            .mockRejectedValueOnce(
+                new client.UGCClientError(
+                    'Changed',
+                    'COMMENT_EDIT_CONFLICT',
+                    409,
+                ),
+            );
+        render(createElement(Comments, { point, pointName: 'Point' }));
+        fireEvent.click(
+            await screen.findByRole('button', { name: 'detail.comments.edit' }),
+        );
+        await waitFor(() =>
+            expect(screen.getByRole('textbox').textContent).toBe(
+                comment.content,
+            ),
+        );
+        vi.mocked(client.listUGCComments).mockImplementationOnce(
+            () =>
+                new Promise((yes, no) => {
+                    refresh = yes;
+                    failRefresh = no;
+                }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'detail.comments.submitEdit' }),
+        );
+        await screen.findByText('detail.comments.editConflict');
+        act(() =>
+            useAuthStore
+                .getState()
+                .setSessionUser({ uid: 'other', nickname: 'Other', role: 'a' }),
+        );
+        await waitFor(() =>
+            expect(
+                screen.queryByText('detail.comments.editConflict'),
+            ).toBeNull(),
+        );
+        let finishNew!: (error: Error) => void;
+        edit.mockImplementationOnce(
+            () =>
+                new Promise((_yes, no) => {
+                    finishNew = no;
+                }),
+        );
+        fireEvent.click(
+            await screen.findByRole('button', { name: 'detail.comments.edit' }),
+        );
+        await waitFor(() =>
+            expect(screen.getByRole('textbox').textContent).toBe(
+                comment.content,
+            ),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'detail.comments.submitEdit' }),
+        );
+        await act(async () => {
+            await Promise.resolve();
+            if (outcome === 'success')
+                refresh([
+                    {
+                        ...published,
+                        content: 'Old private refresh',
+                        status: 'pending_audit',
+                    },
+                ]);
+            else failRefresh(new Error('Failed refresh'));
+        });
+        expect(screen.queryByText('Old private refresh')).toBeNull();
+        expect(
+            screen.queryByText('detail.comments.editConflictRefreshFailed'),
+        ).toBeNull();
+        expect(
+            screen
+                .getByRole('button', { name: 'detail.comments.edit' })
+                .hasAttribute('disabled'),
+        ).toBe(true);
+        await act(() =>
+            Promise.resolve(finishNew(new Error('New edit failed'))),
+        );
+        await screen.findByText('detail.comments.editFailed');
+    },
+);
+
+it.each(['edit', 'reply'] as const)(
+    'clears the %s draft when the account changes',
+    async (mode) => {
+        useAuthStore
+            .getState()
+            .setSessionUser({ uid: 'owner', nickname: 'Owner' });
+        vi.mocked(client.listUGCComments).mockResolvedValue([
+            {
+                ...comment,
+                snapshotId: 'A',
+                author: { publicUid: 'owner', nickname: 'Owner' },
+            },
+        ]);
+        render(createElement(Comments, { point, pointName: 'Point' }));
+        fireEvent.click(
+            await screen.findByRole('button', {
+                name: `detail.comments.${mode}`,
+            }),
+        );
+        const input = screen.getByRole('textbox');
+        userEvent.click(input);
+        fireEvent.paste(input, {
+            clipboardData: { getData: () => 'Private draft' },
+        });
+        await waitFor(() =>
+            expect(input.textContent).toContain('Private draft'),
+        );
+        act(() =>
+            useAuthStore
+                .getState()
+                .setSessionUser({ uid: 'other', nickname: 'Other' }),
+        );
+        await waitFor(() => expect(input.textContent).toBe(''));
+        expect(
+            screen.queryByRole('button', {
+                name: 'detail.comments.submitEdit',
+            }),
+        ).toBeNull();
+        expect(
+            document
+                .querySelector('[data-comment-input]')
+                ?.getAttribute('data-replying'),
+        ).toBe('false');
+    },
+);
+
+it.each(['navigate', 'unmount'] as const)(
+    'discards edit completion after %s even when returning to the same point',
+    async (mode) => {
+        useAuthStore
+            .getState()
+            .setSessionUser({ uid: 'owner', nickname: 'Owner' });
+        vi.mocked(client.listUGCComments).mockResolvedValue([
+            {
+                ...comment,
+                snapshotId: 'A',
+                author: { publicUid: 'owner', nickname: 'Owner' },
+            },
+        ]);
+        let finish!: (value: client.UGCCommentSubmission) => void;
+        vi.spyOn(client, 'editUGCComment').mockImplementationOnce(
+            () =>
+                new Promise((yes) => {
+                    finish = yes;
+                }),
+        );
+        const view = render(
+            createElement(Comments, { point, pointName: 'Point' }),
+        );
+        fireEvent.click(
+            await screen.findByRole('button', { name: 'detail.comments.edit' }),
+        );
+        await waitFor(() =>
+            expect(screen.getByRole('textbox').textContent).toBe(
+                comment.content,
+            ),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'detail.comments.submitEdit' }),
+        );
+        if (mode === 'navigate') {
+            view.rerender(
+                createElement(Comments, {
+                    point: { ...point, id: 'other-point' },
+                    pointName: 'Other',
+                }),
+            );
+            await screen.findByText(comment.content);
+            view.rerender(
+                createElement(Comments, { point, pointName: 'Point' }),
+            );
+            await screen.findByText(comment.content);
+        } else view.unmount();
+        const before = getCommentSubmissionSnapshot(point.id);
+        await act(() =>
+            Promise.resolve(
+                finish({
+                    id: comment.id,
+                    markerId: point.id,
+                    snapshotId: 'late-B',
+                    parentId: null,
+                    depth: 0,
+                    status: 'pending_audit',
+                }),
+            ),
+        );
+        expect(getCommentSubmissionSnapshot(point.id)).toBe(before);
+    },
+);
+
+it('renders and highlights a hidden link target without author metadata or interaction controls, keeping its public reply nested', async () => {
+    vi.mocked(client.listUGCComments).mockResolvedValue([]);
+    vi.spyOn(client, 'getUGCCommentById').mockResolvedValue({ targetId: 'hidden', path: [{
+        type: 'placeholder', id: 'hidden', markerId: point.id, parentId: null, depth: 0, replyCount: 1, replies: [],
+    }], replies: [{ ...comment, id: 'child', parentId: 'hidden', depth: 1, content: 'Public reply beneath unavailable comment' }], repliesTruncated: false });
+    useMarkerStore.setState({ commentOpenRequest: { markerId: point.id, commentId: 'hidden' } });
+    render(createElement(Comments, { point, pointName: 'Marker', active: true }));
+    const placeholder = await screen.findByText('detail.comments.unavailable');
+    const node = placeholder.closest('[data-comment-id]');
+    await waitFor(() => expect(node?.getAttribute('data-highlighted')).toBe('true'));
+    expect(node?.querySelector('button')).toBeNull();
+    expect(node?.querySelector('[data-avt]')).toBeNull();
+    const reply = screen.getByText('Public reply beneath unavailable comment').closest('[data-comment-id]') as HTMLElement;
+    expect(reply.style.getPropertyValue('--comment-display-depth')).toBe('1');
 });

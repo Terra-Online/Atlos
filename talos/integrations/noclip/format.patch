@@ -2638,10 +2638,10 @@ index 00000000..b5839188
 +	};
 +}
 diff --git a/packages/package-format/src/story.test.ts b/packages/package-format/src/story.test.ts
-index 5733e4ec..5262bedc 100644
+index 5733e4ec..150cc42d 100644
 --- a/packages/package-format/src/story.test.ts
 +++ b/packages/package-format/src/story.test.ts
-@@ -2,7 +2,13 @@ import assert from 'node:assert/strict';
+@@ -2,7 +2,14 @@ import assert from 'node:assert/strict';
  import { it } from 'node:test';
  
  import type { SceneControl } from './states.ts';
@@ -2650,13 +2650,14 @@ index 5733e4ec..5262bedc 100644
 +	completedProgressionPicks,
 +	completedProgressionPicksByIndex,
 +	openTraversalPicks,
++	openTraversalPicksByIndex,
 +	storyPointPicks,
 +	storyPoints,
 +} from './story.ts';
  
  /** the fixture's missions, by index: e1m1 and e1m2 */
  const E1M1 = 0;
-@@ -38,6 +44,67 @@ const CONTROLS = [
+@@ -38,6 +45,67 @@ const CONTROLS = [
  ];
  const MISSIONS = [E1M1, E1M2];
  
@@ -2724,7 +2725,7 @@ index 5733e4ec..5262bedc 100644
  it('a story point completes what came before it and leaves what follows unstarted', () => {
  	assert.deepEqual(
  		storyPointPicks(CONTROLS, MISSIONS, { mission: 0, step: 5 }),
-@@ -88,3 +155,24 @@ it('lists a point per mission start and per step quest controls sit at, once per
+@@ -88,3 +156,26 @@ it('lists a point per mission start and per step quest controls sit at, once per
  		],
  	);
  });
@@ -2748,12 +2749,14 @@ index 5733e4ec..5262bedc 100644
 +		{ ...door, id: 'door:derived', source: { kind: 'derived' as const, condition: 0, rule: ['test gate'] } },
 +	];
 +	assert.deepEqual(openTraversalPicks(controls), { 'door:a': 1, 'activation:a': 1 });
++	assert.deepEqual(openTraversalPicksByIndex(controls), new Map([[0, 1], [1, 1]]));
++	assert.deepEqual(completedProgressionPicksByIndex(controls), new Map());
 +});
 diff --git a/packages/package-format/src/story.ts b/packages/package-format/src/story.ts
-index f4bbf3bf..7ea5be7d 100644
+index f4bbf3bf..4548264f 100644
 --- a/packages/package-format/src/story.ts
 +++ b/packages/package-format/src/story.ts
-@@ -11,6 +11,70 @@ const NONE = 0;
+@@ -11,6 +11,80 @@ const NONE = 0;
  const PROCESSING = 2;
  const COMPLETED = 3;
  
@@ -2793,7 +2796,10 @@ index f4bbf3bf..7ea5be7d 100644
 +
 +/** Completed progression indexed for the scene's numeric state evaluator. */
 +export const completedProgressionPicksByIndex = (controls: readonly SceneControl[]): Map<number, number> => {
-+	const byId = completedProgressionPicks(controls);
++	return indexedPicks(controls, completedProgressionPicks(controls));
++};
++
++const indexedPicks = (controls: readonly SceneControl[], byId: Record<string, number>): Map<number, number> => {
 +	return new Map(
 +		controls.flatMap((control, index) => {
 +			const value = byId[control.id];
@@ -2820,6 +2826,13 @@ index f4bbf3bf..7ea5be7d 100644
 +	}
 +	return picks;
 +};
++
++/**
++ * @param controls merged scene and companion controls
++ * @returns World's default picks indexed for offline framing and its validator
++ */
++export const openTraversalPicksByIndex = (controls: readonly SceneControl[]): Map<number, number> =>
++	indexedPicks(controls, openTraversalPicks(controls));
 +
  /**
   * @param controls a package's controls

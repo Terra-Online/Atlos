@@ -11,6 +11,7 @@ interface PopoverTooltipProps {
     placement?: 'top' | 'bottom' | 'left' | 'right';
     disabled?: boolean;
     visible?: boolean;
+    toggleOnClick?: boolean;
     gap?: number;
     variant?: 'text' | 'image';
 }
@@ -146,6 +147,7 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
     anchor = 'element',
     disabled = false,
     visible,
+    toggleOnClick = false,
     gap = 12,
     variant = 'text',
 }) => {
@@ -364,15 +366,19 @@ const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
             (childProps.onPointerEnter as ((event: React.PointerEvent<HTMLElement>) => void) | undefined)?.(e);
         },
         onPointerLeave: (e: React.PointerEvent<HTMLElement>) => {
-            handleMouseLeave();
+            // Touch leaves the trigger before click; keep tap-open help available.
+            if (!toggleOnClick || e.pointerType !== 'touch') handleMouseLeave();
             (childProps.onPointerLeave as ((event: React.PointerEvent<HTMLElement>) => void) | undefined)?.(e);
         },
         onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
-            if (visible === undefined) hidePopover(true);
+            if (visible === undefined && !toggleOnClick) hidePopover(true);
             (childProps.onPointerDown as ((event: React.PointerEvent<HTMLElement>) => void) | undefined)?.(e);
         },
         onClick: (e: React.MouseEvent<HTMLElement>) => {
-            if (visible === undefined) hidePopover(true);
+            if (visible === undefined) {
+                if (toggleOnClick && !isOpenRef.current) showPopover();
+                else hidePopover(true);
+            }
             (childProps.onClick as ((event: React.MouseEvent<HTMLElement>) => void) | undefined)?.(e);
         },
     } as Partial<React.HTMLAttributes<HTMLElement>> & { ref: React.Ref<HTMLElement> });

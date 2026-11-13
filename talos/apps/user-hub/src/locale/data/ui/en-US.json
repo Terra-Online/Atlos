@@ -43,7 +43,6 @@
       "pending_audit": "Awaiting manual review",
       "active": "Public",
       "flagged": "Flagged",
-      "remove_request": "Removal requested",
       "stale": "Unavailable"
     },
     "contentHint": "View submissions and review status.",

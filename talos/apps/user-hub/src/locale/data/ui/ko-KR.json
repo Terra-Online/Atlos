@@ -43,7 +43,6 @@
       "pending_audit": "수동 검토 대기 중",
       "active": "공개됨",
       "flagged": "신고됨",
-      "remove_request": "삭제 요청됨",
       "stale": "사용 불가"
     },
     "contentHint": "게시물과 검토 상태를 확인하세요.",

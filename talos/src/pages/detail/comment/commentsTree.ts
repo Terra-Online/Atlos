@@ -1,6 +1,7 @@
 import type { IMarkerData } from '@/data/marker';
 import type {
     UGCComment,
+    UGCCommentNode,
     UGCCommentActionPatch,
     UGCCommentSubmission,
     UGCCommentVoteValue,
@@ -12,28 +13,28 @@ const MAX_DEPTH = 2;
 export const LOCAL_PENDING_COMMENT_PREFIX = 'local-comment:';
 
 export type DisplayItem = {
-    comment: UGCComment;
+    comment: UGCCommentNode;
     displayDepth: number;
 };
 
 export const isVisible = (status: UGCSubmissionStatus | undefined): boolean => (
-    status === 'active' || status === 'flagged' || status === 'remove_request'
+    status === 'active' || status === 'flagged'
 );
 
 export const isReviewing = (status: UGCSubmissionStatus | undefined): boolean => (
     status === 'pending_openai' || status === 'pending_audit'
 );
 
-export const collectIds = (comment: UGCComment): string[] => (
+export const collectIds = (comment: UGCCommentNode): string[] => (
     [comment.id, ...comment.replies.flatMap(collectIds)]
 );
 
-export const flatList = (comments: UGCComment[]): UGCComment[] => (
+export const flatList = (comments: UGCCommentNode[]): UGCCommentNode[] => (
     comments.flatMap((comment) => [comment, ...flatList(comment.replies)])
 );
 
 export const flatDisplay = (
-    comments: UGCComment[],
+    comments: UGCCommentNode[],
     depth = 0,
 ): DisplayItem[] => (
     comments.flatMap((comment) => [
@@ -51,7 +52,9 @@ export const makePending = (
     submission: UGCCommentSubmission,
     user: SessionUser | null,
 ): UGCComment => ({
+    type: 'comment',
     id: submission.id,
+    snapshotId: submission.snapshotId,
     markerId: submission.markerId,
     poiType: point.type,
     parentId: submission.parentId,
@@ -59,16 +62,15 @@ export const makePending = (
     content,
     author: user
         ? {
-            nickname: user.nickname,
-            publicUid: user.uid,
-            avatar: user.avatar,
-        }
+              nickname: user.nickname,
+              publicUid: user.uid,
+              avatar: user.avatar,
+          }
         : null,
     createdAt: new Date().toISOString(),
     score: 0,
     viewerVote: 0,
     flagged: false,
-    recallRequested: false,
     status: submission.status,
     replyCount: 0,
     replies: [],
@@ -81,6 +83,7 @@ export const makeLocalPending = (
     localId: string,
     user: SessionUser | null,
 ): UGCComment => ({
+    type: 'comment',
     id: localId,
     markerId: point.id,
     poiType: point.type,
@@ -98,18 +101,17 @@ export const makeLocalPending = (
     score: 0,
     viewerVote: 0,
     flagged: false,
-    recallRequested: false,
     status: 'pending_audit',
     replyCount: 0,
     replies: [],
 });
 
-export const appendItem = (comments: UGCComment[], comment: UGCComment): UGCComment[] => {
+export const appendItem = (comments: UGCCommentNode[], comment: UGCComment): UGCCommentNode[] => {
     if (!comment.parentId) {
         return [comment, ...comments];
     }
 
-    const appendTo = (items: UGCComment[]): [UGCComment[], boolean] => {
+    const appendTo = (items: UGCCommentNode[]): [UGCCommentNode[], boolean] => {
         let inserted = false;
         const nextItems = items.map((item) => {
             if (item.id === comment.parentId) {
@@ -138,64 +140,38 @@ export const appendItem = (comments: UGCComment[], comment: UGCComment): UGCComm
     return inserted ? nextComments : [comment, ...comments];
 };
 
-export const removeTree = (
-    comments: UGCComment[],
-    commentId: string,
-): {
-    comments: UGCComment[];
-    removedIds: Set<string>;
-} => {
-    let removed: UGCComment | null = null;
-
-    const removeFrom = (items: UGCComment[]): [UGCComment[], boolean, boolean] => {
-        let changed = false;
-        let removedChild = false;
-        const nextItems: UGCComment[] = [];
-
-        items.forEach((item) => {
-            if (item.id === commentId) {
-                removed = item;
-                changed = true;
-                removedChild = true;
-                return;
-            }
-
-            if (item.replies.length === 0) {
-                nextItems.push(item);
-                return;
-            }
-
-            const [nextReplies, childChanged, childRemoved] = removeFrom(item.replies);
-            if (!childChanged) {
-                nextItems.push(item);
-                return;
-            }
-
+/** Hide only the selected body; retain replies and prune empty connectors. */
+export const hideComment = (comments: UGCCommentNode[], id: string): UGCCommentNode[] => {
+    let changed = false;
+    const next = comments.flatMap((comment): UGCCommentNode[] => {
+        const replies = hideComment(comment.replies, id);
+        if (comment.id === id) {
             changed = true;
-            nextItems.push({
-                ...item,
-                replyCount: childRemoved ? Math.max(0, item.replyCount - 1) : item.replyCount,
-                replies: nextReplies,
-            });
-        });
-
-        return changed ? [nextItems, true, removedChild] : [items, false, false];
-    };
-
-    const [nextComments] = removeFrom(comments);
-    return {
-        comments: nextComments,
-        removedIds: new Set(removed ? collectIds(removed) : []),
-    };
+            return replies.length ? [{
+                type: 'placeholder',
+                id: comment.id,
+                markerId: comment.markerId,
+                parentId: comment.parentId,
+                depth: comment.depth,
+                replyCount: comment.replyCount,
+                replies,
+            }] : [];
+        }
+        if (replies === comment.replies) return [comment];
+        changed = true;
+        if (comment.type === 'placeholder' && replies.length === 0) return [];
+        return [{ ...comment, replies, replyCount: Math.max(0, comment.replyCount - (comment.replies.length - replies.length)) }];
+    });
+    return changed ? next : comments;
 };
 
 export const patchTree = (
-    comments: UGCComment[],
+    comments: UGCCommentNode[],
     commentId: string,
     patch: (comment: UGCComment) => UGCComment,
-): UGCComment[] => (
+): UGCCommentNode[] => (
     comments.map((comment) => {
-        if (comment.id === commentId) {
+        if (comment.id === commentId && comment.type === 'comment') {
             return patch(comment);
         }
 
@@ -204,24 +180,29 @@ export const patchTree = (
     })
 );
 
-export const clearTrans = (comment: UGCComment): UGCComment => ({
-    ...comment,
-    translatedContent: undefined,
-    translationSourceLanguage: undefined,
-    translationTargetLanguage: undefined,
-    translationHidden: undefined,
-    translationStatus: undefined,
-    replies: comment.replies.map(clearTrans),
-});
+export function clearTrans(comment: UGCComment): UGCComment;
+export function clearTrans(comment: UGCCommentNode): UGCCommentNode;
+export function clearTrans(comment: UGCCommentNode): UGCCommentNode {
+    const replies = comment.replies.map(clearTrans);
+    if (comment.type === 'placeholder') return { ...comment, replies };
+    return {
+        ...comment,
+        translatedContent: undefined,
+        translationSourceLanguage: undefined,
+        translationTargetLanguage: undefined,
+        translationHidden: undefined,
+        translationStatus: undefined,
+        replies,
+    };
+};
 
-export const clearAllTrans = (comments: UGCComment[]): UGCComment[] => (
+export const clearAllTrans = (comments: UGCCommentNode[]): UGCCommentNode[] => (
     comments.map(clearTrans)
 );
 
 export const applyPatch = (comment: UGCComment, patch: UGCCommentActionPatch): UGCComment => ({
     ...comment,
     ...patch,
-    recallRequested: patch.recallRequested ?? comment.recallRequested,
     replies: comment.replies,
 });
 

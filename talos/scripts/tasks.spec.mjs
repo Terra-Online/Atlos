@@ -46,6 +46,13 @@ test('world lookup preserves same-shard first representatives and rejects a new 
     assert.throws(() => buildMarkerLookup(rows, new Map([['1', 'A'], ['2', 'B']]), types), /spans source shards/);
 });
 
+test('unknown raw types keep bitmap IDs but do not enter user-visible statistics', () => {
+    const rows = [{ id: '1', type: 'unmapped', subregId: 'A', x: 0, y: 0, z: 0 }];
+    const index = buildMarkerLookup(rows, new Map([['1', 'A']]), {});
+    assert.deepEqual(index.points, { 1: 0 });
+    assert.deepEqual(index.representatives, {});
+});
+
 const fixture = async (t, fail = () => false) => {
     await fs.mkdir(path.join(ROOT, '.cache'), { recursive: true });
     const root = await fs.mkdtemp(path.join(ROOT, '.cache/workflow-test-'));

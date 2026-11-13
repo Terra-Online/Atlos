@@ -43,7 +43,6 @@
       "pending_audit": "手動審査待ち",
       "active": "公開済み",
       "flagged": "報告あり",
-      "remove_request": "削除申請中",
       "stale": "利用不可"
     },
     "contentHint": "投稿と審査状況を確認できます。",

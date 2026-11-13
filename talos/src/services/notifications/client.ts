@@ -48,6 +48,36 @@ export interface NotificationLiveUpdate {
     unread: NotificationUnreadCounts;
 }
 
+export interface NotificationReadUpdate {
+    category: NotificationCategory;
+    ids: string[] | null;
+    readAt: string;
+    unread: NotificationUnreadCounts;
+}
+
+export const applyNotificationRead = (
+    items: NotificationItem[],
+    change: NotificationReadUpdate,
+): NotificationItem[] => {
+    const ids = change.ids === null ? null : new Set(change.ids);
+    const cutoff = Date.parse(change.readAt);
+    return items.map((item) => {
+        if (
+            notificationCategoryForType(item.type) !== change.category ||
+            (ids && !ids.has(item.id)) ||
+            Date.parse(item.createdAt) > cutoff
+        ) return item;
+        return {
+            ...item,
+            readAt: item.readAt ?? change.readAt,
+            messages: item.messages.map((message) => ({
+                ...message,
+                readAt: message.readAt ?? change.readAt,
+            })),
+        };
+    });
+};
+
 export class NotifyClientError extends Error {
     readonly code: string;
     readonly status?: number;
@@ -236,6 +266,7 @@ interface NotificationLiveOptions {
     onUpdate: (update: NotificationLiveUpdate) => void;
     onReady?: (unread: NotificationUnreadCounts) => void;
     onOpen?: () => void;
+    onRead?: (update: NotificationReadUpdate) => void;
 }
 
 const NOTIFICATION_HEARTBEAT_INTERVAL_MS = 50_000;
@@ -264,6 +295,7 @@ export const subscribeNotificationLive = ({
     onUpdate,
     onReady,
     onOpen,
+    onRead,
 }: NotificationLiveOptions): (() => void) => {
     if (typeof WebSocket === 'undefined') return () => undefined;
 
@@ -393,6 +425,15 @@ export const subscribeNotificationLive = ({
                 if (raw.event === 'notification.ready') {
                     if (!receivedUpdateSinceConnect)
                         onReady?.(normalizeNotificationUnread(raw.unread));
+                    return;
+                }
+                if (raw.event === 'notification.read') {
+                    if ((raw.category !== 'system' && raw.category !== 'community') ||
+                        typeof raw.readAt !== 'string' || !Number.isFinite(Date.parse(raw.readAt)) ||
+                        (raw.ids !== null && (!Array.isArray(raw.ids) || raw.ids.length > 100 || !raw.ids.every((id) => typeof id === 'string')))) return;
+                    receivedUpdateSinceConnect = true;
+                    onRead?.({ category: raw.category, ids: raw.ids,
+                        readAt: raw.readAt, unread: normalizeNotificationUnread(raw.unread) });
                     return;
                 }
                 if (raw.event !== 'notification.upserted') return;

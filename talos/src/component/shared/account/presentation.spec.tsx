@@ -10,7 +10,7 @@ import { useIdCardScale } from './useIdCardScale';
 vi.mock('@/locale', async () => (await import('../testFixtures')).localeFixture);
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
-it('replaces loading and guest identity with the confirmed account without showing an unassigned UID as final', () => {
+it('shows an unassigned UID until the first nickname confirmation', () => {
     const initialProps: { sessionUser: SessionUser | null; authReady: boolean; hasLoggedInBefore: boolean } = {
         sessionUser: null, authReady: false, hasLoggedInBefore: true,
     };

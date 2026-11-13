@@ -1114,6 +1114,22 @@
         },
         "noFrame": true
     },
+    "bounce_device": {
+        "key": "bounce_device",
+        "name": "Bounce Device",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        }
+    },
+    "vortex": {
+        "key": "vortex",
+        "name": "Vortex",
+        "category": {
+            "main": "general",
+            "sub": "facility"
+        }
+    },
     "triaggelos": {
         "key": "triaggelos",
         "name": "Triaggelos",

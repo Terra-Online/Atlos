@@ -58,3 +58,21 @@ describe('notification heartbeat compatibility', () => {
         vi.advanceTimersByTime(15_000); expect(socket.close).not.toHaveBeenCalled();
     });
 });
+
+
+it('accepts read updates and ignores an obsolete ready snapshot without polling', () => {
+    vi.stubGlobal('WebSocket', Socket);
+    const onRead = vi.fn(), onReady = vi.fn();
+    const stop = subscribeNotificationLive({ onUpdate: vi.fn(), onRead, onReady });
+    try {
+        const socket = Socket.instances.at(-1)!;
+        socket.open();
+        const update = { category: 'system', ids: ['one'], readAt: '2026-10-28T00:00:00Z', unread: { system: 0, community: 1, total: 1 } };
+        socket.message(JSON.stringify({ event: 'notification.read', ...update }));
+        socket.message(JSON.stringify({ event: 'notification.ready', unread: { system: 10, community: 1, total: 11 } }));
+        expect(onRead).toHaveBeenCalledExactlyOnceWith(update);
+        expect(onReady).not.toHaveBeenCalled();
+        socket.message(JSON.stringify({ event: 'notification.read', ...update, ids: 'bad' }));
+        expect(onRead).toHaveBeenCalledOnce();
+    } finally { stop(); vi.unstubAllGlobals(); }
+});

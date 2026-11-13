@@ -8,17 +8,20 @@ import Drawer from '@/component/drawer/drawer';
 import TabView from '@/component/tabView/TabView';
 import Feed from '@/component/feed/Feed';
 import ActionBar from '@/component/actionBar/ActionBar';
+import LocationBinding from '@/pages/locator/LocationBinding';
+import '@/component/shared/account/access/access.module.scss';
 import type { UGCImage } from '@/services/ugc/client';
 import first from './first.svg?url';
 import second from './second.svg?url';
 
 const images: UGCImage[] = [
-    { id: 'first', markerId: 'fixture', url: first, content: 'First fixture image', createdAt: '2026-05-21T03:28:31Z', author: { nickname: 'First author', publicUid: 'F-001' }, upvotes: 3 },
-    { id: 'second', markerId: 'fixture', url: second, content: 'Second fixture image', createdAt: '2026-05-22T03:28:31Z', author: { nickname: 'Second author', publicUid: 'F-002' }, upvotes: 7 },
+    { id: 'first', markerId: 'fixture', url: first, content: 'First fixture image', createdAt: '2026-05-21T03:28:31Z', author: { nickname: 'First author', publicUid: 'F-001' }, upvoteCount: 3 },
+    { id: 'second', markerId: 'fixture', url: second, content: 'Second fixture image', createdAt: '2026-05-22T03:28:31Z', author: { nickname: 'Second author', publicUid: 'F-002' }, upvoteCount: 7 },
 ];
 
 export default function Components() {
     const [open, setOpen] = useState(false);
+    const [binding, setBinding] = useState(false);
     const [viewer, setViewer] = useState(false);
     const [selected, setSelected] = useState('first');
     const [closed, setClosed] = useState(0);
@@ -38,6 +41,8 @@ export default function Components() {
         <h1>Browser behavior fixture</h1>
         <p>Real components, styles, layout and browser APIs. External service writes are excluded.</p>
         <button onClick={() => setOpen(true)}>Open fixture modal</button>
+        <button onClick={() => setBinding(true)}>Open binding form</button>
+        <LocationBinding open={binding} onClose={() => setBinding(false)} modalSize="full" />
         <output data-result="closed">{closed}</output>
         <PopoverTooltip content="Native tooltip content"><button>Tooltip fixture</button></PopoverTooltip>
         <button onContextMenu={(event) => { event.preventDefault(); setMenu({ x: event.clientX, y: event.clientY }); }} onKeyDown={(event) => {

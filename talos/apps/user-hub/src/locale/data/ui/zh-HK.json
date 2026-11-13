@@ -43,7 +43,6 @@
       "pending_audit": "待人工審核",
       "active": "已公開",
       "flagged": "已標記",
-      "remove_request": "移除申請",
       "stale": "不可用"
     },
     "contentHint": "查看投稿和審核進度。",

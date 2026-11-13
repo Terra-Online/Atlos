@@ -68,11 +68,10 @@
       "flag": "Đánh dấu không chính xác",
       "unflag": "Bỏ đánh dấu",
       "uploadAno": "Tải lên khác",
-      "share": "Chia sẻ",
-      "recall": "Yêu cầu gỡ",
-      "unrecall": "Hủy yêu cầu gỡ"
+      "share": "Chia sẻ"
     },
     "comments": {
+      "unavailable": "Bình luận không khả dụng.",
       "copyLink": "Sao chép liên kết bình luận",
       "emojiPicker": "Chọn biểu tượng cảm xúc",
       "spoilerHidden": "Nhấp để xem nội dung tiết lộ cốt truyện",
@@ -90,14 +89,14 @@
       "reply": "Trả lời",
       "edit": "Chỉnh sửa",
       "submitEdit": "Lưu chỉnh sửa",
-      "undoEdit": "Hoàn tác chỉnh sửa",
-      "recall": "Ẩn ngay",
       "reviewing": "Đang duyệt",
       "emptyWithRule": "Chưa có bình luận nào. Vui lòng tuân thủ <a href=\"{link}\">nguyên tắc cộng đồng</a> khi đăng.",
       "ruleOnly": "Vui lòng tuân thủ <a href=\"{link}\">nguyên tắc cộng đồng</a> khi đăng.",
       "loadFailed": "Không tải được bình luận.",
       "submitFailed": "Không gửi được bình luận.",
-      "editFailed": "Không thể cập nhật bình luận."
+      "editFailed": "Không thể cập nhật bình luận.",
+      "editConflict": "Bình luận đã thay đổi hoặc không thể sửa. Hãy kiểm tra và mở lại trình chỉnh sửa.",
+      "editConflictRefreshFailed": "Bình luận đã thay đổi. Hãy tải lại trước khi chỉnh sửa."
     },
     "errors": {
       "unsupportedType": "Chỉ hỗ trợ ảnh JPEG/PNG/WebP/AVIF/HEIC.",
@@ -502,6 +501,7 @@
     "close": "Đóng",
     "skip": "Bỏ qua",
     "clear": "Xóa",
+    "delete": "Xóa",
     "all": "Tất cả",
     "selected": "Đã chọn",
     "confirm": "Xác nhận",
