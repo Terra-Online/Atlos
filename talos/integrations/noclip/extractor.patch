@@ -4204,10 +4204,10 @@ index 00000000..8bfdb564
 +};
 diff --git a/packages/extractor/src/game/collision-ground.test.ts b/packages/extractor/src/game/collision-ground.test.ts
 new file mode 100644
-index 00000000..510c3942
+index 00000000..5be82614
 --- /dev/null
 +++ b/packages/extractor/src/game/collision-ground.test.ts
-@@ -0,0 +1,415 @@
+@@ -0,0 +1,420 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
@@ -4503,17 +4503,22 @@ index 00000000..510c3942
 +		const geometry = collisionGeometry([input([shape])], { walkableLayers: 1 << 6 });
 +		const snapshot = [...geometry.indices];
 +		const raw = createCollisionWorld(geometry);
-+		const classified = createCollisionWorld({
-+			positions: geometry.positions,
-+			indices: walkableCollisionIndices(geometry),
-+		});
 +		const height = shape.kind === 'sphere' ? 1 : 2.3;
 +		const support = { maxUp: 0.5, maxDown: 0.5, maxSlope: 46 };
-+		assert.ok(raw.groundAt([0, height + 0.1, 0], support));
-+		assert.equal(classified.groundAt([0, height + 0.1, 0], support), null);
 +		const profile = { radius: 0.1, height: 0.2 };
++		assert.ok(raw.groundAt([0, height + 0.1, 0], support));
 +		assert.ok(raw.sweepCapsule([-3, 0, 0], [3, 0, 0], profile));
-+		assert.ok(classified.sweepCapsule([-3, 0, 0], [3, 0, 0], profile));
++		const expected = walkableCollisionIndices(geometry);
++		for (const indices of [geometry.indices, Uint16Array.from(geometry.indices), Uint32Array.from(geometry.indices)]) {
++			const before = Array.from(indices);
++			const classifiedIndices = walkableCollisionIndices({ ...geometry, indices });
++			assert.equal(classifiedIndices.constructor, indices.constructor);
++			assert.deepEqual(Array.from(classifiedIndices), Array.from(expected));
++			assert.deepEqual(Array.from(indices), before);
++			const classified = createCollisionWorld({ positions: geometry.positions, indices: classifiedIndices });
++			assert.equal(classified.groundAt([0, height + 0.1, 0], support), null);
++			assert.ok(classified.sweepCapsule([-3, 0, 0], [3, 0, 0], profile));
++		}
 +		assert.equal(createWallChecker(geometry.exclusions, profile)([0, 0, 0], [0, 0, 0]), true);
 +		assert.deepEqual(geometry.indices, snapshot);
 +	}
@@ -4625,10 +4630,10 @@ index 00000000..510c3942
 +});
 diff --git a/packages/extractor/src/game/collision-ground.ts b/packages/extractor/src/game/collision-ground.ts
 new file mode 100644
-index 00000000..94ee21b5
+index 00000000..4637b78f
 --- /dev/null
 +++ b/packages/extractor/src/game/collision-ground.ts
-@@ -0,0 +1,613 @@
+@@ -0,0 +1,615 @@
 +import type { EcsCollider } from '@endfield-noclip/formats/endfield/ecs-collider';
 +import type { CollisionMesh } from '@endfield-noclip/formats/unity/collision-mesh';
 +import { multiplyMatrices, transformPoint, trsMatrix } from '@endfield-noclip/formats/unity/transform';
@@ -4688,11 +4693,13 @@ index 00000000..94ee21b5
 +	positions: ArrayLike<number>;
 +	indices: ArrayLike<number>;
 +	records?: readonly CollisionRecord[];
-+}): number[] => {
++}): number[] | Uint16Array | Uint32Array => {
 +	if (geometry.positions.length % 3 || geometry.indices.length % 3) {
 +		throw new Error('invalid collision triangle packing');
 +	}
-+	const indices = Array.from(geometry.indices);
++	const indices = geometry.indices instanceof Uint16Array || geometry.indices instanceof Uint32Array
++		? geometry.indices.slice()
++		: Array.from(geometry.indices);
 +	for (const record of geometry.records ?? []) {
 +		if (
 +			!Number.isInteger(record.first) ||
