@@ -3,13 +3,13 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseArgs } from 'node:util';
+import { parseArgs, isDeepStrictEqual } from 'node:util';
 
 import { gangliaV1Defaults, type SolverConfig } from '@opendfieldmap/ganglia';
 
 import { benchmarkMarkdown } from '#@/bench/markdown.ts';
 import { compareQuality, qualityGate, readReference, summarizeQuality } from '#@/bench/quality.ts';
-import { runBenchmark } from '#@/bench/run.ts';
+import { runBenchmark, validateWarmup } from '#@/bench/run.ts';
 import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { sourceHash } from '#@/bench/source.ts';
 import { resetTimings } from '#@/bench/timings.ts';
@@ -34,13 +34,14 @@ const { values } = parseArgs({
     offset: { type: 'string' },
     'catalog-train': { type: 'string' },
     workload: { type: 'string' },
+    'warmup-workload': { type: 'string' },
     'max-mean-cost-ratio': { type: 'string', default: '1.01' },
     'max-worst-cost-ratio': { type: 'string', default: '1.05' },
   },
 });
 if (values.help) {
   console.log(
-    'Usage: pnpm benchmark:full [--json | --markdown] [--data-root <path>] [--scene <name; default map02>] [--extractor <path>] [--workload <json-file | map02-long-range | map02-long-detours | map02-stress>] [--offset <index>] [--catalog-train <count; opt-in approximate static-action algorithm>] [--limit <count>] [--concurrency <scene-lanes>] [--workers <prepared solver processes; default 1>] [--rounds <measured batches; default 1>] [--config <json-file>] [--reference <benchmark-json>] [--max-mean-cost-ratio <ratio; default 1.01>] [--max-worst-cost-ratio <ratio; default 1.05>]. Every query has a hard 300-second SLO; timeouts count as failures. Reference comparisons reject lost solutions or excess modeled route cost; all runs require prewarm stability.',
+    'Usage: pnpm benchmark:full [--json | --markdown] [--data-root <path>] [--scene <name; default map02>] [--extractor <path>] [--workload <json-file | map02-long-range | map02-long-detours | map02-stress>] [--offset <index>] [--catalog-train <count; opt-in approximate static-action algorithm>] [--limit <count>] [--concurrency <scene-lanes>] [--workers <prepared solver processes; default 1>] [--rounds <measured batches; default 1>] [--config <json-file>] [--reference <benchmark-json>] [--max-mean-cost-ratio <ratio; default 1.01>] [--max-worst-cost-ratio <ratio; default 1.05>]. Every query has a hard 300-second SLO; timeouts count as failures. Reference comparisons reject lost solutions or excess modeled route cost; stability is checked across measured rounds. --warmup-workload <json-file> supplies disjoint runtime warmup queries; omitted means no runtime warmup.',
   );
   console.log('GANGLIA_BENCHMARK_HEAP_MB sets the Node heap cap in MiB (default 6144).');
 } else {
@@ -90,6 +91,10 @@ if (values.help) {
       );
     const training = workload.slice(0, trainingCount);
     const selected = workload.slice(offset, offset + count);
+    const warmupCases = values['warmup-workload']
+      ? (await readWorkload(values['warmup-workload'])).cases
+      : [];
+    validateWarmup(selected, warmupCases);
     if (trainingCount) {
       const trainingStarts = new Set(
         training.flatMap((item) =>
@@ -118,9 +123,23 @@ if (values.help) {
         : Number(values.concurrency);
     if (!Number.isSafeInteger(concurrency) || concurrency < 1)
       throw new Error('Invalid concurrency');
-    if (trainingCount && (workers !== 1 || concurrency !== 1))
-      throw new Error('Catalog experiment requires workers=1 and concurrency=1');
     const fixed = { ...config, batchConcurrency: concurrency };
+    const measurement = {
+      warmupCases,
+      rounds,
+      workers,
+      concurrency,
+      trainingCases: training,
+    };
+    const referenceBytes = values.reference ? await readFile(values.reference) : undefined;
+    const referenceReport = referenceBytes
+      ? (JSON.parse(referenceBytes.toString()) as {
+          schemaVersion?: number;
+          measurement?: unknown;
+          batch: { wallMs: number };
+          lifecycle?: { endToEndMs: number };
+        })
+      : undefined;
     const started = performance.now();
     const prepared = await prepareWorkerSolver({
       count: workers,
@@ -130,38 +149,52 @@ if (values.help) {
       scene: values.scene,
     });
     const { solver, inputLoadMs, timings, metadata } = prepared;
+    const workerReadyMs = performance.now();
     try {
-      const referenceBytes = values.reference ? await readFile(values.reference) : undefined;
-      const referenceReport: { batch: { wallMs: number } } | undefined = referenceBytes
-        ? JSON.parse(referenceBytes.toString())
-        : undefined;
       const reference = referenceBytes
         ? readReference(JSON.parse(referenceBytes.toString()), { ...metadata, cases: selected })
         : undefined;
       // Reject incompatible references before spending time on prewarm and search.
-      const setupMs = performance.now() - started;
       let catalogTraining;
       if (trainingCount) {
         console.error(JSON.stringify({ phase: 'catalog-training', queries: training.length }));
         await prepared.setCatalogPhase('training');
         const trainingStarted = performance.now();
-        const results = await solver.solveBatch(training.map((item) => item.query));
+        const results = await prepared.train(training.map((item) => item.query));
         await prepared.setCatalogPhase('frozen');
         catalogTraining = {
           algorithm: 'approximate-static-actions' as const,
           ids: training.map((item) => item.id),
           wallMs: performance.now() - trainingStarted,
-          completed: results.filter(
-            (result) => result.route.status === 'complete' && !result.partial,
-          ).length,
+          completed: Math.min(
+            ...results.map(
+              (rows) =>
+                rows.filter((result) => result.route.status === 'complete' && !result.partial)
+                  .length,
+            ),
+          ),
+          perWorker: results.map((rows, index) => ({
+            completed: rows.filter(
+              (result) => result.route.status === 'complete' && !result.partial,
+            ).length,
+            stats: prepared.catalogStatsAll()[index],
+          })),
           stats: prepared.catalogStats(),
         };
       }
+      const readyMs = performance.now();
+      const setupMs = readyMs - started;
       const report = await runBenchmark(
         solver,
         selected,
         async (phase) => {
-          console.error(JSON.stringify({ phase, queries: selected.length, rounds }));
+          console.error(
+            JSON.stringify({
+              phase,
+              queries: phase === 'prewarm' ? warmupCases.length : selected.length,
+              rounds,
+            }),
+          );
           await prepared.setBenchmarkPhase(phase);
           if (phase === 'batch') {
             resetTimings(timings);
@@ -169,11 +202,15 @@ if (values.help) {
         },
         rounds,
         () => prepared.recoverySetupMs,
+        warmupCases,
       );
+      const endToEndMs = performance.now();
       if (
         catalogTraining &&
         !prepared.recoverySetupMs &&
-        prepared.catalogStats().added !== catalogTraining.stats.added
+        prepared
+          .catalogStatsAll()
+          .some((stats, index) => stats.added !== catalogTraining.perWorker[index].stats.added)
       )
         throw new Error('Frozen catalog changed during holdout');
       if ((await sourceHash(root, ['src', 'bench'])) !== sourceSha256)
@@ -186,8 +223,28 @@ if (values.help) {
         !comparison.gainedSolutions.length &&
         summarizeQuality(reference ?? []).completed === selected.length &&
         report.batch.quality.completed === selected.length;
+      const comparablePolicy =
+        gate.passed &&
+        comparableSpeed &&
+        referenceReport?.schemaVersion === 8 &&
+        isDeepStrictEqual(referenceReport.measurement, measurement);
+      const referenceBatchMs = referenceReport?.batch.wallMs;
+      const referenceEndToEndMs = referenceReport?.lifecycle?.endToEndMs;
       const output = {
-        schemaVersion: 7,
+        schemaVersion: 8,
+        measurement,
+        lifecycle: {
+          workerReadyMs,
+          readyMs,
+          workerStartupMs: timings.workerStartupMs,
+          workers: metadata.execution.preparation,
+          runtimeWarmupMs: report.warmup.wallMs,
+          catalogTrainingMs: catalogTraining?.wallMs ?? 0,
+          endToEndMs,
+          successfulQueries: report.batch.successfulQueries,
+          endToEndSuccessfulQueriesPerSecond: report.batch.successfulQueries / (endToEndMs / 1000),
+          browserArtifacts: null,
+        },
         adapter: 'scene-files',
         node: process.version,
         execArgv: process.execArgv,
@@ -203,26 +260,28 @@ if (values.help) {
         ...(catalogTraining
           ? {
               catalogTraining,
-              catalogAfterHoldout: prepared.catalogStats(),
+              catalogAfterHoldout: prepared.catalogStatsAll(),
               catalogResetDuringHoldout: prepared.recoverySetupMs > 0,
             }
           : {}),
         policy:
-          (catalogTraining
-            ? 'Approximate static-action algorithm: the reported training queries record nonterminal static ordinary motion proofs using original discovery. Training time is excluded from measured holdout and reported separately. The catalog freezes before fresh-start holdout prewarm. Up to eight travel-time-ranked candidate chains, with at most sixteen unique actions, are jointly checked by the real planner and runs a broad comparison of at most 128 candidates and one incumbent-local pass of at most 128 candidates before returning, without recursive refinement. Failed candidates retain original discovery budgets. Frozen queries use physical detour pruning for each first window and retain outer comparisons across preceding window pieces; training retains both comparison phases. '
-            : '') +
-          'Every dispatched query has a hard 300,000 ms SLO enforced by a parent-process watchdog, including training, prewarm and measured solves. Timeout kills the solver process and counts as a failed route. Queueing, initial file loading and solver startup are outside the per-query deadline. After a timeout, other active queries drain before replacement input loading; those globally idle recovery intervals are reported separately and excluded from batch wall time. Replacement processes retain no completed-route or trained-action cache. Within each root query, the file provider certifies complete physics revisions so identical failed physical attempts can reuse their reason and truncation; fresh queries and complete routes are recomputed. One unmeasured batch prewarms prepared process-local caches. Every measured round submits the whole batch and reads inputs from memory only. batch.wallMs is the arithmetic mean of batch samples; all rounds and query outcomes are reported. Attempt throughput includes failures; successful throughput counts complete routes within the SLO. Inclusive phase timers may overlap across processes and must not be added to batch wall time. OS scheduling/JIT/GC uncontrolled.',
+          'One algorithm and preparation lifecycle serve every interpretation of this report. Decoded input loading is separate from adapter/source validation, resource indexing and factory preparation. Declared catalog training runs identically in every worker, freezes before service readiness, and belongs to service preparation. Runtime warmup is optional and uses a separate disjoint workload. No scored query is prewarmed; every measured round counts and repeatability compares measured rounds. Existing immutable preparation, geometry proofs and frozen catalog data are reused by the same solver; lazy work remains inside query time. Every dispatched query, including training and warmup, has a 300,000 ms parent watchdog. Queueing and initial worker setup are outside that deadline; service, queue and response times are separate. Recovery remains in actual batch wall time. End-to-end time starts at Node process time origin and ends after solver shutdown, including loading, preparation, training, runtime warmup, all measured rounds and recovery. Final source re-verification and report formatting are excluded. Per-worker phase timers overlap and must not be summed into wall time. Memory peaks are sampled. Browser index transfer, restoration and browser execution are unmeasured. OS scheduling/JIT/GC uncontrolled.',
         ...report,
         ...(comparison && referenceBytes
           ? {
               comparison: {
                 referenceSha256: createHash('sha256').update(referenceBytes).digest('hex'),
-                ...(gate.passed &&
-                comparableSpeed &&
-                referenceReport &&
-                Number.isFinite(referenceReport.batch.wallMs) &&
-                referenceReport.batch.wallMs > 0
-                  ? { speedup: referenceReport.batch.wallMs / report.batch.wallMs }
+                ...(comparablePolicy &&
+                referenceBatchMs !== undefined &&
+                Number.isFinite(referenceBatchMs) &&
+                referenceBatchMs > 0
+                  ? { batchSpeedup: referenceBatchMs / report.batch.wallMs }
+                  : {}),
+                ...(comparablePolicy &&
+                referenceEndToEndMs !== undefined &&
+                Number.isFinite(referenceEndToEndMs) &&
+                referenceEndToEndMs > 0
+                  ? { endToEndSpeedup: referenceEndToEndMs / endToEndMs }
                   : {}),
                 ...comparison,
               },
@@ -239,22 +298,27 @@ if (values.help) {
         console.table(report.batch.results);
         if (catalogTraining)
           console.log(
-            `Approximate static-action training: ${catalogTraining.ids.length} queries, ${(catalogTraining.wallMs / 1000).toFixed(2)} s excluded, ${catalogTraining.stats.added} actions`,
+            `Approximate static-action training: ${catalogTraining.ids.length} queries, ${(catalogTraining.wallMs / 1000).toFixed(2)} s included in end-to-end time, ${catalogTraining.stats.added} actions`,
           );
-        console.log(`Prewarm: ${(report.prewarmMs / 1000).toFixed(2)} s; excluded`);
+        console.log(
+          `Independent runtime warmup: ${report.warmup.ids.length} queries, ${(report.warmup.wallMs / 1000).toFixed(2)} s`,
+        );
+        console.log(
+          `Ready at ${(readyMs / 1000).toFixed(2)} s; end-to-end ${(endToEndMs / 1000).toFixed(2)} s; ${output.lifecycle.endToEndSuccessfulQueriesPerSecond.toFixed(3)} end-to-end complete routes/s`,
+        );
         console.log(
           `Per-query SLO: ${QUERY_SLO_MS / 1000} s; ${report.batch.quality.completed}/${selected.length} complete, ${report.batch.timedOutAttempts} measured timeouts; ${report.batch.successfulQueriesPerSecond.toFixed(3)} complete routes/s`,
         );
         console.log(
-          `Recovery input loading: ${(report.batch.recoverySetupMs / 1000).toFixed(2)} s; excluded`,
+          `Recovery input loading: ${(report.batch.recoverySetupMs / 1000).toFixed(2)} s; included in batch wall time`,
         );
         console.log(
-          `Batch (${rounds} rounds, average ${report.batch.wallMs.toFixed(3)} ms, total ${report.batch.totalWallMs.toFixed(3)} ms): ${report.batch.queriesPerSecond.toFixed(3)} queries/s; ${report.batch.results.filter((r) => r.sameOutcomeAsPrewarm && r.sameTruncationAsPrewarm).length}/${selected.length} outcomes match prewarm`,
+          `Batch (${rounds} rounds, average ${report.batch.wallMs.toFixed(3)} ms, total ${report.batch.totalWallMs.toFixed(3)} ms): ${report.batch.queriesPerSecond.toFixed(3)} queries/s; ${report.batch.results.filter((r) => r.sameOutcomeAcrossRounds && r.sameTruncationAcrossRounds).length}/${selected.length} matching outcomes; repeatability ${report.batch.repeatability}`,
         );
         console.log(`Complete batch samples (ms): ${report.batch.wallSamplesMs.join(', ')}`);
         if (report.batch.meanSerialQueryMs !== undefined)
           console.log(
-            `Mean serial attempt wall time: ${report.batch.meanSerialQueryMs.toFixed(3)} ms (average batch / queries)`,
+            `Mean serial attempt wall time: ${report.batch.meanSerialQueryMs.toFixed(3)} ms (mean dispatch-to-result)`,
           );
         console.log(
           `Quality: ${report.batch.quality.completed}/${selected.length} complete; total modeled travel time: ${report.batch.quality.totalCostSeconds ?? 'incomplete'} s`,

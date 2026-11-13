@@ -18,8 +18,8 @@ const row = (id: string, cost: number, partial = false): QualityRow => ({
   status: 'complete',
 });
 
-test('quality gates reject lost routes, excessive individual cost and unstable warm results', () => {
-  const stable = { sameOutcomeAsPrewarm: true, sameTruncationAsPrewarm: true };
+test('quality gates reject lost routes, excessive individual cost and unstable measured rounds', () => {
+  const stable = { sameOutcomeAcrossRounds: true, sameTruncationAcrossRounds: true };
   const check = (rows: QualityRow[], before: QualityRow[]) =>
     qualityGate(
       rows.map((r) => ({ ...r, ...stable })),
@@ -32,7 +32,7 @@ test('quality gates reject lost routes, excessive individual cost and unstable w
   assert.equal(check([row('short', 1), row('long', 0, true)], before).passed, false);
   assert.equal(check([row('short', 1)], [row('short', 0)]).passed, false);
   assert.equal(
-    qualityGate([{ ...row('one', 1), ...stable, sameTruncationAsPrewarm: false }], undefined)
+    qualityGate([{ ...row('one', 1), ...stable, sameTruncationAcrossRounds: false }], undefined)
       .passed,
     false,
   );
@@ -62,7 +62,7 @@ test('timeouts and late complete routes fail the SLO without contributing modele
   assert.equal(quality.meanCompletedCostSeconds, 4);
   assert.equal(
     qualityGate(
-      rows.map((r) => ({ ...r, sameOutcomeAsPrewarm: true, sameTruncationAsPrewarm: true })),
+      rows.map((r) => ({ ...r, sameOutcomeAcrossRounds: true, sameTruncationAcrossRounds: true })),
       undefined,
     ).passed,
     false,
@@ -84,7 +84,11 @@ test('recovering timed-out routes gains solutions while common routes retain cos
   assert.equal(comparison.worstCostRatio, 1.06);
   assert.equal(
     qualityGate(
-      current.map((r) => ({ ...r, sameOutcomeAsPrewarm: true, sameTruncationAsPrewarm: true })),
+      current.map((r) => ({
+        ...r,
+        sameOutcomeAcrossRounds: true,
+        sameTruncationAcrossRounds: true,
+      })),
       comparison,
     ).passed,
     false,
@@ -107,11 +111,15 @@ test('markdown exposes timeout failures and successful throughput without claimi
     execution: { mode: 'serial', workers: 0, lanes: 1 },
     config: gangliaV1Defaults,
     querySloMs: 300_000,
-    prewarmMs: 1,
-    prewarmRecoverySetupMs: 0,
-    prewarmQuality: summarizeQuality(measured),
+    warmup: { ids: [], wallMs: 0, recoverySetupMs: 0, quality: summarizeQuality([]) },
+    intervals: {
+      warmup: { startedMs: 0, endedMs: 0 },
+      queries: { startedMs: 0, endedMs: 1 },
+      shutdown: { startedMs: 1, endedMs: 2 },
+    },
     batch: {
       rounds: 1,
+      repeatability: 'unmeasured',
       wallSamplesMs: [300_000],
       totalWallMs: 300_000,
       wallMs: 300_000,
@@ -132,17 +140,19 @@ test('markdown exposes timeout failures and successful throughput without claimi
         drops: 0,
         truncated: true,
         outcomeSha256: 'timeout',
+        queueMs: null,
+        responseMs: null,
         wallSamplesMs: [300_000],
-        sameOutcomeAsPrewarm: true,
-        sameTruncationAsPrewarm: true,
+        sameOutcomeAcrossRounds: true,
+        sameTruncationAcrossRounds: true,
       })),
     },
-    comparison: { ...compareQuality(measured, [row('one', 10)]), speedup: 20 },
+    comparison: { ...compareQuality(measured, [row('one', 10)]), batchSpeedup: 20 },
   });
   assert.match(markdown, /Successful throughput \| 0\.000 complete routes\/s/);
   assert.match(markdown, /Timed-out queries \| 1\/1/);
   assert.match(markdown, /Lost \/ gained solutions \| 1 \/ 0/);
-  assert.match(markdown, /Speedup vs reference \| n\/a/);
+  assert.match(markdown, /Batch speedup vs reference \| n\/a/);
   assert.doesNotMatch(markdown, /20\.000×/);
   assert.match(markdown, /\| one \| timeout \| n\/a \|/);
 });

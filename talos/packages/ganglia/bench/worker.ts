@@ -32,7 +32,9 @@ process.once('message', async (message: WorkerRequest) => {
         }
       : undefined,
   );
+  const preparationStarted = performance.now();
   const solver = await prepareRouteSolver(setup.config, scene.input);
+  const preparationMs = scene.timings.preparationMs + performance.now() - preparationStarted;
   process.on('message', async (message: WorkerRequest) => {
     if (message.type === 'close') {
       await solver.close();
@@ -44,7 +46,14 @@ process.once('message', async (message: WorkerRequest) => {
       if (message.type === 'catalog-phase') setActionCatalogPhase(message.phase);
       else if (process.env.GANGLIA_PROFILE)
         console.error(JSON.stringify({ phase: message.phase, worker: setup.index }));
-      send({ type: 'control', id: message.id, catalog: actionCatalogStats() });
+      send({
+        type: 'control',
+        id: message.id,
+        catalog: actionCatalogStats(),
+        ...(message.type === 'catalog-phase' && message.phase === 'frozen'
+          ? { memory: workerMemory() }
+          : {}),
+      });
       return;
     }
     if (message.type !== 'solve') throw new Error('Unexpected scene worker setup');
@@ -73,7 +82,7 @@ process.once('message', async (message: WorkerRequest) => {
     config: solver.config,
     metadata: scene.metadata,
     inputLoadMs: scene.inputLoadMs,
-    preparationMs: scene.timings.preparationMs,
+    preparationMs,
     memory: workerMemory(),
     catalog: actionCatalogStats(),
   });

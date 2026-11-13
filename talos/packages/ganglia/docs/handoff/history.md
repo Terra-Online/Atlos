@@ -1739,3 +1739,64 @@ exactly, with no lost solutions or timeouts. Evidence is retained under
 `.local/research/resource-relocation/`. This verifies relocation and execution,
 with no algorithm, benchmark-policy or performance improvement claim. The full
 long-range workload was not replayed and its recorded coverage gap remains open.
+
+
+## Unified benchmark lifecycle, 2026-11-14
+
+Schema 8 measures one algorithm and preparation recipe, then interprets the
+measurements for server queries, browser offload or offline batch processing.
+There are no deployment-mode branches. Solver `src/` and search budgets are
+unchanged. Read/decode/hash time is separated from adapter/source validation,
+resource indexing and factory preparation. Catalog training and freezing belong
+to service preparation. Every worker receives the entire ordered training set;
+training is not split among workers. Each dispatch retains its 300-second
+watchdog. Worker-ready and service-ready time and memory are reported separately.
+
+Runtime warmup requires a separately declared disjoint workload. No scored batch
+is used as excluded prewarm. All scored rounds contribute to throughput, and
+repeatability compares outcomes and truncation to the first scored round. Service,
+queue and response time are distinct. Recovery remains in actual batch wall time.
+End-to-end time spans Node process origin through solver shutdown, including all
+loading, preparation, training, runtime warmup, measured rounds and recovery.
+Final source re-verification and report formatting follow that interval. Phase
+timers can overlap; actual end-to-end time is measured rather than summed.
+Browser index transfer, restoration and execution remain unmeasured. Existing
+lazy query preparation and cache-history effects remain visible in query timing;
+no eager immutable-index or fresh-query independence claim is made.
+
+An unmerged prototype had selected different algorithm states using deployment
+modes and query-local input copies. It was rejected because it changed what was
+being measured. Its trained-reference quality failure and superseded controls
+are retained under `.local/research/benchmark-lifecycle/`, marked by
+`discarded-experiments.json`, and excluded from acceptance. All mode and cloning
+changes were removed. No route-cost gate was relaxed.
+
+Final format, lint, typecheck and all 414 tests pass. Added coverage protects
+renamed warmup leakage, measured-round stability, recovery accounting, queue
+latency and complete ordered training in each process. Real validation uses Node
+v26.13.0, the retained native kernel with label limit 64, the same map02 inputs
+and movement/search Config, ten training queries, holdout offset ten, six scored
+queries and two independent runtime warmup requests. A one-worker/one-lane run
+and a two-worker/two-lane run each measure two rounds. All 24 measured attempts
+complete within the SLO; all six ordered outcome hashes, modeled costs and
+truncation flags match across rounds and schedules and retain the original
+quality reference. Both quality gates pass, with mean and worst cost ratios of 1.
+Every worker completes all ten training requests and freezes 239 actions.
+
+Serial service readiness and end-to-end times are 29472.506292 and
+36370.641917 ms; parallel values are 33544.767750 and 38464.445375 ms.
+These are execution/measurement-boundary checks, with no stable performance
+improvement claim. Prior schema-7 reports remain quality references; no speed
+ratio is emitted across changed measurement contracts. JSON-to-Markdown rendering
+of both final reports succeeds. World checks and full-map coverage were not
+rerun because only the benchmark harness, tests and documentation changed.
+
+Accepted evidence: `.local/research/benchmark-lifecycle/unified-serial.json`,
+`unified-parallel.json`, `validation-summary.json` and `check.log`. The exact
+training/warmup/scored queries, Config, consumed file hashes and runtime flags
+are bound in those reports. Source/benchmark SHA-256:
+`374098d617fb719c0347f234319e3646cb0479a596569d209b66b87bf139a23a`.
+Unchanged kernel SHA-256:
+`c0d0ab7702e048104a7e999d8d060e2ff4ac794cc796cfb04e325695eef92b55`.
+Game adapter SHA-256:
+`2c932f2ca8e668f8f4ee6937633d9c77e240986241e2a530f908fbb2cc88c623`.

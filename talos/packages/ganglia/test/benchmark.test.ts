@@ -6,7 +6,7 @@ import { runBenchmark } from '#@/bench/run.ts';
 import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
 import { gangliaV1Defaults } from '#@/src/solver/index.ts';
 
-test('one prewarm and repeated measurements submit whole ordered batches and close once', async () => {
+test('every scored batch is timed, keeps input order and closes once', async () => {
   const cases: readonly { id: string; query: RouteQuery }[] = [1, 2, 3].map((id) => ({
     id: String(id),
     query: { starts: [], goal: [id, 0, 0] },
@@ -52,7 +52,7 @@ test('one prewarm and repeated measurements submit whole ordered batches and clo
     },
     3,
   );
-  assert.equal(batches, 4);
+  assert.equal(batches, 3);
   assert.equal(closes, 1);
   assert.equal(report.batch.rounds, 3);
   assert.equal(report.batch.wallSamplesMs.length, 3);
@@ -62,7 +62,7 @@ test('one prewarm and repeated measurements submit whole ordered batches and clo
   );
   assert.equal(report.batch.wallMs, report.batch.totalWallMs / 3);
   assert.equal(report.batch.queriesPerSecond, 9 / (report.batch.totalWallMs / 1000));
-  assert.deepEqual(phases, ['prewarm', 'batch']);
+  assert.deepEqual(phases, ['batch']);
   assert.deepEqual(
     report.batch.results.map((row) => row.id),
     ['1', '2', '3'],
@@ -71,7 +71,7 @@ test('one prewarm and repeated measurements submit whole ordered batches and clo
     report.batch.results.map((row) => row.cost),
     [1, 2, 3],
   );
-  assert.ok(report.batch.results.every((row) => row.sameOutcomeAsPrewarm));
+  assert.ok(report.batch.results.every((row) => row.sameOutcomeAcrossRounds));
 });
 
 test('the benchmark closes the adapter after a failed batch', async () => {
@@ -97,7 +97,7 @@ test('the benchmark closes the adapter after a failed batch', async () => {
   assert.equal(closed, true);
 });
 
-test('partial geometry from prewarm cannot count as a complete measured outcome', async () => {
+test('independent warmup results are reported separately from the measured problem', async () => {
   const result: RouteResult = {
     route: {
       status: 'complete',
@@ -125,9 +125,14 @@ test('partial geometry from prewarm cannot count as a complete measured outcome'
       close: async () => {},
     },
     [{ id: 'same-geometry', query: { starts: [], goal: [1, 0, 0] } }],
+    undefined,
+    1,
+    undefined,
+    [{ id: 'warmup', query: { starts: [], goal: [2, 0, 0] } }],
   );
   assert.equal(report.batch.results[0].partial, false);
-  assert.equal(report.batch.results[0].sameOutcomeAsPrewarm, false);
+  assert.equal(report.warmup.quality.completed, 0);
+  assert.equal(report.batch.results[0].sameOutcomeAcrossRounds, true);
 });
 
 test('a middle-round lost or changed route and truncation remain unstable after recovery', async () => {
@@ -144,7 +149,7 @@ test('a middle-round lost or changed route and truncation remain unstable after 
         throw new Error('Unexpected single solve');
       },
       solveBatch: async (queries) => {
-        const broken = ++batches === 3;
+        const broken = ++batches === 2;
         return queries.map((query, index): RouteResult => ({
           route:
             broken && index === 0
@@ -170,15 +175,15 @@ test('a middle-round lost or changed route and truncation remain unstable after 
     undefined,
     3,
   );
-  assert.equal(batches, 4);
+  assert.equal(batches, 3);
   assert.equal(closes, 1);
   assert.ok(report.batch.results.every((row) => row.status === 'complete' && !row.truncated));
   assert.deepEqual(
-    report.batch.results.map((row) => row.sameOutcomeAsPrewarm),
+    report.batch.results.map((row) => row.sameOutcomeAcrossRounds),
     [false, false, true],
   );
   assert.deepEqual(
-    report.batch.results.map((row) => row.sameTruncationAsPrewarm),
+    report.batch.results.map((row) => row.sameTruncationAcrossRounds),
     [true, true, false],
   );
   assert.equal(qualityGate(report.batch.results, undefined).passed, false);
@@ -245,7 +250,7 @@ test('SLO accounting preserves a middle-round timeout and counts actual successf
       solve: async () => {
         throw new Error('Unexpected single solve');
       },
-      solveBatch: async () => [++batches === 3 ? timeout : complete],
+      solveBatch: async () => [++batches === 2 ? timeout : complete],
       close: async () => {},
     },
     [{ id: 'intermittent', query: { starts: [], goal: [0, 0, 0] } }],
@@ -261,7 +266,7 @@ test('SLO accounting preserves a middle-round timeout and counts actual successf
   assert.equal(qualityGate(report.batch.results, undefined).passed, false);
 });
 
-test('replacement setup is reported separately from query work in prewarm and measured batches', async () => {
+test('replacement setup is explained separately while remaining in measured wall time', async () => {
   let recoverySetupMs = 0;
   const report = await runBenchmark(
     {
@@ -288,14 +293,59 @@ test('replacement setup is reported separately from query work in prewarm and me
     undefined,
     2,
     () => recoverySetupMs,
+    [{ id: 'warmup', query: { starts: [], goal: [1, 0, 0] } }],
   );
-  assert.ok(report.prewarmRecoverySetupMs >= 4);
+  assert.ok(report.warmup.recoverySetupMs >= 4);
   assert.ok(report.batch.recoverySetupMs >= 8);
   assert.equal(report.batch.samples.length, 2);
+  assert.ok(report.batch.totalWallMs >= report.batch.recoverySetupMs);
+  assert.ok(report.intervals.shutdown.endedMs >= report.intervals.queries.endedMs);
   assert.equal(
     report.batch.recoverySetupMs,
     report.batch.samples.reduce((sum, sample) => sum + sample.recoverySetupMs, 0),
   );
-  assert.equal(report.prewarmQuality.timedOut, 1);
+  assert.equal(report.warmup.quality.timedOut, 1);
   assert.equal(report.batch.successfulQueriesPerSecond, 0);
+});
+
+test('renaming a measured query cannot leak it into warmup, and invalid runs close', async () => {
+  let calls = 0,
+    closes = 0;
+  const query: RouteQuery = {
+    starts: [{ id: 'measured-start', position: [0, 0, 0], state: 'available', cost: 0 }],
+    goal: [1, 2, 3],
+  };
+  await assert.rejects(
+    runBenchmark(
+      {
+        config: gangliaV1Defaults,
+        solve: async () => {
+          throw new Error('unused');
+        },
+        solveBatch: async () => {
+          calls++;
+          return [];
+        },
+        close: async () => {
+          closes++;
+        },
+      },
+      [{ id: 'holdout', query }],
+      undefined,
+      1,
+      undefined,
+      [
+        {
+          id: 'renamed',
+          query: {
+            ...structuredClone(query),
+            starts: query.starts.map((start) => ({ ...start, id: 'renamed-start' })),
+          },
+        },
+      ],
+    ),
+    /must be disjoint/,
+  );
+  assert.equal(calls, 0);
+  assert.equal(closes, 1);
 });

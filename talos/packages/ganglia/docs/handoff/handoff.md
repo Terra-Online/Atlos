@@ -20,6 +20,47 @@ maintained in the renderer patch. Noclip remains pinned to `978acf5`, which is
 newer than that base branch's pin; the solver and World routing source are
 unchanged by this merge.
 
+## Benchmark lifecycle, 2026-11-14
+
+Schema 8 measures one algorithm and preparation recipe for every deployment
+interpretation. Input read/decode/hash cost is separated from adapter validation,
+resource indexing and factory preparation. Declared catalog training is service
+preparation: each worker sees the same training requests in order and freezes
+before service readiness. Worker-ready and service-ready times, per-worker costs,
+prepared memory and sampled peaks are reported. Per-worker phases overlap and
+must not be summed into wall time. No production solver, search budget or
+query-state cloning change is included.
+
+Runtime warmup is opt-in with a separate disjoint workload. Scored queries never
+serve as an excluded warm pass. Every measured round counts. Repeated rounds
+compare outcome hashes and truncation to the first measured round; one round
+does not establish repeatability. Existing caches and frozen catalog preparation
+are reused by the same algorithm. Deferred V1 preparation remains in query time;
+this refactor does not establish eager, query-independent preparation of all
+scene indexes.
+
+Per-query service time, queue time and response time are separate. The existing
+300-second dispatch watchdog applies to training, warmup and measured requests.
+Recovery remains in actual batch wall time. Observed end-to-end time spans Node
+process origin through solver shutdown and includes loading, preparation,
+training, warmup, all measured rounds and recovery. Final source re-verification
+and report formatting follow that interval. Online service, browser offload and
+offline throughput are interpretations of these measurements. Browser index
+transfer, restoration and browser execution remain unmeasured.
+
+Quality references retain their input/query bindings. Speed ratios require
+matching schema-8 measurement recipes; earlier dated results retain their
+original excluded-training/prewarm contracts.
+
+Validation: format, lint, typecheck and 414 tests pass. The retained six-query
+reference passes unchanged with ten training requests, two disjoint runtime
+warmup queries and two measured rounds under both one-worker serial and two-worker
+parallel scheduling. All 24 attempts complete, with identical route hashes,
+modeled costs and truncation flags; each worker freezes 239 actions. Evidence and
+exact code/input bindings are in the corresponding history entry and
+`.local/research/benchmark-lifecycle/validation-summary.json`. No stable speedup,
+full-map coverage or browser execution claim is made.
+
 ## Map-scale benchmark snapshot, 2026-11-13
 
 The long-range workload uses full Wuling navigation and physically grounded

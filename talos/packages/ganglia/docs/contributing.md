@@ -316,3 +316,53 @@ verify a real export. For UI/planner integration, exercise the ordinary **5173
 detail → 5176 route** flow with 5199 serving the same release. Record actual
 commands, input identity, unresolved assumptions and failures. Synthetic tests
 alone do not validate game movement or physical reachability.
+
+
+## Interpret benchmark results
+
+The benchmark measures one fixed algorithm, Config, scene snapshot, declared
+training set and scored workload. Deployment scenarios are interpretations of the
+same measurements and do not select execution modes or alter the algorithm.
+
+Input read/decode/hash time is separate from adapter/source validation, resource
+indexing and factory preparation. Optional `--catalog-train` requests are service
+preparation: every worker sees the same requests in the same order and freezes
+its catalog before readiness. Preparation cost and prepared memory remain in the
+report. Training requests must be separate from scored requests. Query-dependent
+search and refinement remain in query time; current V1 also performs some scene
+preparation lazily there. Ready does not certify an eagerly built immutable index.
+
+Pass `--warmup-workload <json-file>` to declare independent runtime warmup requests;
+omission means no runtime warmup. No scored request is prewarmed. All measured
+rounds count toward throughput. With `--rounds 2` or more, outcomes and truncation
+are compared against the first measured round. One round does not establish
+repeatability.
+
+Run with one worker and one lane for serial query latency. A separate invocation
+with `--workers 2 --concurrency 2` measures parallel batch wall time, service
+latency, queue time and response time using the same algorithm and preparation
+recipe. Per-worker loading/preparation can overlap and must not be added into
+wall time. Worker-ready and service-prepared memory, and sampled memory peaks,
+are recorded separately. Actual parallel performance requires that execution;
+it cannot be inferred from a serial run.
+
+Interpret the results according to the intended deployment:
+
+- Server online queries: use prepared-service query latency, response latency and
+  successful throughput, alongside service readiness time and memory.
+- Browser preparation: include preparation, query costs and memory. Serialized
+  index size, compressed transfer, restoration and browser execution require
+  corresponding measurements. `browserArtifacts: null` means unmeasured; Node
+  input bytes are neither a serialized index size nor a compressed download size.
+- Server offline batch processing: use `lifecycle.endToEndMs` and
+  `endToEndSuccessfulQueriesPerSecond`, covering Node process origin through
+  solver shutdown. This includes loading, preparation, training, runtime warmup,
+  all measured rounds and recovery. Final source re-verification and report
+  formatting follow the interval.
+
+Recovery remains in actual batch wall time. The five-minute service SLO excludes
+queueing and initial worker setup. References bind exact queries, game adapter
+and all input content hashes. Quality and the SLO precede speed. Schema 8 reports
+compare batch and end-to-end speed only when preparation/training, warmup, rounds,
+workers and concurrency agree. Older reports can provide quality references,
+with no speed ratio across the changed measurement contract.

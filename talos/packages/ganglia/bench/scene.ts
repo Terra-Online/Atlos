@@ -86,13 +86,14 @@ export async function loadScene(
     }
   }
   const gameAdapterSha256 = adapterHash.digest('hex');
-  const inputLoadMs = performance.now() - loadingStarted;
+  const inputLoadMs = dataset.inputLoadMs;
   const prepared = prepareSceneResources(
     dataset,
     preparePhysicalRoute,
     concurrency,
     gameAdapterSha256,
   );
+  prepared.timings.preparationMs = performance.now() - loadingStarted - inputLoadMs;
   return {
     input: {
       kind: 'scene' as const,

@@ -56,18 +56,24 @@ export async function loadSceneData(dataRoot: string, scene: string, build?: Reg
   const hashes: Record<string, string> = {};
   const inputs = new Map<string, unknown>();
   let inputBytes = 0;
+  let inputLoadMs = 0;
   const read = async <T>(name: string): Promise<T> => {
     if (inputs.has(name)) return inputs.get(name) as T;
-    const bytes = await readFile(name);
-    // Large collision snapshots exceed V8's single-string limit. Binary inputs
-    // keep exact numeric buffers outside the JS heap; decoding remains setup work.
-    const value: unknown = name.endsWith('.bin')
-      ? deserialize(bytes)
-      : JSON.parse(bytes.toString());
-    inputBytes += bytes.byteLength;
-    hashes[name] = createHash('sha256').update(bytes).digest('hex');
-    inputs.set(name, value);
-    return value as T;
+    const started = performance.now();
+    try {
+      const bytes = await readFile(name);
+      // Large collision snapshots exceed V8's single-string limit. Binary inputs
+      // keep exact numeric buffers outside the JS heap; decoding remains setup work.
+      const value: unknown = name.endsWith('.bin')
+        ? deserialize(bytes)
+        : JSON.parse(bytes.toString());
+      inputBytes += bytes.byteLength;
+      hashes[name] = createHash('sha256').update(bytes).digest('hex');
+      inputs.set(name, value);
+      return value as T;
+    } finally {
+      inputLoadMs += performance.now() - started;
+    }
   };
   const navigation = await read<Navigation>(resolve(dataRoot, `routing/${scene}-ground-all.json`));
   const movementFile = resolve(dataRoot, 'routing/movement-settings-current.json');
@@ -233,6 +239,9 @@ export async function loadSceneData(dataRoot: string, scene: string, build?: Reg
     select,
     query,
     loadRegion,
+    get inputLoadMs() {
+      return inputLoadMs;
+    },
     get inputBytes() {
       return inputBytes;
     },

@@ -30,6 +30,8 @@ export type WorkerResult = RouteResult & {
     solveWallMs: number;
     timedOut: boolean;
     observedWallMs?: number;
+    queueMs: number;
+    responseMs: number;
   };
 };
 type RegionFiles = { ground: string; collision: string };
@@ -68,7 +70,7 @@ export type WorkerReply =
     }
   | { type: 'event'; id: number; event: RouteEvent }
   | { type: 'region'; files: RegionFiles }
-  | { type: 'control'; id: number; catalog: CatalogStats }
+  | { type: 'control'; id: number; catalog: CatalogStats; memory?: Memory }
   | { type: 'error'; id: number; error: string }
   | { type: 'closed' };
 type Task = {
@@ -78,6 +80,8 @@ type Task = {
   options: SolveOptions;
   cleanup: () => void;
   started?: number;
+  enqueued: number;
+  workerIndex?: number;
   timer?: ReturnType<typeof setTimeout>;
 };
 type Slot = {
@@ -91,6 +95,10 @@ type Slot = {
   rssPeakBytes: number;
   heapPeakBytes: number;
   catalog?: CatalogStats;
+  inputLoadMs?: number;
+  preparationMs?: number;
+  readyMemory?: Memory;
+  preparedMemory?: Memory;
 };
 
 /** The parent owns query deadlines. A separate process can be killed even when
@@ -225,6 +233,8 @@ export async function prepareWorkerSolver(options: {
       diagnostics: {
         ...result.diagnostics,
         solveWallMs: timedOut ? timeoutMs : observedWallMs,
+        queueMs: task.started! - task.enqueued,
+        responseMs: performance.now() - task.enqueued,
         timedOut,
         ...(timedOut ? { observedWallMs } : {}),
       },
@@ -274,6 +284,9 @@ export async function prepareWorkerSolver(options: {
             timings.preparationMs += message.preparationMs;
             sample(slot, message.memory);
             slot.catalog = message.catalog;
+            slot.inputLoadMs = message.inputLoadMs;
+            slot.preparationMs = message.preparationMs;
+            slot.readyMemory = message.memory;
             slot.ready = ready = true;
             resolve();
             return;
@@ -281,6 +294,10 @@ export async function prepareWorkerSolver(options: {
           if (message.type === 'closed') return;
           if (message.type === 'control') {
             slot.catalog = message.catalog;
+            if (message.memory) {
+              slot.preparedMemory = message.memory;
+              sample(slot, message.memory);
+            }
             controls.get(message.id)?.resolve();
             controls.delete(message.id);
             return;
@@ -399,7 +416,11 @@ export async function prepareWorkerSolver(options: {
       const slot = slots[nextSlot];
       nextSlot = (nextSlot + 1) % slots.length;
       if (!slot.ready || slot.active) continue;
-      const task = queued.shift()!;
+      const index = queued.findIndex(
+        (task) => task.workerIndex === undefined || task.workerIndex === slot.index,
+      );
+      if (index === -1) continue;
+      const [task] = queued.splice(index, 1);
       slot.active = task;
       task.started = performance.now();
       task.timer = setTimeout(() => retire(slot, 'timeout'), timeoutMs);
@@ -420,13 +441,15 @@ export async function prepareWorkerSolver(options: {
   }
   timings.workerStartupMs = performance.now() - startup;
   if (!prepared || !latest) throw new Error('No scene workers prepared');
-  const submit = (query: RouteQuery, solveOptions: SolveOptions = {}) => {
+  const submit = (query: RouteQuery, solveOptions: SolveOptions = {}, workerIndex?: number) => {
     if (failure) return Promise.reject(failure);
     if (closed) return Promise.reject(new Error('Scene worker solver is closed'));
     return new Promise<RouteResult>((resolve, reject) => {
       const task: Task = {
         message: { type: 'solve', id: ++serial, query, events: Boolean(solveOptions.onEvent) },
         options: solveOptions,
+        enqueued: performance.now(),
+        workerIndex,
         resolve,
         reject,
         cleanup: () => solveOptions.signal?.removeEventListener('abort', abort),
@@ -504,12 +527,25 @@ export async function prepareWorkerSolver(options: {
   };
   return {
     solver,
+    // Every prepared process sees the same declared training set in the same
+    // order. Splitting training across lanes would benchmark different catalogs.
+    async train(queries: readonly RouteQuery[]) {
+      const results: RouteResult[][] = slots.map(() => []);
+      for (const query of queries) {
+        const batch = await Promise.all(slots.map((slot) => submit(query, {}, slot.index)));
+        batch.forEach((result, index) => results[index].push(result));
+      }
+      while (paused || recovering) await new Promise<void>((resolve) => restored.add(resolve));
+      if (failure) throw failure;
+      return results;
+    },
     async setCatalogPhase(phase: CatalogStats['phase']) {
       catalogPhase = phase;
       await control({ type: 'catalog-phase', phase });
     },
     setBenchmarkPhase: (phase: 'prewarm' | 'batch') => control({ type: 'benchmark-phase', phase }),
     catalogStats: () => slots[0].catalog ?? actionCatalogStats(),
+    catalogStatsAll: () => slots.map((slot) => slot.catalog ?? actionCatalogStats()),
     inputLoadMs,
     timings,
     get recoverySetupMs() {
@@ -542,7 +578,15 @@ export async function prepareWorkerSolver(options: {
             processRssSampledPeakBytes,
             workerProcessRssSampledPeakBytes: slots.map((slot) => slot.rssPeakBytes),
             workerHeapUsedSampledPeakBytes: slots.map((slot) => slot.heapPeakBytes),
+            ready: slots.map((slot) => slot.readyMemory),
+            prepared: slots.map((slot) => slot.preparedMemory ?? slot.readyMemory),
           };
+        },
+        get preparation() {
+          return slots.map((slot) => ({
+            inputLoadMs: slot.inputLoadMs,
+            preparationMs: slot.preparationMs,
+          }));
         },
       },
     },

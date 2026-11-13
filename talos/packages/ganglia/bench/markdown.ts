@@ -6,12 +6,16 @@ import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 type Report = Awaited<ReturnType<typeof runBenchmark>>;
 export interface MarkdownReport extends Report {
   scene: string;
+  lifecycle?: { readyMs: number; endToEndMs: number; endToEndSuccessfulQueriesPerSecond: number };
   revision: string;
   sourceSha256: string;
   node: string;
   concurrency: number;
   execution: { mode: string; workers: number; lanes: number };
-  comparison?: ReturnType<typeof compareQuality> & { speedup?: number };
+  comparison?: ReturnType<typeof compareQuality> & {
+    batchSpeedup?: number;
+    endToEndSpeedup?: number;
+  };
   prototype?: {
     implementation: string;
     sourceSha256: string;
@@ -66,11 +70,13 @@ export function benchmarkMarkdown(report: MarkdownReport): string {
       `| Lost / gained solutions | ${comparison.lostSolutions.length} / ${comparison.gainedSolutions.length} |`,
       `| Recovered timed-out solutions | ${comparison.recoveredTimeouts?.length ?? 0} |`,
       `| Geometric mean / worst cost ratio | ${number(comparison.geometricMeanCostRatio, 6)} / ${number(comparison.worstCostRatio, 6)} |`,
-      ...(comparison.speedup === undefined
-        ? []
-        : [
-            `| Speedup vs reference | ${report.qualityGate?.passed === false || comparison.lostSolutions.length || comparison.gainedSolutions.length || quality.completed !== batch.results.length ? 'n/a (quality/SLO gate or solution set changed)' : `${number(comparison.speedup)}×`} |`,
-          ]),
+      ...(['batchSpeedup', 'endToEndSpeedup'] as const).flatMap((metric) =>
+        comparison[metric] === undefined
+          ? []
+          : [
+              `| ${metric === 'batchSpeedup' ? 'Batch' : 'End-to-end'} speedup vs reference | ${report.qualityGate?.passed === false || comparison.lostSolutions.length || comparison.gainedSolutions.length || quality.completed !== batch.results.length ? 'n/a (quality/SLO gate or solution set changed)' : `${number(comparison[metric]!)}×`} |`,
+            ],
+      ),
     );
   if (report.qualityGate)
     rows.push(
@@ -81,22 +87,28 @@ export function benchmarkMarkdown(report: MarkdownReport): string {
     '<details>',
     '<summary>Measurement details</summary>',
     '',
-    `Measured ${batch.rounds ?? 1} complete batch(es) after one prewarm. Input loading, solver preparation and prewarm are excluded. Each query recomputes its route.`,
+    `Measured ${batch.rounds ?? 1} complete batch(es). Runtime warmup uses a separate disjoint workload. Recovery is included in batch wall time. Each query recomputes its route.`,
     '',
     `- Mean batch wall time: ${number(batch.wallMs)} ms; total: ${number(batch.totalWallMs ?? batch.wallMs)} ms.`,
     `- Batch samples (ms): ${(batch.wallSamplesMs ?? [batch.wallMs]).map((sample) => number(sample)).join(', ')}.`,
-    `- Excluded prewarm: ${number(report.prewarmMs / 1000)} s.`,
-    `- Excluded recovery setup: ${number((batch.recoverySetupMs ?? 0) / 1000)} s.`,
-    `- Stable outcomes in every round: ${batch.results.filter((r) => r.sameOutcomeAsPrewarm && r.sameTruncationAsPrewarm).length}/${batch.results.length}.`,
+    `- Independent runtime warmup: ${report.warmup.ids.length} queries, ${number(report.warmup.wallMs / 1000)} s.`,
+    `- Recovery setup (included in batch wall time): ${number((batch.recoverySetupMs ?? 0) / 1000)} s.`,
+    `- Repeatability: ${batch.repeatability}; matching outcomes across recorded rounds: ${batch.results.filter((r) => r.sameOutcomeAcrossRounds && r.sameTruncationAcrossRounds).length}/${batch.results.length}.`,
     `- Truncated discovery: ${batch.results.filter((r) => r.truncated).length}/${batch.results.length}.`,
     `- Total modeled travel time: ${number(quality.totalCostSeconds, 6)} s.`,
-    `- The per-query SLO excludes queueing and input loading. Timeouts count as failed routes. Successful throughput uses completed routes and the full measured batch wall time.`,
+    `- The per-query SLO excludes queueing and initial input loading. Deferred preparation is included in service time. Timeouts count as failed routes. Successful throughput uses completed routes and the full measured batch wall time.`,
   );
+  if (report.lifecycle)
+    rows.push(
+      `- Ready at ${number(report.lifecycle.readyMs / 1000)} s; end-to-end ${number(report.lifecycle.endToEndMs / 1000)} s.`,
+      `- End-to-end successful throughput: ${number(report.lifecycle.endToEndSuccessfulQueriesPerSecond)} complete routes/s.`,
+      '- Worker phase times overlap; use observed end-to-end time. Browser transfer and restore are unmeasured.',
+    );
   if (report.catalogTraining) {
     const training = report.catalogTraining;
     rows.push(
       `- Frozen static-action catalog: ${training.stats.added} actions, ${training.stats.scopes} scopes.`,
-      `- Excluded training: ${number(training.wallMs / 1000)} s; ${training.ids.length} queries, ${training.completed} complete.`,
+      `- Catalog training (included in end-to-end time): ${number(training.wallMs / 1000)} s; ${training.ids.length} queries, ${training.completed} complete.`,
     );
   }
   rows.push(

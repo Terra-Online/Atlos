@@ -62,8 +62,13 @@ pnpm check
 pnpm benchmark:full --limit 3 --json
 ```
 
-The benchmark submits a full scene batch after loading inputs and prewarming the
-prepared solver. `--config` accepts a complete serialized solver configuration.
+The benchmark records one algorithm lifecycle: input loading, service preparation
+(including declared catalog training and freezing), optional independent runtime
+warmup, measured queries and shutdown. It reports per-query service/queue/response
+times, batch wall time and actual end-to-end successful throughput. Runtime warmup
+requires `--warmup-workload <json-file>` with disjoint queries; measured requests
+are never used as an excluded warm pass. `--config` accepts a complete serialized
+solver configuration. See the [measurement guide](docs/contributing.md#interpret-benchmark-results).
 Keep local dependencies, data and generated evidence under the Atlos repository
 root `.local/`, or pass explicit paths for existing verified inputs. Use
 `--data-root` and `--extractor` when resources live outside the workspace.

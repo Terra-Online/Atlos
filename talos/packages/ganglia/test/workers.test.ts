@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { gangliaV1Defaults, type RouteQuery } from '@opendfieldmap/ganglia';
 
 import { resetTimings } from '#@/bench/timings.ts';
-import { prepareWorkerSolver } from '#@/bench/workers.ts';
+import { prepareWorkerSolver, type WorkerResult } from '#@/bench/workers.ts';
 
 const query = (id: string, delay = 5, mode = 0): RouteQuery => ({
   starts: [{ id, position: [0, 0, 0], state: 'available', cost: 0 }],
@@ -65,6 +65,42 @@ test('query errors reject while a crashed search is recorded and queued requests
     assert.equal(failed.reason, 'worker-exited:2');
     assert.equal(next.route.status, 'complete');
     assert.equal((await solver.solve(query('later'))).route.status, 'complete');
+  } finally {
+    await solver.close();
+  }
+});
+
+test('each prepared worker receives the entire ordered training set before freezing', async () => {
+  const prepared = await prepare(2);
+  try {
+    await prepared.setCatalogPhase('training');
+    const results = await prepared.train([query('train-a'), query('train-b')]);
+    await prepared.setCatalogPhase('frozen');
+    assert.equal(results.length, 2);
+    for (const worker of results) {
+      assert.deepEqual(
+        worker.map((result) => (result.route.status === 'complete' ? result.route.start : null)),
+        ['train-a', 'train-b'],
+      );
+      assert.equal(worker[0].reason, worker[1].reason);
+    }
+    assert.notEqual(results[0][0].reason, results[1][0].reason);
+    assert.ok(prepared.catalogStatsAll().every((stats) => stats.phase === 'frozen'));
+  } finally {
+    await prepared.solver.close();
+  }
+});
+
+test('queued requests separate service latency from client response and worker readiness costs', async () => {
+  const { solver, metadata } = await prepare(1);
+  try {
+    const results = await solver.solveBatch([query('blocking', 40), query('queued', 2)]);
+    const { diagnostics } = results[1] as WorkerResult;
+    assert.ok(diagnostics.queueMs >= 30);
+    assert.ok(diagnostics.responseMs >= diagnostics.queueMs + diagnostics.solveWallMs);
+    assert.equal(metadata.execution.preparation[0].inputLoadMs, 1);
+    assert.equal(metadata.execution.preparation[0].preparationMs, 2);
+    assert.ok(metadata.execution.memory.ready[0]!.rssBytes > 0);
   } finally {
     await solver.close();
   }

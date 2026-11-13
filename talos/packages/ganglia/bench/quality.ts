@@ -113,8 +113,8 @@ export function compareQuality(rows: readonly QualityRow[], reference: readonly 
 
 export function qualityGate(
   rows: readonly (QualityRow & {
-    sameOutcomeAsPrewarm: boolean;
-    sameTruncationAsPrewarm: boolean;
+    sameOutcomeAcrossRounds: boolean;
+    sameTruncationAcrossRounds: boolean;
   })[],
   comparison: ReturnType<typeof compareQuality> | undefined,
   limits = { geometricMeanCostRatio: 1.01, worstCostRatio: 1.05 },
@@ -122,8 +122,8 @@ export function qualityGate(
   if (Object.values(limits).some((value) => !Number.isFinite(value) || value < 1))
     throw new Error('Invalid benchmark quality limits');
   const failures: string[] = [];
-  if (rows.some((row) => !row.sameOutcomeAsPrewarm || !row.sameTruncationAsPrewarm))
-    failures.push('Measured results differ from prewarm');
+  if (rows.some((row) => !row.sameOutcomeAcrossRounds || !row.sameTruncationAcrossRounds))
+    failures.push('Measured results differ across rounds');
   if (rows.some(isTimedOut)) failures.push('Queries exceeded the 300,000 ms SLO');
   if (rows.some((row) => !complete(row)))
     failures.push('Some queries have no complete route within the SLO');
