@@ -51,6 +51,8 @@ transfer, restoration and browser execution remain unmeasured.
 Quality references retain their input/query bindings. Speed ratios require
 matching schema-8 measurement recipes; earlier dated results retain their
 original excluded-training/prewarm contracts.
+The Markdown report keeps batch and end-to-end speedup visible, including
+reference/current timings or the reason a matching ratio is unavailable.
 
 Validation: format, lint, typecheck and 414 tests pass. The retained six-query
 reference passes unchanged with ten training requests, two disjoint runtime

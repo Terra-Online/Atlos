@@ -228,6 +228,15 @@ if (values.help) {
         comparableSpeed &&
         referenceReport?.schemaVersion === 8 &&
         isDeepStrictEqual(referenceReport.measurement, measurement);
+      const timingUnavailableReason = !gate.passed
+        ? 'Quality or SLO gate failed'
+        : !comparableSpeed
+          ? 'The set of complete routes changed'
+          : referenceReport?.schemaVersion !== 8
+            ? 'Reference uses an earlier timing contract; rerun the baseline with schema 8'
+            : !isDeepStrictEqual(referenceReport.measurement, measurement)
+              ? 'Preparation, warmup or execution settings differ from the reference'
+              : undefined;
       const referenceBatchMs = referenceReport?.batch.wallMs;
       const referenceEndToEndMs = referenceReport?.lifecycle?.endToEndMs;
       const output = {
@@ -271,18 +280,27 @@ if (values.help) {
           ? {
               comparison: {
                 referenceSha256: createHash('sha256').update(referenceBytes).digest('hex'),
+                referenceBatchWallMs: referenceBatchMs,
+                referenceEndToEndMs,
                 ...(comparablePolicy &&
                 referenceBatchMs !== undefined &&
                 Number.isFinite(referenceBatchMs) &&
                 referenceBatchMs > 0
                   ? { batchSpeedup: referenceBatchMs / report.batch.wallMs }
-                  : {}),
+                  : {
+                      batchSpeedupUnavailableReason:
+                        timingUnavailableReason ?? 'Reference has no valid batch timing',
+                    }),
                 ...(comparablePolicy &&
                 referenceEndToEndMs !== undefined &&
                 Number.isFinite(referenceEndToEndMs) &&
                 referenceEndToEndMs > 0
                   ? { endToEndSpeedup: referenceEndToEndMs / endToEndMs }
-                  : {}),
+                  : {
+                      endToEndSpeedupUnavailableReason:
+                        timingUnavailableReason ??
+                        'Reference has no valid process-start-to-shutdown timing',
+                    }),
                 ...comparison,
               },
             }

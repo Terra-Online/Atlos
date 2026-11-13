@@ -1743,6 +1743,12 @@ long-range workload was not replayed and its recorded coverage gap remains open.
 
 ## Unified benchmark lifecycle, 2026-11-14
 
+Reporting follow-up: JSON retains reference batch/end-to-end times and explicit
+reasons when an automatic ratio is unavailable. Markdown presents both speedup
+rows prominently. The existing timeout/quality regression verifies failed
+queries cannot appear as speedups and older timing references receive a reason.
+Format, lint, typecheck and all 414 tests pass after this reporting change.
+
 Schema 8 measures one algorithm and preparation recipe, then interprets the
 measurements for server queries, browser offload or offline batch processing.
 There are no deployment-mode branches. Solver `src/` and search budgets are

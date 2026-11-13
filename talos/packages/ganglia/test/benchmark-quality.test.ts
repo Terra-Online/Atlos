@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { benchmarkMarkdown } from '#@/bench/markdown.ts';
+import { benchmarkMarkdown, type MarkdownReport } from '#@/bench/markdown.ts';
 import {
   compareQuality,
   readReference,
@@ -102,7 +102,7 @@ test('markdown exposes timeout failures and successful throughput without claimi
   const measured = [
     { ...row('one', 0), status: 'no-verified-route' as const, reason: 'timeout', timedOut: true },
   ];
-  const markdown = benchmarkMarkdown({
+  const report: MarkdownReport = {
     scene: 'fixture',
     revision: '1234567',
     sourceSha256: 'source',
@@ -148,13 +148,35 @@ test('markdown exposes timeout failures and successful throughput without claimi
       })),
     },
     comparison: { ...compareQuality(measured, [row('one', 10)]), batchSpeedup: 20 },
-  });
+  };
+  const markdown = benchmarkMarkdown(report);
   assert.match(markdown, /Successful throughput \| 0\.000 complete routes\/s/);
   assert.match(markdown, /Timed-out queries \| 1\/1/);
   assert.match(markdown, /Lost \/ gained solutions \| 1 \/ 0/);
   assert.match(markdown, /Batch speedup vs reference \| n\/a/);
   assert.doesNotMatch(markdown, /20\.000×/);
   assert.match(markdown, /\| one \| timeout \| n\/a \|/);
+  const noReference = benchmarkMarkdown({ ...report, comparison: undefined });
+  assert.match(noReference, /Batch speedup vs reference \| n\/a \(No reference supplied\)/);
+  const completeRows = report.batch.results.map((item) => ({
+    ...item,
+    status: 'complete' as const,
+    cost: 10,
+    timedOut: false,
+    reason: null,
+  }));
+  const earlierContract = benchmarkMarkdown({
+    ...report,
+    batch: { ...report.batch, results: completeRows, quality: summarizeQuality(completeRows) },
+    comparison: {
+      ...compareQuality(completeRows, [row('one', 10)]),
+      batchSpeedupUnavailableReason: 'Reference uses an earlier timing contract',
+    },
+  });
+  assert.match(
+    earlierContract,
+    /Batch speedup vs reference \| n\/a \(Reference uses an earlier timing contract\)/,
+  );
 });
 
 test('reference comparison pairs by id, weighs queries equally and exposes individual regressions', () => {
