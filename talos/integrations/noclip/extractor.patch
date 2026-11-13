@@ -2259,14 +2259,15 @@ index 00000000..a51178ce
 +};
 diff --git a/packages/extractor/src/commands/player-ground.test.ts b/packages/extractor/src/commands/player-ground.test.ts
 new file mode 100644
-index 00000000..56af04e6
+index 00000000..09da9359
 --- /dev/null
 +++ b/packages/extractor/src/commands/player-ground.test.ts
-@@ -0,0 +1,31 @@
+@@ -0,0 +1,59 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
++import { deserialize } from 'node:v8';
 +
-+import { run } from './player-ground.ts';
++import { encodeCollision, run } from './player-ground.ts';
 +
 +const args = (bounds: string, cellSize = '0.15') => [
 +	'map01',
@@ -2293,14 +2294,42 @@ index 00000000..56af04e6
 +test('rejects invalid voxel resolution and excessive tile work before extraction', async () => {
 +	await assert.rejects(run(args('0,0,10,10', '0')), /resolution or tile budget/);
 +	await assert.rejects(run(args('0,0,100,100', '0.0001')), /resolution or tile budget/);
++	await assert.rejects(run([...args('0,0,10,10'), '--collision-format=unsupported']), /invalid collision format/);
++});
++
++test('local v8 collision snapshots retain float64 coordinates, uint32 indices and exporter metadata', () => {
++	const value = {
++		positions: [-0, Math.PI, 1 + Number.EPSILON, 2 ** 40 + 0.125, -(2 ** 40) - 0.5, Number.MIN_VALUE, 1, 2, 3],
++		indices: [2, 0, 1],
++		scene: 'scene', source: { buildGuid: 'build', contentHash: 'content' },
++		selection: { sceneState: 0, area: 0, solidsOnly: true },
++		coverage: { complete: false }, records: [{ first: 0, count: 1, walkable: false }],
++		exclusions: [], options: { profile: { radius: 0.25, height: 1 }, bounds: { min: [0, 0], max: [10, 10] } },
++		exportRevision: 2, generator: 'generator', absent: [{ x: 1, z: 2 }],
++	};
++	assert.equal(encodeCollision(value), JSON.stringify(value));
++	const encoded = encodeCollision(value, 'v8');
++	assert.ok(Buffer.isBuffer(encoded));
++	const decoded = deserialize(encoded);
++	assert.ok(decoded.positions instanceof Float64Array);
++	assert.ok(decoded.indices instanceof Uint32Array);
++	assert.deepEqual(Array.from(decoded.positions), value.positions);
++	assert.deepEqual(Array.from(decoded.indices), value.indices);
++	assert.deepEqual({ ...decoded, positions: value.positions, indices: value.indices }, value);
++	assert.throws(() => encodeCollision({ ...value, indices: [2 ** 32, 0, 1] }, 'v8'), /invalid collision/);
++	assert.throws(() => encodeCollision({ ...value, indices: [0.5, 0, 1] }, 'v8'), /invalid collision/);
++	const invalid = { ...value, positions: [...value.positions] };
++	Object.assign(invalid.positions, { 0: false });
++	assert.throws(() => encodeCollision(invalid, 'v8'), /invalid collision/);
 +});
 diff --git a/packages/extractor/src/commands/player-ground.ts b/packages/extractor/src/commands/player-ground.ts
 new file mode 100644
-index 00000000..4694927b
+index 00000000..72dfd6ab
 --- /dev/null
 +++ b/packages/extractor/src/commands/player-ground.ts
-@@ -0,0 +1,290 @@
+@@ -0,0 +1,317 @@
 +import { createHash } from 'node:crypto';
++import { serialize } from 'node:v8';
 +/* oxlint-disable no-await-in-loop -- retain one selected collision export at a time */
 +import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 +import { resolve } from 'node:path';
@@ -2325,7 +2354,31 @@ index 00000000..4694927b
 +export const summary =
 +	'build bounded player ground tiles from selected collision sources, including factory floors';
 +export const usage =
-+	'usage: endfield-extract player-ground <scene> --bounds <minX,minZ,maxX,maxZ> --scene-state <n> --area <n> --movement-settings <file> -o <ground-file> --collision-output <geometry-file> [--terminal-scene] [--cell-size <m>] [--tile-cells <n>] [--tiles <x,z;x,z>] [--tile-cache <directory>] --config <config>; player-ground --identity';
++	'usage: endfield-extract player-ground <scene> --bounds <minX,minZ,maxX,maxZ> --scene-state <n> --area <n> --movement-settings <file> -o <ground-file> --collision-output <geometry-file> [--collision-format <json|v8>] [--terminal-scene] [--cell-size <m>] [--tile-cells <n>] [--tiles <x,z;x,z>] [--tile-cache <directory>] --config <config>; player-ground --identity';
++
++/** V8 snapshots are local Node cache files; metadata retains the exporter bindings. */
++export const encodeCollision = (
++	value: { positions: number[]; indices: number[]; [key: string]: unknown },
++	format: 'json' | 'v8' = 'json',
++): string | Buffer => {
++	if (format === 'json') return JSON.stringify(value);
++	if (value.positions.length % 3 || value.indices.length % 3) {
++		throw new Error('invalid collision triangle packing for v8 export');
++	}
++	for (const position of value.positions) {
++		if (!Number.isFinite(position)) throw new Error('invalid collision vertex for v8 export');
++	}
++	for (const index of value.indices) {
++		if (!Number.isInteger(index) || index < 0 || index > 0xffffffff || index >= value.positions.length / 3) {
++			throw new Error('invalid collision index for v8 export');
++		}
++	}
++	return serialize({
++		...value,
++		positions: Float64Array.from(value.positions),
++		indices: Uint32Array.from(value.indices),
++	});
++};
 +
 +/**
 + * @param args source selection, build-bound movement parameters and explicit world bounds
@@ -2345,6 +2398,7 @@ index 00000000..4694927b
 +			'movement-settings': { type: 'string' },
 +			output: { type: 'string', short: 'o' },
 +			'collision-output': { type: 'string' },
++			'collision-format': { type: 'string', default: 'json' },
 +			'cell-size': { type: 'string', default: '0.15' },
 +			'tile-cells': { type: 'string', default: '256' },
 +			tiles: { type: 'string' },
@@ -2370,6 +2424,8 @@ index 00000000..4694927b
 +	) {
 +		throw new Error(usage);
 +	}
++	const collisionFormat = values['collision-format'];
++	if (collisionFormat !== 'json' && collisionFormat !== 'v8') throw new Error('invalid collision format');
 +	const bounds = values.bounds.split(',').map(Number);
 +	if (
 +		bounds.length !== 4 ||
@@ -2435,9 +2491,8 @@ index 00000000..4694927b
 +		radius: numberField(movement.defaultProfile, 'radius'),
 +		height: numberField(movement.defaultProfile, 'height'),
 +	};
-+	const selection = {
++	const selection: { sceneState: number; sceneStates?: number[]; area: number; layerMask: number; solidsOnly: boolean } = {
 +		sceneState: parseInteger(values['scene-state'], '--scene-state'),
-+		sceneStates: undefined as number[] | undefined,
 +		area: parseInteger(values.area, '--area'),
 +		layerMask: numberField(objectField(settings, '_collidableLayers'), 'm_Bits'),
 +		solidsOnly: true,
@@ -2545,7 +2600,7 @@ index 00000000..4694927b
 +			...(tiles ? { tiles } : {}),
 +		};
 +		const generator = await groundGeneratorIdentity();
-+		await writeFile(values['collision-output']!, JSON.stringify({ ...geometry, exportRevision: 2, generator, options, absent }));
++		await writeFile(values['collision-output']!, encodeCollision({ ...geometry, exportRevision: 2, generator, options, absent }, collisionFormat));
 +		const ground = await buildGroundTiles(
 +			{ positions: geometry.positions, indices: buildIndices },
 +			{

@@ -400,10 +400,10 @@ new file mode 100644
 +		!Array.isArray(movement.assets) ||
 +		!Array.isArray(request.walls) ||
 +		!Array.isArray(ground.options.walls) ||
-+		!Array.isArray(collision.positions) ||
++		!(Array.isArray(collision.positions) || collision.positions instanceof Float32Array || collision.positions instanceof Float64Array) ||
 +		collision.positions.length < 9 ||
 +		collision.positions.length % 3 !== 0 ||
-+		!Array.isArray(collision.indices) ||
++		!(Array.isArray(collision.indices) || collision.indices instanceof Uint16Array || collision.indices instanceof Uint32Array) ||
 +		collision.indices.length < 3 ||
 +		collision.indices.length % 3 !== 0 ||
 +		!request.arrival ||
@@ -962,7 +962,7 @@ diff --git a/packages/extractor/src/commands/player-route.test.ts b/packages/ext
 new file mode 100644
 --- /dev/null
 +++ b/packages/extractor/src/commands/player-route.test.ts
-@@ -0,0 +1,818 @@
+@@ -0,0 +1,855 @@
 +import assert from 'node:assert/strict';
 +import { fork } from 'node:child_process';
 +import { once } from 'node:events';
@@ -970,6 +970,7 @@ new file mode 100644
 +import { tmpdir } from 'node:os';
 +import { join } from 'node:path';
 +import { test } from 'node:test';
++import { deserialize } from 'node:v8';
 +
 +import type { Wall } from '@opendfieldmap/ganglia';
 +
@@ -978,6 +979,8 @@ new file mode 100644
 +import { createRouteCache } from '../route-cache.ts';
 +
 +import { run } from './player-route.ts';
++import { preparePhysicalRoute } from '../game/physical-input.ts';
++import { encodeCollision } from './player-ground.ts';
 +
 +const source = { buildGuid: 'build', contentHash: 'content' };
 +const profile = { radius: 0.25, height: 1 };
@@ -1780,4 +1783,38 @@ new file mode 100644
 +		execute(data, { waypoints: 'invalid' }, 'walking'),
 +		/coarse waypoints/,
 +	);
++});
++
++test('physical preparation accepts typed collision snapshots and rejects unsupported geometry containers', async () => {
++	const data = fixture();
++	const inputs: Record<string, unknown> = { ...data };
++	const cache = createRouteCache();
++	cache.begin = async () => 'typed-fixture';
++	cache.read = async <T>(slot: string) => inputs[slot] as T;
++	const prepare = () => preparePhysicalRoute({ ground: 'ground', collision: 'collision', movement: 'movement' }, data.request, { cache });
++	try {
++		const baseline = await (await prepare()).solve({ work: { version: 1, step: 0 } });
++		const encoded = encodeCollision(data.collision, 'v8');
++		assert.ok(Buffer.isBuffer(encoded));
++		for (const geometry of [
++			deserialize(encoded),
++			{ ...data.collision, positions: Float32Array.from(data.collision.positions), indices: Uint16Array.from(data.collision.indices) },
++		]) {
++			inputs.collision = geometry;
++			const report = await (await prepare()).solve({ work: { version: 1, step: 0 } });
++			assert.equal(report.status, 'candidate');
++			assert.deepEqual(report.route, baseline.route);
++			assert.deepEqual(report.source, source);
++			assert.deepEqual(report.coverage, baseline.coverage);
++		}
++		for (const geometry of [
++			{ ...data.collision, positions: false },
++			{ ...data.collision, positions: Int32Array.from(data.collision.positions) },
++			{ ...data.collision, indices: Float64Array.from(data.collision.indices) },
++			{ ...data.collision, indices: new Uint32Array([0, 1]) },
++		]) {
++			inputs.collision = geometry;
++			await assert.rejects(prepare(), /invalid physical route request/);
++		}
++	} finally { cache.clear(); }
 +});
