@@ -175,7 +175,7 @@ ol.bindStep {
     gap: 0.5rem;
     color: var(--auth-text);
     height: 100%;
-    justify-content: space-around;
+    justify-content: center;
     padding: 0 .5rem;
 }
 
@@ -251,18 +251,51 @@ ol.bindStep {
 }
 
 .bindingError {
-  margin: 0 auto;
-  @include prts.prts-text-effect(flex-end, left, 15%);
+    max-width: 100%;
+    @include prts.prts-text-effect(center, center, 0%);
+}
+
+.bindingForm .bindingError {
+    margin: 0 auto;
+    padding: 0 2px;
 }
 
 .bindingErrorRich {
+    display: block;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    line-height: 1.5;
     color: var(--auth-text);
     text-transform: none;
+    animation: none;
+
+    &::before,
+    &::after {
+        content: none;
+    }
 }
 
 .deviceVerificationPopover {
+    display: block;
+    max-width: min(24rem, calc(100vw - 2.5rem));
     white-space: normal;
     line-height: 1.35;
+}
+
+.deviceVerificationHelp {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ack-link);
+    font: inherit;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
 }
 
 .bindingErrorRich .policyReminder {

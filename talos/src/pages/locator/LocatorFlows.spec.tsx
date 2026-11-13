@@ -8,7 +8,7 @@ import EndfieldBindingHost from './EndfieldBindingHost';
 import { requestEndfieldBinding, useLocatorStore } from '@/store/locator';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { type EFBindingSummary, type EFRoleOption, type EFTrackerConf } from '@/services/endfield';
-import { installResizeObserver } from '../../../test-support/browser';
+import { installPointerCapture, installPopover, installResizeObserver } from '../../../test-support/browser';
 import { deferred } from '../../../test-support/pages';
 import { useAuthStore } from '@/store/auth';
 import { openOemAuthModal } from '@/component/shared/account/authEvents';
@@ -105,6 +105,45 @@ it('blocks dismissal and provider changes until the in-flight request settles, r
     expect(screen.getByRole('tab', { name: 'locator.binding.chinaTab' }).getAttribute('aria-selected')).toBe('true');
     fireEvent.click(screen.getByRole('button', { name: 'common.close' }));
     expect(close).toHaveBeenCalledOnce();
+});
+
+it('lets a touch user toggle device verification help and dismiss it without closing the binding form', async () => {
+    const popover = installPopover();
+    const restorePointer = installPointerCapture();
+    try {
+        api.mobile = true;
+        api.config = null;
+        api.exchange.mockRejectedValueOnce(new Error('需要进行设备验证'));
+        const close = vi.fn();
+        render(<LocationBinding open onClose={close} />);
+        fireEvent.click(screen.getByRole('tab', { name: 'locator.binding.chinaTab' }));
+        advanceCountdown(); inputToken();
+        await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'locator.binding.bind' })); await Promise.resolve(); });
+        const help = screen.getByRole('button', { name: '如何解决？' });
+        const tooltip = screen.getByRole('tooltip');
+        const tap = () => {
+            fireEvent.pointerEnter(help, { pointerType: 'touch' });
+            fireEvent.pointerDown(help, { pointerType: 'touch' });
+            fireEvent.pointerUp(help, { pointerType: 'touch' });
+            fireEvent.pointerLeave(help, { pointerType: 'touch' });
+            fireEvent.click(help);
+        };
+        tap();
+        expect(popover.isOpen(tooltip)).toBe(true);
+        tap();
+        expect(popover.isOpen(tooltip)).toBe(false);
+        tap();
+        fireEvent.pointerDown(screen.getByRole('textbox'), { pointerType: 'touch' });
+        expect(popover.isOpen(tooltip)).toBe(false);
+        tap();
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(popover.isOpen(tooltip)).toBe(false);
+        expect(close).not.toHaveBeenCalled();
+    } finally {
+        cleanup();
+        popover.restore();
+        restorePointer();
+    }
 });
 
 it('keeps failed policy authorization open and enables tracking only after agreement succeeds', async () => {

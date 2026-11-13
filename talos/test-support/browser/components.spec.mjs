@@ -144,6 +144,47 @@ test('TEST-BROWSER-LAYOUT-001 ResizeObserver keeps tab geometry and scroll masks
     await testInfo.attach('real-layout', { body: await page.screenshot(), contentType: 'image/png' });
 });
 
+test('TEST-BROWSER-BINDING-001 device verification help opens by touch or hover with a compact centered error', async ({ page, services, isMobile }, testInfo) => {
+    services.handle('POST', '/binding/v1/endfield/exchange-token', () => ({
+        status: 400, body: { message: '需要进行设备验证' },
+    }));
+    await page.getByRole('button', { name: 'Open binding form', exact: true }).click();
+    const modal = page.getByRole('dialog', { name: 'Binding Account', exact: true });
+    await modal.getByRole('tab').first().click();
+    await modal.getByRole('textbox').fill('{"code":0,"data":{"content":"fixture-token"}}');
+    await modal.getByRole('button', { name: 'Bind and enable location sync', exact: true }).click();
+    const help = modal.getByText('如何解决？', { exact: true });
+    const tooltip = page.getByRole('tooltip').filter({ hasText: '新设备登录身份验证' });
+    if (isMobile) {
+        await help.tap();
+        await expect(tooltip).toBeVisible();
+        await help.tap();
+        await expect(tooltip).toBeHidden();
+        await help.tap();
+    } else {
+        await help.hover();
+    }
+    await expect(tooltip).toBeVisible();
+    const bounds = await tooltip.boundingBox();
+    expect(bounds.x).toBeGreaterThanOrEqual(0);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(page.viewportSize().width);
+    const layout = await help.evaluate((node) => {
+        const error = node.closest('[aria-live]').getBoundingClientRect();
+        const form = node.closest('[aria-live]').parentElement;
+        const field = form.querySelector('textarea').getBoundingClientRect();
+        const footer = form.lastElementChild.getBoundingClientRect();
+        const rect = form.getBoundingClientRect();
+        return { center: Math.abs(error.x + error.width / 2 - rect.x - rect.width / 2), before: error.y - field.bottom, after: footer.y - error.bottom };
+    });
+    expect(layout.center).toBeLessThan(1);
+    expect(layout.before).toBeLessThanOrEqual(24);
+    expect(layout.after).toBeLessThanOrEqual(24);
+    await testInfo.attach('binding-device-help', { body: await page.screenshot(), contentType: 'image/png' });
+    await page.keyboard.press('Escape');
+    await expect(tooltip).toBeHidden();
+    await expect(modal).toBeVisible();
+});
+
 test('TEST-BROWSER-ACTIONBAR-001 selection actions preserve editor focus and release their native layer', async ({ page }) => {
     const editor = page.getByRole('textbox', { name: 'Floating editor', exact: true });
     await editor.focus();
