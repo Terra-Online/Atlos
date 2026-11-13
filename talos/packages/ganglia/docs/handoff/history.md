@@ -1,5 +1,33 @@
 # Route solver history and validation evidence
 
+## Rust world integration, 2026-11-14
+
+The native rewrite begins at Atlos `d35e4997`, retaining the TypeScript solver and
+the prototype until full native replacement acceptance. World/model/scaffold work
+was committed as `f1208fb083bb09ebc2731fa6cb6072670b787bcb`, integrated as `a1aeac74`.
+It owns raw facts, spatial/collision/support calculations, flight controls, device
+actions and moving/following support operations without a prototype dependency.
+
+Integration found missing portal-mask enforcement and a ground fast path that
+accepted support unions without checking directed passages. Optional masks now
+retain the difference between absent and explicitly empty masks. Ground tracing
+propagates through the actual directed portal intervals. Split collinear edges
+join only over positive shared intervals. Obstacle visibility proposals address a
+thin-wall detour within broad ground faces, and every resulting chord receives
+support and capsule checks. Interaction spheres use their radius for height unless
+the query supplies an independent vertical limit. Facing validation follows the
+common model's paired forward vector and angle in `(0, 90]` degrees.
+
+Validation: `cargo test --offline` passes 16 tests; `cargo clippy --offline
+--all-targets -- -D warnings` passes; `git diff --check` passes. The regression
+cases protect masked/reverse passage rejection, split-edge connectivity,
+interaction height semantics and obstacle detours. The previous thin-wall test
+expected no route despite open supported space around the wall; it now requires a
+longer route and independently checks every returned capsule chord. Cargo uses
+`/tmp/ganglia-v1-target` in this worktree. No map dataset, benchmark or independent
+TypeScript physical verifier was run for this geometry integration checkpoint.
+This is partial implementation evidence, with no speedup or complete-rewrite claim.
+
 ## Atlos base integration, 2026-11-14
 
 Merged `feat/3d-preview` at `162ca793` into the editable workspace integration.

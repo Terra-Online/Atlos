@@ -1,5 +1,28 @@
 # Route solver handoff
 
+## Rust rewrite integration, 2026-11-14
+
+`crates/ganglia-v1` is an in-progress independent Rust implementation. The retained
+TypeScript solver remains available. The Rust rewrite is not yet accepted as a
+complete replacement: search/engine integration, native seam tests, independent
+physical replay and matched-workload benchmark acceptance remain outstanding.
+
+The Rust world owns normalized facts, collision indexing and continuous capsule
+sweeps, sparse coverage checks, ground generation/projection/refinement, directed
+portal tracing, flight controls, devices and movable support placement. Ground
+generation uses slope-admissible source triangles with runtime support/clearance
+validation rather than Recast output parity. Portal masks and split collinear
+intervals constrain walking. Finite obstacle visibility proposals recover detours
+inside broad faces, with every chosen chord physically checked. Following placement
+uses conservative clearance and supported horizontal roofs; its placement search
+belongs to native search. Geometry results do not certify global route quality.
+
+The world implementation starts from `f1208fb083bb09ebc2731fa6cb6072670b787bcb`
+(integrated as `a1aeac74`). Integration fixes cover portal-mask enforcement,
+directed walking traces, split portals, broad-face obstacle detours and interaction
+height clipping. Sixteen Rust world tests and Clippy with warnings denied pass for
+this source. No native route, whole-map or performance acceptance is implied.
+
 ## Workspace migration checkpoint, 2026-11-14
 
 Ganglia source and all tracked documentation were imported from standalone

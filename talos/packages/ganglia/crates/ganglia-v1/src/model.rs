@@ -10,8 +10,8 @@ pub type Extra = BTreeMap<String, Value>;
 pub struct Surface {
     pub id: String,
     pub vertices: Vec<Vec3>,
-    #[serde(default)]
-    pub portals: Vec<usize>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub portals: Option<Vec<usize>>,
     #[serde(flatten)]
     pub extra: Extra,
 }

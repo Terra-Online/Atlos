@@ -50,10 +50,91 @@ fn sweep_hits_thin_wall_between_clear_endpoints() {
     assert!(w.clear([-2., 0.01, 0.], [-2., 0.01, 0.], 0.).unwrap());
     assert!(w.clear([2., 0.01, 0.], [2., 0.01, 0.], 0.).unwrap());
     assert!(!w.clear([-2., 0.01, 0.], [2., 0.01, 0.], 0.).unwrap());
+    let detour = w.ground_path([-2., 0., 0.], [2., 0., 0.]).unwrap().unwrap();
+    assert!(detour.length > 4.);
     assert!(
-        w.ground_path([-2., 0., 0.], [2., 0., 0.])
+        detour
+            .points
+            .windows(2)
+            .all(|p| w.clear(p[0], p[1], 0.).unwrap())
+    );
+}
+
+#[test]
+fn masked_and_directed_portals_constrain_ground_traces() {
+    let mut value = snapshot(floor(-3., 3., -2., 2., 0.));
+    value["input"]["ground"]["surfaces"] = json!([
+        {"id":"left","vertices":[[-3.,0.,-2.],[0.,0.,-2.],[0.,0.,2.],[-3.,0.,2.]],"portals":[]},
+        {"id":"right","vertices":[[0.,0.,-2.],[3.,0.,-2.],[3.,0.,2.],[0.,0.,2.]],"portals":[]}
+    ]);
+    let blocked = World::new(value.clone()).unwrap();
+    assert!(
+        blocked
+            .ground_path([-1., 0., 0.], [1., 0., 0.])
             .unwrap()
             .is_none()
+    );
+    value["input"]["ground"]["options"]["portals"] = json!([{
+        "from":"left","to":"right","points":[[0.,0.,0.],[0.,0.,0.]],
+        "entry":[[0.,0.,-1.],[0.,0.,1.]],"exit":[[0.,0.,-1.],[0.,0.,1.]]
+    }]);
+    let directed = World::new(value).unwrap();
+    assert!(
+        directed
+            .ground_path([-1., 0., 0.], [1., 0., 0.])
+            .unwrap()
+            .is_some()
+    );
+    assert!(
+        directed
+            .ground_path([1., 0., 0.], [-1., 0., 0.])
+            .unwrap()
+            .is_none()
+    );
+}
+
+#[test]
+fn split_portals_join_over_the_shared_interval() {
+    let mut value = snapshot(floor(-3., 3., -2., 2., 0.));
+    value["input"]["ground"]["surfaces"] = json!([
+        {"id":"left","vertices":[[-3.,0.,-2.],[0.,0.,-2.],[0.,0.,2.],[-3.,0.,2.]]},
+        {"id":"right-low","vertices":[[0.,0.,-2.],[3.,0.,-2.],[3.,0.,0.],[0.,0.,0.]]},
+        {"id":"right-high","vertices":[[0.,0.,0.],[3.,0.,0.],[3.,0.,2.],[0.,0.,2.]]}
+    ]);
+    let world = World::new(value).unwrap();
+    assert!(
+        world
+            .ground_path([-1., 0., -1.], [1., 0., -1.])
+            .unwrap()
+            .is_some()
+    );
+    assert!(
+        world
+            .ground_path([-1., 0., 1.], [1., 0., 1.])
+            .unwrap()
+            .is_some()
+    );
+}
+
+#[test]
+fn interaction_sphere_only_clips_height_when_requested() {
+    let world = World::new(snapshot(floor(-3., 3., -3., 3., 0.))).unwrap();
+    let mut interaction = Interaction {
+        radius: 3.,
+        ..Interaction::default()
+    };
+    assert!(
+        !world
+            .project([0., 2., 0.], Some(&interaction))
+            .unwrap()
+            .is_empty()
+    );
+    interaction.max_vertical = Some(0.5);
+    assert!(
+        world
+            .project([0., 2., 0.], Some(&interaction))
+            .unwrap()
+            .is_empty()
     );
 }
 #[test]

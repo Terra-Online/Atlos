@@ -442,7 +442,7 @@ impl World {
             roofs.push(Surface {
                 id: format!("following/{id}/{i}"),
                 vertices: top,
-                portals: vec![],
+                portals: None,
                 extra,
             });
         }

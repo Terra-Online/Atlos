@@ -70,6 +70,7 @@ pub struct World {
     support: Index,
     owners: Vec<usize>,
     surface_ids: BTreeMap<String, usize>,
+    portal_owners: Vec<Vec<usize>>,
 }
 pub fn distance(a: Vec3, b: Vec3) -> f64 {
     hypot(sub(a, b))
@@ -168,7 +169,7 @@ impl World {
                     surfaces.push(Surface {
                         id: format!("ground/{id}"),
                         vertices,
-                        portals: vec![],
+                        portals: None,
                         extra: Extra::new(),
                     });
                 }
@@ -195,6 +196,9 @@ impl World {
             if s.id.is_empty()
                 || s.vertices.len() < 3
                 || s.vertices.iter().any(|&p| !finite(p))
+                || s.portals
+                    .as_ref()
+                    .is_some_and(|edges| edges.iter().any(|&i| i >= s.vertices.len()))
                 || surface_ids.insert(s.id.clone(), id).is_some()
             {
                 return Err("Invalid or duplicate surface".into());
@@ -228,6 +232,10 @@ impl World {
             {
                 return Err("Invalid portal".into());
             }
+        }
+        let mut portal_owners = vec![vec![]; surfaces.len()];
+        for (i, portal) in portals.iter().enumerate() {
+            portal_owners[surface_ids[&portal.from]].push(i);
         }
         let connections: Vec<Connection> = optional(&input["connections"], "connections")?
             .or(optional(&options["connections"], "connections")?)
@@ -298,6 +306,7 @@ impl World {
             support,
             owners,
             surface_ids,
+            portal_owners,
         };
         world.prepare_devices()?;
         Ok(world)
