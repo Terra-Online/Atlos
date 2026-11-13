@@ -34,6 +34,7 @@ test('packages the satellite SPA entry without bringing tile resources into Page
         await fs.readFile(path.join(output, 'index.html'), 'utf8'));
     assert.deepEqual(await fs.readdir(path.join(output, 'satellite')), ['index.html']);
     assert.ok(await fs.stat(path.join(output, 'me/index.html')));
+
 });
 
 test('rejects a missing satellite entry before replacing an existing package', async (t) => {

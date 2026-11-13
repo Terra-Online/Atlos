@@ -34,6 +34,10 @@
     "emptyDesc": "위치 정보에 누락이나 오류가 있음을 확인하신 경우, 프로젝트 커뮤니티에서 관리자에게 문의하시거나 본 프로젝트의 GitHub 저장소에 <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='위치 오류 신고'>Issue</a>를 등록해 주세요."
   },
   "detail": {
+    "noclip": {
+      "title": "장면 미리보기",
+      "open": "3D 장면에서 위치 보기"
+    },
     "stat": {
       "world": "월드",
       "main": "지역",

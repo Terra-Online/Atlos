@@ -1,0 +1,63 @@
+import { StrictMode, lazy, Suspense } from 'react';
+import { createRoot } from 'react-dom/client';
+import { ViewerApp, PanelProvider } from '@endfield-noclip/viewer/host';
+import '@endfield-noclip/viewer/style.css';
+import '@/styles/global.scss';
+import './style.scss';
+import './preview.css';
+import { i18nInitPromise } from '@/locale';
+import { Panel } from './panel';
+import { Preview } from './preview';
+import { readLaunch } from './route';
+
+const routePreview = new URL(location.href).searchParams.get('routePreview');
+const RouteInspection = import.meta.env.DEV
+    ? lazy(() => import('./route-inspection'))
+    : null;
+
+const root = createRoot(document.getElementById('root')!);
+void i18nInitPromise.then(() => {
+    try {
+        const launch = readLaunch(
+            new URL(location.href),
+            import.meta.env.VITE_WORLD_CATALOG_URL as string | undefined,
+        );
+        root.render(
+            <StrictMode>
+                <PanelProvider component={Panel}>
+                    <ViewerApp
+                        filtersUrl={
+                            import.meta.env.VITE_WORLD_FILTERS_URL as
+                                | string
+                                | undefined
+                        }
+                        overlay={(viewer, panelRoot) => (
+                            <>
+                                <Preview
+                                    viewer={viewer}
+                                    launch={launch}
+                                    panelRoot={panelRoot}
+                                />
+                                {RouteInspection && (
+                                    <Suspense fallback={null}>
+                                        <RouteInspection
+                                            viewer={viewer}
+                                            source={routePreview}
+                                            panelRoot={panelRoot}
+                                        />
+                                    </Suspense>
+                                )}
+                            </>
+                        )}
+                    />
+                </PanelProvider>
+            </StrictMode>,
+        );
+    } catch (error) {
+        root.render(
+            <main role='alert'>
+                {error instanceof Error ? error.message : String(error)}
+            </main>,
+        );
+    }
+});

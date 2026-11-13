@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "../../src/global.d.ts",
+    "../../src/vite-env.d.ts",
+    "../../.cache/noclip/packages/viewer/src/file-system-access.d.ts"
+  ]
+}

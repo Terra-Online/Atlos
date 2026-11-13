@@ -1,10 +1,10 @@
 import IconButton from '@/component/button/IconButton';
 import React, { useMemo } from 'react';
-import styles from '@/pages/regSwitch/regSwitch.module.scss';
+import styles from '@/component/regionSwitch/regionSwitch.module.scss';
 import { useCurrentLayer, useSetCurrentLayer, useLayerStore } from '@/store/layer';
 import classNames from 'classnames';
 import LayerIcon from '@/assets/images/UI/layer.svg?react';
-import SatelliteIcon from '@/assets/images/UI/satellite.svg?react';
+import SatelliteIcon from '@/assets/logos/_Satellite.svg?react';
 import { getAvailableLayers, hasSatelliteTiles } from '@/services/map/tileCoverage';
 import { useForceLayerSubOpen } from '@/store/uiPrefs';
 import useRegion from '@/store/region';
@@ -41,6 +41,7 @@ const LayerSwitch: React.FC<{
     const satellite = useLayerStore((state) => state.satellite);
     const setSatellite = useLayerStore((state) => state.setSatellite);
     const supportsSatellite = hasSatelliteTiles(currentRegionKey);
+    const satelliteActive = supportsSatellite && satellite && currentLayer === 'M';
     const setCurrentLayer = useSetCurrentLayer();
     const forceLayerSubOpen = useForceLayerSubOpen();
 
@@ -74,8 +75,8 @@ const LayerSwitch: React.FC<{
             <div className={classNames(styles.regLabel, styles.layerLabel)}></div>
             {supportsSatellite && (
                 <PopoverTooltip content={t('mapControls.satellite')} placement="left" disabled={isMobile || !isSidebarOpen}>
-                    <div className={classNames(styles.regItem, satellite && currentLayer === 'M' && styles.selected)}>
-                        <IconButton className={styles.mainAction} label={t('mapControls.satellite')} pressed={satellite && currentLayer === 'M'} onClick={() => setSatellite(!(satellite && currentLayer === 'M'))}>
+                    <div className={classNames(styles.regItem, satelliteActive && styles.selected)}>
+                        <IconButton className={styles.mainAction} label={t('mapControls.satellite')} pressed={satelliteActive} onClick={() => setSatellite(!satelliteActive)}>
                             <div className={styles.icon}><SatelliteIcon /></div>
                         </IconButton>
                     </div>
@@ -90,11 +91,12 @@ const LayerSwitch: React.FC<{
                     {...menu.getItemProps('layers')}
                     className={classNames(
                         styles.regItem,
-                        currentLayer !== 'M' && styles.selected,
+                        !satelliteActive && styles.selected,
                     )}
                 >
-                    <IconButton className={styles.mainAction} data-guide="layer-main-toggle" label={t('mapControls.layerSelect')} pressed={currentLayer !== 'M'} onClick={() => {
+                    <IconButton className={styles.mainAction} data-guide="layer-main-toggle" label={t('mapControls.layerSelect')} pressed={!satelliteActive} onClick={() => {
                         menu.open('layers');
+                        setSatellite(false);
                         setCurrentLayer('M');
                     }}>
                         <div className={styles.icon}><LayerIcon /></div>

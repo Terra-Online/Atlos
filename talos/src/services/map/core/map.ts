@@ -4,14 +4,14 @@ import { TILE_SIZE } from '@/data/map/tiles';
 import L from 'leaflet';
 import { MarkerLayer } from '@/services/map/core/marker/markerLayer';
 import { IMapView } from '@/services/map/types';
-import { getTileResourceUrl, type TileSource } from '@/services/assets/resource';
+import { type TileSource } from '@/services/assets/resource';
 import useViewState from '@/store/viewState';
 import { IMarkerData } from '@/data/marker';
 import { SubregionBoundaryManager } from '@/services/map/core/boundary';
 import { getLayerTileSuffix, useLayerStore, type LayerType } from '@/store/layer';
-import { getAvailableLayers, getMaxTileZoom, getRegionTileCoverage, hasSatelliteTiles } from '@/services/map/tileCoverage';
+import { getAvailableLayers, getMaxTileZoom, getRegionTileCoverage, resolveTileSource } from '@/services/map/tileCoverage';
 import { enableSmoothWheelZoom } from '@/services/map/core/smoothWheelZoom';
-import { SmoothTileLayer } from '@/services/map/core/smoothTileLayer';
+import { createMapTileLayer } from '@/services/map/core/tileLayer';
 import { CoverageBounds } from '@/services/map/core/coverageBounds';
 
 export interface IMapOptions {
@@ -290,8 +290,7 @@ export class MapCore {
     }
 
     private getTileSource(regionId: string, layer: LayerType): TileSource {
-        return layer === 'M' && useLayerStore.getState().satellite && hasSatelliteTiles(regionId)
-            ? 'satellite' : 'clips';
+        return resolveTileSource(regionId, layer, useLayerStore.getState().satellite);
     }
 
     private updateCameraLimits(layer: LayerType) {
@@ -316,22 +315,7 @@ export class MapCore {
     }
 
     private createTileLayer(source: TileSource, suffix = ''): L.TileLayer {
-        const coverage = getRegionTileCoverage(this.currentRegionId, source);
-        return new SmoothTileLayer(
-            getTileResourceUrl(`${this.currentRegionId}/{z}/{x}_{y}${suffix}.webp`, source),
-            {
-                tileSize: TILE_SIZE,
-                noWrap: true,
-                pane: 'tilePane',
-                zIndex: suffix ? 2 : 1,
-                maxNativeZoom: getMaxTileZoom(coverage, [suffix]),
-                // Leaflet rounds fractional map zooms when choosing a tile level.
-                maxZoom: Math.ceil(this.map.getMaxZoom()),
-                errorTileUrl: 'data:image/webp;base64,UklGRhYAAABXRUJQVlA4TAoAAAAvAAAAAP8B/wE=',
-            },
-            coverage,
-            suffix,
-        );
+        return createMapTileLayer(this.currentRegionId, source, suffix, this.map.getMaxZoom());
     }
 
     private applyLayer(layer: LayerType) {

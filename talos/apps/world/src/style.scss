@@ -1,0 +1,42 @@
+@use '@/styles/mapSurface.scss' as surface;
+
+html,
+body,
+#root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+.world-regions {
+    --region-menu-top: 236px;
+}
+.oem-minimap.leaflet-container {
+    @include surface.map-surface;
+    overflow: hidden;
+    // Mask the composite, including target artwork, so an edge-centered icon
+    // fades with the map rather than jumping inward to remain fully visible.
+    mask-image:
+        linear-gradient(
+            to right,
+            transparent,
+            #000 14px,
+            #000 calc(100% - 14px),
+            transparent
+        ),
+        linear-gradient(
+            to bottom,
+            transparent,
+            #000 14px,
+            #000 calc(100% - 14px),
+            transparent
+        );
+    mask-composite: intersect;
+    mask-repeat: no-repeat;
+    .leaflet-control-container {
+        display: none;
+    }
+    .leaflet-locator-pane img {
+        transition: none;
+    }
+}

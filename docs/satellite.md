@@ -6,7 +6,7 @@
 
 VL 本次导出从 20000×20000 扩展到 24000×24000，在顶部、右侧各增加 4000 像素。为保持原有地图坐标，已对本地卫星瓦片做一次性编号补偿：0–3 级的 y 分别减去 1、2、4、8，x 不变；顶部新增瓦片使用负 y。图像内容未重新编码。再次直接复制同一批上游瓦片会覆盖此补偿，需先进行相同的编号转换。
 
-后续 L/U 扩展由上游 `clip/splitMap.py` 按同一主图原点切片：L 贴主图左边缘，U 贴主图上边缘并左对齐。三级 L 使用 `x=-40…-1, y=-8…39`，U 使用 `x=0…39, y=-32…-9`；低级别按二倍缩放。上游已对齐的完整输出位于 `clip/output/satellite-vl/{z}`，可直接同步至本目录，无需再次减 y；旧 `input/preprocess/{z}` 仍是未补偿的主图切片。
+后续 L/U 扩展由上游 `clip/splitMap.py` 按同一主图原点切片：L 贴主图左边缘，U 贴主图上边缘并右对齐，向左覆盖 L 上方的一部分。2026-11-08 的三级 L 为 20000×24000，使用 `x=-40…-1, y=-8…39`；U 为 36000×12000，使用 `x=-24…47, y=-32…-9`；低级别按二倍缩放。使用上游带 `--tile-origin` 的独立完整输出同步，无需再次减 y；旧 `input/preprocess/{z}` 仍是未补偿的主图切片。
 
 `getTileResourceUrl(path, 'satellite')` 与 `getRegionTileCoverage(region, 'satellite')` 选择卫星资源，省略第二参数则保持标准地图。构建和发布同时处理两套独立目录及索引。
 
@@ -14,7 +14,7 @@ VL 本次导出从 20000×20000 扩展到 24000×24000，在顶部、右侧各�
 
 `satellite.oem.re`、`satellite.opendfieldmap.org`、`satellite.opendfieldmap.cn` 以及主站的 `/satellite`、`/satellite/` 入口在预加载前启用卫星模式并返回 M 层，覆盖本机保存的标准楼层；之后仍可手动切换底图。无卫星资源的地区沿用标准底图并保留卫星偏好。
 
-构建生成复用主站 bundle 的 `satellite/index.html`；Pages 包只携带该 SPA 入口，瓦片仍使用独立资源目录。短域 Worker 按地理位置把 `satellite.oem.re` 转发到对应卫星子域名，并保留路径和查询参数。线上还需绑定 `satellite.oem.re/*` 的显式 Worker route、`.org` 的 Pages 自定义域，以及 `.cn` 的 DNS／站点域名与证书；不使用 `*.oem.re/*` 通配 route。
+构建生成复用主站 bundle 的 `satellite/index.html`；Pages 包携带该 SPA 入口，瓦片使用独立资源目录。短域 Worker 按地理位置把 `satellite.oem.re` 转发到对应卫星子域名，并保留路径和查询参数。线上已绑定 `satellite.oem.re/*` 的显式 Worker route 和 `.org` 的 Pages 自定义域。`.cn` 的卫星域名由独立 Nginx 站点承接，使用 Cloudflare Origin CA 证书，复用主站发布目录；`/satellite` 保留查询参数跳转至 `/satellite/`，子路径回退至主站 SPA。DNS 均启用 Cloudflare 代理，短域和 CN 沿用各自主域的 A 记录地址，ORG CNAME 指向 `oem-root.pages.dev`。
 
 配套 Bayes 的 CORS、认证来源与登录回跳默认白名单包含两个卫星主站子域名；若部署环境显式配置了 `CORS_ORIGINS`／`TRUSTED_ORIGINS`，发布时也需要在该配置中加入它们。
 

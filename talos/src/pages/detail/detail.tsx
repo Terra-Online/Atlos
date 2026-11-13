@@ -49,6 +49,11 @@ import { resolveMarkerBulkTargets } from '@/services/map/markerBulkActions';
 import classNames from 'classnames';
 import { useTranslateGame, useTranslateUI, useLocale } from '@/locale';
 
+// Keep the unreleased preview available locally without emitting its production chunk.
+const NoclipPreview = import.meta.env.DEV
+    ? React.lazy(() => import('@/pages/detail/NoclipPreview'))
+    : null;
+
 // Category icon mapping
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
     boss: BossIcon,
@@ -682,6 +687,11 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                                         </a>
                                     </div>
                                 </>
+                            )}
+                            {NoclipPreview && (
+                                <React.Suspense fallback={null}>
+                                    <NoclipPreview pointId={currentPoint.id} />
+                                </React.Suspense>
                             )}
                             <div className={styles.detailDivider} data-label={tUI('detail.label.url')}></div>
                             <div className={styles.detailAction} data-act="share">

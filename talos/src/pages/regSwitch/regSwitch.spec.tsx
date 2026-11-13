@@ -4,6 +4,7 @@ import useRegion from '@/store/region';
 import { useUiPrefsStore } from '@/store/uiPrefs';
 import { REGION_DICT, SUBREGION_DICT } from '@/data/map';
 import { RegionContainer } from './regSwitch';
+import { RegionMenu } from '@/component/regionSwitch/regionSwitch';
 import { loadRegionMarkers } from '@/data/marker';
 import { preloadMapTiles } from '@/services/map/preload';
 import { preloadMapFonts } from '@/locale';
@@ -158,4 +159,14 @@ it('prepares a cross-region submenu choice before requesting its camera and lets
     await act(async () => { deliver(); await Promise.resolve(); });
     expect(useRegion.getState().currentRegionKey).toBe('Wuling');
     expect(useRegion.getState().subregionSwitchRequest).toBe(REGION_DICT.Wuling.subregions[0]);
+});
+
+it('lets the embedded host own region selection without main-site loading or persisted state writes', () => {
+    const select = vi.fn();
+    render(<RegionMenu currentRegionKey="Dijiang" currentSubregionKey="DJ_1" isSidebarOpen={false} preparing={null} onSelect={select} />);
+    fireEvent.click(screen.getByRole('button', { name: 'region.WL.main' }));
+    expect(select).toHaveBeenCalledWith('Wuling', undefined);
+    expect(useRegion.getState().currentRegionKey).toBe('Valley_4');
+    expect(loadRegionMarkers).not.toHaveBeenCalled();
+    expect(preloadMapTiles).not.toHaveBeenCalled();
 });

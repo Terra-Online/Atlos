@@ -34,6 +34,10 @@
     "emptyDesc": "Herhangi bir nokta bilgisinin eksik veya hatalı olduğunu doğrularsanız, lütfen topluluğumuzdaki yöneticilerle iletişime geçin veya GitHub depomuza bir <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='Report location error'>Sorun (Issue)</a> gönderin."
   },
   "detail": {
+    "noclip": {
+      "title": "Sahne önizlemesi",
+      "open": "Konumu 3D sahnede görüntüle"
+    },
     "stat": {
       "world": "Dünya",
       "main": "Ana Bölge",

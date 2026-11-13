@@ -1,0 +1,7 @@
+/*
+  Cross-Origin-Opener-Policy: unsafe-none
+  Referrer-Policy: strict-origin-when-cross-origin
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache

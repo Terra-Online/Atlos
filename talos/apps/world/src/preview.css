@@ -1,0 +1,29 @@
+.oem-minimap {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 284px;
+    height: 220px;
+    pointer-events: none;
+}
+
+.oem-status {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    translate: -50% 0;
+    max-width: 480px;
+}
+
+.oem-target {
+    position: absolute;
+    translate: -50% -50%;
+    color: var(--accent);
+    text-align: center;
+    text-shadow: 0 1px 3px #000;
+    pointer-events: none;
+    & span {
+        display: block;
+        font-size: 28px;
+    }
+}

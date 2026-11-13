@@ -97,10 +97,11 @@ export default [
       }],
     },
   },
-  ...['intel', 'user-hub'].map((app) => ({
+  ...['intel', 'user-hub', 'world'].map((app) => ({
     files: [`apps/${app}/**/*.{ts,tsx,mts,cts}`],
-    languageOptions: { parserOptions: { project: [`./apps/${app}/tsconfig.json`] } },
+    languageOptions: { parserOptions: { project: [`./apps/${app}/${app === 'world' ? 'tsconfig.eslint' : 'tsconfig'}.json`] } },
   })),
+  { files: ['apps/world/*.ts'], languageOptions: { globals: globals.node } },
   ...['oem-relink', 'oem-search'].map((worker) => ({
     files: [`${worker}/src/**/*.{ts,tsx}`],
     languageOptions: {

@@ -283,6 +283,18 @@ const cleanDistSeoPointsPlugin = () => {
 export default defineConfig({
     // publicDir: false, // Disabled to allow standard Vite public directory behavior
     plugins: [
+        {
+            name: 'exclude-development-preview-translations',
+            apply: 'build',
+            enforce: 'pre',
+            transform(code, id) {
+                if (!/\/src\/locale\/data\/ui\/[^/]+\.json$/.test(id)) return null;
+                const data = JSON.parse(code);
+                // Preserve the source translations for the preview's eventual release.
+                if (data.detail) delete data.detail.noclip;
+                return { code: JSON.stringify(data), map: null };
+            },
+        },
         bundleReport('main'),
         startupProbe(),
         fontShardsPlugin(),

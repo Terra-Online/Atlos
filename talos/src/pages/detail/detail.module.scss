@@ -432,6 +432,7 @@
 
         > a, > * > a {
             display: inline-block;
+            color: inherit;
             transition: color 0.3s ease;
             font-size: 0.875rem;
             font-weight: 600;

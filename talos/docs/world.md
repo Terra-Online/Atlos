@@ -1,0 +1,307 @@
+# World
+
+World is the OEM subordinate app at `apps/world`, titled **World - Open Endfield Map**.
+It has an independent Pages project (`oem-world`), intended for `world.opendfieldmap.org` and
+`world.oem.re`. It is not bundled into either main-site Pages artifact.
+
+## Ownership
+
+Atlos owns the entry, short routes, opener bridge, point conditions, target marker, minimap and region
+controls. The minimap and shared `UIOverlayLayer`/`RegionMenu` run directly in the World document;
+there are no auxiliary iframes. Main-site region selection is never changed by the World camera.
+The same map resource helpers, coordinate transforms, floor handling, background texture and font
+preparation are reused. Scene controls retain the renderer's original panels.
+
+The renderer and extractor are generated from the pinned upstream archive and local patches in
+`integrations/noclip`. `pnpm noclip:prepare` materializes `.cache/noclip`; that ignored directory is a
+build input, not another Git checkout. Edit the integration patches, never the generated source.
+All four generated packages join the pnpm workspace. Game keys and exported game content stay
+outside the Atlos build and repository. See [the integration workflow](../integrations/noclip/README.md).
+World consumes the viewer's host interface. React is deduplicated in the World bundle; type checking
+resolves the same Atlos React types. World uses TypeScript 7 to match the renderer's platform types.
+
+## Links and communication
+
+- `/{token}` opens a point, using OEM's existing seven-character point codec.
+- `/?region=DJ_1` opens a subregion overview and clears the point target.
+- `/` opens the initial Valley overview.
+
+The source catalog is fixed by `VITE_WORLD_CATALOG_URL`; release and package generations remain
+validated internally. Share links intentionally resolve against the currently deployed catalog.
+Invalid tokens and missing points produce an error. URLs carry no release, catalog, source origin or
+session identifiers. Main-site detail links use `VITE_WORLD_URL` and the same short point codec.
+
+Each main-site tab reuses one named World window. World sends a fresh challenge to its actual
+opener, then accepts a session only from an explicitly allowed OEM origin and that exact opener.
+Commands and acknowledgements check origin, source, protocol version, session and challenge. The handshake also carries the main site’s language and satellite preference; these are
+applied only after sender validation. Pending
+point clicks coalesce to the latest selection. Refresh establishes a fresh handshake; a shared link
+or a closed opener works independently. The initial hello contains only the protocol and nonce.
+
+## Local work
+
+```sh
+cd talos
+pnpm noclip:prepare
+pnpm install --frozen-lockfile
+```
+
+Set the two variables in `.env.world.example` using a local-only env file or shell environment.
+Run noclip's existing data server on port 5199 against its retained `out/releases`, then run
+`pnpm dev:world` for the main site and World together. World can also run alone with
+`pnpm --filter @atlos/world dev`; map assets proxy through the main development server on 5173.
+The frontend can be rebuilt without unpacking game data or clearing browser caches.
+
+```sh
+pnpm type-check --app world
+pnpm test --app world
+pnpm build --app world
+```
+
+The independent build writes `dist/world` and a receipt with the renderer pin, catalog and file
+hashes. Main-site full builds exclude World. Its build checks the source pin and uses an immutable
+catalog; local HTTP-catalog artifacts are reviewable but cannot be deployed by the release command.
+To update the renderer, update the archive and patches together against the latest upstream commit,
+prepare the source and validate the complete World and extractor pipeline. Keep only the current
+source archive, patches and Ganglia artifact. Repack incompatible maps instead of retaining old-format
+compatibility code. The upstream noclip checkout remains unmodified.
+
+## Deployment
+
+`pnpm world:deploy` explicitly uploads the verified World artifact to its own Pages project. It
+checks the artifact hashes and renderer pin first. It never publishes the main site, game data,
+DNS records or custom-domain bindings. Do not run it without release authorization.
+
+Bind both domains to the World Pages project before setting their DNS records; see
+[Pages custom domains](https://developers.cloudflare.com/pages/configuration/custom-domains/).
+The project config is `apps/world/wrangler.toml`; see
+[Pages Wrangler configuration](https://developers.cloudflare.com/pages/functions/wrangler-configuration/).
+The static SPA fallback serves point-token paths. Keep opener communication enabled.
+
+Scene archives, companions and baked views remain in the existing R2/CDN immutable release namespace.
+Apply the renderer repository's R2 CORS configuration including the World origins when publishing
+those data. Upload and verify the complete data release before changing either app's catalog.
+The frontend receipt is independent of data publication; building and local testing do not deploy.
+
+## Automatic roaming
+
+World samples the free camera every 150 ms. OEM's existing subregion polygons resolve horizontal
+ownership; `navigation.json` supplies explicit scene/level mappings, source seamless flags and
+three-dimensional floor volumes from the same game build. Crossings must remain stable for 600 ms.
+Initial positioning and point/overview flights suppress automatic switching; roaming arms after
+one metre of user movement. Gaps retain the current context, and genuinely ambiguous overlapping
+packages do not pick a scene by nearest marker.
+
+Same-package transitions change visibility and stream around the camera without an overview flight.
+Cross-package transitions reuse the existing shared-map transforms for position and heading, keeping
+the authored Unity height, pitch projection, FOV and movement settings. A package is replaced on demand;
+this is not simultaneous rendering of both packages, so cold package loads can show a loading gap.
+The current point target and its URL remain selected, including its minimap edge icon; the condition
+panel is read-only while its source level is not active. Explicit region selection still clears it.
+
+Use `oem-navigation` in the renderer's extractor to add the optional, generation-bound navigation
+sidecar to an existing baked release. It hard-links model archives and retains all baked views.
+Authored tier volumes decide floors and independent-scene entry. For an independent scene without
+a tier volume, only its verified gameplay-point footprint (expanded by 10 m) is used as conservative
+entry evidence; other space remains unresolved. The sidecar is supplied as a processed artifact
+for the matching baked release. Older releases without
+this sidecar continue supporting manual navigation.
+
+## Panels
+
+`src/panel.tsx` owns World panel presentation. The renderer's `PanelProvider` supplies the same
+shell to Preview, scene conditions, display settings and statistics through separate title,
+action and body slots. Collapsing a panel hides its body without unmounting controls; Reset
+remains a separate action. The styling follows OEM-SDK's `examples/basic/style.scss`: translucent
+light panels, section headings, compact fields, orange accents and diamond toggles/slider thumbs.
+World defines the reading and heading font roles once, using existing Atlos assets and font-shard
+loading. Dynamic game labels register glyph demand with the shared font loader; controls inherit
+the reading font. No new font files or external font requests are introduced.
+
+The minimap composites imagery, the original target icon and the camera cursor through one 14 px
+edge feather. Offscreen targets pin their artwork center to the rectangle boundary with no inset.
+The pin is computed for the next map view before Leaflet moves, using the same camera sample as
+the tiles. A small, static canvas reuses the main map artwork painter; camera movement only
+translates it, without creating the main map WebGL marker surface or a perpetual target pulse.
+Camera/map updates are coalesced per display frame, with no idle polling. Terrain height is
+sampled at most every 100 ms (or immediately on scene/floor changes). Hidden tabs pause this
+work and apply the latest pending sample on return. Local development proxies both
+standard and satellite imagery through the main site's resource server.
+
+Minimap zoom uses half-level bands (about 1.41× scale per step), bounded to 0–5. A 0.15-level
+hysteresis beyond the usual rounding boundary prevents height/terrain/pitch jitter from switching
+back and forth. Band changes ease over 240 ms, retargeting from the displayed scale without
+jumping. Large changes select their destination band directly rather than visiting intermediate
+bands. Scene/floor changes reset the band, while same-map point flights retain it. Position and
+heading follow each display frame independently of the lower-frequency terrain sampling.
+
+World persists one latest view in `localStorage["world-view"]`, with an internal `version: 1`.
+It contains the public route, release/scene/level/floor, camera position/orientation/FOV, movement
+speed and portable display options. It is separate from shared map preferences and the renderer's
+`noclip-point-view-v3:*` algorithm cache; neither is migrated or overwritten. Scene environment
+IDs and story overrides are intentionally excluded. Matching routes/releases resume the saved
+camera after loading (including a scene reached by roaming); other links use their own target
+framing while keeping lens, speed and display preferences. Release changes invalidate only the
+saved position. Explicit incoming point/region requests take priority over restoration.
+Writes are coalesced at 500 ms, deduplicated, and flushed on page hide; transient scene loads and
+automatic flights do not overwrite the last stable view. Invalid/blocked storage is optional and
+never blocks opening World. This is one last view per origin, not a per-point history.
+
+Free-flight movement shares the minimap's cached ground sample (100 ms), falling back to the
+selected floor elevation where terrain is unavailable. With the default speed trim, cruise eases
+from 10 m/s within 5 m of ground to 50 m/s at 100 m clearance. Ctrl+wheel still adjusts the stored
+speed trim; ordinary cruise stays capped at 50 m/s. Hold Tab/Alt for one-fifth speed or right mouse
+for fivefold boost; slow takes priority when both are held. UI Tab focus navigation remains
+available outside flight. Automatic point/overview flight timings are unchanged.
+
+## Photography
+
+The renderer's Photography panel uses the same World panel shell and inherited fonts. Aperture
+(f/1.4–f/32), focus distance and the depth-of-field toggle are saved in the existing `world-view`
+record alongside FOV; older records retain the defaults for these optional settings. Preview's
+“Focus on target” action sets the focus plane through the selected point and enables depth of
+field. A target behind the camera produces a message instead of changing focus. The scene must
+be active before this action is available.
+
+The v49 renderer includes physical foreground/background defocus and water depth, without adding
+scene-package downloads. Moving-object motion and after-DoF transparent classification still
+differ from the game; see the renderer's photography notes before claiming image parity.
+
+
+## Game photo filters
+
+World accepts `VITE_WORLD_FILTERS_URL` for the optional library exported by the renderer's
+`filters` command. It passes the URL directly to the shared photo picker, so point URLs stay short.
+Serve the exported JSON as game content alongside scene assets, rather than bundling it into Pages.
+The picker uses the same World panel shell as scene and photography controls; exposure, tonemapping,
+bloom and vignette switches remain in Display settings. The renderer's `feat/filters` branch is
+retained separately for upstream work.
+
+Panel expansion follows the OEM-SDK demo's 240 ms height animation and easing. The body remains
+mounted, becomes non-interactive during collapse, and hides only after the animation. Retargeting
+starts at the displayed height; cancelled animations cannot hide a reopened panel. Reduced-motion
+preferences skip the height animation. The shared camera readout retains its original dark backing.
+The right scrollport includes extra horizontal space for panel shadows without changing panel widths or screen positions.
+
+For completed-profile point launches, a generation-bound obstruction preview can show the original
+state for 800 ms after the camera flight arrives, then its authored result. The same panel offers original/result and replay.
+Only controls proven to block the selected point view are changed. Leaving the point, changing the
+preset or unmounting cancels playback; manual control edits take precedence. This displays settled
+states, not simulated destruction particles or gameplay. Missing packed destruction states remain
+explicitly unconfirmed context views.
+
+## Ground journeys
+
+`walking-route.ts` consumes the packed `@opendfieldmap/ganglia` dependency. Its source binding
+includes the selected build, scene, state and body profile. Directed rope/jump/drop/launch
+connections carry verified sample positions and times. `journeySample` returns the
+current position, movement mode and optional connection ID; playback begins after the
+selected teleport arrival and does not draw a flight from the previous position.
+
+The local preview plans physical routes through the configured extractor and retains each job's
+progress log. Fully enabled planning reads all same-level travel points from the source-bound
+catalog, including industrial-base centres absent from older AI-ground arrival exports. Base
+centres carry explicit vertical projection bounds; the importer resolves them to physical support.
+An unmapped landing tries the next distance-ranked origin without widening the same region. Other
+origin failures can fall back after their bounded coverage attempts. This is a feasibility fallback,
+not a claim that all origins have been compared for the globally fastest journey.
+
+Route-result identity changes independently of physical-tile identity. Updating arrival semantics
+invalidates failed route results while retaining compatible physical terrain. The model still depends
+on the exported collision coverage and device motion model; the preview is not a game execution proof.
+
+
+### Corridor discovery corrections (2026-11-06)
+
+Physical requests now receive direction samples only from the corridor used for
+that request's tiles. Alternative corridors remain separate retries; their missing
+supports must not be projected onto the currently loaded corridor. Ganglia alpha.30
+groups duplicate direction goals by directed ground connectivity and advances
+bounded frontier batches beyond rejected pairs. This is not yet a regional
+entry/exit graph or a guarantee of global optimality.
+
+Four existing physical replay costs remain 32.5137026, 56.8194175, 8.1988517 and
+22.6338346 seconds. The distant rear-approach case `0bzZEM3` remains unresolved;
+loading a wider corridor and experimenting with local coarse-point transfers did
+not establish a complete physical route. Those transfer/priority experiments
+were not enabled. Task logs retain the separate build and search results.
+
+### Progressive origin and corridor scheduling (2026-11-06)
+
+Physical route attempts now interleave distance-ranked teleport origins with wider
+approaches. The order begins with origin 0 / coverage 0, origin 1 / coverage 0,
+origin 0 / coverage 1, then continues by the sum of origin and coverage indices.
+This keeps a disconnected nearby origin from consuming all four coverage rounds
+before another origin gets a first attempt. Deferred coverage rounds remain
+available. Unmapped/unavailable landings and failed origin jobs are excluded from
+later rounds as before. Complete incumbents retain the existing comparison policy.
+
+This scheduling change applies to every query; it does not add point-specific
+waypoints, movement edges, costs or collision exceptions. Ground generation and
+physical route cache identities are unchanged, so already built tiles and solved
+jobs remain reusable. It establishes first feasibility, not globally fastest
+selection across every teleport and corridor.
+
+The previously unresolved `0bzZEM3` now completes through the normal nearest-route
+endpoint and viewer with a 50.8116844-second model route. It starts from the second
+nearest same-level teleport, uses five swept jumps and supported walking, then
+approaches the target through the building's rear side. The successful physical
+command took 65.73 seconds, including 44.52 seconds of search; these are command
+timings, not the whole multi-attempt task latency. A retained HTTP query returned
+the completed result in 43.7 ms. The first origin remains unresolved within its
+initial corridor rather than being classified as physically unreachable.
+
+The normal endpoint replays for `10YLgUg` and `17nac6U` retain their original
+successful model costs of 8.1988517 and 22.6338346 seconds. Six server integration
+tests cover the existing behavior, unmapped-origin skipping, disconnected-origin
+interleaving, and revisiting deferred wider coverage after other origins fail.
+Local interface-graph and step-trace experiments did not establish a better
+solution and are not part of the shipped planner.
+
+### Prepared solver workers
+
+The physical builder keeps up to two serial solver workers, alongside the existing
+foreground/build and optimization queues. A free worker with matching physical input
+paths is preferred, so optimization can continue from a completed foreground device
+check without immediately rebuilding the same region. Foreground work can use the
+other worker while optimization runs. Older configured extractors without the worker
+entry continue through their one-shot CLI.
+
+Workers retain preparation, not route results: each invocation still runs the solver
+and writes a new result. The extractor validates input file generations and retains
+at most one region plus one target refinement per worker. An idle worker exits after
+60 seconds. Before an idle worker switches to different physical input paths, the
+host retires its process so the previous region's expanded heap is released.
+Server shutdown terminates running and idle workers. A crashed worker
+fails its current job and is recreated for subsequent work. Task logs include the
+worker PID, process reuse, prepared-stage reuse and reported memory. The extractor's
+serialized-input limit is not an upper bound on expanded heap memory.
+
+Fresh-process first-query time is the primary performance gate. Same-region
+new-goal and repeated-input timings are auxiliary and must be reported separately.
+Completed-result HTTP cache hits do not measure solver performance.
+
+### Cold first-query validation
+
+The integrated alpha.39 solver preserves complete route, discovered connection and
+candidate-limit objects for all 38 fixed alpha.31 successes. Every solve used a new
+Node process with retained physical input files. Aggregate command time was
+554.891 / 452.624 seconds; search time was 202.690 / 152.695 seconds. The rear
+approach example was 53.197 / 32.983 seconds. This is an intermediate 18.4 percent
+command reduction, well short of the requested 90 percent reduction. Worker reuse
+and completed HTTP results are excluded from these figures. Ten historical cost
+gaps already present in the baseline remain a separate route-quality backlog.
+
+The next alpha.47 integration preserves all 38 exact route/connection/limit checks
+and reduces that fixed population to 417.453 seconds total and 140.154 seconds
+search. It shares one filtered graph/SCC, updates current-query distance labels
+incrementally and avoids a complete weighted edge copy. The rear approach query
+takes 29.731 seconds against 53.197 seconds in the alpha.31 baseline. These figures
+still exclude parent queueing, Node startup and physical tile extraction/build.
+Peak RSS did not uniformly decrease; runtime cache limits have not been raised.
+The ten-percent remaining-time target is still open.
+
+The extractor's physical ground generator identity is unchanged by this runtime
+upgrade, so retained tile meshes remain reusable. Route output identities still
+advance with the solver release. The installed integration passes 11 server/worker
+tests, the focused server type check and the World production build.

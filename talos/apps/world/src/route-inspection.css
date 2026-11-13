@@ -1,0 +1,43 @@
+.route-inspection-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+.host-panel:has(.route-inspection-panel) {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.route-inspection-panel {
+    order: -1;
+}
+.route-inspection-panel input[type='range'] {
+    width: 100%;
+}
+.route-inspection-panel .world-panel-actions {
+    flex-wrap: wrap;
+}
+.viewer-app:has(.route-inspection-canvas) > .dock { z-index: 2; }
+
+.route-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    padding: 0;
+    margin: 8px 0;
+    list-style: none;
+    font-size: 12px;
+}
+.route-legend li {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.route-legend li > span {
+    width: 18px;
+    height: 4px;
+    border-radius: 2px;
+}

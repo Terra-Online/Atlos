@@ -1,5 +1,5 @@
 import styles from '@/component/shared/siteShell/headBar/headbar.module.scss';
-import LiquidGlass from 'liquid-glass-react-positioning';
+import GlassSurface from './glassSurface';
 import React, { useState, useEffect, useRef } from 'react';
 import CloseIcon from '@/assets/logos/close.svg?react';
 import { usePerformanceMode } from '@/store/uiPrefs';
@@ -54,28 +54,7 @@ const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children, forceExpanded =
     }
 
     return (
-        <LiquidGlass
-            displacementScale={20}
-            blurAmount={0}
-            saturation={20}
-            aberrationIntensity={2}
-            elasticity={0.1}
-            cornerRadius={36}
-            padding={actualExpanded ? '12px' : '8px'}
-            mode='standard'
-            overLight={false}
-            positioning='top-right'
-            border1Transition='none'
-            border2Transition='none'
-            style={{
-                position: 'fixed',
-                top: 'max(1rem, env(safe-area-inset-top, 0px))',
-                right: '1rem',
-                backgroundColor: 'var(--headbar-bg)',
-                borderRadius: '36px',
-                transition: 'padding 0.3s ease',
-            }}
-        >
+        <GlassSurface mobile expanded={actualExpanded}>
             <div
                 ref={containerRef}
                 data-guide='headbar'
@@ -94,7 +73,7 @@ const HeadBarMobile: React.FC<HeadBarMobileProps> = ({ children, forceExpanded =
                     {childrenArray}
                 </div>
             </div>
-        </LiquidGlass>
+        </GlassSurface>
     );
 };
 

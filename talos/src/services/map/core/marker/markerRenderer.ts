@@ -1,9 +1,9 @@
 import { ViewportMarker } from '@/services/map/core/canvas/markerViewport';
 import L from 'leaflet';
-import { SceneIcon, setMarkerState } from '@/services/map/core/canvas/markerModel';
+import { type SceneIcon, setMarkerState } from '@/services/map/core/canvas/markerModel';
 import { IMarkerData, type IMarkerType, MARKER_TYPE_DICT } from '@/data/marker';
 
-import { getItemIconUrl, getMarkerSubIconUrl } from '@/services/assets/resource';
+import { createMarkerIcon } from './markerIcon';
 import LOGGER from '@/lib/logging/logger';
 import {
     MARKER_PREVIEW_ENTER_EVENT,
@@ -27,18 +27,7 @@ interface MarkerStateHandlers {
 
 export const MARKER_ICON_DICT = Object.values(MARKER_TYPE_DICT).reduce<Record<string, SceneIcon>>(
     (icons, type: IMarkerType) => {
-        const noFrame = !!type.noFrame && !type.subIcon;
-        icons[type.key] = new SceneIcon({
-            image: getItemIconUrl(type.subIcon ? type.key : type.icon ?? type.key, 'webp'),
-            subImage: type.subIcon ? getMarkerSubIconUrl(type.subIcon) : '',
-            noFrame,
-            tier: '',
-        }, type.key, {
-            iconSize: noFrame ? [50, 50] : [32, 32],
-            iconAnchor: noFrame ? [25, 25] : [16, 32],
-            popupAnchor: [0, 0],
-            tooltipAnchor: [0, 0],
-        });
+        icons[type.key] = createMarkerIcon(type);
         return icons;
     }, {},
 );

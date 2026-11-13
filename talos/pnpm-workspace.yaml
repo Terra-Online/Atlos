@@ -1,5 +1,10 @@
 packages:
   - apps/intel
   - apps/user-hub
+  - apps/world
   - oem-search
   - oem-relink
+  - .cache/noclip/packages/viewer
+  - .cache/noclip/packages/package-format
+  - .cache/noclip/packages/formats
+  - .cache/noclip/packages/extractor

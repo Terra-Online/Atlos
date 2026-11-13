@@ -72,3 +72,7 @@ export const hasTileInCoverage = (
     const rowRanges = coverage.zooms[String(zoom)]?.[suffix]?.[String(y)];
     return Boolean(rowRanges?.length && isXInRanges(x, rowRanges));
 };
+
+/** Shared source selection for the main map, its warmup and passive preview map. */
+export const resolveTileSource = (region: string, layer: string, satellite: boolean): TileSource =>
+    layer === 'M' && satellite && hasSatelliteTiles(region) ? 'satellite' : 'clips';

@@ -1,0 +1,20 @@
+{
+  "name": "@atlos/world",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5176",
+    "build": "node ../../scripts/world.mjs build",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@endfield-noclip/package-format": "workspace:*",
+    "@endfield-noclip/viewer": "workspace:*",
+    "@opendfieldmap/ganglia": "file:../../vendor/ganglia/opendfieldmap-ganglia-0.1.0-alpha.77.tgz"
+  },
+  "devDependencies": {
+    "@webgpu/types": "^0.1.74",
+    "typescript": "7.0.2"
+  }
+}

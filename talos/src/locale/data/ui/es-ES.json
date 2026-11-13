@@ -34,6 +34,10 @@
     "emptyDesc": "Si confirma que falta información de algún punto o es incorrecta, por favor contacte a los administradores en nuestra comunidad, o envíe un <a href='https://github.com/Terra-Online/Atlos/issues' class='embed' target='_blank' rel='noopener' aria-label='Report location error'>Issue</a> en nuestro repositorio de GitHub."
   },
   "detail": {
+    "noclip": {
+      "title": "Vista previa de la escena",
+      "open": "Ver ubicación en la escena 3D"
+    },
     "stat": {
       "world": "Mundo",
       "main": "Región",

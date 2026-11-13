@@ -27,7 +27,7 @@ import {
     verifyOutput,
 } from './release-artifact.mjs';
 const help = `Usage: pnpm <command> [options]
-  build       [--target cn|org|all] [--app main|intel|user-hub]
+  build       [--target cn|org|all] [--app main|intel|user-hub|world]
   deploy:all  [--skip-og] [--skip-subset]
   deploy:cn / deploy:org [--channel prod|beta] [--app intel|user-hub]
   run publish [--target cn|org] [--only oss|r2|server|pages|resources] [--app intel|user-hub]
@@ -35,9 +35,9 @@ const help = `Usage: pnpm <command> [options]
   og          [--target cn|org|all] [--action build|publish|refresh]
   worker      search|relink check|deploy
   check [--build] / lint / lint:fix / type-check / test
-  type-check [--app main|intel|user-hub|relink|search]
-  run test    [--app main|intel|user-hub|relink|scripts]
-  data        prepare|check|overrides|intel|locale|tile-coverage|marker-stats|marker-lookup|marker-diff|search-index|relink-preview|sync-intel|seo
+  type-check [--app main|intel|user-hub|world|relink|search]
+  run test    [--app main|intel|user-hub|world|relink|scripts]
+  data        prepare|check|overrides|intel|locale|tile-coverage|marker-stats|marker-lookup|marker-diff|search-index|relink-preview|seo
   data fonts  (generate shared immutable shards for all apps)
 Common: --channel prod|beta, --dry-run, --help
 CI source checks/builds: --source-only (omits private Intel icons; artifact cannot be published)
@@ -141,13 +141,15 @@ export const parseTask = (argv, env = process.env) => {
         throw new Error('--dist-dir requires a single target.');
     const allowedApps =
         command === 'type-check'
-            ? ['all', ...Object.keys(apps), 'search', 'relink']
+            ? ['all', ...Object.keys(apps), 'world', 'search', 'relink']
             : command === 'test'
-              ? ['all', ...Object.keys(apps), 'relink', 'scripts']
-              : ['all', ...Object.keys(apps)];
+              ? ['all', ...Object.keys(apps), 'world', 'relink', 'scripts']
+              : ['all', ...Object.keys(apps), 'world'];
     if (values.app && !allowedApps.includes(values.app)) {
         throw new Error(`Unknown app: ${values.app}`);
     }
+    if (values.app === 'world' && !['build', 'type-check', 'test'].includes(command))
+        throw new Error('World builds and deploys independently; use pnpm world:build or pnpm world:deploy.');
     if (command === 'build' && values.app === 'all') delete values.app;
     if (values.app && values['skip-intel'])
         throw new Error('--app and --skip-intel cannot be combined.');
@@ -617,6 +619,11 @@ const executeTask = async (argv, dependencies = {}) => {
                     ? AbortSignal.any([runner.signal, init.signal])
                     : runner.signal || init.signal,
         });
+    if (options.app === 'world' && options.command === 'build') {
+        if (options.distDir || options.outputDir) throw new Error('World builds to its dedicated dist/world directory.');
+        await runner.run('node', ['./scripts/world.mjs', 'build']);
+        return;
+    }
     switch (options.command) {
         case 'build':
         case 'deploy':

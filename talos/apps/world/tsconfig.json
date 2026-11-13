@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable",
+      "DOM.AsyncIterable"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "types": [
+      "vite/client",
+      "@webgpu/types"
+    ],
+    "paths": {
+      "@/*": [
+        "../../src/*"
+      ],
+      "react": [
+        "../../node_modules/@types/react"
+      ],
+      "react/*": [
+        "../../node_modules/@types/react/*"
+      ],
+      "react-dom": [
+        "../../node_modules/@types/react-dom"
+      ],
+      "react-dom/*": [
+        "../../node_modules/@types/react-dom/*"
+      ]
+    }
+  },
+  "include": [
+    "src",
+    "../../src/global.d.ts",
+    "../../src/vite-env.d.ts",
+    "../../.cache/noclip/packages/viewer/src/file-system-access.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
