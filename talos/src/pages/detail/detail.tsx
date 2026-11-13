@@ -12,7 +12,6 @@ import Comments, { CommentExcerpt } from '@/pages/detail/comment/Comments';
 import { flatList } from '@/pages/detail/comment/commentsTree';
 import { useAutoTrans } from '@/pages/detail/comment/useAutoTrans';
 import { useGlobalCollectionRate } from '@/pages/detail/useGlobalCollectionRate';
-import NoclipPreview from '@/pages/detail/NoclipPreview';
 
 import parse from 'html-react-parser';
 import { getItemIconUrl, getFileContentUrl, fetchArchiveFile } from '@/services/assets/resource';
@@ -49,6 +48,11 @@ import { commitPointProgress } from '@/store/history';
 import { resolveMarkerBulkTargets } from '@/services/map/markerBulkActions';
 import classNames from 'classnames';
 import { useTranslateGame, useTranslateUI, useLocale } from '@/locale';
+
+// Keep the unreleased preview available locally without emitting its production chunk.
+const NoclipPreview = import.meta.env.DEV
+    ? React.lazy(() => import('@/pages/detail/NoclipPreview'))
+    : null;
 
 // Category icon mapping
 const CATEGORY_ICON_MAP: Record<string, React.FC<React.SVGProps<SVGSVGElement>>> = {
@@ -684,7 +688,11 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                                     </div>
                                 </>
                             )}
-                            <NoclipPreview pointId={currentPoint.id} />
+                            {NoclipPreview && (
+                                <React.Suspense fallback={null}>
+                                    <NoclipPreview pointId={currentPoint.id} />
+                                </React.Suspense>
+                            )}
                             <div className={styles.detailDivider} data-label={tUI('detail.label.url')}></div>
                             <div className={styles.detailAction} data-act="share">
                                 <PopoverTooltip
