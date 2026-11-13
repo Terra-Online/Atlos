@@ -74,7 +74,7 @@
       "unavailable": "此條留言業已失效。",
       "copyLink": "複製留言連結",
       "emojiPicker": "選擇表情符號",
-      "spoilerHidden": "點擊以查看劇透內容",
+      "spoilerHidden": "點擊詳閱劇透內容",
       "spoilerRevealed": "你知道的太多了",
       "placeholder": "傾兩句？",
       "submit": "發布留言",
@@ -127,8 +127,8 @@
     "current": "現時",
     "fullSupport": "完整支援的語言",
     "fullSupportHint": "網站介面及遊戲內容均已提供完整翻譯。",
-    "uiOnly": "只支援介面翻譯的語言",
-    "uiOnlyHint": "只提供網站介面文字翻譯，遊戲內的文本術語將以英文顯示。",
+    "uiOnly": "僅支援介面翻譯的語言",
+    "uiOnlyHint": "僅提供網站介面文字翻譯，遊戲內的文本術語將以英文顯示。",
     "fyi": "阁下可前往 <a class='embed' href=\"https://crowdin.com/project/oem\">Crowdin</a> 參與我們的翻譯項目，或為你的語言申請翻譯；亦可透過電郵 <a class='embed' href=\"mailto:translate@opendfieldmap.org\">translate@opendfieldmap.org</a> 聯絡本站管理員。",
     "names": {
       "en-US": "英語",
@@ -237,9 +237,9 @@
     "tip": "導引說明",
     "welcome": "歡迎使用 <span class=\"keyword\">Open Endfield Map</span>。<br>這是阁下首次使用本地圖，若有任何問題，請點擊右上角的<span class=\"keyword\">幫助</span>按鈕，我們將提供詳細的功能引導。</p>",
     "sidebarToggle": "點擊以展開<span class=\"keyword\">側邊欄</span>。<br>側邊欄包括您最常用的點位篩選器，以及與點位顯示密切相關的開關。",
-    "search": "您可以用<span class=\"keyword\">遊戲本體支持的語言</span>搜索需要檢視的點位，並在搜索結果中選中它們。",
+    "search": "您可以用<span class=\"keyword\">遊戲自身支持的語言</span>搜索需檢視之點位，並在搜索結果中選中它們。",
     "filterContainer": "同類型的點位位於同一個<span class=\"keyword\">篩選器</span>中。<br>點擊以展開對應類型的點位列表。",
-    "filterSort": "按住篩選器左側的ICON，其將進入<span class=\"keyword\">拖拽狀態</span>。<br>您可以根據自己的需要排序對您重要的篩選器。",
+    "filterSort": "按住篩選器左側的ICON，其將進入<span class=\"keyword\">拖拽狀態</span>。<br>您可根據自己的需要排序對您重要的篩選器。",
     "selectorSelect": "具體的<span class=\"keyword\">點位選擇器</span>。點擊以切換選擇狀態，被選擇的點位會出現在地圖上。<br>您可以看到在當前區域此類點位的總數，以及您已經標記的數量。<br><br>您也可以在側邊欄的<span class=\"keyword\">空白區域按住並拖動</span>，對多個點位選擇器進行<span class=\"keyword\">框選</span>，從而快速批量切換它們的選擇狀態。",
     "selectorComplete": "當此類型所有點位都被標記為完成時，選擇器將會變為<span class=\"keyword\">完成狀態</span>，以便您快捷判斷標記情況。",
     "triggerHandle": "與地圖顯示有關的開關位於側邊欄底部。<br>您可以按住鼠標將其<span class=\"keyword\">拖起並操作。</span>",
@@ -310,7 +310,7 @@
       "ghRegis": "使用 GitHub 註冊",
       "connecting": "連線中...",
       "resetLink": "請輸入需要重設密碼的電郵，我們将向阁下已註冊的信箱寄送一封包含密碼重設連結的郵件。<br><br>確認發送後，請檢查收件匣與垃圾郵件夾。",
-      "resetRequire": "請輸入您的新密碼並正確重複一次。<br><br>我們即將為閣下進行密碼重設。",
+      "resetRequire": "請輸入新密碼並正確重複一次。<br><br>我們即將為你重設密碼。",
       "backTo": "返回",
       "signIn": "登入",
       "switchToRegisterPrefix": "尚無帳戶？",
@@ -318,7 +318,7 @@
       "switchToLoginPrefix": "若已有帳戶，",
       "switchToLoginAction": "請點此登入。",
       "ack": "如繼續操作，即表明閣下已詳閱並認可我們之",
-      "ackLink": "<a href=\"{privacy}\">私隱政策</a>與<a href=\"{tos}\">使用條款</a>。",
+      "ackLink": "<a href=\"{privacy}\">私隱政策</a>及<a href=\"{tos}\">使用條款</a>。",
       "hints": {
         "0": "帳戶/密碼錯誤",
         "101": "請填寫電郵",
@@ -369,7 +369,7 @@
       "returnHint": "點擊 Logo 以返回目前分頁",
       "enterMode": "開啟畫中畫模式",
       "exitMode": "退出畫中畫模式",
-      "unsupported": "目前瀏覽器不支援文件畫中畫"
+      "unsupported": "此瀏覽器不支援畫中畫模式"
     }
   },
   "locator": {
@@ -379,7 +379,7 @@
     },
     "binding": {
       "title": "綁定帳户",
-      "docsLead": "若繼續綁定，即表示你已閱讀並同意以下條款與聲明：",
+      "docsLead": "若繼續綁定，即表示你已閱讀並同意以下條款及聲明：",
       "docsLinks": "<a href=\"{tos}\">使用條款</a> · <a href=\"{privacy}\">私隱政策</a> · <a href=\"{data}\">資料收集清單</a> · <a href=\"{disclaimer}\">免責聲明</a>",
       "chinaTab": "國服 (Hypergryph)",
       "globalTab": "國際服 (Gryphline)",
@@ -428,11 +428,11 @@
       "trackPoints": "追蹤點位",
       "centerOnPosition": "角色光標置中",
       "heatmap": "熱力圖",
-      "configNote": "啟用此功能代表你已接受我們的 <a href=\"{data}\">資料收集清單</a> 與其他條款。"
+      "configNote": "啟用此功能代表你已接受我們的 <a href=\"{data}\">資料收集清單</a> 及其他條款。"
     },
     "errors": {
       "10000": "位置同步工作階段已過期，請重新綁定。",
-      "10002": "遊戲登入已過期，請解除終末地綁定後重新綁定。",
+      "10002": "遊戲登入已過期，請解除綁定後重新綁定。",
       "19001": "無法取得位置，請確認已登入遊戲。",
       "19002": "位置同步需要授權後才能開始。",
       "noRole": "此帳戶下未找到終末地角色。",
@@ -490,7 +490,7 @@
     "shareLocation": "分享此位置",
     "clearAllHighlights": "清除所有高亮",
     "selectAllCategoryFilters": "選取全部",
-    "deselectAllCategoryFilters": "取消全部",
+    "deselectAllCategoryFilters": "全不選",
     "hideCompletedMarkers": "隱藏已完成點位",
     "showCompletedMarkers": "顯示已完成點位",
     "undo": "復原",
@@ -527,7 +527,7 @@
     "org": "<span class=\"keyword\">海外用戶</span>推薦使用全球鏡像(<a href='https://opendfieldmap.org/' class='embed' target='_blank' rel='noopener'>https://opendfieldmap.org</a>)，訪問更快捷穩定。"
   },
   "support": {
-    "title": "支持我們",
+    "title": "贊助我們",
     "content": "在過去兩週裡，Open Endfield Map 共計處理了超<span class=\"hl\">2億次</span>HTTPS 請求（也即平均<span class=\"hl\">每日約834萬次</span>），累計消耗了<span class=\"hl\">超過2.8TB</span>的頻寬。網站的活躍用戶已經超過<span class=\"hl\">7萬人</span>並仍在增長。本站位於新加坡與杭州的伺服器仍然全功率運轉中。感謝各位的熱情！<br><br>OEM從2025年2月開始開發並始終開源免費，在絕大部分時間裡（以及現在）<span class=\"hl\">僅由我（Jacy Chan/Cirisus）獨自維護</span>。然而，在最近一個月內，僅計<a href='https://imgur.com/a/cloudflare-invoice-eqBC0zZ' class='embed' target='_blank'>CDN頻寬與Argo路由所產生的帳單</a>計費就達到了<span class=\"hl\">266.07美元（約2000港元）</span>。如果您覺得本站對您有所幫助，歡迎通過以下方式支持本站，幫助站點繼續為各位提供服務。您的支持將用於維持伺服器和頻寬費用，以及未來功能（例如用戶系統和點位第三視角上載）開發的投入。<br><br>站點的數據、UI、翻譯各方面不盡完善之處請隨時反饋，我會加緊處理，感謝您的支持與理解。",
     "patreon": "買一份日誌（Patreon）",
     "kofi": "買一杯咖啡（Ko-fi）",
