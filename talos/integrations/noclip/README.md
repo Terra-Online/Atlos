@@ -27,9 +27,9 @@ configure route data and the private game configuration. Neither keys nor game c
 
 ## updating
 
-The current pin uses package format v102, including upstream foliage lighting, local-light shadows
-and texture-driven cloth offsets. Existing v98 archives must be repacked before using this viewer.
-Point coordinates and navigation exports do not need recomputing for this renderer update; retained
+The current pin uses package format v104, including per-draw emissive albedo and instance-row
+moving-platform paths. Existing v102 and older archives must be repacked before using this viewer.
+The CPU decoder transfers the moving-row path buffers alongside the other instance data. Retained
 companion metadata must be checked against the new package states, source fingerprint and levels,
 and its catalog and navigation generation bindings updated before publication.
 

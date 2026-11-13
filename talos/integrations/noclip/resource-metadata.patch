@@ -1,7 +1,8 @@
 diff --git a/packages/viewer/src/package/package-source.ts b/packages/viewer/src/package/package-source.ts
+index 97b0587b..8be9dd23 100644
 --- a/packages/viewer/src/package/package-source.ts
 +++ b/packages/viewer/src/package/package-source.ts
-@@ -29,6 +29,8 @@
+@@ -29,6 +29,8 @@ export interface ByteRange {
  	length: number;
  	/** the whole file's size in the opened package's manifest */
  	fileSize: number;
@@ -10,7 +11,7 @@ diff --git a/packages/viewer/src/package/package-source.ts b/packages/viewer/src
  }
  
  /**
-@@ -54,10 +56,10 @@
+@@ -54,10 +56,10 @@ const checkSize = (path: string, actual: number, expected: number): void => {
   * @param baseUrl the package directory's URL; a trailing slash is added if missing
   * @returns a source issuing one HTTP range request per read
   */
@@ -24,7 +25,7 @@ diff --git a/packages/viewer/src/package/package-source.ts b/packages/viewer/src
  		if (!response.ok) {
  			throw new Error(`${path}: HTTP ${response.status}`);
  		}
-@@ -69,11 +71,12 @@
+@@ -69,11 +71,12 @@ export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): Pack
  			const response = await fetchOk(path, { signal });
  			return new Uint8Array(await response.arrayBuffer());
  		},
@@ -40,9 +41,10 @@ diff --git a/packages/viewer/src/package/package-source.ts b/packages/viewer/src
  			const partial = response.status === 206;
  			// `bytes <first>-<last>/<size>`; the size may be `*` (unknown)
 diff --git a/packages/viewer/src/streaming/stream-manager.ts b/packages/viewer/src/streaming/stream-manager.ts
+index 99229533..f4247c03 100644
 --- a/packages/viewer/src/streaming/stream-manager.ts
 +++ b/packages/viewer/src/streaming/stream-manager.ts
-@@ -499,7 +499,7 @@
+@@ -499,7 +499,7 @@ export class StreamManager {
  		this.#package.source
  			.readRange(
  				shard.path,

@@ -1,5 +1,5 @@
 diff --git a/packages/extractor/package.json b/packages/extractor/package.json
-index fa7c03a9..514212ed 100644
+index fa7c03a9..2d8701e4 100644
 --- a/packages/extractor/package.json
 +++ b/packages/extractor/package.json
 @@ -13,6 +13,7 @@
@@ -2993,7 +2993,7 @@ index 00000000..caa6985e
 +};
 diff --git a/packages/extractor/src/commands/walk-routes.ts b/packages/extractor/src/commands/walk-routes.ts
 new file mode 100644
-index 00000000..57d5acf6
+index 00000000..bfb5d554
 --- /dev/null
 +++ b/packages/extractor/src/commands/walk-routes.ts
 @@ -0,0 +1,78 @@
@@ -4204,7 +4204,7 @@ index 00000000..8bfdb564
 +};
 diff --git a/packages/extractor/src/game/collision-ground.test.ts b/packages/extractor/src/game/collision-ground.test.ts
 new file mode 100644
-index 00000000..26a2a4de
+index 00000000..510c3942
 --- /dev/null
 +++ b/packages/extractor/src/game/collision-ground.test.ts
 @@ -0,0 +1,415 @@
@@ -6210,7 +6210,7 @@ index 00000000..40061f90
 +};
 diff --git a/packages/extractor/src/game/ground-data.test.ts b/packages/extractor/src/game/ground-data.test.ts
 new file mode 100644
-index 00000000..1daab090
+index 00000000..57d07346
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-data.test.ts
 @@ -0,0 +1,293 @@
@@ -6885,7 +6885,7 @@ index 00000000..6c66f17f
 +};
 diff --git a/packages/extractor/src/game/ground-refinement.test.ts b/packages/extractor/src/game/ground-refinement.test.ts
 new file mode 100644
-index 00000000..8b0492a2
+index 00000000..e376af30
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-refinement.test.ts
 @@ -0,0 +1,77 @@
@@ -6968,13 +6968,14 @@ index 00000000..8b0492a2
 +});
 diff --git a/packages/extractor/src/game/ground-refinement.ts b/packages/extractor/src/game/ground-refinement.ts
 new file mode 100644
+index 00000000..c41d4142
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-refinement.ts
 @@ -0,0 +1 @@
 +export { refineGoalGround } from '@opendfieldmap/ganglia/solver/host';
 diff --git a/packages/extractor/src/game/ground-tile-cache.test.ts b/packages/extractor/src/game/ground-tile-cache.test.ts
 new file mode 100644
-index 00000000..2892d25e
+index 00000000..e5f68d22
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-tile-cache.test.ts
 @@ -0,0 +1,79 @@
@@ -7059,7 +7060,7 @@ index 00000000..2892d25e
 +});
 diff --git a/packages/extractor/src/game/ground-tile-cache.ts b/packages/extractor/src/game/ground-tile-cache.ts
 new file mode 100644
-index 00000000..1a875635
+index 00000000..6f9e1d74
 --- /dev/null
 +++ b/packages/extractor/src/game/ground-tile-cache.ts
 @@ -0,0 +1,116 @@
@@ -8059,7 +8060,7 @@ index 418803cc..b4a54172 100644
  // `state` itself
  const jumpPad: MemoryPackValue = {
 diff --git a/packages/extractor/src/game/interactives/interactive-facilities.ts b/packages/extractor/src/game/interactives/interactive-facilities.ts
-index 86df2d06..34630da6 100644
+index 92cef19f..859f9617 100644
 --- a/packages/extractor/src/game/interactives/interactive-facilities.ts
 +++ b/packages/extractor/src/game/interactives/interactive-facilities.ts
 @@ -3,7 +3,7 @@ import type { Vec3 } from '@endfield-noclip/package-format/values';
@@ -8138,7 +8139,7 @@ index 86df2d06..34630da6 100644
 +			alternatives: baseGate(visibility).alternatives.map((requirements) => [...requirements, ...gates]),
 +		});
  		// oxlint-disable-next-line no-await-in-loop -- splines are read once per level
- 		const ride = await platforms.rideOf(row, levelId);
+ 		const ride = await platforms.rideOf(entry);
  		// oxlint-disable-next-line no-await-in-loop -- locks are read once per level
 diff --git a/packages/extractor/src/game/interactives/template-traits.ts b/packages/extractor/src/game/interactives/template-traits.ts
 index d60d08f6..6f730d05 100644
@@ -9908,7 +9909,7 @@ index 00000000..12efc5be
 +};
 diff --git a/packages/extractor/src/game/round-exclusions.test.ts b/packages/extractor/src/game/round-exclusions.test.ts
 new file mode 100644
-index 00000000..a4eaf9ee
+index 00000000..fcc225f7
 --- /dev/null
 +++ b/packages/extractor/src/game/round-exclusions.test.ts
 @@ -0,0 +1,46 @@
@@ -11726,7 +11727,7 @@ index 00000000..285a6b79
 +};
 diff --git a/packages/extractor/src/game/traversal-links.test.ts b/packages/extractor/src/game/traversal-links.test.ts
 new file mode 100644
-index 00000000..281feda9
+index 00000000..5764aae7
 --- /dev/null
 +++ b/packages/extractor/src/game/traversal-links.test.ts
 @@ -0,0 +1,261 @@
@@ -11992,10 +11993,10 @@ index 00000000..281feda9
 +	assert.equal(deviceConnections(input, setup([floor('floor', 0, 0)])).boosts.length, 0);
 +});
 diff --git a/packages/extractor/src/game/world/world-index.ts b/packages/extractor/src/game/world/world-index.ts
-index 132860c4..e194b874 100644
+index 34a06000..58322140 100644
 --- a/packages/extractor/src/game/world/world-index.ts
 +++ b/packages/extractor/src/game/world/world-index.ts
-@@ -100,7 +100,7 @@ export class WorldIndex {
+@@ -103,7 +103,7 @@ export class WorldIndex {
  	#stringPool: Promise<StringPool> | undefined;
  	#names: Promise<Map<string, string>> | undefined;
  	#english: Promise<Map<bigint, string>> | undefined;
@@ -12004,7 +12005,7 @@ index 132860c4..e194b874 100644
  	readonly #missions = new Map<string, Promise<MissionRuntime | undefined>>();
  	#chunkFiles: Promise<ChunkFile[]> | undefined;
  	readonly #mapConfigs = new Map<string, Promise<MapConfig | undefined>>();
-@@ -292,13 +292,29 @@ export class WorldIndex {
+@@ -295,13 +295,29 @@ export class WorldIndex {
  	}
  
  	/**
@@ -12037,7 +12038,7 @@ index 132860c4..e194b874 100644
  			const ids = new Map<string, bigint>();
  			for (const [key, value] of parseSparkTable(
  				await this.#read(VfsGroup.Table, 'Data/TableCfg/TextTable.bytes'),
-@@ -309,10 +325,11 @@ export class WorldIndex {
+@@ -312,10 +328,11 @@ export class WorldIndex {
  			}
  			return (key: string) => {
  				const id = ids.get(key);
