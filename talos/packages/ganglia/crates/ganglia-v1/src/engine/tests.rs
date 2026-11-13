@@ -1,0 +1,400 @@
+use super::*;
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+fn route(a: Point, b: Point) -> Value {
+    json!({"status":"complete","start":"a","arrivalCost":0.,"cost":distance(a,b),"length":distance(a,b),"points":[a,b],
+    "segments":[{"mode":"walk","points":[a,b],"times":[0.,distance(a,b)]}]})
+}
+fn input() -> Value {
+    json!({"kind":"scene","scene":{"scene":"fixture","walls":[],"navigation":{"surfaces":[
+    {"id":"floor","vertices":[[-100.,0.,-10.],[100.,0.,-10.],[100.,0.,10.],[-100.,0.,10.]]}],"options":{"speed":1.,"maxVertical":3.}}},
+    "locomotion":{"speed":1.,"sprintSpeed":1.,"sprintAcceleration":1.}})
+}
+fn query() -> Value {
+    json!({"starts":[{"id":"a","position":[0.,0.,0.],"cost":4.,"state":"available"}],"goal":[10.,0.,0.]})
+}
+fn success(_: &World, q: &Value, _: &Value) -> Result<Value, String> {
+    let a = point(&q["starts"][0]["position"])?;
+    let b = point(&q["goal"])?;
+    let mut r = route(a, b);
+    r["start"] = q["starts"][0]["id"].clone();
+    r["arrivalCost"] = q["starts"][0]["cost"].clone();
+    r["cost"] = json!(distance(a, b) + number(&q["starts"][0], "cost", 0.));
+    Ok(json!({"route":r,"connections":[],"diagnostics":{"truncated":false}}))
+}
+fn snapshot() -> Value {
+    json!({"kind":"surfaces","input":{"surfaces":input()["scene"]["navigation"]["surfaces"],
+    "walls":[],"collision":{"positions":[],"indices":[]},"movement":{"speed":1.,"maxVertical":3.,"profile":{"radius":0.1,"height":1.},
+    "model":{"gravity":9.8,"fallingGravity":9.8,"maxJumpHeight":1.,"maxFallingSpeed":20.,"apexTime":0.5,"maxHorizontalSpeed":3.}}}})
+}
+fn response(step: &Value, revision: &str, coverage: Value) -> Value {
+    json!({"id":step["effect"]["id"],"revision":revision,"coverage":coverage,
+    "snapshot":snapshot()})
+}
+fn finish(e: &mut Engine, mut step: Value) -> Value {
+    for _ in 0..200 {
+        if step["type"] == "complete" {
+            return step["result"].clone();
+        }
+        step = e
+            .resume(response(&step, "r1", json!({"kind":"complete"})))
+            .unwrap();
+    }
+    panic!("Engine did not terminate")
+}
+
+#[test]
+fn completed_tail_restores_original_arrival_cost_and_queries_are_fresh() {
+    let mut e = Engine::with_search(json!({}), input(), success).unwrap();
+    let step = e.start(query()).unwrap();
+    let first = finish(&mut e, step);
+    assert_eq!(first["partial"], false);
+    assert_eq!(first["route"]["start"], "a");
+    assert_eq!(first["route"]["cost"], 14.);
+    let mut next = query();
+    next["starts"][0]["cost"] = json!(9.);
+    let step = e.start(next).unwrap();
+    let second = finish(&mut e, step);
+    assert_eq!(second["route"]["cost"], 19.);
+    assert_eq!(e.cache.len(), 1);
+}
+
+#[test]
+fn stale_response_does_not_consume_pending_query() {
+    let mut e = Engine::with_search(json!({}), input(), success).unwrap();
+    let step = e.start(query()).unwrap();
+    let mut stale = response(&step, "r", json!({"kind":"complete"}));
+    stale["id"] = json!(999);
+    assert!(e.resume(stale).unwrap_err().contains("Stale"));
+    assert_eq!(finish(&mut e, step)["route"]["status"], "complete");
+}
+
+#[test]
+fn revision_and_sparse_coverage_both_invalidate_preparation() {
+    let mut e = Engine::with_search(json!({}), input(), success).unwrap();
+    let snapshot = snapshot();
+    let one = json!({"kind":"sparse","bounds":{"min":[-100,-100],"max":[100,100]},"tileSpan":32,"tiles":[{"x":0,"z":0}]});
+    let mut two = one.clone();
+    two["tiles"] = json!([{"x":1,"z":0}]);
+    let a = e.world(&snapshot, &json!("r1"), &one).unwrap();
+    let b = e.world(&snapshot, &json!("r1"), &one).unwrap();
+    assert!(Arc::ptr_eq(&a, &b));
+    let c = e.world(&snapshot, &json!("r1"), &two).unwrap();
+    assert!(!Arc::ptr_eq(&a, &c));
+    let d = e.world(&snapshot, &json!("r2"), &two).unwrap();
+    assert!(!Arc::ptr_eq(&c, &d));
+}
+
+fn fail_walking(world: &World, q: &Value, c: &Value) -> Result<Value, String> {
+    if c["physicalWork"]["step"] == 0 {
+        return Ok(
+            json!({"route":{"status":"no-verified-route"},"reason":"walking-blocked","diagnostics":{"truncated":true}}),
+        );
+    }
+    success(world, q, c)
+}
+#[test]
+fn staged_retries_preserve_truncation_after_success() {
+    let mut e = Engine::with_search(json!({}), input(), fail_walking).unwrap();
+    let step = e.start(query()).unwrap();
+    let result = finish(&mut e, step);
+    assert_eq!(result["route"]["status"], "complete");
+    assert_eq!(result["diagnostics"]["truncated"], true);
+}
+
+fn fail_all(_: &World, _: &Value, _: &Value) -> Result<Value, String> {
+    Ok(
+        json!({"route":{"status":"no-verified-route"},"reason":"blocked","diagnostics":{"truncated":false}}),
+    )
+}
+#[test]
+fn terminal_partial_survives_failed_prefix_and_cancellation_invalidates_effect() {
+    let mut e = Engine::with_search(json!({}), input(), fail_all).unwrap();
+    let mut q = query();
+    q["interaction"] = json!({"airborne":true,"radius":1.});
+    let step = e.start(q).unwrap();
+    assert_eq!(step["effect"]["kind"], "terminals");
+    let terminal = route([9., 0., 0.], [10., 0., 0.]);
+    let step = e
+        .resume(json!({"id":step["effect"]["id"],"terminals":[{"id":"asset","route":terminal}]}))
+        .unwrap();
+    assert_eq!(step["effect"]["partial"]["partial"], true);
+    let result = e.cancel().unwrap();
+    assert_eq!(result["result"]["partial"], true);
+    assert_eq!(result["result"]["reason"], "aborted");
+    assert!(
+        e.resume(response(&step, "r", json!({"kind":"complete"})))
+            .is_err()
+    );
+}
+
+#[test]
+fn composition_cannot_reset_sprint_activation_at_window_boundary() {
+    let a = route([0., 0., 0.], [1., 0., 0.]);
+    let mut b = route([1., 0., 0.], [2., 0., 0.]);
+    b["segments"][0]["mode"] = json!("jump");
+    b["segments"][0]["requiredGait"] = json!("sprint");
+    b["segments"][0]["flight"] = json!({"kind":"flight","control":{"mode":"jump"}});
+    let policy = json!({"speed":1.,"sprintSpeed":2.,"sprintAcceleration":100.,"stamina":{"capacity":1.,"initial":1.,"activationCost":1.,"recoveryRate":0.,"recoveryDelay":0.,"reserve":0.}});
+    let joined = schedule::compose(&[a, b], &policy).unwrap().unwrap();
+    assert_eq!(joined["schedule"].as_array().unwrap().len(), 2);
+    assert_eq!(
+        joined["segments"].as_array().unwrap().last().unwrap()["flight"]["kind"],
+        "flight"
+    );
+    assert_eq!(joined["locomotion"]["final"], 0.);
+    let mut exhausted = policy.clone();
+    exhausted["stamina"]["initial"] = json!(0.);
+    let a = route([0., 0., 0.], [1., 0., 0.]);
+    let mut b = route([1., 0., 0.], [2., 0., 0.]);
+    b["segments"][0]["mode"] = json!("jump");
+    b["segments"][0]["requiredGait"] = json!("sprint");
+    assert!(schedule::compose(&[a, b], &exhausted).unwrap().is_none());
+}
+
+#[test]
+fn composition_rejects_discontinuity_and_expired_boost() {
+    let a = route([0., 0., 0.], [1., 0., 0.]);
+    let b = route([2., 0., 0.], [3., 0., 0.]);
+    assert!(
+        schedule::compose(&[a.clone(), b], &input()["locomotion"])
+            .unwrap()
+            .is_none()
+    );
+    let mut a = a;
+    let mut b = route([1., 0., 0.], [2., 0., 0.]);
+    let boost = json!({"id":"boost","duration":1.5,"multiplier":1.});
+    a["segments"][0]["boost"] = boost.clone();
+    b["segments"][0]["boost"] = boost;
+    assert!(
+        schedule::compose(&[a, b], &input()["locomotion"])
+            .unwrap()
+            .is_none()
+    );
+}
+
+static CALLS: AtomicUsize = AtomicUsize::new(0);
+fn trained(w: &World, q: &Value, c: &Value) -> Result<Value, String> {
+    CALLS.fetch_add(1, Ordering::SeqCst);
+    let mut r = success(w, q, c)?;
+    r["connections"] = json!([{"id":"action","state":"open","mode":"jump","points":[[0,0,0],[1,0,0]],"times":[0,1]}]);
+    Ok(r)
+}
+#[test]
+fn catalog_freeze_stops_training_without_caching_queries() {
+    let mut e = Engine::with_search(json!({}), input(), trained).unwrap();
+    e.catalog("train").unwrap();
+    let step = e.start(query()).unwrap();
+    finish(&mut e, step);
+    let stats = e.catalog("freeze").unwrap();
+    assert_eq!(stats["actions"], 1);
+    let before = CALLS.load(Ordering::SeqCst);
+    let step = e.start(query()).unwrap();
+    finish(&mut e, step);
+    assert!(CALLS.load(Ordering::SeqCst) > before);
+    assert_eq!(e.catalog("stats").unwrap()["actions"], 1);
+    assert!(e.catalog("train").is_err());
+    e.close();
+    e.close();
+    assert!(e.start(query()).is_err());
+}
+
+#[test]
+fn invalid_budgets_are_rejected_before_any_query() {
+    for (key, value) in [
+        ("maxCandidates", json!(-1)),
+        ("maxShortcutCandidates", json!(0.5)),
+        ("maxLinks", json!(0)),
+        ("batchConcurrency", json!(0)),
+        ("maxAttempts", json!(9_007_199_254_740_992_u64)),
+        ("maxTiles", json!(513)),
+        ("sampleSpacing", json!(0)),
+        ("margin", Value::Null),
+        ("maxTargetError", json!(-0.1)),
+    ] {
+        let mut config = json!({});
+        config[key] = value;
+        assert!(
+            Engine::with_search(config, input(), success).is_err(),
+            "accepted invalid {key}"
+        );
+    }
+    assert!(
+        Engine::with_search(
+            json!({"maxTargetError":0,"maxCandidates":0,"maxShortcutCandidates":0}),
+            input(),
+            success
+        )
+        .is_ok()
+    );
+}
+
+#[test]
+fn cached_snapshot_miss_allows_full_resend_of_same_effect() {
+    let mut e = Engine::with_search(json!({}), input(), success).unwrap();
+    let step = e.start(query()).unwrap();
+    let mut cached = response(&step, "new-revision", json!({"kind":"complete"}));
+    cached["snapshot"] = json!({"cached":true});
+    assert_eq!(e.resume(cached).unwrap_err(), "Native snapshot cache miss");
+    assert_eq!(finish(&mut e, step)["route"]["status"], "complete");
+}
+
+fn short_windows(w: &World, q: &Value, c: &Value) -> Result<Value, String> {
+    // A 100 m guide is densified at 16 2/3 m intervals under the default
+    // 38.4 m tile width. The fixture accepts one interval, rejects longer work.
+    if distance(point(&q["starts"][0]["position"])?, point(&q["goal"])?) > 18. {
+        return fail_all(w, q, c);
+    }
+    success(w, q, c)
+}
+#[test]
+fn failed_long_window_expands_then_subdivides_without_rejecting_arrival() {
+    let mut e = Engine::with_search(json!({"maxTiles":512}), input(), short_windows).unwrap();
+    let mut q = query();
+    q["goal"] = json!([100., 0., 0.]);
+    let mut step = e.start(q).unwrap();
+    let mut expanded = false;
+    let mut nearer = false;
+    for _ in 0..500 {
+        if step["type"] == "complete" {
+            break;
+        }
+        expanded |= number(&step["effect"], "margin", 0.) == 16.;
+        if let Ok(target) = point(&step["effect"]["target"]) {
+            nearer |= target[0] > 0. && target[0] < 20.;
+        }
+        step = e
+            .resume(response(&step, "same-world", json!({"kind":"complete"})))
+            .unwrap();
+    }
+    assert!(expanded && nearer);
+    assert_eq!(step["result"]["route"]["status"], "complete");
+    assert_eq!(step["result"]["diagnostics"]["candidateAttempts"], 1);
+    assert_eq!(step["result"]["partial"], false);
+    assert!((number(&step["result"]["route"], "cost", 0.) - 104.).abs() < 1e-6);
+}
+
+#[test]
+fn waypoint_consumption_observes_trace_order_and_vertical_intervals() {
+    let waypoints = vec![json!([8., 0., 0.]), json!([2., 0., 0.])];
+    assert_eq!(
+        consume_waypoints(&[[0., 0., 0.], [10., 0., 0.]], &waypoints, 0, 0.1, 0.1).unwrap(),
+        1
+    );
+    assert_eq!(
+        consume_waypoints(
+            &[[0., 0., 0.], [10., 0., 0.], [0., 0., 0.]],
+            &waypoints,
+            0,
+            0.1,
+            0.1
+        )
+        .unwrap(),
+        2
+    );
+    let vertical = vec![json!([0., 8., 0.]), json!([0., 2., 0.])];
+    assert_eq!(
+        consume_waypoints(&[[0., 0., 0.], [0., 10., 0.]], &vertical, 0, 0.1, 0.1).unwrap(),
+        1
+    );
+}
+
+#[test]
+fn native_scene_walk_emits_replayable_schedule_and_pays_arrival_once() {
+    let mut snapshot = snapshot();
+    let vertices = snapshot["input"]["surfaces"][0]["vertices"]
+        .as_array()
+        .unwrap()
+        .clone();
+    snapshot["input"]["collision"] = json!({"positions":vertices.iter().flat_map(|p|point(p).unwrap()).collect::<Vec<_>>(),"indices":[0,2,1,0,3,2]});
+    snapshot["input"]["movement"]["locomotion"] = input()["locomotion"].clone();
+    let mut e = Engine::new(
+        json!({"maxCandidates":0,"maxShortcutCandidates":0}),
+        input(),
+    )
+    .unwrap();
+    let mut step = e.start(query()).unwrap();
+    for _ in 0..30 {
+        if step["type"] == "complete" {
+            break;
+        }
+        step=e.resume(json!({"id":step["effect"]["id"],"snapshot":snapshot,"revision":"floor-v1","coverage":{"kind":"complete"}})).unwrap();
+    }
+    assert_eq!(step["type"], "complete");
+    let result = &step["result"];
+    assert_eq!(result["route"]["status"], "complete");
+    assert_eq!(result["partial"], false);
+    assert_eq!(result["route"]["arrivalCost"], 4.);
+    assert!(
+        result["route"]["schedule"]
+            .as_array()
+            .is_some_and(|s| !s.is_empty())
+    );
+    let route = &result["route"];
+    let seconds = route["segments"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| {
+            s["times"]
+                .as_array()
+                .unwrap()
+                .last()
+                .unwrap()
+                .as_f64()
+                .unwrap()
+        })
+        .sum::<f64>();
+    assert!((number(route, "cost", 0.) - seconds - 4.).abs() < 1e-9);
+    assert_eq!(
+        e.cache.front().unwrap().world.snapshot()["coverage"],
+        "complete"
+    );
+}
+
+#[test]
+fn terminal_selection_composes_prefix_with_goal_event_and_witness() {
+    let mut e = Engine::with_search(json!({}), input(), success).unwrap();
+    let mut q = query();
+    q["interaction"] = json!({"airborne":true,"radius":0.5});
+    let step = e.start(q).unwrap();
+    let mut expensive = route([8., 0., 0.], [10., 0., 0.]);
+    expensive["cost"] = json!(100.);
+    let mut terminal = route([9., 0., 0.], [10., 0., 0.]);
+    terminal["segments"][0]["mode"] = json!("jump");
+    terminal["segments"][0]["flight"] = json!({"kind":"flight","start":[9,0,0],"end":[10,0,0]});
+    terminal["goalHit"] = json!({"segment":0,"time":1.,"position":[10.,0.,0.]});
+    let step=e.resume(json!({"id":step["effect"]["id"],"terminals":[{"id":"expensive","route":expensive},{"id":"selected","route":terminal}]})).unwrap();
+    assert_eq!(step["effect"]["target"], json!([9., 0., 0.]));
+    let result = finish(&mut e, step);
+    assert_eq!(result["partial"], false);
+    assert_eq!(result["route"]["cost"], 14.);
+    assert_eq!(result["route"]["goalHit"]["segment"], 1);
+    assert_eq!(result["route"]["segments"][1]["flight"]["kind"], "flight");
+}
+
+fn second_arrival(w: &World, q: &Value, c: &Value) -> Result<Value, String> {
+    if q["starts"][0]["id"] != "b" {
+        fail_all(w, q, c)
+    } else {
+        success(w, q, c)
+    }
+}
+#[test]
+fn failed_arrival_is_query_local_and_alternative_gets_a_fresh_attempt() {
+    let mut e = Engine::with_search(json!({"maxAttempts":2}), input(), second_arrival).unwrap();
+    let mut q = query();
+    q["starts"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!({"id":"b","position":[1.,0.,0.],"cost":20.,"state":"available"}));
+    let step = e.start(q).unwrap();
+    let result = finish(&mut e, step);
+    assert_eq!(result["route"]["status"], "complete");
+    assert_eq!(result["route"]["start"], "b");
+    assert_eq!(result["diagnostics"]["candidateAttempts"], 2);
+    // A new query must try a again; a previous bounded failure is no global
+    // reachability certificate and may never populate the prepared cache.
+    let step = e.start(query()).unwrap();
+    assert_eq!(step["effect"]["kind"], "window");
+}
