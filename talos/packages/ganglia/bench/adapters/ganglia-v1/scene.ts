@@ -23,6 +23,7 @@ import {
 } from '#@/bench/scene-data.ts';
 import { createTimings } from '#@/bench/timings.ts';
 import { createPhysicalVerifier } from '#@/src/evaluation/physical.ts';
+import { verificationDefaults } from '#@/src/evaluation/policy.ts';
 import { physicalTileSpan } from '#@/src/model/coverage.ts';
 import { createPhysicalWorld } from '#@/src/model/world.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
@@ -115,7 +116,10 @@ export async function loadScene(
       gameAdapterSha256,
       kernelSha256,
       resolvedKernel,
-      rules: { maxVertical: dataset.navigation.options.maxVertical },
+      rules: {
+        maxVertical: dataset.navigation.options.maxVertical,
+        verification: { version: 1, policy: verificationDefaults },
+      },
       get inputBytes() {
         return dataset.inputBytes;
       },

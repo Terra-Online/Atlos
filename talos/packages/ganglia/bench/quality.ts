@@ -143,6 +143,7 @@ export function qualityGate(
 
 type Binding = {
   scene: string;
+  rules?: unknown;
   source: unknown;
   hashes: Record<string, string>;
   gameAdapterSha256: string;
@@ -165,9 +166,12 @@ export function readReference(value: unknown, binding: Binding): QualityRow[] {
     !isDeepStrictEqual(value.source, binding.source) ||
     !isDeepStrictEqual(Object.values(value.hashes).sort(), Object.values(binding.hashes).sort()) ||
     value.gameAdapterSha256 !== binding.gameAdapterSha256 ||
+    !isDeepStrictEqual(value.rules, binding.rules) ||
     !isDeepStrictEqual(value.cases, binding.cases)
   )
-    throw new Error('Reference scene, input snapshot, game adapter or queries do not match');
+    throw new Error(
+      'Reference scene, input snapshot, game adapter, verification rules or queries do not match',
+    );
   // Algorithm/config/source hashes may differ: comparing those variants is the purpose.
   const rows = value.batch.results.map((row: unknown, index: number) => {
     if (

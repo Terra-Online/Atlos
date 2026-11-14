@@ -1,4 +1,6 @@
+import { verificationPolicy, within, type VerificationPolicy } from '#@/src/evaluation/policy.ts';
 import { evaluateRoute, verifyRoute } from '#@/src/evaluation/route.ts';
+import { executeWalking } from '#@/src/evaluation/walking.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
 import { jumpConnection, runOffConnection, jumpDuration } from '#@/src/model/flight.ts';
 import { findGoalHit } from '#@/src/model/goals.ts';
@@ -21,11 +23,12 @@ const sameTrace = (
   a: Pick<Segment, 'points' | 'times'>,
   b: Pick<Segment, 'points' | 'times'>,
   tolerance = 1e-5,
+  timeTolerance = 1e-6,
 ) => {
   if (
-    !close(a.times.at(-1)!, b.times.at(-1)!) ||
-    distance(a.points[0], b.points[0]) > 1e-5 ||
-    distance(a.points.at(-1)!, b.points.at(-1)!) > 1e-5
+    !within(a.times.at(-1)!, b.times.at(-1)!, timeTolerance, 1e-6) ||
+    distance(a.points[0], b.points[0]) > tolerance ||
+    distance(a.points.at(-1)!, b.points.at(-1)!) > tolerance
   )
     return false;
   const position = (trace: typeof a, time: number): Vec3 => {
@@ -90,24 +93,34 @@ function supportedWalk(
 /** A verifier owns no search state. It re-executes the submitted controls against
  * provider-owned snapshots; unknown actions, missing witnesses and coverage
  * failures are rejected. A failed search never establishes physical impossibility. */
-export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]) {
-  return (query: RouteQuery, route: Route) => {
-    const trace = evaluateRoute(route);
+export function createPhysicalVerifier(
+  snapshots: () => readonly PhysicalWorld[],
+  options: Partial<VerificationPolicy> = {},
+) {
+  const policy = verificationPolicy(options);
+  const verify = (
+    query: RouteQuery,
+    route: Route,
+    worlds: readonly PhysicalWorld[],
+    navigationWalks = false,
+  ) => {
+    const trace = evaluateRoute(route, policy);
     if (!trace.valid) return { ...trace, scope: 'physical' as const };
-    const worlds = snapshots();
     const first =
       route.status === 'complete' &&
       worlds.find((w) => w.covered(route.points[0], route.points[0]));
     const contract = verifyRoute(query, route, {
       maxVertical: first ? first.input.ground.options.maxVertical : 0,
+      ...policy,
     });
     const issues = [...contract.issues];
+    let verifiedCost = contract.costSeconds;
     const result = () => ({
       ...contract,
       scope: 'physical' as const,
       valid: contract.valid && !issues.length,
       issues,
-      costSeconds: issues.length ? null : contract.costSeconds,
+      costSeconds: issues.length ? null : verifiedCost,
       length: issues.length ? null : contract.length,
     });
     if (!contract.valid || route.status !== 'complete') return result();
@@ -332,7 +345,7 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
               witness.kind === 'run-off'
                 ? runOffConnection(witness.start, witness.end, options)
                 : jumpConnection(witness.start, witness.end, options);
-            if (!replay || !sameTrace(s, replay, 0.005))
+            if (!replay || !sameTrace(s, replay, policy.traceTolerance))
               throw new Error('Flight does not match collision-checked controls');
             const airSpeed =
               replay.peakHorizontalSpeed ??
@@ -491,7 +504,8 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
           const before = state;
           const replay = controller.advance([segment], state, block);
           if (!replay) throw new Error('Resource controls are infeasible');
-          physical(segment, elapsed, before.sprinting, replay.duration);
+          if (!navigationWalks || segment.mode !== 'walk')
+            physical(segment, elapsed, before.sprinting, replay.duration);
           output.push(...replay.segments);
           state = replay.state;
           elapsed += replay.duration;
@@ -503,7 +517,8 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
         const clear = worlds.some((snapshot) => {
           try {
             const configured = snapshot.configured(placements, configuration);
-            if (segment.mode === 'walk') return supportedWalk(segment, configured);
+            if (segment.mode === 'walk')
+              return navigationWalks || supportedWalk(segment, configured);
             const { world, blocked } = configured;
             const profile = snapshot.input.ground.options.profile;
             return segment.points.every((point, index) => {
@@ -521,7 +536,9 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
       if (
         actual.length !== expected.length ||
         actual.some(
-          (phase, i) => phase.key !== expected[i].key || !sameTrace(phase, expected[i], 0.005),
+          (phase, i) =>
+            phase.key !== expected[i].key ||
+            !sameTrace(phase, expected[i], policy.traceTolerance, policy.timeTolerance),
         )
       )
         throw new Error('Route differs from resource replay');
@@ -534,8 +551,25 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
       )
         throw new Error('Resource summary differs from replay');
       const origin = first.configured(placements, configuration).standing(route.points[0]);
-      if (!origin || distance(origin, route.points[0]) > 1e-5)
+      if (!navigationWalks && (!origin || distance(origin, route.points[0]) > 1e-5))
         throw new Error('Unsupported route origin');
+      if (!navigationWalks && !query.interaction) {
+        const endpoint = route.points.at(-1)!;
+        if (Math.hypot(endpoint[0] - query.goal[0], endpoint[2] - query.goal[2]) > 1e-6) {
+          // A nearby point across a wall or support gap is a different destination.
+          // Certify a local connection without adding an unrequested approach.
+          const connected = worlds.some((snapshot) => {
+            try {
+              const physical = snapshot.configured(placements, configuration);
+              const goal = physical.standing([query.goal[0], endpoint[1], query.goal[2]]);
+              return goal && physical.walkTrace(endpoint, goal);
+            } catch {
+              return false;
+            }
+          });
+          if (!connected) throw new Error('Goal tolerance crosses an obstacle or support gap');
+        }
+      }
       if (query.interaction?.airborne) {
         for (let index = 0; index < route.segments.length; index++) {
           const segment = route.segments[index],
@@ -560,11 +594,42 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
           break;
         }
       }
-      if (!close(route.cost, route.arrivalCost + elapsed))
+      if (
+        !within(
+          route.cost,
+          route.arrivalCost + elapsed,
+          policy.costTolerance,
+          policy.relativeTolerance,
+        )
+      )
         throw new Error('Physical cost differs from route');
+      verifiedCost = route.arrivalCost + elapsed;
     } catch (error) {
       issues.push(error instanceof Error ? error.message : String(error));
     }
     return result();
+  };
+  return (query: RouteQuery, route: Route) => {
+    const worlds = snapshots();
+    const strict = verify(query, route, worlds);
+    if (strict.valid || route.status !== 'complete' || !policy.walkSnap) return strict;
+    // Validate submitted timing, controls, nonwalk geometry and terminal events
+    // before treating walk heights as navigation intent. Never fix invalid controls.
+    const controls = verify(query, route, worlds, true);
+    if (!controls.valid) return controls;
+    try {
+      const executed = executeWalking(route, worlds, policy);
+      const result = verify(query, executed.route, worlds);
+      return {
+        ...result,
+        execution: {
+          maxWalkSnap: executed.maxWalkSnap,
+          costDeltaSeconds: executed.route.cost - route.cost,
+          lengthDelta: executed.route.length - route.length,
+        },
+      };
+    } catch (error) {
+      return { ...strict, issues: [error instanceof Error ? error.message : String(error)] };
+    }
   };
 }

@@ -1,5 +1,50 @@
 # Route solver history and validation evidence
 
+## Verification approximation policy, 2026-11-14
+
+The user authorized practical defaults and configurable representation tolerances
+following the physical regression investigation. Implementation starts at `9d4fac29`.
+The independent verifier now distinguishes reported navigation intent from physical
+execution, while retaining the strict collision/resource evaluation underneath.
+
+A public policy supplies 5 cm ordinary goal tolerance, 5 mm trace comparison,
+1 ms resource-replay timestamp comparison, and up to 20 cm vertical walk snapping.
+Reported totals allow 0.01 s / 0.01 m absolute plus 0.1% relative error; evaluation
+returns recomputed totals. Interaction volumes and ordered waypoint rules are not
+expanded. A nearby ordinary goal additionally requires a supported local connection.
+Resource amounts, action authority, takeoff support and actual collision retain
+separate strict checks rather than inheriting a general position tolerance.
+
+Before walk interpretation, the submitted route must match its resource controls,
+nonwalk physics and terminal events. Walk spans are then projected without horizontal
+search, checked against coverage and the snap bound, and resource controls are
+replayed over the physical path. The resulting full route must pass the verifier.
+This charges changed distance/time and catches resource/boost consequences. Execution
+corrections are reported without modifying the submitted object. `walkSnap: 0`
+retains direct physical-trace acceptance. The older slope test's rejection applies
+explicitly to this strict policy; a new default-policy test requires acceptance and
+independently calculated slope travel time, with a positive cost correction.
+
+RED→GREEN coverage includes configurable goal/report rounding, bounded slope
+execution with independently recomputed cost and immutable input, and rejection of
+a near goal behind a thin wall. Existing collision, support-gap, airborne-authority,
+resource and device negatives still pass. Reference validation now includes `rules`
+so reports with different verifier policies cannot silently share acceptance scope.
+Independent review found and reproduced two additional edge cases: a zero-XZ
+walk span omitted its end-height correction, and block-wide resource replay applied
+one segment's boost to later motions. Endpoint corrections are now bounded explicitly,
+and execution carries resource state one segment at a time, matching verification.
+Both review probes are retained as RED→GREEN public-verifier regressions. Package
+formatting, lint, typecheck and all 458 TS tests pass.
+
+The final post-change audit replays all fifty saved first-round submissions from
+`1e942192`, without running search or training. Six pass after execution; 33 fail
+supported walking and 11 fail takeoff support. No remaining failure is a snap-bound
+exceedance, so increasing that limit has no evidence-based justification. Evidence:
+`.local/research/physical-regression/approximation-audit.ts` and
+`approximation-audit.json`. These outcomes do not replace the historical timing
+report or establish a new full-population solver performance result.
+
 ## Physical rules and goal-projection regression investigation, 2026-11-14
 
 The review starts from committed `a361c555` and compares the shared physical

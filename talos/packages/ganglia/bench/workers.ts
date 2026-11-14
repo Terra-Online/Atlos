@@ -237,6 +237,7 @@ export async function prepareWorkerSolver(options: {
           isDeepStrictEqual(latest.source, value.source) &&
           latest.kernelSha256 === value.kernelSha256 &&
           latest.gameAdapterSha256 === value.gameAdapterSha256 &&
+          isDeepStrictEqual(latest.rules, value.rules) &&
           Object.entries(latest.hashes).every(([name, hash]) => value.hashes[name] === hash)
         : sceneIdentity(latest) === sceneIdentity(value);
       if (!matches) throw new Error('Scene worker input/source identity mismatch');

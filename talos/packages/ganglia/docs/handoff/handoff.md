@@ -1,5 +1,32 @@
 # Route solver handoff
 
+## Configurable verification and bounded walk execution, 2026-11-14
+
+`createPhysicalVerifier(snapshots, options)` accepts a partial `VerificationPolicy`;
+`verificationDefaults` is exported from the evaluation entry. Default ordinary
+point-goal tolerance is 0.05 m, replay trace tolerance 0.005 m, resource timestamp
+comparison tolerance 0.001 s, and maximum vertical walk correction 0.2 m. Reporting
+allows 0.01 s cost / 0.01 m length plus 0.001 relative error, while returned cost and
+length are recomputed. Set `walkSnap: 0` to require submitted physical feet.
+
+A failed direct execution can be interpreted as navigation-height walk intent only
+after its controls, resource schedule, nonwalk geometry and terminal events pass.
+The independent execution helper projects walk spans onto covered physical support,
+retains their horizontal path, and recomputes the whole resource timeline. The
+result then passes the complete physical verifier again. It adds no search, new
+flight or horizontal detour. `Evaluation.execution` reports maximum walk correction
+and cost/length deltas; input routes are unchanged. Flight origins, obstacles,
+coverage, resources, explicit interactions, start identity and ordered waypoints
+retain their physical checks. Ordinary goal tolerance requires a local supported
+connection, so a nearby point behind an obstacle cannot satisfy the goal.
+
+Benchmark metadata binds the verification version and default policy in `rules`;
+reference comparison and worker restoration require matching rule identities.
+The saved `1e942192` first-round traces now yield six valid executions, 33 unsupported
+or obstructed walks and 11 unsupported takeoffs. This is an audit of unchanged saved
+intent, not a new solver timing measurement. The prior historical benchmark remains
+bound to its original rules. Package checks pass 458 TS tests.
+
 ## Physical regression followup, 2026-11-14
 
 The shared world's continuous support proof now bounds capsule feet between the

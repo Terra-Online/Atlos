@@ -1,3 +1,4 @@
+import { verificationPolicy, within, type VerificationPolicy } from '#@/src/evaluation/policy.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
 import { findGoalHit } from '#@/src/model/goals.ts';
 import { validateMotion } from '#@/src/model/motion.ts';
@@ -21,8 +22,10 @@ export interface Evaluation {
   issues: string[];
   costSeconds: number | null;
   length: number | null;
+  execution?: { maxWalkSnap: number; costDeltaSeconds: number; lengthDelta: number };
 }
-export function evaluateRoute(route: Route): Evaluation {
+export function evaluateRoute(route: Route, options: Partial<VerificationPolicy> = {}): Evaluation {
+  const policy = verificationPolicy(options);
   const issues: string[] = [];
   if (route.status !== 'complete')
     return {
@@ -73,9 +76,15 @@ export function evaluateRoute(route: Route): Evaluation {
     }
   }
   if (distance(endpoint, route.points.at(-1)!) > 1e-6) issues.push('Inconsistent route endpoint');
-  if (!Number.isFinite(route.cost) || !equal(route.cost, costSeconds))
+  if (
+    !Number.isFinite(route.cost) ||
+    !within(route.cost, costSeconds, policy.costTolerance, policy.relativeTolerance)
+  )
     issues.push('Declared cost differs from trace duration');
-  if (!Number.isFinite(route.length) || !equal(route.length, length))
+  if (
+    !Number.isFinite(route.length) ||
+    !within(route.length, length, policy.lengthTolerance, policy.relativeTolerance)
+  )
     issues.push('Declared length differs from trace length');
   return {
     scope: 'route-contract' as const,
@@ -88,14 +97,19 @@ export function evaluateRoute(route: Route): Evaluation {
 
 /** Projection tolerance comes from the supplied world/movement snapshot. Solver
  * diagnostics and its claimed groundedTarget are never goal witnesses. */
-export function verifyRoute(query: RouteQuery, route: Route, options: { maxVertical: number }) {
+export function verifyRoute(
+  query: RouteQuery,
+  route: Route,
+  options: { maxVertical: number } & Partial<VerificationPolicy>,
+) {
   if (!Number.isFinite(options.maxVertical) || options.maxVertical < 0)
     throw new Error('Invalid projection tolerance');
-  const evaluation = evaluateRoute(route);
+  const policy = verificationPolicy(options);
+  const evaluation = evaluateRoute(route, policy);
   if (!evaluation.valid || route.status !== 'complete') return evaluation;
   const issues = [...evaluation.issues];
-  const nearProjection = (a: Vec3, b: Vec3) =>
-    Math.hypot(a[0] - b[0], a[2] - b[2]) <= 1e-6 &&
+  const nearProjection = (a: Vec3, b: Vec3, horizontal = 1e-6) =>
+    Math.hypot(a[0] - b[0], a[2] - b[2]) <= horizontal &&
     Math.abs(a[1] - b[1]) <= options.maxVertical + 1e-6;
   const start = query.starts.find(
     (start) => start.id === route.start && start.state === 'available',
@@ -110,7 +124,8 @@ export function verifyRoute(query: RouteQuery, route: Route, options: { maxVerti
   if (query.interaction) {
     if (!findGoalHit([endpoint, endpoint], query.goal, query.interaction))
       issues.push('Route endpoint misses the interaction goal');
-  } else if (!nearProjection(query.goal, endpoint)) issues.push('Route endpoint misses the goal');
+  } else if (!nearProjection(query.goal, endpoint, policy.goalTolerance + 1e-6))
+    issues.push('Route endpoint misses the goal');
   // Waypoints must occur in order along the submitted trace. Check each line
   // span, since a solver may use a different sampling density around a waypoint.
   const points = route.segments.length
