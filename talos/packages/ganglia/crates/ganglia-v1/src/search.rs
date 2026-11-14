@@ -1958,11 +1958,12 @@ fn solve_world(
         .collect::<Vec<_>>();
     let mut walking_phases = Vec::new();
     let mut unexplored_detours = 0usize;
-    // Stage 2 first searches only direct canonical walking and proved actions.
-    // Restart resource labels for detours so earlier dominance cannot suppress
-    // paths introduced by the larger graph. Static action blocks remain shared.
+    // Known-action lookup is a quick direct-walk pass. A trained catalog must
+    // not trigger a full detour proof for every pair before fresh discovery.
+    // Stage 2 also starts direct, then restores ordinary detours. Restart labels
+    // so earlier dominance cannot suppress paths introduced by the larger graph.
     for pass in 0..if stage >= 2 { 2 } else { 1 } {
-        let direct_only = stage >= 2 && pass == 0;
+        let direct_only = stage >= 1 && pass == 0;
         let phase = if direct_only {
             "direct"
         } else if stage >= 2 {
@@ -2241,10 +2242,10 @@ fn solve_world(
                 "result":walking_phases.last()})
             );
         }
+        truncated |= direct_only && unexplored_detours > 0;
         if winner.is_some() {
             // Returning the direct graph's winner avoids all detour proofs.
             // Unexplored alternatives may offer a cheaper route.
-            truncated |= direct_only && unexplored_detours > 0;
             break;
         }
         if expanded >= max_expanded {

@@ -45,6 +45,12 @@ dominance and retained label caps. All resource/geometry proofs and budgets rema
 unchanged. This addresses cheap-prefix expansion in trained action graphs;
 full-population acceptance remains required.
 
+Known-action lookup now checks direct supported walks and existing actions
+without eagerly solving all catalog endpoint detours. Full discovery still
+restores ordinary detour proofs after its direct pass. This prevents optional
+catalog reuse from delaying fresh discovery indefinitely; omitted lookup detours
+mark the local result truncated. Stage-zero walking retains full ground paths.
+
 ## Rust rewrite integration, 2026-11-14
 
 Native placement revalidation retains each piece's original local query and

@@ -1,5 +1,27 @@
 # Route solver history and validation evidence
 
+## Direct walking during catalog lookup, 2026-11-14
+
+The frozen `38a5cf23` configured run completes the lower-floor warmup in 70.427
+seconds, modeled cost 7.756732 and independent physical replay valid. The
+upper-floor request then times out at 300 seconds; the run ends after 407.858
+seconds before scoring. Evidence remains in
+`.local/research/rust-configured-full50-38a5cf23/`. Goal-directed queue ordering
+alone does not establish trained service readiness. A one-second read-only sample
+at `/tmp/ganglia-trained-goal-queue.sample.txt` is dominated by ground proofs.
+
+Known-action lookup previously called full ground-path repair eagerly for every
+selected catalog endpoint pair, before new action discovery. It now checks direct
+supported walking only. Full stage-two search retains direct walking followed by
+ordinary detours, with the same expansion and candidate budgets. Stage zero also
+retains complete ground-path repair. Lookup omissions mark truncation; they do
+not exclude full-search detours. The existing obstacle regression now explicitly
+checks a direct lookup miss and the full search's unchanged valid detour.
+
+All 143 Rust unit tests, two authored-action tests and 24 common-physical N-API
+fixtures pass. Release N-API build, feature-enabled all-target Clippy and Rustfmt
+pass. TypeScript source is unchanged from the preceding 446-test package check.
+
 ## Trained warmup timeout and goal-directed queue, 2026-11-14
 
 The unchanged algorithm at `08b7d7a0`, with full warmup evaluation logging, repeats

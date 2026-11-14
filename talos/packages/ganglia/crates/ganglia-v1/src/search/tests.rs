@@ -719,7 +719,17 @@ fn bounded_sample_walking_keeps_proven_obstacle_detours_between_query_anchors() 
                 .map(|x| json!(x)),
         );
     let query = json!({"starts":[start("a",-2.,0.,"available")],"goal":[2.,0.,0.]});
-    for stage in [0, 1, 2] {
+    // Catalog lookup does not eagerly prove an obstacle detour. Full search
+    // must still recover it after its direct pass misses, even without samples.
+    let lookup = solve_snapshot(
+        &snapshot,
+        &query,
+        &json!({"physicalWork":{"step":1},"maxCandidates":0}),
+    )
+    .unwrap();
+    assert_eq!(lookup["route"]["status"], "no-verified-route");
+    assert_eq!(lookup["diagnostics"]["truncated"], true);
+    for stage in [0, 2] {
         let result = solve_snapshot(
             &snapshot,
             &query,
