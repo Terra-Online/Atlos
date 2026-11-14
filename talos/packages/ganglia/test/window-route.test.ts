@@ -121,6 +121,50 @@ test('shared ground preparation supports concurrent queries and target-side vali
   assert.equal(loads, 1);
 });
 
+test('the final point goal keeps its horizontal coordinates on sloped support', async () => {
+  const ground = {
+    surfaces: [
+      {
+        id: 'slope',
+        vertices: [
+          [0, 0, -1],
+          [4, 2, -1],
+          [4, 2, 1],
+          [0, 0, 1],
+        ] as Surface['vertices'],
+      },
+    ],
+    options: { speed: 5, maxVertical: 0.5, walls: [], profile: { radius: 0.1, height: 1.8 } },
+  };
+  const planner = createGroundPlanner(ground.surfaces, ground.options);
+  const builder: Resources = {
+    key: () => 'slope',
+    ground: async () => ground,
+    query: async () => ({ status: 'ready', output: 'slope', collision: 'slope' }),
+    solve: async (job, local) => ({
+      ...job,
+      result: { route: planner.plan([local.arrival], local.target) },
+    }),
+    route: (job) => job.result ?? {},
+  };
+  const window = createWindowRoute(
+    builder,
+    {
+      ...request,
+      target: [2, 1.1, 0],
+    },
+    [
+      [0, 0, 0],
+      [2, 1.1, 0],
+    ],
+    settings,
+  );
+  let result = await window.advance();
+  for (let i = 0; i < 12 && result.status === 'pending'; i++) result = await window.advance();
+  assert.equal(result.status, 'complete');
+  if (result.status === 'complete') assert.deepEqual(result.route.points.at(-1), [2, 1, 0]);
+});
+
 test('windows retain true exits, enforce tile budget and retime the whole trajectory', async () => {
   const starts: number[][] = [];
   const builder: Omit<Resources, 'key' | 'ground' | 'route'> = {

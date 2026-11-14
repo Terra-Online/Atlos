@@ -228,6 +228,69 @@ test('whole-route controls cannot reset stamina between sprint blocks', () => {
   assert.equal(verify(input, fake).valid, false);
 });
 
+test('physical walking on a slope uses capsule support independently of navmesh cell height', () => {
+  const input = snapshot();
+  input.movement.maxSlope = 46;
+  // On y=x a radius-0.2 capsule has feet r*(sqrt(2)-1) above the
+  // vertical terrain projection. Add the same 5 mm clearance as flat ground.
+  input.collision.positions = input.collision.positions.map((value, index) =>
+    index % 3 === 1 ? input.collision.positions[index - 1] : value,
+  );
+  const segment: Segment = {
+    mode: 'walk',
+    points: [
+      [0, 0.087842712474619, 0],
+      [1, 1.087842712474619, 0],
+    ],
+    times: [0, Math.SQRT2 / 5],
+  };
+  for (const cellHeight of [0.1, 0.01]) {
+    input.ground.build = {
+      profile: input.ground.options.profile,
+      maxSlope: 46,
+      stepUp: 0.4,
+      stepDown: 0.5,
+      cellSize: 0.1,
+      cellHeight,
+      tileCells: 16,
+      bounds: { min: [-10, -10], max: [10, 10] },
+    };
+    const result = verify(input, candidate(input, [segment]));
+    assert.equal(result.valid, true, JSON.stringify({ cellHeight, result }));
+  }
+});
+
+test('walking beside a finite ramp edge retains its sphere-edge support', () => {
+  const input = snapshot();
+  input.movement.maxSlope = 46;
+  input.collision = {
+    positions: [-1, -1, -2, -1, -1, 2, 0, 0, 2, 0, 0, -2],
+    indices: [0, 1, 2, 0, 2, 3],
+  };
+  input.ground.build = {
+    profile: input.ground.options.profile,
+    maxSlope: 46,
+    stepUp: 0.4,
+    stepDown: 0.5,
+    cellSize: 0.1,
+    cellHeight: 0.01,
+    tileCells: 16,
+    bounds: { min: [-10, -10], max: [10, 10] },
+  };
+  // The contact is on x=0. Its sphere support is sqrt(r²-dx²)-r,
+  // below the infinite-plane tangent height; add 5 mm clearance.
+  const segment: Segment = {
+    mode: 'walk',
+    points: [
+      [-0.01, 0.00474984355438179, -0.5],
+      [-0.01, 0.00474984355438179, 0.5],
+    ],
+    times: [0, 0.2],
+  };
+  const result = verify(input, candidate(input, [segment]));
+  assert.equal(result.valid, true, JSON.stringify(result));
+});
+
 test('support correction cannot add uncharged physical distance on a slope', () => {
   const input = snapshot();
   input.collision.positions = input.collision.positions.map((v, i) =>

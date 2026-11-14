@@ -1,5 +1,48 @@
 # Route solver history and validation evidence
 
+## Physical rules and goal-projection regression investigation, 2026-11-14
+
+The review starts from committed `a361c555` and compares the shared physical
+milestone (`48e6e791`) with the extracted `d35e4997` rules and retained V1 behavior.
+Two independently reproduced defects are corrected:
+
+- `createPhysicalWorld.walkTrace` clipped support intervals against vertical plane
+  height, while `groundAt(radius)` uses tangent-sphere support. For the plane y=x,
+  a radius-0.2 capsule's feet are 0.082842712474619 metres above the vertical plane
+  projection. With 5 mm clearance, the same legal walk passed at cellHeight=0.1
+  but failed at 0.01. The new analytic public-verifier regression demonstrated RED
+  before allowing the slope lift and GREEN afterward. Independent review also
+  reproduced a finite-edge false negative in the initial correction: edge/corner
+  sphere support can sit below infinite-plane support. An additional RED→GREEN
+  regression verifies a path parallel to a ramp edge; interval clipping now retains
+  the vertical lower bound and extends only the upper bound by the plane lift.
+  Existing unsupported-gap, floating-foot, slope-distance, collision and resource
+  negative tests still pass.
+- V1 `createWindowRoute` used nearest 3D region projection for final point goals as
+  well as intermediate anchors. On y=0.5x, requested [2,1.1,0] became [2.04,1.02,0]
+  instead of vertically projected [2,1,0]. The prepared-window regression reproduced
+  this before the fix. Final point goals now retain XZ and their existing configured
+  vertical tolerance; intermediate anchors and explicit interactions preserve their
+  contracts. Final result admission also checks XZ rather than accepting 0.5 m drift.
+  This behavior predates the verifier and is visible in the imported TS solver.
+
+Saved real-data submissions explain why these fixes do not certify the historical
+routes. The first lower-floor route starts at navigation y=298.30939069046434;
+provider collision gives capsule feet y=298.2302319151454 at the same XZ, a
+0.07915877531894-metre discrepancy. Its next knot differs by approximately 0.111 m.
+The verifier correctly refuses to charge navigation-space distances as executed
+physical motion. The upper-floor endpoint shift of approximately 0.0183 m follows
+from the broader final-target projection policy above. No goal tolerance was widened.
+
+Diagnostics normalize provider facts without invoking search. The source comparison
+and first failing spans are retained under `.local/research/physical-regression/`
+(`inspect.ts`, `inspection.json`). A post-fix independent replay of all fifty saved
+`1e942192` first-round submissions is `physical-audit.json`: the same 25 walking and
+25 endpoint failures remain, because the audit never repairs stored routes. This is
+verification evidence, not a new timing or solver-completion benchmark. Package
+formatting, lint, typecheck and all 453 TS tests pass. The historical report and its
+source binding remain unchanged; Rust optimization remains paused.
+
 ## Historical TS recovery and benchmark compatibility, 2026-11-14
 
 The user stopped Rust optimization and requested a historical pure-TS solver with

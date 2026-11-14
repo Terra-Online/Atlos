@@ -1,8 +1,30 @@
 # Route solver handoff
 
+## Physical regression followup, 2026-11-14
+
+The shared world's continuous support proof now bounds capsule feet between the
+vertical terrain height and the slope's tangent-sphere height. Finite-face edge
+and corner contacts lie within this envelope, matching collision `groundAt`.
+Using vertical terrain height alone rejected supported walks at small cell heights. Continuous raw support coverage, exact submitted feet,
+swept collision and resource replay remain required.
+
+TS window routing now projects final point goals vertically and rejects horizontal
+endpoint drift above 1e-6 metres. The 0.5-metre support adjustment remains available
+for intermediate coarse anchors; explicit final interactions retain their own
+region semantics. This corrects an older solver behavior exposed by the independent
+verifier, rather than relaxing the goal contract.
+
+Analytic slope and prepared-window regressions fail before these fixes and pass
+afterward. Package formatting, lint, typecheck and 453 TS tests pass. Replaying the
+fifty saved historical submissions still rejects 25 unsupported/obstructed walks
+and 25 old shifted endpoints. Saved trajectories are neither repaired nor replaced
+by this audit. Navigation-space heights still need physical execution before these
+routes can satisfy the newer contract. No new solver performance run was made;
+the baseline below remains bound to its measured `1e942192` source.
+
 ## Historical pure-TS compatibility baseline, 2026-11-14
 
-The active task restores a usable historical TS solver/benchmark combination.
+A usable historical TS solver/benchmark combination is retained.
 Rust performance work is paused. The unfinished native-admission experiment is
 preserved in the local stash named `paused-native-admission-investigation`.
 
