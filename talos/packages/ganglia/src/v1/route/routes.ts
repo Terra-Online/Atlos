@@ -13,11 +13,6 @@ import {
 } from '#@/src/v1/reach/connectivity.ts';
 import { searchResources } from '#@/src/v1/resource/resource-search.ts';
 import { createMinHeap } from '#@/src/v1/search/heap.ts';
-import {
-  createPreparedRouteSearch,
-  type PreparedRouteSearch,
-  type RouteSearchSeed,
-} from '#@/src/v1/search/route-search.ts';
 
 export interface Node {
   id: string;
@@ -149,13 +144,9 @@ export function createUpdatingRoutePlanner(graph: Graph) {
 // The ground planner owns its immutable base graph. Only query endpoints and
 // newly validated actions need corridor checks on each successive planning pass.
 export function createRoutePlanner(graph: Graph, constraints?: RouteConstraints) {
-  const accepted: Edge[] = [];
-  const base = prepareGraph(graph, constraints, undefined, accepted);
+  const base = prepareGraph(graph, constraints);
   const ids = graph.nodes.map((node) => node.id);
-  return preparedSearch(base, () => directedComponents(ids, base.edges), {
-    nodes: graph.nodes,
-    edges: accepted,
-  });
+  return preparedSearch(base, () => directedComponents(ids, base.edges));
 }
 // Ground and movement already need the full numeric topology. Own it once in
 // their shared preparation, without retaining it for standalone graph searches.
@@ -180,17 +171,12 @@ export function prepareRoutePlanner(graph: Graph, constraints?: RouteConstraints
     get topology() {
       return (topology ??= groundComponents(graphSnapshot));
     },
-    plan: preparedSearch(base, () => condenseComponents(preparedBase.topology), graphSnapshot),
+    plan: preparedSearch(base, () => condenseComponents(preparedBase.topology)),
   };
   return preparedBase;
 }
-const preparedSearch = (
-  base: PreparedGraph,
-  getComponents: () => CondensedTopology,
-  snapshot: Graph,
-) => {
+const preparedSearch = (base: PreparedGraph, getComponents: () => CondensedTopology) => {
   const estimates: Estimates = {};
-  const numeric = createPreparedRouteSearch(snapshot);
   let disconnected = false,
     components: CondensedTopology | undefined;
   return (
@@ -216,8 +202,6 @@ const preparedSearch = (
         },
       },
       locomotion,
-      undefined,
-      numeric && { search: numeric, nodes: extra.nodes, links: prepared.links! },
     );
   };
 };
@@ -295,7 +279,6 @@ function search(
   connectivity: Connectivity | undefined,
   locomotion: LocomotionOptions | undefined,
   onPath?: (edges: Edge[]) => void,
-  numeric?: { search: PreparedRouteSearch; nodes: Node[]; links: Edge[] },
 ): Route {
   const requested = Array.isArray(goal) ? goal : [goal];
   const mapped = requested.filter((id) => nodes.has(id));
@@ -338,7 +321,6 @@ function search(
   const { push, pop } = heap;
   const sourceIds = new Set<string>(),
     sourceNodes: string[] = [];
-  const seeds: RouteSearchSeed[] | undefined = numeric ? [] : undefined;
   for (const start of starts) {
     if (
       typeof start.id !== 'string' ||
@@ -357,7 +339,6 @@ function search(
       origins.set(start.node, start.id);
       const priority = start.cost + estimate(start.node);
       push({ id: start.node, travelled: start.cost, cost: priority });
-      seeds?.push({ node: start.node, origin: start.id, travelled: start.cost, priority });
     }
   }
   if (!heap.size) return { status: 'unmapped' };
@@ -394,28 +375,6 @@ function search(
       length: points.slice(1).reduce((sum, p, i) => sum + distance(points[i], p), 0),
     };
   };
-  if (numeric) {
-    const result = numeric.search.search({
-      nodes: numeric.nodes,
-      links: numeric.links,
-      seeds: seeds!,
-      goals: [...goals],
-      targetKey,
-      ...(Number.isFinite(maxSpeed) && maxSpeed > 0
-        ? { estimateDenominator: maxSpeed * (1 + 1e-12) }
-        : {}),
-    });
-    if (result)
-      return finish(
-        result.root,
-        result.reversePath,
-        result.origin,
-        result.cost,
-        result.arrivalCost,
-      );
-    connectivity?.exhausted();
-    return { status: 'no-verified-route' };
-  }
   while (heap.size) {
     const entry = pop()!,
       current = entry.id;

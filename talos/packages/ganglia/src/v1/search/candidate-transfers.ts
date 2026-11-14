@@ -151,12 +151,4 @@ export function createTypeScriptTransferQuery(
   };
 }
 
-// Prototype-only injection keeps Node loading out of the browser-compatible kernel.
-// Register before preparing a solver; an existing index keeps its implementation.
-export type TransferQueryFactory = typeof createTypeScriptTransferQuery;
-let prototypeFactory: TransferQueryFactory | undefined;
-export function installTransferPrototype(factory: TransferQueryFactory) {
-  prototypeFactory = factory;
-}
-export const createTransferQuery: TransferQueryFactory = (...args) =>
-  (prototypeFactory ?? createTypeScriptTransferQuery)(...args);
+export { createTypeScriptTransferQuery as createTransferQuery };

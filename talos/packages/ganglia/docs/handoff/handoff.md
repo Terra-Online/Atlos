@@ -126,10 +126,11 @@ one lane, no training or warmup and one measured round, native batch time is
 truncated, and one round does not measure repeatability or broader reachability.
 The preceding native watchdog failures remain historical failed experiments.
 
-This integration is not accepted as a complete replacement. Broader whole-map
-completion, route cost and physical replay remain required before deleting the
-prototype or claiming completion. Diagnostic reference routes are never inputs
-to the production native solver.
+The native implementation covers the complete solver interface and action
+families. Broader whole-map completion and route-quality work remain open. The
+old Rust prototype and its TS injection hooks have been retired after independent
+contract fixtures and complete Scene replay; the TS solver remains selectable
+and is the default. Diagnostic reference routes are never production inputs.
 
 The subsequent one-training/six-holdout/two-round replay at `a0796a09` fails the
 physical gate. All six return native complete traces, but five fail common replay
@@ -187,7 +188,7 @@ execution of supplied flight controls and deterministic locomotion transitions.
 search budgets. Candidate enumeration, graph search, dominance pruning, resource
 allocation and device discovery remain under `src/v1/`. Public `./model` and
 `./evaluation` entries expose the shared boundary for another solver and a later
-Rust migration. Native prototype hooks now attach to the owning shared modules.
+Rust migration.
 
 `src/evaluation/route.ts` checks trace timing, continuity, available starts,
 ordered waypoints and terminal query geometry, and independently recomputes time
@@ -257,8 +258,7 @@ V1 publishes execution controls, selected placements and flight witnesses. Befor
 resource scheduling, `src/v1/solver/physical/execution.ts` constructs its actual
 support-following walking geometry. This is solver-side candidate construction;
 the independent verifier rejects inconsistent submissions rather than repairing
-them. TS shared collision execution is retained independently of native search
-prototype hooks.
+them. TS shared collision execution remains independent of native search.
 
 Schema 10 adds a post-batch physical-verification RPC to the default adapter.
 The adapter captures normalized facts before search and lazily builds separate

@@ -559,11 +559,4 @@ export function createTypeScriptCollisionWorld(
   };
 }
 
-// Native loading stays in the optional prototype preloader, outside browser code.
-export type CollisionWorldFactory = typeof createTypeScriptCollisionWorld;
-let prototypeFactory: CollisionWorldFactory | undefined;
-export function installCollisionPrototype(factory: CollisionWorldFactory) {
-  prototypeFactory = factory;
-}
-export const createCollisionWorld: CollisionWorldFactory = (...args) =>
-  (prototypeFactory ?? createTypeScriptCollisionWorld)(...args);
+export { createTypeScriptCollisionWorld as createCollisionWorld };

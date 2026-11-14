@@ -13,14 +13,6 @@ interface Triangle extends Pick<SupportTriangle, 'vertices' | 'min' | 'max' | 'd
   id: number;
   neighbours: { triangle: Triangle; opposite: number; portal?: SharedPortal }[];
 }
-export type GroundTraceFactory = (
-  triangles: readonly Triangle[],
-) => (start: Vec3, end: Vec3, supports: readonly Triangle[]) => Vec3[] | null;
-let prototypeTraceFactory: GroundTraceFactory | undefined;
-export function installGroundTracePrototype(factory: GroundTraceFactory | undefined) {
-  prototypeTraceFactory = factory;
-}
-
 interface Owner {
   triangle: Triangle;
   edge: number;
@@ -216,7 +208,6 @@ export function createGroundStraightener(
     if (a && b)
       a.triangle.neighbours.push({ triangle: b.triangle, opposite: (a.edge + 2) % 3, portal });
   }
-  const nativeTrace = prototypeTraceFactory?.(triangles);
   const supporting = makeIndex(triangles);
   let components: Int32Array | undefined;
   const endpointComponents = new WeakMap<Vec3, { position: Vec3; groups: Set<number> }>();
@@ -249,12 +240,6 @@ export function createGroundStraightener(
   const trace = (start: Vec3, end: Vec3, supports: Triangle[]): Vec3[] | null => {
     if (Math.hypot(end[0] - start[0], end[2] - start[2]) < 1e-10) {
       return distance(start, end) < tolerance ? [[...start], [...end]] : null;
-    }
-    if (nativeTrace) {
-      const raw = nativeTrace(start, end, supports);
-      if (!raw) return null;
-      const points = simplifyCollinear(raw);
-      return points.slice(1).some((point, index) => blocked(points[index], point)) ? null : points;
     }
     const interpolate = (fraction: number): Vec3 => [
       start[0] + fraction * (end[0] - start[0]),

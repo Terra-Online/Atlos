@@ -72,17 +72,6 @@ export interface ScheduleDecision {
   truncated: boolean;
   maxLabels: number;
 }
-export type ScheduleChooser = (
-  blocks: Segment[][],
-  options: LocomotionOptions,
-) => ScheduleDecision | null;
-let prototypeChooser: ScheduleChooser | undefined;
-export function installSchedulePrototype(choose: ScheduleChooser | undefined) {
-  const previous = prototypeChooser;
-  prototypeChooser = choose;
-  return previous;
-}
-
 export function chooseTypeScriptSchedule(
   blocks: Segment[][],
   options: LocomotionOptions,
@@ -260,7 +249,7 @@ export function retimeGroundRoute(route: Route, options: LocomotionOptions): Rou
     });
   }
   const initialEnergy = stamina?.initial ?? 0;
-  const decision = (prototypeChooser ?? chooseTypeScriptSchedule)(blocks, options);
+  const decision = chooseTypeScriptSchedule(blocks, options);
   if (!decision) return { status: 'no-verified-route' };
   const { truncated, maxLabels } = decision;
   const best = { state: createLocomotion(options).initial(), duration: 0 };

@@ -26,7 +26,7 @@
     "typecheck": "tsc --noEmit",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
-    "lint": "oxlint src bench test scripts prototype",
+    "lint": "oxlint src bench test scripts",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
     "test": "node --test test/*.test.ts",
     "prepack": "pnpm check",
@@ -34,9 +34,6 @@
     "rust:build": "node scripts/build-rust.ts",
     "rust:test": "cargo test --locked --manifest-path crates/ganglia-v1/Cargo.toml",
     "rust:integration": "node --test test/rust/*.test.ts",
-    "prototype:rust:build": "node prototype/rust-kernel/build.ts",
-    "prototype:rust:test": "node --test prototype/rust-kernel/parity.test.ts",
-    "prototype:rust:benchmark": "node prototype/rust-kernel/benchmark.ts",
     "benchmark:markdown": "node bench/report.ts"
   },
   "dependencies": {

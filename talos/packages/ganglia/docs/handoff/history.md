@@ -1,5 +1,23 @@
 # Route solver history and validation evidence
 
+## Retire the old native prototype, 2026-11-14
+
+Removed the old `prototype/rust-kernel` crate, preloaders, binding adapters,
+prototype-only parity/benchmark tooling and their injection hooks. The retained
+TS solver uses its ordinary TS implementations directly. Its public Solver
+interface and behavior remain available beside the new `ganglia-v1-rust` adapter.
+The detour regression retains its geometric, scheduling and device-witness
+assertions through the ordinary scheduling interface instead of an injected
+prototype chooser. Historical prototype measurements keep their original scope.
+
+All 440 retained TS tests and 23 native integration fixtures pass after retirement.
+Package formatting, lint and typecheck also pass. The new crate has no dependency
+on the retired implementation. World application/worker typechecks and all seven
+route-worker/server integration tests pass.
+Its complete action/Scene contract fixtures and
+independent representative Scene replay are recorded below; finite broader map
+discovery remains an optimization/coverage concern.
+
 ## Native authority growth and responsive cancellation, 2026-11-14
 
 Independent audit found that later sparse Worlds could lose an already known

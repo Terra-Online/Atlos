@@ -21,26 +21,10 @@ export interface GoalProjection {
   distance: number;
 }
 
-export interface GoalClip {
+interface GoalClip {
   maxVertical?: number;
   facing?: { forwardX: number; forwardZ: number; sine: number; cosine: number };
 }
-export interface GoalGeometry {
-  projectPoint(target: Vec3, maxVertical: number, candidates: number[]): GoalProjection | null;
-  closestSurfaces(
-    target: Vec3,
-    candidates: number[],
-    clip: GoalClip,
-  ): (GoalProjection & { index: number })[];
-}
-export type GoalGeometryFactory = (
-  surfaces: readonly Pick<Surface, 'id' | 'vertices'>[],
-) => GoalGeometry;
-let prototypeGeometry: GoalGeometryFactory | undefined;
-export function installGoalGeometryPrototype(factory: GoalGeometryFactory) {
-  prototypeGeometry = factory;
-}
-
 const finitePoint = (point: unknown): point is Vec3 =>
   Array.isArray(point) && point.length === 3 && point.every(Number.isFinite);
 const distanceSquared = (a: readonly number[], b: readonly number[]) => {
@@ -211,7 +195,6 @@ export function createGoalProjector(surfaces: Surface[]): GoalProjector {
     return { id: owned.id, vertices: owned.vertices, index, min: owned.min, max: owned.max };
   });
   const query = createBoundsIndex(snapshot);
-  const geometry = prototypeGeometry?.(snapshot);
   // Repeated action endpoints share only immutable geometric projection proofs.
   // Keep ownership separate from returned witnesses and bound arbitrary query history.
   const projections = new Map<string, GoalProjection[]>();
@@ -259,14 +242,6 @@ export function createGoalProjector(surfaces: Surface[]): GoalProjector {
         max: [target[0], target[1] + maxVertical!, target[2]],
       };
       const candidates = [...query(bounds)].sort((a, b) => a.index - b.index);
-      if (geometry) {
-        const best = geometry.projectPoint(
-          target,
-          maxVertical!,
-          candidates.map((surface) => surface.index),
-        );
-        return remember(key, best ? [best] : []);
-      }
       let best: GoalProjection | null = null;
       for (const surface of candidates) {
         const projected = projectPoint([surface], target, { maxVertical: maxVertical! });
@@ -288,17 +263,11 @@ export function createGoalProjector(surfaces: Surface[]): GoalProjector {
       bounds.max[1] = Math.min(bounds.max[1], target[1] + interaction.maxVertical);
     }
     const candidates: (GoalProjection & { index: number })[] = [];
-    if (geometry) {
-      const indices = Array.from(query(bounds, target, radius), (surface) => surface.index);
-      for (const candidate of geometry.closestSurfaces(target, indices, clip))
-        if (candidate.distance <= radius) candidates.push(candidate);
-    } else {
-      const planes = planesFromClip(target, clip);
-      for (const surface of query(bounds, target, radius)) {
-        const candidate = closestOnSurface(surface, target, planes);
-        if (candidate && candidate.distance <= radius)
-          candidates.push({ ...candidate, index: surface.index });
-      }
+    const planes = planesFromClip(target, clip);
+    for (const surface of query(bounds, target, radius)) {
+      const candidate = closestOnSurface(surface, target, planes);
+      if (candidate && candidate.distance <= radius)
+        candidates.push({ ...candidate, index: surface.index });
     }
     candidates.sort((a, b) => a.distance - b.distance || a.index - b.index);
     return remember(
@@ -323,7 +292,7 @@ export function createGoalProjector(surfaces: Surface[]): GoalProjector {
       bounds.min[1] = Math.max(bounds.min[1], target[1] - interaction.maxVertical);
       bounds.max[1] = Math.min(bounds.max[1], target[1] + interaction.maxVertical);
     }
-    const planes = geometry ? [] : planesFromClip(target, clip);
+    const planes = planesFromClip(target, clip);
     let best: GoalProjection | undefined;
     let bestIndex = Infinity;
     // Clipping and triangle projection can round a witness just beyond its box.
@@ -335,9 +304,7 @@ export function createGoalProjector(surfaces: Surface[]): GoalProjector {
     for (const surface of query.nearest(bounds, target, touches)) {
       if (best && Math.sqrt(boundsDistanceSquared(surface, target)) > best.distance + roundoff)
         break;
-      const candidate = geometry
-        ? geometry.closestSurfaces(target, [surface.index], clip)[0]
-        : closestOnSurface(surface, target, planes);
+      const candidate = closestOnSurface(surface, target, planes);
       if (!candidate || !(candidate.distance <= radius)) continue;
       if (
         !best ||

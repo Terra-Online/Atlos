@@ -6,7 +6,6 @@ import type { SceneNavigation } from '#@/src/solver/resources.ts';
 import { surfaceGraph, surfacePortals } from '#@/src/v1/geo/surfaces.ts';
 import { groundComponents } from '#@/src/v1/reach/connectivity.ts';
 import { createGroundStraightener } from '#@/src/v1/route/straighten.ts';
-import { createCandidateSearch } from '#@/src/v1/search/candidate-search.ts';
 import { createTransferQuery } from '#@/src/v1/search/candidate-transfers.ts';
 import { createMinHeap } from '#@/src/v1/search/heap.ts';
 
@@ -292,34 +291,6 @@ export function createCandidatePlanner(
       ...(edge.device ? { device: edge.device } : {}),
     };
   };
-  const kernel = createCandidateSearch({
-    nodeCount: () => graph.nodes.length,
-    node: (node) => ({ expand: topology.components[node], logical: componentOf(node) }),
-    edgeCount: () => edges.length,
-    edge: (index) => {
-      const edge = edges[index];
-      const ascent = edge.points.at(-1)![1] - edge.points[0][1];
-      return {
-        to: ids.get(edge.to)!,
-        penalty: edge.unresolved
-          ? ascent > 2.1 && !edge.mode
-            ? ascentPenalty
-            : transferPenalty
-          : 0,
-        length: edge.length ?? edge.cost!,
-        key: edge.key,
-        ...(edge.unresolved ? { points: edge.points } : {}),
-      };
-    },
-    adjacency: (node) => adjacency[node],
-    expand,
-    flush: () => {
-      const nodes = [...dirty];
-      for (const node of nodes) adjacency[node].sort(compareEdges);
-      dirty.clear();
-      return nodes;
-    },
-  });
   const rejected = new Set<number | string>();
   return {
     reject(indices: (number | string)[]) {
@@ -378,21 +349,6 @@ export function createCandidatePlanner(
           toComponent: componentOf(ids.get(region.to)!),
         };
       });
-      if (kernel) {
-        const result = kernel.plan({
-          end,
-          starts: starts.map(({ arrival, node }, origin) => ({
-            node,
-            cost: arrival.cost ?? 0,
-            origin,
-          })),
-          excluded: new Set([...excluded, ...rejected]),
-          regions,
-        });
-        if (!result) return { status: 'no-candidate' };
-        const arrival = starts[result.origin].arrival;
-        return finish(arrival, result.path.map(edgeOutput), result.score);
-      }
       const scores = new Float64Array(graph.nodes.length).fill(Infinity);
       const previous = new Int32Array(graph.nodes.length).fill(-1),
         origins = new Map<number, GroundArrival>(),

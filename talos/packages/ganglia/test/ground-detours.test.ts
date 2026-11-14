@@ -5,11 +5,7 @@ import type { Surface, Vec3, Wall } from '#@/src/geometry.ts';
 import { blockedByWalls } from '#@/src/model/walls.ts';
 import type { LocomotionOptions, MovementMode, Segment } from '#@/src/movement.ts';
 import type { Route } from '#@/src/route.ts';
-import {
-  chooseTypeScriptSchedule,
-  installSchedulePrototype,
-  retimeGroundRoute,
-} from '#@/src/v1/resource/locomotion.ts';
+import { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
 import { pruneGroundDetours } from '#@/src/v1/route/ground-detours.ts';
 import { createGroundPlanner, groundPreparation } from '#@/src/v1/route/ground.ts';
 import { expectStatus } from '#@/test/assertions.ts';
@@ -96,7 +92,7 @@ test('a supported cheaper walk removes an unnecessary device and preserves exact
   assert.deepEqual(original, excursion(), 'caller-owned route was mutated');
 });
 
-test('a supported replacement that cannot beat the incumbent avoids the full candidate schedule', () => {
+test('a slower supported walk retains the device route under the complete locomotion policy', () => {
   const bridge = floor('bridge', 2, 4);
   bridge.vertices = bridge.vertices.map(([x, y, z]) => [x, y, z === 0 ? 3 : 4]);
   const planner = createGroundPlanner([floor('left', 0, 2), bridge, floor('right', 4, 8)], options);
@@ -110,22 +106,23 @@ test('a supported replacement that cannot beat the incumbent avoids the full can
   assert.equal(walk.status, 'complete');
   const incumbent = expectStatus(retimeGroundRoute(original, locomotion), 'complete');
   assert.ok(walk.length / locomotion.sprintSpeed > incumbent.cost);
-  let schedules = 0;
-  const previous = installSchedulePrototype((blocks, policy) => {
-    schedules++;
-    return chooseTypeScriptSchedule(blocks, policy);
-  });
-  try {
-    const result = pruneGroundDetours(original, planner, locomotion, { maxQueries: 1 });
-    assert.equal(result.queries, 1);
-    assert.equal(result.replacements, 0);
-    assert.deepEqual(result.route, original);
-    // Geometry alone rejects the supported walk before scheduling a stitched
-    // candidate. Only the incumbent needs a resource schedule.
-    assert.equal(schedules, 1);
-  } finally {
-    installSchedulePrototype(previous);
-  }
+  const result = pruneGroundDetours(original, planner, locomotion, { maxQueries: 1 });
+  assert.equal(result.queries, 1);
+  assert.equal(result.replacements, 0);
+  assert.deepEqual(result.route, original);
+  const selected = expectStatus(retimeGroundRoute(result.route, locomotion), 'complete');
+  assert.ok(selected.segments.some((part) => part.mode === 'walk' && part.gait === 'sprint'));
+  assert.ok(Math.abs(selected.cost - incumbent.cost) < 1e-8);
+  const walking = expectStatus(walk, 'complete');
+  assert.ok(walking.cost > selected.cost);
+  const withoutSprint = expectStatus(
+    retimeGroundRoute(result.route, { ...locomotion, sprintSpeed: locomotion.speed }),
+    'complete',
+  );
+  assert.ok(selected.cost < withoutSprint.cost);
+  const device = selected.segments.find((part) => part.mode === 'launch')!;
+  assert.deepEqual(device.points, original.segments[1].points);
+  assert.deepEqual(device.times, original.segments[1].times);
 });
 
 test('a dash-fast supported replacement remains eligible when sprint alone cannot improve it', () => {
