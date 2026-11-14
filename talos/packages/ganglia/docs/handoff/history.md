@@ -1,5 +1,30 @@
 # Route solver history and validation evidence
 
+## Matched final-source native query, 2026-11-14
+
+Commit `102e323c` completes the matched lower-floor-6 request with independent
+physical replay valid and no issues. Native serial service time is 22.439546
+seconds, batch wall time is 22.439649 seconds and end-to-end time is 28.316523
+seconds. The retained TS reference measures 67.143217 seconds of service,
+67.143351 seconds of batch wall time and 73.353018 seconds end to end. Batch
+speedup is 2.992175x; end-to-end speedup is 2.590467x.
+
+Both use map02, resource-relocation offset 10/limit 1, one worker/lane, one round,
+Node v26.13.0 with a 6144 MiB old-space limit and no training or warmup. Omitting
+`--catalog-train` disables training; an explicitly supplied zero is invalid. The
+original cost gate passes: native modeled cost 7.750349963873002 versus TS
+7.68412422083312, ratio 1.0086185154139402. The native route is truncated and has
+length 94.09861001457595 metres. This is one matched request and measured round.
+
+Evidence is `.local/research/rust-solver-rewrite/matched-102e323c/report.json`.
+It records a clean working tree and source SHA-256
+`3f134e46dbbc510cda4c1b937beae8d56ee5b1744711fb28ec0266b32dc9a58a`.
+Native binary SHA-256 is
+`c5cf3a88d25a6d4cfa413e1c851a0a52a749abf0f05f685517c57b5ee4d247c2`;
+the TS reference SHA-256 is
+`0f7cc681726998b45c043bab068f947ad28015d3f831941c4ed3fa93502c3cbf`.
+The earlier 3.987x native checkpoint keeps its original source and workload scope.
+
 ## Retire the old native prototype, 2026-11-14
 
 Removed the old `prototype/rust-kernel` crate, preloaders, binding adapters,

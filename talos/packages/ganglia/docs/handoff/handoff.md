@@ -119,10 +119,12 @@ Supplied valid endpoints remain unchanged.
 
 Matched map02 query `new-goal-near-lower-floor-ground-jump-6-1` now completes through
 the full native scene host and passes unchanged independent physical replay. Its
-modeled cost is 7.251677 seconds versus 7.684124 for retained TS. With one worker,
+modeled cost is 7.750350 seconds versus 7.684124 for retained TS. With one worker,
 one lane, no training or warmup and one measured round, native batch time is
-16.839 seconds versus 67.143 seconds, a 3.987x speedup; end-to-end speedup is
-3.194x. Both routes are complete and the unchanged cost gate passes. Search is
+22.440 seconds versus 67.143 seconds, a 2.992x speedup; end-to-end speedup is
+2.590x. Both routes are complete and the unchanged cost gate passes at cost ratio
+1.008619. The report binds clean source `102e323c`; evidence is
+`.local/research/rust-solver-rewrite/matched-102e323c/report.json`. Search is
 truncated, and one round does not measure repeatability or broader reachability.
 The preceding native watchdog failures remain historical failed experiments.
 
@@ -135,7 +137,7 @@ and is the default. Diagnostic reference routes are never production inputs.
 The subsequent one-training/six-holdout/two-round replay at `a0796a09` fails the
 physical gate. All six return native complete traces, but five fail common replay
 with `Unsupported or obstructed walk` in both rounds. Only the lower-floor query
-above is physically accepted. Training hits its 300-second watchdog; measured
+is physically accepted at that checkpoint. Training hits its 300-second watchdog; measured
 requests have no timeouts. Results and truncation are stable across rounds. No
 aggregate speedup is accepted. The resulting hardening adds raw centerline
 support in addition to directed nav proofs and certifies walking clearance across
