@@ -319,9 +319,32 @@ pub(super) fn portals(surfaces: &[Surface], m: &Movement) -> Vec<Portal> {
     }
     out
 }
+struct NavWork {
+    remaining: usize,
+    used: usize,
+    exhausted: bool,
+}
+fn nav_charge(work: &mut Option<NavWork>) -> bool {
+    let Some(work) = work else {
+        return true;
+    };
+    if work.remaining == 0 {
+        work.exhausted = true;
+        return false;
+    }
+    work.remaining -= 1;
+    work.used += 1;
+    true
+}
 // Clip the entire segment against every candidate support triangle. Checking the
 // resulting intervals prevents even sub-sample cracks from becoming walkable.
-fn support_intervals(w: &World, a: Vec3, b: Vec3) -> Vec<(f64, f64, usize)> {
+fn support_intervals(
+    w: &World,
+    a: Vec3,
+    b: Vec3,
+    height_clip: bool,
+    work: &mut Option<NavWork>,
+) -> Option<Vec<(f64, f64, usize)>> {
     let v = w.movement.max_vertical;
     let query = [
         a[0].min(b[0]),
@@ -333,6 +356,9 @@ fn support_intervals(w: &World, a: Vec3, b: Vec3) -> Vec<(f64, f64, usize)> {
     ];
     let mut out = vec![];
     for id in w.support.candidates(query) {
+        if !nav_charge(work) {
+            return None;
+        }
         let t = w.support.faces[id];
         let mut lo: f64 = 0.;
         let mut hi: f64 = 1.;
@@ -356,12 +382,32 @@ fn support_intervals(w: &World, a: Vec3, b: Vec3) -> Vec<(f64, f64, usize)> {
                 }
             }
         }
+        if good && height_clip {
+            let n = cross(sub(t[1], t[0]), sub(t[2], t[0]));
+            let offset = |p: Vec3| {
+                p[1] - t[0][1] + (n[0] * (p[0] - t[0][0]) + n[2] * (p[2] - t[0][2])) / n[1]
+            };
+            let first = offset(a);
+            let last = offset(b);
+            for (x, y) in [(v - first, v - last), (v + first, v + last)] {
+                if x < 0. && y < 0. {
+                    good = false;
+                    break;
+                }
+                if x < 0. {
+                    lo = lo.max(x / (x - y));
+                }
+                if y < 0. {
+                    hi = hi.min(x / (x - y));
+                }
+            }
+        }
         if good && lo <= hi {
             out.push((lo, hi, w.owners[id]));
         }
     }
     out.sort_by(|a, b| a.0.total_cmp(&b.0));
-    out
+    Some(out)
 }
 // Navigation authorizes directed passage; physical inputs additionally need
 // continuous centerline support from raw terrain or eligible device roofs.
@@ -472,14 +518,31 @@ fn crossing(a: Vec3, b: Vec3, aperture: [Vec3; 2]) -> Option<(f64, f64)> {
     let hi = t.max(u).min(1.);
     (lo <= hi + 1e-9).then_some((lo, hi))
 }
-pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, String> {
-    if !finite(a) || !finite(b) {
-        return Err("Invalid ground path".into());
-    }
-    let intervals = support_intervals(w, a, b);
+struct Permission {
+    cuts: Vec<f64>,
+    intervals: Vec<(f64, f64, usize)>,
+    entered: Vec<f64>,
+    by_owner: BTreeMap<usize, Vec<usize>>,
+}
+// The direct physical proof and proposal visibility share directed authorization.
+// Visibility also clips every admitted interval by affine navigation height;
+// it must not erase a height-changing turn before physical probes inspect it.
+fn navigation_permission(
+    w: &World,
+    a: Vec3,
+    b: Vec3,
+    height_clip: bool,
+    work: &mut Option<NavWork>,
+) -> Result<Option<Permission>, String> {
+    let Some(intervals) = support_intervals(w, a, b, height_clip, work) else {
+        return Ok(None);
+    };
     let mut end = 0.;
     let mut cuts = vec![0., 1.];
     for &(lo, hi, _) in &intervals {
+        if !nav_charge(work) {
+            return Ok(None);
+        }
         if lo > end + 1e-9 {
             return Ok(None);
         }
@@ -496,6 +559,9 @@ pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, S
     let mut pending = std::collections::VecDeque::new();
     let mut by_owner: BTreeMap<usize, Vec<usize>> = BTreeMap::new();
     for (i, &(lo, _, owner)) in intervals.iter().enumerate() {
+        if !nav_charge(work) {
+            return Ok(None);
+        }
         by_owner.entry(owner).or_default().push(i);
         if lo <= 1e-9
             && starts.iter().any(|p| {
@@ -511,6 +577,9 @@ pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, S
         .keys()
         .flat_map(|&owner| w.portal_owners[owner].iter())
     {
+        if !nav_charge(work) {
+            return Ok(None);
+        }
         let portal = &w.portals[index];
         let from = w.surface_ids[&portal.from];
         let to = w.surface_ids[&portal.to];
@@ -528,11 +597,17 @@ pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, S
         }
     }
     while let Some(i) = pending.pop_front() {
+        if !nav_charge(work) {
+            return Ok(None);
+        }
         let (_, end, owner) = intervals[i];
         let mut successors = vec![(owner, entered[i], end)];
         successors.extend(outgoing.get(&owner).into_iter().flatten().copied());
         for (to, low, high) in successors {
             for &j in by_owner.get(&to).into_iter().flatten() {
+                if !nav_charge(work) {
+                    return Ok(None);
+                }
                 let t = entered[i].max(intervals[j].0).max(low);
                 if t <= end.min(intervals[j].1).min(high) + 1e-8 && t < entered[j] - 1e-10 {
                     entered[j] = t;
@@ -548,9 +623,56 @@ pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, S
     {
         return Ok(None);
     }
+    Ok(Some(Permission {
+        cuts,
+        intervals,
+        entered,
+        by_owner,
+    }))
+}
+pub(super) fn probe(w: &World, a: Vec3, b: Vec3) -> Result<GroundProbe, String> {
+    let mut failure = GroundFailure::Navigation;
+    match direct_with_failure(w, a, b, &mut failure) {
+        Ok(Some(points)) => {
+            let length = path_length(&points);
+            Ok(GroundProbe::Supported(GroundPath {
+                points,
+                length,
+                cost: length / w.movement.speed,
+            }))
+        }
+        Ok(None) => Ok(GroundProbe::Rejected(failure)),
+        Err(_) if matches!(failure, GroundFailure::ProofBudget { .. }) => {
+            Ok(GroundProbe::Rejected(failure))
+        }
+        Err(error) => Err(error),
+    }
+}
+pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, String> {
+    direct_with_failure(w, a, b, &mut GroundFailure::Navigation)
+}
+fn direct_with_failure(
+    w: &World,
+    a: Vec3,
+    b: Vec3,
+    failure: &mut GroundFailure,
+) -> Result<Option<Vec<Vec3>>, String> {
+    if !finite(a) || !finite(b) {
+        return Err("Invalid ground path".into());
+    }
+    let Some(Permission {
+        mut cuts,
+        intervals,
+        entered,
+        by_owner,
+    }) = navigation_permission(w, a, b, false, &mut None)?
+    else {
+        return Ok(None);
+    };
     let span = distance(a, b);
     let n = (span / 0.15).ceil() as usize;
     if n > 100_000 {
+        *failure = GroundFailure::ProofBudget { span: [a, b] };
         return Err("Ground path exceeds validation budget".into());
     }
     for i in 1..n {
@@ -558,6 +680,10 @@ pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, S
     }
     cuts.sort_by(f64::total_cmp);
     cuts.dedup_by(|a, b| (*a - *b).abs() < 1e-10);
+    // A nearby portal cut can sort before 1 and absorb that exact endpoint.
+    // Preserve supplied feet at both ends before joining independent proofs.
+    cuts[0] = 0.;
+    *cuts.last_mut().unwrap() = 1.;
     let mut out: Vec<Vec3> = vec![];
     for t in cuts {
         let seed = mix(a, b, t);
@@ -579,6 +705,9 @@ pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, S
             w.movement.profile.radius,
         )?
         else {
+            *failure = GroundFailure::PhysicalSupport {
+                span: [out.last().copied().unwrap_or(seed), seed],
+            };
             return Ok(None);
         };
         let mut p = ground.position;
@@ -602,9 +731,13 @@ pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, S
                         - 1e-7
                 || !w.clear(previous, p, 0.)?
             {
+                *failure = GroundFailure::Clearance {
+                    span: [previous, p],
+                };
                 return Ok(None);
             }
         } else if !w.clear(p, p, 0.)? {
+            *failure = GroundFailure::Clearance { span: [p, p] };
             return Ok(None);
         }
         out.push(p);
@@ -615,7 +748,7 @@ pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, S
     let mut refined = vec![out[0]];
     let mut budget = 100_000;
     for pair in out.windows(2) {
-        if !refine_supported_chord(w, pair[0], pair[1], 0, &mut budget, &mut refined)? {
+        if !refine_supported_chord(w, pair[0], pair[1], 0, &mut budget, &mut refined, failure)? {
             return Ok(None);
         }
     }
@@ -671,7 +804,7 @@ fn stable_clearance(w: &World, a: Vec3, b: Vec3) -> bool {
     }
     upper
 }
-fn replay_foot(w: &World, p: Vec3) -> Result<Option<Vec3>, String> {
+fn replay_foot(w: &World, p: Vec3, failure: &mut GroundFailure) -> Result<Option<Vec3>, String> {
     let Some((ground, mesh_support)) = w.ground_support(
         p,
         w.movement.max_vertical,
@@ -679,6 +812,7 @@ fn replay_foot(w: &World, p: Vec3) -> Result<Option<Vec3>, String> {
         w.movement.profile.radius,
     )?
     else {
+        *failure = GroundFailure::PhysicalSupport { span: [p, p] };
         return Ok(None);
     };
     let mut foot = ground.position;
@@ -690,7 +824,11 @@ fn replay_foot(w: &World, p: Vec3) -> Result<Option<Vec3>, String> {
     } else {
         foot[1] + 0.005
     };
-    Ok(w.clear(foot, foot, 0.)?.then_some(foot))
+    if !w.clear(foot, foot, 0.)? {
+        *failure = GroundFailure::Clearance { span: [p, foot] };
+        return Ok(None);
+    }
+    Ok(Some(foot))
 }
 fn refine_supported_chord(
     w: &World,
@@ -699,31 +837,42 @@ fn refine_supported_chord(
     depth: usize,
     budget: &mut usize,
     out: &mut Vec<Vec3>,
+    failure: &mut GroundFailure,
 ) -> Result<bool, String> {
     // Match the independent standing trace's sampling density. Refinement is
     // bounded; exhaustion rejects this proposal rather than returning an
     // unverified chord. Every accepted pair is swept with its actual feet.
     if depth >= 16 || *budget == 0 {
+        *failure = GroundFailure::ProofBudget { span: [a, b] };
         return Ok(false);
     }
     let step = (w.movement.profile.radius / 4.).max(0.025) * 0.9;
     let count = (distance(a, b) / step).ceil().max(1.) as usize;
     if count > *budget {
+        *failure = GroundFailure::ProofBudget { span: [a, b] };
         return Ok(false);
     }
     *budget -= count;
     if depth == 0 {
         for endpoint in [a, b] {
-            let Some(foot) = replay_foot(w, endpoint)? else {
+            let Some(foot) = replay_foot(w, endpoint, failure)? else {
                 return Ok(false);
             };
             if distance(foot, endpoint) > 1e-5 {
+                *failure = GroundFailure::PhysicalSupport {
+                    span: [endpoint, endpoint],
+                };
                 return Ok(false);
             }
         }
     }
     if count == 1 {
-        if !physical_support(w, a, b) || !w.clear(a, b, 0.)? {
+        if !physical_support(w, a, b) {
+            *failure = GroundFailure::PhysicalSupport { span: [a, b] };
+            return Ok(false);
+        }
+        if !w.clear(a, b, 0.)? {
+            *failure = GroundFailure::Clearance { span: [a, b] };
             return Ok(false);
         }
         if stable_clearance(w, a, b) {
@@ -731,7 +880,7 @@ fn refine_supported_chord(
             return Ok(true);
         }
         let seed = mix(a, b, 0.5);
-        let Some(mut foot) = replay_foot(w, seed)? else {
+        let Some(mut foot) = replay_foot(w, seed, failure)? else {
             return Ok(false);
         };
         if w.snapshot["kind"] == "physical" {
@@ -742,20 +891,24 @@ fn refine_supported_chord(
                 w.movement.profile.radius,
             )?
             else {
+                *failure = GroundFailure::PhysicalSupport { span: [seed, seed] };
                 return Ok(false);
             };
             foot[1] = hit.position[1] + 0.0075;
             if !w.clear(foot, foot, 0.)? {
+                *failure = GroundFailure::Clearance { span: [seed, foot] };
                 return Ok(false);
             }
         }
-        return Ok(refine_supported_chord(w, a, foot, depth + 1, budget, out)?
-            && refine_supported_chord(w, foot, b, depth + 1, budget, out)?);
+        return Ok(
+            refine_supported_chord(w, a, foot, depth + 1, budget, out, failure)?
+                && refine_supported_chord(w, foot, b, depth + 1, budget, out, failure)?,
+        );
     }
     let mut trace = vec![a];
     for i in 1..count {
         let seed = mix(a, b, i as f64 / count as f64);
-        let Some(foot) = replay_foot(w, seed)? else {
+        let Some(foot) = replay_foot(w, seed, failure)? else {
             return Ok(false);
         };
         trace.push(foot);
@@ -764,7 +917,7 @@ fn refine_supported_chord(
     // Canonicalization can increase 3D span length, so subdivision is checked
     // again on actual feet rather than assuming planar spacing is sufficient.
     for pair in trace.windows(2) {
-        if !refine_supported_chord(w, pair[0], pair[1], depth + 1, budget, out)? {
+        if !refine_supported_chord(w, pair[0], pair[1], depth + 1, budget, out, failure)? {
             return Ok(false);
         }
     }
@@ -944,6 +1097,224 @@ impl Graph {
             proofs: Default::default(),
         }
     }
+}
+
+/// Feedback uses the existing directed portal-representative graph, but reads
+/// no physical proof cache and performs exactly one optimistic A* traversal.
+/// Ordinary ground search retains its independent detour/repair policy.
+pub(super) fn probe_route(
+    w: &World,
+    a: Vec3,
+    b: Vec3,
+    limits: GroundRouteLimits,
+) -> Result<GroundRouteProbe, String> {
+    use std::collections::HashMap;
+    if !finite(a) || !finite(b) {
+        return Err("Invalid navigation probe endpoints".into());
+    }
+    let mut result = GroundRouteProbe {
+        navigation: None,
+        supported: None,
+        failures: vec![],
+        expanded: 0,
+        probed: 0,
+        truncated: false,
+    };
+    if limits.max_expansions == 0 {
+        result.truncated = true;
+        return Ok(result);
+    }
+    let starts = w.project(a, None)?;
+    let goals = w.project(b, None)?;
+    let (Some(start), Some(goal)) = (starts.first(), goals.first()) else {
+        result.failures.push(GroundFailure::Navigation);
+        return Ok(result);
+    };
+    let from = w.surface_ids[&start.surface];
+    let to = w.surface_ids[&goal.surface];
+    if w.components[from] != w.components[to] {
+        result.failures.push(GroundFailure::Navigation);
+        return Ok(result);
+    }
+    let graph = w.ground_graph.get_or_init(|| Graph::new(w));
+    let base = graph.points.len();
+    let point = |i: usize| {
+        if i < base {
+            graph.points[i]
+        } else if i == base {
+            a
+        } else {
+            b
+        }
+    };
+    let owner = |i: usize| {
+        if i < base {
+            graph.owners[i]
+        } else if i == base {
+            from
+        } else {
+            to
+        }
+    };
+    // Weighted A* is finite candidate ranking only. It deliberately trades
+    // shortest-proposal guarantees for goal direction; physical proofs and
+    // ordinary ground search retain their independent costs and authority.
+    let heuristic = |i: usize| 2. * distance(point(i), b);
+    let mut costs = HashMap::from([(base, 0.)]);
+    let mut previous = HashMap::new();
+    let mut pending = BinaryHeap::from([Label(heuristic(base), base)]);
+    let mut reached = false;
+    while let Some(Label(priority, i)) = pending.pop() {
+        let cost = costs[&i];
+        if priority > cost + heuristic(i) + 1e-9 {
+            continue;
+        }
+        if result.expanded >= limits.max_expansions {
+            result.truncated = true;
+            break;
+        }
+        result.expanded += 1;
+        if i == base + 1 {
+            reached = true;
+            break;
+        }
+        let mut successors = graph.by_surface[owner(i)].clone();
+        if owner(i) == from {
+            successors.push(base);
+        }
+        if owner(i) == to {
+            successors.push(base + 1);
+        }
+        // Only the source representative can cross this directed portal.
+        if i < base && i % 2 == 0 {
+            successors.push(i + 1);
+        }
+        successors.sort_unstable();
+        successors.dedup();
+        for j in successors {
+            if i == j {
+                continue;
+            }
+            let next = cost + distance(point(i), point(j));
+            if costs.get(&j).is_none_or(|&old| next < old) {
+                costs.insert(j, next);
+                previous.insert(j, i);
+                pending.push(Label(next + heuristic(j), j));
+            }
+        }
+    }
+    if !reached {
+        if !result.truncated {
+            result.failures.push(GroundFailure::Navigation);
+        }
+        return Ok(result);
+    }
+    let mut nodes = vec![base + 1];
+    while *nodes.last().unwrap() != base {
+        let Some(&parent) = previous.get(nodes.last().unwrap()) else {
+            return Err("Broken navigation proposal".into());
+        };
+        nodes.push(parent);
+        if nodes.len() > result.expanded + 1 {
+            return Err("Cyclic navigation proposal".into());
+        }
+    }
+    nodes.reverse();
+    // Coincident entry/exit representatives need no separate physical unit.
+    let mut navigation = vec![];
+    for node in nodes {
+        let p = point(node);
+        if navigation.last() != Some(&p) {
+            navigation.push(p);
+        }
+    }
+    if navigation.len() == 1 {
+        navigation.push(b);
+    }
+    // Greedy farthest/halving visibility is proposal geometry only. Each
+    // accepted shortcut has full directed and continuous-height permission.
+    // Triangle, interval and portal visits share the node-expansion allowance.
+    let mut work = Some(NavWork {
+        remaining: limits.max_expansions - result.expanded,
+        used: 0,
+        exhausted: false,
+    });
+    let mut reduced = vec![navigation[0]];
+    let mut at = 0;
+    'visibility: while at + 1 < navigation.len() {
+        let mut end = navigation.len() - 1;
+        while end > at + 1 {
+            if !nav_charge(&mut work) {
+                result.truncated = true;
+                reduced.extend_from_slice(&navigation[at + 1..]);
+                break 'visibility;
+            }
+            let permission =
+                navigation_permission(w, navigation[at], navigation[end], true, &mut work)?;
+            if work.as_ref().unwrap().exhausted {
+                result.truncated = true;
+                reduced.extend_from_slice(&navigation[at + 1..]);
+                break 'visibility;
+            }
+            if permission.is_some() {
+                break;
+            }
+            end = (at + end) / 2;
+        }
+        reduced.push(navigation[end]);
+        at = end;
+    }
+    result.expanded += work.unwrap().used;
+    navigation = reduced;
+    let mut canonical: Vec<Vec3> = vec![];
+    for pair in navigation.windows(2) {
+        if result.probed >= limits.max_legs {
+            result.truncated = true;
+            break;
+        }
+        result.probed += 1;
+        // Canonicalize shared raw portal feet consistently so separately
+        // proved legs join exactly, without inventing a connector afterward.
+        let start = w.standing_foot(pair[0])?.unwrap_or(pair[0]);
+        let end = w.standing_foot(pair[1])?.unwrap_or(pair[1]);
+        match probe(w, start, end)? {
+            GroundProbe::Supported(_) if !result.failures.is_empty() => {}
+            GroundProbe::Supported(path) => {
+                if let Some(&last) = canonical.last() {
+                    if path.points.first() != Some(&last) {
+                        result.failures.push(GroundFailure::PhysicalSupport {
+                            span: [last, path.points[0]],
+                        });
+                    } else {
+                        canonical.extend(path.points.into_iter().skip(1));
+                    }
+                } else {
+                    canonical = path.points;
+                }
+            }
+            GroundProbe::Rejected(failure) => {
+                let exhausted = matches!(failure, GroundFailure::ProofBudget { .. });
+                result.failures.push(failure);
+                if exhausted {
+                    result.truncated = true;
+                    break;
+                }
+            }
+        }
+    }
+    // Visibility is optional: exhaustion retains the full directed proposal.
+    // Its truncated flag does not invalidate a route whose every retained leg
+    // and exact canonical join has subsequently passed physical proof.
+    if result.probed == navigation.len() - 1 && result.failures.is_empty() {
+        let length = path_length(&canonical);
+        result.supported = Some(GroundPath {
+            points: canonical,
+            length,
+            cost: length / w.movement.speed,
+        });
+    }
+    result.navigation = Some(navigation);
+    Ok(result)
 }
 
 pub(super) fn path(w: &World, a: Vec3, b: Vec3) -> Result<Option<GroundPath>, String> {

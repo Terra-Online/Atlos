@@ -1,5 +1,87 @@
 # Route solver history and validation evidence
 
+## Bounded native ground feedback and replay hardening, 2026-11-14
+
+Placement changes can remove a previously used takeoff or intersect a curved
+flight between submitted samples. Earlier pieces now replay native flight/run-off
+witnesses under the selected poses and their original local query. A collected
+prefix does not require its unused future to remain safe. Future terminal assets
+also require proof under merged poses, using retained coverage or one bounded
+normal window load for replay only. Focused removed-roof and collection-prefix
+regressions distinguish this from the prior chord-only check.
+
+An unrelated uncovered nav face could abort an otherwise covered query during
+optional sampling. The synthetic case completes in 0.5 seconds with discovery
+disabled and throws a coverage error with discovery enabled on the old code.
+World now categorizes only its three unavailable-space errors; Search drops those
+optional witnesses with truncation while retaining invalid-input failures.
+Physical standing no longer carries a hidden tighter nav tolerance. A radius-0.1,
+nav-offset-0.4, maxVertical-0.5 case protects the separation.
+
+Fast run-off omitted the sprint requirement. Native World now emits authoritative
+computed peak horizontal speed for every flight family, and replay rejects forged
+supplied values. Search applies the common gait threshold to drops as well as
+jumps. Unchanged common replay accepts the sprint-approach/run-off fixture at
+1.2622251366249724 seconds and rejects it after removing the sprint approach.
+Evidence is `/tmp/ganglia-fast-drop-common-replay.json`.
+
+The upper-floor direct corridor proof returns Navigation in 0.277 ms, so direct
+raw-gap feedback alone cannot expose its interior failures. A single bounded
+directed NAV proposal was added. Horizontal and then 3D Euclidean ranking both
+exhaust the 4096 work allowance without a path. Weighted `g + 2*h` ranking finds an
+85-point proposal; directed visibility coalescing shares that allowance and can
+exhaust it before reaching later turns. This is an optimistic proposal only.
+
+The original seven remaining physical prefix units prove seven legs but reach no
+failure. Feedback now reserves at most `min(maxCandidates / 8, maxLinks * 4)`
+units from the same total candidate pool. The approved World-only probe with 255
+remaining units proves all 84 legs individually: 60 supported, 23 raw-support
+failures and one clearance failure. It takes 4.783 seconds including 4.666 seconds
+preparing World and 114 ms feedback. Exact spans are in
+`/tmp/ganglia-nav-weighted-255-result.json`. This is not a joined physical route.
+
+The subsequent single frozen Search diagnostic still times out after 45.02
+seconds. It has 24 repair regions, 130 nodes and exactly 8000 attempts, comprising
+85 feedback proofs and 7915 flights. Action discovery finishes 1.350 seconds after
+Search starts. No result exists for physical replay. Summary, source bindings and
+raw log are `/tmp/ganglia-search-shared-budget-core-summary.json`,
+`/tmp/ganglia-search-shared-budget-source-binding.json` and the adjacent `.log`.
+No budget increase or second run follows from this evidence. Eager full ground
+detours during resource expansion are the next structural issue, rather than
+another candidate-placement adjustment.
+
+Coalescing exhaustion alone previously suppressed a fully physically proved
+retained proposal. A focused finite-work regression now permits `supported` with
+`truncated=true` only when every retained leg and exact canonical join passes.
+Missing paths, failed legs and incomplete physical proofs remain uncertified.
+
+Stage 2 now tries directly proved canonical walks and existing action edges before
+full ground detours. If that graph cannot complete, it restarts arrival resource
+labels against the expanded graph; dominance from the first pass cannot suppress
+new paths. Expansions remain cumulative and static action blocks are reused.
+Stages 0/1 retain full walking behavior. Obstacle and expansion-limit regressions
+protect the mandatory fallback. A direct-pass result with unexamined detours is
+explicitly approximate and truncated.
+
+The single frozen two-phase upper-core run also times out at 45.03 seconds. The
+direct pass finishes at 1.568 seconds of Search time with 8320 resource expansions,
+99 direct ground proofs and 80 rejected targets left for detour exploration.
+Fallback starts but does not finish. The result distinguishes graph-connectivity
+failure from the eager detour cost; neither phase yields a route for replay.
+Artifacts are `/tmp/ganglia-search-two-phase-core-summary.json`, the adjacent log
+and `/tmp/ganglia-search-two-phase-source-binding.json`. Subsequent inspection
+must identify the missing graph connection before another sampler change.
+
+Assembled validation after these changes passes 133 Rust unit tests, two authored
+action tests, all 22 N-API fixtures and all 440 retained TypeScript tests. The
+new durable fast-drop fixture solves naturally, passes common replay and rejects
+the unchanged flight after its sprint approach is removed. The four scene
+continuation fixtures also pass with parent sparse-placement verifier commit
+`0a8254c8`, integrated locally as `85d2f9b1`. Release N-API build, all-target Clippy
+with N-API enabled and warnings denied, TypeScript checking, lint, Rustfmt and
+focused formatting checks pass. The package-manager wrapper rejects the installed
+pnpm version; checks run through the package's existing local binaries instead.
+
 ## Native physical contracts and scene continuation, 2026-11-14
 
 The broad failure at `a0796a09` exposes two walking defects. Native radius-aware

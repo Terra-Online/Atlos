@@ -768,3 +768,312 @@ fn continuation_comes_from_selected_retimed_prefix_and_keeps_expired_pickup_used
     .unwrap();
     assert!(number(&repeated.route, "cost", 0.) <= number(&result.route, "cost", 0.) + 1e-6);
 }
+
+fn placement_replay_snapshot() -> Value {
+    let vertices = vec![
+        [-20., 0., -2.],
+        [20., 0., -2.],
+        [20., 0., 2.],
+        [-20., 0., 2.],
+    ];
+    let body = (0..8)
+        .map(|bits| {
+            [
+                if bits & 1 != 0 { 0.5 } else { -0.5 },
+                if bits & 2 != 0 { 0.4 } else { 0. },
+                if bits & 4 != 0 { 0.5 } else { -0.5 },
+            ]
+        })
+        .collect::<Vec<_>>();
+    json!({"kind":"physical","input":{
+        "ground":{"surfaces":[{"id":"floor","vertices":vertices}],"options":{"speed":8.,"maxVertical":0.5,"walls":[],"profile":{"radius":0.1,"height":1.}}},
+        "collision":{"positions":vertices.into_iter().flatten().collect::<Vec<_>>(),"indices":[0,2,1,0,3,2]},
+        "movement":{"model":{"gravity":10.,"fallingGravity":20.,"maxJumpHeight":0.5,"maxFallingSpeed":20.,"apexTime":0.1,"maxHorizontalSpeed":8.,"startHorizontalSpeed":8.,"airAcceleration":30.,"airDeceleration":30.,"airOverspeedDeceleration":5.},"maxSlope":45.,"runAirSpeed":8.,"stepUp":0.3,"stepDown":0.3},
+        "locomotion":{"speed":8.,"sprintSpeed":8.,"sprintAcceleration":10.},
+        "devices":{"devices":[],"ropes":[],"followingSupports":[{"id":"box","spawn":[0.,0.,0.],"bodies":[body],"geometryKind":"box","maxDistance":10.,"initialState":0.,"assumption":"placement-within-activity-range"}]}
+    }})
+}
+fn flight_fragment(connection: crate::model::Connection, arrival: &Value) -> Value {
+    let seconds = connection.duration();
+    let points = connection.points.clone();
+    json!({"status":"complete","start":arrival["id"],"arrivalCost":arrival["cost"],
+        "cost":seconds+number(arrival,"cost",0.),"length":crate::world::path_length(&points),
+        "points":points,"segments":[serde_json::to_value(connection).unwrap()]})
+}
+fn move_box_after_takeoff(w: &World, q: &Value, _: &Value) -> Result<Value, String> {
+    let arrival = &q["starts"][0];
+    let start = point(&arrival["position"])?;
+    let end = point(&q["goal"])?;
+    let mut route = if start[1] > 0.3 {
+        let landing = w.standing_foot(end)?.ok_or("Missing native landing")?;
+        flight_fragment(
+            w.flight(start, landing, crate::model::Mode::Jump)?
+                .ok_or("Missing native flight")?,
+            arrival,
+        )
+    } else {
+        let path = w
+            .ground_path(start, end)?
+            .ok_or("Missing native ground path")?;
+        let mut times = vec![0.];
+        for pair in path.points.windows(2) {
+            times.push(times.last().unwrap() + distance(pair[0], pair[1]) / 8.);
+        }
+        json!({"status":"complete","start":arrival["id"],"arrivalCost":arrival["cost"],"cost":number(arrival,"cost",0.)+times.last().unwrap(),"length":path.length,
+            "points":path.points,"segments":[{"mode":"walk","points":path.points,"times":times}]})
+    };
+    if start[0] > 0.5 && start[0] < 10. {
+        route["placements"] = json!([{"device":"box","position":[-4.,0.,0.]}]);
+    }
+    Ok(json!({"route":route,"connections":[],"diagnostics":{"truncated":false}}))
+}
+
+#[test]
+fn later_placement_rejects_an_earlier_first_segment_jump_from_the_default_roof() {
+    let snapshot = placement_replay_snapshot();
+    let world = World::new(snapshot.clone()).unwrap();
+    let flight = world
+        .flight([0., 0.41, 0.], [4., 0.01, 0.], crate::model::Mode::Jump)
+        .unwrap()
+        .unwrap();
+    let moved = world
+        .with_placements(&[json!({"device":"box","position":[-4.,0.,0.]})])
+        .unwrap()
+        .unwrap();
+    assert!(
+        flight
+            .points
+            .windows(2)
+            .all(|p| moved.clear(p[0], p[1], 0.).unwrap()),
+        "collision-only chord replay misses the lost takeoff support"
+    );
+    let mut scene = input();
+    scene["scene"]["navigation"]["surfaces"] = snapshot["input"]["ground"]["surfaces"].clone();
+    scene["locomotion"] = snapshot["input"]["locomotion"].clone();
+    let mut engine = Engine::with_search(
+        json!({"tileSpan":8.,"gridSpan":4.,"maxTiles":4,"margin":0.5,"maxAttempts":2}),
+        scene,
+        move_box_after_takeoff,
+    )
+    .unwrap();
+    let mut q = query();
+    q["starts"][0]["position"] = json!([0., 0.41, 0.]);
+    q["goal"] = json!([16., 0., 0.]);
+    let mut step = engine.start(q).unwrap();
+    for _ in 0..50 {
+        if step["type"] == "complete" {
+            break;
+        }
+        step=engine.resume(json!({"id":step["effect"]["id"],"snapshot":snapshot,"revision":"placement-support","coverage":{"kind":"complete"}})).unwrap();
+    }
+    assert_eq!(step["type"], "complete");
+    assert_eq!(step["result"]["partial"], true, "{step}");
+    assert_eq!(step["result"]["reason"], "placement-invalidates-prefix");
+}
+
+#[test]
+fn earlier_piece_replay_forwards_collection_geometry_and_ignores_the_unused_future() {
+    let snapshot = placement_replay_snapshot();
+    let world = World::new(snapshot.clone()).unwrap();
+    let start = [-8., 0.01, 0.];
+    let end = [-3., 0.01, 0.];
+    let full = world
+        .flight(start, end, crate::model::Mode::Jump)
+        .unwrap()
+        .unwrap();
+    let goal = full.points[full.points.len() / 3];
+    let interaction = crate::model::Interaction {
+        radius: 0.1,
+        airborne: true,
+        ..Default::default()
+    };
+    let flight = world
+        .flight_to_goal(
+            start,
+            end,
+            &world.movement.model,
+            &crate::world::FlightControl::default(),
+            goal,
+            &interaction,
+        )
+        .unwrap()
+        .unwrap();
+    let time = flight.duration();
+    let position = *flight.points.last().unwrap();
+    let mut route = flight_fragment(flight, &json!({"id":"approach","cost":0.}));
+    route["goalHit"] = json!({"segment":0,"time":time,"position":position});
+    let mut changed = snapshot;
+    changed["input"]["ground"]["options"]["walls"] =
+        json!([{"min":[-4.,0.,-1.],"max":[-3.9,4.,1.],"state":"active"}]);
+    let changed = World::new(changed).unwrap();
+    assert!(
+        trace_clear(
+            &changed,
+            &route,
+            &json!({"goal":goal,"interaction":interaction})
+        )
+        .unwrap()
+    );
+    assert!(
+        !trace_clear(&changed, &route, &json!({"goal":goal})).unwrap(),
+        "without collection authority the unsafe future must be rejected"
+    );
+}
+
+static TERMINAL_PREFIX_SOLVES: AtomicUsize = AtomicUsize::new(0);
+fn prefix_selects_distant_box(w: &World, q: &Value, c: &Value) -> Result<Value, String> {
+    if q["interaction"]["airborne"] == true {
+        return fail_all(w, q, c);
+    }
+    TERMINAL_PREFIX_SOLVES.fetch_add(1, Ordering::Relaxed);
+    let placement = json!({"device":"box","position":[-12.,0.,0.]});
+    let placed = w
+        .with_placements(std::slice::from_ref(&placement))?
+        .ok_or("Missing prefix placement")?;
+    let arrival = &q["starts"][0];
+    let start = point(&arrival["position"])?;
+    let end = placed
+        .standing_foot(point(&q["goal"])?)?
+        .ok_or("Missing terminal entry")?;
+    let landing = [-10., 0.01, end[2]];
+    let flight = placed
+        .flight(start, landing, crate::model::Mode::Jump)?
+        .ok_or("Missing prefix descent")?;
+    let first = flight_fragment(flight, arrival);
+    let path = placed
+        .ground_path(landing, end)?
+        .ok_or("Missing prefix walk")?;
+    let mut times = vec![0.];
+    for pair in path.points.windows(2) {
+        times.push(times.last().unwrap() + distance(pair[0], pair[1]) / 8.);
+    }
+    let second = json!({"status":"complete","start":arrival["id"],"arrivalCost":0.,"cost":times.last().unwrap(),"length":path.length,
+        "points":path.points,"segments":[{"mode":"walk","points":path.points,"times":times}]});
+    let mut route = schedule::compose(&[first, second], &w.snapshot()["input"]["locomotion"])?
+        .ok_or("Missing prefix schedule")?;
+    route["placements"] = json!([placement]);
+    Ok(json!({"route":route,"connections":[],"diagnostics":{"truncated":false}}))
+}
+
+#[test]
+fn future_terminal_is_replayed_after_prefix_poses_change_its_original_scene() {
+    for (lost_roof, sparse_prefix) in [(true, false), (false, false), (false, true)] {
+        let mut snapshot = placement_replay_snapshot();
+        snapshot["input"]["devices"]["followingSupports"][0]["maxDistance"] = json!(20.);
+        let original = World::new(snapshot.clone()).unwrap();
+        let z = if lost_roof { 0. } else { 1.5 };
+        let goal = [4., 0.01, z];
+        let interaction = crate::model::Interaction {
+            radius: 0.05,
+            airborne: true,
+            ..Default::default()
+        };
+        let entry = [-1., 0.01, z];
+        let mut pieces = vec![];
+        let takeoff = if lost_roof {
+            let roof = [0., 0.41, 0.];
+            pieces.push(flight_fragment(
+                original
+                    .flight(entry, roof, crate::model::Mode::Jump)
+                    .unwrap()
+                    .unwrap(),
+                &json!({"id":"approach","cost":0.}),
+            ));
+            roof
+        } else {
+            entry
+        };
+        let flight = original
+            .flight_to_goal(
+                takeoff,
+                goal,
+                &original.movement.model,
+                &crate::world::FlightControl::default(),
+                goal,
+                &interaction,
+            )
+            .unwrap()
+            .unwrap();
+        let duration = flight.duration();
+        let position = *flight.points.last().unwrap();
+        let mut last = flight_fragment(flight, &json!({"id":"approach","cost":0.}));
+        last["goalHit"] = json!({"segment":0,"time":duration,"position":position});
+        pieces.push(last);
+        let terminal = schedule::compose(&pieces, &snapshot["input"]["locomotion"])
+            .unwrap()
+            .unwrap();
+        let mut q = query();
+        q["starts"][0]["position"] = json!([-12., 0.41, 0.]);
+        q["goal"] = json!(goal);
+        q["interaction"] = json!(interaction);
+        assert!(
+            trace_clear(&original, &terminal, &q).unwrap(),
+            "asset must be prevalidated in its original default poses"
+        );
+        let mut scene = input();
+        scene["scene"]["navigation"]["surfaces"] = snapshot["input"]["ground"]["surfaces"].clone();
+        scene["locomotion"] = snapshot["input"]["locomotion"].clone();
+        let mut engine =
+            Engine::with_search(json!({"maxAttempts":1}), scene, prefix_selects_distant_box)
+                .unwrap();
+        TERMINAL_PREFIX_SOLVES.store(0, Ordering::Relaxed);
+        let step = engine.start(q.clone()).unwrap();
+        let mut step=engine.resume(json!({"id":step["effect"]["id"],"terminals":[{"id":"original-approach","route":terminal}]})).unwrap();
+        let mut loads = 0;
+        for _ in 0..20 {
+            if step["type"] == "complete" {
+                break;
+            }
+            let validation = step["effect"]["purpose"] == "terminal-validation";
+            let before = TERMINAL_PREFIX_SOLVES.load(Ordering::Relaxed);
+            if validation {
+                loads += 1;
+                assert_eq!(step["effect"]["start"], json!(entry));
+                assert_eq!(step["effect"]["target"], json!(goal));
+                assert_eq!(step["effect"]["interaction"], json!(interaction));
+            }
+            let mut loaded = snapshot.clone();
+            let coverage = if sparse_prefix && !validation {
+                loaded["input"]["collisionOptions"]["bounds"] =
+                    json!({"min":[-20.,-2.],"max":[-0.6,2.]});
+                let tiles = (-5..0)
+                    .flat_map(|x| (-1..=0).map(move |z| json!({"x":x,"z":z})))
+                    .collect::<Vec<_>>();
+                json!({"kind":"sparse","bounds":{"min":[-20.,-2.],"max":[-0.6,2.]},"tiles":tiles,"tileSpan":4.})
+            } else {
+                json!({"kind":"complete"})
+            };
+            step=engine.resume(json!({"id":step["effect"]["id"],"snapshot":loaded,"revision":if validation {"terminal-proof"} else {"prefix-proof"},"coverage":coverage})).unwrap();
+            if validation {
+                assert_eq!(
+                    TERMINAL_PREFIX_SOLVES.load(Ordering::Relaxed),
+                    before,
+                    "verification-only IO must never invoke route search"
+                );
+            }
+        }
+        assert_eq!(step["type"], "complete");
+        assert_eq!(
+            loads,
+            usize::from(lost_roof || sparse_prefix),
+            "lost_roof={lost_roof} sparse={sparse_prefix} reason={} status={} partial={} solves={}",
+            step["result"]["reason"],
+            step["result"]["route"]["status"],
+            step["result"]["partial"],
+            TERMINAL_PREFIX_SOLVES.load(Ordering::Relaxed)
+        );
+        assert_eq!(step["result"]["partial"], lost_roof, "{step}");
+        if lost_roof {
+            assert_eq!(
+                step["result"]["route"], terminal,
+                "retain the unchanged original-scene partial instead of certifying the incompatible composition"
+            );
+        } else {
+            let configured = original
+                .with_placements(&[json!({"device":"box","position":[-12.,0.,0.]})])
+                .unwrap()
+                .unwrap();
+            assert!(trace_clear(&configured, &step["result"]["route"], &q).unwrap());
+        }
+    }
+}

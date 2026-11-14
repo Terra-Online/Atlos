@@ -28,6 +28,9 @@
 //!   boosts include immutable trigger facts for sparse windows that omit them.
 //!   Completed results expose continuation from the selected recomposed trace.
 //!   Following bindings likewise persist per query without changing cached Worlds.
+//! * A window effect with `purpose:"terminal-validation"` requests raw facts for
+//!   replay only. It uses the normal window response schema and never invokes
+//!   Search. New prefix poses must not silently invalidate a future terminal.
 //!
 //! Only one query may be in flight per Engine. Batch lanes own separate engines.
 //! `cancel()` completes a suspended query; `close()` is idempotent and releases
@@ -81,6 +84,7 @@ struct Query {
     terminal: Option<Value>,
     terminals: VecDeque<Terminal>,
     awaiting_terminals: bool,
+    awaiting_terminal_world: bool,
     pending: Option<u64>,
     partial: Option<Value>,
     incumbent: Option<Value>,
@@ -119,7 +123,20 @@ struct Window {
     failures: HashSet<String>,
     waypoint: usize,
     continuation: Option<Value>,
-    proofs: Vec<(Arc<World>, Value)>,
+    proofs: Vec<Proof>,
+    terminal_verified: bool,
+}
+
+struct Proof {
+    world: Arc<World>,
+    route: Value,
+    query: Value,
+}
+
+enum TerminalCheck {
+    Ready,
+    Load(Value),
+    Rejected,
 }
 
 impl Engine {
@@ -267,6 +284,7 @@ impl Engine {
             terminal: None,
             terminals: VecDeque::new(),
             awaiting_terminals: airborne,
+            awaiting_terminal_world: false,
             pending: None,
             partial: None,
             incumbent: None,
@@ -409,6 +427,13 @@ impl Engine {
                 q.terminal = terminal.asset;
             }
             q.awaiting_terminals = false;
+        } else if self.query.as_ref().unwrap().awaiting_terminal_world {
+            self.query.as_mut().unwrap().awaiting_terminal_world = false;
+            if let Some(error) = response["error"].as_str() {
+                self.fail_candidate(error)?;
+            } else if let Err(error) = self.replay_terminal(loaded_world.unwrap()) {
+                return self.recover(Err(error));
+            }
         } else if let Some(error) = response["error"].as_str() {
             self.fail_candidate(error)?;
         } else {
@@ -672,6 +697,11 @@ impl Engine {
                 w.cursor >= w.points.len()
             };
             if done {
+                match self.check_terminal()? {
+                    TerminalCheck::Load(effect) => return Ok(effect),
+                    TerminalCheck::Rejected => continue,
+                    TerminalCheck::Ready => (),
+                }
                 let q = self.query.as_mut().unwrap();
                 let w = q.window.as_ref().unwrap();
                 let mut pieces = w.pieces.clone();
@@ -818,8 +848,120 @@ impl Engine {
         Ok(())
     }
 
-    fn solve_window(&mut self, base_world: Arc<World>) -> Result<(), String> {
-        let world = base_world.clone();
+    fn terminal_placements(&self) -> Result<Vec<Value>, String> {
+        let q = self.query.as_ref().unwrap();
+        let mut placements = route_placements(&q.window.as_ref().unwrap().pieces)?;
+        if let Some(terminal) = &q.terminal {
+            merge_placements(
+                &mut placements,
+                terminal["route"]["placements"]
+                    .as_array()
+                    .map(Vec::as_slice)
+                    .unwrap_or(&[]),
+            )?;
+        }
+        Ok(placements)
+    }
+
+    fn check_terminal(&mut self) -> Result<TerminalCheck, String> {
+        let q = self.query.as_ref().unwrap();
+        let w = q.window.as_ref().unwrap();
+        let Some(terminal) = q
+            .terminal
+            .as_ref()
+            .filter(|_| !q.tail && !w.terminal_verified)
+        else {
+            return Ok(TerminalCheck::Ready);
+        };
+        let authored = route_placements(std::slice::from_ref(&terminal["route"]))?;
+        let placements = self.terminal_placements()?;
+        let changed = placements.iter().any(|placement| {
+            !authored.iter().any(|p| {
+                p["device"] == placement["device"] && p["position"] == placement["position"]
+            }) && !q
+                .following_facts
+                .get(placement["device"].as_str().unwrap_or(""))
+                .is_some_and(|fact| fact["spawn"] == placement["position"])
+        });
+        if !changed {
+            self.query
+                .as_mut()
+                .unwrap()
+                .window
+                .as_mut()
+                .unwrap()
+                .terminal_verified = true;
+            return Ok(TerminalCheck::Ready);
+        }
+        // A terminal is prevalidated against its original poses, not future
+        // choices made by this prefix. Reuse current-query physical coverage
+        // when it proves the unchanged terminal witness under all merged poses.
+        if let Some(proof) = w.proofs.last()
+            && let Ok(configured) =
+                placed_world(proof.world.clone(), &placements, &q.following_facts)
+            && trace_clear(&configured, &terminal["route"], &q.original).unwrap_or(false)
+        {
+            self.query
+                .as_mut()
+                .unwrap()
+                .window
+                .as_mut()
+                .unwrap()
+                .terminal_verified = true;
+            return Ok(TerminalCheck::Ready);
+        }
+        let mut path = route_points(&terminal["route"])?;
+        let start = path[0];
+        let target = point(&q.original["goal"])?;
+        path.push(target);
+        let margin = number(&self.config, "margin", 8.);
+        if tile_count(&path, margin, &self.config) > number(&self.config, "maxTiles", 16.) as usize
+        {
+            self.query.as_mut().unwrap().truncated = true;
+            self.fail_candidate("terminal-coverage-budget")?;
+            return Ok(TerminalCheck::Rejected);
+        }
+        let arrival =
+            json!({"id":terminal["route"]["start"],"position":start,"cost":0,"state":"available"});
+        let interaction = q.original["interaction"].clone();
+        let corridor = corridor(&path, margin, &self.config);
+        self.query.as_mut().unwrap().awaiting_terminal_world = true;
+        Ok(TerminalCheck::Load(self.effect(
+            json!({"kind":"window","purpose":"terminal-validation",
+            "scene":self.input["scene"]["scene"],"start":start,"target":target,"arrival":arrival,
+            "interaction":interaction,"waypoints":[],"margin":margin,"corridor":corridor}),
+        )))
+    }
+
+    fn replay_terminal(&mut self, world: Arc<World>) -> Result<(), String> {
+        self.remember_world(&world)?;
+        let q = self.query.as_ref().unwrap();
+        let placements = self.terminal_placements()?;
+        let verified =
+            placed_world(world, &placements, &q.following_facts).and_then(|configured| {
+                trace_clear(
+                    &configured,
+                    &q.terminal.as_ref().unwrap()["route"],
+                    &q.original,
+                )
+            });
+        match verified {
+            Ok(true) => {
+                self.query
+                    .as_mut()
+                    .unwrap()
+                    .window
+                    .as_mut()
+                    .unwrap()
+                    .terminal_verified = true
+            }
+            Ok(false) => self.fail_candidate("placement-invalidates-terminal")?,
+            Err(_) => self.fail_candidate("terminal-coverage-incomplete")?,
+        }
+        Ok(())
+    }
+
+    fn remember_world(&mut self, world: &World) -> Result<(), String> {
         let facts = &mut self.query.as_mut().unwrap().boost_facts;
         for boost in &world.boosts {
             let value = serde_json::to_value(boost).map_err(|e| e.to_string())?;
@@ -842,6 +984,11 @@ impl Engine {
             }
             following.insert(device.id.clone(), value);
         }
+        Ok(())
+    }
+
+    fn solve_window(&mut self, base_world: Arc<World>) -> Result<(), String> {
+        self.remember_world(&base_world)?;
         let q = self.query.as_ref().unwrap();
         let w = q.window.as_ref().unwrap();
         let end = w.end.unwrap();
@@ -966,9 +1113,9 @@ impl Engine {
         if merged != fixed {
             // Newly selected static placements apply to the whole route. Their
             // collision cannot invalidate an earlier independently proved piece.
-            for (proof_world, proof_route) in &w.proofs {
-                let configured = placed_world(proof_world.clone(), &merged, &q.following_facts)?;
-                if !trace_clear(&configured, proof_route)? {
+            for proof in &w.proofs {
+                let configured = placed_world(proof.world.clone(), &merged, &q.following_facts)?;
+                if !trace_clear(&configured, &proof.route, &proof.query)? {
                     return self.fail_candidate("placement-invalidates-prefix");
                 }
             }
@@ -1027,7 +1174,11 @@ impl Engine {
                     let composed = composed.take().unwrap();
                     w.pieces = vec![composed.route];
                     w.continuation = Some(composed.continuation);
-                    w.proofs.push((base_world, route.clone()));
+                    w.proofs.push(Proof {
+                        world: base_world,
+                        route: route.clone(),
+                        query: local,
+                    });
                     if let Some(v) = result["supportBoxes"].as_array() {
                         w.support.extend(v.clone());
                     }
@@ -1071,6 +1222,7 @@ impl Engine {
             return self.begin_forward();
         }
         let q = self.query.as_mut().unwrap();
+        q.awaiting_terminal_world = false;
         q.last_reason = reason.into();
         let p = q.proposal.as_ref().unwrap();
         let w = q.window.as_ref().unwrap();
@@ -1113,6 +1265,7 @@ impl Engine {
             });
         }
         q.terminal = next.asset;
+        q.awaiting_terminal_world = false;
         q.excluded_arrivals = next.excluded_arrivals;
         q.excluded_edges = next.excluded_edges;
         q.proposal = None;
@@ -1191,6 +1344,7 @@ impl Window {
             waypoint: 0,
             continuation: None,
             proofs: vec![],
+            terminal_verified: false,
         })
     }
 }
@@ -1268,12 +1422,59 @@ fn placed_world(
             .ok_or("Carried following placement is unavailable")?,
     ))
 }
-fn trace_clear(world: &World, route: &Value) -> Result<bool, String> {
-    for segment in route["segments"]
+fn trace_clear(world: &World, route: &Value, query: &Value) -> Result<bool, String> {
+    let interaction = if route["goalHit"].is_object() && query["interaction"]["airborne"] == true {
+        Some(
+            serde_json::from_value::<crate::model::Interaction>(query["interaction"].clone())
+                .map_err(|e| e.to_string())?,
+        )
+    } else {
+        None
+    };
+    let goal = point(&query["goal"])?;
+    for (index, segment) in route["segments"]
         .as_array()
         .ok_or("Route requires segments")?
+        .iter()
+        .enumerate()
     {
         let points = route_points(segment)?;
+        let collection = if route["goalHit"]["segment"].as_u64() == Some(index as u64) {
+            interaction.as_ref().map(|interaction| (goal, interaction))
+        } else {
+            None
+        };
+        if matches!(
+            segment["flight"]["kind"].as_str(),
+            Some("flight" | "run-off")
+        ) {
+            // A placement can remove takeoff/landing support or intersect the
+            // curved motion between samples. Re-execute the original witness;
+            // a collected prefix does not authorize checking its unused future.
+            if !world.replay_flight(segment, collection)? {
+                return Ok(false);
+            }
+            continue;
+        }
+        if segment["mode"] != "walk" {
+            // Authored device motion without a native flight witness retains its
+            // fixed trajectory authority, while its support and swept geometry
+            // must still exist in the newly configured World.
+            for endpoint in [
+                Some(points[0]),
+                collection.is_none().then_some(*points.last().unwrap()),
+            ]
+            .into_iter()
+            .flatten()
+            {
+                if world
+                    .standing_foot(endpoint)?
+                    .is_none_or(|foot| distance(foot, endpoint) > 1e-5)
+                {
+                    return Ok(false);
+                }
+            }
+        }
         for pair in points.windows(2) {
             if !world.clear(pair[0], pair[1], 0.)? {
                 return Ok(false);

@@ -126,6 +126,154 @@ pub(super) fn query(world: &World, bounds: Bounds) -> Result<Vec<Boundary>, Stri
     Ok(result)
 }
 
+// Clip an edge to another triangle's projected coverage at matching physical
+// height. Only coverage extending outside the owner removes its boundary;
+// duplicate or same-side faces cannot erase an exposed edge.
+fn raw_coverage(a: Vec3, b: Vec3, inward: Vec3, triangle: [Vec3; 3]) -> Option<(f64, f64)> {
+    if !triangle.iter().any(|&p| dot(sub(p, a), inward) < -1e-8) {
+        return None;
+    }
+    let u = sub(triangle[1], triangle[0]);
+    let v = sub(triangle[2], triangle[0]);
+    let determinant = u[0] * v[2] - u[2] * v[0];
+    if determinant.abs() < 1e-12 {
+        return None;
+    }
+    let weights = |p: Vec3| {
+        let d = sub(p, triangle[0]);
+        let b = (d[0] * v[2] - d[2] * v[0]) / determinant;
+        let c = (u[0] * d[2] - u[2] * d[0]) / determinant;
+        [1. - b - c, b, c]
+    };
+    let first = weights(a);
+    let last = weights(b);
+    let mut lo: f64 = 0.;
+    let mut hi: f64 = 1.;
+    let mut clip = |x: f64, y: f64| {
+        if x < 0. && y < 0. {
+            return false;
+        }
+        if x < 0. {
+            lo = lo.max(x / (x - y));
+        }
+        if y < 0. {
+            hi = hi.min(x / (x - y));
+        }
+        lo <= hi
+    };
+    for i in 0..3 {
+        if !clip(first[i] + 1e-9, last[i] + 1e-9) {
+            return None;
+        }
+    }
+    let first_y = (0..3).map(|i| first[i] * triangle[i][1]).sum::<f64>();
+    let last_y = (0..3).map(|i| last[i] * triangle[i][1]).sum::<f64>();
+    let x = a[1] - first_y;
+    let y = b[1] - last_y;
+    if !clip(1e-5 - x, 1e-5 - y) || !clip(1e-5 + x, 1e-5 + y) {
+        return None;
+    }
+    (hi - lo > 1e-9).then_some((lo, hi))
+}
+pub(super) fn raw(world: &World, bounds: Bounds) -> Result<Vec<RawBoundary>, String> {
+    if (0..2).any(|i| {
+        !bounds.min[i].is_finite() || !bounds.max[i].is_finite() || bounds.min[i] > bounds.max[i]
+    }) {
+        return Err("Invalid raw support boundary bounds".into());
+    }
+    if world.snapshot["kind"] != "physical" {
+        return Ok(vec![]);
+    }
+    let query = [
+        bounds.min[0],
+        f64::NEG_INFINITY,
+        bounds.min[1],
+        bounds.max[0],
+        f64::INFINITY,
+        bounds.max[1],
+    ];
+    let indices = [&world.collision, &world.moving_support];
+    let eligible = |t: [Vec3; 3]| {
+        let normal = cross(sub(t[1], t[0]), sub(t[2], t[0]));
+        normal[1] > 0. && normal[1] / hypot(normal) >= world.movement.max_slope.to_radians().cos()
+    };
+    let mut result = vec![];
+    let mut seen = HashSet::new();
+    let mut work = 0_usize;
+    for index in indices {
+        let candidates = index.candidates(query);
+        if candidates.len() > 100_000 {
+            return Err("Raw boundary query exceeds geometry budget".into());
+        }
+        for id in candidates {
+            let triangle = index.faces[id];
+            if !eligible(triangle) {
+                continue;
+            }
+            for i in 0..3 {
+                let Some([a, b]) = clip_segment(triangle[i], triangle[(i + 1) % 3], &bounds) else {
+                    continue;
+                };
+                let dx = b[0] - a[0];
+                let dz = b[2] - a[2];
+                let length = dx.hypot(dz);
+                if length < 1e-9 {
+                    continue;
+                }
+                // Upward triangles are clockwise in XZ.
+                let inward = [dz / length, 0., -dx / length];
+                let neighbors = [
+                    a[0].min(b[0]) - 1e-8,
+                    a[1].min(b[1]) - 1e-5,
+                    a[2].min(b[2]) - 1e-8,
+                    a[0].max(b[0]) + 1e-8,
+                    a[1].max(b[1]) + 1e-5,
+                    a[2].max(b[2]) + 1e-8,
+                ];
+                let mut covered = vec![];
+                for other in indices {
+                    for id in other.candidates(neighbors) {
+                        work += 1;
+                        if work > 100_000 {
+                            return Err("Raw boundary query exceeds geometry budget".into());
+                        }
+                        let face = other.faces[id];
+                        if eligible(face)
+                            && let Some(interval) = raw_coverage(a, b, inward, face)
+                        {
+                            covered.push(interval);
+                        }
+                    }
+                }
+                covered.sort_by(|a, b| a.0.total_cmp(&b.0).then_with(|| a.1.total_cmp(&b.1)));
+                let mut end: f64 = 0.;
+                let mut emit = |low: f64, high: f64| {
+                    if high - low <= 1e-9 {
+                        return;
+                    }
+                    let points = [mix(a, b, low), mix(a, b, high)];
+                    // Repeated raw faces retain one proposal without changing
+                    // geometry or approximating coordinates onto a grid.
+                    let key = serde_json::to_string(&(points, inward)).unwrap();
+                    if seen.insert(key) {
+                        result.push(RawBoundary { points, inward });
+                    }
+                };
+                for (low, high) in covered {
+                    if low > end {
+                        emit(end, low);
+                    }
+                    end = end.max(high);
+                }
+                if end < 1. {
+                    emit(end, 1.);
+                }
+            }
+        }
+    }
+    Ok(result)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

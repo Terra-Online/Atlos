@@ -2,6 +2,47 @@
 
 ## Rust rewrite integration, 2026-11-14
 
+Native placement revalidation retains each piece's original local query and
+replays its adaptive flight witness under the final joint poses. Collection
+prefixes stop at the original interaction rather than requiring a safe unused
+landing. Future terminal assets receive the same pose check; a bounded ordinary
+window load supplies missing terminal coverage without running Search or changing
+the witness. Failure retains the independently valid original-scene partial.
+
+World separates physical standing from navigation admission. Search owns nav
+tolerance and preserves supplied physical feet. Optional unavailable-space
+witnesses are skipped with truncation through an exact coverage-error category;
+invalid geometry and controls still fail. Computed native flight peak speed is
+emitted and replay-checked, including run-off approaches. Both jump and drop gait
+classification use this authority, so a fast drop requires an active sprint.
+
+Bounded ground feedback exposes typed local direct-proof failures and one
+optimistic directed NAV proposal. Weighted 3D proposal ranking and authorized
+coalescing share a finite work allowance. Local physical failures can allocate raw
+support-boundary samples from the existing sample budget. Feedback and flight
+proofs share the existing candidate-attempt pool; unused feedback reserve returns
+to flights. Neither a failed chord nor an exhausted NAV proposal excludes ground
+detours. Complete retained NAV paths may be physically certified despite an
+exhausted coalescing allowance, provided every leg and exact join passes.
+
+The captured upper-floor case remains unresolved. The latest bounded probe finds
+an 85-point NAV proposal and exposes 23 raw support failures plus one clearance
+failure. Search reaches 130 nodes and completes 8,000 shared attempts, then hits
+the 45-second diagnostic limit during resource/ground expansion. These results
+establish useful local feedback, not a complete route or a performance gain.
+Stage 2 searches directly proved walks and existing actions first, then restarts
+resource labels with ordinary ground detours if necessary. Both passes share the
+original expansion budget. An early completion is approximate when detours remain
+unexplored and is marked truncated. The upper-floor direct pass finishes in
+1.57 seconds without completion; detour fallback still hits the diagnostic limit.
+Broader replay remains gated on a physically accepted representative case.
+
+The assembled checkpoint passes 133 Rust unit tests, two authored-action tests,
+22 native integration fixtures and the retained 440 TypeScript tests. Release
+N-API build, feature-enabled all-target Clippy, TypeScript checking, lint and
+format checks pass. This validates the new contracts and focused fixtures; it
+does not establish whole-map acceptance.
+
 `crates/ganglia-v1` owns independent native world, search and engine modules.
 The retained TypeScript implementation is selectable as `ganglia-v1-ts` (the
 `ganglia-v1` default remains compatible); `ganglia-v1-rust` uses the same
@@ -87,8 +128,9 @@ snapshot residency mirror.
 Broader route acceptance remains open: with stricter raw support, the formerly
 fast upper-floor diagnostic spends most sampled time repairing ground proposals
 and has no complete candidate before it is stopped. Discovery at raw support
-interfaces inside imported nav is required. Revalidation after a later placement
-also needs complete earlier-flight support and witness checks.
+interfaces inside imported nav and eager walking-detour work remain material.
+Earlier-flight and future-terminal pose revalidation now use complete native
+witness replay; broader route acceptance still requires assembled validation.
 
 ## Workspace migration checkpoint, 2026-11-14
 

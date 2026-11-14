@@ -217,6 +217,109 @@ impl Leg {
     }
 }
 impl World {
+    /// Replay a selected native flight against this placement-bound World.
+    /// The supplied model/control retain their authority; this method proves
+    /// geometry, support and selected trace fidelity, not device eligibility.
+    pub fn replay_flight(
+        &self,
+        segment: &Value,
+        collection: Option<(Vec3, &Interaction)>,
+    ) -> Result<bool, String> {
+        let mode: Mode = decode(&segment["mode"], "flight segment mode")?;
+        if !matches!(mode, Mode::Jump | Mode::Drop | Mode::Launch) {
+            return Err("Unsupported replay flight mode".into());
+        }
+        let witness = &segment["flight"];
+        if !matches!(witness["kind"].as_str(), Some("flight" | "run-off")) {
+            return Err("Missing native flight witness".into());
+        }
+        let start: Vec3 = decode(&witness["start"], "flight start")?;
+        let end: Vec3 = decode(&witness["end"], "flight end")?;
+        let model: JumpModel = decode(&witness["model"], "flight model")?;
+        let control: FlightControl = decode(&witness["control"], "flight control")?;
+        if control.mode
+            != if mode == Mode::Launch {
+                Mode::Jump
+            } else {
+                mode
+            }
+        {
+            return Ok(false);
+        }
+        let points: Vec<Vec3> = decode(&segment["points"], "flight points")?;
+        let times: Vec<f64> = decode(&segment["times"], "flight times")?;
+        if points.len() < 2
+            || points.len() != times.len()
+            || points.iter().any(|&p| !finite(p))
+            || times.first() != Some(&0.)
+            || times.iter().any(|t| !t.is_finite() || *t < 0.)
+            || times.windows(2).any(|t| t[1] < t[0])
+        {
+            return Err("Invalid selected flight trace".into());
+        }
+        let standing = |p| -> Result<bool, String> {
+            Ok(self
+                .standing_foot(p)?
+                .is_some_and(|foot| distance(foot, p) <= 1e-5))
+        };
+        if !standing(start)? || (collection.is_none() && !standing(end)?) {
+            return Ok(false);
+        }
+        let replay = if witness["kind"] == "run-off" {
+            self.controlled_run_off(start, end, &model, &control, collection)?
+        } else {
+            self.controlled_flight(start, end, &model, &control, collection)?
+        };
+        let Some(replay) = replay else {
+            return Ok(false);
+        };
+        // Metadata is advisory only when it agrees with authoritative replay.
+        // Older witnesses may omit it; malformed or forged supplied peaks fail.
+        if let Some(peak) = segment.get("peakHorizontalSpeed") {
+            let Some(peak) = peak.as_f64().filter(|v| v.is_finite() && *v >= 0.) else {
+                return Ok(false);
+            };
+            let expected = replay.extra["peakHorizontalSpeed"].as_f64().unwrap();
+            if (peak - expected).abs() > 1e-6 {
+                return Ok(false);
+            }
+        }
+        let duration = *times.last().unwrap();
+        if (duration - replay.duration()).abs()
+            > 1e-6 * duration.abs().max(replay.duration().abs()).max(1.)
+            || distance(points[0], replay.points[0]) > 1e-5
+            || distance(*points.last().unwrap(), *replay.points.last().unwrap()) > 1e-5
+        {
+            return Ok(false);
+        }
+        let at = |points: &[Vec3], times: &[f64], time: f64| {
+            let next = times
+                .partition_point(|&t| t < time)
+                .clamp(1, times.len() - 1);
+            let span = times[next] - times[next - 1];
+            let fraction = if span > 0. {
+                ((time - times[next - 1]) / span).clamp(0., 1.)
+            } else {
+                1.
+            };
+            mix(points[next - 1], points[next], fraction)
+        };
+        for &time in times.iter().chain(&replay.times) {
+            if distance(
+                at(&points, &times, time),
+                at(&replay.points, &replay.times, time),
+            ) > 0.005
+            {
+                return Ok(false);
+            }
+        }
+        for pair in points.windows(2) {
+            if !self.clear(pair[0], pair[1], 0.)? {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
     pub fn flight_duration(&self, start: f64, end: f64, mode: Mode) -> Result<Option<f64>, String> {
         Ok(phases(start, end, &self.movement.model, mode)?.map(|p| p.iter().map(|p| p.time).sum()))
     }
@@ -353,6 +456,13 @@ impl World {
                 .max(model.air_deceleration.unwrap());
             legs = Some((mid, a, b));
         }
+        let peak_horizontal_speed = if let Some((_, a, b)) = legs {
+            a.peak.max(b.peak)
+        } else if overspeed {
+            initial
+        } else {
+            horizontal / duration
+        };
         let horizontal_at = |time: f64| -> [f64; 2] {
             if let Some((mid, a, b)) = legs {
                 let x = if a.distance == 0. {
@@ -421,6 +531,10 @@ impl World {
         if collected {
             c.terminal = Some(true);
         }
+        c.extra.insert(
+            "peakHorizontalSpeed".into(),
+            serde_json::json!(peak_horizontal_speed),
+        );
         c.endpoint_tolerance = Some(self.movement.profile.radius);
         let mut witness_model = serde_json::to_value(model).map_err(|e| e.to_string())?;
         if let Some(obj) = witness_model.as_object_mut() {
@@ -544,6 +658,7 @@ impl World {
         };
         let mut times;
         let mut arc;
+        let peak_horizontal_speed;
         if control.exit.is_none() {
             let Some(a) = self.controlled_flight(launch, end, model, &plain, collection)? else {
                 return Ok(None);
@@ -559,6 +674,10 @@ impl World {
             if air_speed <= 0. || air_speed > model.max_horizontal_speed {
                 return Ok(None);
             }
+            peak_horizontal_speed = arc.extra["peakHorizontalSpeed"]
+                .as_f64()
+                .unwrap()
+                .max(air_speed);
             times = distances.iter().map(|d| d / air_speed).collect::<Vec<_>>();
         } else {
             let Some(phases) = phases(launch[1], end[1], model, Mode::Drop)? else {
@@ -590,6 +709,7 @@ impl World {
                 .hypot(initial[1])
                 .max(middle[0].hypot(middle[1]))
                 .max(terminal[0].hypot(terminal[1]));
+            peak_horizontal_speed = peak;
             let acceleration = 2. / duration
                 * (middle[0] - initial[0])
                     .hypot(middle[1] - initial[1])
@@ -648,6 +768,10 @@ impl World {
         times.extend(arc.times.drain(1..).map(|t| t + offset));
         let mut c = Connection::new("run-off".into(), Mode::Drop, points, times);
         c.terminal = arc.terminal;
+        c.extra.insert(
+            "peakHorizontalSpeed".into(),
+            serde_json::json!(peak_horizontal_speed),
+        );
         let mut m = serde_json::to_value(model).unwrap();
         m.as_object_mut().unwrap().retain(|_, v| !v.is_null());
         m["profile"] = serde_json::to_value(self.movement.profile).unwrap();

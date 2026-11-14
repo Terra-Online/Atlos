@@ -640,10 +640,31 @@ fn bounded_sample_walking_keeps_proven_obstacle_detours_between_query_anchors() 
         let result = solve_snapshot(
             &snapshot,
             &query,
-            &json!({"physicalWork":{"step":stage},"maxLinks":1,"maxCandidates":64}),
+            // With no optional nodes, stage 2 cannot form a direct chain
+            // around the obstacle and must retain ordinary ground detours.
+            &json!({"physicalWork":{"step":stage},"maxLinks":1,"maxCandidates":if stage==2 {0}else{64}}),
         )
         .unwrap();
         complete(&result);
+        let phases = array(&result["diagnostics"]["walkingPhases"]);
+        if stage == 2 {
+            assert_eq!(phases.len(), 2);
+            assert_eq!(phases[0]["kind"], "direct");
+            assert_eq!(phases[0]["complete"], false);
+            assert!(phases[0]["unexploredDetours"].as_u64().unwrap() > 0);
+            assert_eq!(phases[1]["kind"], "detours");
+            assert_eq!(phases[1]["complete"], true);
+            assert_eq!(
+                phases
+                    .iter()
+                    .map(|p| p["expanded"].as_u64().unwrap())
+                    .sum::<u64>(),
+                result["route"]["search"]["expanded"].as_u64().unwrap()
+            );
+        } else {
+            assert_eq!(phases.len(), 1);
+            assert_eq!(phases[0]["kind"], "full");
+        }
         assert!(result["route"]["length"].as_f64().unwrap() > 4.);
         assert!(
             array(&result["route"]["points"])
@@ -651,6 +672,22 @@ fn bounded_sample_walking_keeps_proven_obstacle_detours_between_query_anchors() 
                 .any(|p| p[2].as_f64().unwrap().abs() > 1.)
         );
     }
+    snapshot["movement"]["locomotion"] = json!({"speed":2.,"sprintSpeed":2.,"sprintAcceleration":10.,
+        "search":{"maxExpanded":1}});
+    let bounded = solve_snapshot(&snapshot, &query, &json!({"maxCandidates":0})).unwrap();
+    assert_eq!(bounded["route"]["status"], "no-verified-route");
+    assert_eq!(bounded["route"]["search"]["expanded"], 1);
+    assert_eq!(bounded["route"]["search"]["truncated"], true);
+    assert_eq!(
+        array(&bounded["diagnostics"]["walkingPhases"]).len(),
+        1,
+        "the fallback must not reset an exhausted expansion allowance"
+    );
+    snapshot["movement"]["locomotion"]["search"]["maxExpanded"] = json!(2);
+    let bounded = solve_snapshot(&snapshot, &query, &json!({"maxCandidates":0})).unwrap();
+    complete(&bounded);
+    assert_eq!(bounded["route"]["search"]["expanded"], 2);
+    assert_eq!(array(&bounded["diagnostics"]["walkingPhases"]).len(), 2);
 }
 #[test]
 fn bounded_sample_walking_keeps_all_device_endpoints_for_multiple_hops() {
@@ -671,6 +708,20 @@ fn bounded_sample_walking_keeps_all_device_endpoints_for_multiple_hops() {
         .collect::<Vec<_>>();
     assert_eq!(ids, ["ab", "bc"]);
     assert!((result["route"]["cost"].as_f64().unwrap() - 6.7).abs() < 1e-8);
+    let phases = array(&result["diagnostics"]["walkingPhases"]);
+    assert_eq!(phases.len(), 1);
+    assert_eq!(phases[0]["kind"], "direct");
+    assert_eq!(phases[0]["complete"], true);
+    assert!(phases[0]["unexploredDetours"].as_u64().unwrap() > 0);
+    assert_eq!(result["route"]["search"]["truncated"], true);
+    for authored in array(&snapshot["connections"]) {
+        let segment = array(&result["route"]["segments"])
+            .iter()
+            .find(|s| s["connection"] == authored["id"])
+            .unwrap();
+        assert_eq!(segment["points"], authored["points"]);
+        assert_eq!(segment["times"], authored["times"]);
+    }
 }
 
 #[test]
@@ -1005,6 +1056,13 @@ fn generated_catalog_train_freeze_reuses_flight_and_run_off_above_offset_navigat
         complete(&reused);
         assert_eq!(reused["diagnostics"]["candidateAttempts"], 0);
         assert_eq!(reused["route"]["cost"], frozen["route"]["cost"]);
+        // Recomputing the content ID cannot authorize forged physical peak metadata.
+        let mut false_peak = learned.clone();
+        false_peak["peakHorizontalSpeed"] = json!(0.);
+        false_peak["id"] = json!(generated_id(&false_peak, &authority).unwrap());
+        false_peak["connection"] = false_peak["id"].clone();
+        let false_segment: Segment = serde_json::from_value(false_peak.clone()).unwrap();
+        assert!(!admit_generated(&world, &false_peak, &false_segment, &authority, &[]).unwrap());
         // A marker and a recomputed content ID cannot authorize a forged model.
         let mut forged = learned.clone();
         forged["flight"]["model"]["maxJumpHeight"] = json!(100.);
@@ -1028,4 +1086,333 @@ fn generated_catalog_train_freeze_reuses_flight_and_run_off_above_offset_navigat
             "complete"
         );
     }
+}
+
+#[test]
+fn local_raw_crack_interfaces_enable_jump_inside_a_broad_imported_face() {
+    let left =
+        json!({"id":"raw-left","vertices":[[-4.,0.,-2.],[1.,0.,-2.],[1.,0.,2.],[-4.,0.,2.]]});
+    let right =
+        json!({"id":"raw-right","vertices":[[1.4,0.,-2.],[5.,0.,-2.],[5.,0.,2.],[1.4,0.,2.]]});
+    let mut snapshot = scene(vec![left, right], vec![]);
+    // The imported nav polygon covers the physical crack; its own perimeter,
+    // center and radial samples provide no reachable landing across the gap.
+    snapshot["surfaces"] =
+        json!([{"id":"imported","vertices":[[-4.,0.1,-2.],[5.,0.1,-2.],[5.,0.1,2.],[-4.,0.1,2.]]}]);
+    snapshot["movement"]["model"] = json!({"gravity":10.,"fallingGravity":10.,"maxJumpHeight":0.3,
+        "maxFallingSpeed":20.,"apexTime":0.,"maxHorizontalSpeed":2.});
+    snapshot["movement"]["runAirSpeed"] = json!(2.);
+    let physical = json!({"kind":"physical","input":{
+        "ground":{"surfaces":snapshot["surfaces"],"options":snapshot["movement"]},
+        "movement":snapshot["movement"],"collision":snapshot["collision"]}});
+    let result = solve_snapshot(
+        &physical,
+        &json!({"starts":[start("start",-2.,0.,"available")],"goal":[3.,0.,0.]}),
+        &json!({"maxCandidates":512,"maxLinks":8,"sampleSpacing":100.}),
+    )
+    .unwrap();
+    complete(&result);
+    assert!(result["diagnostics"]["repairRegions"].as_u64().unwrap() > 0);
+    assert!(result["diagnostics"]["candidateAttempts"].as_u64().unwrap() <= 512);
+    assert!(array(&result["route"]["segments"]).iter().any(|s| {
+        let points = array(&s["points"]);
+        s["mode"] == "jump"
+            && points.first().unwrap()[0].as_f64().unwrap() < 1.
+            && points.last().unwrap()[0].as_f64().unwrap() > 1.4
+            && s["flight"].is_object()
+    }));
+}
+
+#[test]
+fn directed_nav_feedback_finds_raw_crack_when_straight_corridor_has_no_navigation() {
+    let rect = |id: &str, x0: f64, x1: f64, z0: f64, z1: f64, y: f64| {
+        json!({"id":id,
+        "vertices":[[x0,y,z0],[x1,y,z0],[x1,y,z1],[x0,y,z1]]})
+    };
+    let raw = scene(
+        vec![
+            rect("raw-left", -4., -0.8, -1., 1., 0.),
+            rect("raw-right", -0.4, 0., -1., 1., 0.),
+            rect("raw-turn", 0., 2., -1., 1., 0.),
+            rect("raw-goal", 0., 2., 1., 6., 0.),
+        ],
+        vec![],
+    );
+    let movement = json!({"speed":2.,"maxVertical":0.5,"profile":{"radius":0.1,"height":1.8},
+        "walls":[],"runAirSpeed":2.,"maxDrop":100.,"maxHorizontalDistance":100.,
+        "model":{"gravity":10.,"fallingGravity":10.,"maxJumpHeight":0.3,
+            "maxFallingSpeed":20.,"apexTime":0.,"maxHorizontalSpeed":2.}});
+    // The directed nav route turns through two portals; its first leg crosses
+    // a physical gap hidden inside the broad imported starting face.
+    let snapshot = json!({"kind":"physical","input":{"ground":{"surfaces":[
+        rect("a",-4.,0.,-1.,1.,0.1),rect("b",0.,2.,-1.,1.,0.1),
+        rect("c",0.,2.,1.,6.,0.1)],"options":movement},
+        "movement":movement,"collision":raw["collision"]}});
+    let result = solve_snapshot(
+        &snapshot,
+        &json!({"starts":[start("start",-3.,0.,"available")],"goal":[1.,0.,5.]}),
+        &json!({"maxCandidates":512,"maxLinks":8,"sampleSpacing":100.}),
+    )
+    .unwrap();
+    complete(&result);
+    let diagnostics = &result["diagnostics"];
+    assert!(diagnostics["groundProbes"].as_u64().unwrap() <= 32);
+    assert!(diagnostics["groundRouteExpanded"].as_u64().unwrap() <= 64);
+    let feedback = &diagnostics["groundProbeFeedback"][0];
+    assert_eq!(feedback["direct"]["kind"], "Navigation");
+    assert_eq!(feedback["navigation"]["found"], true);
+    assert!(
+        array(&feedback["navigation"]["failures"])
+            .iter()
+            .any(|f| f["kind"] == "PhysicalSupport")
+    );
+    assert!(
+        array(&result["route"]["segments"])
+            .iter()
+            .any(|s| s["mode"] == "jump" && s["flight"].is_object())
+    );
+}
+
+fn sparse_optional_fixture() -> Value {
+    let raw = scene(vec![surface("inside", 0.)], vec![]);
+    json!({"kind":"physical","coverage":{"bounds":{"min":[-3.,-3.],"max":[3.,3.]}},"input":{
+        "ground":{"surfaces":[surface("inside",0.),surface("unrelated",5.)],"options":raw["movement"]},
+        "movement":raw["movement"],"collision":raw["collision"]}})
+}
+#[test]
+fn optional_uncovered_samples_do_not_abort_a_covered_route() {
+    let snapshot = sparse_optional_fixture();
+    let query = json!({"starts":[start("start",-0.5,0.,"available")],"goal":[0.5,0.,0.]});
+    let plain = solve_snapshot(&snapshot, &query, &json!({"maxCandidates":0})).unwrap();
+    let sampled = solve_snapshot(
+        &snapshot,
+        &query,
+        &json!({"maxCandidates":32,"maxLinks":4,"sampleSpacing":100.}),
+    )
+    .unwrap();
+    complete(&plain);
+    complete(&sampled);
+    assert_eq!(plain["route"]["cost"], sampled["route"]["cost"]);
+    assert_eq!(sampled["diagnostics"]["truncated"], true);
+    assert!(
+        array(&sampled["route"]["points"])
+            .iter()
+            .all(|p| p[0].as_f64().unwrap().abs() < 1.)
+    );
+    // Query-anchor admission stays explicit; skipping optional witnesses must
+    // not turn an unloaded arrival into a grounded source.
+    let uncovered = solve_snapshot(
+        &snapshot,
+        &json!({"starts":[start("unloaded",5.,0.,"available")],"goal":[0.5,0.,0.]}),
+        &json!({"maxCandidates":0}),
+    )
+    .unwrap();
+    assert_eq!(uncovered["route"]["status"], "unmapped");
+}
+#[test]
+fn optional_proofs_skip_coverage_but_propagate_real_control_and_geometry_errors() {
+    let snapshot = sparse_optional_fixture();
+    let world = crate::world::World::new(snapshot.clone()).unwrap();
+    let mut model = world.movement.model.clone();
+    model.max_jump_height = 1.;
+    model.max_horizontal_speed = 10.;
+    let mut truncated = false;
+    let flight = world.flight_with_control(
+        [-0.5, 0.01, 0.],
+        [5., 0.01, 0.],
+        &model,
+        &crate::world::FlightControl::default(),
+    );
+    assert!(
+        flight
+            .as_ref()
+            .is_err_and(|e| crate::world::is_coverage_error(e))
+    );
+    assert!(optional_proof(flight, &mut truncated).unwrap().is_none());
+    assert!(truncated);
+    truncated = false;
+    let invalid = world.flight_with_control(
+        [-0.5, 0.01, 0.],
+        [0.5, 0.01, 0.],
+        &model,
+        &crate::world::FlightControl {
+            horizontal_split: Some(2.),
+            ..Default::default()
+        },
+    );
+    let message = invalid.as_ref().unwrap_err().clone();
+    assert_eq!(
+        optional_proof(invalid, &mut truncated).unwrap_err(),
+        message
+    );
+    assert!(!truncated);
+    let mut malformed = snapshot;
+    malformed["input"]["collision"]["indices"] = json!([0, 99, 1]);
+    assert!(
+        solve_snapshot(
+            &malformed,
+            &json!({"starts":[start("start",0.,0.,"available")],"goal":[0.5,0.,0.]}),
+            &json!({"maxCandidates":32})
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn fast_run_off_requires_sprint_before_takeoff_but_slow_drop_does_not() {
+    let rectangle = |id: &str, end: f64, y: f64| {
+        json!({"id":id,
+        "vertices":[[-4.,y,-2.],[end,y,-2.],[end,y,2.],[-4.,y,2.]]})
+    };
+    let mut raw = scene(
+        vec![rectangle("lower", 5., 0.), rectangle("upper", 0., 2.)],
+        vec![],
+    );
+    raw["movement"]["model"] = json!({"gravity":10.,"fallingGravity":10.,"maxJumpHeight":1.,
+        "maxFallingSpeed":20.,"apexTime":0.,"maxHorizontalSpeed":6.,"airAcceleration":30.,"airDeceleration":30.});
+    raw["movement"]["runAirSpeed"] = json!(2.);
+    let world = crate::world::World::new(json!({"kind":"surfaces","input":raw})).unwrap();
+    let opts = options(json!({"sprintThrough":["drop"]}));
+    let initial = locomotion::initial(&opts);
+    let connection = |x| {
+        world
+            .run_off(
+                [-1., 2.01, 0.],
+                [x, 0.01, 0.],
+                &world.movement.model,
+                &crate::world::FlightControl {
+                    mode: crate::model::Mode::Drop,
+                    ..Default::default()
+                },
+            )
+            .unwrap()
+            .expect("physically proved run-off")
+    };
+    let fast = connection(2.);
+    let original = serde_json::to_value(&fast).unwrap();
+    let mut segment: Segment = serde_json::from_value(original.clone()).unwrap();
+    classify_flight(&mut segment, 2.);
+    assert_eq!(segment.required_gait.as_deref(), Some("sprint"));
+    assert!(
+        locomotion::advance(&segment, &opts, initial, true, false).is_none(),
+        "resource scheduling cannot acquire sprint in unsupported flight"
+    );
+    let mut approach = walk(-2., -1.);
+    for foot in &mut approach.points {
+        foot[1] = 2.01;
+    }
+    let (sprinting, approach_duration, approach_segments) =
+        locomotion::advance(&approach, &opts, initial, true, false).unwrap();
+    let (_, duration, scheduled) =
+        locomotion::advance(&segment, &opts, sprinting, true, false).unwrap();
+    assert_eq!(duration, *segment.times.last().unwrap());
+    assert_eq!(
+        serde_json::to_value(&scheduled[0]).unwrap()["flight"],
+        original["flight"]
+    );
+    assert_eq!(scheduled[0].points, segment.points);
+    assert_eq!(scheduled[0].times, segment.times);
+    assert!(approach_duration > 0.);
+    assert!(
+        approach_segments
+            .iter()
+            .any(|s| s.gait.as_deref() == Some("sprint"))
+    );
+    // Both ordinary free-fall and controlled cubic run-off use World peaks.
+    let controlled = world
+        .run_off(
+            [-1., 2.01, 0.],
+            [2., 0.01, 0.],
+            &world.movement.model,
+            &crate::world::FlightControl {
+                mode: crate::model::Mode::Drop,
+                exit: Some([1., 0.]),
+                speed_fraction: Some(0.5),
+                terminal: Some("average".into()),
+                ..Default::default()
+            },
+        )
+        .unwrap()
+        .unwrap();
+    let ordinary = world
+        .flight([0.2, 2.01, 0.], [2., 0.01, 0.], crate::model::Mode::Drop)
+        .unwrap()
+        .unwrap();
+    for physical in [controlled, ordinary] {
+        let peak = physical.extra["peakHorizontalSpeed"].as_f64().unwrap();
+        assert!(peak > 2. + 1e-6);
+        let mut drop: Segment =
+            serde_json::from_value(serde_json::to_value(physical).unwrap()).unwrap();
+        classify_flight(&mut drop, 2.);
+        assert_eq!(drop.required_gait.as_deref(), Some("sprint"));
+        assert!(locomotion::advance(&drop, &opts, initial, true, false).is_none());
+        drop.required_gait = None;
+        classify_flight(&mut drop, peak - 0.5e-6);
+        assert_eq!(
+            drop.required_gait, None,
+            "common replay tolerates 1e-6 speed excess"
+        );
+        classify_flight(&mut drop, peak - 2e-6);
+        assert_eq!(drop.required_gait.as_deref(), Some("sprint"));
+    }
+    let mut slow: Segment =
+        serde_json::from_value(serde_json::to_value(connection(0.4)).unwrap()).unwrap();
+    classify_flight(&mut slow, 2.);
+    assert_eq!(slow.required_gait, None);
+    assert!(locomotion::advance(&slow, &opts, initial, false, false).is_some());
+    // Fixed launches retain device authority even when character air speed is lower.
+    let mut launch = segment;
+    launch.mode = "launch".into();
+    launch.required_gait = None;
+    classify_flight(&mut launch, 2.);
+    assert_eq!(launch.required_gait, None);
+}
+
+#[test]
+fn feedback_and_flights_share_one_total_physical_attempt_budget() {
+    let mut raw = scene(vec![surface("a", 0.), surface("b", 4.)], vec![]);
+    raw["movement"]["model"] = json!({"gravity":10.,"fallingGravity":10.,"maxJumpHeight":1.,
+        "maxFallingSpeed":20.,"apexTime":0.,"maxHorizontalSpeed":4.});
+    raw["movement"]["runAirSpeed"] = json!(4.);
+    let result = solve_snapshot(
+        &raw,
+        &json!({"starts":[start("a",0.,0.,"available")],"goal":[4.,0.,0.]}),
+        &json!({"maxCandidates":16,"maxLinks":8,"sampleSpacing":100.}),
+    )
+    .unwrap();
+    let d = &result["diagnostics"];
+    let total = d["candidateAttempts"].as_u64().unwrap();
+    let feedback = d["feedbackAttempts"].as_u64().unwrap();
+    let flights = d["flightAttempts"].as_u64().unwrap();
+    assert_eq!(total, feedback + flights);
+    assert_eq!(feedback, d["groundProbes"].as_u64().unwrap());
+    assert!(feedback > 0 && feedback <= 2);
+    assert!(total <= 16);
+    assert!(
+        flights > 14,
+        "unused feedback reserve returns to flight discovery: {d}"
+    );
+
+    let floor = scene(
+        vec![json!({"id":"floor","vertices":[[-1.,0.,-2.],[21.,0.,-2.],
+        [21.,0.,2.],[-1.,0.,2.]]})],
+        vec![],
+    );
+    let waypoints = (1..=12)
+        .map(|x| json!([x as f64, 0.01, 0.]))
+        .collect::<Vec<_>>();
+    let supported = solve_snapshot(
+        &floor,
+        &json!({"starts":[start("a",0.,0.,"available")],"goal":[14.,0.,0.],"waypoints":waypoints}),
+        &json!({"maxCandidates":128,"maxLinks":8,"sampleSpacing":100.}),
+    )
+    .unwrap();
+    complete(&supported);
+    let d = &supported["diagnostics"];
+    assert!(
+        d["groundProbes"].as_u64().unwrap() > 8,
+        "feedback can inspect a longer supported prefix"
+    );
+    assert!(d["groundProbes"].as_u64().unwrap() <= 16);
+    assert!(d["candidateAttempts"].as_u64().unwrap() <= 128);
 }

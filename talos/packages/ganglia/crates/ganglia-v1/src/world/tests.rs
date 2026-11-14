@@ -859,3 +859,733 @@ fn rounded_support_chords_preserve_standing_at_arbitrary_scheduler_cuts() {
         }
     }
 }
+
+#[test]
+fn physical_standing_is_independent_of_navigation_projection_radius() {
+    let mut input = snapshot(floor(-3., 3., -3., 3., 0.));
+    input["input"]["ground"]["options"]["profile"]["radius"] = json!(0.1);
+    input["input"]["ground"]["surfaces"] = json!([
+        {"id":"offset","vertices":[[-3.,0.4,-3.],[3.,0.4,-3.],[3.,0.4,3.],[-3.,0.4,3.]]}
+    ]);
+    let w = World::new(input).unwrap();
+    let foot = w.standing_foot([0., 0.005, 0.]).unwrap().unwrap();
+    assert_eq!(foot, [0., 0.005, 0.]);
+    assert!(
+        w.project_with_tolerance(foot, 0.1, None)
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(
+        w.project_with_tolerance(foot, 0.5, None).unwrap()[0].surface,
+        "offset"
+    );
+    let walk = w
+        .ground_path([-1., 0.005, 0.], [1., 0.005, 0.])
+        .unwrap()
+        .unwrap();
+    assert_eq!(walk.points[0], [-1., 0.005, 0.]);
+    assert_eq!(*walk.points.last().unwrap(), [1., 0.005, 0.]);
+}
+
+#[test]
+fn direct_probe_distinguishes_physical_gap_navigation_and_clearance() {
+    let mut collision = floor(-2., -0.05, -1., 1., 0.);
+    merge(&mut collision, floor(0.05, 2., -1., 1., 0.));
+    let mut input = snapshot(collision);
+    input["input"]["ground"]["surfaces"] = json!([
+        {"id":"navigation","vertices":[[-2.,0.,-1.],[2.,0.,-1.],[2.,0.,1.],[-2.,0.,1.]]}
+    ]);
+    let w = World::new(input).unwrap();
+    let GroundProbe::Rejected(GroundFailure::PhysicalSupport { span }) =
+        w.probe_ground([-1., 0.01, 0.], [1., 0.01, 0.]).unwrap()
+    else {
+        panic!("raw crack needs a physical witness")
+    };
+    assert!(span[0][0].min(span[1][0]) < 0.05 && span[0][0].max(span[1][0]) > -0.05);
+    let boundaries = w
+        .raw_support_boundaries(Bounds {
+            min: [-0.1, -0.8],
+            max: [0.1, 0.8],
+        })
+        .unwrap();
+    assert!(
+        boundaries
+            .iter()
+            .any(|b| (b.points[0][0] + 0.05).abs() < 1e-8 && b.inward[0] < -0.99)
+    );
+    assert!(
+        boundaries
+            .iter()
+            .any(|b| (b.points[0][0] - 0.05).abs() < 1e-8 && b.inward[0] > 0.99)
+    );
+    let mut masked = snapshot(floor(-2., 2., -1., 1., 0.));
+    masked["input"]["ground"]["surfaces"] = json!([
+        {"id":"left","vertices":[[-2.,0.,-1.],[0.,0.,-1.],[0.,0.,1.],[-2.,0.,1.]],"portals":[]},
+        {"id":"right","vertices":[[0.,0.,-1.],[2.,0.,-1.],[2.,0.,1.],[0.,0.,1.]],"portals":[]}
+    ]);
+    let w = World::new(masked).unwrap();
+    assert!(matches!(
+        w.probe_ground([-1., 0.01, 0.], [1., 0.01, 0.]).unwrap(),
+        GroundProbe::Rejected(GroundFailure::Navigation)
+    ));
+    assert!(
+        w.raw_support_boundaries(Bounds {
+            min: [-0.1, -0.8],
+            max: [0.1, 0.8]
+        })
+        .unwrap()
+        .is_empty()
+    );
+    let mut blocked = snapshot(floor(-2., 2., -2., 2., 0.));
+    blocked["input"]["ground"]["options"]["walls"] =
+        json!([{ "min":[-0.1,0.,-0.5],"max":[0.1,2.,0.5],"state":"active"}]);
+    let w = World::new(blocked).unwrap();
+    assert!(matches!(
+        w.probe_ground([-1., 0.01, 0.], [1., 0.01, 0.]).unwrap(),
+        GroundProbe::Rejected(GroundFailure::Clearance { .. })
+    ));
+    // A failed direct chord is not a failed ground route: the detour remains.
+    assert!(
+        w.ground_path([-1., 0.01, 0.], [1., 0.01, 0.])
+            .unwrap()
+            .is_some()
+    );
+}
+#[test]
+fn raw_boundaries_subtract_partial_shared_edges_without_mesh_diagonals() {
+    let mut collision = floor(-2., 0., -1., 1., 0.);
+    merge(&mut collision, floor(0., 2., -1., 0., 0.));
+    let w = World::new(snapshot(collision)).unwrap();
+    let boundaries = w
+        .raw_support_boundaries(Bounds {
+            min: [-0.01, -0.9],
+            max: [0.01, 0.9],
+        })
+        .unwrap();
+    let seam: Vec<_> = boundaries
+        .iter()
+        .filter(|b| b.points.iter().all(|p| p[0].abs() < 1e-8))
+        .collect();
+    assert_eq!(seam.len(), 1);
+    assert!(seam[0].points.iter().any(|p| p[2].abs() < 1e-7));
+    assert!(seam[0].points.iter().any(|p| (p[2] - 0.9).abs() < 1e-7));
+    assert!(seam[0].inward[0] < -0.99);
+}
+#[test]
+fn direct_probe_reports_finite_proof_budget_without_running_ground_search() {
+    let w = World::new(snapshot(floor(-20_000., 20_000., -2., 2., 0.))).unwrap();
+    assert!(matches!(
+        w.probe_ground([-19_000., 0.01, 0.], [19_000., 0.01, 0.])
+            .unwrap(),
+        GroundProbe::Rejected(GroundFailure::ProofBudget { .. })
+    ));
+    let local = World::new(snapshot(floor(-2., 2., -2., 2., 0.))).unwrap();
+    let GroundProbe::Supported(path) = local.probe_ground([-1., 0.01, 0.], [1., 0.01, 0.]).unwrap()
+    else {
+        panic!("flat chord")
+    };
+    assert!((path.length - 2.).abs() < 1e-9);
+    assert!((path.cost - path.length / w.movement.speed).abs() < 1e-12);
+}
+
+#[test]
+fn flight_replay_rejects_support_lost_when_default_box_is_moved() {
+    let mut input = snapshot(floor(-6., 6., -3., 3., 0.));
+    input["input"]["devices"] = json!({"followingSupports":[following_box("box",0.)]});
+    let w = World::new(input).unwrap();
+    let flight = w
+        .flight([0., 1.01, 0.], [2., 0.01, 0.], Mode::Jump)
+        .unwrap()
+        .unwrap();
+    let segment = serde_json::to_value(&flight).unwrap();
+    assert!(w.replay_flight(&segment, None).unwrap());
+    let moved = w.place_following("box", [4., 0., 0.]).unwrap().unwrap();
+    assert!(
+        flight
+            .points
+            .windows(2)
+            .all(|p| moved.clear(p[0], p[1], 0.).unwrap())
+    );
+    assert!(!moved.replay_flight(&segment, None).unwrap());
+}
+#[test]
+fn flight_replay_collection_proves_prefix_without_future_landing_or_obstacle_checks() {
+    let w = World::new(snapshot(floor(-8., 8., -3., 3., 0.))).unwrap();
+    let start = [-3., 0.01, 0.];
+    let end = [3., 0.01, 0.];
+    let full = w.flight(start, end, Mode::Jump).unwrap().unwrap();
+    let target = full.points[full.points.len() / 3];
+    let interaction = Interaction {
+        radius: 0.1,
+        airborne: true,
+        ..Default::default()
+    };
+    let flight = w
+        .flight_to_goal(
+            start,
+            end,
+            &w.movement.model,
+            &FlightControl::default(),
+            target,
+            &interaction,
+        )
+        .unwrap()
+        .unwrap();
+    let segment = serde_json::to_value(&flight).unwrap();
+    let mut input = snapshot(floor(-8., -2., -3., 3., 0.));
+    input["input"]["ground"]["options"]["walls"] = json!([
+        {"min":[2.,0.,-1.],"max":[2.1,4.,1.],"state":"active"}
+    ]);
+    let changed = World::new(input).unwrap();
+    assert!(
+        changed
+            .replay_flight(&segment, Some((target, &interaction)))
+            .unwrap()
+    );
+    assert!(!changed.replay_flight(&segment, None).unwrap());
+    let mut mistimed = segment.clone();
+    let times = mistimed["times"].as_array_mut().unwrap();
+    let last = times.last_mut().unwrap();
+    *last = json!(last.as_f64().unwrap() + 0.01);
+    assert!(
+        !changed
+            .replay_flight(&mistimed, Some((target, &interaction)))
+            .unwrap()
+    );
+}
+#[test]
+fn flight_replay_accepts_run_off_and_supplied_fixed_launch_model_authority() {
+    let mut collision = floor(-4., 5., -2., 2., 0.);
+    merge(&mut collision, floor(-4., 0., -2., 2., 2.));
+    let w = World::new(snapshot(collision)).unwrap();
+    let control = FlightControl {
+        mode: Mode::Drop,
+        ..Default::default()
+    };
+    let run_off = w
+        .run_off(
+            [-1., 2.005, 0.],
+            [2., 0.005, 0.],
+            &w.movement.model,
+            &control,
+        )
+        .unwrap()
+        .unwrap();
+    assert!(
+        w.replay_flight(&serde_json::to_value(run_off).unwrap(), None)
+            .unwrap()
+    );
+    let mut model = w.movement.model.clone();
+    model.max_jump_height = 4.;
+    model.max_horizontal_speed = 3.;
+    model.start_horizontal_speed = None;
+    model.air_acceleration = None;
+    model.air_deceleration = None;
+    let mut launch = w
+        .flight_with_control(
+            [-2., 2.01, 0.],
+            [2., 0.01, 0.],
+            &model,
+            &FlightControl::default(),
+        )
+        .unwrap()
+        .unwrap();
+    launch.mode = Mode::Launch;
+    assert!(
+        w.replay_flight(&serde_json::to_value(launch).unwrap(), None)
+            .unwrap()
+    );
+}
+
+#[test]
+fn physical_stair_walk_is_supported_before_scheduling() {
+    let mut collision = floor(-2., 0., -2., 2., 0.);
+    merge(&mut collision, floor(0., 2., -2., 2., 0.2));
+    merge(
+        &mut collision,
+        CollisionGeometry {
+            positions: vec![0., 0., -2., 0., 0.2, -2., 0., 0.2, 2., 0., 0., 2.],
+            indices: vec![0, 1, 2, 0, 2, 3],
+        },
+    );
+    let mut input = snapshot(collision);
+    input["input"]["movement"]["stepUp"] = json!(0.5);
+    input["input"]["movement"]["stepDown"] = json!(0.5);
+    let w = World::new(input).unwrap();
+    let path = w
+        .ground_path([-1., 0.01, 0.], [1., 0.21, 0.])
+        .unwrap()
+        .expect("legitimate supported 20cm stair");
+    assert_eq!(path.points[0], [-1., 0.01, 0.]);
+    assert!(distance(*path.points.last().unwrap(), [1., 0.21, 0.]) < 1e-9);
+    assert!(path.length > distance(path.points[0], *path.points.last().unwrap()) + 0.01);
+    assert!(
+        path.points
+            .windows(2)
+            .all(|p| w.clear(p[0], p[1], 0.).unwrap())
+    );
+    for pair in path.points.windows(2) {
+        for i in 0..=17 {
+            let p = collision::mix(pair[0], pair[1], i as f64 / 17.);
+            let h = w
+                .ground_at(p, 0.31, 0.31, w.movement.profile.radius)
+                .unwrap()
+                .unwrap();
+            assert!((0.005 - 1e-6..=0.01 + 1e-6).contains(&(p[1] - h.position[1])));
+        }
+    }
+}
+
+fn bent_navigation(gap: bool) -> World {
+    let mut collision = floor(-3., -1., -2., 0., 0.);
+    if gap {
+        merge(&mut collision, floor(-1., 1., -2., -1.05, 0.));
+        merge(&mut collision, floor(-1., 1., -0.95, 0., 0.));
+    } else {
+        merge(&mut collision, floor(-1., 1., -2., 0., 0.));
+    }
+    merge(&mut collision, floor(-1., 1., 0., 3., 0.));
+    let mut input = snapshot(collision);
+    input["input"]["ground"]["surfaces"] = json!([
+        {"id":"left","vertices":[[-3.,0.,-2.],[-1.,0.,-2.],[-1.,0.,0.],[-3.,0.,0.]],"portals":[]},
+        {"id":"corner","vertices":[[-1.,0.,-2.],[1.,0.,-2.],[1.,0.,0.],[-1.,0.,0.]],"portals":[]},
+        {"id":"upper","vertices":[[-1.,0.,0.],[1.,0.,0.],[1.,0.,3.],[-1.,0.,3.]],"portals":[]}
+    ]);
+    input["input"]["ground"]["options"]["portals"] = json!([
+        {"from":"left","to":"corner","points":[[-1.,0.,-1.],[-1.,0.,-1.]],
+            "entry":[[-1.,0.,-2.],[-1.,0.,0.]],"exit":[[-1.,0.,-2.],[-1.,0.,0.]]},
+        {"from":"corner","to":"upper","points":[[0.,0.,0.],[0.,0.,0.]],
+            "entry":[[-1.,0.,0.],[1.,0.,0.]],"exit":[[-1.,0.,0.],[1.,0.,0.]]}
+    ]);
+    World::new(input).unwrap()
+}
+#[test]
+fn navigation_route_probe_reveals_physical_gap_hidden_from_straight_probe() {
+    let w = bent_navigation(true);
+    let a = [-2., 0.01, -1.];
+    let b = [0., 0.01, 2.];
+    assert!(matches!(
+        w.probe_ground(a, b).unwrap(),
+        GroundProbe::Rejected(GroundFailure::Navigation)
+    ));
+    let result = w
+        .probe_ground_route(
+            a,
+            b,
+            GroundRouteLimits {
+                max_expansions: 64,
+                max_legs: 7,
+            },
+        )
+        .unwrap();
+    assert!(result.navigation.is_some());
+    assert!(result.supported.is_none());
+    assert!(result.expanded <= 64 && result.probed <= 7);
+    assert!(!result.truncated);
+    assert!(
+        result
+            .failures
+            .iter()
+            .any(|f| matches!(f, GroundFailure::PhysicalSupport { .. }))
+    );
+}
+#[test]
+fn navigation_route_probe_returns_only_fully_proved_directed_canonical_joins() {
+    let w = bent_navigation(false);
+    let a = [-2., 0.01, -1.];
+    let b = [0., 0.01, 2.];
+    let result = w
+        .probe_ground_route(
+            a,
+            b,
+            GroundRouteLimits {
+                max_expansions: 64,
+                max_legs: 7,
+            },
+        )
+        .unwrap();
+    let path = result
+        .supported
+        .clone()
+        .unwrap_or_else(|| panic!("{result:?}"));
+    assert!(result.failures.is_empty() && !result.truncated);
+    assert_eq!(path.points[0], a);
+    assert_eq!(*path.points.last().unwrap(), b);
+    assert!(
+        path.points
+            .windows(2)
+            .all(|p| w.clear(p[0], p[1], 0.).unwrap())
+    );
+    assert!((path.length - path_length(&path.points)).abs() < 1e-10);
+    assert_eq!(result.probed, result.navigation.unwrap().len() - 1);
+    let reverse = w
+        .probe_ground_route(
+            b,
+            a,
+            GroundRouteLimits {
+                max_expansions: 64,
+                max_legs: 7,
+            },
+        )
+        .unwrap();
+    assert!(reverse.navigation.is_none() && reverse.supported.is_none());
+    assert!(!reverse.truncated && reverse.probed == 0);
+    assert!(matches!(
+        reverse.failures.as_slice(),
+        [GroundFailure::Navigation]
+    ));
+}
+#[test]
+fn navigation_route_probe_honors_prefix_and_expansion_limits_without_route_claims() {
+    let w = bent_navigation(false);
+    let a = [-2., 0.01, -1.];
+    let b = [0., 0.01, 2.];
+    let prefix = w
+        .probe_ground_route(
+            a,
+            b,
+            GroundRouteLimits {
+                max_expansions: 64,
+                max_legs: 1,
+            },
+        )
+        .unwrap();
+    assert!(prefix.navigation.is_some() && prefix.supported.is_none() && prefix.truncated);
+    assert_eq!(prefix.probed, 1);
+    let stopped = w
+        .probe_ground_route(
+            a,
+            b,
+            GroundRouteLimits {
+                max_expansions: 1,
+                max_legs: 7,
+            },
+        )
+        .unwrap();
+    assert!(stopped.navigation.is_none() && stopped.supported.is_none() && stopped.truncated);
+    assert_eq!(stopped.expanded, 1);
+    assert_eq!(stopped.probed, 0);
+    let no_proofs = w
+        .probe_ground_route(
+            a,
+            b,
+            GroundRouteLimits {
+                max_expansions: 64,
+                max_legs: 0,
+            },
+        )
+        .unwrap();
+    assert!(no_proofs.navigation.is_some() && no_proofs.supported.is_none() && no_proofs.truncated);
+    assert_eq!(no_proofs.probed, 0);
+}
+
+#[test]
+fn navigation_proposal_ranking_charges_vertical_floor_excursions() {
+    let mut input = snapshot(floor(-2., 12., -4., 4., 0.));
+    input["input"]["ground"]["surfaces"] = json!([
+        {"id":"start","vertices":[[-1.,0.,-1.],[1.,0.,-1.],[1.,0.,1.],[-1.,0.,1.]],"portals":[]},
+        {"id":"high","vertices":[[-1.,20.,-1.],[11.,20.,-1.],[11.,20.,1.],[-1.,20.,1.]],"portals":[]},
+        {"id":"level","vertices":[[-1.,0.,1.],[11.,0.,1.],[11.,0.,3.],[-1.,0.,3.]],"portals":[]},
+        {"id":"goal","vertices":[[9.,0.,-1.],[11.,0.,-1.],[11.,0.,1.],[9.,0.,1.]],"portals":[]}
+    ]);
+    input["input"]["ground"]["options"]["portals"] = json!([
+        {"from":"start","to":"high","points":[[0.,0.,0.],[0.,20.,0.]]},
+        {"from":"high","to":"goal","points":[[10.,20.,0.],[10.,0.,0.]]},
+        {"from":"start","to":"level","points":[[0.,0.,0.],[0.,0.,2.]]},
+        {"from":"level","to":"goal","points":[[10.,0.,2.],[10.,0.,0.]]}
+    ]);
+    let w = World::new(input).unwrap();
+    let result = w
+        .probe_ground_route(
+            [0., 0.01, 0.],
+            [10., 0.01, 0.],
+            GroundRouteLimits {
+                max_expansions: 64,
+                max_legs: 0,
+            },
+        )
+        .unwrap();
+    let navigation = result.navigation.unwrap();
+    // Only proposal ranking is exercised: neither alternative is physically
+    // certified when no direct proof units are supplied.
+    assert!(navigation.iter().all(|p| p[1].abs() < 0.02));
+    assert!(navigation.iter().any(|p| (p[2] - 2.).abs() < 1e-9));
+    assert!(result.supported.is_none() && result.probed == 0 && result.truncated);
+}
+
+#[test]
+fn coverage_category_tracks_unavailable_emitters_without_hiding_malformed_facts() {
+    let mut input = snapshot(floor(-3., 3., -3., 3., 0.));
+    input["coverage"] = json!({"bounds":{"min":[-1.,-1.],"max":[1.,1.]}});
+    let w = World::new(input.clone()).unwrap();
+    assert!(is_coverage_error(
+        &w.clear([0., 0.01, 0.], [2., 0.01, 0.], 0.).unwrap_err()
+    ));
+    input["coverage"] = json!({"bounds":{"min":[-1.,-1.],"max":[1.,1.]},"tiles":[],"tileSpan":1.});
+    let w = World::new(input.clone()).unwrap();
+    assert!(is_coverage_error(
+        &w.clear([0., 0.01, 0.], [0., 0.01, 0.], 0.).unwrap_err()
+    ));
+    input["coverage"] = json!("complete");
+    input["input"]["collisionOptions"] = json!({"bounds":{"min":[-1.,-1.],"max":[1.,1.]}});
+    let w = World::new(input.clone()).unwrap();
+    assert!(is_coverage_error(
+        &w.clear([0., 0.01, 0.], [2., 0.01, 0.], 0.).unwrap_err()
+    ));
+    assert!(!is_coverage_error(
+        &w.clear([f64::NAN, 0., 0.], [0., 0., 0.], 0.).unwrap_err()
+    ));
+    input["coverage"] = json!({"bounds":{"min":[1.,-1.],"max":[-1.,1.]}});
+    assert!(!is_coverage_error(&World::new(input).unwrap_err()));
+    assert!(!is_coverage_error("Coverage query exceeds tile budget"));
+    assert!(!is_coverage_error("Flight exceeds sweep budget"));
+    assert!(!is_coverage_error("Invalid flight speed control"));
+}
+
+fn nav_rectangle(id: &str, x0: f64, x1: f64, z0: f64, z1: f64, y: f64) -> Value {
+    json!({"id":id,"vertices":[[x0,y,z0],[x1,y,z0],[x1,y,z1],[x0,y,z1]],"portals":[]})
+}
+fn proposal_world(surfaces: Value, portals: Value) -> World {
+    let mut input = snapshot(floor(-2., 12., -2., 6., 0.));
+    input["input"]["ground"]["surfaces"] = surfaces;
+    input["input"]["ground"]["options"]["portals"] = portals;
+    World::new(input).unwrap()
+}
+#[test]
+fn weighted_navigation_proposal_has_no_shortest_path_guarantee() {
+    let w = proposal_world(
+        json!([
+            nav_rectangle("00-start", -0.1, 0.1, -0.1, 3.1, 0.),
+            nav_rectangle("a", -0.1, 8.1, -0.1, 0.1, 0.),
+            nav_rectangle("b", 7.9, 8.1, -0.1, 4.1, 0.),
+            nav_rectangle("c", 7.9, 10.1, 3.9, 4.1, 0.),
+            nav_rectangle("level", -0.1, 10.1, 2.9, 3.1, 0.),
+            nav_rectangle("goal", 9.9, 10.1, -0.1, 4.1, 0.)
+        ]),
+        json!([
+            {"from":"00-start","to":"a","points":[[0.,0.,0.],[0.,0.,0.]]},
+            {"from":"a","to":"b","points":[[8.,0.,0.],[8.,0.,0.]]},
+            {"from":"b","to":"c","points":[[8.,0.,4.],[8.,0.,4.]]},
+            {"from":"c","to":"goal","points":[[10.,0.,4.],[10.,0.,4.]]},
+            {"from":"00-start","to":"level","points":[[0.,0.,3.],[0.,0.,3.]]},
+            {"from":"level","to":"goal","points":[[10.,0.,3.],[10.,0.,3.]]}
+        ]),
+    );
+    let result = w
+        .probe_ground_route(
+            [0., 0.01, 0.],
+            [10., 0.01, 0.],
+            GroundRouteLimits {
+                max_expansions: 4096,
+                max_legs: 0,
+            },
+        )
+        .unwrap();
+    let navigation = result.navigation.unwrap();
+    // Weighted priority chooses the goal-facing 18m branch even though the
+    // alternate authorized path via (0,3),(10,3) is about16m. It is a proposal.
+    assert!(path_length(&navigation) > 17.);
+    assert!(result.supported.is_none() && result.probed == 0);
+}
+fn dense_navigation(count: usize) -> World {
+    let surfaces: Vec<_> = (0..count)
+        .map(|i| {
+            nav_rectangle(
+                &format!("face/{i:02}"),
+                i as f64,
+                (i + 1) as f64,
+                -1.,
+                1.,
+                0.,
+            )
+        })
+        .collect();
+    let portals: Vec<_> = (0..count - 1)
+        .map(|i| {
+            json!({"from":format!("face/{i:02}"),"to":format!("face/{:02}",i+1),
+        "points":[[(i+1) as f64,0.,0.],[(i+1) as f64,0.,0.]]})
+        })
+        .collect();
+    let mut input = snapshot(floor(0., count as f64, -1., 1., 0.));
+    input["input"]["ground"]["surfaces"] = json!(surfaces);
+    input["input"]["ground"]["options"]["portals"] = json!(portals);
+    World::new(input).unwrap()
+}
+#[test]
+fn navigation_visibility_coalesces_dense_authorized_chords_within_shared_work() {
+    let w = dense_navigation(40);
+    let result = w
+        .probe_ground_route(
+            [0.1, 0.01, 0.],
+            [39.9, 0.01, 0.],
+            GroundRouteLimits {
+                max_expansions: 4096,
+                max_legs: 1,
+            },
+        )
+        .unwrap();
+    assert_eq!(result.navigation.as_ref().unwrap().len(), 2);
+    assert_eq!(result.probed, 1);
+    assert!(result.supported.is_some() && !result.truncated && result.expanded <= 4096);
+    let limited = dense_navigation(8)
+        .probe_ground_route(
+            [0.1, 0.01, 0.],
+            [7.9, 0.01, 0.],
+            GroundRouteLimits {
+                max_expansions: 16,
+                max_legs: 1,
+            },
+        )
+        .unwrap();
+    assert!(limited.navigation.as_ref().unwrap().len() > 2);
+    assert!(limited.truncated && limited.supported.is_none() && limited.expanded <= 16);
+}
+#[test]
+fn navigation_visibility_retains_masked_detour_and_height_changing_turns() {
+    let w = proposal_world(
+        json!([
+            nav_rectangle("left", 0., 1., -1., 1., 0.),
+            nav_rectangle("right", 1., 2., -1., 1., 0.),
+            nav_rectangle("upper", 0., 2., 1., 2., 0.)
+        ]),
+        json!([
+            {"from":"left","to":"upper","points":[[0.5,0.,1.],[0.5,0.,1.]]},
+            {"from":"upper","to":"right","points":[[1.5,0.,1.],[1.5,0.,1.]]}
+        ]),
+    );
+    let a = [0.5, 0.01, 0.];
+    let b = [1.5, 0.01, 0.];
+    let result = w
+        .probe_ground_route(
+            a,
+            b,
+            GroundRouteLimits {
+                max_expansions: 4096,
+                max_legs: 3,
+            },
+        )
+        .unwrap();
+    assert!(result.navigation.as_ref().unwrap().len() > 2);
+    assert!(result.supported.as_ref().unwrap().length > 2.5);
+    assert!(matches!(
+        w.probe_ground(a, b).unwrap(),
+        GroundProbe::Rejected(GroundFailure::Navigation)
+    ));
+    let height = proposal_world(
+        json!([
+            nav_rectangle("low", -1., 1., -1., 1., 0.),
+            nav_rectangle("high", -1., 3., -1., 1., 2.)
+        ]),
+        json!([{"from":"low","to":"high","points":[[0.,0.,0.],[0.,2.,0.]]}]),
+    );
+    let result = height
+        .probe_ground_route(
+            [0., 0.01, 0.],
+            [2., 2.01, 0.],
+            GroundRouteLimits {
+                max_expansions: 4096,
+                max_legs: 0,
+            },
+        )
+        .unwrap();
+    let navigation = result.navigation.unwrap();
+    assert!(navigation.contains(&[0., 0., 0.]) && navigation.contains(&[0., 2., 0.]));
+    assert!(navigation.len() >= 4 && result.supported.is_none());
+}
+
+#[test]
+fn authoritative_flight_peaks_cover_constant_split_overspeed_and_runoff() {
+    let w = World::new(snapshot(floor(-20., 20., -20., 20., 0.))).unwrap();
+    let a = [-2., 0.01, 0.];
+    let b = [2., 0.01, 0.];
+    let constant = w.flight(a, b, Mode::Jump).unwrap().unwrap();
+    assert!(
+        (constant.extra["peakHorizontalSpeed"].as_f64().unwrap() - 4. / constant.duration()).abs()
+            < 1e-12
+    );
+    let split = w
+        .flight_with_control(
+            a,
+            b,
+            &w.movement.model,
+            &FlightControl {
+                horizontal_waypoint: Some([0., 0.2]),
+                ..Default::default()
+            },
+        )
+        .unwrap()
+        .unwrap();
+    assert_eq!(split.extra["peakHorizontalSpeed"], json!(6.));
+    assert!(split.extra["peakHorizontalSpeed"].as_f64().unwrap() > 4. / split.duration());
+    let mut model = w.movement.model.clone();
+    model.start_horizontal_speed = Some(12.);
+    model.air_overspeed_deceleration = Some(5.);
+    let fast = w
+        .flight_with_control(a, [7., 0.01, 0.], &model, &FlightControl::default())
+        .unwrap()
+        .unwrap();
+    assert!(fast.extra["peakHorizontalSpeed"].as_f64().unwrap() > 6.);
+    let mut geometry = floor(-4., 5., -2., 2., 0.);
+    merge(&mut geometry, floor(-4., 0., -2., 2., 2.));
+    let w = World::new(snapshot(geometry)).unwrap();
+    for exit in [None, Some([1., 0.])] {
+        let c = w
+            .run_off(
+                [-1., 2.01, 0.],
+                [2., 0.01, 0.],
+                &w.movement.model,
+                &FlightControl {
+                    mode: Mode::Drop,
+                    exit,
+                    speed_fraction: exit.map(|_| 0.5),
+                    terminal: exit.map(|_| "average".into()),
+                    ..Default::default()
+                },
+            )
+            .unwrap()
+            .unwrap();
+        let peak = c.extra["peakHorizontalSpeed"].as_f64().unwrap();
+        assert!(peak > 0. && peak <= 6.);
+        let mut segment = serde_json::to_value(&c).unwrap();
+        assert!(w.replay_flight(&segment, None).unwrap());
+        segment["peakHorizontalSpeed"] = json!(peak - 0.01);
+        assert!(!w.replay_flight(&segment, None).unwrap());
+        segment["peakHorizontalSpeed"] = json!("forged");
+        assert!(!w.replay_flight(&segment, None).unwrap());
+        segment
+            .as_object_mut()
+            .unwrap()
+            .remove("peakHorizontalSpeed");
+        assert!(w.replay_flight(&segment, None).unwrap());
+    }
+}
+
+#[test]
+fn coalescing_exhaustion_retains_a_fully_proved_canonical_route() {
+    let w = dense_navigation(8);
+    let a = [0.1, 0.01, 0.];
+    let b = [7.9, 0.01, 0.];
+    let result = w
+        .probe_ground_route(
+            a,
+            b,
+            GroundRouteLimits {
+                max_expansions: 16,
+                max_legs: 255,
+            },
+        )
+        .unwrap();
+    let navigation = result.navigation.as_ref().unwrap();
+    assert!(result.truncated && result.expanded == 16 && navigation.len() > 2);
+    assert_eq!(result.probed, navigation.len() - 1);
+    assert!(result.failures.is_empty());
+    let path = result.supported.unwrap();
+    assert_eq!(path.points.first(), Some(&a));
+    assert_eq!(path.points.last(), Some(&b));
+    assert!((path.length - 7.8).abs() < 1e-10);
+    // Every retained canonical portal foot occurs exactly in the joined path.
+    for &point in navigation {
+        let canonical = w.standing_foot(point).unwrap().unwrap();
+        assert!(path.points.contains(&canonical));
+    }
+}

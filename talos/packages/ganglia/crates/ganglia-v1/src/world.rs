@@ -30,6 +30,18 @@ pub struct Coverage {
     tiles: Option<HashSet<(i64, i64)>>,
     tile_span: f64,
 }
+/// Unavailable physical space is an optional-proposal outcome, not malformed
+/// input. Only the exact bounds/tile emitters belong to this category; invalid
+/// facts, numerical errors and work-budget exhaustion must still propagate.
+/// Keep this category synchronized with require_coverage and Index::require_scope.
+pub fn is_coverage_error(error: &str) -> bool {
+    matches!(
+        error,
+        "Motion exceeds declared physical coverage"
+            | "Motion crosses an unloaded physical tile"
+            | "Collision query exceeds indexed XZ bounds"
+    )
+}
 #[derive(Clone, Debug)]
 pub struct Projection {
     pub surface: String,
@@ -50,6 +62,45 @@ pub struct GroundPath {
     pub points: Vec<Vec3>,
     pub length: f64,
     pub cost: f64,
+}
+/// A direct chord rejection is local evidence, never proof that no detour exists.
+#[derive(Clone, Debug)]
+pub enum GroundFailure {
+    Navigation,
+    PhysicalSupport { span: [Vec3; 2] },
+    Clearance { span: [Vec3; 2] },
+    ProofBudget { span: [Vec3; 2] },
+}
+#[derive(Clone, Debug)]
+pub enum GroundProbe {
+    Supported(GroundPath),
+    Rejected(GroundFailure),
+}
+/// Caller-owned limits for one optimistic navigation proposal and its prefix proofs.
+#[derive(Clone, Copy, Debug)]
+pub struct GroundRouteLimits {
+    /// Shared allowance for accepted proposal-node pops and visibility work.
+    pub max_expansions: usize,
+    pub max_legs: usize,
+}
+#[derive(Clone, Debug)]
+pub struct GroundRouteProbe {
+    /// Optimistic navigation coordinates, never an executable physical route.
+    pub navigation: Option<Vec<Vec3>>,
+    /// Present only when every selected leg and canonical join is proved.
+    pub supported: Option<GroundPath>,
+    pub failures: Vec<GroundFailure>,
+    /// Charged node pops plus navigation visibility visits, within max_expansions.
+    pub expanded: usize,
+    pub probed: usize,
+    pub truncated: bool,
+}
+/// An exposed physical support edge. It authorizes candidate discovery only;
+/// callers still need navigation admission and complete movement proofs.
+#[derive(Clone, Debug)]
+pub struct RawBoundary {
+    pub points: [Vec3; 2],
+    pub inward: Vec3,
 }
 #[derive(Clone, Debug)]
 pub struct Discovery {
@@ -491,6 +542,25 @@ impl World {
         let surface = self.surface(surface_id).ok_or("Unknown support surface")?;
         Ok(ground::closest_on_surface(surface, p))
     }
+    /// Bounded canonical direct proof; no LazySP or ground-detour search.
+    pub fn probe_ground(&self, a: Vec3, b: Vec3) -> Result<GroundProbe, String> {
+        ground::probe(self, a, b)
+    }
+    /// One directed optimistic navigation path, followed by bounded prefix
+    /// canonical proofs. A rejection or exhausted budget makes no detour claim.
+    pub fn probe_ground_route(
+        &self,
+        a: Vec3,
+        b: Vec3,
+        limits: GroundRouteLimits,
+    ) -> Result<GroundRouteProbe, String> {
+        ground::probe_route(self, a, b, limits)
+    }
+    /// Exposed upward raw-terrain/device intervals inside a local XZ query.
+    /// Imported navigation topology and authored masks remain unchanged.
+    pub fn raw_support_boundaries(&self, bounds: Bounds) -> Result<Vec<RawBoundary>, String> {
+        boundaries::raw(self, bounds)
+    }
     pub fn surface(&self, id: &str) -> Option<&Surface> {
         self.surface_ids.get(id).map(|&i| &self.surfaces[i])
     }
@@ -612,11 +682,9 @@ impl World {
         };
         let mut foot = h.position;
         foot[1] = standing_height(p[1], foot[1], mesh_support);
-        if self
-            .project_with_tolerance(foot, self.movement.profile.radius.max(0.02), None)?
-            .is_empty()
-            || !self.clear(foot, foot, 0.)?
-        {
+        // Navigation admission belongs to the caller's projection contract.
+        // Physical feet can be farther from an imported mesh than body radius.
+        if !self.clear(foot, foot, 0.)? {
             return Ok(None);
         }
         Ok(Some(foot))
