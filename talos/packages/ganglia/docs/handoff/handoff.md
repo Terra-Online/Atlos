@@ -1,5 +1,25 @@
 # Route solver handoff
 
+## Approach/departure ranking diagnostics, 2026-11-15
+
+An optimistic approach/departure field trial ranked whole flight journeys over
+sample nodes instead of per-source nearest-target quotas. It did not resolve the
+lower-floor cost regressions. Replacing those fields with prepared directed
+navigation-centroid distances plus existing-action overlays also failed the
+focused quality comparison. All six physical replays completed validly; cases
+17/18/19/21 still exceeded their retained TS costs. The directed-field trial passed
+Clippy. It was removed rather than retaining new topology state without benefit.
+Evidence is `.local/research/native-journey-result.json` and
+`native-fields-result.json`, with corresponding probe logs under `/tmp`.
+
+These trials change the next diagnostic: compare retained TS successful takeoff
+and landing locations to the actual native candidate graph. Sorting cannot recover
+an absent witness. Identify whether source or landing generation omits that local
+neighborhood, then migrate the corresponding TS seed/projection/continuous-control
+logic. Do not repeat distance-field ranking alone without changed candidate coverage.
+Production source remains the full-population `947366c` checkpoint. No new accepted
+speedup or complete-population quality pass exists; the 2x objective remains active.
+
 ## TS shortcut strategy migration diagnostics, 2026-11-15
 
 Read TS `route-shortcuts.ts` and `search/shortcuts.ts` before retrying smaller
