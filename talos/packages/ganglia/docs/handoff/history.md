@@ -1,5 +1,30 @@
 # Route solver history and validation evidence
 
+## Bounded frozen-catalog retrieval, 2026-11-14
+
+The configured `11837497` run processes all ten training requests and freezes
+7,770 connections in one physical bank, then fails the required warmup gate before
+any scored requests. The process ends after 387.828 seconds. Its log/status are
+retained in `.local/research/rust-configured-full50-11837497/`; it produces no
+accepted performance report. A one-second read-only warmup CPU sample at
+`/tmp/ganglia-configured-warmup.sample.txt` attributes most active samples to
+resource-label insertion/evaluation plus ground jobs in the active query graph.
+Inspection finds the entire trained library admitted into that graph.
+
+Catalog retrieval now ranks proposals by approach distance, trajectory duration
+and remaining goal distance, retaining the existing `maxLinks` allowance.
+Selected connections still undergo authority and full physical replay. Authored
+World actions remain mandatory inputs, and fresh bounded discovery remains
+available. Omitted catalog proposals mark search truncated. No candidate budget,
+physical limit or verifier assertion is relaxed. The regression finds a useful
+late library entry among irrelevant proposals and reports omitted coverage.
+
+All 142 Rust unit tests, two authored-action tests and 24 common-replay N-API
+fixtures pass. Feature-enabled all-target Clippy, Rustfmt, native release build
+and TypeScript checking pass. The preceding full package check passes 446 TS
+tests; subsequent TS edits only clarify the link-allowance comment. No new
+full-population performance result is claimed by this change alone.
+
 ## Native connection training without whole-route solving, 2026-11-14
 
 The configured run at `6b83f2bb` correctly stopped before scoring when its first

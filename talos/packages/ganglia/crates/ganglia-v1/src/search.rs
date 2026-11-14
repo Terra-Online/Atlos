@@ -1530,8 +1530,24 @@ fn solve_world(
         known_actions.clear();
     }
     if stage >= 1 {
-        for connection in array(&config["catalogConnections"]) {
-            if !known_actions.iter().any(|c| c["id"] == connection["id"]) {
+        let catalog = array(&config["catalogConnections"]);
+        let origins = seeds
+            .iter()
+            .map(|&(node, _, _, _)| graph.points[node])
+            .collect::<Vec<_>>();
+        let selected = catalog_candidates(catalog, &origins, goal, speed, max_links)?;
+        truncated |= selected.len() < catalog.len();
+        let mut retained = known_actions
+            .iter()
+            .filter_map(|c| c["id"].as_str().map(str::to_owned))
+            .collect::<std::collections::HashSet<_>>();
+        for connection in selected {
+            if retained.insert(
+                connection["id"]
+                    .as_str()
+                    .ok_or("connection id missing")?
+                    .to_owned(),
+            ) {
                 known_actions.push(connection.clone());
             }
         }
@@ -2298,6 +2314,43 @@ fn solve_world(
     Ok(
         json!({"route":route,"connections":connections,"diagnostics":{"truncated":truncated,"candidateAttempts":attempts,"flightAttempts":attempts-ground_probes,"feedbackAttempts":ground_probes,"groundAttempts":ground_attempts,"discovery":discovery,"walkingPhases":walking_phases,"groundDegree":ground_degree,"groundProbes":ground_probes,"repairRegions":repair_spans.len(),"repairTruncated":repair_truncated,"groundRouteExpanded":route_expanded,"groundProbeFeedback":ground_feedback},"arrival":starts[chosen.origin],"groundedTarget":points.last(),"continuation":continuation}),
     )
+}
+
+/// A frozen library is a proposal source, not the active query graph. Rank its
+/// connections by approach, traversal and remaining distance before admitting
+/// the existing link allowance. Selected facts still pass full authority/replay;
+/// omitted proposals mark bounded search truncated and fresh discovery remains.
+fn catalog_candidates<'a>(
+    catalog: &'a [Value],
+    origins: &[Point],
+    goal: Point,
+    speed: f64,
+    limit: usize,
+) -> Result<Vec<&'a Value>, String> {
+    let mut ranked = Vec::with_capacity(catalog.len());
+    for (index, connection) in catalog.iter().enumerate() {
+        let points = connection["points"]
+            .as_array()
+            .ok_or("catalog points missing")?;
+        let from = point(points.first().ok_or("catalog points empty")?)?;
+        let to = point(points.last().ok_or("catalog points empty")?)?;
+        let approach = origins
+            .iter()
+            .map(|&p| distance(p, from))
+            .fold(f64::INFINITY, f64::min);
+        let duration = connection["times"]
+            .as_array()
+            .and_then(|v| v.last())
+            .and_then(Value::as_f64)
+            .unwrap_or(0.);
+        ranked.push(((approach + distance(to, goal)) / speed + duration, index));
+    }
+    ranked.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1.cmp(&b.1)));
+    Ok(ranked
+        .into_iter()
+        .take(limit)
+        .map(|(_, i)| &catalog[i])
+        .collect())
 }
 fn ground_failure(
     failure: crate::world::GroundFailure,

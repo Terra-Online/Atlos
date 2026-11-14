@@ -13,6 +13,11 @@ request. It retains proved nonterminal connections even when no complete route
 exists, without resource-label search, ground-detour fallback or scene retries.
 Training returns `catalog-trained`, not a fabricated completed route. Frozen
 service queries still run ordinary route/resource search and independent replay.
+Frozen catalog retrieval ranks approach, traversal and remaining distance and
+admits the configured `maxLinks` allowance into the active query graph. Authored
+World actions remain available. Every selected catalog connection still passes
+authority and full trajectory replay; omitted proposals mark search truncated,
+and ordinary bounded fresh discovery remains available.
 
 The built-in benchmark adapters bind this policy to tracked map02 preparation
 requests independently of the scored workload. A normal full-population command

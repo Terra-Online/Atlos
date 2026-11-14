@@ -24,7 +24,7 @@ export interface GangliaV1Config {
   readonly maxShortcutCandidates: number;
   /** Boundary sampling distance in metres. Smaller spacing can increase work. */
   readonly sampleSpacing: number;
-  /** Retained action links per discovery call, not per complete scene query. */
+  /** Retained action links per discovery or catalog retrieval, not per scene query. */
   readonly maxLinks: number;
   /** Maximum global corridor/arrival attempts for one scene query. */
   readonly maxAttempts: number;
