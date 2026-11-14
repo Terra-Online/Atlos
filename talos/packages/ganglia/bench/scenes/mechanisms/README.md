@@ -23,6 +23,9 @@ The circular and joint-box TS prototypes do not turn these unrun cases into pass
 - `cases.csv`: human-readable case index.
 - `coverage.json` / `coverage.csv`: intended mechanism-to-case mapping, all unrun.
 - `multi-box.csv`: the eight two-box and four three-box cases.
+- `development-controls.json`: two source-ground waterwheel entry/exit controls
+  retained after successful bounded physical replay. These are development
+  regressions, separate from the 266-case population and not unseen holdouts.
 
 Case IDs retain their original `v250-` prefix after expansion to 266. Preserve IDs
 when adapting runners. Record any changed query, setup, source or scoring rule as
@@ -74,6 +77,7 @@ and report each scene/mechanism group as well as the full population. A local
 source-reference audit is not physical acceptance. Historical observations in
 `previousObservation` are not expected answers or current verifier results.
 
-This suite supplements the required local/stress TS/Rust workloads in `AGENTS.md`.
+This suite supplements the configured full-population performance policy in
+`AGENTS.md`; reuse retained TS controls, with stress treated as opt-in.
 Use focused subsets while adapting the runner and fixing capabilities. Keep raw
 results in `.local/`; close owned browser/profiling processes after each profile.

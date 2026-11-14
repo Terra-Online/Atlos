@@ -1,5 +1,22 @@
 # Route solver history and validation evidence
 
+## Prototype integration with configured service startup, 2026-11-14
+
+Merged the latest five commits from `misakavan/3d-preview`, through its configured
+warmup-failure diagnostics. The merge preserves required service preparation,
+full-population scoring and bounded catalog retrieval alongside the TS prototypes.
+Only handoff/history insertions conflicted; both records were retained. Current
+performance policy reuses retained TS controls, requires configured full map02
+scoring for performance claims, and treats stress as opt-in. No new service
+benchmark or native speedup claim belongs to this prototype integration.
+
+After integration, package formatting, lint, typecheck and all 459 tests pass.
+World application/worker and extractor typechecks also pass. Real mechanism probes
+retain their pre-integration input/code scope. Two successful source-ground wheel
+entry/exit queries are shared in `bench/scenes/mechanisms/development-controls.json`
+as post-selection development regressions, separately from the 266-case population.
+They require explicit local asset binding and are not unseen acceptance holdouts.
+
 ## Circular wheel and nearby joint-box prototypes, 2026-11-14
 
 This prototype implements the agreed phase-free circular wheel model and bounded
@@ -55,7 +72,8 @@ the earlier non-grounded diagnostics and stopped run are preserved separately.
 The probe uses retained geometry with newly bound device facts, not a same-input
 performance comparison. All probe workers exited and their timers were cleared.
 
-Validation: package format/lint/typecheck and 453 tests pass; World application and
+Before the subsequent upstream integration, package format/lint/typecheck and
+453 tests pass; World application and
 worker typechecks pass. Eleven affected extractor export tests and extractor
 checking pass. Full map02/map02-stress paired acceptance has not been run for this
 prototype, and ordinary real multi-box success remains unestablished. Placement
@@ -109,6 +127,109 @@ World moving-bounds/route-inspection tests. These are not test results for the
 new branch baseline. The regenerated input audit
 resolves 707 source references across 121 files. These checks verify the input
 definitions and existing annotation behavior, not the new real-scene routes.
+
+## Configured readiness failure diagnostics, 2026-11-14
+
+The `8db5fd94` full-population attempt processes all ten training requests,
+freezes 6,509 connections and fails the required warmup gate before any scored
+request. It exits with code 1 after 375.930 seconds. Its log/status remain in
+`.local/research/rust-configured-full50-8db5fd94/`; no accepted performance report
+exists and no benchmark remains active. Bounded catalog retrieval alone does not
+establish successful service readiness. Warmup rejection now logs per-request
+status, reason and partial state alongside aggregate validation, so a subsequent
+diagnostic can identify the failing preparation requests.
+
+The configuration defect was lifecycle ownership: optional benchmark CLI flags
+controlled training independently of algorithm configuration, and missing flags
+silently admitted an unprepared solver. Required V1 preparation, dataset-bound
+request profiles and scoring-entry readiness checks now cover that path. Native
+training collects connections without requiring complete training routes;
+training success and service readiness remain separate checks.
+
+The finalized benchmark diagnostic passes formatting, lint, typechecking and the
+446-test package suite. The existing startup tests exercise all three V1 aliases,
+missing training, invalid policies, unfrozen catalogs and failed warmup. An
+uncommitted goal-directed resource-queue experiment was removed: its proposed
+regression also passed the original ordering and supplied no acceptance evidence.
+
+## Bounded frozen-catalog retrieval, 2026-11-14
+
+The configured `11837497` run processes all ten training requests and freezes
+7,770 connections in one physical bank, then fails the required warmup gate before
+any scored requests. The process ends after 387.828 seconds. Its log/status are
+retained in `.local/research/rust-configured-full50-11837497/`; it produces no
+accepted performance report. A one-second read-only warmup CPU sample at
+`/tmp/ganglia-configured-warmup.sample.txt` attributes most active samples to
+resource-label insertion/evaluation plus ground jobs in the active query graph.
+Inspection finds the entire trained library admitted into that graph.
+
+Catalog retrieval now ranks proposals by approach distance, trajectory duration
+and remaining goal distance, retaining the existing `maxLinks` allowance.
+Selected connections still undergo authority and full physical replay. Authored
+World actions remain mandatory inputs, and fresh bounded discovery remains
+available. Omitted catalog proposals mark search truncated. No candidate budget,
+physical limit or verifier assertion is relaxed. The regression finds a useful
+late library entry among irrelevant proposals and reports omitted coverage.
+
+All 142 Rust unit tests, two authored-action tests and 24 common-replay N-API
+fixtures pass. Feature-enabled all-target Clippy, Rustfmt, native release build
+and TypeScript checking pass. The preceding full package check passes 446 TS
+tests; subsequent TS edits only clarify the link-allowance comment. No new
+full-population performance result is claimed by this change alone.
+
+## Native connection training without whole-route solving, 2026-11-14
+
+The configured run at `6b83f2bb` correctly stopped before scoring when its first
+training request hit the 300-second watchdog; total process time was 302.886
+seconds. Its log/status are retained in
+`.local/research/rust-configured-full50-6b83f2bb/`; the report is empty and no
+scored measurements exist. Inspection found that scene training performed full
+route solving and learned only after successful scene composition, tying useful
+local connection collection to unrelated ground repair and route completion.
+
+Native training now requests bounded full-action discovery directly and returns
+its independently proved connections before resource-label/ground-detour search.
+Engine learns that one loaded window's connections and finishes the training
+request without scene expansion/subdivision. The ordinary candidate pool and
+physical authority proofs are unchanged. A training result reports
+`catalog-trained` with no complete route; processed requests and complete training
+routes are distinct statistics. Frozen queries still solve afresh under the
+ordinary scene/resource algorithm and pass independent physical verification.
+
+The Engine regression retains connections from a no-route result with exactly
+one local discovery. Existing generated-flight train/freeze tests retain exact
+flight authority and verify complete frozen service routes. A new N-API fixture
+trains connections, freezes, then solves a different query and passes common
+physical replay with unchanged catalog size. All 141 Rust unit tests and two
+authored-action tests pass, as do 24 N-API fixtures and 446 TS tests. Release
+N-API build, feature-enabled all-target Clippy, Rustfmt and package checks pass.
+No new full-population performance result is claimed by this fix alone.
+
+## Make V1 preparation part of algorithm configuration, 2026-11-14
+
+The untrained full-population TS attempts were canceled without final reports.
+Their configuration incorrectly treated missing optional CLI flags as permission
+to change the measured V1 preparation lifecycle. No results from those canceled
+attempts are accepted. The user excludes fresh TS baseline and stress runs.
+
+V1 now requires a nested preparation policy with positive training and warmup
+counts. Defaults specify ten catalog-training requests and two warmup requests;
+the benchmark adapters provide tracked dataset-bound requests. The scored map02
+population remains fifty requests. Training shares ten scored queries because
+catalogs retain verified connections rather than completed routes; warmup uses
+separate goals and remains disjoint from scoring. Neither population is inferred
+from a scored offset. No unseen-query generalization claim follows from this run.
+
+Removed optional training/warmup CLI switches. Config files inherit algorithm
+defaults, and invalid preparation fails before workers are launched. The V1
+scoring entry requires matching training records, frozen per-worker catalogs and
+configured warmup counts; invalid warmup stops before scoring. Training timeout
+also stops preparation rather than continuing after catalog loss. Generic timing
+fixtures identify their own algorithm instead of bypassing V1 startup policy.
+New regressions cover defaults for all three V1 aliases, missing/zero policy,
+insufficient request sets, omitted training, unfrozen catalogs and failed warmup.
+Package formatting, lint, typecheck and all 446 tests pass. No new performance
+result is claimed by this configuration change.
 
 ## Frozen native six-request completion, 2026-11-14
 

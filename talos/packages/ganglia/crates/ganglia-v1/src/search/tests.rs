@@ -43,6 +43,26 @@ fn staged_work_consumes_snapshot_bound_catalog_actions() {
             .any(|s| s["connection"] == "catalog/rope")
     );
 }
+
+#[test]
+fn catalog_library_retrieval_uses_link_allowance_and_reports_omitted_proposals() {
+    let world = scene(vec![surface("a", 0.), surface("b", 10.)], vec![]);
+    let query = json!({"starts":[start("a",0.,0.,"available")],"goal":[10.,0.,0.]});
+    let mut catalog = (0..100)
+        .map(|i| connection(&format!("catalog/irrelevant-{i}"), 10., 10.5, 2.))
+        .collect::<Vec<_>>();
+    catalog.push(connection("catalog/useful", 0., 10., 2.));
+    let config = json!({"maxCandidates":0,"maxLinks":1,"physicalWork":{"step":1},
+        "catalogConnections":catalog});
+    let result = solve_snapshot(&world, &query, &config).unwrap();
+    complete(&result);
+    assert_eq!(result["diagnostics"]["truncated"], true);
+    assert!(
+        array(&result["route"]["segments"])
+            .iter()
+            .any(|s| s["connection"] == "catalog/useful")
+    );
+}
 fn complete(result: &Value) {
     assert_eq!(
         result["route"]["status"], "complete",
@@ -1047,7 +1067,8 @@ fn generated_catalog_train_freeze_reuses_flight_and_run_off_above_offset_navigat
         let mut engine = crate::engine::Engine::new(policy.clone(), snapshot.clone()).unwrap();
         engine.catalog("train").unwrap();
         let trained = engine.start(query.clone()).unwrap()["result"].clone();
-        complete(&trained);
+        assert_eq!(trained["reason"], "catalog-trained");
+        assert_ne!(trained["route"]["status"], "complete");
         let stats = engine.catalog("freeze").unwrap();
         assert_eq!(stats["actions"], 1);
         let frozen = engine.start(query.clone()).unwrap()["result"].clone();

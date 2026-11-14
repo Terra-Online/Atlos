@@ -4,6 +4,7 @@ export type { GangliaV1Config, GangliaV1Config as SolverConfig } from '#@/src/so
 export type {
   SceneInput,
   SolverSettings,
+  ServicePreparation,
   SolverInput,
   RouteQuery,
   RouteResult,

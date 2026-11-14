@@ -28,10 +28,19 @@ export interface SceneInput {
   };
 }
 
+/** Required work before a prepared algorithm is ready to serve requests. */
+export interface ServicePreparation {
+  /** Discover reusable connections, then freeze the catalog before serving. */
+  readonly trainingQueries: number;
+  /** Exercise the prepared service with explicitly declared requests before serving. */
+  readonly warmupQueries: number;
+}
+
 /** Execution identity shared by solver implementations. Algorithm policy is adapter-owned. */
 export interface SolverSettings {
   readonly algorithm: string;
   readonly batchConcurrency: number;
+  readonly preparation?: ServicePreparation;
 }
 
 export interface RouteQuery {

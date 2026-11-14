@@ -250,6 +250,28 @@ fn composition_rejects_discontinuity_and_expires_walk_boost() {
 }
 
 static CALLS: AtomicUsize = AtomicUsize::new(0);
+static TRAINING_CALLS: AtomicUsize = AtomicUsize::new(0);
+fn connections_without_route(_: &World, _: &Value, config: &Value) -> Result<Value, String> {
+    TRAINING_CALLS.fetch_add(1, Ordering::SeqCst);
+    assert_eq!(config["catalogTraining"], true);
+    assert_eq!(config["physicalWork"]["step"], 2);
+    Ok(json!({"route":{"status":"no-verified-route"},
+        "connections":[{"id":"proved-local-connection","state":"open","mode":"jump"}],
+        "diagnostics":{"truncated":true}}))
+}
+
+#[test]
+fn catalog_training_retains_connections_without_scene_completion_or_retries() {
+    let mut engine = Engine::with_search(json!({}), input(), connections_without_route).unwrap();
+    engine.catalog("train").unwrap();
+    let step = engine.start(query()).unwrap();
+    let result = finish(&mut engine, step);
+    assert_eq!(result["reason"], "catalog-trained");
+    assert_ne!(result["route"]["status"], "complete");
+    assert_eq!(TRAINING_CALLS.load(Ordering::SeqCst), 1);
+    assert_eq!(engine.catalog("freeze").unwrap()["actions"], 1);
+}
+
 fn trained(w: &World, q: &Value, c: &Value) -> Result<Value, String> {
     CALLS.fetch_add(1, Ordering::SeqCst);
     let mut r = success(w, q, c)?;

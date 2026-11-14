@@ -1,6 +1,7 @@
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import type { Case } from '#@/bench/run.ts';
 import type { SolverSettings } from '#@/src/solver/contract.ts';
 
 /** A child-process entry implements the IPC protocol in workers.ts. Dataset and
@@ -10,6 +11,8 @@ export interface BenchmarkAdapter {
   defaults: SolverSettings;
   entry: URL;
   catalogTraining?: boolean;
+  /** Dataset-bound requests fulfilling the algorithm's required startup policy. */
+  preparation?: { scene: string; training: readonly Case[]; warmup: readonly Case[] };
 }
 export async function loadAdapter(path?: string): Promise<BenchmarkAdapter> {
   const builtin = path === 'ganglia-v1-ts' || path === 'ganglia-v1-rust' ? path : undefined;

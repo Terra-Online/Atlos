@@ -23,14 +23,54 @@ The user-authorized shared 266-case mechanism definitions now live in
 queries, scenario setup, assertions and portable source references; raw assets
 remain local. The manifest requires runner adaptation and is not a plain
 `--workload` query array. It is selected and source-audited, not yet physically
-accepted. It supplements the required TS/Rust local and stress workloads in
-`AGENTS.md`; unsupported per-case setup must not be silently ignored.
+accepted. It supplements configured full-population performance acceptance in
+`AGENTS.md`; retained TS controls are reused and stress is opt-in. Unsupported
+per-case setup must not be silently ignored.
 
 The current draft implements the TS circular-waterwheel and bounded joint-box
 prototypes, alongside source export repairs and the shared acceptance definitions.
 It is not a completed map-scale acceptance or a measured speedup. Rust search has
 not been ported to the new joint-discovery or circular-contact rules; the shared
 verifier remains the acceptance authority.
+
+## Required V1 service preparation, 2026-11-14
+
+`GangliaV1Config.preparation` requires positive training and warmup request counts,
+defaulting to ten and two. The low-level solver factory constructs the kernel
+used for startup; service hosts train reusable physical connections, freeze the
+catalog and warm the same solver before declaring readiness. Prepared TS and
+native configs snapshot the nested policy.
+
+Native catalog training runs bounded physical discovery in one loaded window per
+request. It retains proved nonterminal connections even when no complete route
+exists, without resource-label search, ground-detour fallback or scene retries.
+Training returns `catalog-trained`, not a fabricated completed route. Frozen
+service queries still run ordinary route/resource search and independent replay.
+Frozen catalog retrieval ranks approach, traversal and remaining distance and
+admits the configured `maxLinks` allowance into the active query graph. Authored
+World actions remain available. Every selected catalog connection still passes
+authority and full trajectory replay; omitted proposals mark search truncated,
+and ordinary bounded fresh discovery remains available.
+
+The built-in benchmark adapters bind this policy to tracked map02 preparation
+requests independently of the scored workload. A normal full-population command
+scores all fifty requests and always executes preparation. Training overlaps ten
+scored requests; warmup uses separate goals. This is a trained full population,
+not an unseen holdout. Optional CLI training/warmup switches have been removed.
+Old flat policy files inherit required preparation from algorithm defaults.
+Explicit missing/disabled policy, absent training records, unfrozen catalogs,
+wrong warmup counts or invalid warmup cannot enter V1 scoring. A training timeout
+stops before scoring because worker replacement loses the catalog. Retained TS
+baseline reports are reused; fresh TS and stress runs are excluded by the user.
+
+The latest configured full-population attempt at `8db5fd94` processes all ten
+training requests and freezes 6,509 connections, but fails warmup before scoring.
+Its terminal status and log are in
+`.local/research/rust-configured-full50-8db5fd94/`. No benchmark remains active and
+no scored performance result exists. Failed warmup now emits each request's ID,
+route status, reason and partial state before rejecting readiness. The required
+startup lifecycle is implemented; successful native service readiness remains an
+algorithm acceptance gap.
 
 ## Rust rewrite integration, 2026-11-14
 
@@ -79,13 +119,11 @@ requests returning the same facts reuse identical bounded failures only inside
 the current query. Revision, coverage, continuation, joint poses, catalog or
 stage changes require new work. Stage 1 is omitted when no known actions or boost
 pickups distinguish it from stage 0. Subsequent queries always search afresh.
-The frozen `102e323c` six-request run now completes all requests with independent
-physical replay valid and no timeouts. Mean serial service time is 81.387 seconds;
-the slowest request takes 289.856 seconds. It uses one round, no training/warmup
-and no reference, so repeatability and paired cost/speedup remain unmeasured.
-These are local regressions; the complete local and long-distance workloads
-specified in `AGENTS.md` still require acceptance. Its adapter/data binding
-predates the noclip v106 update.
+The frozen `102e323c` small regression run completes its requests with independent
+physical replay valid and no timeouts. It omits training/warmup and predates the
+noclip v106 update, so it supplies no current service-performance result. Routine
+acceptance uses the configured full local population specified in `AGENTS.md`;
+long-distance stress is opt-in.
 
 Following-fact growth revalidates selected prefixes and retained partial/incumbent
 proofs. Every known default body remains present in later sparse Worlds even when
@@ -338,7 +376,8 @@ prepared memory and sampled peaks are reported. Per-worker phases overlap and
 must not be summed into wall time. No production solver, search budget or
 query-state cloning change is included.
 
-Runtime warmup is opt-in with a separate disjoint workload. Scored queries never
+V1 runtime warmup is required by its algorithm configuration and uses separately
+declared requests. Scored queries never
 serve as an excluded warm pass. Every measured round counts. Repeated rounds
 compare outcome hashes and truncation to the first measured round; one round
 does not establish repeatability. Existing caches and frozen catalog preparation
@@ -592,7 +631,7 @@ pass and serves a fixed in-memory snapshot to lane-local physical preparation ca
 No frontend, resource HTTP process or completed-route cache participates. Timed work
 includes query-specific normalization, search, physical windows, retries and any
 remaining lazy computation. Preparation and prewarm durations are reported separately;
-measured inclusive resource-adapter phase timers may overlap across concurrent lanes. The host-owned candidate timer is omitted; candidate search remains included in total batch wall time. JSON schema 5 adds deterministic modeled-travel-time quality summaries and optional fixed-reference comparisons. Complete non-partial routes contribute their total modeled seconds, including arrival overhead. A workload with missing/partial solutions has no total quality cost. Reference comparisons bind scene, source, consumed input content, game adapter and exact queries, while allowing different solver/configuration implementations. They report lost/gained solutions, per-query cost ratios, geometric mean ratio and worst ratio. Completion must be assessed before paired costs; a reference is not an optimality oracle. `--config` selects a complete serialized solver configuration; the report records the effective frozen policy. Warm/measured
+measured inclusive resource-adapter phase timers may overlap across concurrent lanes. The host-owned candidate timer is omitted; candidate search remains included in total batch wall time. JSON schema 5 adds deterministic modeled-travel-time quality summaries and optional fixed-reference comparisons. Complete non-partial routes contribute their total modeled seconds, including arrival overhead. A workload with missing/partial solutions has no total quality cost. Reference comparisons bind scene, source, consumed input content, game adapter and exact queries, while allowing different solver/configuration implementations. They report lost/gained solutions, per-query cost ratios, geometric mean ratio and worst ratio. Completion must be assessed before paired costs; a reference is not an optimality oracle. `--config` overrides algorithm defaults; required preparation remains present unless an explicitly invalid override is rejected. The report records the effective frozen policy. Warm/measured
 outcomes and truncation flags are compared per input. The resolved game-adapter kernel
 must match the benchmark checkout. Missing coverage requires offline preparation.
 

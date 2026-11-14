@@ -1,3 +1,5 @@
+import type { ServicePreparation } from '#@/src/solver/contract.ts';
+
 /** Fixed policy for one ganglia-v1 solver. Start from gangliaV1Defaults when
  * changing individual settings. Movement and scene snapshots are separate inputs.
  *
@@ -8,6 +10,11 @@
  */
 export interface GangliaV1Config {
   readonly algorithm: 'ganglia-v1' | 'ganglia-v1-ts' | 'ganglia-v1-rust';
+  /** Service startup trains reusable physical connections, freezes the catalog,
+   * then warms the same prepared solver. Native training discovers connections
+   * in one loaded window per request without requiring a complete scene route.
+   * Request populations belong to the host. */
+  readonly preparation: ServicePreparation;
   /** Candidate work per local search, renewed for other windows/arrivals/retries.
    * This is not a whole-query work limit. V1 caps optional discovery at 640 when
    * walking or known devices already provide a complete route. */
@@ -17,7 +24,7 @@ export interface GangliaV1Config {
   readonly maxShortcutCandidates: number;
   /** Boundary sampling distance in metres. Smaller spacing can increase work. */
   readonly sampleSpacing: number;
-  /** Retained action links per discovery call, not per complete scene query. */
+  /** Retained action links per discovery or catalog retrieval, not per scene query. */
   readonly maxLinks: number;
   /** Maximum global corridor/arrival attempts for one scene query. */
   readonly maxAttempts: number;
@@ -38,6 +45,7 @@ export interface GangliaV1Config {
 
 export const gangliaV1Defaults: GangliaV1Config = Object.freeze({
   algorithm: 'ganglia-v1',
+  preparation: Object.freeze({ trainingQueries: 10, warmupQueries: 2 }),
   maxCandidates: 8000,
   maxShortcutCandidates: 512,
   sampleSpacing: 1,
@@ -50,3 +58,14 @@ export const gangliaV1Defaults: GangliaV1Config = Object.freeze({
   margin: 8,
   maxTargetError: 3,
 });
+
+export function validateServicePreparation(policy: ServicePreparation | undefined) {
+  if (
+    !policy ||
+    !Number.isSafeInteger(policy.trainingQueries) ||
+    policy.trainingQueries < 1 ||
+    !Number.isSafeInteger(policy.warmupQueries) ||
+    policy.warmupQueries < 1
+  )
+    throw new Error('Ganglia V1 service requires positive trainingQueries and warmupQueries');
+}

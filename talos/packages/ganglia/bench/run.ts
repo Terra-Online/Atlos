@@ -4,6 +4,7 @@ import { isDeepStrictEqual } from 'node:util';
 
 import type { PreparedRouteSolver, RouteQuery, RouteResult } from '@opendfieldmap/ganglia';
 
+import { requirePreparedCatalog, type TrainedCatalog } from '#@/bench/preparation.ts';
 import { summarizeQuality } from '#@/bench/quality.ts';
 import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { evaluateRoute, verifyRoute } from '#@/src/evaluation/route.ts';
@@ -84,6 +85,7 @@ export async function runBenchmark(
     query: RouteQuery,
     result: RouteResult,
   ) => Promise<ReturnType<typeof evaluateRoute>>,
+  catalog?: TrainedCatalog,
 ) {
   const evaluate = async (query: RouteQuery, result: RouteResult) =>
     result.partial
@@ -99,6 +101,7 @@ export async function runBenchmark(
   try {
     if (!Number.isSafeInteger(rounds) || rounds < 1) throw new Error('Invalid benchmark rounds');
     if (!cases.length) throw new Error('Benchmark requires measured queries');
+    requirePreparedCatalog(solver.config, catalog, warmupCases);
     validateWarmup(cases, warmupCases);
     const warmupStarted = performance.now();
     intervals.warmup.startedMs = warmupStarted;
@@ -124,6 +127,21 @@ export async function runBenchmark(
       ),
     };
     intervals.warmup.endedMs = performance.now();
+    if (solver.config.preparation && warmup.quality.completed !== warmupCases.length) {
+      console.error(
+        JSON.stringify({
+          phase: 'service-not-ready',
+          warmup,
+          results: warm.map((result, index) => ({
+            id: warmupCases[index].id,
+            status: result.route.status,
+            reason: result.reason,
+            partial: result.partial,
+          })),
+        }),
+      );
+      throw new Error('Configured service warmup failed physical/completion validation');
+    }
     await onPhase?.('batch');
     intervals.queries.startedMs = performance.now();
     const samples: {
