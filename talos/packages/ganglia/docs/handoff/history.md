@@ -1,5 +1,42 @@
 # Route solver history and validation evidence
 
+## Native walking/search optimization, 2026-11-15
+
+The retained trial combines compact proven walking geometry, approximate resource
+frontier buckets (0.25 energy, 0.05 s recovery delay), weighted search ordering
+(1.5), immutable-World direct-proof reuse, prepared triangle normals and median
+BVH partitioning. Walking clearance remains physically checked; the representation
+bound is 2 cm, inside the unchanged independent verifier's 2.5 cm default.
+Frontier merging retains real state and records approximation as truncation.
+Catalog selection groups nearby transfer endpoints in 2 m cells without changing
+the sixteen-action selection limit or dropping prerequisites from a selected chain.
+
+Diagnostic sequence: compaction alone did not resolve the upper bottleneck;
+resource bucketing reduced lower-query labels; the weighted combination completed
+the lower query in about 0.71 s and upper query in 27.24 s. Spatial catalog diversity
+completed them in about 0.61 s and 20.97 s. Both routes passed common physical
+replay in those two-goal probes. These are profiling observations, not population
+speedup measurements. Artifacts are `.local/research/native-weighted-result.json`
+and `native-diverse-result.json`, with corresponding `/tmp/ganglia-native-*-probe.log`.
+
+Rejected experiments: adding all coarse corridor points to the runtime graph
+inflated it and timed out both diagnostic requests. Restricting runtime hints to
+protected transfer endpoints still worsened the upper case. Adding those endpoints
+only during training also worsened the upper diagnostic (41.19 s); that change was
+removed. No production map coordinates, witness-route hints or per-case budgets
+were introduced. Training, freeze, warmup and cooperative worker reuse remain.
+
+The retained TS timing report is reused without rerunning TS. A derived reference
+at `.local/research/ts-reference-v3/report.json` binds its original serial timings
+to the saved-route v3 verifier audit (46/50 accepted), preserving provenance and
+marking lifecycle totals as measured with the original verifier. The serial target
+is at most 794.705 ms/query against 1589.410 ms/query. No 2x claim is accepted yet.
+
+Validation of the retained batch: 148 Rust unit tests, two authored-action
+integration tests and 25 N-API common physical/lifecycle fixtures pass. Release
+build, Rustfmt, all-target N-API Clippy with warnings denied and diff checks pass.
+TS source and verifier are unchanged. Full-population measurement is next.
+
 ## Native capsule support coverage, 2026-11-15
 
 The active local objective is at least 2x TS serial throughput on the full normal

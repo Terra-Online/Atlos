@@ -1,5 +1,31 @@
 # Route solver handoff
 
+## Native walking/search optimization, 2026-11-15
+
+The Rust search retains exact chosen resource states while merging nearby energy
+and recovery-delay states for bounded approximate frontier search. Weighted goal
+ordering uses separate, unweighted pruning bounds. Returned routes still undergo
+independent physical replay and the unchanged modeled-cost comparison.
+
+Walking proofs remove collinear sample knots after validation, permit supported
+vertical representation error up to 2 cm, and reuse completed directed probes
+inside each immutable World. Placement or coverage changes create fresh caches.
+Triangle normals are prepared once, and BVH median partitioning avoids sorting
+whole subtrees repeatedly. Catalog ranking reserves its existing bounded graph
+for spatially distinct transfers, preserving all links of each admitted chain.
+
+The trained two-goal diagnostic completes with valid physical replay, but the
+upper query still spends substantial time rejecting full-window walking detours
+before subdivision. This is not full-population acceptance or a speedup claim.
+The 2x objective remains open. The next measurement uses all 50 ordinary map02
+requests, ten configured training requests, two warmups and one scored round.
+Rust changes remain local; stress and new TS timing runs are excluded.
+
+Validation of the retained batch: 148 Rust unit tests, two authored-action
+integration tests and 25 N-API common physical/lifecycle fixtures pass. Release
+build, Rustfmt, all-target N-API Clippy with warnings denied and diff checks pass.
+TS source and verifier are unchanged. Full-population measurement is next.
+
 ## Native capsule support coverage, 2026-11-15
 
 The active local objective is at least 2x TS serial throughput on the full normal

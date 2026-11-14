@@ -238,6 +238,7 @@ struct Node {
 #[derive(Clone, Debug)]
 pub(crate) struct Index {
     pub faces: Vec<Triangle>,
+    normals: Vec<Vec3>,
     nodes: Vec<Node>,
     pub scope: Option<crate::model::Bounds>,
 }
@@ -298,8 +299,21 @@ impl Index {
         {
             return Err("Invalid coverage bounds".into());
         }
+        let normals = faces
+            .iter()
+            .map(|face| {
+                let normal = cross(sub(face[1], face[0]), sub(face[2], face[0]));
+                let length = hypot(normal);
+                if length == 0. {
+                    [0.; 3]
+                } else {
+                    normal.map(|v| v / length)
+                }
+            })
+            .collect();
         let mut index = Self {
             faces,
+            normals,
             nodes: vec![],
             scope,
         };
@@ -340,7 +354,8 @@ impl Index {
             let axis = (0..3)
                 .max_by(|&a, &c| (b[a + 3] - b[a]).total_cmp(&(b[c + 3] - b[c])))
                 .unwrap();
-            ids.sort_by(|&a, &c| {
+            let middle = ids.len() / 2;
+            ids.select_nth_unstable_by(middle, |&a, &c| {
                 let a = bounds(&self.faces[a]);
                 let c = bounds(&self.faces[c]);
                 (a[axis] + a[axis + 3]).total_cmp(&(c[axis] + c[axis + 3]))
@@ -351,6 +366,9 @@ impl Index {
             self.nodes[slot].left = Some((l, r));
         }
         Ok(slot)
+    }
+    pub fn normal(&self, triangle: usize) -> Vec3 {
+        self.normals[triangle]
     }
     pub fn candidates(&self, b: Bounds3) -> Vec<usize> {
         let mut result = vec![];
@@ -475,12 +493,10 @@ impl Index {
         let mut best: Option<GroundHit> = None;
         for id in self.candidates(b) {
             let f = self.faces[id];
-            let n = cross(sub(f[1], f[0]), sub(f[2], f[0]));
-            let len = hypot(n);
-            if len == 0. || n[1] / len < slope.to_radians().cos() {
+            let normal = self.normals[id];
+            if normal[1] < slope.to_radians().cos() {
                 continue;
             }
-            let normal = n.map(|v| v / len);
             let y = if radius > 0. {
                 sphere_support(p, f, normal, radius)
             } else {
@@ -488,6 +504,7 @@ impl Index {
                 let z = p[2] - f[0][2];
                 let ab = sub(f[1], f[0]);
                 let ac = sub(f[2], f[0]);
+                let n = cross(ab, ac);
                 let u = (x * ac[2] - z * ac[0]) / -n[1];
                 let v = (ab[0] * z - ab[2] * x) / -n[1];
                 if u < -1e-10 || v < -1e-10 || u + v > 1. + 1e-10 {

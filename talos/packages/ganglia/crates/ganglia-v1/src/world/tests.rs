@@ -519,7 +519,12 @@ fn ground_repair_finds_supported_detour_past_multiple_blocked_chords() {
         assert!(distance(*path.points.first().unwrap(), a) < 1e-9);
         assert!(distance(*path.points.last().unwrap(), b) < 1e-9);
         assert!(path.length > distance(a, b));
-        assert!(path.points.iter().all(|p| (p[1] - 0.01).abs() < 1e-9));
+        assert!(path.points.iter().all(|&p| {
+            world
+                .standing_foot(p)
+                .unwrap()
+                .is_some_and(|feet| distance(feet, p) < 1e-5)
+        }));
         assert!(
             path.points
                 .windows(2)
@@ -692,7 +697,7 @@ fn capsule_support_bend_is_not_replaced_by_endpoint_interpolation() {
     assert!(
         path.points
             .windows(2)
-            .all(|p| distance(p[0], p[1]) <= 0.045 + 1e-10 && w.clear(p[0], p[1], 0.).unwrap())
+            .all(|p| w.clear(p[0], p[1], 0.).unwrap())
     );
 }
 
@@ -855,7 +860,7 @@ fn rounded_support_chords_preserve_standing_at_arbitrary_scheduler_cuts() {
                 .unwrap();
             let clearance = foot[1] - hit.position[1];
             assert!(
-                (0.005 - 1e-6..=0.01 + 1e-6).contains(&clearance),
+                (-1e-6..=0.02 + 1e-6).contains(&clearance),
                 "unsupported scheduler cut {foot:?}: {clearance}"
             );
         }
@@ -1140,7 +1145,7 @@ fn physical_stair_walk_is_supported_before_scheduling() {
                 .ground_at(p, 0.31, 0.31, w.movement.profile.radius)
                 .unwrap()
                 .unwrap();
-            assert!((0.005 - 1e-6..=0.01 + 1e-6).contains(&(p[1] - h.position[1])));
+            assert!((-1e-6..=0.02 + 1e-6).contains(&(p[1] - h.position[1])));
         }
     }
 }

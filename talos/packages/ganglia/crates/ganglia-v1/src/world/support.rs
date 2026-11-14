@@ -1,7 +1,7 @@
 //! Continuous support for a finite-radius foot. The horizontal footprint is
 //! exact; vertical tolerance only broadens the contact envelope. Actual feet
 //! and collision remain the walking proof's responsibility.
-use crate::geometry::{cross, dot, hypot, sub};
+use crate::geometry::{dot, sub};
 use crate::model::Vec3;
 
 #[derive(Clone, Copy)]
@@ -70,6 +70,7 @@ pub(super) fn intervals(
     a: Vec3,
     b: Vec3,
     triangle: [Vec3; 3],
+    unit: Vec3,
     radius: f64,
     tolerance: f64,
     output: &mut Vec<(f64, f64)>,
@@ -97,9 +98,6 @@ pub(super) fn intervals(
         }
         range
     };
-    let normal = cross(u, v);
-    let length = hypot(normal);
-    let unit = normal.map(|x| x / length);
     let centers = [a, b].map(|p| [p[0], p[1] + radius, p[2]]);
     let distances = centers.map(|point| dot(sub(point, p), unit));
     let projected = [0, 1].map(|j| std::array::from_fn(|i| centers[j][i] - distances[j] * unit[i]));

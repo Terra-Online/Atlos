@@ -282,6 +282,15 @@ impl Index {
         let mut selected = Vec::new();
         let mut used = HashSet::new();
         let mut alternatives = 0;
+        // Nearby launch/landing witnesses compete for one proposal slot. Keep
+        // their exact controls, but spend the bounded query graph on distinct
+        // transfers rather than many samples of the same trajectory.
+        let signature = |edge: usize| {
+            let e = &self.entries[edge];
+            let cell = |p: Point| p.map(|x| (x / 2.).floor() as i64);
+            (e.from, e.to, cell(e.start), cell(e.end))
+        };
+        let mut transfers = HashSet::new();
         let mut prefixes = HashMap::<usize, (f64, State)>::new();
         while let Some(state) = heap.pop() {
             crate::cancel::check()?;
@@ -303,9 +312,14 @@ impl Index {
                     .copied()
                     .filter(|i| !used.contains(i))
                     .collect();
-                if !additions.is_empty() && selected.len() + additions.len() <= limit {
+                if additions
+                    .iter()
+                    .any(|i| !transfers.contains(&signature(*i)))
+                    && selected.len() + additions.len() <= limit
+                {
                     for i in additions {
                         used.insert(i);
+                        transfers.insert(signature(i));
                         selected.push(self.entries[i].id.clone());
                     }
                     alternatives += 1;
@@ -360,8 +374,13 @@ impl Index {
         }
         let mut local = local.into_iter().collect::<Vec<_>>();
         local.sort_by(|a, b| a.1.total_cmp(&b.1).then(a.0.cmp(&b.0)));
-        for (edge, _) in local.into_iter().take(limit.saturating_sub(selected.len())) {
-            selected.push(self.entries[edge].id.clone());
+        for (edge, _) in local {
+            if selected.len() == limit {
+                break;
+            }
+            if transfers.insert(signature(edge)) {
+                selected.push(self.entries[edge].id.clone());
+            }
         }
         if std::env::var_os("GANGLIA_PROFILE").is_some() {
             eprintln!(

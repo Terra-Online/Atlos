@@ -136,7 +136,8 @@ pub struct World {
     components: Vec<usize>,
     authored_navigation: HashSet<usize>,
     ground_graph: std::sync::OnceLock<ground::Graph>,
-    ground_cache: std::sync::Arc<std::sync::Mutex<ground_cache::Cache>>,
+    ground_cache: std::sync::Arc<std::sync::Mutex<ground_cache::Cache<Option<GroundPath>>>>,
+    direct_cache: std::sync::Arc<std::sync::Mutex<ground_cache::Cache<GroundProbe>>>,
 }
 pub fn distance(a: Vec3, b: Vec3) -> f64 {
     hypot(sub(a, b))
@@ -465,6 +466,7 @@ impl World {
             authored_navigation,
             ground_graph: std::sync::OnceLock::new(),
             ground_cache: Default::default(),
+            direct_cache: Default::default(),
         };
         world.prepare_devices()?;
         Ok(world)
@@ -562,7 +564,14 @@ impl World {
     }
     /// Bounded canonical direct proof; no LazySP or ground-detour search.
     pub fn probe_ground(&self, a: Vec3, b: Vec3) -> Result<GroundProbe, String> {
-        ground::probe(self, a, b)
+        crate::cancel::check()?;
+        let key = [a, b].map(|p| p.map(f64::to_bits));
+        if let Some(probe) = self.direct_cache.lock().unwrap().get(&key) {
+            return Ok(probe);
+        }
+        let probe = ground::probe(self, a, b)?;
+        self.direct_cache.lock().unwrap().insert(key, probe.clone());
+        Ok(probe)
     }
     /// One directed optimistic navigation path, followed by bounded prefix
     /// canonical proofs. A rejection or exhausted budget makes no detour claim.

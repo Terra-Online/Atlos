@@ -92,8 +92,7 @@ fn support_intervals(
     Some(out)
 }
 // Navigation authorizes directed passage; physical inputs additionally need
-// continuous centerline support from raw terrain or eligible device roofs.
-// Capsule-radius support alone can bridge a crack with no surface underfoot.
+// continuous capsule support from raw terrain or eligible device roofs.
 fn physical_support(w: &World, a: Vec3, b: Vec3) -> bool {
     if w.snapshot["kind"] != "physical" {
         return true;
@@ -113,13 +112,11 @@ fn physical_support(w: &World, a: Vec3, b: Vec3) -> bool {
     for index in [&w.collision, &w.moving_support] {
         for id in index.candidates(query) {
             let face = index.faces[id];
-            let normal = cross(sub(face[1], face[0]), sub(face[2], face[0]));
-            if normal[1] <= 0.
-                || normal[1] / hypot(normal) < w.movement.max_slope.to_radians().cos()
-            {
+            let normal = index.normal(id);
+            if normal[1] < w.movement.max_slope.to_radians().cos() {
                 continue;
             }
-            super::support::intervals(a, b, face, radius, tolerance, &mut intervals);
+            super::support::intervals(a, b, face, normal, radius, tolerance, &mut intervals);
         }
     }
     intervals.sort_by(|a, b| a.0.total_cmp(&b.0));
@@ -424,8 +421,34 @@ fn direct_with_failure(
             return Ok(None);
         }
     }
+    compact(&mut refined);
     Ok(Some(refined))
 }
+// Proof sampling is not route representation. Remove collinear proof knots
+// before caching/compiling resource clocks: the geometric path is unchanged,
+// while flat walking no longer carries one allocation/phase per few centimetres.
+fn compact(points: &mut Vec<Vec3>) {
+    let mut length = 0;
+    for read in 0..points.len() {
+        let point = points[read];
+        while length >= 2 {
+            let first = sub(points[length - 1], points[length - 2]);
+            let second = sub(point, points[length - 1]);
+            let normal = cross(first, second);
+            if collision::dot(first, second) < 0.
+                || collision::dot(normal, normal)
+                    > 1e-20 * collision::dot(first, first) * collision::dot(second, second)
+            {
+                break;
+            }
+            length -= 1;
+        }
+        points[length] = point;
+        length += 1;
+    }
+    points.truncate(length);
+}
+
 // A triangle rounded by a sphere is convex; its upper support height is
 // concave over XZ. One face supporting both endpoints within the upper
 // clearance bound therefore supports the entire chord within that bound.
@@ -437,8 +460,11 @@ fn stable_clearance(w: &World, a: Vec3, b: Vec3) -> bool {
     let radius = w.movement.profile.radius;
     let tolerance =
         (number(&w.snapshot["input"]["ground"]["build"], "cellHeight", 0.1) * 3. + 0.01).max(0.02);
-    let low = 0.005 - 0.5e-6;
-    let high = 0.01 + 0.5e-6;
+    // The walking representation may approximate a rounded support face by
+    // a chord. Keep it clear and within 2 cm of support, below the independent
+    // verifier's 2.5 cm walking allowance; artificial 5 mm lift is not physics.
+    let low = 0.;
+    let high = 0.02;
     let center = |p: Vec3| [p[0], p[1] + radius - low, p[2]];
     let query = [
         a[0].min(b[0]) - radius,
@@ -452,12 +478,10 @@ fn stable_clearance(w: &World, a: Vec3, b: Vec3) -> bool {
     for index in [&w.collision, &w.moving_support] {
         for id in index.candidates(query) {
             let face = index.faces[id];
-            let normal = cross(sub(face[1], face[0]), sub(face[2], face[0]));
-            let length = hypot(normal);
-            if normal[1] <= 0. || normal[1] / length < w.movement.max_slope.to_radians().cos() {
+            let normal = index.normal(id);
+            if normal[1] < w.movement.max_slope.to_radians().cos() {
                 continue;
             }
-            let normal = normal.map(|v| v / length);
             let ha = collision::sphere_support(a, face, normal, radius);
             let hb = collision::sphere_support(b, face, normal, radius);
             // Phase-free roofs outside the ground query's upper range are

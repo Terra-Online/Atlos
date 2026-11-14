@@ -491,6 +491,8 @@ struct Label {
     dashes: usize,
     active: bool,
 }
+const SEARCH_WEIGHT: f64 = 1.5;
+
 #[derive(Clone, Copy)]
 struct Queue {
     cost: f64,
@@ -727,13 +729,14 @@ fn remaining_costs(
 
 #[derive(Clone, Copy)]
 struct GroundJob {
+    priority: f64,
     lower_bound: f64,
     from: usize,
     to: usize,
 }
 impl PartialEq for GroundJob {
     fn eq(&self, b: &Self) -> bool {
-        self.lower_bound == b.lower_bound && self.from == b.from && self.to == b.to
+        self.priority == b.priority && self.from == b.from && self.to == b.to
     }
 }
 impl Eq for GroundJob {}
@@ -744,8 +747,8 @@ impl PartialOrd for GroundJob {
 }
 impl Ord for GroundJob {
     fn cmp(&self, b: &Self) -> Ordering {
-        b.lower_bound
-            .total_cmp(&self.lower_bound)
+        b.priority
+            .total_cmp(&self.priority)
             .then_with(|| b.from.cmp(&self.from))
             .then_with(|| b.to.cmp(&self.to))
     }
@@ -2085,19 +2088,21 @@ fn solve_world(
                 queue.pop();
             }
             let next_label_cost = queue.peek().map_or(f64::INFINITY, |item| item.cost);
-            // The caller already owns a feasible route. More expensive optimistic
-            // labels/jobs cannot improve it; retain the caller's incumbent.
+            // Weighted ordering spends bounded work toward the goal. Pruning
+            // still uses the unweighted admissible bound on each popped item;
+            // priority is not a proof that the remaining frontier is exhausted.
             let cost_limit = config["costLimit"].as_f64().unwrap_or(f64::INFINITY);
-            if next_label_cost.min(ground_jobs.peek().map_or(f64::INFINITY, |j| j.lower_bound))
-                >= cost_limit
-            {
+            if queue.is_empty() && ground_jobs.is_empty() {
                 break;
             }
             if ground_jobs
                 .peek()
-                .is_some_and(|job| job.lower_bound <= next_label_cost)
+                .is_some_and(|job| job.priority <= next_label_cost)
             {
                 let job = ground_jobs.pop().unwrap();
+                if job.lower_bound >= cost_limit {
+                    continue;
+                }
                 ground_attempts += 1;
                 let p = graph.points[job.from];
                 let q = graph.points[job.to];
@@ -2174,6 +2179,9 @@ fn solve_world(
                 continue;
             }
             let label = arena[item.label].clone();
+            if label.cost + estimates[label.node] >= cost_limit {
+                continue;
+            }
             if label.stage == waypoints.len()
                 && goal_at(
                     graph.points[label.node],
@@ -2253,6 +2261,7 @@ fn solve_world(
                             // subtract it so normalization cannot raise the bound.
                             let travel = (distance(p, q) - 2e-5).max(0.) / maximum_walk_speed;
                             ground_jobs.push(GroundJob {
+                                priority: source_cost + travel + SEARCH_WEIGHT * estimates[b],
                                 lower_bound: source_cost + travel + estimates[b],
                                 from: label.node,
                                 to: b,
@@ -2535,18 +2544,25 @@ fn insert(
             && locomotion::continuation(a.state, b.state)
     };
     let dominates = |a: &Label, b: &Label| {
-        // Automatic sprint restart makes extra energy non-monotone. Only an
-        // identical resource continuation can replace a more costly prefix.
-        a.cost <= b.cost + EPS && a.state.energy == b.state.energy && a.state.delay == b.state.delay
+        // This is bounded approximate search, not a monotonic-energy proof.
+        // Keep the real selected state; quantization only limits which prefixes
+        // compete for the frontier. Every returned route is replayed exactly.
+        a.cost <= b.cost + EPS
+            && (a.state.energy / 0.25).floor() == (b.state.energy / 0.25).floor()
+            && (a.state.delay / 0.05).floor() == (b.state.delay / 0.05).floor()
     };
-    if row.iter().any(|&i| {
+    let approximate =
+        |a: &Label, b: &Label| a.state.energy != b.state.energy || a.state.delay != b.state.delay;
+    if let Some(&i) = row.iter().find(|&&i| {
         arena[i].active && comparable(&arena[i], &candidate) && dominates(&arena[i], &candidate)
     }) {
+        *truncated |= approximate(&arena[i], &candidate);
         return;
     }
     for &i in row.iter() {
         if arena[i].active && comparable(&candidate, &arena[i]) && dominates(&candidate, &arena[i])
         {
+            *truncated |= approximate(&candidate, &arena[i]);
             arena[i].active = false;
         }
     }
@@ -2572,7 +2588,7 @@ fn insert(
     }
     if arena[index].active {
         queue.push(Queue {
-            cost: arena[index].cost + estimates[arena[index].node],
+            cost: arena[index].cost + SEARCH_WEIGHT * estimates[arena[index].node],
             label: index,
         });
     } else {
