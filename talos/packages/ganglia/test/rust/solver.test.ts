@@ -7,6 +7,7 @@ import type { Surface, Vec3 } from '#@/src/geometry.ts';
 import { createPhysicalWorld } from '#@/src/model/world.ts';
 import type { Route } from '#@/src/route.ts';
 import type { RouteQuery } from '#@/src/solver/contract.ts';
+import { prepareGangliaV1Rust } from '#@/src/solver/ganglia-v1-rust.ts';
 import { gangliaV1Defaults, prepareRouteSolver } from '#@/src/solver/index.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 
@@ -79,6 +80,26 @@ const certify = (query: RouteQuery, route: Route, input = physical) => {
   );
   assert.equal(evaluation.valid, true, evaluation.issues.join('; '));
 };
+
+test('Rust startup learns physical connections without completing a query and freezes for service', async () => {
+  const solver = await prepareGangliaV1Rust(config, input);
+  try {
+    solver.setCatalogPhase('training');
+    const training = await solver.solve({ starts: [start([1, 0, 0])], goal: [17, 0, 0] });
+    assert.equal(training.reason, 'catalog-trained');
+    assert.notEqual(training.route.status, 'complete');
+    const actions = Number(solver.catalogStats().actions);
+    assert.ok(actions > 0);
+    solver.setCatalogPhase('frozen');
+    const query: RouteQuery = { starts: [start([1, 0, 0])], goal: [16.5, 0, 0] };
+    const served = await solver.solve(query);
+    assert.equal(served.route.status, 'complete');
+    certify(query, served.route);
+    assert.equal(solver.catalogStats().actions, actions);
+  } finally {
+    await solver.close();
+  }
+});
 
 test('Rust discovers a multihop route and emits replayable flight controls', async () => {
   const solver = await prepareRouteSolver(config, input);

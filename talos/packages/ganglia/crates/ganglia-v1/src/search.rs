@@ -1833,6 +1833,16 @@ fn solve_world(
         );
     }
     let max_labels = budget(&movement["locomotion"]["search"], "maxLabels", 256)?.max(2);
+    if config["catalogTraining"] == true {
+        // Startup learns independently proved connections. Resource labels and
+        // ground-detour repair answer a route query and cannot add catalog facts.
+        let mut connections = known;
+        connections.extend(graph.generated);
+        return Ok(json!({"route":{"status":"no-verified-route"},
+            "reason":"catalog-trained","connections":connections,
+            "diagnostics":{"truncated":truncated,"candidateAttempts":attempts,
+                "discovery":discovery,"groundProbes":ground_probes}}));
+    }
     profile("actions", &started, attempts);
     let max_expanded = budget(&movement["locomotion"]["search"], "maxExpanded", 100_000)?;
     let mut arena = Vec::<Label>::new();

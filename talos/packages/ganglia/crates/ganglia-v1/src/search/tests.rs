@@ -1047,7 +1047,8 @@ fn generated_catalog_train_freeze_reuses_flight_and_run_off_above_offset_navigat
         let mut engine = crate::engine::Engine::new(policy.clone(), snapshot.clone()).unwrap();
         engine.catalog("train").unwrap();
         let trained = engine.start(query.clone()).unwrap()["result"].clone();
-        complete(&trained);
+        assert_eq!(trained["reason"], "catalog-trained");
+        assert_ne!(trained["route"]["status"], "complete");
         let stats = engine.catalog("freeze").unwrap();
         assert_eq!(stats["actions"], 1);
         let frozen = engine.start(query.clone()).unwrap()["result"].clone();

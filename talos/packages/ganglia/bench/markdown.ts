@@ -131,7 +131,7 @@ export function benchmarkMarkdown(report: MarkdownReport): string {
     const training = report.catalogTraining;
     rows.push(
       `- Frozen static-action catalog: ${training.stats.added} actions, ${training.stats.scopes} scopes.`,
-      `- Catalog training (included in end-to-end time): ${number(training.wallMs / 1000)} s; ${training.ids.length} queries, ${training.completed} complete.`,
+      `- Catalog training (included in end-to-end time): ${number(training.wallMs / 1000)} s; ${training.ids.length} preparation queries, ${training.completed} complete routes. Connection training does not require a complete route.`,
     );
   }
   rows.push(

@@ -11,7 +11,9 @@ import type { ServicePreparation } from '#@/src/solver/contract.ts';
 export interface GangliaV1Config {
   readonly algorithm: 'ganglia-v1' | 'ganglia-v1-ts' | 'ganglia-v1-rust';
   /** Service startup trains reusable physical connections, freezes the catalog,
-   * then warms the same prepared solver. Request populations belong to the host. */
+   * then warms the same prepared solver. Native training discovers connections
+   * in one loaded window per request without requiring a complete scene route.
+   * Request populations belong to the host. */
   readonly preparation: ServicePreparation;
   /** Candidate work per local search, renewed for other windows/arrivals/retries.
    * This is not a whole-query work limit. V1 caps optional discovery at 640 when

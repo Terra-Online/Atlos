@@ -1,5 +1,33 @@
 # Route solver history and validation evidence
 
+## Native connection training without whole-route solving, 2026-11-14
+
+The configured run at `6b83f2bb` correctly stopped before scoring when its first
+training request hit the 300-second watchdog; total process time was 302.886
+seconds. Its log/status are retained in
+`.local/research/rust-configured-full50-6b83f2bb/`; the report is empty and no
+scored measurements exist. Inspection found that scene training performed full
+route solving and learned only after successful scene composition, tying useful
+local connection collection to unrelated ground repair and route completion.
+
+Native training now requests bounded full-action discovery directly and returns
+its independently proved connections before resource-label/ground-detour search.
+Engine learns that one loaded window's connections and finishes the training
+request without scene expansion/subdivision. The ordinary candidate pool and
+physical authority proofs are unchanged. A training result reports
+`catalog-trained` with no complete route; processed requests and complete training
+routes are distinct statistics. Frozen queries still solve afresh under the
+ordinary scene/resource algorithm and pass independent physical verification.
+
+The Engine regression retains connections from a no-route result with exactly
+one local discovery. Existing generated-flight train/freeze tests retain exact
+flight authority and verify complete frozen service routes. A new N-API fixture
+trains connections, freezes, then solves a different query and passes common
+physical replay with unchanged catalog size. All 141 Rust unit tests and two
+authored-action tests pass, as do 24 N-API fixtures and 446 TS tests. Release
+N-API build, feature-enabled all-target Clippy, Rustfmt and package checks pass.
+No new full-population performance result is claimed by this fix alone.
+
 ## Make V1 preparation part of algorithm configuration, 2026-11-14
 
 The untrained full-population TS attempts were canceled without final reports.

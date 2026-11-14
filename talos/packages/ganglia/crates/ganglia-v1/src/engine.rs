@@ -455,6 +455,9 @@ impl Engine {
             if let Err(error) = self.solve_window(loaded_world.unwrap()) {
                 return self.recover(Err(error));
             }
+            if self.catalog.training {
+                return Ok(self.finish("catalog-trained", false));
+            }
         }
         let result = self.drive();
         self.recover(result)
@@ -546,7 +549,9 @@ impl Engine {
         let mut config = self.config.clone();
         // Native search consumes the same PhysicalWork stage as V1. Catalog
         // entries are verified connections, never cached completed routes.
-        config["physicalWork"] = json!({"version":1,"step":stage});
+        config["physicalWork"] =
+            json!({"version":1,"step":if self.catalog.training { 2 } else { stage }});
+        config["catalogTraining"] = json!(self.catalog.training);
         if let Some(bank) = key.and_then(|k| self.catalog.banks.get(k)) {
             config["catalogConnections"] = json!(bank.values().collect::<Vec<_>>());
         }
@@ -1150,6 +1155,15 @@ impl Engine {
         let key = self.cache.front().unwrap().key.clone();
         let mut config = self.search_config(w.stage, Some(&key));
         config["fixedPlacements"] = json!(fixed);
+        if self.catalog.training {
+            // One loaded physical window supplies bounded, verified connections.
+            // A training request does not need a complete scene route, expanded
+            // windows or resource scheduling to retain those facts.
+            let result = (self.solve)(&world, &local, &config)?;
+            self.learn(&key, &result);
+            self.query.as_mut().unwrap().truncated |= truncated(&result);
+            return Ok(());
+        }
         let search_key = serde_json::to_string(&json!([key, local, config, q.following_facts,]))
             .map_err(|e| e.to_string())?;
         let mut failed_search = None;

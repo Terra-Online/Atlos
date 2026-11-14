@@ -8,6 +8,12 @@ used for startup; service hosts train reusable physical connections, freeze the
 catalog and warm the same solver before declaring readiness. Prepared TS and
 native configs snapshot the nested policy.
 
+Native catalog training runs bounded physical discovery in one loaded window per
+request. It retains proved nonterminal connections even when no complete route
+exists, without resource-label search, ground-detour fallback or scene retries.
+Training returns `catalog-trained`, not a fabricated completed route. Frozen
+service queries still run ordinary route/resource search and independent replay.
+
 The built-in benchmark adapters bind this policy to tracked map02 preparation
 requests independently of the scored workload. A normal full-population command
 scores all fifty requests and always executes preparation. Training overlaps ten

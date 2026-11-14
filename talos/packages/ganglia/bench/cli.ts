@@ -172,6 +172,7 @@ if (values.help) {
         const trained = {
           algorithm: 'approximate-static-actions' as const,
           ids: training.map((item) => item.id),
+          processed: training.length,
           wallMs: performance.now() - trainingStarted,
           completed: Math.min(
             ...results.map(
