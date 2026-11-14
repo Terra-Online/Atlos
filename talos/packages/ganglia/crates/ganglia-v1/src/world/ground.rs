@@ -398,14 +398,14 @@ fn direct_with_failure(
                     < -w.movement.step_down
                         - distance(previous, p) * w.movement.max_slope.to_radians().tan()
                         - 1e-7
-                || !w.clear(previous, p, 0.)?
+                || !w.walk_clear(previous, p)?
             {
                 *failure = GroundFailure::Clearance {
                     span: [previous, p],
                 };
                 return Ok(None);
             }
-        } else if !w.clear(p, p, 0.)? {
+        } else if !w.walk_clear(p, p)? {
             *failure = GroundFailure::Clearance { span: [p, p] };
             return Ok(None);
         }
@@ -520,7 +520,7 @@ fn replay_foot(w: &World, p: Vec3, failure: &mut GroundFailure) -> Result<Option
     } else {
         foot[1] + 0.005
     };
-    if !w.clear(foot, foot, 0.)? {
+    if !w.walk_clear(foot, foot)? {
         *failure = GroundFailure::Clearance { span: [p, foot] };
         return Ok(None);
     }
@@ -567,7 +567,7 @@ fn refine_supported_chord(
             *failure = GroundFailure::PhysicalSupport { span: [a, b] };
             return Ok(false);
         }
-        if !w.clear(a, b, 0.)? {
+        if !w.walk_clear(a, b)? {
             *failure = GroundFailure::Clearance { span: [a, b] };
             return Ok(false);
         }
@@ -591,7 +591,7 @@ fn refine_supported_chord(
                 return Ok(false);
             };
             foot[1] = hit.position[1] + 0.0075;
-            if !w.clear(foot, foot, 0.)? {
+            if !w.walk_clear(foot, foot)? {
                 *failure = GroundFailure::Clearance { span: [seed, foot] };
                 return Ok(false);
             }

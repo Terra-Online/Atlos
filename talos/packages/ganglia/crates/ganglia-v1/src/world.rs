@@ -616,6 +616,30 @@ impl World {
                 .sweep_capsule(a, b, self.movement.profile, inflation)?
                 .is_none())
     }
+    /// Walking uses the shared model's 1 cm raw-mesh contact allowance.
+    /// Coverage and explicit solid walls retain the full body; flight proofs
+    /// continue to use `clear` with the original capsule.
+    pub(crate) fn walk_clear(&self, a: Vec3, b: Vec3) -> Result<bool, String> {
+        let body = self.movement.profile;
+        self.require_coverage(a, b, body.radius)?;
+        if self.wall_blocked(a, b, 0.) {
+            return Ok(false);
+        }
+        let skin = 0.01_f64.min(body.radius / 2.).min(body.height / 4.);
+        let shape = Profile {
+            radius: body.radius - skin,
+            height: body.height - 2. * skin,
+        };
+        let shifted = |p: Vec3| [p[0], p[1] + skin, p[2]];
+        Ok(self
+            .collision
+            .sweep(shifted(a), shifted(b), shape, 0.)?
+            .is_none()
+            && self
+                .following_collision
+                .sweep(shifted(a), shifted(b), shape, 0.)?
+                .is_none())
+    }
     pub fn ground_at(
         &self,
         p: Vec3,

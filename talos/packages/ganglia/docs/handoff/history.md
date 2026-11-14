@@ -1,5 +1,53 @@
 # Route solver history and validation evidence
 
+## Prepared native connection graph, 2026-11-15
+
+The walking-only raw-contact correction passed its new N-API common-verifier
+regression (old artifact red, corrected artifact green). It reduced the previously
+worst lower route cost from 9.263 to 6.309 s in a focused replay, versus retained
+TS cost 6.024 s; upper latency still remained about 23 s. Artifacts are
+`.local/research/native-contact-result.json` and `native-catalog-profile-result.json`.
+
+Catalog inspection found roughly 28000 learned actions but no nearby witnesses for
+several required middle-corridor jumps. Training corridor samples supplied these
+without increasing the configured attempt budget. Merely ranking local actions by
+walking-leg overhead and prechecking redundant hops did not yield a connected query
+graph; its upper diagnostic timed out. A bounded runtime corridor-anchor trial also
+timed out. Both runtime-anchor and local-ranking experiments were removed.
+
+The retained replacement prepares physical walking connectivity among all learned
+endpoints. The inspected trained bank had 34532 actions but only 2343 distinct
+endpoints; its graph retained 6884 proved walking links. A frozen diagnostic completed
+and physically accepted the upper query in 1279.910 ms at cost 10.610448 s, and the
+worst lower-cost regression query in 1283.382 ms at cost 6.309413 s. Preparation took
+68.283 s. Evidence is `.local/research/native-roadmap-result.json` and
+`/tmp/ganglia-native-roadmap-probe.log`; this is not a population speedup claim.
+Subsequent static transfer-ranking reuse removes repeated navigation string/sort
+work, and walking-only passes no longer select unused catalog assets.
+
+Final validation covers 149 Rust unit tests plus two authored integration tests,
+26 N-API common physical/lifecycle fixtures, release native build, Rustfmt and
+feature-enabled all-target Clippy. The added TS fixture passes typecheck, lint and
+formatting. The navigation regression preserves a cheaper unknown arrival against
+an expensive known corridor; the existing excluded-witness test covers cached
+alternative selection. Complete-population performance/quality acceptance is next.
+
+## Full normal-population native check, 2026-11-15
+
+Commit `116bc4d` completed all 50 ordinary map02 requests in one scored round after
+ten training requests, freeze and two warmups. All 50 passed independent physical
+verification, with no timeout or worker recovery. The performance and modeled-cost
+goals failed: mean serial time was 12613.794 ms/query; paired cost geometric mean
+was 1.017768 and worst ratio 1.537557, exceeding unchanged limits 1.01 and 1.05.
+Service readiness was 49.505 s; end-to-end time was 703.402 s. No speedup is accepted.
+
+The lower/upper strata averaged 1876.070/23351.518 ms/query. The largest cost
+regressions occur in later lower-floor starts, especially ground-jump-23-1.
+The complete report and request journal are under
+`.local/research/native-optimized-50/`. This full-population result supersedes any
+inference from the earlier two-goal diagnostics. Further work must address both
+repeated walking-proof failures and catalog/local-improvement route quality.
+
 ## Native walking/search optimization, 2026-11-15
 
 The retained trial combines compact proven walking geometry, approximate resource

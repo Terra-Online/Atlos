@@ -487,3 +487,42 @@ test('Rust physical walking uses continuous raw support across a navigation gap'
     await solver.close();
   }
 });
+
+test('Rust walking admits raw mesh skin contact under the common verifier policy', async () => {
+  const floor: Surface = {
+    id: 'floor',
+    vertices: [
+      [-3, 0, -2],
+      [3, 0, -2],
+      [3, 0, 2],
+      [-3, 0, 2],
+    ],
+  };
+  const input: PhysicalInput = {
+    ...physical,
+    ground: { ...physical.ground, surfaces: [floor] },
+    collision: {
+      positions: [
+        -3, 0, -2, 3, 0, -2, 3, 0, 2, -3, 0, 2, -0.5, 0, 0, -0.5, 2, 0, 0.5, 2, 0, 0.5, 0, 0,
+      ],
+      indices: [0, 2, 1, 0, 3, 2, 4, 5, 6, 4, 6, 7],
+    },
+  };
+  const query: RouteQuery = { starts: [start([-1, 0.01, 0.295])], goal: [1, 0.01, 0.295] };
+  const solver = await prepareRouteSolver(
+    { ...config, maxCandidates: 0 },
+    { kind: 'physical', input },
+  );
+  try {
+    const result = await solver.solve(query);
+    assert.equal(result.route.status, 'complete');
+    assert.ok(result.route.segments.every((segment) => segment.mode === 'walk'));
+    certify(query, result.route, input);
+    const strict = createPhysicalVerifier(() => [createPhysicalWorld(input, 'complete')], {
+      walkContactTolerance: 0,
+    })(query, result.route);
+    assert.equal(strict.valid, false, 'the fixture actually exercises the mesh contact allowance');
+  } finally {
+    await solver.close();
+  }
+});

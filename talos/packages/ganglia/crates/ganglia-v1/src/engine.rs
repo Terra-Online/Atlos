@@ -591,6 +591,11 @@ impl Engine {
             }
         }
 
+        // The walking-only pass consumes no catalog assets. Defer selection
+        // until the action pass instead of attaching the same query twice.
+        if stage == 0 && !self.catalog.training {
+            return Ok(config);
+        }
         if let Some(bank) = key.and_then(|k| self.catalog.banks.get(k)) {
             if self.catalog.frozen
                 && let Some(index) = key.and_then(|k| self.catalog.prepared.get(k))
@@ -598,6 +603,7 @@ impl Engine {
                 let selected =
                     index.select(world, query, number(&self.config, "maxLinks", 64.) as usize)?;
                 config["catalogConnected"] = json!(selected.connects_goal);
+                config["catalogWalks"] = json!(selected.walks);
                 config["catalogTruncated"] = json!(selected.actions.len() < bank.len());
                 config["catalogConnections"] = json!(
                     selected
@@ -1249,6 +1255,14 @@ impl Engine {
         let mut config = self.search_config(w.stage, Some(&key), &world, &local)?;
         config["fixedPlacements"] = json!(fixed);
         if self.catalog.training {
+            // Training covers the corridor between its endpoints as well as
+            // endpoint neighborhoods. Hints propose physical action sources;
+            // they never authorize walking or become cached query answers.
+            config["corridorAnchors"] = json!(sample_corridor(
+                &q.proposal.as_ref().unwrap().points,
+                number(&self.config, "sampleSpacing", 2.),
+                number(&self.config, "maxLinks", 64.).max(1.) as usize,
+            ));
             // One loaded physical window supplies bounded, verified connections.
             // A training request does not need a complete scene route, expanded
             // windows or resource scheduling to retain those facts.
@@ -1585,6 +1599,23 @@ impl Window {
     }
 }
 
+// Bounded arc-length samples retain bends without copying the dense navigation
+// tessellation into an all-pairs physical graph. Each sample needs fresh support.
+fn sample_corridor(points: &[Point], spacing: f64, limit: usize) -> Vec<Point> {
+    let length: f64 = points.windows(2).map(|p| distance(p[0], p[1])).sum();
+    let spacing = spacing.max(length / limit as f64);
+    let mut hints = Vec::new();
+    let mut traversed = 0.;
+    for pair in points.windows(2) {
+        traversed += distance(pair[0], pair[1]);
+        if traversed >= spacing {
+            hints.push(pair[1]);
+            traversed = 0.;
+        }
+    }
+    hints
+}
+
 fn merge_placements(placements: &mut Vec<Value>, additions: &[Value]) -> Result<(), String> {
     for addition in additions {
         let id = addition["device"]
@@ -1707,7 +1738,12 @@ fn trace_clear(world: &World, route: &Value, query: &Value) -> Result<bool, Stri
             }
         }
         for pair in points.windows(2) {
-            if !world.clear(pair[0], pair[1], 0.)? {
+            let clear = if segment["mode"] == "walk" {
+                world.walk_clear(pair[0], pair[1])?
+            } else {
+                world.clear(pair[0], pair[1], 0.)?
+            };
+            if !clear {
                 return Ok(false);
             }
             if segment["mode"] == "walk" {

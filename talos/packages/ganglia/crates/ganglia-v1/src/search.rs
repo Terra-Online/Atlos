@@ -1087,6 +1087,15 @@ fn solve_world(
             }
         }
     }
+    if config["catalogTraining"] == true {
+        for hint in array(&config["corridorAnchors"]) {
+            if let Some(p) = geometry.project(point(hint)?, tolerance)
+                && geometry.clear(p, p, 0.)
+            {
+                graph.anchor(p);
+            }
+        }
+    }
     // Boundary samples supply takeoffs, landings and turns. Endpoints are retained
     // independently of polygon representatives, avoiding centre-only device detours.
     let spacing = number(config, "sampleSpacing", 2.)?;
@@ -1696,6 +1705,32 @@ fn solve_world(
         );
         graph.action_ids.insert(id.into());
         known.push(c.clone());
+    }
+    if stage >= 1 {
+        for pair in array(&config["catalogWalks"]) {
+            let a = point(&pair[0])?;
+            let b = point(&pair[1])?;
+            if let Some(crate::world::GroundProbe::Supported(path)) =
+                optional_proof(world.probe_ground(a, b).map(Some), &mut truncated)?
+                && distance(path.points[0], a) <= 1e-5
+                && distance(*path.points.last().unwrap(), b) <= 1e-5
+            {
+                let from = graph.anchor(a);
+                let to = graph.anchor(b);
+                graph.edge(
+                    from,
+                    to,
+                    Segment {
+                        mode: "walk".into(),
+                        times: walk_times(&path.points, speed),
+                        points: path.points,
+                        ..Default::default()
+                    },
+                    false,
+                    None,
+                );
+            }
+        }
     }
     let mut incoming_attempts = 0;
     if config["catalogTraining"] == true {

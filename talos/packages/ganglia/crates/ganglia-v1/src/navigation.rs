@@ -7,9 +7,12 @@ use crate::model::{Interaction, Portal, Surface, Vec3 as Point};
 use serde::{Deserialize, Serialize};
 #[cfg(test)]
 use serde_json::{Value, json};
+use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::collections::{BTreeMap, BinaryHeap, HashMap, HashSet};
 use topology::Topology;
+
+const TRANSFER_PENALTY: f64 = 10_000.;
 
 fn horizontal(a: Point, b: Point) -> f64 {
     (a[0] - b[0]).hypot(a[2] - b[2])
@@ -112,7 +115,16 @@ pub(crate) struct Navigation {
     max_vertical: f64,
 
     seams: HashMap<[i64; 3], BTreeMap<usize, Vec<Witness>>>,
+    transfers: RefCell<HashMap<usize, Vec<Transfer>>>,
 }
+struct Transfer {
+    key: String,
+    to: usize,
+    source: usize,
+    target: usize,
+    length: f64,
+}
+
 const CELL: Point = [8., 50., 8.];
 const ALTERNATIVES: usize = 4;
 
@@ -260,6 +272,7 @@ impl Navigation {
         self.graph = Topology::default();
         self.ids.clear();
         self.seams.clear();
+        self.transfers.get_mut().clear();
     }
     pub fn new(data: Option<Input>) -> Result<Self, String> {
         let Some(mesh) = data else {
@@ -270,6 +283,7 @@ impl Navigation {
                 ids: HashMap::new(),
                 max_vertical: 3.,
                 seams: HashMap::new(),
+                transfers: RefCell::default(),
             });
         };
         let vertical = mesh.options.max_vertical;
@@ -351,6 +365,7 @@ impl Navigation {
             ids,
             max_vertical: vertical,
             seams,
+            transfers: RefCell::default(),
         })
     }
 
@@ -360,10 +375,26 @@ impl Navigation {
         goal: Point,
         excluded: &HashSet<String>,
     ) -> Result<Option<Proposal>, String> {
-        if let Some(proposal) = self.plan_projected(arrivals, goal, excluded, false)? {
+        // A cheap known corridor already beats every unresolved transfer.
+        // Avoid materializing those geometric proposals until their lower bound
+        // can compete. The general search still handles disconnected endpoints,
+        // costly arrivals and unusually long known corridors.
+        if let Some(proposal) = self.plan_projected(arrivals, goal, excluded, false, false)? {
+            let rank = proposal.arrival.cost + proposal.edges.iter().map(Edge::rank).sum::<f64>();
+            let lower = arrivals
+                .iter()
+                .filter(|a| a.state == Availability::Available)
+                .map(|a| a.cost)
+                .fold(f64::INFINITY, f64::min)
+                + TRANSFER_PENALTY;
+            if rank < lower {
+                return Ok(Some(proposal));
+            }
+        }
+        if let Some(proposal) = self.plan_projected(arrivals, goal, excluded, false, true)? {
             return Ok(Some(proposal));
         }
-        self.plan_projected(arrivals, goal, excluded, true)
+        self.plan_projected(arrivals, goal, excluded, true, true)
     }
 
     fn plan_projected(
@@ -372,6 +403,7 @@ impl Navigation {
         goal: Point,
         excluded: &HashSet<String>,
         broad: bool,
+        allow_transfers: bool,
     ) -> Result<Option<Proposal>, String> {
         let Some(mesh) = &self.mesh else {
             return Ok(None);
@@ -473,7 +505,7 @@ impl Navigation {
                 break;
             }
             let component = self.graph.components[node];
-            if expanded_components.insert(component) {
+            if allow_transfers && expanded_components.insert(component) {
                 for (from, edge) in self.transfers(component, arrivals, goal, excluded)? {
                     transfers.entry(from).or_default().push(query_edges.len());
                     query_edges.push(edge);
@@ -583,90 +615,108 @@ impl Navigation {
         }
         selected.sort_unstable();
         selected.dedup();
-        let mut candidates: BTreeMap<(usize, usize), Vec<Edge>> = BTreeMap::new();
-        // Unknown transfers are query-directed finite proposals. Materialize
-        // only reached component interfaces. Cells exclude the source component
-        // before visiting representatives, so dense connected floors do not cause
-        // repeated broad projection, face cloning, or sorting. Both ends are
-        // retained vertices; physical support/flight validation remains in World.
-        // Nine representatives per component/cell and four alternatives per
-        // source face/target component define finite proposal coverage, not an
-        // equivalence claim with continuous nearest-surface projection.
+        let mut candidates = Vec::new();
+        let mut cached = self.transfers.borrow_mut();
         for from in selected {
-            for (source, &vertex) in mesh.surfaces[from].vertices.iter().enumerate() {
-                let origin = cell(vertex);
-                for dx in -2..=2 {
-                    for dy in -1..=1 {
-                        for dz in -2..=2 {
-                            let Some(groups) =
-                                self.seams
-                                    .get(&[origin[0] + dx, origin[1] + dy, origin[2] + dz])
-                            else {
+            if let std::collections::hash_map::Entry::Vacant(slot) = cached.entry(from) {
+                slot.insert(self.transfer_candidates(from, component)?);
+            }
+            let mut group = usize::MAX;
+            let mut emitted = 0;
+            for candidate in &cached[&from] {
+                let to = candidate.to;
+                let target_component = self.graph.components[to];
+                if group != target_component {
+                    group = target_component;
+                    emitted = 0;
+                }
+                // Geometry and ranking are static. Filter exclusions before
+                // limiting each group, so failures reveal all later witnesses.
+                if emitted == ALTERNATIVES || excluded.contains(&candidate.key) {
+                    continue;
+                }
+                candidates.push((
+                    from,
+                    Edge {
+                        key: candidate.key.clone(),
+                        to,
+                        length: candidate.length,
+                        points: vec![
+                            self.centers[from],
+                            mesh.surfaces[from].vertices[candidate.source],
+                            mesh.surfaces[to].vertices[candidate.target],
+                            self.centers[to],
+                        ],
+                        unresolved: true,
+                    },
+                ));
+                emitted += 1;
+            }
+        }
+        Ok(candidates)
+    }
+
+    fn transfer_candidates(&self, from: usize, component: usize) -> Result<Vec<Transfer>, String> {
+        let mesh = self.mesh.as_ref().unwrap();
+        let mut candidates = Vec::new();
+        for (source, &vertex) in mesh.surfaces[from].vertices.iter().enumerate() {
+            crate::cancel::check()?;
+            let origin = cell(vertex);
+            for dx in -2..=2 {
+                for dy in -1..=1 {
+                    for dz in -2..=2 {
+                        let Some(groups) =
+                            self.seams
+                                .get(&[origin[0] + dx, origin[1] + dy, origin[2] + dz])
+                        else {
+                            continue;
+                        };
+                        for (&target_component, witnesses) in groups {
+                            if target_component == component {
                                 continue;
-                            };
-                            for (&target_component, witnesses) in groups {
-                                if target_component == component {
+                            }
+                            for witness in witnesses {
+                                let to = witness.surface;
+                                let target = mesh.surfaces[to].vertices[witness.vertex];
+                                if (vertex[1] - target[1]).abs() > 50.
+                                    || horizontal(vertex, target) > 16.
+                                {
                                     continue;
                                 }
-                                for witness in witnesses {
-                                    let to = witness.surface;
-                                    let target = mesh.surfaces[to].vertices[witness.vertex];
-                                    if (vertex[1] - target[1]).abs() > 50.
-                                        || horizontal(vertex, target) > 16.
-                                    {
-                                        continue;
-                                    }
-                                    let key = format!(
+                                let path = [self.centers[from], vertex, target, self.centers[to]];
+                                candidates.push(Transfer {
+                                    key: format!(
                                         "transfer:{}:{}:{source}:{}",
                                         mesh.surfaces[from].id,
                                         mesh.surfaces[to].id,
                                         witness.vertex
-                                    );
-                                    // Reject the actual retained witness before ranking;
-                                    // a failed cheapest seam must reveal other witnesses.
-                                    if excluded.contains(&key) {
-                                        continue;
-                                    }
-                                    let path =
-                                        [self.centers[from], vertex, target, self.centers[to]];
-                                    let length =
-                                        path.windows(2).map(|p| distance(p[0], p[1])).sum::<f64>();
-                                    let list =
-                                        candidates.entry((from, target_component)).or_default();
-                                    let score = length
-                                        + if path[3][1] - path[0][1] > 2.1 {
-                                            1_000_000.
-                                        } else {
-                                            10_000.
-                                        };
-                                    let rank = list.partition_point(|old| {
-                                        old.rank().total_cmp(&score).then_with(|| old.key.cmp(&key))
-                                            != Ordering::Greater
-                                    });
-                                    if rank < ALTERNATIVES {
-                                        list.insert(
-                                            rank,
-                                            Edge {
-                                                key,
-                                                to,
-                                                length,
-                                                points: path.to_vec(),
-                                                unresolved: true,
-                                            },
-                                        );
-                                        list.truncate(ALTERNATIVES);
-                                    }
-                                }
+                                    ),
+                                    to,
+                                    source,
+                                    target: witness.vertex,
+                                    length: path.windows(2).map(|p| distance(p[0], p[1])).sum(),
+                                });
                             }
                         }
                     }
                 }
             }
         }
-        Ok(candidates
-            .into_iter()
-            .flat_map(|((from, _), edges)| edges.into_iter().map(move |edge| (from, edge)))
-            .collect())
+        let rank = |candidate: &Transfer| {
+            candidate.length
+                + if self.centers[candidate.to][1] - self.centers[from][1] > 2.1 {
+                    1_000_000.
+                } else {
+                    TRANSFER_PENALTY
+                }
+        };
+        candidates.sort_by(|a, b| {
+            self.graph.components[a.to]
+                .cmp(&self.graph.components[b.to])
+                .then_with(|| rank(a).total_cmp(&rank(b)))
+                .then_with(|| a.key.cmp(&b.key))
+        });
+        Ok(candidates)
     }
 }
 impl Edge {
@@ -685,7 +735,7 @@ impl Edge {
                 if self.points.last().unwrap()[1] - self.points[0][1] > 2.1 {
                     1_000_000.
                 } else {
-                    10_000.
+                    TRANSFER_PENALTY
                 }
             } else {
                 0.
@@ -807,6 +857,22 @@ mod tests {
         // A proposal remains hypothetical: its crossing must be physically
         // solved before it can become a route.
         assert!(!uphill.protected.is_empty());
+    }
+
+    #[test]
+    fn cheap_unknown_arrival_can_beat_an_expensive_known_corridor() {
+        let nav = navigation(vec![face("goal", 0., 0.), face("other", 5., 0.)], vec![]);
+        let mut arrivals = start(0.);
+        arrivals[0].id = "expensive".into();
+        arrivals[0].cost = 20_000.;
+        let mut cheap = start(5.).remove(0);
+        cheap.id = "cheap".into();
+        arrivals.push(cheap);
+        let proposal = nav
+            .plan(&arrivals, [0., 0., 0.], &HashSet::new())
+            .unwrap()
+            .unwrap();
+        assert_eq!(proposal.arrival.id, "cheap");
     }
 
     #[test]

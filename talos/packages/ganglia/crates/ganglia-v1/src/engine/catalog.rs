@@ -1,5 +1,7 @@
 //! Frozen navigation index for proposing connected action chains. Navigation is
 //! optimistic: Search still proves every walk, action and resource transition.
+#[path = "catalog/roadmap.rs"]
+mod roadmap;
 use super::{Point, horizontal, point};
 use crate::{model::Interaction, world::World};
 use serde_json::Value;
@@ -18,8 +20,10 @@ struct Entry {
 pub(super) struct Selection {
     pub actions: Vec<String>,
     pub connects_goal: bool,
+    pub walks: Vec<[Point; 2]>,
 }
 pub(super) struct Index {
+    roadmap: roadmap::Roadmap,
     components: HashMap<String, usize>,
     forward: Vec<Vec<usize>>,
     entries: Vec<Entry>,
@@ -170,7 +174,9 @@ impl Index {
                 serde_json::json!({"native":"catalog","phase":"index","components":count,"entries":entries.len(),"bank":bank.len()})
             );
         }
+        let roadmap = roadmap::Roadmap::prepare(world, &entries)?;
         Ok(Self {
+            roadmap,
             components,
             forward: dag,
             entries,
@@ -207,6 +213,35 @@ impl Index {
         limit: usize,
     ) -> Result<Selection, String> {
         let goal = point(&query["goal"])?;
+        let starts = query["starts"]
+            .as_array()
+            .ok_or("Missing starts")?
+            .iter()
+            .filter(|s| s["state"] == "available")
+            .map(|s| Ok((point(&s["position"])?, s["cost"].as_f64().unwrap_or(0.))))
+            .collect::<Result<Vec<_>, String>>()?;
+        let mut destinations = query["waypoints"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(point)
+            .collect::<Result<Vec<_>, _>>()?;
+        destinations.push(goal);
+        if let Some(mut path) = self.roadmap.select(world, &starts, &destinations)? {
+            let mut seen = HashSet::new();
+            path.actions.retain(|id| seen.insert(*id));
+            if path.actions.len() <= limit {
+                return Ok(Selection {
+                    actions: path
+                        .actions
+                        .into_iter()
+                        .map(|i| self.entries[i].id.clone())
+                        .collect(),
+                    connects_goal: true,
+                    walks: path.walks,
+                });
+            }
+        }
         let interaction: Option<Interaction> = if query["interaction"].is_null() {
             None
         } else {
@@ -391,6 +426,7 @@ impl Index {
         Ok(Selection {
             actions: selected,
             connects_goal,
+            walks: Vec::new(),
         })
     }
 }

@@ -1,5 +1,48 @@
 # Route solver handoff
 
+## Prepared native connection graph, 2026-11-15
+
+Catalog training now samples the coarse corridor as well as endpoint neighborhoods.
+Freeze builds `engine/catalog/roadmap`: exact learned action endpoints plus nearby
+walking links independently proved by World. Spatial representatives propose links
+without merging endpoints. Queries attach supported starts, ordered waypoints and
+goals, then pass selected actions and walking spans to the normal resource search.
+Walking spans are rechecked against the current World, including placements; the
+prepared graph proposes a corridor rather than certifying a resource-feasible route.
+If it cannot connect a request, the existing catalog/discovery path remains.
+
+World walking uses the shared model's 1 cm raw-mesh contact allowance while keeping
+full-body coverage and explicit walls unchanged. Flight sweeps remain strict. A
+N-API regression passes default common verification and fails zero-contact-tolerance
+verification; it fails against the earlier native artifact. No TS/verifier code changed.
+
+Navigation reuses static transfer candidates and their ranking, applies query
+exclusions before taking alternatives, and skips unknown transfer enumeration when
+a known corridor beats its lower bound. New Worlds/navigation inputs own fresh
+prepared state; no complete-query answers or failed-query exclusions are cached.
+
+The trained real-map diagnostic now physically accepts the upper route and the
+previously worst-cost lower route. The earlier graph artifact measured about
+1.28 s for each and 68.28 s readiness. This is diagnostic evidence, not full-population
+speedup. Full 50-request validation of the final prepared artifact is next; the 2x
+objective remains active and all Rust work remains local.
+
+## Full normal-population native check, 2026-11-15
+
+Commit `116bc4d` completed all 50 ordinary map02 requests in one scored round after
+ten training requests, freeze and two warmups. All 50 passed independent physical
+verification, with no timeout or worker recovery. The performance and modeled-cost
+goals failed: mean serial time was 12613.794 ms/query; paired cost geometric mean
+was 1.017768 and worst ratio 1.537557, exceeding unchanged limits 1.01 and 1.05.
+Service readiness was 49.505 s; end-to-end time was 703.402 s. No speedup is accepted.
+
+The lower/upper strata averaged 1876.070/23351.518 ms/query. The largest cost
+regressions occur in later lower-floor starts, especially ground-jump-23-1.
+The complete report and request journal are under
+`.local/research/native-optimized-50/`. This full-population result supersedes any
+inference from the earlier two-goal diagnostics. Further work must address both
+repeated walking-proof failures and catalog/local-improvement route quality.
+
 ## Native walking/search optimization, 2026-11-15
 
 The Rust search retains exact chosen resource states while merging nearby energy
