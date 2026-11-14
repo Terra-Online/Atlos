@@ -366,6 +366,18 @@ multipart transport regression. The six failures are identical to the v106 patch
 baseline run against the same current Ganglia workspace, with all assertions
 retained. This source migration makes no route performance or acceptance claim.
 
+The completed release is `a6d8781f62e482d4`: seven scenes, 594 archives,
+28,741,574,762 stored bytes and 11,608/11,608 view bindings. Its 297 fallback views
+remain unconfirmed target visibility. `oem-check` passes again after removing
+the old v104 and intermediate releases. All 15 photo filters were re-exported.
+World and standalone viewer builds pass with chunk-size advisories. The final
+generated source passes lint with warnings and nine focused fixture/decoder/
+transport tests. The World multipart-byte accounting regression passes all five
+client tests; application/worker typechecks and scoped ESLint pass. Browser
+checks on Apple Metal confirm map02 target framing uses the baked key, 15 filter
+choices and depth of field work, with zero failed assets. Map01 also renders
+the new format. No solver benchmark or physical-route rebake was run.
+
 ## Noclip v106 integration, 2026-11-14
 
 Advanced the maintained upstream archive from `978acf5b` to

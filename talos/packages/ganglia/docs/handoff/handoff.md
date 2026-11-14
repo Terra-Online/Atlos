@@ -283,9 +283,10 @@ visibility. Moving-platform decode transfers and initial-pose framing are
 maintained in the renderer patch. Noclip is pinned to `1a8dfb80` (package format
 v114). The maintained patches preserve the physical-input accessor and adapt
 multipart resource accounting, CPU instance bounds and the animated-material
-look builder. Seven scene packages pass manifest/archive inventory checks;
-fresh companion/navigation/view bindings and GPU visual acceptance govern catalog
-rollout. A package or view rebuild does not rebind retained physical-route assets
+look builder. Release `a6d8781f62e482d4` contains seven verified scene packages and
+11,608 bound point views, including 297 context-only fallbacks. World map02 target
+framing accepts its baked key, with photography and depth of field exercised in
+Apple Metal. A package or view rebuild does not rebind retained physical-route assets
 or certify solver results against new geometry. Solver and World routing source
 are unchanged by this upstream update.
 
