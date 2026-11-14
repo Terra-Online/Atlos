@@ -1,5 +1,36 @@
 # Route solver history and validation evidence
 
+## Circular waterwheel and conveyor acceptance correction, 2026-11-14
+
+The user reconfirmed the earlier waterwheel decision: model a traversable circular
+surface/domain, assuming player adjustment on the blades, while preserving source
+geometry, external obstacles and entry checks. Platform phase and waiting are
+explicitly excluded. Current exported wheel animation and terminal-pose static
+collision are insufficient evidence of this model. Source inspection did not
+establish an already delivered circular adapter in standalone Ganglia or the
+workspace; no migration-loss claim is supported.
+
+For conveyor stepping, swept support proposes positions, while the actual contact
+run must fit one source-derived box pose. The route overlay already consumes
+selected `supportBoxes`, and the annotator emits one `use` box for a conveyor
+contact run. It does not display the whole sweep. This annotation is separate
+from proving that all contacts in that run fit the same fixed box.
+
+The private real-scene suite under the Atlos root `.local/validation-250/` contains
+266 requests, including twelve multi-box and four circular-waterwheel capability
+cases. Conveyor cases 184–187 were corrected to use one source-derived fixed pose
+and require both contact support and final-pose-only visualization. Other request
+coordinates are preserved. The new capability cases remain unrun; source-reference
+checks and existing focused tests do not establish their physical feasibility,
+mechanism exercise or performance. No solver or renderer algorithm changed.
+
+Before integration onto the latest Rust branch, focused validation on the prior
+local source passed seven existing Ganglia moving-route annotation tests and four
+World moving-bounds/route-inspection tests. These are not test results for the
+new branch baseline. The regenerated input audit
+resolves 707 source references across 121 files. These checks verify the input
+definitions and existing annotation behavior, not the new real-scene routes.
+
 ## Frozen native six-request completion, 2026-11-14
 
 The no-training, no-warmup, one-worker/lane, one-round run at clean `102e323c`

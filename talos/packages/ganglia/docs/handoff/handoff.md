@@ -1,5 +1,32 @@
 # Route solver handoff
 
+## Algorithm prototype collaboration, 2026-11-14
+
+`chan/algo-progression` starts from `misakavan/3d-preview` and its draft PR targets
+that branch. The retained TypeScript solver in `src/v1/` is the algorithm prototype;
+`crates/ganglia-v1/` owns the Rust implementation. Shared `src/model/`,
+`src/evaluation/` and public Solver contracts require coordinated changes.
+
+At the start of each development round, fetch and merge the latest
+`origin/misakavan/3d-preview` into the prototype branch. Resolve conflicts while
+preserving both implementations and their acceptance contracts. Push coherent,
+validated milestones to the existing draft PR. Keep shared history intact;
+update the PR description to the actual delivered scope at each milestone.
+This is a development workflow, not an unattended synchronization job.
+
+Update this file in the same commit as changes to current behavior, ownership,
+contracts or remaining gaps. Record attempted approaches, outcomes, exact input
+and code bindings, checks and unrun acceptance in `history.md`. Keep raw game
+inputs and profiles in ignored `.local/`; a Git push does not transfer them.
+The 266-case mechanism suite is selected and source-audited, not yet physically
+accepted. It supplements the required TS/Rust local and stress workloads in
+`AGENTS.md`; unsupported per-case setup must not be silently ignored.
+
+The first algorithm milestone is the agreed circular-waterwheel model and
+single-pose conveyor stepping semantics. Multi-box discovery follows; performance
+claims require fixed-input paired validation. The initial draft changes handoff
+records only and contains no new solver implementation or measured speedup.
+
 ## Rust rewrite integration, 2026-11-14
 
 Native placement revalidation retains each piece's original local query and
@@ -603,7 +630,24 @@ strategies remain in the companion history.
 
 The working snapshot assumes completed tasks, enabled and powered facilities, and open doors. Geometry, body clearance, collision and applicable hazards still constrain passage. Factory region centres can serve as teleport arrivals under the fully traversable factory assumption. The fixed map02 snapshot uses daytime. Preserve these assumptions in result interpretation and source selection.
 
-Moving rocks, lotus supports, conveyor boxes, elevators and seesaws use the user-approved phase-free model. Horizontal motion primarily supplies swept support. Vertical motion supplies directed transport connections. Periodic timing, boarding windows, waiting policies and selectable-floor control remain broader modeling work.
+Moving rocks, lotus supports, conveyor boxes, elevators and seesaws use the user-approved phase-free model. Horizontal motion primarily supplies swept support. Vertical motion supplies directed transport connections. Platform phase synchronization and waiting are explicitly outside the current acceptance scope, as reconfirmed on 2026-11-14. Selectable-floor control is a separate unresolved contract.
+
+Waterwheels have a previously agreed model: a traversable circular surface/domain,
+assuming the player adjusts position on the blades. Derive its axis, pivot and
+blade extent from source geometry and motion; preserve external obstacles and
+entry clearance. Per-phase blade placement and waiting are not required. The
+current export retains animation samples and terminal-pose static collision,
+which does not implement this circular domain. Inspection of the standalone
+Ganglia checkout and the current workspace did not establish a delivered circular
+waterwheel adapter; do not describe this as a new modeling decision or a proven
+migration regression.
+
+Conveyor stepping uses swept support to find a candidate box position. The
+selected contact run must fit one feasible source-derived box pose. Display only
+that used pose (`family: conveyor`, `role: use`), rather than the sweep envelope
+or catalogue endpoint poses. The existing route annotator selects a used pose;
+that visual annotation alone does not prove that a whole walk along the sweep
+fits the same fixed box. The local acceptance cases now check both conditions.
 
 Following stepping boxes may be arranged within their authored activity region. The output records required placements. Activation, guidance and box-moving time are omitted from modeled travel cost. Current query success establishes the declared model and input coverage. Independent execution replay, perturbation tolerance and live-game timing remain separate acceptance work.
 
@@ -889,8 +933,10 @@ The boost planner compares one reachable pickup and its accelerated tail. Ground
 | Device family | Current model and remaining boundary |
 | --- | --- |
 | Fixed ropes/ziplines and bounce devices | Exported identities, directed endpoints, supported attachment and model-based swept motion. Authored state/timing still defines applicability. |
-| Moving rocks, lotus supports, conveyor boxes and elevators | Phase-free swept support and directed vertical transport. Exact periodic phase, waiting and selectable-floor semantics remain open. |
-| Seesaws | Exported moving support. Angular timing and phase remain open. |
+| Moving rocks, lotus supports and elevators | Phase-free swept support and directed vertical transport. Phase and waiting are excluded from current acceptance; selectable-floor semantics remain open. |
+| Conveyor stepping boxes | Swept candidate support with a single feasible used pose per stepping contact run. Route visualization emits that used box; acceptance must also verify full-run support by the same pose. |
+| Waterwheels | Agreed traversable circular domain with player adjustment, external-obstacle checks and valid entry. Animation samples and terminal-pose collision are exported; the circular-domain adapter is not established. |
+| Seesaws | Exported sampled support poses under the same phase-free assumption; phase and waiting are excluded from current acceptance. |
 | Forklifts | Actual lifting-rack subtree and endpoint control poses. Vehicle-body collision remains static. Retained export audit covers 18 map01 and 5 map02 objects. Real-point and visual acceptance remain limited. |
 | Following stepping boxes | Placement sampling inside the authored activity sphere, supported/collision-checked placement, reconstructed box-top support and used-position output. Retained audit covers 23 map01 and 9 map02 boxes. |
 | Steam and other hazards | Applicable exported exclusions participate in planning. Complete map-wide hazard coverage remains an audit item. |
