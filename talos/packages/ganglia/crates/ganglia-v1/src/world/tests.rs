@@ -557,3 +557,139 @@ fn ground_detours_ignore_unloaded_proposals_without_granting_access() {
     );
     assert!(world.standing_foot([3.1, 0., 2.1]).is_err());
 }
+
+#[test]
+fn surface_landing_projection_selects_interior_edges_and_requested_layer() {
+    let mut value = snapshot(CollisionGeometry::default());
+    value["input"]["ground"]["surfaces"] = json!([
+        {"id":"lower","vertices":[[1.,0.,-2.],[5.,0.,-2.],[5.,0.,2.],[1.,0.,2.]]},
+        {"id":"upper","vertices":[[1.,10.,-2.],[5.,10.,-2.],[5.,10.,2.],[1.,10.,2.]]}
+    ]);
+    let world = World::new(value).unwrap();
+    assert_eq!(
+        world.project_to_surface("lower", [2., 8., 0.]).unwrap(),
+        Some([2., 0., 0.])
+    );
+    assert_eq!(
+        world.project_to_surface("upper", [2., 8., 0.]).unwrap(),
+        Some([2., 10., 0.])
+    );
+    assert_eq!(
+        world.project_to_surface("lower", [-1., 0., 1.]).unwrap(),
+        Some([1., 0., 1.])
+    );
+    assert_eq!(
+        world.project_to_surface("lower", [8., 3., 4.]).unwrap(),
+        Some([5., 0., 2.])
+    );
+}
+
+#[test]
+fn surface_landing_projection_uses_three_dimensional_slope_distance() {
+    let mut value = snapshot(CollisionGeometry::default());
+    value["input"]["ground"]["surfaces"] = json!([
+        {"id":"slope","vertices":[[0.,0.,0.],[2.,2.,0.],[2.,2.,2.],[0.,0.,2.]]}
+    ]);
+    let world = World::new(value).unwrap();
+    let projected = world
+        .project_to_surface("slope", [1., 0., 1.])
+        .unwrap()
+        .unwrap();
+    assert!(distance(projected, [0.5, 0.5, 1.]) < 1e-10);
+    assert_eq!(
+        world.project_to_surface("slope", [3., 3., 1.]).unwrap(),
+        Some([2., 2., 1.])
+    );
+}
+
+#[test]
+fn surface_landing_projection_rejects_bad_bindings_and_has_no_vertical_support() {
+    let mut value = snapshot(CollisionGeometry::default());
+    value["input"]["ground"]["surfaces"] = json!([
+        {"id":"vertical","vertices":[[0.,0.,0.],[0.,1.,0.],[0.,1.,1.]]}
+    ]);
+    let world = World::new(value).unwrap();
+    assert!(world.project_to_surface("missing", [0., 0., 0.]).is_err());
+    assert!(
+        world
+            .project_to_surface("vertical", [f64::NAN, 0., 0.])
+            .is_err()
+    );
+    assert_eq!(
+        world.project_to_surface("vertical", [1., 0., 0.]).unwrap(),
+        None
+    );
+}
+
+#[test]
+fn nonlinear_raw_support_retains_real_walk_bends_before_costing() {
+    // Local raw triangles around a captured failing chord. Both supplied feet
+    // are valid, but the common physical trace bends down between them.
+    let fixture: Value =
+        serde_json::from_str(include_str!("fixtures/nonlinear-walk.json")).unwrap();
+    let w = World::new(fixture["snapshot"].clone()).unwrap();
+    let a: Vec3 = serde_json::from_value(fixture["a"].clone()).unwrap();
+    let b: Vec3 = serde_json::from_value(fixture["b"].clone()).unwrap();
+    let path = w.ground_path(a, b).unwrap().unwrap();
+    assert_eq!(path.points[0], a);
+    assert_eq!(*path.points.last().unwrap(), b);
+    assert!(path.length > distance(a, b) + 0.0003);
+    assert!((path.cost - path.length / w.movement.speed).abs() < 1e-12);
+    for pair in path.points.windows(2) {
+        let count = (distance(pair[0], pair[1]) / (w.movement.profile.radius / 4.).max(0.025))
+            .ceil()
+            .max(1.) as usize;
+        let replay: Vec<_> = (0..=count)
+            .map(|i| {
+                let seed = collision::mix(pair[0], pair[1], i as f64 / count as f64);
+                let support = w
+                    .ground_at(
+                        seed,
+                        w.movement.max_vertical,
+                        w.movement.max_vertical,
+                        w.movement.profile.radius,
+                    )
+                    .unwrap()
+                    .unwrap();
+                let clearance = seed[1] - support.position[1];
+                let mut feet = seed;
+                if !(0.005 - 1e-6..=0.01 + 1e-6).contains(&clearance) {
+                    feet[1] = support.position[1] + 0.005;
+                }
+                feet
+            })
+            .collect();
+        assert!(distance(replay[0], pair[0]) < 1e-5);
+        assert!(distance(*replay.last().unwrap(), pair[1]) < 1e-5);
+        assert!((path_length(&replay) - distance(pair[0], pair[1])).abs() < 1e-5);
+        assert!(replay.windows(2).all(|p| w.clear(p[0], p[1], 0.).unwrap()));
+    }
+}
+
+#[test]
+fn capsule_support_bend_is_not_replaced_by_endpoint_interpolation() {
+    let mut collision = floor(-2., 2., -2., 2., 0.);
+    merge(
+        &mut collision,
+        CollisionGeometry {
+            positions: vec![-1., 0.2, -1., -1., 0.2, 1., 0., 0., 1., 0., 0., -1.],
+            indices: vec![0, 1, 2, 0, 2, 3],
+        },
+    );
+    let mut input = snapshot(collision);
+    input["input"]["ground"]["surfaces"] = json!([
+        {"id":"navigation","vertices":[[-2.,0.,-2.],[4.,0.,-2.],[-2.,0.,4.]]}
+    ]);
+    let w = World::new(input).unwrap();
+    let a = w.standing_foot([-0.06, 0., 0.]).unwrap().unwrap();
+    let b = w.standing_foot([0.06, 0., 0.]).unwrap().unwrap();
+    let path = w.ground_path(a, b).unwrap().unwrap();
+    assert_eq!(path.points.first(), Some(&a));
+    assert_eq!(path.points.last(), Some(&b));
+    assert!(path.length > distance(a, b) + 1e-5);
+    assert!(
+        path.points
+            .windows(2)
+            .all(|p| distance(p[0], p[1]) <= 0.045 + 1e-10 && w.clear(p[0], p[1], 0.).unwrap())
+    );
+}

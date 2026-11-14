@@ -2,6 +2,7 @@
 //! Generated support is a triangle mesh, independent of a TypeScript/Recast build.
 //! A projection is only a support proposal: walking and flight methods additionally
 //! validate the full swept body against collision, walls and declared coverage.
+mod boundaries;
 mod collision;
 mod devices;
 mod flight;
@@ -33,6 +34,15 @@ pub struct Projection {
     pub surface: String,
     pub position: Vec3,
     pub distance: f64,
+}
+/// An uncovered source edge interval, clipped to an XZ query rectangle.
+/// Search chooses insets and validates physical support and motion separately.
+#[derive(Clone, Debug)]
+pub struct Boundary {
+    pub surface: String,
+    pub points: [Vec3; 2],
+    /// Unit horizontal normal pointing into the source polygon.
+    pub inward: Vec3,
 }
 #[derive(Clone, Debug)]
 pub struct GroundPath {
@@ -427,6 +437,22 @@ impl World {
     }
     pub fn known_actions(&self) -> &[Connection] {
         &self.connections
+    }
+    /// Return positive-length polygon edge portions without outgoing passage.
+    /// Entry apertures are subtracted as a union; incoming and point portals
+    /// remove no edge length. Points retain edge order and interpolated height.
+    pub fn support_boundaries(&self, bounds: Bounds) -> Result<Vec<Boundary>, String> {
+        boundaries::query(self, bounds)
+    }
+    /// Closest geometric point on one supplied support polygon's triangle fan.
+    /// Unknown IDs and non-finite points are errors; a polygon without usable
+    /// support triangles returns None. Search owns range and physical checks.
+    pub fn project_to_surface(&self, surface_id: &str, p: Vec3) -> Result<Option<Vec3>, String> {
+        if !finite(p) {
+            return Err("Invalid surface projection point".into());
+        }
+        let surface = self.surface(surface_id).ok_or("Unknown support surface")?;
+        Ok(ground::closest_on_surface(surface, p))
     }
     pub fn surface(&self, id: &str) -> Option<&Surface> {
         self.surface_ids.get(id).map(|&i| &self.surfaces[i])

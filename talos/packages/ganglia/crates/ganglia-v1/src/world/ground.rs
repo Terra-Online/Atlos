@@ -64,6 +64,18 @@ fn closest(p: Vec3, t: [Vec3; 3]) -> Vec3 {
         .min_by(|&a, &b| distance(p, a).total_cmp(&distance(p, b)))
         .unwrap()
 }
+pub(super) fn closest_on_surface(surface: &Surface, p: Vec3) -> Option<Vec3> {
+    let vertices = &surface.vertices;
+    (1..vertices.len() - 1)
+        .filter_map(|i| {
+            let triangle = [vertices[0], vertices[i], vertices[i + 1]];
+            // Match the support index's fan eligibility; vertical faces cannot
+            // supply landing support even when their 3D area is nonzero.
+            (cross(sub(triangle[1], triangle[0]), sub(triangle[2], triangle[0]))[1].abs() > 1e-12)
+                .then(|| closest(p, triangle))
+        })
+        .min_by(|&a, &b| distance(p, a).total_cmp(&distance(p, b)))
+}
 pub(super) fn project(
     w: &World,
     p: Vec3,
@@ -490,6 +502,13 @@ pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, S
         };
         let mut p = ground.position;
         p[1] = standing_height(seed[1], p[1], mesh_support);
+        // Support projection may introduce roundoff in XZ. Keep already valid
+        // supplied endpoints exact so walking joins retain their witnesses.
+        if t == 0. && distance(p, a) <= 1e-6 {
+            p = a;
+        } else if t == 1. && distance(p, b) <= 1e-6 {
+            p = b;
+        }
         if let Some(&previous) = out.last() {
             let delta = p[1] - previous[1];
             if delta
@@ -509,7 +528,93 @@ pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, S
         }
         out.push(p);
     }
-    Ok(Some(out))
+    // Ground samples are proposals until their interpolated chords replay on
+    // raw capsule support. Rounded triangle edges can bend the supported feet
+    // between two valid endpoints; retain those bends before computing cost.
+    let mut refined = vec![out[0]];
+    let mut budget = 100_000;
+    for pair in out.windows(2) {
+        if !refine_supported_chord(w, pair[0], pair[1], 0, &mut budget, &mut refined)? {
+            return Ok(None);
+        }
+    }
+    Ok(Some(refined))
+}
+fn replay_foot(w: &World, p: Vec3) -> Result<Option<Vec3>, String> {
+    let Some((ground, mesh_support)) = w.ground_support(
+        p,
+        w.movement.max_vertical,
+        w.movement.max_vertical,
+        w.movement.profile.radius,
+    )?
+    else {
+        return Ok(None);
+    };
+    let mut foot = ground.position;
+    let clearance = p[1] - foot[1];
+    foot[1] = if (mesh_support && clearance.abs() <= 1e-6)
+        || (0.005 - 1e-6..=0.01 + 1e-6).contains(&clearance)
+    {
+        p[1]
+    } else {
+        foot[1] + 0.005
+    };
+    Ok(w.clear(foot, foot, 0.)?.then_some(foot))
+}
+fn refine_supported_chord(
+    w: &World,
+    a: Vec3,
+    b: Vec3,
+    depth: usize,
+    budget: &mut usize,
+    out: &mut Vec<Vec3>,
+) -> Result<bool, String> {
+    // Match the independent standing trace's sampling density. Refinement is
+    // bounded; exhaustion rejects this proposal rather than returning an
+    // unverified chord. Every accepted pair is swept with its actual feet.
+    if depth >= 16 || *budget == 0 {
+        return Ok(false);
+    }
+    let step = (w.movement.profile.radius / 4.).max(0.025) * 0.9;
+    let count = (distance(a, b) / step).ceil().max(1.) as usize;
+    if count > *budget {
+        return Ok(false);
+    }
+    *budget -= count;
+    if depth == 0 {
+        for endpoint in [a, b] {
+            let Some(foot) = replay_foot(w, endpoint)? else {
+                return Ok(false);
+            };
+            if distance(foot, endpoint) > 1e-5 {
+                return Ok(false);
+            }
+        }
+    }
+    if count == 1 {
+        if !w.clear(a, b, 0.)? {
+            return Ok(false);
+        }
+        out.push(b);
+        return Ok(true);
+    }
+    let mut trace = vec![a];
+    for i in 1..count {
+        let seed = mix(a, b, i as f64 / count as f64);
+        let Some(foot) = replay_foot(w, seed)? else {
+            return Ok(false);
+        };
+        trace.push(foot);
+    }
+    trace.push(b);
+    // Canonicalization can increase 3D span length, so subdivision is checked
+    // again on actual feet rather than assuming planar spacing is sufficient.
+    for pair in trace.windows(2) {
+        if !refine_supported_chord(w, pair[0], pair[1], depth + 1, budget, out)? {
+            return Ok(false);
+        }
+    }
+    Ok(true)
 }
 #[derive(Clone)]
 struct Label(f64, usize);

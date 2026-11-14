@@ -728,3 +728,95 @@ fn ranked_discovery_reaches_late_multihop_landings_after_many_essential_distract
     );
     assert!(result["diagnostics"]["candidateAttempts"].as_u64().unwrap() <= 2000);
 }
+
+#[test]
+fn descending_targets_keep_early_slots_among_many_same_floor_components() {
+    let mut snapshot = scene(vec![surface("base", 0.)], vec![]);
+    snapshot["movement"]["model"]["maxHorizontalSpeed"] = json!(8.);
+    snapshot["movement"]["model"]["maxJumpHeight"] = json!(1.);
+    let world = crate::world::World::new(json!({"kind":"surfaces","input":snapshot})).unwrap();
+    let mut graph = Graph {
+        points: vec![],
+        edges: vec![],
+        generated: vec![],
+        action_ids: Default::default(),
+        anchors: Default::default(),
+    };
+    graph.node([0., 20., 0.]);
+    for i in 0..24 {
+        let angle = i as f64 * 0.2;
+        graph.node([angle.cos(), 20., angle.sin()]);
+    }
+    let deep = graph.node([4., 0., 1.]);
+    let components = (0..graph.points.len()).map(Some).collect::<Vec<_>>();
+    let ranked = rank_action_targets(&graph, 0, &world, 1., &components).unwrap();
+    assert!(ranked.iter().position(|&id| id == deep).unwrap() < 3);
+}
+
+#[test]
+fn upper_ledge_and_lateral_deep_landing_survive_horizontal_corridor_sampling() {
+    let upper =
+        json!({"id":"upper","vertices":[[-3.,20.,-3.],[3.,20.,-3.],[3.,20.,12.],[-3.,20.,12.]]});
+    let lower = json!({"id":"lower","vertices":[[5.,0.,8.],[9.,0.,8.],[9.,0.,12.],[5.,0.,12.]]});
+    let mut snapshot = scene(vec![upper, lower], vec![]);
+    snapshot["movement"]["model"]["maxJumpHeight"] = json!(1.);
+    snapshot["movement"]["model"]["maxHorizontalSpeed"] = json!(3.);
+    snapshot["movement"]["runAirSpeed"] = json!(3.);
+    let query = json!({"starts":[{"id":"start","position":[0.,20.,-2.],"state":"available","cost":0.}],"goal":[7.,0.,10.]});
+    let result = solve_snapshot(
+        &snapshot,
+        &query,
+        &json!({"maxCandidates":4000,"maxLinks":32,"sampleSpacing":1.}),
+    )
+    .unwrap();
+    complete(&result);
+    assert!(array(&result["route"]["segments"]).iter().any(|s| {
+        let points = array(&s["points"]);
+        (s["mode"] == "jump" || s["mode"] == "drop")
+            && points.first().unwrap()[1].as_f64().unwrap()
+                - points.last().unwrap()[1].as_f64().unwrap()
+                > 19.
+    }));
+}
+
+#[test]
+fn continuous_landing_inside_large_lower_polygon_connects_to_grounded_goal() {
+    // Every fixed lower-floor center/radial sample is underneath the upper
+    // platform, while its perimeter is outside jump range. A safe landing lies
+    // in the lower polygon's interior beyond the platform footprint.
+    let upper =
+        json!({"id":"upper","vertices":[[-3.,20.,-3.],[3.,20.,-3.],[3.,20.,3.],[-3.,20.,3.]]});
+    let lower =
+        json!({"id":"lower","vertices":[[-40.,0.,-40.],[40.,0.,-40.],[40.,0.,40.],[-40.,0.,40.]]});
+    let mut snapshot = scene(vec![upper, lower], vec![]);
+    snapshot["movement"]["model"]["maxJumpHeight"] = json!(1.);
+    snapshot["movement"]["model"]["maxHorizontalSpeed"] = json!(4.);
+    snapshot["movement"]["runAirSpeed"] = json!(4.);
+    let query = json!({"starts":[{"id":"upper","position":[0.,20.,0.],"cost":0.,"state":"available"}],"goal":[30.,0.,30.]});
+    let result = solve_snapshot(
+        &snapshot,
+        &query,
+        &json!({"maxCandidates":4000,"maxLinks":16,"sampleSpacing":100.}),
+    )
+    .unwrap();
+    complete(&result);
+    let flight = array(&result["route"]["segments"])
+        .iter()
+        .find(|s| {
+            let points = array(&s["points"]);
+            s["mode"] == "jump"
+                && points.first().unwrap()[1].as_f64().unwrap()
+                    - points.last().unwrap()[1].as_f64().unwrap()
+                    > 19.
+        })
+        .unwrap();
+    let end = point(array(&flight["points"]).last().unwrap()).unwrap();
+    assert!(end[0].abs() < 15. && end[2].abs() < 15. && end[1] < 0.02);
+    assert!(end[0].abs() > 3. || end[2].abs() > 3.);
+    assert!(flight["flight"].is_object());
+    assert!(
+        array(&result["route"]["segments"])
+            .last()
+            .is_some_and(|s| s["mode"] == "walk")
+    );
+}

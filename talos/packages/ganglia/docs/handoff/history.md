@@ -1,5 +1,57 @@
 # Route solver history and validation evidence
 
+## Native boundary discovery and supported walking, 2026-11-14
+
+The changed premise after `a9388c7` is that native World accepts the independent
+TS descent witness and nearby natural takeoffs, while sampled graph coverage
+misses the useful landing interior. Diagnostic flight replay agrees to numerical
+precision; these reference coordinates never enter production sampling. Search
+now ranks the horizontal corridor, interleaves height strata and samples exposed
+support intervals after subtracting outgoing portal apertures. Boundary sampling
+alone admits a 36.13 m descent but does not complete the captured window. Bounded
+source-relative continuous landing proposals through World polygon projection
+complete it, sharing the existing 8,000-attempt budget. A synthetic lower platform
+with obstructed center/radials and distant perimeter reproduces the previous
+failure and protects the interior landing behavior.
+
+The first complete native trace fails unchanged common physical replay because
+four walking chords omit capsule-support height bends. Merely validating their
+endpoints is insufficient. World now subdivides actual 3D spans to 90% of
+`max(0.025, radius / 4)`, queries raw support for inserted feet and sweeps every
+resulting span. Canonicalization can increase length, so bounded refinement
+rechecks the resulting spans. Exhaustion rejects the proposal. Length and cost
+include these bends before scheduling. A slope-to-floor regression and a local
+60-triangle fixture cover the failure. The four original spans and the complete
+rescheduled route pass unchanged common replay.
+
+Full-scene matched evidence is `/tmp/ganglia-native-supported-comparison.json`,
+with retained TS reference `/tmp/ganglia-ts-native-comparison.json`. The workload
+is resource-relocation offset 10, limit 1, map02, one worker/lane, one round, no
+training or warmup. Native completes in 16,839.317 ms, batch 16,839.434 ms and
+end-to-end 22,966.766 ms. TS service is 67,143.217 ms, batch 67,143.351 ms and
+end-to-end 73,353.018 ms. Batch speedup is 3.987269x and end-to-end speedup is
+3.193877x. Physical replay passes without issues; cost ratio is 0.943722, native
+cost 7.251676835146807 versus 7.68412422083312. Both routes complete, native uses
+two jumps, and native diagnostics mark truncation. One round leaves repeatability
+unmeasured. This is one-request acceptance, not whole-map or complete-rewrite
+acceptance.
+
+The measured source is `a9388c7` plus this checkpoint's dirty changes, digest
+`30db13378d63d5077795c89b9247032b1dc80f28b1d625de1308632cde6c1461`.
+Loaded native binary SHA-256 is
+`ac3ed500f5d31b9f90352f9e7249127949a32f85b34379e32f0213f22d354a69`.
+The report binds dataset and game-adapter hashes; common verification runs after
+the timed batch. Captured core result and verdict are
+`/tmp/ganglia-native-supported-window-result.json` and its `.evaluation.json`.
+
+Consolidated validation passes 92 Rust unit tests, two authored-action integration
+tests, twelve N-API fixtures, all-target Clippy with warnings denied, release N-API
+build, Rust formatting, TypeScript checking, lint, matched-source formatting and
+diff checks. The new scene-partial fixture checks native terminal publication,
+approach-only certification and cancellation before prefix IO. No shared verifier
+source changed. The retained TypeScript suite's prior 438-pass result remains
+bound to its earlier checkpoint; it was not rerun for these native-only changes.
+
 ## Rust world integration, 2026-11-14
 
 The native rewrite begins at Atlos `d35e4997`, retaining the TypeScript solver and

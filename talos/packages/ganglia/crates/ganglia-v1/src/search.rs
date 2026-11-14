@@ -598,20 +598,21 @@ fn solve_world(
     let proximity = |p: Point| {
         let near = anchors
             .iter()
-            .map(|&q| distance(p, q))
+            .map(|&q| horizontal(p, q))
             .fold(f64::INFINITY, f64::min);
         let mut corridor = f64::INFINITY;
         for arrival in starts.iter().filter(|a| a["state"] == "available") {
             if let Ok(mut from) = point(&arrival["position"]) {
                 for to in waypoints.iter().copied().chain(std::iter::once(goal)) {
                     let delta = geometry::sub(to, from);
-                    let length = geometry::dot(delta, delta);
+                    let length = delta[0] * delta[0] + delta[2] * delta[2];
                     let t = if length > 0. {
-                        (geometry::dot(geometry::sub(p, from), delta) / length).clamp(0., 1.)
+                        (((p[0] - from[0]) * delta[0] + (p[2] - from[2]) * delta[2]) / length)
+                            .clamp(0., 1.)
                     } else {
                         0.
                     };
-                    corridor = corridor.min(distance(p, lerp(from, to, t)));
+                    corridor = corridor.min(horizontal(p, lerp(from, to, t)));
                     from = to;
                 }
             }
@@ -642,17 +643,178 @@ fn solve_world(
             *entry = candidate;
         }
     }
-    let mut selected = regions.into_values().collect::<Vec<_>>();
-    selected.sort_by(|a, b| a.0.total_cmp(&b.0).then_with(|| a.1.id.cmp(&b.1.id)));
     let face_budget = sample_budget.div_ceil(4);
-    if selected.len() > face_budget {
-        truncated |= stage >= 2;
-        selected.truncate(face_budget);
+    let stratum = world.movement.model.max_jump_height.max(3.);
+    let mut bands = std::collections::BTreeMap::<i64, Vec<_>>::new();
+    for candidate in regions.into_values() {
+        bands
+            .entry((center(candidate.1)[1] / stratum).floor() as i64)
+            .or_default()
+            .push(candidate);
     }
-    let surfaces = selected
-        .into_iter()
-        .map(|(_, surface)| surface)
-        .collect::<Vec<_>>();
+    for band in bands.values_mut() {
+        band.sort_by(|a, b| a.0.total_cmp(&b.0).then_with(|| a.1.id.cmp(&b.1.id)));
+    }
+    let mut bands = bands.into_iter().collect::<Vec<_>>();
+    let height_distance = |band: i64| {
+        anchors
+            .iter()
+            .map(|p| {
+                let lo = band as f64 * stratum;
+                let hi = lo + stratum;
+                (lo - p[1]).max(p[1] - hi).max(0.)
+            })
+            .fold(f64::INFINITY, f64::min)
+    };
+    bands.sort_by(|a, b| {
+        height_distance(a.0)
+            .total_cmp(&height_distance(b.0))
+            .then(a.1[0].0.total_cmp(&b.1[0].0))
+            .then(a.0.cmp(&b.0))
+    });
+    // A descending query's horizontal corridor remains useful on its upper
+    // platform. Round-robin height bands instead of following the sloping 3D
+    // line, which can rank every upper takeoff below irrelevant middle floors.
+    let total = bands.iter().map(|(_, band)| band.len()).sum::<usize>();
+    let mut surfaces = Vec::new();
+    'bands: for rank in 0..bands.iter().map(|(_, band)| band.len()).max().unwrap_or(0) {
+        for (_, band) in &bands {
+            if surfaces.len() >= face_budget {
+                break 'bands;
+            }
+            if let Some((_, surface)) = band.get(rank) {
+                surfaces.push(*surface);
+            }
+        }
+    }
+    if surfaces.len() < total {
+        truncated |= stage >= 2;
+    }
+    // Exposed support intervals are launch interfaces; interior triangle edges
+    // are only mesh detail. Keep a separate share of the finite graph for these
+    // interfaces before filling it with centers and arbitrary vertices.
+    if sample_budget > 0 {
+        let margin = world
+            .movement
+            .model
+            .max_horizontal_speed
+            .max(world.movement.profile.radius * 2.);
+        let bounds = crate::model::Bounds {
+            min: [0, 2].map(|axis| {
+                anchors
+                    .iter()
+                    .map(|p| p[axis])
+                    .fold(f64::INFINITY, f64::min)
+                    - margin
+            }),
+            max: [0, 2].map(|axis| {
+                anchors
+                    .iter()
+                    .map(|p| p[axis])
+                    .fold(f64::NEG_INFINITY, f64::max)
+                    + margin
+            }),
+        };
+        let mut boundary_regions = std::collections::BTreeMap::new();
+        for boundary in world.support_boundaries(bounds)? {
+            let [a, b] = boundary.points;
+            let delta = geometry::sub(b, a);
+            let length = delta[0] * delta[0] + delta[2] * delta[2];
+            let mut points = vec![a, b, lerp(a, b, 0.5)];
+            // Project query anchors onto the interval as well as sampling its
+            // length. This preserves narrow takeoffs between uniform samples.
+            if length > EPS * EPS {
+                for anchor in &anchors {
+                    let t = (((anchor[0] - a[0]) * delta[0] + (anchor[2] - a[2]) * delta[2])
+                        / length)
+                        .clamp(0., 1.);
+                    points.push(lerp(a, b, t));
+                }
+            }
+            for arrival in starts.iter().filter(|a| a["state"] == "available") {
+                if let Ok(mut from) = point(&arrival["position"]) {
+                    for to in waypoints.iter().copied().chain(std::iter::once(goal)) {
+                        let path = geometry::sub(to, from);
+                        let cross = |u: Point, v: Point| u[0] * v[2] - u[2] * v[0];
+                        let denominator = cross(delta, path);
+                        if denominator.abs() > EPS * EPS {
+                            let offset = geometry::sub(from, a);
+                            let t = cross(offset, path) / denominator;
+                            let u = cross(offset, delta) / denominator;
+                            if (0. ..=1.).contains(&t) && (0. ..=1.).contains(&u) {
+                                points.push(lerp(a, b, t));
+                            }
+                        }
+                        from = to;
+                    }
+                }
+            }
+            let count = (horizontal(a, b) / spacing.clamp(0.5, 2.)).ceil().max(1.) as usize;
+            for k in 1..count {
+                points.push(lerp(a, b, k as f64 / count as f64));
+            }
+            for p in points {
+                let key = (
+                    (p[0] / 2.).floor() as i64,
+                    (p[1] / stratum).floor() as i64,
+                    (p[2] / 2.).floor() as i64,
+                    world.support_component(&boundary.surface),
+                );
+                let score = proximity(p);
+                let entry = boundary_regions
+                    .entry(key)
+                    .or_insert((score, p, boundary.inward));
+                if score < entry.0 {
+                    *entry = (score, p, boundary.inward);
+                }
+            }
+        }
+        let mut bands = std::collections::BTreeMap::<i64, Vec<_>>::new();
+        for (_, candidate) in boundary_regions {
+            bands
+                .entry((candidate.1[1] / stratum).floor() as i64)
+                .or_default()
+                .push(candidate);
+        }
+        for band in bands.values_mut() {
+            band.sort_by(|a, b| {
+                a.0.total_cmp(&b.0)
+                    .then_with(|| a.1[0].total_cmp(&b.1[0]))
+                    .then_with(|| a.1[2].total_cmp(&b.1[2]))
+            });
+        }
+        let mut bands = bands.into_iter().collect::<Vec<_>>();
+        bands.sort_by(|a, b| {
+            height_distance(a.0)
+                .total_cmp(&height_distance(b.0))
+                .then(a.1[0].0.total_cmp(&b.1[0].0))
+                .then(a.0.cmp(&b.0))
+        });
+        let boundary_budget = sample_budget.div_ceil(2);
+        'boundaries: for rank in 0..bands.iter().map(|(_, b)| b.len()).max().unwrap_or(0) {
+            for (_, band) in &bands {
+                if let Some(&(_, p, inward)) = band.get(rank) {
+                    for inset in [
+                        world.movement.profile.radius * 0.5,
+                        world.movement.profile.radius,
+                    ] {
+                        if samples >= boundary_budget {
+                            truncated = true;
+                            break 'boundaries;
+                        }
+                        let p = std::array::from_fn(|i| p[i] + inward[i] * inset);
+                        if let Some(p) = world.standing_foot(p)? {
+                            let before = graph.points.len();
+                            graph.node(p);
+                            if graph.points.len() > before {
+                                samples += 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     let centers = surfaces
         .iter()
         .map(|s| {
@@ -855,8 +1017,26 @@ fn solve_world(
             let limit = ((source_end - attempts) / 2).max(1);
             let action_targets =
                 rank_action_targets(&graph, a, world, largest_multiplier, &action_components)?;
-            let direct_end = (attempts + limit).min(source_end);
             let mut discovered = Vec::new();
+            // One new landing per sampled source keeps graph growth bounded.
+            // Its outgoing ground successors use the same canonical World paths
+            // and retain every essential anchor, including the final goal.
+            let landing_limit = ((source_end - attempts) / 3).min(16);
+            if stage >= 2 && landing_limit > 0 {
+                for end in landing_proposals(world, graph.points[a], goal, landing_limit)? {
+                    if attempts >= source_end {
+                        break;
+                    }
+                    attempts += 1;
+                    if let Some(connection) =
+                        world.flight(graph.points[a], end, crate::model::Mode::Jump)?
+                    {
+                        discovered.push(connection);
+                        break;
+                    }
+                }
+            }
+            let direct_end = (attempts + limit).min(source_end);
             'direct: for &b in &action_targets {
                 for mode in [crate::model::Mode::Jump, crate::model::Mode::Drop] {
                     if !free_flight_reaches(world, graph.points[a], graph.points[b], mode, 1.)? {
@@ -1786,8 +1966,18 @@ fn free_flight_reaches(
     {
         return Ok(false);
     }
-    let Some(time) = world.flight_duration(a[1], b[1], mode)? else {
-        return Ok(false);
+    Ok(free_flight_range(world, a[1], b[1], mode, multiplier)?
+        .is_some_and(|reach| horizontal(a, b) <= reach + EPS))
+}
+fn free_flight_range(
+    world: &crate::world::World,
+    start: f64,
+    end: f64,
+    mode: crate::model::Mode,
+    multiplier: f64,
+) -> Result<Option<f64>, String> {
+    let Some(time) = world.flight_duration(start, end, mode)? else {
+        return Ok(None);
     };
     let model = &world.movement.model;
     let cap = model.max_horizontal_speed * multiplier;
@@ -1806,7 +1996,114 @@ fn free_flight_reaches(
     } else {
         initial * time
     };
-    Ok(horizontal(a, b) <= reach + EPS)
+    Ok(Some(
+        reach.min(world.movement.max_horizontal_distance * multiplier),
+    ))
+}
+/// Continuous landing points supplement mesh representatives. Projection is
+/// geometric only; admission still requires standing support and a full flight.
+fn landing_proposals(
+    world: &crate::world::World,
+    source: Point,
+    goal: Point,
+    limit: usize,
+) -> Result<Vec<Point>, String> {
+    let stratum = world.movement.model.max_jump_height.max(3.);
+    let mut bands = std::collections::BTreeMap::<i64, Vec<_>>::new();
+    for surface in &world.surfaces {
+        let y = surface.vertices.iter().map(|p| p[1]).sum::<f64>() / surface.vertices.len() as f64;
+        if y >= source[1] - world.movement.max_vertical || source[1] - y > world.movement.max_drop {
+            continue;
+        }
+        let Some(reach) = free_flight_range(world, source[1], y, crate::model::Mode::Jump, 1.)?
+        else {
+            continue;
+        };
+        let min = [0, 2].map(|axis| {
+            surface
+                .vertices
+                .iter()
+                .map(|p| p[axis])
+                .fold(f64::INFINITY, f64::min)
+        });
+        let max = [0, 2].map(|axis| {
+            surface
+                .vertices
+                .iter()
+                .map(|p| p[axis])
+                .fold(f64::NEG_INFINITY, f64::max)
+        });
+        let dx = (min[0] - source[0]).max(source[0] - max[0]).max(0.);
+        let dz = (min[1] - source[2]).max(source[2] - max[1]).max(0.);
+        if dx.hypot(dz) > reach + EPS {
+            continue;
+        }
+        bands
+            .entry((y / stratum).floor() as i64)
+            .or_default()
+            .push((surface, y, min, max));
+    }
+    let mut bands = bands
+        .into_values()
+        .map(|band| {
+            let score = band
+                .iter()
+                .map(|(_, y, _, _)| (y - goal[1]).abs())
+                .fold(f64::INFINITY, f64::min);
+            (score, band)
+        })
+        .collect::<Vec<_>>();
+    bands.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1[0].0.id.cmp(&b.1[0].0.id)));
+    let angle = (goal[2] - source[2]).atan2(goal[0] - source[0]);
+    let mut proposals = Vec::new();
+    for (_, band) in bands {
+        let y = band
+            .iter()
+            .map(|(_, y, _, _)| *y)
+            .min_by(|a, b| (a - goal[1]).abs().total_cmp(&(b - goal[1]).abs()))
+            .unwrap();
+        let Some(reach) = free_flight_range(world, source[1], y, crate::model::Mode::Jump, 1.)?
+        else {
+            continue;
+        };
+        for fraction in [0.95, 0.65] {
+            for turn in [0., 1., -1., 2., -2., 3., -3., 4.] {
+                if proposals.len() >= limit {
+                    return Ok(proposals);
+                }
+                let theta = angle + turn * std::f64::consts::FRAC_PI_4;
+                let seed = [
+                    source[0] + reach * fraction * theta.cos(),
+                    y,
+                    source[2] + reach * fraction * theta.sin(),
+                ];
+                let mut closest = None;
+                let mut best = f64::INFINITY;
+                for (surface, _, min, max) in &band {
+                    let dx = (min[0] - seed[0]).max(seed[0] - max[0]).max(0.);
+                    let dz = (min[1] - seed[2]).max(seed[2] - max[1]).max(0.);
+                    if dx.hypot(dz) > best {
+                        continue;
+                    }
+                    if let Some(p) = world.project_to_surface(&surface.id, seed)? {
+                        let d = distance(seed, p);
+                        if d < best {
+                            best = d;
+                            closest = Some(p);
+                        }
+                    }
+                }
+                let Some(p) = closest else { continue };
+                if let Some(p) = world.standing_foot(p)?
+                    && free_flight_reaches(world, source, p, crate::model::Mode::Jump, 1.)?
+                    && !proposals.iter().any(|&q| distance(q, p) < EPS)
+                {
+                    proposals.push(p);
+                }
+            }
+        }
+    }
+    Ok(proposals)
 }
 fn rank_action_targets(
     graph: &Graph,
@@ -1843,19 +2140,40 @@ fn rank_action_targets(
     samples.sort_by(nearest);
     deferred.sort_by(nearest);
     let mut ranked = essential;
-    let mut sectors = std::collections::HashSet::new();
-    let mut repeated = Vec::new();
+    let stratum = world.movement.model.max_jump_height.max(3.);
+    let mut bands = std::collections::BTreeMap::<i64, Vec<usize>>::new();
     for id in samples {
-        let d = geometry::sub(graph.points[id], origin);
-        let sector =
-            ((d[2].atan2(d[0]) + std::f64::consts::PI) * 4. / std::f64::consts::PI).floor() as i32;
-        if sectors.insert((components[id], sector.clamp(0, 7))) {
-            ranked.push(id);
-        } else {
-            repeated.push(id);
+        let band = ((graph.points[id][1] - origin[1]) / stratum).floor() as i64;
+        bands.entry(band).or_default().push(id);
+    }
+    for band in bands.values_mut() {
+        let mut sectors = std::collections::HashSet::new();
+        let mut distinct = Vec::new();
+        let mut repeated = Vec::new();
+        for &id in band.iter() {
+            let d = geometry::sub(graph.points[id], origin);
+            let sector = ((d[2].atan2(d[0]) + std::f64::consts::PI) * 4. / std::f64::consts::PI)
+                .floor() as i32;
+            if sectors.insert((components[id], sector.clamp(0, 7))) {
+                distinct.push(id);
+            } else {
+                repeated.push(id);
+            }
+        }
+        distinct.extend(repeated);
+        *band = distinct;
+    }
+    let mut bands = bands.into_values().collect::<Vec<_>>();
+    bands.sort_by(|a, b| nearest(&a[0], &b[0]));
+    // Reserve early attempts at every reachable elevation. Sorting all cells by
+    // 3D distance lets a dense same-floor mesh hide useful descending landings.
+    for rank in 0..bands.iter().map(Vec::len).max().unwrap_or(0) {
+        for band in &bands {
+            if let Some(&id) = band.get(rank) {
+                ranked.push(id);
+            }
         }
     }
-    ranked.extend(repeated);
     // Run-off controls include a supported approach, so free-fall duration does
     // not bound their total horizontal distance. Keep these and distant airborne
     // collection endpoints after ordinary reachable landings, without weakening
