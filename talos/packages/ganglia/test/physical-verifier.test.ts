@@ -160,6 +160,47 @@ test('flight witnesses are replayed against authoritative gravity and the swept 
   route.schedule![0].segments[0].flight!.model.gravity = 1;
   assert.equal(verify(input, route).valid, false);
 });
+test('early airborne collection uses executed horizontal speed for the sprint requirement', () => {
+  const input = snapshot(),
+    world = createPhysicalWorld(input, 'complete'),
+    configured = world.configured();
+  const options = {
+    ...input.movement.model,
+    mode: 'jump' as const,
+    profile: input.ground.options.profile,
+    walls: [],
+    sweep: configured.world.sweepCapsule.bind(configured.world),
+  };
+  const full = jumpConnection([0, 0.01, 0], [2, 0.01, 0], options)!;
+  const goal = full.points[Math.floor(full.points.length / 4)];
+  const interaction = { radius: 0.125, airborne: true };
+  const arc = jumpConnection(full.flight!.start, full.flight!.end, {
+    ...options,
+    collection: { target: goal, interaction },
+  })!;
+  assert.ok(arc.times.at(-1)! < full.times.at(-1)! / 2);
+  const route = candidate(input, [arc]);
+  route.goalHit = {
+    segment: route.segments.length - 1,
+    time: route.segments.at(-1)!.times.at(-1)!,
+    position: route.points.at(-1)!,
+  };
+  const query = {
+    starts: [{ id: 'start', position: route.points[0], cost: 0, state: 'available' as const }],
+    goal,
+    interaction,
+  };
+  const accepted = createPhysicalVerifier(() => [world])(query, route);
+  assert.equal(accepted.valid, true, accepted.issues.join());
+  const slowRun = structuredClone(input);
+  slowRun.movement.runAirSpeed = 1;
+  const rejection = createPhysicalVerifier(() => [createPhysicalWorld(slowRun, 'complete')])(
+    query,
+    route,
+  );
+  assert.equal(rejection.valid, false);
+  assert.match(rejection.issues.join(), /requires active sprint/);
+});
 test('boosts and moving-support labels cannot authorize invented actions', () => {
   const input = snapshot(),
     boosted = walk();

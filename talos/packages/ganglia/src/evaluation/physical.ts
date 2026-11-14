@@ -331,8 +331,12 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
               throw new Error('Flight does not match collision-checked controls');
             const airSpeed =
               replay.peakHorizontalSpeed ??
-              Math.hypot(witness.end[0] - witness.start[0], witness.end[2] - witness.start[2]) /
-                replay.times.at(-1)!;
+              // Without a peak, horizontal motion is uniform. Collection can
+              // stop before the nominal landing, so use the executed span.
+              Math.hypot(
+                replay.points.at(-1)![0] - replay.points[0][0],
+                replay.points.at(-1)![2] - replay.points[0][2],
+              ) / replay.times.at(-1)!;
             if (
               s.mode !== 'launch' &&
               airSpeed > rules.movement.runAirSpeed * multiplier + 1e-6 &&

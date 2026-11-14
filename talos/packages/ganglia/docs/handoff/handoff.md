@@ -162,6 +162,12 @@ geometry also receives collision checks, so representation tolerance cannot
 permit wall penetration. Equivalent segment splits and knot densities are
 accepted through timed trajectory comparison.
 
+For early airborne collection, uniform horizontal speed is measured over the
+executed replay span. The nominal witness landing can lie beyond collection;
+its full displacement must not be divided by the shorter collection duration.
+Accelerating and steered flights use the replay model's peak speed for sprint
+eligibility.
+
 The replay checks whole-route stamina, sprint/dash choices, boost triggers and
 expiry, directed device entry/exit, launch/rope motion, terminal first-goal events,
 and placement geometry. Moving supports retain the exported phase-free swept
