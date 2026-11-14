@@ -30,14 +30,20 @@ wrong warmup counts or invalid warmup cannot enter V1 scoring. A training timeou
 stops before scoring because worker replacement loses the catalog. Retained TS
 baseline reports are reused; fresh TS and stress runs are excluded by the user.
 
-The latest configured full-population attempt at `8db5fd94` processes all ten
-training requests and freezes 6,509 connections, but fails warmup before scoring.
-Its terminal status and log are in
-`.local/research/rust-configured-full50-8db5fd94/`. No benchmark remains active and
-no scored performance result exists. Failed warmup now emits each request's ID,
-route status, reason and partial state before rejecting readiness. The required
-startup lifecycle is implemented; successful native service readiness remains an
-algorithm acceptance gap.
+The configured warmup diagnostic confirms that the lower-floor request exhausts
+the 300-second watchdog, restarts its worker and loses its trained catalog. The
+upper-floor request then completes with independent physical replay valid. Full
+warmup evaluations and timing are retained in
+`.local/research/rust-configured-full50-warmup-diagnostic/`. No scored performance
+result exists from that attempt. Failed warmup logs each request's evaluation,
+status, reason and timing before rejecting readiness.
+
+Resource labels and lazy ground jobs now share goal-directed queue priorities.
+The remaining horizontal distance is divided by the graph's maximum action or
+walking speed, including boost allowances. Actual accumulated cost still governs
+dominance and retained label caps. All resource/geometry proofs and budgets remain
+unchanged. This addresses cheap-prefix expansion in trained action graphs;
+full-population acceptance remains required.
 
 ## Rust rewrite integration, 2026-11-14
 

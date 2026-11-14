@@ -1930,6 +1930,32 @@ fn solve_world(
             * walking_multiplier,
         f64::max,
     );
+    // A trained library introduces many resource alternatives. Order live labels
+    // toward the goal instead of exhausting every cheap nearby prefix first.
+    // Retain actual costs for dominance and keep all physical/resource proofs.
+    let action_speed = graph
+        .edges
+        .iter()
+        .flatten()
+        .flat_map(|edge| {
+            edge.segment
+                .points
+                .windows(2)
+                .zip(edge.segment.times.windows(2))
+                .map(|(points, times)| horizontal(points[0], points[1]) / (times[1] - times[0]))
+        })
+        .fold(maximum_walk_speed, f64::max)
+        * largest_multiplier;
+    let goal_radius = if interaction.is_object() {
+        number(interaction, "radius", 0.)?
+    } else {
+        tolerance
+    };
+    let estimates = graph
+        .points
+        .iter()
+        .map(|&p| (horizontal(p, goal) - goal_radius).max(0.) / action_speed)
+        .collect::<Vec<_>>();
     let mut walking_phases = Vec::new();
     let mut unexplored_detours = 0usize;
     // Stage 2 first searches only direct canonical walking and proved actions.
@@ -1957,6 +1983,7 @@ fn solve_world(
                 &mut arena,
                 &mut rows,
                 &mut queue,
+                &estimates,
                 max_labels,
                 &mut truncated,
             );
@@ -2038,6 +2065,7 @@ fn solve_world(
                             &mut arena,
                             &mut rows,
                             &mut queue,
+                            &estimates,
                             max_labels,
                             &mut truncated,
                         );
@@ -2092,6 +2120,7 @@ fn solve_world(
                             &mut arena,
                             &mut rows,
                             &mut queue,
+                            &estimates,
                             max_labels,
                             &mut truncated,
                         );
@@ -2130,7 +2159,7 @@ fn solve_world(
                             // subtract it so normalization cannot raise the bound.
                             let travel = (distance(p, q) - 2e-5).max(0.) / maximum_walk_speed;
                             ground_jobs.push(GroundJob {
-                                lower_bound: source_cost + travel,
+                                lower_bound: source_cost + travel + estimates[b],
                                 from: label.node,
                                 to: b,
                             });
@@ -2193,6 +2222,7 @@ fn solve_world(
                         &mut arena,
                         &mut rows,
                         &mut queue,
+                        &estimates,
                         max_labels,
                         &mut truncated,
                     );
@@ -2398,6 +2428,7 @@ fn insert(
     arena: &mut Vec<Label>,
     rows: &mut [Vec<usize>],
     queue: &mut BinaryHeap<Queue>,
+    estimates: &[f64],
     max: usize,
     truncated: &mut bool,
 ) {
@@ -2447,7 +2478,7 @@ fn insert(
     }
     if arena[index].active {
         queue.push(Queue {
-            cost: arena[index].cost,
+            cost: arena[index].cost + estimates[arena[index].node],
             label: index,
         });
     } else {

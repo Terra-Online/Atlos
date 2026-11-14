@@ -113,18 +113,17 @@ export async function runBenchmark(
       if (warm.length !== warmupCases.length)
         throw new Error('Warmup returned a different number of results');
     }
+    const warmupResults = await Promise.all(
+      warm.map(async (result, i) => ({
+        id: warmupCases[i].id,
+        ...summarize(result, await evaluate(warmupCases[i].query, result)),
+      })),
+    );
     const warmup = {
       ids: warmupCases.map((item) => item.id),
       wallMs: performance.now() - warmupStarted,
       recoverySetupMs: recoverySetup() - recoveryBefore,
-      quality: summarizeQuality(
-        await Promise.all(
-          warm.map(async (result, i) => ({
-            id: warmupCases[i].id,
-            ...summarize(result, await evaluate(warmupCases[i].query, result)),
-          })),
-        ),
-      ),
+      quality: summarizeQuality(warmupResults),
     };
     intervals.warmup.endedMs = performance.now();
     if (solver.config.preparation && warmup.quality.completed !== warmupCases.length) {
@@ -132,12 +131,7 @@ export async function runBenchmark(
         JSON.stringify({
           phase: 'service-not-ready',
           warmup,
-          results: warm.map((result, index) => ({
-            id: warmupCases[index].id,
-            status: result.route.status,
-            reason: result.reason,
-            partial: result.partial,
-          })),
+          results: warmupResults,
         }),
       );
       throw new Error('Configured service warmup failed physical/completion validation');

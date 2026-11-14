@@ -1,5 +1,28 @@
 # Route solver history and validation evidence
 
+## Trained warmup timeout and goal-directed queue, 2026-11-14
+
+The unchanged algorithm at `08b7d7a0`, with full warmup evaluation logging, repeats
+the configured failure in 376.153 seconds. The lower-floor request times out at
+300 seconds and worker recovery costs 1.428 seconds, losing its catalog. The
+upper-floor request then completes in 38.238 seconds, modeled cost 4.525145 and
+physical replay valid with no issues. Its report/log are retained in
+`.local/research/rust-configured-full50-warmup-diagnostic/`. No scored requests
+run. The earlier generic warmup failure concealed this distinction.
+
+Goal-directed resource queue ordering is retried with a corrected bounded test:
+an expansion allowance of one distinguishes a direct goal from a cheaper remote
+prefix; the previous allowance of two admitted both orders. The original queue
+fails this fixture with no verified route; goal-directed ordering completes it.
+Queue priority adds remaining horizontal distance divided by the maximum action
+or walking speed, with boost allowances. Lazy ground jobs use the same remaining
+estimate. Dominance, label caps and replay use actual costs. No sampling, candidate
+budget, physical acceptance rule or verifier gate changes.
+
+All 143 Rust unit tests, two authored-action tests, 24 common-physical N-API
+fixtures and 446 TS tests pass. Release N-API build, feature-enabled all-target
+Clippy with warnings denied, Rustfmt and package formatting/lint/typecheck pass.
+
 ## Configured readiness failure diagnostics, 2026-11-14
 
 The `8db5fd94` full-population attempt processes all ten training requests,
