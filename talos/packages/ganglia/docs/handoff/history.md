@@ -1963,3 +1963,17 @@ The kernel digest is
 and the unchanged game-adapter digest is
 `2c932f2ca8e668f8f4ee6937633d9c77e240986241e2a530f908fbb2cc88c623`.
 No further solver run or algorithm change was made for this measurement followup.
+
+### Early collection sprint eligibility
+
+Engine integration identified a shared evaluator error for uniform airborne
+collection. A witness can describe a full landing while execution stops at an
+earlier interaction. The fallback air-speed check divided the full landing
+displacement by the collection-clipped duration and falsely required sprint.
+It now uses the executed replay displacement and duration; model-provided peak
+speeds still govern nonuniform flight. A focused regression accepts early
+collection within run air speed and rejects the same flight when the movement
+rules require active sprint. No witness changes or physics limits are needed.
+The regression fails with `Fast flight requires active sprint` under the original
+fallback and passes after the correction. Package format, lint, typecheck and all
+439 tests pass. No solver benchmark was rerun for this evaluator-only fix.
