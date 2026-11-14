@@ -1,5 +1,7 @@
 /** Metres and seconds throughout. These tolerances describe representation and
- * reporting error, never extra movement speed, resources or collision clearance. */
+ * reporting error, never extra movement speed, resources or collision clearance.
+ * These defaults are tunable: if human review finds a tolerance too strict for
+ * practical use, it may be relaxed to an appropriate value. */
 export interface VerificationPolicy {
   /** Horizontal radius for ordinary point goals; interactions and waypoints keep their own rules. */
   goalTolerance: number;
