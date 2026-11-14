@@ -9,6 +9,30 @@ type Complete = Extract<Route, { status: 'complete' }>;
 export function composeRoutes(pieces: readonly Complete[], locomotion: LocomotionOptions): Route {
   const first = pieces[0];
   if (!first) return { status: 'no-verified-route' };
+  // Geometry replay is not available at this composition boundary. Every piece
+  // must therefore declare the same complete layout: a newly moved box can block
+  // an earlier segment even when the pieces are individually feasible.
+  type Placement = NonNullable<Complete['placements']>[number];
+  let placements: Map<string, Placement> | undefined;
+  for (const piece of pieces) {
+    const layout = new Map<string, Placement>();
+    for (const placement of piece.placements ?? []) {
+      if (placement.position.length !== 3 || !placement.position.every(Number.isFinite))
+        return { status: 'no-verified-route' };
+      const previous = layout.get(placement.device);
+      if (previous && previous.position.some((v, i) => v !== placement.position[i]))
+        return { status: 'no-verified-route' };
+      layout.set(placement.device, placement);
+    }
+    if (placements) {
+      if (layout.size !== placements.size) return { status: 'no-verified-route' };
+      for (const [device, placement] of placements) {
+        const next = layout.get(device);
+        if (!next || placement.position.some((v, i) => v !== next.position[i]))
+          return { status: 'no-verified-route' };
+      }
+    } else placements = layout;
+  }
   for (let i = 1; i < pieces.length; i++) {
     const end = pieces[i - 1].points.at(-1);
     const start = pieces[i].points[0];
@@ -40,7 +64,7 @@ export function composeRoutes(pieces: readonly Complete[], locomotion: Locomotio
       length: pieces.reduce((sum, piece) => sum + piece.length, 0),
       points: pieces.flatMap((piece, i) => (i ? piece.points.slice(1) : piece.points)),
       segments,
-      placements: pieces.flatMap((piece) => piece.placements ?? []),
+      placements: [...placements!.values()],
       boosts: pieces.flatMap((piece) => piece.boosts ?? []),
       ...(last.goalHit
         ? {

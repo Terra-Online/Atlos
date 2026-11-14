@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "scope": "Post-selection development controls, separate from the 266-case scored population. Adaptation required; not a plain benchmark query array.",
+  "source": {
+    "buildGuid": "2954fa80-23c1-1579-2b22-4ecfd6d70418",
+    "contentHash": "23821a7611be5c0478dc4695d96fd74a"
+  },
+  "physicalWindow": {
+    "scene": "map02",
+    "bounds": [-704, -1344, -576, -1120],
+    "profile": {
+      "radius": 0.3499999940395355,
+      "height": 1.659999966621399
+    },
+    "groundGenerator": "948b3bf9aae7f8e9481f10921727a1282e7ff608cbdeb8511e666b9d665c4e34",
+    "deviceGenerator": "948b3bf9aae7f8e9481f10921727a1282e7ff608cbdeb8511e666b9d665c4e34",
+    "sceneState": 0,
+    "area": 0,
+    "terminalScene": true
+  },
+  "resources": {
+    "ground": "exports/wheel-window-ground.json",
+    "collision": "exports/wheel-window-collision.json",
+    "devices": "exports/map02-traversal-devices.json",
+    "movement": "exports/movement-settings-current.json"
+  },
+  "selection": "These two controls were retained after observing successful bounded ground-planner + circular-join replay. They are development regressions, not unseen holdouts. New exports require explicit rebinding and replay.",
+  "cases": [
+    {
+      "id": "wheel-entry-10100290003",
+      "scene": "map02",
+      "query": {
+        "starts": [
+          {
+            "id": "ground-entry",
+            "position": [-631.8285351682327, 229.13280536626965, -1318.606332053392],
+            "state": "available",
+            "cost": 0
+          }
+        ],
+        "goal": [-631.1737935329859, 229.15148812793748, -1300.1342852323921]
+      },
+      "requiredSupport": "10100290003",
+      "assertions": [
+        "ordinary-support-entry-and-exit",
+        "exercise:circular-support",
+        "independent-physical-replay"
+      ],
+      "observed": {
+        "scope": "bounded source-ground joins through wheel rim; not an ordinary whole-scene search",
+        "independentValid": true,
+        "issues": [],
+        "modeledCost": 10.713121750248071
+      }
+    },
+    {
+      "id": "wheel-entry-10100290024",
+      "scene": "map02",
+      "query": {
+        "starts": [
+          {
+            "id": "ground-entry",
+            "position": [-626.5908321392117, 228.3939956052005, -1255.3018132622205],
+            "state": "available",
+            "cost": 0
+          }
+        ],
+        "goal": [-634.7921927192536, 228.3939956052005, -1246.7252626241584]
+      },
+      "requiredSupport": "10100290024",
+      "assertions": [
+        "ordinary-support-entry-and-exit",
+        "exercise:circular-support",
+        "independent-physical-replay"
+      ],
+      "observed": {
+        "scope": "bounded source-ground joins through wheel rim; not an ordinary whole-scene search",
+        "independentValid": true,
+        "issues": [],
+        "modeledCost": 14.65675363124182
+      }
+    }
+  ]
+}

@@ -1,0 +1,370 @@
+--- a/packages/extractor/src/commands/traversal-devices.ts
++++ b/packages/extractor/src/commands/traversal-devices.ts
+@@ -148,7 +148,7 @@
+ 				},
+ 				devices,
+ 				conveyors,
+-				movingSupports: moving.supports,
++				movingSupports: [...moving.supports, ...structures.circularSupports],
+ 				transports: rafts.transports,
+ 				unsupportedTransports: rafts.unsupported,
+ 				staticSupports: [...moving.staticSupports, ...structures.supports],
+--- /dev/null
++++ b/packages/extractor/src/game/circular-rotations.test.ts
+@@ -0,0 +1,30 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++import { trsMatrix, unityEulerQuaternion } from '@endfield-noclip/formats/unity/transform';
++import type { PoseClip } from './prefabs/prefab.ts';
++import { bindingKey } from './prefabs/pose-paths.ts';
++import { circularRotations } from './circular-rotations.ts';
++const path=bindingKey('Rotor');
++const clip=():PoseClip=>({animator:null,transforms:new Map(),active:new Map(),materials:new Map(),renderers:new Map(),
++    motion:{duration:8,sampleRate:60,loops:true,paths:[path],sample:t=>new Map([[path,[{kind:'rotation',value:[0,0,Math.sin(Math.PI*t/8),Math.cos(Math.PI*t/8)]}]]])}});
++const nodes=()=>[
++    {key:'root',parent:null,matrix:trsMatrix([3,5,7],unityEulerQuaternion([0,90,0]),[1,1,1]),paths:[''],local:{position:[3,5,7]}},
++    {key:'rotor',parent:'root',matrix:trsMatrix([0,0,0],[0,0,0,1],[1,1,1]),paths:['Rotor'],local:{position:[2,0,0]}},
++];
++test('binds only rotating collider owners and transforms the source pivot and axis once',()=>{
++    const r=circularRotations(nodes(),['rotor','root'],[clip()]);
++    assert.equal(r.length,1);assert.deepEqual(r[0].bodies,[0]);
++    assert.ok(r[0].pivot.every((v,i)=>Math.abs(v-[3,5,5][i])<1e-5));
++    assert.ok(r[0].axis.every((v,i)=>Math.abs(v-[1,0,0][i])<1e-5));assert.equal(r[0].period,8);
++});
++test('rejects translating/deforming rotors instead of inventing a circular domain',()=>{
++    const c=clip(),original=c.motion!.sample;
++    c.motion!.sample=t=>new Map([[path,[...original(t).get(path)!,{kind:'position',value:[t,0,0]}]]]);
++    assert.throws(()=>circularRotations(nodes(),['rotor'],[c]),/translates or deforms/);
++});
++test('static decorations and incomplete revolutions do not become rotating support',()=>{
++    const c=clip();c.motion!.loops=false;
++    assert.deepEqual(circularRotations(nodes(),['rotor'],[c]),[]);
++    const half=clip(),sample=half.motion!.sample;half.motion!.sample=t=>sample(t/2);
++    assert.throws(()=>circularRotations(nodes(),['rotor'],[half]),/complete revolution/);
++});
+--- /dev/null
++++ b/packages/extractor/src/game/circular-rotations.ts
+@@ -0,0 +1,71 @@
++import { multiplyQuaternions, transformPoint } from '@endfield-noclip/formats/unity/transform';
++import type { PoseClip } from './prefabs/prefab.ts';
++import { bindingKey, type ClipPaths } from './prefabs/pose-paths.ts';
++
++type Vec3 = [number, number, number];
++type Node = { key: string; parent: string | null; matrix: Float32Array; paths: ClipPaths;
++    local: { position: readonly number[] } };
++export type CircularRotation = { pivot: Vec3; axis: Vec3; bodies: number[]; period: number; path: number };
++const dot = (a: readonly number[], b: readonly number[]) => a.reduce((n,v,i) => n + v*b[i],0);
++
++/** Bind collision bodies to a complete fixed-axis source animation, retaining
++ * its true parent-space pivot. Unbound/compound/deforming motion is not guessed. */
++export function circularRotations(nodes: Node[], owners: string[], clips: readonly PoseClip[]): CircularRotation[] {
++    const byKey = new Map(nodes.map(n => [n.key,n]));
++    const descendant = (key: string, root: string): boolean => key === root ||
++        (byKey.get(key)?.parent ? descendant(byKey.get(key)!.parent!,root) : false);
++    const result: CircularRotation[] = [];
++    for (const [ci, clip] of clips.entries()) {
++        const motion = clip.motion;
++        if (!motion?.loops || !Number.isFinite(motion.duration) || motion.duration <= 0) continue;
++        for (const node of nodes) {
++            const name = node.paths[ci];
++            if (name === null || name === undefined) continue;
++            const path = bindingKey(name);
++            if (!motion.paths.includes(path)) continue;
++            const bodies = owners.flatMap((owner,i) => descendant(owner,node.key) ? [i] : []);
++            if (!bodies.length) continue;
++            const count = Math.max(64, Math.ceil(motion.duration * motion.sampleRate));
++            if (!Number.isSafeInteger(count) || count > 100000) throw new Error('Invalid circular animation sampling');
++            const samples = Array.from({length:count+1},(_,i) => motion.sample(motion.duration*i/count).get(path) ?? []);
++            const rotations = samples.map(s => s.find(v => v.kind === 'rotation'));
++            if (rotations.every(r => !r)) continue;
++            if (rotations.some(r => !r || r.kind !== 'rotation' || !r.value.every(Number.isFinite) || Math.abs(Math.hypot(...r.value)-1)>.001)) throw new Error('Invalid circular rotation samples');
++            for (const kind of ['position','scale'] as const) {
++                const initial = samples[0].find(v => v.kind === kind);
++                if (samples.some(s => JSON.stringify(s.find(v => v.kind === kind)) !== JSON.stringify(initial))) throw new Error('Circular body translates or deforms');
++            }
++            let axis: Vec3 | null = null, angle = 0;
++            for (let i=1;i<rotations.length;i++) {
++                const a=rotations[i-1]!.value,b=rotations[i]!.value;
++                const q=multiplyQuaternions(b,[-a[0],-a[1],-a[2],a[3]]);
++                if (q[3]<0) for(let k=0;k<4;k++)q[k]=-q[k];
++                const length=Math.hypot(q[0],q[1],q[2]);
++                if(length<1e-8)continue;
++                const direction:Vec3=[q[0]/length,q[1]/length,q[2]/length];
++                if(axis && dot(axis,direction)<1-1e-5)throw new Error('Circular rotation changes axis or direction');
++                axis=direction;angle+=2*Math.atan2(length,q[3]);
++            }
++            if (!axis || Math.abs(angle-2*Math.PI)>.001) throw new Error('Circular motion is not one complete revolution');
++            let parent=node.parent;
++            while(parent) {
++                const ancestor=byKey.get(parent)!;
++                if(clips.some((c,i) => ancestor.paths[i]!==null && ancestor.paths[i]!==undefined && c.motion?.paths.includes(bindingKey(ancestor.paths[i]!)))) throw new Error('Circular rotor has an animated ancestor');
++                parent=ancestor.parent;
++            }
++            const matrix=node.parent ? byKey.get(node.parent)!.matrix : new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);
++            const lengths=[0,4,8].map(i=>Math.hypot(matrix[i],matrix[i+1],matrix[i+2]));
++            if(Math.max(...lengths)-Math.min(...lengths)>Math.max(...lengths)*1e-4)throw new Error('Circular rotor has nonuniform parent scale');
++            for (let a=0;a<3;a++) for (let b=a+1;b<3;b++) {
++                const product=[0,1,2].reduce((sum,k)=>sum+matrix[a*4+k]*matrix[b*4+k],0);
++                if(Math.abs(product)>lengths[a]*lengths[b]*1e-4)throw new Error('Circular rotor has a sheared parent');
++            }
++            const origin=transformPoint(matrix,[0,0,0]),tip=transformPoint(matrix,axis);
++            const v=tip.map((n,i)=>n-origin[i]),length=Math.hypot(...v);
++            if(length<1e-8)throw new Error('Degenerate circular axis');
++            if(result.some(r=>r.bodies.some(i=>bodies.includes(i))))throw new Error('Ambiguous circular collider ownership');
++            result.push({pivot:transformPoint(matrix,node.local.position),axis:v.map(n=>n/length) as Vec3,bodies,period:motion.duration,path});
++        }
++    }
++    return result;
++}
+--- a/packages/extractor/src/game/following-supports.test.ts
++++ b/packages/extractor/src/game/following-supports.test.ts
+@@ -6,6 +6,8 @@
+ 
+ import type { Vec3 } from '@opendfieldmap/ganglia';
+ 
++import { collisionBox } from './collision-ground.ts';
++import { transformPoint, trsMatrix, unityEulerQuaternion } from '@endfield-noclip/formats/unity/transform';
+ import { followingSupport, isFollowingBox } from './following-supports.ts';
+ 
+ const bits = (v: number) => {
+@@ -37,7 +39,7 @@
+ 	componentProperties: new Map(),
+ } as unknown as LevelInteractive;
+ const bodies: Vec3[][] = [
+-	Array.from({ length: 8 }, (_, i) => [10 + (i & 1 ? 1 : -1), i & 2 ? 2 : 0, 20 + (i & 4 ? 1 : -1)]),
++	collisionBox([1, 1, 1]).vertices.map((p): Vec3 => [p[0]+10,p[1]+1,p[2]+20]),
+ ];
+ 
+ test('sources retain the authored activity range and actual solid without a transport state space', () => {
+@@ -45,7 +47,7 @@
+ 	assert.equal(isFollowingBox(template(), row), true);
+ 	assert.deepEqual(data.spawn, row.position);
+ 	assert.equal(data.maxDistance, 65);
+-	assert.deepEqual(data.bodies, bodies);
++	assert.deepEqual(data.bodies[0], [0,1,3,2,4,5,7,6].map(i=>bodies[0][i]));
+ 	assert.equal(data.assumption, 'placement-within-activity-range');
+ 	assert.equal('surfaces' in data, false);
+ 	assert.equal('activation' in data, false);
+@@ -82,3 +84,22 @@
+ 	} as LevelInteractive;
+ 	assert.equal(isFollowingBox(source, changed), false);
+ });
++
++
++test('rotated mirrored multiple BoxColliders preserve coordinates with bit-indexed edge axes', () => {
++    const source = [1, -1].map(sign => collisionBox([1,2,3]).vertices.map(p =>
++        transformPoint(trsMatrix([10,2,20],unityEulerQuaternion([0,37,0]),[sign,1,1]),p)));
++    const before=structuredClone(source);
++    const result=followingSupport('x','level','model',template(),row,source,'box');
++    assert.deepEqual(source,before);
++    for(let i=0;i<source.length;i++) {
++        const b=result.bodies[i];
++        assert.deepEqual([...b].map(p=>JSON.stringify(p)).sort(),[...source[i]].map(p=>JSON.stringify(p)).sort());
++        for(let bits=0;bits<8;bits++) for(let axis=0;axis<3;axis++) {
++            const expected=b[0][axis]+[1,2,4].reduce((sum,mask)=>sum+(bits&mask?b[mask][axis]-b[0][axis]:0),0);
++            assert.ok(Math.abs(b[bits][axis]-expected)<1e-5);
++        }
++    }
++    const convex=followingSupport('x','level','model',template(),row,source,'convex');
++    assert.equal(convex.geometryKind,'convex');assert.deepEqual(convex.bodies,source);
++});
+--- a/packages/extractor/src/game/following-supports.ts
++++ b/packages/extractor/src/game/following-supports.ts
+@@ -43,7 +43,7 @@
+  * @param model source model
+  * @param template decoded effective interactive template
+  * @param row placed box
+- * @param bodies solid collider vertices at the authored placement in world space
++ * @param bodies solid collider vertices at the authored placement in world space; boxes retain collisionBox face-ring order
+  * @param geometryKind decoded solid provenance
+  * @returns an activity-range source; the solver must still validate each stationary placement
+  * @throws on invalid collision geometry, saved state or activity range
+@@ -81,7 +81,7 @@
+ 	if (
+ 		!spawn.every(Number.isFinite) ||
+ 		!bodies.length ||
+-		bodies.some((body) => body.length < 8 || body.some((p) => p.length !== 3 || !p.every(Number.isFinite)))
++		bodies.some((body) => body.length < 8 || (geometryKind === 'box' && body.length !== 8) || body.some((p) => p.length !== 3 || !p.every(Number.isFinite)))
+ 	) {
+ 		throw new Error('following box solid geometry unresolved');
+ 	}
+@@ -92,10 +92,12 @@
+ 		spawn,
+ 		geometryKind,
+ 		bodies: bodies.map((body) =>
+-			body.map((p): Vec3 => [
+-				p[0] + spawn[0] - row.position[0],
+-				p[1] + spawn[1] - row.position[1],
+-				p[2] + spawn[2] - row.position[2],
++			// Only the following-box boundary needs bit-indexed corners. Preserve the
++			// indexed mesh/ring order used by static and rotating collider exporters.
++			(geometryKind === 'box' ? [0, 1, 3, 2, 4, 5, 7, 6].map(i => body[i]) : body).map((p): Vec3 => [
++				p[0] + (spawn[0] - row.position[0]),
++				p[1] + (spawn[1] - row.position[1]),
++				p[2] + (spawn[2] - row.position[2]),
+ 			]),
+ 		),
+ 		maxDistance,
+--- a/packages/extractor/src/game/ground-tile-cache.ts
++++ b/packages/extractor/src/game/ground-tile-cache.ts
+@@ -31,8 +31,10 @@
+ 			'./collision-inputs.ts',
+ 			'./collision-ground.ts',
+ 			'./prefab-support.ts',
++            './circular-rotations.ts',
+ 			'./static-supports.ts',
+ 			'./moving-supports.ts',
++            './following-supports.ts',
+ 			'./floor-supports.ts',
+ 			'./prefabs/pose-paths.ts',
+ 			'./assets/asset-decode.ts',
+--- a/packages/extractor/src/game/prefab-support.ts
++++ b/packages/extractor/src/game/prefab-support.ts
+@@ -21,6 +21,7 @@
+ import { collisionBox } from './collision-ground.ts';
+ import { bindingKey, clipPaths, posedLocal, type ClipPaths } from './prefabs/pose-paths.ts';
+ import type { PrefabPose } from './prefabs/prefab.ts';
++import { circularRotations } from './circular-rotations.ts';
+ 
+ type Vec3 = [number, number, number];
+ const xyz = (v: TypeTreeObject): Vec3 => [numberField(v, 'x'), numberField(v, 'y'), numberField(v, 'z')];
+@@ -37,7 +38,7 @@
+  * @throws for malformed references, unsupported nonempty collision cooks or absent solid support
+  */
+ export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef,
+- options: { wholePrefab?: boolean; pose?: PrefabPose | null } = {}) => {
++ options: { wholePrefab?: boolean; pose?: PrefabPose | null; circular?: boolean } = {}) => {
+  const clips = options.pose?.clips ?? [];
+  const transforms = clips.map(clip => clip.transforms);
+ 	const nodes: {
+@@ -45,6 +46,7 @@
+ 		paths: ClipPaths;
+ 		parent: string | null;
+ 		matrix: Float32Array;
++        local: ReturnType<typeof posedLocal>;
+ 		active: boolean;
+ 		components: { ref: ObjectRef; data: TypeTreeObject }[];
+ 	}[] = [];
+@@ -91,7 +93,7 @@
+             const path = paths[i];
+             if (path !== null && path !== undefined && path !== '') enabled = clip.active.get(bindingKey(path)) ?? enabled;
+         }
+-        const node = { key, paths, parent: parent?.key ?? null, matrix,
++        const node = { key, paths, parent: parent?.key ?? null, matrix, local,
+             active: (parent?.active ?? true) && options.pose?.hidden !== true &&
+                 (enabled ?? (data.m_IsActive !== false && data.m_IsActive !== 0)), components };
+ 
+@@ -136,17 +138,21 @@
+ 	}
+ 	const belongs = (node: (typeof nodes)[number]): boolean =>
+ 		!selected || node.key === selected || (node.parent !== null && belongs(byKey.get(node.parent)!));
+-	const vertices: Vec3[] = [];
++	const bodyOwners: string[] = [];
++    let bodyOwner = '';
++    const vertices: Vec3[] = [];
+ 	const bodies: Vec3[][] = [];
+ 	const bodyKinds: ('box' | 'convex' | 'triangle')[] = [];
+ 	const bodyTriangles: (number[][] | null)[] = [];
+ 	const add = (points: Vec3[], kind: 'box' | 'convex' | 'triangle', triangles: number[][] | null = null) => {
+-		bodyTriangles.push(triangles ?? (kind === 'box' ? collisionBox([1, 1, 1]).triangles : null));
++		bodyOwners.push(bodyOwner);
++        bodyTriangles.push(triangles ?? (kind === 'box' ? collisionBox([1, 1, 1]).triangles : null));
+ 		bodyKinds.push(kind);
+ 		vertices.push(...points);
+ 		bodies.push(points);
+ 	};
+ 	for (const node of nodes) {
++        bodyOwner = node.key;
+ 		if (!node.active || !belongs(node)) {
+ 			continue;
+ 		}
+@@ -261,6 +267,7 @@
+ 	if (!vertices.length) throw new FormatError('prefab has no decoded solid support');
+     if (vertices.some(point => !point.every(Number.isFinite))) throw new FormatError('prefab collider contains nonfinite vertices');
+ 	return {
++        circular: options.circular ? circularRotations(nodes, bodyOwners, clips) : [],
+ 		bodies,
+ 		bodyKinds,
+ 		bodyTriangles,
+--- a/packages/extractor/src/game/static-supports.ts
++++ b/packages/extractor/src/game/static-supports.ts
+@@ -1,3 +1,5 @@
++import { circularSupport } from '@opendfieldmap/ganglia/solver/host';
++import type { SweptSupport } from '@opendfieldmap/ganglia/solver';
+ /* oxlint-disable no-await-in-loop -- offline export follows authored placement order */
+ import { levelInteractiveFromValue, type LevelInteractive } from '@endfield-noclip/formats/endfield/level-interactives';
+ import { isMemoryPackObject } from '@endfield-noclip/formats/endfield/memory-pack';
+@@ -103,6 +105,7 @@
+ export const collectStaticSupports = async (ctx: Context, scene: string, knownIds: ReadonlySet<string>) => {
+     const objects: ObjectRecord[] = [], unsupported: { id: string; template: string; reason: string }[] = [];
+     const supports = new Map<string, Support>();
++    const circular = new Map<string, SweptSupport>();
+     const rows = new Map<string, Row>(), byOwner = new Map<string, Row[]>();
+     const paths = await ctx.world.pathLookup(), reader = await ctx.memoryPack();
+     const levels = [...(await ctx.world.levelConfigs()).values()].filter(level => level.mapId === scene);
+@@ -155,14 +158,41 @@
+         const path = paths(model.model.pathHash)?.toLowerCase();
+         if (!path) throw new Error('static-support prefab path unavailable');
+         const pose = model.pose?.key ?? 'authored-rest';
+-        const key = `${path}:${pose}`;
++        const wheel = /^int_(?:big_)?waterwheel$/.test(item.template);
++        const key = `${path}:${pose}:${wheel}`;
+         if (!bodies.has(key)) bodies.set(key, (async () => {
+             const ref = await resolver.findUnique({ hash: model.model.pathHash, path }, UnityClass.GameObject);
+-            return readPrefabSupport(resolver, ref, { wholePrefab: true, pose: model.pose });
++            return readPrefabSupport(resolver, ref, { wholePrefab: true, pose: model.pose, circular: wheel });
+         })());
+         const body = await bodies.get(key)!;
+-        const geometry = supportGeometry(body, model.model);
+-        if (!geometry.indices.length) throw new Error('prefab has no solid triangles');
++        const rotating = new Set(body.circular.flatMap(r => r.bodies));
++        if (wheel && !body.circular.length) throw new Error('waterwheel has no source-bound circular collider');
++        const generated: SweptSupport[] = [];
++        for (const [ri, rotor] of body.circular.entries()) {
++            if (Math.max(...model.model.scale)-Math.min(...model.model.scale)>Math.max(...model.model.scale)*1e-4) throw new Error('waterwheel has nonuniform placement scale');
++            const matrix=trsMatrix(model.model.position,unityEulerQuaternion(model.model.rotation),model.model.scale);
++            const pivot=transformPoint(matrix,rotor.pivot);
++            const tip=transformPoint(matrix,rotor.pivot.map((v,i)=>v+rotor.axis[i]));
++            const delta=tip.map((v,i)=>v-pivot[i]),norm=Math.hypot(...delta);
++            const axis=delta.map(v=>v/norm) as [number,number,number];
++            const vertices=rotor.bodies.flatMap(i=>body.bodies[i]).map(p=>transformPoint(matrix,p));
++            const along=vertices.map(p=>p.reduce((n,v,i)=>n+(v-pivot[i])*axis[i],0));
++            const radii=vertices.map((p,j)=>Math.hypot(...p.map((v,i)=>v-pivot[i]-along[j]*axis[i])));
++            const radius=Math.max(...radii);
++            // Axle/braces can extend farther sideways than the blade rim. Only
++            // source vertices at the actual peripheral contact radius set width.
++            const rim=along.filter((_,i)=>radius-radii[i]<=Math.max(1e-5,radius*1e-5));
++            const low=Math.min(...rim),high=Math.max(...rim);
++            const id=body.circular.length===1 ? item.id : `${item.id}/rotor/${ri}`;
++            const ring=circularSupport({id,level:item.level,model:path,
++                center:pivot.map((v,i)=>v+(low+high)/2*axis[i]) as [number,number,number],axis,radius,
++                halfWidth:(high-low)/2,speed:2*Math.PI*radius/rotor.period});
++            if(circular.has(id))throw new Error('waterwheel has ambiguous model ownership');
++            generated.push(ring);
++        }
++        const geometry = supportGeometry({bodies:body.bodies.filter((_,i)=>!rotating.has(i)),
++            bodyTriangles:body.bodyTriangles.filter((_,i)=>!rotating.has(i))},model.model);
++        if (!geometry.indices.length && !generated.length) throw new Error('prefab has no solid triangles');
+         const motion = supportMotion(model.pose);
+         let support = supports.get(item.id);
+         if (!support) {
+@@ -175,6 +205,7 @@
+         for (const index of geometry.indices) support.indices.push(index + first);
+         support.parts.push({ model: { pathHash: String(model.model.pathHash), position: model.model.position,
+             rotation: model.model.rotation, scale: model.model.scale }, path, pose, source: model.source, motion });
++        for(const ring of generated)circular.set(ring.id,ring);
+         if (motion.length) support.motion = 'animated-terminal-pose';
+         if (item.status !== 'unresolved') item.status = motion.length || support.motion === 'animated-terminal-pose' ? 'animated' : 'exported';
+     };
+@@ -243,8 +274,9 @@
+         }
+         if (item.status === 'unresolved') {
+             supports.delete(item.id);
++            for(const id of circular.keys())if(id===item.id || id.startsWith(item.id+'/rotor/'))circular.delete(id);
+             unsupported.push({ id: item.id, template: item.template, reason: item.reason ?? 'unresolved physical model' });
+         }
+     }
+-    return { supports: [...supports.values()], objects, unsupported };
+-};
++    return { supports: [...supports.values()], circularSupports: [...circular.values()], objects, unsupported };
++};

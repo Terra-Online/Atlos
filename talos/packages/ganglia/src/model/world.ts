@@ -9,6 +9,7 @@ import {
   blockedBody,
   onBoxFace,
 } from '#@/src/model/placement.ts';
+import { projectPoint } from '#@/src/model/support.ts';
 import { supportBounds } from '#@/src/model/supports.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
 import type { FollowingSupport, PhysicalInput } from '#@/src/solver/physical.ts';
@@ -334,13 +335,46 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
       }
       return false;
     };
-    const support = (p: Vec3) =>
-      world.groundAt(p, {
+    const support = (p: Vec3) => {
+      // Circular attachments have explicit contact heights. A radius query can
+      // select a neighbouring rim patch above the submitted feet; it does not
+      // prove that this contact moved vertically. External collision still
+      // applies in standing(), including braces and other placed bodies.
+      let circularNeighbour = false;
+      for (const circular of input.devices?.movingSupports ?? []) {
+        if (!circular.circular) continue;
+        circularNeighbour ||= !!projectPoint(circular.surfaces, p, { maxVertical: tolerance });
+        const contact = projectPoint(circular.surfaces, p, { maxVertical: 0.02 });
+        if (
+          contact &&
+          p[1] - contact.position[1] >= 0.005 - 1e-6 &&
+          p[1] - contact.position[1] <= 0.01 + 1e-6
+        )
+          return contact;
+      }
+      if (circularNeighbour) {
+        // An abstract rim is an alternative contact, not a solid surface that
+        // lifts feet already resting on independently supported static ground.
+        const ground = base.groundAt(p, {
+          maxUp: tolerance,
+          maxDown: tolerance,
+          maxSlope: input.movement.maxSlope,
+          radius: profile.radius,
+        });
+        if (
+          ground &&
+          p[1] - ground.position[1] >= 0.005 - 1e-6 &&
+          p[1] - ground.position[1] <= 0.01 + 1e-6
+        )
+          return ground;
+      }
+      return world.groundAt(p, {
         maxUp: tolerance,
         maxDown: tolerance,
         maxSlope: input.movement.maxSlope,
         radius: profile.radius,
       });
+    };
     const standing = (p: Vec3) => {
       const hit = support(p);
       if (!hit) return null;

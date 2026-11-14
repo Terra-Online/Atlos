@@ -1,5 +1,154 @@
 # Route solver history and validation evidence
 
+## Merge request lifecycle updates, 2026-11-14
+
+Merged four upstream commits through `8eed53ee` into `chan/algo-progression`.
+They add goal-directed native queueing, deferred catalog detours, cooperative
+cancellation/restoration and durable benchmark outcome reporting. The conflicts
+were only concurrent handoff/history insertions; both histories are retained.
+The current warmup policy records failures separately and continues scoring once
+the worker is reusable. Earlier readiness-rejection measurements keep their
+historical scope.
+
+Validation: format, lint, typecheck and World typechecks pass. Rust passes 143
+unit tests and two authored-action tests; the release native build and all 24
+N-API integration tests pass. The TS suite passes 462/463 tests: the trained-worker
+restoration fixture exceeds its deadline both in the initial parallel run and a
+serial rerun. An isolated archive of the unmodified upstream tip reproduces the
+same failure. No assertion or timeout was relaxed. This is a recorded upstream
+failure on the local environment, not a green full-suite acceptance. Logs are
+`/tmp/atlos-sync-ts-serial.log` and `/tmp/atlos-sync-upstream-restore.log`.
+No performance benchmark was run. Concurrent unstaged noclip integration changes
+are outside this merge and are preserved separately.
+
+## Prototype integration with configured service startup, 2026-11-14
+
+Merged the latest five commits from `misakavan/3d-preview`, through its configured
+warmup-failure diagnostics. The merge preserves required service preparation,
+full-population scoring and bounded catalog retrieval alongside the TS prototypes.
+Only handoff/history insertions conflicted; both records were retained. Current
+performance policy reuses retained TS controls, requires configured full map02
+scoring for performance claims, and treats stress as opt-in. No new service
+benchmark or native speedup claim belongs to this prototype integration.
+
+After integration, package formatting, lint, typecheck and all 459 tests pass.
+World application/worker and extractor typechecks also pass. Real mechanism probes
+retain their pre-integration input/code scope. Two successful source-ground wheel
+entry/exit queries are shared in `bench/scenes/mechanisms/development-controls.json`
+as post-selection development regressions, separately from the 266-case population.
+They require explicit local asset binding and are not unseen acceptance holdouts.
+
+## Circular wheel and nearby joint-box prototypes, 2026-11-14
+
+This prototype implements the agreed phase-free circular wheel model and bounded
+TS joint-box discovery. Export and model changes are carried together in this
+commit. The Rust search implementation is unchanged; full TS/Rust local/stress
+acceptance and the 266-case suite remain pending. No paired speedup is claimed.
+
+The waterwheel exporter proves complete source rotation and collider ownership,
+then derives axis, pivot, rim radius and width. It rejects unsupported motion
+instead of guessing. Static decorations and nonrotating collider geometry remain.
+Four target wheels export successfully; all previous static-support identities and
+non-wheel triangle indices are retained. Circular contacts use physical feet,
+continuous strip-clearance clipping and sagitta-inflated transfer checks. Independent
+replay found and fixed vertical walk stubs and accidental projection to neighbouring
+higher rim contacts without relaxing the global collision or height gates.
+
+The real window is map02 bounds [-704, -1344, -576, -1120], containing 24 tiles,
+194,226 ground surfaces and 14,968 portals. All four wheels have completed bounded
+rim-to-rim controls. Ordinary-ground entry/exit controls pass independent replay
+with no issues for 10100290003 and 10100290024 (modeled costs 10.713121750248071 and
+14.65675363124182). Wheel 10100290021 has no join in this probe; 10100290025 has no
+connected pair among its two joins. These are bounded mechanism controls, not
+ordinary whole-scene searches or the original four collection requests.
+Evidence: `.local/research/algo-progression/wheel-contact-results.json` and
+`wheel-entry-results.json`, with per-wheel inputs/results and retained geometry.
+
+Joint-box discovery retains individual three-dimensional source ranges and other
+box collisions. Layout sizes share a finite budget; nearby subsets rotate and
+candidate combinations expand diagonally. Individually impossible geometry is
+rejected before forming joint products. Search truncation is propagated, and
+composition refuses conflicting or newly introduced layouts without prefix replay.
+Synthetic required two-/three-box relays, independent joint-layout validation,
+overlap/range rejection, original-coverage refusal and composition tests pass.
+
+Real input exposed a pre-existing corner-order contract mismatch: source box
+vertices were face-ring ordered while both solver implementations expected binary
+corners. The following export boundary now reorders corners only. All 32 source
+boxes validate, with zero coordinate changes and identical spawn/radius values.
+The old v250-260 probe was rejected before layout search. After this repair, a
+preparation-only run was stopped after more than 60 seconds without a layout; it
+was not classified as a timeout or a physical failure. Reusing the support index
+for local XZ projection removed the broad global projection work while preserving
+projection results and all geometric constraints.
+
+The subsequent v250-260 probe was corrected to meet the direct API's grounded-start
+precondition using the ordinary TS projection range. Requested/effective start
+heights are 27.2610015869 / 27.1434693316 metres; XZ, goal, interaction and budgets
+are unchanged. With 8,000 candidates and 64 layouts under a 300-second deadline,
+it takes 42.063 seconds and examines 26 layouts, returning no-verified-route with
+truncated=true and no used box. It is not multi-box success or proof of
+impossibility. Evidence is `.local/research/algo-progression/following-grounded/`;
+the earlier non-grounded diagnostics and stopped run are preserved separately.
+The probe uses retained geometry with newly bound device facts, not a same-input
+performance comparison. All probe workers exited and their timers were cleared.
+
+Before the subsequent upstream integration, package format/lint/typecheck and
+453 tests pass; World application and
+worker typechecks pass. Eleven affected extractor export tests and extractor
+checking pass. Full map02/map02-stress paired acceptance has not been run for this
+prototype, and ordinary real multi-box success remains unestablished. Placement
+currently requires static-ground support; stacking/suspension semantics remain
+unconfirmed rather than silently enabled.
+
+## Share mechanism acceptance definitions, 2026-11-14
+
+The user authorized publishing the 266 selected case definitions so the Rust
+implementation can adapt and reuse them. `bench/scenes/mechanisms/` contains the
+manifest, case/coverage indexes and multi-box index. Local absolute paths are
+replaced by explicit `exports/` and `retained/` resource namespaces; raw geometry,
+profiles and private configuration are not included. Sixteen original physical
+window definitions retain their bounds and export options.
+
+The transfer check preserves all 266 IDs, queries, per-case setup and assertions
+after resource-path normalization. Coverage entries resolve to existing cases;
+the CSV indexes retain the same population. These are packaging checks, not route
+or performance results. Runner integration remains pending: the existing custom
+workload loader accepts a plain query array and does not apply this manifest's
+scene-specific preparation or scenario overrides. Unsupported setup must be
+reported explicitly, and mechanism exercise remains distinct from feasibility.
+
+## Circular waterwheel and conveyor acceptance correction, 2026-11-14
+
+The user reconfirmed the earlier waterwheel decision: model a traversable circular
+surface/domain, assuming player adjustment on the blades, while preserving source
+geometry, external obstacles and entry checks. Platform phase and waiting are
+explicitly excluded. Current exported wheel animation and terminal-pose static
+collision are insufficient evidence of this model. Source inspection did not
+establish an already delivered circular adapter in standalone Ganglia or the
+workspace; no migration-loss claim is supported.
+
+For conveyor stepping, swept support proposes positions, while the actual contact
+run must fit one source-derived box pose. The route overlay already consumes
+selected `supportBoxes`, and the annotator emits one `use` box for a conveyor
+contact run. It does not display the whole sweep. This annotation is separate
+from proving that all contacts in that run fit the same fixed box.
+
+The private real-scene suite under the Atlos root `.local/validation-250/` contains
+266 requests, including twelve multi-box and four circular-waterwheel capability
+cases. Conveyor cases 184–187 were corrected to use one source-derived fixed pose
+and require both contact support and final-pose-only visualization. Other request
+coordinates are preserved. The new capability cases remain unrun; source-reference
+checks and existing focused tests do not establish their physical feasibility,
+mechanism exercise or performance. No solver or renderer algorithm changed.
+
+Before integration onto the latest Rust branch, focused validation on the prior
+local source passed seven existing Ganglia moving-route annotation tests and four
+World moving-bounds/route-inspection tests. These are not test results for the
+new branch baseline. The regenerated input audit
+resolves 707 source references across 121 files. These checks verify the input
+definitions and existing annotation behavior, not the new real-scene routes.
+
 ## Benchmark lifecycle correction
 
 Review identified unused native cancellation, immediate worker killing, frozen
