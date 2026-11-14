@@ -22,12 +22,17 @@ The historical gate covers reported completion, modeled cost, SLO and repeatabil
 A separate post-shutdown physical audit replays the saved first-round submissions
 against provider-normalized facts. Both outcomes are explicit in the report.
 
-The exploratory full replay completes 100/100 attempts with stable outcomes and
-no timeouts in 213.924 seconds including preparation. Its historical gate passes;
-its separate physical audit rejects all fifty distinct routes: twenty-five for
-unsupported/obstructed walks and twenty-five for endpoint mismatch. These are
-separate acceptance contracts. The measured input and sources are retained in
-`.local/research/ts-history-compat/`; final entry-point validation remains pending.
+The maintained entry point passed on clean commit `1e942192`: 100/100 attempts
+complete, zero timeouts/recoveries and identical outcomes/truncation across two
+rounds. Mean serial service is 1359.696 ms; readiness is 80.284 s, measured batch
+136.001 s and end-to-end 216.412 s (221.150 s including the separate audit).
+Historical cost geometric mean/worst ratios are 0.952314/1.039298, within the
+unchanged 1.01/1.05 gates. The physical audit rejects all fifty distinct routes:
+twenty-five unsupported/obstructed walks and twenty-five endpoint mismatches.
+Historical completion and modern physical acceptance remain distinct contracts.
+The report and per-request journal are under
+`.local/research/ts-history-final-1e942192/`; exploratory evidence is preserved under
+`.local/research/ts-history-compat/`.
 
 ## Benchmark request lifecycle
 

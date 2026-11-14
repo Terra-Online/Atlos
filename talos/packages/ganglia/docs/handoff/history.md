@@ -47,6 +47,36 @@ restore their original navigation-coordinate assertions: the 5 mm execution lift
 was introduced by the removed candidate postprocessor in `f3f58f07`. Package
 formatting, lint, typecheck and all 450 TS tests pass for this restoration.
 
+The committed entry point then ran successfully on clean `1e942192`, with source
+SHA-256 `25f91bd7c7cb5c559a2450b9c20ccd92a72c6dff5dd51532a480cbb152323539`.
+Its 100 attempts complete without timeout/recovery and with identical round
+outcomes/truncation. Mean serial service is 1359.696 ms, P95 4924.530 ms and maximum
+6752.247 ms. Ten training requests complete in 78.568 s, producing 239 actions;
+readiness is 80.284 s, batch 136.001 s and end-to-end 216.412 s. The independent
+first-round physical audit completes in a further 4.738 s and rejects the same
+25 walks/25 endpoints. Package checks pass all 450 TS tests.
+
+The `aa985494` archived control uses the same fifty queries and identical consumed
+input hashes, but a different adapter and preparation policy (one entire unmeasured
+batch rather than catalog training plus two disjoint warmups). Its 849.195-second
+single batch corresponds to 16.984 s/request; the restored two-round batch averages
+1.360 s/request, a 12.49× historical workload comparison. This does not isolate one
+algorithm change or establish modern physical acceptance. Modeled cost ratios remain
+0.952314 geometric mean and 1.039298 worst, passing the original 1.01/1.05 limits.
+The current training set contains the first ten scored requests and stores actions,
+not completed-route answers; this is the full-population workload, not a holdout-only
+score. Raw report and result journal: `.local/research/ts-history-final-1e942192/`.
+
+```sh
+cd talos/packages/ganglia
+pnpm benchmark:history \
+  --output ../../../.local/research/ts-history-final-1e942192/report.json \
+  --reference ../../../.local/research/full-batch-50.json
+```
+
+Use a fresh output path for a rerun; the journal refuses to overwrite prior evidence.
+The run used Node v26.13.0 with the script's 6144 MiB heap and no native preload.
+
 ## Rust prepared-search optimization, 2026-11-14
 
 Profiling attributed trained latency to weak global-speed queue bounds, repeated
