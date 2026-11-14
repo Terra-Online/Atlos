@@ -1,5 +1,26 @@
 # Route solver handoff
 
+## Continuous landing diagnostics, 2026-11-15
+
+Compared TS `motion/landings.ts` with native angular landing proposals. TS emits
+nearest-source, nearest-goal, center and horizontal-envelope/edge intersections,
+then tries control variants. Native finite angular/range seeds omit some continuous
+landing neighborhoods. A trial prepended nearest-source/goal/center projections
+for improvement queries; six requests remained physically valid, but 17/18 still
+failed cost comparison and 19 lost its retained improvement. Removed. Evidence:
+`.local/research/native-continuous-result.json` and its corresponding probe log.
+
+A separate raw-support-boundary stream near fresh origins, sharing the existing
+sample quota, produced the same routes/costs as `6571e5c` on the six diagnostics.
+Removed as unproductive (`native-raw-departure-result.json`). No performance claim
+or full benchmark is derived from either diagnostic. Production source remains
+`6571e5c`; the active goal and no-push instruction remain.
+
+Further migration needs the complete TS landing/control handoff: reach-envelope
+intersections and fair control variants for each candidate, rather than replacing
+angular seeds with only nearest-point projections. Inspect attempted candidates
+and rejection causes before another surface/sample allocation trial.
+
 ## Spatial launch coverage checkpoint, 2026-11-15
 
 A diagnostic dump of the actual improvement graph for ground-jump-18-1 found
