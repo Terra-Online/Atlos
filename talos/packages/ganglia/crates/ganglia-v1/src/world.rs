@@ -6,6 +6,7 @@ mod boundaries;
 mod support;
 use crate::geometry as collision;
 mod devices;
+mod discovery;
 mod flight;
 mod following;
 mod ground;
@@ -136,6 +137,7 @@ pub struct World {
     components: Vec<usize>,
     authored_navigation: HashSet<usize>,
     ground_graph: std::sync::OnceLock<ground::Graph>,
+    discovery_graph: std::sync::OnceLock<discovery::Graph>,
     ground_cache: std::sync::Arc<std::sync::Mutex<ground_cache::Cache<Option<GroundPath>>>>,
     direct_cache: std::sync::Arc<std::sync::Mutex<ground_cache::Cache<GroundProbe>>>,
 }
@@ -465,6 +467,7 @@ impl World {
             components,
             authored_navigation,
             ground_graph: std::sync::OnceLock::new(),
+            discovery_graph: std::sync::OnceLock::new(),
             ground_cache: Default::default(),
             direct_cache: Default::default(),
         };

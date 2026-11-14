@@ -8,6 +8,8 @@ use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 #[path = "search/geometry.rs"]
 mod geometry;
+#[path = "search/improvement.rs"]
+mod improvement;
 #[path = "search/locomotion.rs"]
 mod locomotion;
 #[path = "search/training.rs"]
@@ -1939,6 +1941,12 @@ fn solve_world(
         Vec::new()
     };
     let original_sources = action_sources.len();
+    let complete_attempt_budget = max_attempts;
+    let max_attempts = if improving {
+        attempts + max_attempts.saturating_sub(attempts).div_ceil(2)
+    } else {
+        max_attempts
+    };
     let mut target_eligible = vec![true; count];
     let mut interior_landings = std::collections::HashSet::new();
     let mut source_cursor = 0usize;
@@ -2116,6 +2124,20 @@ fn solve_world(
                 target_eligible.push(interior_landings.contains(&id));
             }
         }
+    }
+    let max_attempts = complete_attempt_budget;
+    if improving {
+        attempts += improvement::discover(
+            &mut graph,
+            world,
+            &origins,
+            goal,
+            max_attempts.saturating_sub(attempts),
+            max_links,
+            options.speed.max(options.sprint_speed),
+            &authority,
+            &mut truncated,
+        )?;
     }
     let discovery = json!({"originalSources":original_sources,"processedSources":source_cursor,
         "queuedSources":action_sources.len(),"pendingSources":action_sources.len()-source_cursor,

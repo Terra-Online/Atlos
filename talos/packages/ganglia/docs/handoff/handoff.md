@@ -1,5 +1,53 @@
 # Route solver handoff
 
+## TS-style bounded action refinement checkpoint, 2026-11-15
+
+The native improvement pass now shares its existing 640 physical-attempt budget
+between generated-landing discovery and a bounded landing/control queue. The
+second pass sees proved endpoints from the first pass. It uses TS-style directed
+approach/departure navigation fields, continuous face/envelope landing witnesses,
+spatially interleaved launch/landing cells and a maxLinks admission limit. Landing
+proposals are normalized to actual standing feet before flight proof. Navigation
+costs rank proposals only; all retained motion still requires World proof and
+common physical replay. Training and first-feasible policies are unchanged.
+
+An unbounded first draft materialized about 2.65 million proposals in one captured
+window. Bounding neighbor enumeration before projection reduced this to about
+111 thousand; the measured proposal/queue preparation fell from about 876 to
+277 ms in that diagnostic. Standalone globally ranked or shared-queue-only trials
+lost useful actions and were rejected. The retained composition preserves the
+first pass's generated landing sources before refining their continuous landings.
+Evidence includes `native-shared-result.json`, `native-shared-continuous-result.json`,
+`native-shared-bounded-result.json`, `native-shared-fields-result.json` and
+`native-shared-standing-result.json` under `.local/research/`. Those small probes
+are diagnostics, not accepted benchmark results.
+
+The complete ordinary map02 run trains ten requests, freezes, warms two requests
+and scores all fifty once on one worker/lane. All 50 routes independently pass
+physical replay; no timeout or worker recovery occurs. Mean serial service time
+is 766.565510 ms/query, readiness 68.829175 s and end-to-end 118.268789 s. Compared
+with the retained 1589.409605 ms/query TS measurement, latency is below half, but
+**the quality gate still fails**. Paired cost geometric mean is 0.926148732;
+worst ratio is 1.126873081 on ground-jump-15-1 (6.982318 versus 6.196188 modeled
+seconds). It is the only paired request above the unchanged 1.05 worst gate.
+No accepted speedup or completed rewrite objective is claimed.
+
+Raw evidence: `.local/research/native-shared-refinement-50/report.json` and its
+adjacent events journal. Source digest:
+`a844702d71ca258b20cf40ec6b68dbf2e58f5b9a8cef3a7de2c01d6addd7b909`;
+native binary digest:
+`fda5b73393c5a8ee1cef2a7c7a21d0036aef08c8f371b29470b5db3c5880906a`.
+The compatible derived TS reference retains its original timing and the current
+verifier audit, with 46 valid retained routes; four new valid completions are
+reported separately. Readiness/end-to-end scopes retain those provenance limits.
+
+Rust unit/authored tests (149 + 2), feature-enabled all-target Clippy with warnings
+denied, Rustfmt, release N-API build, 26 common physical/lifecycle N-API fixtures
+and diff checks pass. The next task is the
+remaining generic candidate-coverage gap at case 15, preserving all fifty requests,
+current physical policy, original quality gates and the latency goal. Rust remains
+local until the user says ready.
+
 ## Fine-pool coverage and grouping diagnostic, 2026-11-15
 
 Dumped the actual pre-action candidate pool after `2ddfba5` for case 18-1:
