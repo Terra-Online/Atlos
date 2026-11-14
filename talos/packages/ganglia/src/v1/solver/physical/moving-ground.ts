@@ -168,9 +168,11 @@ export const movingGround = async (
   }
   const tolerance = build.cellHeight * 3;
   const layerKey = (support: SweptSupport, height: number) =>
-    support.family === 'seesaw'
-      ? 'seesaw/' + support.id
-      : 'height/' + Math.round(height / build.cellHeight);
+    support.circular
+      ? 'circular/' + support.id + '/' + Math.round(height / build.cellHeight)
+      : support.family === 'seesaw'
+        ? 'seesaw/' + support.id
+        : 'height/' + Math.round(height / build.cellHeight);
   const layers = new Map<string, Layer>();
   const selected: Surface[] = [];
   const rawFaces = new Map<Surface, SourceFace>();
@@ -190,7 +192,7 @@ export const movingGround = async (
       const key = layerKey(support, surface.vertices[0][1]);
       const layer = layers.get(key) ?? { roofs: [], surfaces: [] };
       if (!layers.has(key)) layers.set(key, layer);
-      layer.roofs.push(surface);
+      if (!support.circular) layer.roofs.push(surface);
     }
   }
   const surfaces: Surface[] = [],
@@ -310,6 +312,85 @@ export const movingGround = async (
       }
     }
   }
+  // A circular contact domain is the explicitly approved wheel abstraction.
+  // Its narrow attachment patches are not terrain to erode into stairs. Admit
+  // each contact only after checking the player's body against static geometry.
+  for (const [supportIndex, support] of supports.entries()) {
+    if (!support.circular) continue;
+    if (support.family !== 'waterwheel') throw new Error('Invalid circular support family');
+    const blocked = createWallChecker(walls, build.profile);
+    for (const [surfaceIndex, raw] of support.surfaces.entries()) {
+      if (!rawFaces.has(raw)) continue;
+      const p = centerOf(raw.vertices);
+      const feet: Vec3 = [p[0], p[1] + 0.01, p[2]];
+      if (
+        world.bounds &&
+        [0, 2].some(
+          (axis, i) =>
+            feet[axis] - build.profile.radius < world.bounds!.min[i] ||
+            feet[axis] + build.profile.radius > world.bounds!.max[i],
+        )
+      )
+        continue;
+      const length = Math.hypot(support.circular.axis[0], support.circular.axis[2]);
+      const axis: Vec3 = [support.circular.axis[0] / length, 0, support.circular.axis[2] / length];
+      const padding = Math.max(
+        ...raw.vertices.map((v) => Math.abs((v[0] - p[0]) * -axis[2] + (v[2] - p[2]) * axis[0])),
+      );
+      const clear = (offset: number) => {
+        const end = feet.map((v, i) => v + offset * axis[i]) as Vec3;
+        if (
+          world.bounds &&
+          [0, 2].some(
+            (k, i) =>
+              end[k] - build.profile.radius - padding < world.bounds!.min[i] ||
+              end[k] + build.profile.radius + padding > world.bounds!.max[i],
+          )
+        )
+          return false;
+        return (
+          !blocked(feet, end, padding) &&
+          !world.sweepCapsule(feet, end, { ...build.profile, inflation: padding })
+        );
+      };
+      if (!clear(0)) continue;
+      const extent = (sign: number) => {
+        const limit = support.circular!.halfWidth;
+        if (clear(sign * limit)) return limit;
+        let low = 0,
+          high = limit;
+        for (let i = 0; i < 20; i++) {
+          const middle = (low + high) / 2;
+          if (clear(sign * middle)) low = middle;
+          else high = middle;
+        }
+        return low;
+      };
+      const low = -extent(-1),
+        high = extent(1);
+      if (high - low < 1e-4) continue;
+      // Planning nodes are physical feet, while the source patches remain the
+      // support surface. Keeping the clearance here avoids vertical walk stubs
+      // between a rim ride and a projected ground-height endpoint.
+      const face = {
+        ...raw,
+        id: 'moving-ground/' + surfaces.length,
+        portals: [],
+        vertices: raw.vertices.map((v) => {
+          const along = (v[0] - p[0]) * axis[0] + (v[2] - p[2]) * axis[2];
+          const clipped = Math.max(low, Math.min(high, along));
+          return [
+            v[0] + (clipped - along) * axis[0],
+            v[1] + 0.01,
+            v[2] + (clipped - along) * axis[2],
+          ] as Vec3;
+        }),
+      };
+      surfaces.push(face);
+      layers.get(layerKey(support, p[1]))!.surfaces.push(face);
+      sourceFaces.set(face.id, [{ support: supportIndex, surface: surfaceIndex }]);
+    }
+  }
   const project = createGoalProjector(surfaces),
     blocked = createWallChecker(walls, build.profile);
   const baseProject = createGoalProjector(baseSurfaces);
@@ -319,8 +400,20 @@ export const movingGround = async (
     if (!destination) {
       continue;
     }
-    const a: Vec3 = [center[0], center[1] + 0.01, center[2]],
-      b: Vec3 = [destination.position[0], destination.position[1] + 0.01, destination.position[2]];
+    const circular = sourceFaces
+      .get(surface.id)
+      ?.some((source) => supports[source.support].circular);
+    const contact = circular
+      ? world.groundAt(destination.position, {
+          maxUp: tolerance,
+          maxDown: tolerance,
+          maxSlope: build.maxSlope,
+          radius: build.profile.radius,
+        })?.position
+      : destination.position;
+    if (!contact) continue;
+    const a: Vec3 = [center[0], center[1] + (circular ? 0 : 0.01), center[2]],
+      b: Vec3 = [contact[0], contact[1] + 0.01, contact[2]];
     if (blocked(a, b) || world.sweepCapsule(a, b, build.profile)) {
       continue;
     }
@@ -373,7 +466,11 @@ export const movingGround = async (
         const a: Vec3 = [from.position[0], transfer.from[1] + 0.01, from.position[2]],
           b: Vec3 = [to.position[0], transfer.to[1] + 0.01, to.position[2]];
         reason = 'ride-clearance-blocked';
-        if (!blocked(a, b) && !world.sweepCapsule(a, b, build.profile)) {
+        const inflation = support.circular?.sagitta ?? 0;
+        if (
+          !blocked(a, b, inflation) &&
+          !world.sweepCapsule(a, b, { ...build.profile, inflation })
+        ) {
           const time =
             Math.hypot(...transfer.from.map((v, i) => v - transfer.to[i])) / transfer.speed;
           const id = 'moving-ride/' + support.id + '/' + index;

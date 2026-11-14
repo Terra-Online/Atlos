@@ -285,7 +285,7 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
                 evidence: [...evidence],
                 diagnostics: { truncated },
               }
-            : progress('incomplete', 'resource-schedule');
+            : progress('incomplete', 'route-composition');
         }
         if (evidence.length >= maxWindows) return progress('incomplete', 'window-budget');
         const margin = settings.margin * (expansion + 1);

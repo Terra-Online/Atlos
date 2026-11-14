@@ -26,11 +26,11 @@ remain local. The manifest requires runner adaptation and is not a plain
 accepted. It supplements the required TS/Rust local and stress workloads in
 `AGENTS.md`; unsupported per-case setup must not be silently ignored.
 
-The first algorithm milestone is the agreed circular-waterwheel model and
-single-pose conveyor stepping semantics. Multi-box discovery follows; performance
-claims require fixed-input paired validation. The draft currently shares handoff
-records and acceptance case definitions, with no new solver implementation or
-measured speedup.
+The current draft implements the TS circular-waterwheel and bounded joint-box
+prototypes, alongside source export repairs and the shared acceptance definitions.
+It is not a completed map-scale acceptance or a measured speedup. Rust search has
+not been ported to the new joint-discovery or circular-contact rules; the shared
+verifier remains the acceptance authority.
 
 ## Rust rewrite integration, 2026-11-14
 
@@ -637,15 +637,20 @@ The working snapshot assumes completed tasks, enabled and powered facilities, an
 
 Moving rocks, lotus supports, conveyor boxes, elevators and seesaws use the user-approved phase-free model. Horizontal motion primarily supplies swept support. Vertical motion supplies directed transport connections. Platform phase synchronization and waiting are explicitly outside the current acceptance scope, as reconfirmed on 2026-11-14. Selectable-floor control is a separate unresolved contract.
 
-Waterwheels have a previously agreed model: a traversable circular surface/domain,
-assuming the player adjusts position on the blades. Derive its axis, pivot and
-blade extent from source geometry and motion; preserve external obstacles and
-entry clearance. Per-phase blade placement and waiting are not required. The
-current export retains animation samples and terminal-pose static collision,
-which does not implement this circular domain. Inspection of the standalone
-Ganglia checkout and the current workspace did not establish a delivered circular
-waterwheel adapter; do not describe this as a new modeling decision or a proven
-migration regression.
+Waterwheels use the agreed traversable circular domain with player adjustment on
+blades. The extractor binds real collider subtrees to a complete fixed-axis source
+rotation and retains its pivot, axis and outer rim. Only proven rotating collider
+bodies are replaced; stationary and unrelated geometry stays in the static export.
+The TS model creates rim contacts and adjacent transfers with a 5 mm maximum chord
+sagitta. It uses the source nominal peripheral speed and excludes phase/waiting.
+Contact strips are clipped by continuous body-clearance sweeps. The shared verifier
+checks exact circular feet and inflated transfer clearance; a filled disk or an
+unchecked terminal pose is not a substitute for this domain.
+
+All four source wheels export successfully and have bounded rim-to-rim controls.
+Two also pass independent ordinary-ground entry/exit replay. The other two do not
+yet have verified paired ordinary joins. This is mechanism-level evidence, not
+whole-scene reachability or completion of the 266 original queries.
 
 Conveyor stepping uses swept support to find a candidate box position. The
 selected contact run must fit one feasible source-derived box pose. Display only
@@ -940,13 +945,41 @@ The boost planner compares one reachable pickup and its accelerated tail. Ground
 | Fixed ropes/ziplines and bounce devices | Exported identities, directed endpoints, supported attachment and model-based swept motion. Authored state/timing still defines applicability. |
 | Moving rocks, lotus supports and elevators | Phase-free swept support and directed vertical transport. Phase and waiting are excluded from current acceptance; selectable-floor semantics remain open. |
 | Conveyor stepping boxes | Swept candidate support with a single feasible used pose per stepping contact run. Route visualization emits that used box; acceptance must also verify full-run support by the same pose. |
-| Waterwheels | Agreed traversable circular domain with player adjustment, external-obstacle checks and valid entry. Animation samples and terminal-pose collision are exported; the circular-domain adapter is not established. |
+| Waterwheels | Source-bound circular TS prototype, clipped contacts and collision-checked rim transfers. Four real rim controls complete; two ordinary-ground entry/exit controls pass independent replay. Full-scene acceptance and Rust parity remain pending. |
 | Seesaws | Exported sampled support poses under the same phase-free assumption; phase and waiting are excluded from current acceptance. |
 | Forklifts | Actual lifting-rack subtree and endpoint control poses. Vehicle-body collision remains static. Retained export audit covers 18 map01 and 5 map02 objects. Real-point and visual acceptance remain limited. |
 | Following stepping boxes | Placement sampling inside the authored activity sphere, supported/collision-checked placement, reconstructed box-top support and used-position output. Retained audit covers 23 map01 and 9 map02 boxes. |
 | Steam and other hazards | Applicable exported exclusions participate in planning. Complete map-wide hazard coverage remains an audit item. |
 
-Following-box search currently runs after ordinary planning fails, moves one source box per trial and retains other source collisions. It supports horizontal box tops and handled BoxCollider geometry, emits diagnostics for unsupported/missing ownership and spends a finite placement budget. Multi-box coordination, box shortcuts to an already complete route, continuous placement completeness and moving time remain open. Placement search and moving-support algorithms live in Ganglia `src/solver/physical/`; game-specific geometry export remains in the extractor adapter.
+TS following-box search still runs after ordinary planning fails. It now explores
+joint layouts with a shared finite budget, alternating nearby box subsets and
+candidate poses. Each box keeps its own source spawn and three-dimensional activity
+radius. Original-body coverage, target coverage, support and collision are checked;
+unselected boxes retain conservative collision. The returned route records every
+selected pose, including a moved body that clears a path without being stepped on.
+Action and resource-search truncation propagate to the caller.
+
+The source exporter now converts following BoxCollider corners from face-ring to
+bit-indexed order without changing any coordinates, spawn or activity radius.
+All 23 map01 and 9 map02 source boxes satisfy the existing box-geometry contract.
+Older exports need explicit regeneration/rebinding; raw historical inputs are not
+rewritten in place. Local candidate projection first filters the XZ footprint using
+the existing support index, preserving the original vertical/range checks.
+
+Current placement requires flat static-ground support. Stacking and suspended
+placement have not been confirmed and are not enabled. Synthetic two- and three-box
+relay cases require joint use and pass; the bounded real v250-260 probe attempts
+26 layouts without a verified route and remains truncated. It does not establish
+real-scene multi-box success or impossibility. Rust can bind supplied joint layouts,
+but its automatic placement discovery remains single-box.
+
+TS route composition deduplicates identical box bindings and rejects conflicting
+ones. Without final-layout geometry replay, multiple pieces must declare the same
+complete layout. New or changed placements across windows remain conservatively
+incomplete; full prefix revalidation and cross-window layout carry are open. Box
+shortcuts to already complete routes and continuous placement completeness also
+remain open. Algorithms live in `src/v1/solver/physical/`; game-specific export is
+maintained through the noclip integration patches.
 
 The later traversal export audit also identified incomplete motion relationships for five `InteractiveMovingPlatform` objects, fifteen water-level-driven waterdrone platforms, one waterbody floating support and the separate box-game elevator controller. Existing static/current-pose collision remains useful, while complete transport semantics require the missing control bindings. Actual bridge geometry and bridge-end access are separate investigations. See the Atlos [traversal audit](../../../../apps/world/docs/traversal-data-audit-2026-11-10.md).
 

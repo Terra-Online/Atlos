@@ -1,5 +1,67 @@
 # Route solver history and validation evidence
 
+## Circular wheel and nearby joint-box prototypes, 2026-11-14
+
+This prototype implements the agreed phase-free circular wheel model and bounded
+TS joint-box discovery. Export and model changes are carried together in this
+commit. The Rust search implementation is unchanged; full TS/Rust local/stress
+acceptance and the 266-case suite remain pending. No paired speedup is claimed.
+
+The waterwheel exporter proves complete source rotation and collider ownership,
+then derives axis, pivot, rim radius and width. It rejects unsupported motion
+instead of guessing. Static decorations and nonrotating collider geometry remain.
+Four target wheels export successfully; all previous static-support identities and
+non-wheel triangle indices are retained. Circular contacts use physical feet,
+continuous strip-clearance clipping and sagitta-inflated transfer checks. Independent
+replay found and fixed vertical walk stubs and accidental projection to neighbouring
+higher rim contacts without relaxing the global collision or height gates.
+
+The real window is map02 bounds [-704, -1344, -576, -1120], containing 24 tiles,
+194,226 ground surfaces and 14,968 portals. All four wheels have completed bounded
+rim-to-rim controls. Ordinary-ground entry/exit controls pass independent replay
+with no issues for 10100290003 and 10100290024 (modeled costs 10.713121750248071 and
+14.65675363124182). Wheel 10100290021 has no join in this probe; 10100290025 has no
+connected pair among its two joins. These are bounded mechanism controls, not
+ordinary whole-scene searches or the original four collection requests.
+Evidence: `.local/research/algo-progression/wheel-contact-results.json` and
+`wheel-entry-results.json`, with per-wheel inputs/results and retained geometry.
+
+Joint-box discovery retains individual three-dimensional source ranges and other
+box collisions. Layout sizes share a finite budget; nearby subsets rotate and
+candidate combinations expand diagonally. Individually impossible geometry is
+rejected before forming joint products. Search truncation is propagated, and
+composition refuses conflicting or newly introduced layouts without prefix replay.
+Synthetic required two-/three-box relays, independent joint-layout validation,
+overlap/range rejection, original-coverage refusal and composition tests pass.
+
+Real input exposed a pre-existing corner-order contract mismatch: source box
+vertices were face-ring ordered while both solver implementations expected binary
+corners. The following export boundary now reorders corners only. All 32 source
+boxes validate, with zero coordinate changes and identical spawn/radius values.
+The old v250-260 probe was rejected before layout search. After this repair, a
+preparation-only run was stopped after more than 60 seconds without a layout; it
+was not classified as a timeout or a physical failure. Reusing the support index
+for local XZ projection removed the broad global projection work while preserving
+projection results and all geometric constraints.
+
+The subsequent v250-260 probe was corrected to meet the direct API's grounded-start
+precondition using the ordinary TS projection range. Requested/effective start
+heights are 27.2610015869 / 27.1434693316 metres; XZ, goal, interaction and budgets
+are unchanged. With 8,000 candidates and 64 layouts under a 300-second deadline,
+it takes 42.063 seconds and examines 26 layouts, returning no-verified-route with
+truncated=true and no used box. It is not multi-box success or proof of
+impossibility. Evidence is `.local/research/algo-progression/following-grounded/`;
+the earlier non-grounded diagnostics and stopped run are preserved separately.
+The probe uses retained geometry with newly bound device facts, not a same-input
+performance comparison. All probe workers exited and their timers were cleared.
+
+Validation: package format/lint/typecheck and 453 tests pass; World application and
+worker typechecks pass. Eleven affected extractor export tests and extractor
+checking pass. Full map02/map02-stress paired acceptance has not been run for this
+prototype, and ordinary real multi-box success remains unestablished. Placement
+currently requires static-ground support; stacking/suspension semantics remain
+unconfirmed rather than silently enabled.
+
 ## Share mechanism acceptance definitions, 2026-11-14
 
 The user authorized publishing the 266 selected case definitions so the Rust

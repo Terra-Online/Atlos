@@ -12,6 +12,10 @@ circular-waterwheel cases. Failures in the retained population remain included.
 New mechanism selections are opportunities to exercise a feature, not proof that
 the feature is necessary or that the target is reachable.
 
+`selectionCapabilityGap` preserves the pre-prototype selection context. Current
+implementation and probe results live in the canonical handoff/history records.
+The circular and joint-box TS prototypes do not turn these unrun cases into passes.
+
 ## Files
 
 - `suite.json`: authoritative queries, per-case setup, assertions, source bindings,
@@ -35,6 +39,9 @@ and call the result full mechanism acceptance.** It requires these adaptations:
    referenced assets are not shipped here. Match the recorded source build,
    movement/profile, exporter and progression assumptions. Current renderer
    package upgrades do not automatically rebind these older physics inputs.
+   The new wheel-domain export and corrected following-box corner order require
+   regenerated candidate facts and an explicit candidate input binding. Preserve
+   the original selection provenance; do not overwrite or relabel old exports.
 2. Preserve original goal position, interaction volume, facing/airborne rules,
    arrival states/costs and waypoint order. Start projection requires physical
    support evidence and must not replace the requested goal.

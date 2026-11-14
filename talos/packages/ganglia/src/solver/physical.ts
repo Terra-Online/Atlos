@@ -76,7 +76,10 @@ export interface PoseSpan {
 /** query-independent phase-free support, scoped to one moving body's authored path */
 export interface SweptSupport {
   id: string;
-  family: 'platform' | 'conveyor' | 'seesaw' | 'water-floater' | 'forklift';
+  family: 'platform' | 'conveyor' | 'seesaw' | 'water-floater' | 'forklift' | 'waterwheel';
+  /** Source-bound circular contact domain; rotating blades are deliberately
+   * abstracted under the phase-free player-adjustment assumption. */
+  circular?: { center: Vec3; axis: Vec3; radius: number; halfWidth: number; sagitta: number };
   level: string;
   model: string;
   /** local authored control, retained alongside the fully-enabled planning assumption */
@@ -118,6 +121,8 @@ export interface FollowingSupport {
   level: string;
   model: string;
   spawn: Vec3;
+  /** BoxCollider corners use binary indices: 0→1, 0→2 and 0→4 are the
+   * three box axes. Source exporters must normalize face-ring ordering. */
   bodies: Vec3[][];
   geometryKind: 'box' | 'convex';
   /** Three-dimensional distance from the restored spawn, not an arbitrary endpoint. */

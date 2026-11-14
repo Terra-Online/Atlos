@@ -53,17 +53,20 @@ export function verticalProjectionCandidates(
   surfaces: Surface[],
   position: Vec3,
   maxVertical: number,
+  horizontal = 0,
 ): Surface[] {
   // Preserve projectPoint's argument checks even when the spatial query is empty.
   projectPoint([], position, { maxVertical });
+  if (!Number.isFinite(horizontal) || horizontal < 0)
+    throw new Error('Invalid projection footprint');
   let index = verticalIndices.get(surfaces);
   if (!index) {
     index = indexVerticalSupports(surfaces);
     verticalIndices.set(surfaces, index);
   }
   const bounds = {
-    min: [position[0], position[1] - maxVertical, position[2]],
-    max: [position[0], position[1] + maxVertical, position[2]],
+    min: [position[0] - horizontal, position[1] - maxVertical, position[2] - horizontal],
+    max: [position[0] + horizontal, position[1] + maxVertical, position[2] + horizontal],
   };
   return [...index.query(bounds), ...index.fallback]
     .sort((a, b) => a.ordinal - b.ordinal)

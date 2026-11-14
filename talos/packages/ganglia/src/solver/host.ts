@@ -1,5 +1,6 @@
 /** Host-side normalization and resource work use this seam without importing v1 paths.
  * Browser consumers use solver results and playback instead of algorithm helpers. */
+export { circularSupport } from '#@/src/model/circular-support.ts';
 export {
   createPhysicalPreparation,
   physicalWork,

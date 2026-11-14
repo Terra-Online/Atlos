@@ -1,5 +1,5 @@
 {
-  "schema": 3,
+  "schema": 4,
   "name": "real-scene-validation",
   "selectionSeed": 2501114,
   "selectionDate": "2026-11-14",
@@ -123,14 +123,14 @@
   "supportPolicy": {
     "vertical": "Source pose caps plus validated bidirectional ride connections, without a fictitious shaft wall.",
     "nonVertical": "Phase-free swept roof support plus validated timed transfers when a source speed exists; swept space is not a solid obstacle.",
-    "followingBox": "Source activity-range placement with support/collision validation; current search moves one box per trial.",
-    "multiBox": "Acceptance requires one coherent joint placement and actual use of all counted boxes. Rust can jointly bind/validate supplied placements and retain bindings across windows; automatic placement discovery remains single-box in TS and Rust.",
+    "followingBox": "Each selected placement must obey its source activity sphere and supported/collision-free geometry. Unselected source boxes remain present.",
+    "multiBox": "One coherent joint layout must actually support all counted box uses. The TS prototype searches bounded joint layouts; Rust automatic discovery remains single-box. Full real-scene acceptance is pending.",
     "conveyor": "Swept support locates candidate poses. Each stepping use must admit one fixed source-derived box pose covering its full contact run. Display only that used box pose; source speed is not required for this phase-free stepping model.",
     "waterwheel": "Previously agreed traversable circular-surface model, allowing player adjustment on blades while preserving source axis/pivot/radius, external obstacles and entry checks. Exported terminal-pose geometry is not an implementation of this model."
   },
   "modelLimits": [
-    "Multi-box joint placement is a required capability gap, now represented by 12 acceptance cases; proximity does not prove necessity or feasibility.",
-    "Waterwheel reachable-domain support is a required capability gap, represented by four source-animated wheel cases.",
+    "Selection-time capability gap: Multi-box joint placement is a required capability gap, now represented by 12 acceptance cases; proximity does not prove necessity or feasibility.",
+    "Selection-time capability gap: Waterwheel reachable-domain support is a required capability gap, represented by four source-animated wheel cases.",
     "Following-box carrying/activation time is outside the present placement model.",
     "Authored source/runtime progression and actual player traversal still require separate confirmation.",
     "Coarse navigation, historical completion and stair labels are selection evidence, not current physical validation.",
@@ -14594,7 +14594,7 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "knownCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
     },
     {
       "id": "v250-252",
@@ -14677,7 +14677,7 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "knownCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
     },
     {
       "id": "v250-253",
@@ -14759,7 +14759,7 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "knownCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
     },
     {
       "id": "v250-254",
@@ -14841,7 +14841,7 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "knownCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
     },
     {
       "id": "v250-255",
@@ -14923,7 +14923,7 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "knownCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
     },
     {
       "id": "v250-256",
@@ -15008,7 +15008,7 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "knownCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
     },
     {
       "id": "v250-257",
@@ -15091,7 +15091,7 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "knownCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
     },
     {
       "id": "v250-258",
@@ -15174,7 +15174,7 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "knownCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
     },
     {
       "id": "v250-259",
@@ -15266,7 +15266,7 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "knownCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
     },
     {
       "id": "v250-260",
@@ -15361,7 +15361,7 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "knownCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
     },
     {
       "id": "v250-261",
@@ -15453,7 +15453,7 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "knownCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
     },
     {
       "id": "v250-262",
@@ -15545,7 +15545,7 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "knownCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
     },
     {
       "id": "v250-263",
@@ -15613,7 +15613,7 @@
       ],
       "status": "selected-unrun",
       "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
-      "knownCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter."
+      "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter."
     },
     {
       "id": "v250-264",
@@ -15680,7 +15680,7 @@
       ],
       "status": "selected-unrun",
       "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
-      "knownCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter."
+      "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter."
     },
     {
       "id": "v250-265",
@@ -15747,7 +15747,7 @@
       ],
       "status": "selected-unrun",
       "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
-      "knownCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter."
+      "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter."
     },
     {
       "id": "v250-266",
@@ -15814,7 +15814,7 @@
       ],
       "status": "selected-unrun",
       "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
-      "knownCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter."
+      "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter."
     }
   ],
   "distribution": {
@@ -15827,7 +15827,8 @@
     },
     "pathResolution": "Resource references are logical root-relative names, not paths relative to this manifest. Map each root explicitly.",
     "legacyObservationScope": "Previous observations are from the retained pre-Rust comparison, not a fresh run of this suite.",
-    "generatedAssetsIncluded": false
+    "generatedAssetsIncluded": false,
+    "adaptationNotes": "selectionCapabilityGap records the pre-prototype selection state, not the current implementation. Regenerate and explicitly bind candidate inputs for circular waterwheels and canonical following-box corners; preserve original queries and original source provenance. Do not silently relabel old exports as new inputs."
   },
   "physicalRegions": [
     {

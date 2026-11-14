@@ -179,7 +179,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
             const route = terminal
               ? composeRoutes([result.route, terminal.route], locomotion)
               : result.route;
-            if (route.status !== 'complete') return stopped('terminal-resource-schedule');
+            if (route.status !== 'complete') return stopped('terminal-composition');
             return publish(
               route,
               [...result.evidence, ...(terminal ? [{ supportBoxes: terminal.supportBoxes }] : [])],

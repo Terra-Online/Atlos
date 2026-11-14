@@ -12,7 +12,8 @@
     "gpu-recovery.patch",
     "extractor-types.patch",
     "client-transport.patch",
-    "resource-metadata.patch"
+    "resource-metadata.patch",
+    "algorithm-supports.patch"
   ],
   "migratedFrom": "c986039f16d9037aefb5c21b10cac971b77ceef9",
   "packageVersion": 106

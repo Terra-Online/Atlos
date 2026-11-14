@@ -3,6 +3,7 @@ import { test } from 'node:test';
 
 import { createCollisionWorld } from '#@/src/collision.ts';
 import type { GroundArrival, Surface, Vec3 } from '#@/src/index.ts';
+import { createPhysicalWorld } from '#@/src/model/world.ts';
 import type { FollowingSupport } from '#@/src/solver/physical.ts';
 import type { JumpRouteOptions } from '#@/src/v1/route/jump-planner.ts';
 import { planFollowingRoute } from '#@/src/v1/solver/physical/following-route.ts';
@@ -336,4 +337,166 @@ test('compatible known device actions remain usable and actions crossing the pla
     options: { ...jump, connections: [crossing] },
   });
   assert.equal(blocked.route.status, 'no-verified-route');
+});
+
+const relayBox = (id: string, x: number): FollowingSupport => ({
+  ...support(),
+  id,
+  spawn: [x, -2, 5],
+  maxDistance: 6,
+  bodies: [
+    Array.from({ length: 8 }, (_, bits): Vec3 => [
+      x + (bits & 1 ? 0.8 : -0.8),
+      -2 + (bits & 2 ? 2 : 0),
+      5 + (bits & 4 ? 0.8 : -0.8),
+    ]),
+  ],
+});
+const relaySurfaces = () => [
+  floor('entry', -8, -3, 0, -0.5, 0.5),
+  floor('goal', 6.5, 12, 0, -0.5, 0.5),
+  floor('pad-a', -1, 1, -2, -1, 1),
+  floor('pad-b', 2.5, 4.5, -2, -1, 1),
+  floor('spawn-a', -1, 1, -2, 4, 6),
+  floor('spawn-b', 2.5, 4.5, -2, 4, 6),
+];
+const relayOptions: JumpRouteOptions = {
+  ...jump,
+  runAirSpeed: 3,
+  maxHorizontalDistance: 4,
+  model: { ...jump.model, maxHorizontalSpeed: 3 },
+  locomotion: { speed: 3, sprintSpeed: 3, sprintAcceleration: 3 },
+  maxLinks: 32,
+  maxCandidates: 2048,
+};
+
+const relayWorld = (boxes: FollowingSupport[], surfaces: Surface[]) =>
+  createPhysicalWorld(
+    {
+      ground: {
+        surfaces,
+        build,
+        options: { profile: build.profile, speed: 3, maxVertical: 0.5, walls: [] },
+      },
+      collision: geometry(surfaces),
+      movement: {
+        model: {
+          ...relayOptions.model,
+          startHorizontalSpeed: 3,
+          airOverspeedDeceleration: 10,
+          airAcceleration: 60,
+          airDeceleration: 10,
+        },
+        maxSlope: 45,
+        runAirSpeed: 3,
+        stepUp: 0.3,
+        stepDown: 0.5,
+      },
+      locomotion: { speed: 3, sprintSpeed: 3, sprintAcceleration: 3 },
+      devices: { devices: [], ropes: [], followingSupports: boxes },
+    },
+    'complete',
+  );
+
+test('joint discovery uses two nearby boxes when neither box alone connects the relay', async () => {
+  const boxes = [relayBox('a', 0), relayBox('b', 3.5)];
+  const options = { surfaces: relaySurfaces(), target: [8, 0, 0] as Vec3, options: relayOptions };
+  for (const box of boxes)
+    assert.notEqual((await solve({ ...options, boxes: [box] })).route.status, 'complete');
+  const result = await solve({ ...options, boxes });
+  assert.equal(result.route.status, 'complete', JSON.stringify(result.diagnostics));
+  assert.deepEqual(new Set(result.supportBoxes.map((b) => b.device)), new Set(['a', 'b']));
+  if (result.route.status === 'complete') {
+    assert.equal(result.route.placements?.length, 2);
+    assert.deepEqual(
+      new Set(
+        relayWorld(boxes, options.surfaces).configured(result.route.placements!)
+          .validatedPlacements,
+      ),
+      new Set(['a', 'b']),
+    );
+    for (const p of result.route.placements!) {
+      const source = boxes.find((b) => b.id === p.device)!;
+      assert.ok(Math.hypot(...p.position.map((v, i) => v - source.spawn[i])) <= source.maxDistance);
+    }
+  }
+});
+
+test('independent joint geometry rejects overlapping or out-of-range box layouts', () => {
+  const boxes = [relayBox('a', 0), relayBox('b', 3.5)],
+    world = relayWorld(boxes, relaySurfaces());
+  assert.throws(
+    () =>
+      world.configured([
+        { device: 'a', position: [3.3, -2, 0] },
+        { device: 'b', position: [3.3, -2, 0] },
+      ]),
+    /overlap/,
+  );
+  assert.throws(
+    () => world.configured([{ device: 'a', position: [7, -2, 0] }]),
+    /Invalid support placement/,
+  );
+});
+
+test('joint discovery cannot borrow a remote box or exceed an individual activity sphere', async () => {
+  const a = relayBox('a', 0),
+    b = relayBox('b', 3.5),
+    remote = relayBox('remote', 100);
+  remote.maxDistance = 2;
+  const result = await solve({
+    boxes: [{ ...a, maxDistance: 4 }, b, remote],
+    surfaces: relaySurfaces(),
+    target: [8, 0, 0],
+    options: relayOptions,
+  });
+  assert.notEqual(result.route.status, 'complete');
+  assert.ok(
+    result.diagnostics.outcomes.some(
+      (o) => o.device === 'remote' && o.reason === 'activity-range-outside-collision-scope',
+    ),
+  );
+  assert.ok(result.diagnostics.placements <= 32);
+});
+
+test('three-box relay keeps all placements in one coherent source-bounded layout', async () => {
+  const boxes = [relayBox('a', 0), relayBox('b', 3.5), relayBox('c', 7)];
+  const surfaces = [
+    ...relaySurfaces().filter((s) => s.id !== 'goal'),
+    floor('pad-c', 6, 8, -2, -1, 1),
+    floor('spawn-c', 6, 8, -2, 4, 6),
+    floor('end', 10, 14, 0, -0.5, 0.5),
+  ];
+  const result = await solve({
+    boxes,
+    surfaces,
+    target: [12, 0, 0],
+    options: { ...relayOptions, maxLinks: 64, maxCandidates: 8192 },
+  });
+  assert.equal(result.route.status, 'complete', JSON.stringify(result.diagnostics));
+  assert.deepEqual(new Set(result.supportBoxes.map((b) => b.device)), new Set(['a', 'b', 'c']));
+  if (result.route.status === 'complete') assert.equal(result.route.placements?.length, 3);
+});
+
+test('an exhausted action search remains truncated even when its one layout is exhausted', async () => {
+  const box = support();
+  box.spawn = [8.7, 0, 0];
+  box.bodies = [cuboid(8.7, 0, 0)];
+  box.maxDistance = 0.01;
+  const result = await solve({ boxes: [box], options: { ...jump, maxLinks: 1, maxCandidates: 1 } });
+  assert.equal(result.route.status, 'no-verified-route');
+  assert.equal(result.diagnostics.placements, 1);
+  assert.equal(result.diagnostics.truncated, true);
+});
+
+test('nearby activity range cannot authorize relocating an original body outside physical coverage', async () => {
+  const box = support();
+  box.spawn = [19, 0, 0];
+  box.bodies = [cuboid(19, 0, 0)];
+  const result = await solve({ boxes: [box] });
+  assert.equal(result.route.status, 'no-verified-route');
+  assert.equal(result.diagnostics.truncated, true);
+  assert.ok(
+    result.diagnostics.outcomes.some((o) => o.reason === 'original-body-outside-collision-scope'),
+  );
 });

@@ -1310,8 +1310,8 @@
     }
   ],
   "unmodeled": [
-    "Multi-box joint placement is a required capability gap, now represented by 12 acceptance cases; proximity does not prove necessity or feasibility.",
-    "Waterwheel reachable-domain support is a required capability gap, represented by four source-animated wheel cases.",
+    "Selection-time capability gap: Multi-box joint placement is a required capability gap, now represented by 12 acceptance cases; proximity does not prove necessity or feasibility.",
+    "Selection-time capability gap: Waterwheel reachable-domain support is a required capability gap, represented by four source-animated wheel cases.",
     "Following-box carrying/activation time is outside the present placement model.",
     "Authored source/runtime progression and actual player traversal still require separate confirmation.",
     "Coarse navigation, historical completion and stair labels are selection evidence, not current physical validation.",

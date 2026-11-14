@@ -349,6 +349,7 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
             )
               throw new Error('Fast flight requires active sprint');
           } else {
+            let deviceInflation = 0;
             const authored = rules.ground.options.connections?.find(
               (edge) => edge.id === s.connection && edge.state === 'open',
             );
@@ -369,11 +370,12 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
                   if (
                     !transfer.speed ||
                     s.points.length !== 2 ||
-                    distance(s.points[0], a) > profile.radius + 0.05 ||
-                    distance(s.points[1], b) > profile.radius + 0.05 ||
+                    distance(s.points[0], a) > (support.circular ? 0.02 : profile.radius + 0.05) ||
+                    distance(s.points[1], b) > (support.circular ? 0.02 : profile.radius + 0.05) ||
                     !close(s.times.at(-1)!, distance(a, b) / transfer.speed)
                   )
                     throw new Error('Invalid moving support ride');
+                  deviceInflation = support.circular?.sagitta ?? 0;
                   verified = true;
                 }
               if (
@@ -431,8 +433,11 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
             if (
               s.points.some(
                 (p, i) =>
-                  blocked(i ? s.points[i - 1] : p, p) ||
-                  world.sweepCapsule(i ? s.points[i - 1] : p, p, profile),
+                  blocked(i ? s.points[i - 1] : p, p, deviceInflation) ||
+                  world.sweepCapsule(i ? s.points[i - 1] : p, p, {
+                    ...profile,
+                    inflation: deviceInflation,
+                  }),
               )
             )
               throw new Error('Obstructed device trajectory');
