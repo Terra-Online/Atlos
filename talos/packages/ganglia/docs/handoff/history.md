@@ -1,5 +1,12 @@
 # Route solver history and validation evidence
 
+## Configurable benchmark deadline, 2026-11-14
+
+`GANGLIA_BENCHMARK_QUERY_SLO_MS` overrides the cooperative query deadline and
+reported SLO together; the default remains 300000 ms. The stress diagnostic uses
+60000 ms. Source preparation, warmup and scoring retain the same worker, and
+cancellation waits for solver checkpoints. No hard worker timeout is introduced.
+
 ## Verifier walking approximation, 2026-11-14
 
 Verification version 3 separates walking representation from flight precision.

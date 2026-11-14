@@ -44,9 +44,12 @@ const { values } = parseArgs({
 });
 if (values.help) {
   console.log(
-    'Usage: pnpm benchmark:full [--adapter ganglia-v1-ts|ganglia-v1-rust|<module-path>] [--json | --markdown] [--data-root <path>] [--scene <name; default map02>] [--extractor <path>] [--workload <json-file | map02-long-range | map02-long-detours | map02-stress>] [--offset <index>] [--limit <count>] [--concurrency <scene-lanes>] [--workers <prepared solver processes; default 1>] [--rounds <measured batches; default 1>] [--config <json-file>] [--reference <benchmark-json>] [--max-mean-cost-ratio <ratio; default 1.01>] [--max-worst-cost-ratio <ratio; default 1.05>]. After 300 seconds a query receives a cooperative cancellation request; timeouts count as failures. Reference comparisons reject lost solutions or excess modeled route cost; stability is checked across measured rounds. V1 service preparation is required by its solver config and supplied by the benchmark adapter.',
+    'Usage: pnpm benchmark:full [--adapter ganglia-v1-ts|ganglia-v1-rust|<module-path>] [--json | --markdown] [--data-root <path>] [--scene <name; default map02>] [--extractor <path>] [--workload <json-file | map02-long-range | map02-long-detours | map02-stress>] [--offset <index>] [--limit <count>] [--concurrency <scene-lanes>] [--workers <prepared solver processes; default 1>] [--rounds <measured batches; default 1>] [--config <json-file>] [--reference <benchmark-json>] [--max-mean-cost-ratio <ratio; default 1.01>] [--max-worst-cost-ratio <ratio; default 1.05>]. After the configured SLO a query receives a cooperative cancellation request; timeouts count as failures. Reference comparisons reject lost solutions or excess modeled route cost; stability is checked across measured rounds. V1 service preparation is required by its solver config and supplied by the benchmark adapter.',
   );
   console.log('GANGLIA_BENCHMARK_HEAP_MB sets the Node heap cap in MiB (default 6144).');
+  console.log(
+    'GANGLIA_BENCHMARK_QUERY_SLO_MS sets the cooperative per-query deadline in milliseconds (default 300000).',
+  );
 } else {
   const outputPath = values.output
     ? resolve(values.output)
