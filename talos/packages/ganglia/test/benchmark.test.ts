@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { qualityGate } from '#@/bench/quality.ts';
 import { runBenchmark } from '#@/bench/run.ts';
 import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
-import { gangliaV1Defaults } from '#@/src/solver/index.ts';
+const fixtureConfig = { algorithm: 'timing-fixture', batchConcurrency: 1 };
 
 test('every scored batch is timed, keeps input order and closes once', async () => {
   const cases: readonly { id: string; query: RouteQuery }[] = [1, 2, 3].map((id) => ({
@@ -19,7 +19,7 @@ test('every scored batch is timed, keeps input order and closes once', async () 
   const phases: string[] = [];
   const report = await runBenchmark(
     {
-      config: gangliaV1Defaults,
+      config: fixtureConfig,
       async solve() {
         throw new Error('Benchmark must submit whole batches');
       },
@@ -83,7 +83,7 @@ test('the benchmark closes the adapter after a failed batch', async () => {
   await assert.rejects(
     runBenchmark(
       {
-        config: gangliaV1Defaults,
+        config: fixtureConfig,
         async solve() {
           throw new Error('worker failed');
         },
@@ -119,7 +119,7 @@ test('independent warmup results are reported separately from the measured probl
   let batch = 0;
   const report = await runBenchmark(
     {
-      config: gangliaV1Defaults,
+      config: fixtureConfig,
       solve: async () => {
         throw new Error('Unexpected single solve');
       },
@@ -158,7 +158,7 @@ test('a middle-round lost or changed route and truncation remain unstable after 
     closes = 0;
   const report = await runBenchmark(
     {
-      config: gangliaV1Defaults,
+      config: fixtureConfig,
       solve: async () => {
         throw new Error('Unexpected single solve');
       },
@@ -210,7 +210,7 @@ test('a later measured batch failure closes the solver without running more roun
   await assert.rejects(
     runBenchmark(
       {
-        config: gangliaV1Defaults,
+        config: fixtureConfig,
         solve: async () => {
           throw new Error('Unexpected single solve');
         },
@@ -262,7 +262,7 @@ test('SLO accounting preserves a middle-round timeout and counts actual successf
   };
   const report = await runBenchmark(
     {
-      config: gangliaV1Defaults,
+      config: fixtureConfig,
       solve: async () => {
         throw new Error('Unexpected single solve');
       },
@@ -295,7 +295,7 @@ test('replacement setup is explained separately while remaining in measured wall
   let recoverySetupMs = 0;
   const report = await runBenchmark(
     {
-      config: gangliaV1Defaults,
+      config: fixtureConfig,
       solve: async () => {
         throw new Error('Unexpected single solve');
       },
@@ -344,7 +344,7 @@ test('renaming a measured query cannot leak it into warmup, and invalid runs clo
   await assert.rejects(
     runBenchmark(
       {
-        config: gangliaV1Defaults,
+        config: fixtureConfig,
         solve: async () => {
           throw new Error('unused');
         },

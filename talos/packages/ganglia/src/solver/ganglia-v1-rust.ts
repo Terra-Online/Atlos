@@ -71,7 +71,7 @@ export async function prepareGangliaV1Rust<Source, Job extends WindowJob>(
   config: GangliaV1Config,
   input: SolverInput<Source, Job>,
 ): Promise<RustPreparedSolver> {
-  config = Object.freeze({ ...config });
+  config = Object.freeze({ ...config, preparation: Object.freeze({ ...config.preparation }) });
   if (input.kind === 'scene' && !input.resources.physical)
     throw new Error('ganglia-v1-rust scene resources require raw physical snapshots');
   const facts =

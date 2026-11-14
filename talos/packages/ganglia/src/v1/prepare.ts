@@ -22,6 +22,7 @@ export async function prepareGangliaV1<Source, Job extends WindowJob>(
 export function snapshotGangliaV1Config(config: GangliaV1Config): GangliaV1Config {
   const fixed: GangliaV1Config = {
     algorithm: config.algorithm,
+    preparation: Object.freeze({ ...config.preparation }),
     maxCandidates: config.maxCandidates,
     maxShortcutCandidates: config.maxShortcutCandidates,
     sampleSpacing: config.sampleSpacing,

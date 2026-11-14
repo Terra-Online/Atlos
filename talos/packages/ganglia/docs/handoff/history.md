@@ -1,5 +1,31 @@
 # Route solver history and validation evidence
 
+## Make V1 preparation part of algorithm configuration, 2026-11-14
+
+The untrained full-population TS attempts were canceled without final reports.
+Their configuration incorrectly treated missing optional CLI flags as permission
+to change the measured V1 preparation lifecycle. No results from those canceled
+attempts are accepted. The user excludes fresh TS baseline and stress runs.
+
+V1 now requires a nested preparation policy with positive training and warmup
+counts. Defaults specify ten catalog-training requests and two warmup requests;
+the benchmark adapters provide tracked dataset-bound requests. The scored map02
+population remains fifty requests. Training shares ten scored queries because
+catalogs retain verified connections rather than completed routes; warmup uses
+separate goals and remains disjoint from scoring. Neither population is inferred
+from a scored offset. No unseen-query generalization claim follows from this run.
+
+Removed optional training/warmup CLI switches. Config files inherit algorithm
+defaults, and invalid preparation fails before workers are launched. The V1
+scoring entry requires matching training records, frozen per-worker catalogs and
+configured warmup counts; invalid warmup stops before scoring. Training timeout
+also stops preparation rather than continuing after catalog loss. Generic timing
+fixtures identify their own algorithm instead of bypassing V1 startup policy.
+New regressions cover defaults for all three V1 aliases, missing/zero policy,
+insufficient request sets, omitted training, unfrozen catalogs and failed warmup.
+Package formatting, lint, typecheck and all 446 tests pass. No new performance
+result is claimed by this configuration change.
+
 ## Frozen native six-request completion, 2026-11-14
 
 The no-training, no-warmup, one-worker/lane, one-round run at clean `102e323c`

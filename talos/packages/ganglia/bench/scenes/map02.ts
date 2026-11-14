@@ -41,3 +41,28 @@ export const cases: { id: string; horizontalDistance: number; query: RouteQuery 
       query: { starts: [{ id: 'player', position, state: 'available', cost: 0 }], goal },
     })),
   );
+
+// Catalog preparation can share requests with scoring: it retains physical
+// connections, never completed-query answers. Warmup uses separate goals.
+export const preparation = {
+  scene: 'map02',
+  training: cases.slice(0, 10),
+  warmup: [
+    {
+      id: 'warmup-lower-floor',
+      query: {
+        starts: [{ id: 'player', position: starts[5], state: 'available', cost: 0 }],
+        goal: [-1357.1600646972656, 255.66273360141332, -1591.517585854135],
+        interaction: { radius: 0.5 },
+      },
+    },
+    {
+      id: 'warmup-upper-floor',
+      query: {
+        starts: [{ id: 'player', position: starts[11], state: 'available', cost: 0 }],
+        goal: [-1328.6417236328125, 297.5499979654948, -1623.9938557942708],
+        interaction: { radius: 0.5 },
+      },
+    },
+  ],
+} satisfies { scene: string; training: typeof cases; warmup: { id: string; query: RouteQuery }[] };

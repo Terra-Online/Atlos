@@ -20,23 +20,26 @@ Reuse retained TS baselines; run a new TS control only when the user requests it
 Long-distance stress is an opt-in investigation, outside routine acceptance.
 
 From this directory, use Node 26 on PATH and verified local datasets. Build the
-release native artifact with `pnpm rust:build`. A trained full-population command is:
+release native artifact with `pnpm rust:build`, then run the configured benchmark:
 
 ```sh
-pnpm --silent benchmark:full --adapter ganglia-v1-rust \
-  --workload /tmp/training-and-scored.json --catalog-train 10 \
-  --offset 10 --limit 50 --warmup-workload /tmp/warmup.json \
+pnpm --silent benchmark:full --adapter ganglia-v1-rust --workload map02 \
   --workers 1 --concurrency 1 --rounds 2 --json > /tmp/ganglia-rust.json
 ```
 
-The workload array contains ten declared training cases followed by all fifty
-unaltered scored cases from `bench/scenes/map02.ts`. Supply two separate warmup
-queries. Training may share starts or queries with scoring when the implementation
-retains reusable physical connections rather than complete-query answers; declare
-that overlap and call the scored set a full population, not an unseen holdout.
-Warmup must exclude scored queries. Check catalog population/freeze/persistence and
-successful warmup before accepting the measured service as ready. A preparation
-timeout that loses the worker's catalog must stop the run before scoring.
+`GangliaV1Config.preparation` is required and defaults to ten catalog-training
+requests and two warmup requests. The built-in benchmark adapter binds those
+counts to tracked requests in `bench/scenes/map02.ts`, independently of the scored
+workload. Omitting command-line options preserves preparation. Optional training
+and warmup flags are not supported. The V1 scoring entry rejects missing training
+records, an unfrozen catalog, wrong warmup counts or failed warmup validation.
+
+All fifty requests from `bench/scenes/map02.ts` remain scored. Training can overlap
+scoring because catalogs retain physical connections rather than complete-query
+answers; report that overlap and call this the full population, not an unseen
+holdout. Warmup uses separate goals and excludes scored queries. Service startup
+must use the configured training, freeze and warmup order on the same prepared
+solver. A training timeout that loses the worker's catalog stops preparation.
 
 `bench/workload.ts` defines preset data roots. Use `--data-root`, `--extractor` and
 `--config` for explicit datasets, adapters and policy. Verify game build, package

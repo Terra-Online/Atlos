@@ -1,5 +1,24 @@
 # Route solver handoff
 
+## Required V1 service preparation, 2026-11-14
+
+`GangliaV1Config.preparation` requires positive training and warmup request counts,
+defaulting to ten and two. The low-level solver factory constructs the kernel
+used for startup; service hosts train reusable physical connections, freeze the
+catalog and warm the same solver before declaring readiness. Prepared TS and
+native configs snapshot the nested policy.
+
+The built-in benchmark adapters bind this policy to tracked map02 preparation
+requests independently of the scored workload. A normal full-population command
+scores all fifty requests and always executes preparation. Training overlaps ten
+scored requests; warmup uses separate goals. This is a trained full population,
+not an unseen holdout. Optional CLI training/warmup switches have been removed.
+Old flat policy files inherit required preparation from algorithm defaults.
+Explicit missing/disabled policy, absent training records, unfrozen catalogs,
+wrong warmup counts or invalid warmup cannot enter V1 scoring. A training timeout
+stops before scoring because worker replacement loses the catalog. Retained TS
+baseline reports are reused; fresh TS and stress runs are excluded by the user.
+
 ## Rust rewrite integration, 2026-11-14
 
 Native placement revalidation retains each piece's original local query and
@@ -306,7 +325,8 @@ prepared memory and sampled peaks are reported. Per-worker phases overlap and
 must not be summed into wall time. No production solver, search budget or
 query-state cloning change is included.
 
-Runtime warmup is opt-in with a separate disjoint workload. Scored queries never
+V1 runtime warmup is required by its algorithm configuration and uses separately
+declared requests. Scored queries never
 serve as an excluded warm pass. Every measured round counts. Repeated rounds
 compare outcome hashes and truncation to the first measured round; one round
 does not establish repeatability. Existing caches and frozen catalog preparation
@@ -560,7 +580,7 @@ pass and serves a fixed in-memory snapshot to lane-local physical preparation ca
 No frontend, resource HTTP process or completed-route cache participates. Timed work
 includes query-specific normalization, search, physical windows, retries and any
 remaining lazy computation. Preparation and prewarm durations are reported separately;
-measured inclusive resource-adapter phase timers may overlap across concurrent lanes. The host-owned candidate timer is omitted; candidate search remains included in total batch wall time. JSON schema 5 adds deterministic modeled-travel-time quality summaries and optional fixed-reference comparisons. Complete non-partial routes contribute their total modeled seconds, including arrival overhead. A workload with missing/partial solutions has no total quality cost. Reference comparisons bind scene, source, consumed input content, game adapter and exact queries, while allowing different solver/configuration implementations. They report lost/gained solutions, per-query cost ratios, geometric mean ratio and worst ratio. Completion must be assessed before paired costs; a reference is not an optimality oracle. `--config` selects a complete serialized solver configuration; the report records the effective frozen policy. Warm/measured
+measured inclusive resource-adapter phase timers may overlap across concurrent lanes. The host-owned candidate timer is omitted; candidate search remains included in total batch wall time. JSON schema 5 adds deterministic modeled-travel-time quality summaries and optional fixed-reference comparisons. Complete non-partial routes contribute their total modeled seconds, including arrival overhead. A workload with missing/partial solutions has no total quality cost. Reference comparisons bind scene, source, consumed input content, game adapter and exact queries, while allowing different solver/configuration implementations. They report lost/gained solutions, per-query cost ratios, geometric mean ratio and worst ratio. Completion must be assessed before paired costs; a reference is not an optimality oracle. `--config` overrides algorithm defaults; required preparation remains present unless an explicitly invalid override is rejected. The report records the effective frozen policy. Warm/measured
 outcomes and truncation flags are compared per input. The resolved game-adapter kernel
 must match the benchmark checkout. Missing coverage requires offline preparation.
 

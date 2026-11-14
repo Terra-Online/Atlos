@@ -325,15 +325,20 @@ training set and scored workload. Deployment scenarios are interpretations of th
 same measurements and do not select execution modes or alter the algorithm.
 
 Input read/decode/hash time is separate from adapter/source validation, resource
-indexing and factory preparation. Optional `--catalog-train` requests are service
-preparation: every worker sees the same requests in the same order and freezes
-its catalog before readiness. Preparation cost and prepared memory remain in the
-report. Training requests must be separate from scored requests. Query-dependent
+indexing and factory preparation. `GangliaV1Config.preparation` requires catalog
+training and warmup, defaulting to ten and two requests. Built-in benchmark
+adapters bind that policy to tracked preparation requests. Every worker sees the
+same training requests in the same order, freezes its catalog and completes
+warmup before service readiness. Preparation cost and prepared memory remain in
+the report. Training may overlap scoring when the catalog retains reusable
+physical connections rather than completed-query answers; report that overlap.
+Query-dependent
 search and refinement remain in query time; current V1 also performs some scene
 preparation lazily there. Ready does not certify an eagerly built immutable index.
 
-Pass `--warmup-workload <json-file>` to declare independent runtime warmup requests;
-omission means no runtime warmup. No scored request is prewarmed. All measured
+Warmup requests are part of the benchmark configuration and exclude scored
+queries. Missing training, unfrozen catalogs and unsuccessful warmup prevent V1
+scoring. No optional CLI flag disables preparation. All measured
 rounds count toward throughput. With `--rounds 2` or more, outcomes and truncation
 are compared against the first measured round. One round does not establish
 repeatability.

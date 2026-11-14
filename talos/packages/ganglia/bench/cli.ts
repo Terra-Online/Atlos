@@ -7,6 +7,7 @@ import { parseArgs, isDeepStrictEqual } from 'node:util';
 
 import { loadAdapter } from '#@/bench/adapter.ts';
 import { benchmarkMarkdown } from '#@/bench/markdown.ts';
+import { benchmarkPreparation } from '#@/bench/preparation.ts';
 import { compareQuality, qualityGate, readReference, summarizeQuality } from '#@/bench/quality.ts';
 import { runBenchmark, validateWarmup } from '#@/bench/run.ts';
 import { QUERY_SLO_MS } from '#@/bench/slo.ts';
@@ -33,16 +34,14 @@ const { values } = parseArgs({
     reference: { type: 'string' },
     limit: { type: 'string' },
     offset: { type: 'string' },
-    'catalog-train': { type: 'string' },
     workload: { type: 'string' },
-    'warmup-workload': { type: 'string' },
     'max-mean-cost-ratio': { type: 'string', default: '1.01' },
     'max-worst-cost-ratio': { type: 'string', default: '1.05' },
   },
 });
 if (values.help) {
   console.log(
-    'Usage: pnpm benchmark:full [--adapter ganglia-v1-ts|ganglia-v1-rust|<module-path>] [--json | --markdown] [--data-root <path>] [--scene <name; default map02>] [--extractor <path>] [--workload <json-file | map02-long-range | map02-long-detours | map02-stress>] [--offset <index>] [--catalog-train <count; opt-in approximate static-action algorithm>] [--limit <count>] [--concurrency <scene-lanes>] [--workers <prepared solver processes; default 1>] [--rounds <measured batches; default 1>] [--config <json-file>] [--reference <benchmark-json>] [--max-mean-cost-ratio <ratio; default 1.01>] [--max-worst-cost-ratio <ratio; default 1.05>]. Every query has a hard 300-second SLO; timeouts count as failures. Reference comparisons reject lost solutions or excess modeled route cost; stability is checked across measured rounds. --warmup-workload <json-file> supplies disjoint runtime warmup queries; omitted means no runtime warmup.',
+    'Usage: pnpm benchmark:full [--adapter ganglia-v1-ts|ganglia-v1-rust|<module-path>] [--json | --markdown] [--data-root <path>] [--scene <name; default map02>] [--extractor <path>] [--workload <json-file | map02-long-range | map02-long-detours | map02-stress>] [--offset <index>] [--limit <count>] [--concurrency <scene-lanes>] [--workers <prepared solver processes; default 1>] [--rounds <measured batches; default 1>] [--config <json-file>] [--reference <benchmark-json>] [--max-mean-cost-ratio <ratio; default 1.01>] [--max-worst-cost-ratio <ratio; default 1.05>]. Every query has a hard 300-second SLO; timeouts count as failures. Reference comparisons reject lost solutions or excess modeled route cost; stability is checked across measured rounds. V1 service preparation is required by its solver config and supplied by the benchmark adapter.',
   );
   console.log('GANGLIA_BENCHMARK_HEAP_MB sets the Node heap cap in MiB (default 6144).');
 } else {
@@ -82,37 +81,22 @@ if (values.help) {
       offset + count > workload.length
     )
       throw new Error('Invalid workload, offset or query limit');
-    const trainingCount =
-      values['catalog-train'] === undefined ? 0 : Number(values['catalog-train']);
-    if (
-      !Number.isSafeInteger(trainingCount) ||
-      trainingCount < 0 ||
-      (values['catalog-train'] !== undefined &&
-        (trainingCount === 0 || values.offset === undefined || offset < trainingCount))
-    )
-      throw new Error(
-        'Catalog training requires a positive count and explicit holdout offset at least that count',
-      );
-    const training = workload.slice(0, trainingCount);
     const selected = workload.slice(offset, offset + count);
-    const warmupCases = values['warmup-workload']
-      ? (await readWorkload(values['warmup-workload'])).cases
-      : [];
-    validateWarmup(selected, warmupCases);
-    // Catalogs contain reusable physical connections, not completed-query answers.
-    // The declared training/scoring populations may overlap; warmup still excludes
-    // scored queries, and the report records both populations explicitly.
     if (new Set(selected.map((item) => item.id)).size !== selected.length)
       throw new Error('Duplicate workload query id');
-    const policy: SolverSettings = values.config
-      ? JSON.parse(await readFile(values.config, 'utf8'))
-      : { ...adapter.defaults };
+    const policy: SolverSettings = {
+      ...adapter.defaults,
+      ...(values.config ? JSON.parse(await readFile(values.config, 'utf8')) : {}),
+    };
     const config = {
       ...policy,
       ...(values.adapter === 'ganglia-v1-ts' || values.adapter === 'ganglia-v1-rust'
         ? { algorithm: values.adapter }
         : {}),
     };
+    const { training, warmup: warmupCases } = benchmarkPreparation(config, adapter, values.scene);
+    const trainingCount = training.length;
+    validateWarmup(selected, warmupCases);
     const workers = Number(values.workers);
     if (!Number.isSafeInteger(workers) || workers < 1) throw new Error('Invalid worker count');
     const concurrency =
@@ -185,7 +169,7 @@ if (values.help) {
             throw new Error('Catalog training timed out; prepared service is not ready');
         }
         await prepared.setCatalogPhase('frozen');
-        catalogTraining = {
+        const trained = {
           algorithm: 'approximate-static-actions' as const,
           ids: training.map((item) => item.id),
           wallMs: performance.now() - trainingStarted,
@@ -204,9 +188,10 @@ if (values.help) {
           })),
           stats: prepared.catalogStats(),
         };
+        catalogTraining = trained;
       }
-      const readyMs = performance.now();
-      const setupMs = readyMs - started;
+      let readyMs = 0;
+      let setupMs = 0;
       const report = await runBenchmark(
         solver,
         selected,
@@ -221,6 +206,8 @@ if (values.help) {
           );
           await prepared.setBenchmarkPhase(phase);
           if (phase === 'batch') {
+            readyMs = performance.now();
+            setupMs = readyMs - started;
             resetTimings(timings);
           }
         },
@@ -228,6 +215,7 @@ if (values.help) {
         () => prepared.recoverySetupMs,
         warmupCases,
         prepared.verify,
+        catalogTraining,
       );
       const endToEndMs = performance.now();
       if (
@@ -299,7 +287,7 @@ if (values.help) {
             }
           : {}),
         policy:
-          'One algorithm and preparation lifecycle serve every interpretation of this report. Decoded input loading is separate from adapter/source validation, resource indexing and factory preparation. Declared catalog training runs identically in every worker, freezes before service readiness, and belongs to service preparation. Runtime warmup is optional and uses a separate disjoint workload. No scored query is prewarmed; every measured round counts and repeatability compares measured rounds. Existing immutable preparation, geometry proofs and frozen catalog data are reused by the same solver; lazy work remains inside query time. Every dispatched query, including training and warmup, has a 300,000 ms parent watchdog. Queueing and initial worker setup are outside that deadline; service, queue and response times are separate. Recovery remains in actual batch wall time. End-to-end time starts at Node process time origin and ends after solver shutdown, including loading, preparation, training, runtime warmup, all measured rounds and recovery. Final source re-verification and report formatting are excluded. Per-worker phase timers overlap and must not be summed into wall time. Memory peaks are sampled. Browser index transfer, restoration and browser execution are unmeasured. OS scheduling/JIT/GC uncontrolled.',
+          'One algorithm and preparation lifecycle serve every interpretation of this report. Decoded input loading is separate from adapter/source validation, resource indexing and factory preparation. Algorithm-configured catalog training runs identically in every worker, freezes before service readiness, and belongs to service preparation. Algorithm-configured runtime warmup uses separate declared requests. No scored query is prewarmed; every measured round counts and repeatability compares measured rounds. Existing immutable preparation, geometry proofs and frozen catalog data are reused by the same solver; lazy work remains inside query time. Every dispatched query, including training and warmup, has a 300,000 ms parent watchdog. Queueing and initial worker setup are outside that deadline; service, queue and response times are separate. Recovery remains in actual batch wall time. End-to-end time starts at Node process time origin and ends after solver shutdown, including loading, preparation, training, runtime warmup, all measured rounds and recovery. Final source re-verification and report formatting are excluded. Per-worker phase timers overlap and must not be summed into wall time. Memory peaks are sampled. Browser index transfer, restoration and browser execution are unmeasured. OS scheduling/JIT/GC uncontrolled.',
         ...report,
         ...(comparison && referenceBytes
           ? {
