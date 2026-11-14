@@ -47,7 +47,13 @@ requests returning the same facts reuse identical bounded failures only inside
 the current query. Revision, coverage, continuation, joint poses, catalog or
 stage changes require new work. Stage 1 is omitted when no known actions or boost
 pickups distinguish it from stage 0. Subsequent queries always search afresh.
-Six-request acceptance remains to be established.
+The frozen `102e323c` six-request run now completes all requests with independent
+physical replay valid and no timeouts. Mean serial service time is 81.387 seconds;
+the slowest request takes 289.856 seconds. It uses one round, no training/warmup
+and no reference, so repeatability and paired cost/speedup remain unmeasured.
+These are local regressions; the complete local and long-distance workloads
+specified in `AGENTS.md` still require acceptance. Its adapter/data binding
+predates the noclip v106 update.
 
 Following-fact growth revalidates selected prefixes and retained partial/incumbent
 proofs. Every known default body remains present in later sparse Worlds even when

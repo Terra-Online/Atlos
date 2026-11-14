@@ -1,5 +1,29 @@
 # Route solver history and validation evidence
 
+## Frozen native six-request completion, 2026-11-14
+
+The no-training, no-warmup, one-worker/lane, one-round run at clean `102e323c`
+completes all six resource-relocation holdouts (offset 10, limit 6). Each route is
+complete, nonpartial and independently physically valid with no issues. Every
+route is truncated; no optimality or exhaustive discovery is claimed. There are
+zero timeouts, failures or recoveries. Batch wall time is 488.324468 seconds,
+mean serial service time is 81.387383 seconds, readiness is 1.439304 seconds and
+end-to-end time is 495.013408 seconds. Per-request service times in report order
+are 22.318578, 289.856336, 12.238495, 46.774951, 81.759733 and 35.376207 seconds.
+The lower-floor-12 request remains close to the 300-second deadline.
+
+Evidence is `.local/research/rust-solver-rewrite/six-query-102e323c/report.json`.
+Source SHA-256 is
+`3f134e46dbbc510cda4c1b937beae8d56ee5b1744711fb28ec0266b32dc9a58a`;
+native binary SHA-256 is
+`c5cf3a88d25a6d4cfa413e1c851a0a52a749abf0f05f685517c57b5ee4d247c2`.
+The normalized game adapter digest is
+`1f08b4ba7046ff4dc52becfe6ded1f560b300e9e6c3f01f70629b9349d688bf5`.
+This binding predates the noclip v106 pin. No reference was supplied: the passing
+gate establishes completion/physical validity within the SLO, not paired route
+cost or aggregate speedup. One round leaves repeatability unmeasured. Complete
+50-request local and 14-request stress acceptance remains pending.
+
 ## Noclip v106 integration, 2026-11-14
 
 Advanced the maintained upstream archive from `978acf5b` to
