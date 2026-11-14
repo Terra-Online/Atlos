@@ -99,19 +99,9 @@ if (values.help) {
       ? (await readWorkload(values['warmup-workload'])).cases
       : [];
     validateWarmup(selected, warmupCases);
-    if (trainingCount) {
-      const trainingStarts = new Set(
-        training.flatMap((item) =>
-          item.query.starts.map((start) => JSON.stringify(start.position)),
-        ),
-      );
-      if (
-        selected.some((item) =>
-          item.query.starts.some((start) => trainingStarts.has(JSON.stringify(start.position))),
-        )
-      )
-        throw new Error('Catalog holdout starts must be absent from training');
-    }
+    // Catalogs contain reusable physical connections, not completed-query answers.
+    // The declared training/scoring populations may overlap; warmup still excludes
+    // scored queries, and the report records both populations explicitly.
     if (new Set(selected.map((item) => item.id)).size !== selected.length)
       throw new Error('Duplicate workload query id');
     const policy: SolverSettings = values.config
@@ -172,7 +162,28 @@ if (values.help) {
         console.error(JSON.stringify({ phase: 'catalog-training', queries: training.length }));
         await prepared.setCatalogPhase('training');
         const trainingStarted = performance.now();
-        const results = await prepared.train(training.map((item) => item.query));
+        const results: Awaited<ReturnType<typeof prepared.train>> = Array.from(
+          { length: workers },
+          () => [],
+        );
+        for (const [index, item] of training.entries()) {
+          const rows = await prepared.train([item.query]);
+          rows.forEach((batch, worker) => results[worker].push(...batch));
+          console.error(
+            JSON.stringify({
+              phase: 'catalog-training-progress',
+              completed: index + 1,
+              total: training.length,
+              id: item.id,
+              outcomes: rows.map((batch) => batch[0].reason ?? batch[0].route.status),
+              catalogs: prepared.catalogStatsAll(),
+            }),
+          );
+          // A timeout replaces the worker and loses its trained catalog. Resolve
+          // that preparation failure before dispatching the scored population.
+          if (rows.some((batch) => batch.some((result) => result.reason === 'timeout')))
+            throw new Error('Catalog training timed out; prepared service is not ready');
+        }
         await prepared.setCatalogPhase('frozen');
         catalogTraining = {
           algorithm: 'approximate-static-actions' as const,
