@@ -433,3 +433,131 @@ test('a submitted flight within representation tolerance still cannot penetrate 
   assert.equal(result.valid, false);
   assert.match(result.issues.join(), /Submitted trajectory/);
 });
+
+test('sparse windows share following facts while each selected placement needs complete proof', () => {
+  const input = snapshot();
+  input.devices = {
+    devices: [],
+    ropes: [],
+    followingSupports: [
+      {
+        id: 'box',
+        level: 'test',
+        model: 'box',
+        spawn: [-7, 0, 5],
+        bodies: [
+          Array.from({ length: 8 }, (_, bits): Vec3 => [
+            -7 + (bits & 1 ? 0.5 : -0.5),
+            bits & 2 ? 1 : 0,
+            5 + (bits & 4 ? 0.5 : -0.5),
+          ]),
+        ],
+        geometryKind: 'box',
+        maxDistance: 30,
+        initialState: 0,
+        assumption: 'placement-within-activity-range',
+      },
+    ],
+  };
+  const later = structuredClone(input);
+  later.devices!.followingSupports = [];
+  const sparse = (facts: PhysicalInput, min: number, max: number, missingZ?: number) =>
+    createPhysicalWorld(facts, {
+      bounds: { min: [min, -10], max: [max, 10] },
+      tileSpan: 1,
+      tiles: Array.from({ length: max - min }, (_, x) =>
+        Array.from({ length: 20 }, (_, z) => ({ x: x + min, z: z - 10 })),
+      )
+        .flat()
+        .filter(({ z }) => z !== missingZ),
+    });
+  const worlds = [sparse(input, -10, 2), sparse(later, -2, 10)];
+  const route = candidate(
+    input,
+    [-4, 0].map((x): Segment => ({
+      mode: 'walk',
+      points: [
+        [x, 0.005, 0],
+        [x + 4, 0.005, 0],
+      ],
+      times: [0, 0.8],
+    })),
+  );
+  route.placements = [{ device: 'box', position: [-6, 0, 5] }];
+  const query = {
+    starts: [{ id: 'start', position: route.points[0], cost: 0, state: 'available' as const }],
+    goal: route.points.at(-1)!,
+  };
+  const evaluate = createPhysicalVerifier(() => worlds);
+  const accepted = evaluate(query, route);
+  assert.equal(accepted.valid, true, accepted.issues.join());
+
+  const multi = structuredClone(input);
+  const bodies = multi.devices!.followingSupports![0].bodies;
+  bodies.push(bodies[0].map((p): Vec3 => [p[0], p[1], p[2] + 3]));
+  // A slab in the gap belongs to neither body. Neither its collision nor
+  // missing gap coverage can invalidate the two separately proved cuboids.
+  const offset = multi.collision.positions.length / 3;
+  multi.collision.positions = [
+    ...multi.collision.positions,
+    -7.5,
+    0.5,
+    6.25,
+    -7.5,
+    0.5,
+    6.75,
+    -6.5,
+    0.5,
+    6.75,
+    -6.5,
+    0.5,
+    6.25,
+  ];
+  multi.collision.indices = [
+    ...multi.collision.indices,
+    offset,
+    offset + 1,
+    offset + 2,
+    offset,
+    offset + 2,
+    offset + 3,
+  ];
+  const separateBodies = createPhysicalVerifier(() => [sparse(multi, -10, 2, 6), worlds[1]])(
+    query,
+    route,
+  );
+  assert.equal(separateBodies.valid, true, separateBodies.issues.join());
+
+  const unknown = structuredClone(route);
+  unknown.placements![0].device = 'unknown';
+  assert.match(evaluate(query, unknown).issues.join(), /Unknown support placement/);
+
+  const uncovered = structuredClone(route);
+  uncovered.placements![0].position = [15, 0, 5];
+  assert.equal(evaluate(query, uncovered).valid, false);
+
+  // A global fact remains an obstacle in the later window even when omitted
+  // from that window's exporter response.
+  const blocker = structuredClone(input);
+  blocker.devices!.followingSupports![0].spawn = [3, 0, 0];
+  blocker.devices!.followingSupports![0].bodies = blocker.devices!.followingSupports![0].bodies.map(
+    (body) => body.map((p): Vec3 => [p[0] + 10, p[1], p[2] - 5]),
+  );
+  const blocked = structuredClone(route);
+  blocked.placements = [];
+  assert.equal(
+    createPhysicalVerifier(() => [sparse(blocker, -10, 2), sparse(later, -2, 10)])(query, blocked)
+      .valid,
+    false,
+  );
+
+  const conflicting = structuredClone(input);
+  conflicting.devices!.followingSupports![0].maxDistance++;
+  assert.match(
+    createPhysicalVerifier(() => [worlds[0], sparse(conflicting, -2, 10)])(
+      query,
+      route,
+    ).issues.join(),
+    /Conflicting following support facts/,
+  );
+});

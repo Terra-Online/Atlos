@@ -2238,3 +2238,26 @@ rules require active sprint. No witness changes or physics limits are needed.
 The regression fails with `Fast flight requires active sprint` under the original
 fallback and passes after the correction. Package format, lint, typecheck and all
 439 tests pass. No solver benchmark was rerun for this evaluator-only fix.
+
+### Sparse-window placement proof ownership
+
+Engine integration identified a shared evaluator false rejection: configuring
+each sparse snapshot with all route placements required every snapshot to export
+every selected following ID and cover every selected body. A later window could
+therefore reject a placement already fully proved in an earlier window.
+
+Evaluation now unions immutable following facts across snapshots, rejects
+conflicting definitions, and requires a complete local placement proof for each
+selected ID before replay. Window configurations share all body geometry while
+reporting only their complete placement proofs. Global unknown IDs, missing
+proof coverage, unsupported placement geometry and body collisions remain
+failures. The complete proof must include original collision ownership when a
+body moves; evidence fragmented across snapshots is not inferred to be complete.
+A two-sparse-window regression covers a valid placement exported only in the
+first window, global unknown IDs, missing placement coverage, conflicting facts,
+and an omitted default body obstructing the later route.
+Original coverage and collision ownership are checked per source body, preserving
+unknown or occupied gaps between separate cuboids. The regression includes a
+missing gap tile and a static slab between the bodies. Package formatting, lint,
+typecheck and all 440 tests pass. Independent correctness and Standards reviews
+found no remaining scoped findings. No solver benchmark was rerun for this fix.

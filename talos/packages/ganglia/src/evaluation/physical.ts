@@ -8,6 +8,7 @@ import type { PhysicalWorld } from '#@/src/model/world.ts';
 import type { Segment, JumpModel } from '#@/src/movement.ts';
 import type { Route } from '#@/src/route.ts';
 import type { RouteQuery } from '#@/src/solver/contract.ts';
+import type { FollowingSupport } from '#@/src/solver/physical.ts';
 
 const close = (a: number, b: number) =>
   Number.isFinite(a) &&
@@ -116,6 +117,7 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
     }
     const input = first.input;
     const placements = route.placements ?? [];
+    let configuration: Parameters<PhysicalWorld['configured']>[1];
     const boosts = worlds.flatMap(
       (w) => w.input.devices?.devices.filter((d) => d.kind === 'accelerate') ?? [],
     );
@@ -166,7 +168,10 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
       for (const snapshot of worlds) {
         if (!s.points.every((p) => snapshot.covered(p, p))) continue;
         try {
-          const { world, blocked, standing, walkTrace } = snapshot.configured(placements);
+          const { world, blocked, standing, walkTrace } = snapshot.configured(
+            placements,
+            configuration,
+          );
           const rules = snapshot.input,
             profile = rules.ground.options.profile;
           if (
@@ -440,6 +445,41 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
       throw new Error(errors[0] ?? 'Missing complete physical coverage');
     };
     try {
+      const following = new Map<string, FollowingSupport>();
+      const signature = (support: FollowingSupport) =>
+        JSON.stringify([
+          support.level,
+          support.model,
+          support.spawn,
+          support.bodies,
+          support.geometryKind,
+          support.maxDistance,
+          support.initialState,
+          support.assumption,
+        ]);
+      for (const snapshot of worlds)
+        for (const support of snapshot.input.devices?.followingSupports ?? []) {
+          const previous = following.get(support.id);
+          if (previous && signature(previous) !== signature(support))
+            throw new Error('Conflicting following support facts');
+          following.set(support.id, support);
+        }
+      configuration = { followingSupports: [...following.values()], scopedPlacements: true };
+      for (const placement of placements) {
+        if (!following.has(placement.device)) throw new Error('Unknown support placement');
+        const failures: string[] = [];
+        const proven = worlds.some((snapshot) => {
+          try {
+            return snapshot
+              .configured(placements, configuration)
+              .validatedPlacements.includes(placement.device);
+          } catch (error) {
+            failures.push(error instanceof Error ? error.message : String(error));
+            return false;
+          }
+        });
+        if (!proven) throw new Error(failures[0] ?? 'Missing complete placement coverage');
+      }
       const controller = createLocomotionRules(input.locomotion);
       let state = controller.initial(),
         elapsed = 0;
@@ -462,7 +502,7 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
       for (const segment of route.segments) {
         const clear = worlds.some((snapshot) => {
           try {
-            const configured = snapshot.configured(placements);
+            const configured = snapshot.configured(placements, configuration);
             if (segment.mode === 'walk') return supportedWalk(segment, configured);
             const { world, blocked } = configured;
             const profile = snapshot.input.ground.options.profile;
@@ -493,7 +533,7 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
           (route.locomotion.dashes ?? 0) !== (state.dashCount ?? 0))
       )
         throw new Error('Resource summary differs from replay');
-      const origin = first.configured(placements).standing(route.points[0]);
+      const origin = first.configured(placements, configuration).standing(route.points[0]);
       if (!origin || distance(origin, route.points[0]) > 1e-5)
         throw new Error('Unsupported route origin');
       if (query.interaction?.airborne) {

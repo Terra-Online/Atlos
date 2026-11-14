@@ -11,7 +11,14 @@ import {
 } from '#@/src/model/placement.ts';
 import { supportBounds } from '#@/src/model/supports.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
-import type { PhysicalInput } from '#@/src/solver/physical.ts';
+import type { FollowingSupport, PhysicalInput } from '#@/src/solver/physical.ts';
+
+interface Configuration {
+  followingSupports?: readonly FollowingSupport[];
+  /** Report complete local placement proofs; the caller must require a proof
+   * for every selected placement across the full snapshot set. */
+  scopedPlacements?: boolean;
+}
 
 export type Coverage =
   | 'complete'
@@ -77,7 +84,12 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
   const blocked = createWallChecker(input.roundedWalls ?? input.ground.options.walls, profile);
   const tolerance = Math.max(0.02, (input.ground.build?.cellHeight ?? 0.1) * 3 + 0.01);
   const configured = new Map<string, ReturnType<typeof build>>();
-  function build(placements: readonly { device: string; position: Vec3 }[]) {
+  function build(
+    placements: readonly { device: string; position: Vec3 }[],
+    options: Configuration,
+  ) {
+    const followingSupports = options.followingSupports ?? input.devices?.followingSupports ?? [];
+    const validatedPlacements: string[] = [];
     const extra: Surface[] = (input.devices?.movingSupports ?? []).flatMap((support) => {
       if (support.assumption !== 'phase-free-swept-support')
         throw new Error('Unsupported moving support assumption');
@@ -86,7 +98,7 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
     const solidWalls: import('#@/src/geometry.ts').Wall[] = [];
     const positions: number[] = [],
       indices: number[] = [];
-    for (const support of input.devices?.followingSupports ?? []) {
+    for (const support of followingSupports) {
       const supplied = placements.filter((placement) => placement.device === support.id);
       if (supplied.length > 1) throw new Error('Conflicting support placements');
       const position = supplied[0]?.position ?? support.spawn;
@@ -98,6 +110,18 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
       )
         throw new Error('Invalid support placement');
       const delta = position.map((v, i) => v - support.spawn[i]);
+      const initial = distance(position, support.spawn) <= 1e-5;
+      const local =
+        support.bodies.every((body) => {
+          const bounds = supportBounds([body.map((p) => p.map((v, i) => v + delta[i]) as Vec3)]);
+          return covered(bounds.min, bounds.max, 0);
+        }) &&
+        (initial ||
+          support.bodies.every((body) => {
+            const bounds = supportBounds([body]);
+            return covered(bounds.min, bounds.max, 0);
+          }));
+      const validate = supplied.length > 0 && (!options.scopedPlacements || local);
       for (const source of support.bodies) {
         if (!flatCuboid(source) || support.geometryKind !== 'box') {
           if (supplied.length) throw new Error('Unsupported support body');
@@ -109,7 +133,7 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
         const minimum = body[0].map((_, i) => Math.min(...body.map((p) => p[i]))) as Vec3;
         const maximum = body[0].map((_, i) => Math.max(...body.map((p) => p[i]))) as Vec3;
         solidWalls.push({ min: minimum, max: maximum, state: 'active' });
-        if (supplied.length) {
+        if (validate) {
           if (!covered(minimum, maximum, 0)) throw new Error('Incomplete placement coverage');
           const selected = base.trianglesInBounds!({
             min: [minimum[0], minimum[2]],
@@ -118,14 +142,15 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
           const triangles = trianglesOf(input.collision, selected);
           if (!flatSupport(footprintOf(body, minimum[1]), minimum[1], triangles))
             throw new Error('Placement footprint is unsupported');
-          const initial = distance(position, support.spawn) <= 1e-5;
           const obstacles = initial
             ? triangles.filter((triangle) => !onBoxFace(triangle, source))
             : triangles;
           if (blockedBody({ min: minimum, max: maximum }, minimum[1], obstacles))
             throw new Error('Placed body intersects static geometry');
-          const original = supportBounds(support.bodies);
           if (!initial) {
+            const original = supportBounds([source]);
+            if (!covered(original.min, original.max, 0))
+              throw new Error('Incomplete original body coverage');
             const originalTriangles = trianglesOf(
               input.collision,
               base.trianglesInBounds!({
@@ -145,7 +170,7 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
             )
               throw new Error('Placed body intersects exclusion');
           }
-          for (const other of input.devices?.followingSupports ?? []) {
+          for (const other of followingSupports) {
             if (other.id === support.id) continue;
             const pick = placements.find((p) => p.device === other.id)?.position ?? other.spawn;
             const delta = pick.map((v, i) => v - other.spawn[i]);
@@ -165,7 +190,7 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
           }
         }
 
-        if (supplied.length) {
+        if (validate) {
           const hit = base.groundAt([position[0], minimum[1], position[2]], {
             maxUp: tolerance,
             maxDown: tolerance,
@@ -199,8 +224,9 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
             });
         }
       }
+      if (validate) validatedPlacements.push(support.id);
     }
-    if (placements.some((p) => !input.devices?.followingSupports?.some((s) => s.id === p.device)))
+    if (placements.some((p) => !followingSupports.some((s) => s.id === p.device)))
       throw new Error('Unknown support placement');
     const added = createTypeScriptCollisionWorld({ positions, indices });
     const supportGeometry: CollisionGeometry = { positions: [], indices: [] };
@@ -334,6 +360,7 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
     const combinedBlocked = (a: Vec3, b: Vec3, inflation = 0) =>
       blocked(a, b, inflation) || solidBlocked(a, b, inflation);
     return {
+      validatedPlacements,
       world,
       blocked: combinedBlocked,
       standing,
@@ -385,11 +412,14 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
   return {
     input,
     covered,
-    configured(placements: readonly { device: string; position: Vec3 }[] = []) {
-      const key = JSON.stringify(placements);
+    configured(
+      placements: readonly { device: string; position: Vec3 }[] = [],
+      options: Configuration = {},
+    ) {
+      const key = JSON.stringify([placements, options]);
       let value = configured.get(key);
       if (!value) {
-        value = build(placements);
+        value = build(placements, options);
         configured.set(key, value);
       }
       return value;
