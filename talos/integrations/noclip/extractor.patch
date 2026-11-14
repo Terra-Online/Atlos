@@ -16960,7 +16960,7 @@ index 00000000..6cbc15b8
 +	};
 +};
 diff --git a/packages/extractor/src/game/world/world-index.ts b/packages/extractor/src/game/world/world-index.ts
-index 34a06000..58322140 100644
+index 3449a3ef..4688a99a 100644
 --- a/packages/extractor/src/game/world/world-index.ts
 +++ b/packages/extractor/src/game/world/world-index.ts
 @@ -103,7 +103,7 @@ export class WorldIndex {
@@ -17020,15 +17020,15 @@ index 34a06000..58322140 100644
  
  	/**
 diff --git a/packages/extractor/src/pack/convert/assets.ts b/packages/extractor/src/pack/convert/assets.ts
-index a444b124..a6ee6c2c 100644
+index 12c05220..15d7881a 100644
 --- a/packages/extractor/src/pack/convert/assets.ts
 +++ b/packages/extractor/src/pack/convert/assets.ts
-@@ -486,7 +486,7 @@ const describeSurfaces = (
- 			unsupported[key] = (unsupported[key] ?? 0) + 1;
- 			materials.debug[id].unsupported = surface.reason;
+@@ -509,7 +509,7 @@ const describeSurfaces = (
+ 				motion = moving;
+ 			}
  		}
--		return { status: 'ready', cull: material.cull, surface };
-+		return { status: 'ready', cull: material.cull, renderQueue: material.renderQueue, surface };
+-		return { status: 'ready', cull: material.cull, surface, gaps, motion };
++		return { status: 'ready', cull: material.cull, renderQueue: material.renderQueue, surface, gaps, motion };
  	});
  	return { entries, unsupported };
  };
@@ -17282,3 +17282,39 @@ index 00000000..4ca43fc5
 +	process.exit(0);
 +});
 +send({ type: 'ready', version: 1 });
+diff --git a/packages/extractor/src/commands/oem-views.ts b/packages/extractor/src/commands/oem-views.ts
+--- a/packages/extractor/src/commands/oem-views.ts
++++ b/packages/extractor/src/commands/oem-views.ts
+@@ -162,6 +162,9 @@
+ 		};
+ 		const source: PackageSource = {
+ 			label: scene,
++			readRanges(path, ranges, signal) {
++				return Promise.all(ranges.map(range => source.readRange(path, range, signal)));
++			},
+ 			async readFile(path) {
+ 				return Uint8Array.from(await readFile(join(root, entry.path, path)));
+ 			},
+diff --git a/packages/extractor/src/game/photo-effects.ts b/packages/extractor/src/game/photo-effects.ts
+--- a/packages/extractor/src/game/photo-effects.ts
++++ b/packages/extractor/src/game/photo-effects.ts
+@@ -40,6 +40,7 @@
+ 		viewPose: null,
+ 		particleQuad: quad,
+ 		locked: false,
++		effectLod: 'camera',
+ 	})) {
+ 		const particles = draw.particles;
+ 		if (
+diff --git a/packages/extractor/src/game/static-supports.test.ts b/packages/extractor/src/game/static-supports.test.ts
+--- a/packages/extractor/src/game/static-supports.test.ts
++++ b/packages/extractor/src/game/static-supports.test.ts
+@@ -30,7 +30,7 @@
+ test('looping transform animation survives JSON as authored-rate samples', () => {
+     const pose: PrefabPose = { key: 'wheel:state=1', active: new Map(), clips: [{ animator: 'WheelRoot',
+         transforms: new Map(), active: new Map(), materials: new Map(), renderers: new Map(),
+-        motion: { duration: 1, sampleRate: 2, loops: true, paths: [17], sample: time =>
++        motion: { materials: () => new Map(), duration: 1, sampleRate: 2, loops: true, paths: [17], sample: time =>
+             new Map([[17, [{ kind: 'position', value: [time, 0, 0] }]]]) },
+     }] };
+     const motion = JSON.parse(JSON.stringify(supportMotion(pose)));

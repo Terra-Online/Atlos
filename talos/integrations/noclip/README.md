@@ -27,8 +27,8 @@ configure route data and the private game configuration. Neither keys nor game c
 
 ## updating
 
-The current pin uses package format v104, including upstream terrain-hole fixes, emissive albedo
-and moving-platform instance paths. Older archives must be repacked before using this viewer.
+The current pin uses package format v118, including moving particle emitters,
+glowing foliage, effect normal maps and opaque refraction. Older archives must be repacked before using this viewer.
 Export companion and navigation metadata against the new states before rebaking point views with
 `oem-views --rebuild`. The exporter and `oem-check` use the indexed `openTraversalPicks` profile,
 matching World's default completed progression with doors open and activations enabled. Using only
