@@ -86,6 +86,14 @@ assumption and flat-cuboid eligibility; their complete body must clear terrain,
 other bodies and exclusions. An unused unsupported convex body remains an
 obstacle and supplies no additional walkable roof.
 
+Following facts are shared across the route's sparse snapshots, with conflicting
+definitions of one ID rejected. Each selected placement needs a complete local
+proof covering its bodies and, when moved, original collision ownership. A later
+window need not contain that placement or repeat its exported facts. All known
+following bodies still contribute geometry to every window configuration, so
+omitting a local device entry cannot remove an obstacle. Placements without any
+complete proving snapshot and globally unknown device IDs are rejected.
+
 V1 publishes execution controls, selected placements and flight witnesses. Before
 resource scheduling, `src/v1/solver/physical/execution.ts` constructs its actual
 support-following walking geometry. This is solver-side candidate construction;
