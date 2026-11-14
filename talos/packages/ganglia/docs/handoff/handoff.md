@@ -1,5 +1,28 @@
 # Route solver handoff
 
+## Requested stress diagnostic at 60 seconds, 2026-11-14
+
+Commit `2c99b6c2` attempted the 14-request `map02-stress` workload with the current
+TS solver, one worker/lane and one measured round. The cooperative deadline was
+60000 ms. The initial 6144 MiB process exhausted its JS heap during input loading.
+A 12288 MiB retry loaded inputs but the packed stress dataset lacked the fixed
+catalog-training region. A local combined dataset at
+`.local/data/stress-with-preparation` hard-links unchanged stress and ordinary
+map02 snapshots, retaining input source/profile checks and dataset provenance.
+
+The combined-data attempt completed training request 1 in 55.140 s. Training
+request 2 timed out and returned after 69.747 s, approximately 9.747 s beyond the
+soft deadline. The worker was not killed or replaced. The CLI stopped because
+catalog training was incomplete; warmup and all 14 scored requests were never
+dispatched. This is a preparation failure, not 14 failed stress measurements, and
+no stress latency, throughput or speedup is available. No timeout was extended and
+no preparation was skipped. The processes have finished.
+
+Artifacts are under `.local/research/ts-stress-60s/`, `ts-stress-60s-12g/` and
+`ts-stress-60s-prepared/`; the last directory includes `invocation.json`, the
+interrupted report and its per-request journal. The timeout configuration change
+passed package formatting, lint, typecheck and all 461 TS tests.
+
 ## Configurable benchmark deadline, 2026-11-14
 
 `GANGLIA_BENCHMARK_QUERY_SLO_MS` overrides the cooperative query deadline and
