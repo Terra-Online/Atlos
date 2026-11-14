@@ -71,9 +71,20 @@ export function createTransport(
                 input,
                 typeof location === 'undefined' ? undefined : location.href,
             ).href;
-            const range = /^bytes=(\d+)-(\d+)$/.exec(
-                new Headers(init.headers).get('range') ?? '',
-            );
+            const rangeHeader = new Headers(init.headers).get('range') ?? '';
+            const ranges = /^bytes=\d+-\d+(?:,\s*\d+-\d+)*$/.test(rangeHeader)
+                ? rangeHeader
+                      .slice(6)
+                      .split(',')
+                      .map((part) => part.trim().split('-').map(Number))
+                : [];
+            const requestedBytes =
+                ranges.length && ranges.every(([start, end]) => end >= start)
+                    ? ranges.reduce(
+                          (total, [start, end]) => total + end - start + 1,
+                          0,
+                      )
+                    : null;
             const row: Transfer = {
                 id: ++serial,
                 operation,
@@ -81,9 +92,7 @@ export function createTransport(
                 url,
                 started: performance.now(),
                 durationMs: null,
-                requestedBytes: range
-                    ? Number(range[2]) - Number(range[1]) + 1
-                    : null,
+                requestedBytes,
                 uploadBytes:
                     typeof init.body === 'string'
                         ? new TextEncoder().encode(init.body).byteLength
@@ -124,7 +133,8 @@ export function createTransport(
                 const response = await fetcher(url, init);
                 row.status = response.status;
                 row.serverCache = response.headers.get('x-route-cache');
-                row.rangeFallback = !!range && response.status === 200;
+                row.rangeFallback =
+                    requestedBytes !== null && response.status === 200;
                 const reader = response.body?.getReader();
                 if (!reader) {
                     finish('complete');

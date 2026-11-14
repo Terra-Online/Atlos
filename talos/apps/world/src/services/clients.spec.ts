@@ -3,6 +3,33 @@ import { describe, it, expect } from 'vitest';
 import { createTransport } from './transport';
 
 describe('client transfer accounting', () => {
+    it('counts all requested ranges and records a multipart fallback', async () => {
+        const transport = createTransport(() =>
+            Promise.resolve(new Response('abcdefghij')),
+        );
+        const response = await transport.fetch(
+            'scene',
+            'https://assets.test/shard.czar',
+            {
+                headers: { range: 'bytes=0-1, 8-9' },
+            },
+            [
+                { kind: 'geometry', bytes: 2 },
+                { kind: 'texture', bytes: 2 },
+            ],
+        );
+        await response.arrayBuffer();
+        expect(transport.snapshot().requests[0]).toMatchObject({
+            requestedBytes: 4,
+            responseBytes: 10,
+            rangeFallback: true,
+            content: [
+                { kind: 'geometry', bytes: 2 },
+                { kind: 'texture', bytes: 2 },
+            ],
+        });
+    });
+
     it('counts the complete response when a server ignores a range request', async () => {
         const transport = createTransport(() =>
             Promise.resolve(new Response('abcdefghij')),
