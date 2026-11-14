@@ -1,5 +1,42 @@
 # Route solver handoff
 
+## 266-case functional census, 2026-11-15
+
+Frozen source daab983c completed all 266 case records, followed by seven independent
+input retries and one confirmed coverage repair. The resulting latest-attempt
+population is 67 physically accepted complete routes, 96 complete candidates
+rejected by independent replay, 53 incomplete outcomes, 40 timeouts, six execution
+errors and four correct negative rejections. No input-unavailable case remains.
+These are functional results under verification version 3, not service-performance
+acceptance or proof that every exported game object is modeled.
+
+The original 113 queries return 92 complete candidates against alpha.77's historical
+91. Three new reported completions are 021/0zxbxDM, 058/0G7BIJo and 091/0nbbV7C;
+old reported successes 081/0hgydMj and 104/0sPkq7L time out. Historical alpha.77
+physical validity remains unknown. Changed inputs, verification and mixed cold,
+shared-preparation and concurrent lifecycles prohibit a speedup claim.
+
+Main findings: 42 arrival-unmapped outcomes require source-start/admission review,
+not arbitrary projection to an easier floor; invalid coarse waypoints account for
+four execution errors and one partial result. Following-box, joint-box and original
+wheel-target mechanism acceptance remains open. The two physically accepted
+multi-box-group queries use no boxes and do not establish joint-placement coverage.
+All four original wheel queries return candidates but fail independent replay.
+
+The input re-export preserves map02_lv008 bounds/state/static imports and uses
+V8 collision serialization, avoiding the JSON single-string limit. Case 237 receives
+an allowed overlapping source window and passes replay; other coverage failures
+need precise probe attribution before more export or tolerance changes.
+The V8 frozen-window retry currently uses the private input adapter in the research
+directory; general binary binding for this diagnostic path remains an infra task.
+
+The user explicitly authorized hard cleanup for this test round only after 300 s
+cooperative cancellation failed to settle. Twenty such cleanups retain receipts;
+production cancellation defaults and repository rules are not globally overridden.
+All census/retry searches are finished; no progress automation is active. Data and scripts remain
+in `.local/research/ts-progression-20261114/full266-daab983c/`; comparison.json,
+comparison.csv and mechanism-summary.csv retain every case and prior attempt.
+
 ## Prototype branch integration, 2026-11-14
 
 The prototype branch includes upstream through 2c99b6c2: cooperative worker

@@ -1,5 +1,75 @@
 # Route solver history and validation evidence
 
+## Completed 266-case census and input repairs, 2026-11-15
+
+Source daab983c and a frozen v114 extractor were used without CPU sampling or
+catalog training/warmup. The functional population remains 266, including four
+explicit negatives. Initial case-cold execution changed to two concurrent lanes
+and exact-input/setup groups sharing immutable preparation, at the user's request.
+No complete-query answers were cached. Group preparation and per-query validation
+are recorded separately; these lifecycle changes are not equivalent speed samples.
+
+Worker heap exhaustion on 089 and 092 invalidates the corresponding execution
+segments; original reports remain intact. Subsequent independent segments continue
+unexecuted/cancelled cases without pretending to restore a crashed worker. Coarse
+progress checkpoints did not bound cancellation tail time. Private harnesses later
+observe the same 300 s deadline synchronously at existing progress callbacks.
+The user then explicitly authorizes this round's unresponsive-process cleanup:
+300 s deadline plus 5 s grace, exact PID/command tree checks and retained cleanup
+receipts. No production cancellation policy or solver strategy is changed.
+
+Main-round outcomes were 65 physical completions, 93 invalid complete candidates,
+52 incomplete, 39 timeouts, six errors, four correct negatives and seven input
+failures. The seven failed inputs are 093--099 in map02_lv008. JSON.stringify
+exceeded V8's single-string limit, not the heap limit. Re-export with identical
+bounds [-416,864,-224,1056], terminal state, area, movement and static-support facts
+uses built-in V8 serialization: 32.619 s, 77,408,492-byte ground JSON and
+323,900,274-byte collision binary. Seven independent retries retain the first
+failures: one physical completion (096), four invalid candidates (094,095,097,098),
+one incomplete (099) and one hard timeout (093). Initialization and validation
+stay charged to retry total time; raw solve entry/completion remains unknown if
+termination prevents observing it.
+
+Metadata locates 237's real capsule-footprint deficit beyond X=352: missing extent
+reaches X=351.675009. It is a scene case permitting expansion, not a frozen-window
+exception. An overlapping [320,192,384,224] source window fixes that certificate;
+the unchanged query passes physical replay in 34.828 s total, modeled executed cost
+48.666018 s. Original failure and new source provenance remain linked. Other
+coverage messages whose submitted spans fit declared snapshots remain unresolved;
+no blanket export expansion or verifier relaxation is performed.
+
+Final latest-attempt counts: 67 physical complete, 96 invalid complete, 53 incomplete,
+20 cooperative timeout plus 20 hard-cleanup timeout, six errors, four correct
+rejections, zero input unavailable. There are 163 complete candidates. Incomplete
+reasons are 42 arrival-unmapped, six no-verified-route, two unmapped, two
+no-global-candidate and one Invalid coarse waypoints partial. Errors are two
+recorded heap failures and four Invalid coarse waypoints execution exceptions.
+
+For the historical 113-query subset, 92 candidates complete versus alpha.77's 91
+reported completions (90 historical lightweight checks). Retained reported
+successes are 89; new completions are 021,058,091; old successes 081 and 104 time out.
+No old physical-pass population is available. Eligible historical reported costs
+are lower in 44 cases, equal in 16 and higher in 28; changed geometry and execution
+interpretation keep these as protection targets/trends rather than matched quality
+acceptance. No whole-population speedup or strict per-point non-regression passes.
+
+Mechanism credit is distinct: six rope, five launch and one moving-transfer query
+exercise their asserted device with valid replay. The two valid multi-box-group
+routes have no placements; following-box and circular-wheel original-target
+acceptance is not established. Synthetic/development controls cannot replace them.
+
+Final comparison JSON/CSV and mechanism-summary.csv, all raw per-case results,
+prior attempts, snapshot bindings, lifecycle timing distributions and cleanup
+receipts are under `.local/research/ts-progression-20261114/full266-daab983c/`.
+The final files have 266 unique IDs, no missing-input outcome and no read errors.
+Observed per-case scene-concurrent request times (150 cases, including failures and
+hard-cleanup receipts) have median 49.369 s, P95 326.442 s and maximum 965.030 s.
+These observations combine the documented cancellation epochs and are not a
+controlled service-latency comparison. Preparation-sharing strata remain separate
+in the JSON; no global average omits failed requests to manufacture a speedup.
+All census/retry searches have ended. No source/algorithm change or additional unit-test run
+belongs to this measurement/documentation followup.
+
 ## Merge cooperative cancellation and finite-support verification, 2026-11-14
 
 Merged upstream through 2c99b6c2 into chan/algo-progression. Preserve the prototype
