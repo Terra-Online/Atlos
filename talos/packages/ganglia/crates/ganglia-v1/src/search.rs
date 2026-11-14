@@ -218,6 +218,44 @@ struct Graph {
     anchors: std::collections::HashSet<usize>,
 }
 impl Graph {
+    // Geometric discovery may inspect many seeds. Only query anchors and
+    // endpoints of proved actions/paths enter the expensive resource graph.
+    fn retain_connections(&mut self) -> Vec<usize> {
+        let mut keep = vec![false; self.points.len()];
+        for &id in &self.anchors {
+            keep[id] = true;
+        }
+        for (from, edges) in self.edges.iter().enumerate() {
+            if !edges.is_empty() {
+                keep[from] = true;
+            }
+            for edge in edges {
+                keep[edge.to] = true;
+            }
+        }
+        let mut ids = vec![usize::MAX; keep.len()];
+        let mut points = Vec::new();
+        for (id, &point) in self.points.iter().enumerate() {
+            if keep[id] {
+                ids[id] = points.len();
+                points.push(point);
+            }
+        }
+        let mut edges = Vec::new();
+        for (id, mut row) in std::mem::take(&mut self.edges).into_iter().enumerate() {
+            if keep[id] {
+                for edge in &mut row {
+                    edge.to = ids[edge.to];
+                }
+                edges.push(row);
+            }
+        }
+        self.anchors = self.anchors.iter().map(|&id| ids[id]).collect();
+        self.points = points;
+        self.edges = edges;
+        ids
+    }
+
     fn node(&mut self, p: Point) -> usize {
         if let Some(i) = self.points.iter().position(|q| distance(p, *q) < EPS) {
             return i;
@@ -1110,7 +1148,13 @@ fn solve_world(
     let max_links = budget(config, "maxLinks", 64)?.max(1);
     // Work and retained geometry are different budgets. Dense detail meshes
     // must not turn a bounded trajectory search into an all-pairs mesh graph.
-    let sample_budget = max_candidates.min(max_links.saturating_mul(2));
+    let sample_budget = max_candidates.min(max_links.saturating_mul(
+        if config["costLimit"].is_number() {
+            8
+        } else {
+            2
+        },
+    ));
     let mut truncated = config["catalogTruncated"] == true;
     let mut samples = 0;
     let mut supported_paths = std::collections::HashMap::new();
@@ -1926,7 +1970,9 @@ fn solve_world(
             // to the original supported-source count, rather than a fresh node
             // allowance per newly discovered source.
             let landing_limit = if interior_landings.len() < original_sources {
-                ((source_end - attempts) / 3).min(16)
+                ((source_end - attempts) / 3)
+                    .max(usize::from(improving))
+                    .min(16)
             } else {
                 truncated = true;
                 0
@@ -2092,6 +2138,32 @@ fn solve_world(
             "reason":"catalog-trained","connections":connections,
             "diagnostics":{"truncated":truncated,"candidateAttempts":attempts,
                 "discovery":discovery,"groundProbes":ground_probes}}));
+    }
+    if improving {
+        let before = graph.points.len();
+        let ids = graph.retain_connections();
+        for seed in &mut seeds {
+            seed.0 = ids[seed.0];
+        }
+        for target in &mut targets {
+            *target = ids[*target];
+        }
+        for waypoint in &mut waypoint_nodes {
+            *waypoint = ids[*waypoint];
+        }
+        supported_paths = supported_paths
+            .into_iter()
+            .filter_map(|((a, b), path)| {
+                (ids[a] != usize::MAX && ids[b] != usize::MAX).then_some(((ids[a], ids[b]), path))
+            })
+            .collect();
+        if std::env::var_os("GANGLIA_PROFILE").is_some() {
+            eprintln!(
+                "{}",
+                json!({"native":"search","phase":"candidate-pool",
+                "candidates":before,"retained":graph.points.len()})
+            );
+        }
     }
     profile("actions", &started, attempts);
     let max_expanded = budget(&movement["locomotion"]["search"], "maxExpanded", 100_000)?;

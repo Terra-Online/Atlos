@@ -1,5 +1,39 @@
 # Route solver history and validation evidence
 
+## Separate geometric candidates from the resource graph, 2026-11-15
+
+Improvement discovery now retains a larger bounded geometric pool (at most eight
+maxLinks, still within maxCandidates), then compacts the resource graph to query
+anchors and endpoints of proved actions/paths. Dense temporary node IDs are
+remapped in starts, targets, ordered waypoints and supported-path keys before
+resource scheduling. Unproved geometric proposals do not become expensive walking
+or resource vertices. Training and first-feasible discovery keep their existing
+sampling policy.
+
+The first larger-pool diagnostic exposed a budget floor defect: a one-attempt
+source received zero interior-landing proposals because integer division by three
+rounded to zero. Improvement discovery now permits its existing single attempt
+to generate a landing; no new attempts are granted. Both changes follow TS's
+separation of geometric enumeration, physical action admission and final routing.
+
+The six-request trained diagnostic physically accepts every route. Lower cases
+17/18/19/21 measured about 563/523/480/441 ms, with modeled costs
+7.367911/7.081703/6.511280/5.894853 s. Upper cases 4/12 measured 1663/2203 ms.
+Cases 17/18 still exceed the retained TS cost gates; upper latency still prevents
+an inference of 2x performance. Evidence is
+`.local/research/native-pool-landings-result.json` and its probe log. This is a
+focused diagnostic, not a complete-population benchmark or accepted speedup.
+The larger pool without landing budget correction was worse
+(`native-pool-result.json`); do not repeat it unchanged.
+
+Validation passes 149 Rust unit tests, two authored integration tests, 26 N-API
+common physical/lifecycle fixtures, release native build, Rustfmt, feature-enabled
+all-target Clippy with warnings denied and diff checks. TS/verifier source is unchanged.
+
+Continue migrating TS candidate pairing/control coverage and reducing resource
+work, then run all 50 ordinary requests with training, freeze, warmup and one round.
+The objective remains active and Rust commits remain local until ready.
+
 ## Exact-flight and boundary ownership diagnostic, 2026-11-15
 
 Replayed saved TS jump witnesses from lower-floor cases 17/18/19 directly against
