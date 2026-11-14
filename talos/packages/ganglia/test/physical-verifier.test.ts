@@ -120,16 +120,40 @@ test('consistent claimed timing cannot turn a run into teleportation', () => {
   assert.equal(result.valid, false);
   assert.match(result.issues.join(), /resource replay/);
 });
-test('continuous support rejects a narrow raw collision gap even with a solid navigation polygon', () => {
+test('continuous support includes capsule edge contact but rejects gaps wider than its footprint', () => {
   const input = snapshot();
-  input.collision = {
-    positions: [
-      -10, 0, -10, -10, 0, 10, 0.9999, 0, 10, 0.9999, 0, -10, 1.0001, 0, -10, 1.0001, 0, 10, 10, 0,
-      10, 10, 0, -10,
-    ],
-    indices: [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7],
-  };
-  assert.equal(verify(input, candidate(input, [walk()])).valid, false);
+  for (const gap of [0.0002, 0.5]) {
+    input.collision = {
+      positions: [
+        -10,
+        0,
+        -10,
+        -10,
+        0,
+        10,
+        1 - gap / 2,
+        0,
+        10,
+        1 - gap / 2,
+        0,
+        -10,
+        1 + gap / 2,
+        0,
+        -10,
+        1 + gap / 2,
+        0,
+        10,
+        10,
+        0,
+        10,
+        10,
+        0,
+        -10,
+      ],
+      indices: [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7],
+    };
+    assert.equal(verify(input, candidate(input, [walk()]), { walkSnap: 0 }).valid, gap < 0.4);
+  }
 });
 test('capsule replay rejects an active wall and missing swept body coverage', () => {
   const input = snapshot(),

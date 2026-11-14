@@ -1,5 +1,28 @@
 # Route solver handoff
 
+## Current-route support correction in progress, 2026-11-14
+
+The failed `c316ac52` run exposed two geometric inconsistencies. A representative
+walking span had a 3.744 mm gap in center-projection support intervals although
+its radius-0.35 capsule had continuous nearby edge support and clear sweeps.
+Continuous support now intersects the finite triangle's exact horizontal capsule
+footprint with its 3D contact envelope, including edges/corners; the horizontal
+reach is never expanded by projection tolerance. Standing and swept-body checks
+still certify actual feet. Gaps wider than the capsule footprint remain rejected.
+
+V1 `standingFoot` previously added infinite-plane slope lift to a radius-zero
+projection. A real rejected takeoff was 7.527 mm above finite-triangle sphere
+support. It now uses the collision model's radius-aware support directly, plus
+existing clearance. Analytic edge-support and footprint-gap regressions pass;
+package formatting, lint, typecheck and 457 TS tests pass. Verification identity
+advances to version 2. The Rust negative-gap fixture now uses a gap wider than its
+capsule footprint; no Rust implementation or binary was changed.
+
+A frozen current-source generation run is required before acceptance. Saved-route
+replay is diagnostic only: it exposes additional real nearby steep-face collision
+and unsupported endpoints. Those are not waived by these fixes. Local geometry
+probes and extracted source facts live under `.local/research/current-physical-failures/`.
+
 ## Current-source TS full-population run, 2026-11-14
 
 Clean commit `c316ac5210d32e00581f090442c4829b8365132c` completed the requested

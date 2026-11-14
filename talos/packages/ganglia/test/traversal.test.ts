@@ -638,3 +638,17 @@ test('shared traversal preparation does not retain an earlier query action overl
     connected,
   );
 });
+
+test('takeoff feet use finite ramp edge support instead of an infinite slope plane', () => {
+  const ramp = floor('ramp', -1, 0, 0);
+  ramp.vertices = ramp.vertices.map(([x, _y, z]) => [x, x, z]);
+  const world = createCollisionWorld(geometry([ramp]));
+  const result = standingFoot({ position: [-0.01, -0.01, 0] }, world, {
+    ...options,
+    profile: { radius: 0.2, height: 1.6 },
+    blocked: () => false,
+    project: createGoalProjector([ramp]),
+  });
+  assert.ok(result.position);
+  assert.ok(Math.abs(result.position[1] - 0.00474984355438179) < 1e-9);
+});

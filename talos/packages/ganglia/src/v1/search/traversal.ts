@@ -332,10 +332,13 @@ export const standingFoot = (
     maxUp: profile.radius,
     maxDown: profile.radius,
     maxSlope,
+    radius: profile.radius,
   });
   if (!support) return { reason: 'support' };
   const position: Vec3 = [...support.position];
-  position[1] += profile.radius * (1 / support.normal[1] - 1) + 0.005;
+  // groundAt includes finite-face, edge and corner sphere support. Applying an
+  // infinite-plane lift afterward can leave a takeoff floating above a ledge.
+  position[1] += 0.005;
   // Real support corrects voxel and slope height. Bind the corrected foot to the
   // closest eligible navigation support, matching subsequent ground queries.
   if (Math.abs(position[1] - nav.position[1]) > Math.min(maxVertical, profile.radius))

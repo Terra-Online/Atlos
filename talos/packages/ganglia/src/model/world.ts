@@ -9,6 +9,7 @@ import {
   blockedBody,
   onBoxFace,
 } from '#@/src/model/placement.ts';
+import { supportIntervals } from '#@/src/model/support-coverage.ts';
 import { supportBounds } from '#@/src/model/supports.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
 import type { FollowingSupport, PhysicalInput } from '#@/src/solver/physical.ts';
@@ -269,8 +270,8 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
         [supportGeometry, supports],
       ] as const) {
         const candidates = index.trianglesInBounds!({
-          min: [Math.min(a[0], b[0]), Math.min(a[2], b[2])],
-          max: [Math.max(a[0], b[0]), Math.max(a[2], b[2])],
+          min: [Math.min(a[0], b[0]) - profile.radius, Math.min(a[2], b[2]) - profile.radius],
+          max: [Math.max(a[0], b[0]) + profile.radius, Math.max(a[2], b[2]) + profile.radius],
         });
         for (const triangle of candidates) {
           const vertices = [0, 1, 2].map((corner): Vec3 => {
@@ -294,40 +295,9 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
             normal[1] / Math.hypot(...normal) < Math.cos((input.movement.maxSlope * Math.PI) / 180)
           )
             continue;
-          const determinant = u[0] * v[2] - u[2] * v[0];
-          if (Math.abs(determinant) < 1e-12) continue;
-          const weights = (point: Vec3) => {
-            const x = point[0] - p[0],
-              z = point[2] - p[2];
-            const b = (x * v[2] - z * v[0]) / determinant,
-              c = (u[0] * z - u[2] * x) / determinant;
-            return [1 - b - c, b, c];
-          };
-          const first = weights(a),
-            last = weights(b);
-          let near = 0,
-            far = 1;
-          const clip = (x: number, y: number) => {
-            if (x < 0 && y < 0) {
-              far = -1;
-              return;
-            }
-            if (x < 0) near = Math.max(near, x / (x - y));
-            if (y < 0) far = Math.min(far, x / (x - y));
-          };
-          for (let i = 0; i < 3; i++) clip(first[i] + 1e-9, last[i] + 1e-9);
-          // For a center projected inside this finite face, sphere support lies
-          // between the vertical plane height and the infinite-plane tangent
-          // height. Edge/corner contacts can lie below the latter. This envelope
-          // proves continuous coverage; standing and sweeps prove actual feet.
-          const lift = profile.radius * (Math.hypot(...normal) / normal[1] - 1);
-          const offset = (point: Vec3, w: number[]) =>
-            point[1] - w.reduce((sum, n, i) => sum + n * vertices[i][1], 0);
-          const low = offset(a, first),
-            high = offset(b, last);
-          clip(tolerance + lift - low, tolerance + lift - high);
-          clip(tolerance + low, tolerance + high);
-          if (near <= far) intervals.push([near, far]);
+          intervals.push(
+            ...supportIntervals(a, b, vertices, normal as Vec3, profile.radius, tolerance),
+          );
         }
       }
       intervals.sort((a, b) => a[0] - b[0]);

@@ -121,7 +121,7 @@ export async function loadScene(
       resolvedKernel,
       rules: {
         maxVertical: dataset.navigation.options.maxVertical,
-        verification: { version: 1, policy: verificationDefaults },
+        verification: { version: 2, policy: verificationDefaults },
       },
       get inputBytes() {
         return dataset.inputBytes;
