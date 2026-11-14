@@ -185,9 +185,9 @@ fn airborne_collection_stops_before_later_collision() {
     assert_eq!(prefix.extra["flight"]["end"], json!(target));
 }
 #[test]
-fn tiny_support_crack_is_not_walkable() {
+fn a_support_gap_wider_than_the_capsule_is_not_walkable() {
     let mut c = floor(-3., 0., -2., 2., 0.);
-    merge(&mut c, floor(0.001, 3., -2., 2., 0.));
+    merge(&mut c, floor(0.8, 3., -2., 2., 0.));
     let w = World::new(snapshot(c)).unwrap();
     assert!(
         w.ground_path([-2., 0., 0.], [2., 0., 0.])
@@ -697,21 +697,23 @@ fn capsule_support_bend_is_not_replaced_by_endpoint_interpolation() {
 }
 
 #[test]
-fn physical_walk_needs_raw_centerline_support_even_when_capsule_bridges_gap() {
-    let mut collision = floor(-2., -0.05, -1., 1., 0.);
-    merge(&mut collision, floor(0.05, 2., -1., 1., 0.));
-    let mut input = snapshot(collision);
-    input["input"]["ground"]["options"]["profile"]["radius"] = json!(0.3);
-    input["input"]["ground"]["surfaces"] = json!([
-        {"id":"navigation","vertices":[[-2.,0.,-1.],[2.,0.,-1.],[2.,0.,1.],[-2.,0.,1.]]}
-    ]);
-    let w = World::new(input).unwrap();
-    assert!(w.standing_foot([0., 0.01, 0.]).unwrap().is_some());
-    assert!(
-        w.ground_path([-1., 0.01, 0.], [1., 0.01, 0.])
-            .unwrap()
-            .is_none()
-    );
+fn physical_walk_uses_capsule_edge_support_without_bridging_wide_gaps() {
+    for half_gap in [0.05, 0.4] {
+        let mut collision = floor(-2., -half_gap, -1., 1., 0.);
+        merge(&mut collision, floor(half_gap, 2., -1., 1., 0.));
+        let mut input = snapshot(collision);
+        input["input"]["ground"]["options"]["profile"]["radius"] = json!(0.3);
+        input["input"]["ground"]["surfaces"] = json!([
+            {"id":"navigation","vertices":[[-2.,0.,-1.],[2.,0.,-1.],[2.,0.,1.],[-2.,0.,1.]]}
+        ]);
+        let w = World::new(input).unwrap();
+        assert_eq!(
+            w.ground_path([-1., 0.01, 0.], [1., 0.01, 0.])
+                .unwrap()
+                .is_some(),
+            half_gap < 0.3
+        );
+    }
 }
 
 fn following_box(id: &str, x: f64) -> Value {
@@ -889,34 +891,36 @@ fn physical_standing_is_independent_of_navigation_projection_radius() {
 
 #[test]
 fn direct_probe_distinguishes_physical_gap_navigation_and_clearance() {
-    let mut collision = floor(-2., -0.05, -1., 1., 0.);
-    merge(&mut collision, floor(0.05, 2., -1., 1., 0.));
+    let mut collision = floor(-2., -0.4, -1., 1., 0.);
+    merge(&mut collision, floor(0.4, 2., -1., 1., 0.));
     let mut input = snapshot(collision);
     input["input"]["ground"]["surfaces"] = json!([
         {"id":"navigation","vertices":[[-2.,0.,-1.],[2.,0.,-1.],[2.,0.,1.],[-2.,0.,1.]]}
     ]);
     let w = World::new(input).unwrap();
-    let GroundProbe::Rejected(GroundFailure::PhysicalSupport { span }) =
-        w.probe_ground([-1., 0.01, 0.], [1., 0.01, 0.]).unwrap()
+    let probe = w.probe_ground([-1., 0.01, 0.], [1., 0.01, 0.]).unwrap();
+    let GroundProbe::Rejected(
+        GroundFailure::PhysicalSupport { span } | GroundFailure::Clearance { span },
+    ) = probe
     else {
-        panic!("raw crack needs a physical witness")
+        panic!("raw gap needs a physical rejection: {probe:?}")
     };
-    assert!(span[0][0].min(span[1][0]) < 0.05 && span[0][0].max(span[1][0]) > -0.05);
+    assert!(span[0][0].min(span[1][0]) < 0.4 && span[0][0].max(span[1][0]) > -0.4);
     let boundaries = w
         .raw_support_boundaries(Bounds {
-            min: [-0.1, -0.8],
-            max: [0.1, 0.8],
+            min: [-0.5, -0.8],
+            max: [0.5, 0.8],
         })
         .unwrap();
     assert!(
         boundaries
             .iter()
-            .any(|b| (b.points[0][0] + 0.05).abs() < 1e-8 && b.inward[0] < -0.99)
+            .any(|b| (b.points[0][0] + 0.4).abs() < 1e-8 && b.inward[0] < -0.99)
     );
     assert!(
         boundaries
             .iter()
-            .any(|b| (b.points[0][0] - 0.05).abs() < 1e-8 && b.inward[0] > 0.99)
+            .any(|b| (b.points[0][0] - 0.4).abs() < 1e-8 && b.inward[0] > 0.99)
     );
     let mut masked = snapshot(floor(-2., 2., -1., 1., 0.));
     masked["input"]["ground"]["surfaces"] = json!([
@@ -1144,12 +1148,19 @@ fn physical_stair_walk_is_supported_before_scheduling() {
 fn bent_navigation(gap: bool) -> World {
     let mut collision = floor(-3., -1., -2., 0., 0.);
     if gap {
-        merge(&mut collision, floor(-1., 1., -2., -1.05, 0.));
-        merge(&mut collision, floor(-1., 1., -0.95, 0., 0.));
+        merge(&mut collision, floor(-1., 1., -2., -1.4, 0.));
+        merge(&mut collision, floor(-1., 1., -0.6, 0., 0.));
     } else {
         merge(&mut collision, floor(-1., 1., -2., 0., 0.));
     }
-    merge(&mut collision, floor(-1., 1., 0., 3., 0.));
+    if gap {
+        // Keep the unsupported crossing away from the adjacent left floor;
+        // capsule edge support can legitimately round that earlier corner.
+        merge(&mut collision, floor(-1., 1., 0., 0.7, 0.));
+        merge(&mut collision, floor(-1., 1., 1.3, 3., 0.));
+    } else {
+        merge(&mut collision, floor(-1., 1., 0., 3., 0.));
+    }
     let mut input = snapshot(collision);
     input["input"]["ground"]["surfaces"] = json!([
         {"id":"left","vertices":[[-3.,0.,-2.],[-1.,0.,-2.],[-1.,0.,0.],[-3.,0.,0.]],"portals":[]},
@@ -1187,12 +1198,10 @@ fn navigation_route_probe_reveals_physical_gap_hidden_from_straight_probe() {
     assert!(result.supported.is_none());
     assert!(result.expanded <= 64 && result.probed <= 7);
     assert!(!result.truncated);
-    assert!(
-        result
-            .failures
-            .iter()
-            .any(|f| matches!(f, GroundFailure::PhysicalSupport { .. }))
-    );
+    assert!(result.failures.iter().any(|f| matches!(
+        f,
+        GroundFailure::PhysicalSupport { .. } | GroundFailure::Clearance { .. }
+    )));
 }
 #[test]
 fn navigation_route_probe_returns_only_fully_proved_directed_canonical_joins() {

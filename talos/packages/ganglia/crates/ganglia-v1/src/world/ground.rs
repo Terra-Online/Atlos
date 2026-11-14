@@ -100,63 +100,26 @@ fn physical_support(w: &World, a: Vec3, b: Vec3) -> bool {
     }
     let tolerance =
         (number(&w.snapshot["input"]["ground"]["build"], "cellHeight", 0.1) * 3. + 0.01).max(0.02);
+    let radius = w.movement.profile.radius;
     let query = [
-        a[0].min(b[0]),
+        a[0].min(b[0]) - radius,
         a[1].min(b[1]) - tolerance,
-        a[2].min(b[2]),
-        a[0].max(b[0]),
-        a[1].max(b[1]) + tolerance,
-        a[2].max(b[2]),
+        a[2].min(b[2]) - radius,
+        a[0].max(b[0]) + radius,
+        a[1].max(b[1]) + 2. * radius + tolerance,
+        a[2].max(b[2]) + radius,
     ];
-    let mut intervals = vec![];
+    let mut intervals = Vec::new();
     for index in [&w.collision, &w.moving_support] {
         for id in index.candidates(query) {
-            let t = index.faces[id];
-            let u = sub(t[1], t[0]);
-            let v = sub(t[2], t[0]);
-            let normal = cross(u, v);
+            let face = index.faces[id];
+            let normal = cross(sub(face[1], face[0]), sub(face[2], face[0]));
             if normal[1] <= 0.
                 || normal[1] / hypot(normal) < w.movement.max_slope.to_radians().cos()
             {
                 continue;
             }
-            let determinant = u[0] * v[2] - u[2] * v[0];
-            if determinant.abs() < 1e-12 {
-                continue;
-            }
-            let weights = |p: Vec3| {
-                let x = p[0] - t[0][0];
-                let z = p[2] - t[0][2];
-                let b = (x * v[2] - z * v[0]) / determinant;
-                let c = (u[0] * z - u[2] * x) / determinant;
-                [1. - b - c, b, c]
-            };
-            let first = weights(a);
-            let last = weights(b);
-            let mut near: f64 = 0.;
-            let mut far: f64 = 1.;
-            let mut clip = |x: f64, y: f64| {
-                if x < 0. && y < 0. {
-                    far = -1.;
-                } else {
-                    if x < 0. {
-                        near = near.max(x / (x - y));
-                    }
-                    if y < 0. {
-                        far = far.min(x / (x - y));
-                    }
-                }
-            };
-            for i in 0..3 {
-                clip(first[i] + 1e-9, last[i] + 1e-9);
-            }
-            let low = a[1] - (0..3).map(|i| first[i] * t[i][1]).sum::<f64>();
-            let high = b[1] - (0..3).map(|i| last[i] * t[i][1]).sum::<f64>();
-            clip(tolerance - low, tolerance - high);
-            clip(tolerance + low, tolerance + high);
-            if near <= far {
-                intervals.push((near, far));
-            }
+            super::support::intervals(a, b, face, radius, tolerance, &mut intervals);
         }
     }
     intervals.sort_by(|a, b| a.0.total_cmp(&b.0));

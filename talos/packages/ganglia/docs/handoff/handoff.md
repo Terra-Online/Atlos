@@ -1,5 +1,38 @@
 # Route solver handoff
 
+## Native capsule support coverage, 2026-11-15
+
+The active local objective is at least 2x TS serial throughput on the full normal
+50-request workload with training, freeze and warmup, physical acceptance and
+comparable route cost. Rust commits remain local until explicit user approval.
+Stress is excluded. No accepted speedup has been reached.
+
+Profiling the navigation checkpoint identified 1802 completed detour proofs in a
+trained two-goal diagnostic; roughly 99 of 102 cumulative proof seconds ended in
+rejection. The Rust proof still required raw centerline triangle coverage, whereas
+the shared physical model admits finite-radius face, edge and vertex support.
+`world/support` now computes that continuous footprint/contact intersection with
+fixed-size interval storage and merged feature intervals. It expands no horizontal
+reach beyond the real capsule radius. Actual supported feet, collision, coverage
+and resource checks remain. This fixes physical semantics rather than increasing
+search work or changing the verifier.
+
+Four old negative fixtures relied on rejecting gaps narrower than the capsule.
+Their negative cases now use genuinely unsupported wide gaps; the positive
+capsule-edge case remains explicit. A bent-navigation fixture moves its unsupported
+crossing away from an adjacent floor that legitimately supports a rounded corner.
+Both support and clearance failures count as physical rejection witnesses.
+
+The frozen `support-stage.node` diagnostic keeps ten training requests, both
+warmups and two ordinary map02 targets. Both target routes now complete and pass
+independent physical replay, including the formerly timed-out upper target. This
+is functional diagnostic evidence, not full-population acceptance or speedup.
+Results/profile are `.local/research/native-support-result.json` and
+`/tmp/ganglia-native-support-probe.log`; the preceding profile summary is
+`.local/research/native-core-profile-summary.json`. Query time remains far above
+the objective; unnecessary trajectory density and repeated local-search work are
+next. Native N-API physical/lifecycle integration passes all 25 fixtures.
+
 ## Incremental Rust navigation module, 2026-11-15
 
 Rust development resumes beside the retained TS implementation. This rewrite and

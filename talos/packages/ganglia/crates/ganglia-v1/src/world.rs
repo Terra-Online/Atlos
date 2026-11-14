@@ -3,6 +3,7 @@
 //! A projection is only a support proposal: walking and flight methods additionally
 //! validate the full swept body against collision, walls and declared coverage.
 mod boundaries;
+mod support;
 use crate::geometry as collision;
 mod devices;
 mod flight;
