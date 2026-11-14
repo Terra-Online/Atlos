@@ -1,5 +1,26 @@
 # Route solver handoff
 
+## Fine-pool coverage and grouping diagnostic, 2026-11-15
+
+Dumped the actual pre-action candidate pool after `2ddfba5` for case 18-1:
+522 points, nearest critical takeoff about 1.48 m from the TS witness (previous
+small graph about 5.4 m). Its intermediate landing is represented within 0.17 m;
+the deep landing is still about 6.94 m away. Evidence:
+`.local/research/native-pool-candidate-graph.json` and the retained TS event 34.
+
+A body-diameter boundary-cell trial improved case 17 cost slightly but worsened
+18 and 21 relative to the retained source. Removed. All six diagnostic requests
+remained physically valid; no complete-population speedup or quality claim follows.
+Evidence is `.local/research/native-body-cells-result.json`. Production source is
+restored to `2ddfba5`; the temporary candidate dump instrumentation is removed.
+
+Next migrate the TS active landing/control candidate lifecycle. Larger native
+pools often allocate only one flight attempt to a source; a blocked first landing
+then retires that source instead of allowing another landing/control witness.
+Preserve unfinished candidates in a bounded shared work queue, with the same total
+attempt pool. Do not repeat only source-cell refinement before fixing candidate
+pair scheduling. The full 2x objective and path-cost gates remain unmet; no push.
+
 ## Separate geometric candidates from the resource graph, 2026-11-15
 
 Improvement discovery now retains a larger bounded geometric pool (at most eight
