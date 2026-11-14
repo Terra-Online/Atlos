@@ -103,6 +103,17 @@ export async function prepareGangliaV1Rust<Source, Job extends WindowJob>(
     );
     return result;
   };
+  const timed = async <T>(phase: string, work: () => Promise<T>): Promise<T> => {
+    if (!process.env.GANGLIA_PROFILE) return work();
+    const began = performance.now();
+    try {
+      return await work();
+    } finally {
+      console.error(
+        JSON.stringify({ native: 'host', phase, elapsedMs: performance.now() - began }),
+      );
+    }
+  };
   const solve = (query: RouteQuery, options?: SolveOptions) =>
     enqueue(async () => {
       const abort = () => engine.cancel();
@@ -111,7 +122,7 @@ export async function prepareGangliaV1Rust<Source, Job extends WindowJob>(
         options?.signal?.throwIfAborted();
         options?.onEvent?.({ type: 'progress', phase: 'prepare' });
         options?.signal?.throwIfAborted();
-        let step = JSON.parse(await engine.start(encode(query))) as Step;
+        let step = JSON.parse(await timed('start', () => engine.start(encode(query)))) as Step;
         while (step.type === 'load') {
           options?.signal?.throwIfAborted();
           if (input.kind !== 'scene')
@@ -156,7 +167,9 @@ export async function prepareGangliaV1Rust<Source, Job extends WindowJob>(
                 waypoints: effect.waypoints,
                 solverConfig: config,
               };
-              const snapshot = await input.resources.physical!(job, request);
+              const snapshot = await timed('normalize', () =>
+                input.resources.physical!(job, request),
+              );
               const coverage =
                 snapshot.coverage === 'complete'
                   ? { kind: 'complete' }
@@ -175,7 +188,7 @@ export async function prepareGangliaV1Rust<Source, Job extends WindowJob>(
           options?.signal?.throwIfAborted();
           options?.onEvent?.({ type: 'progress', phase: 'search' });
           options?.signal?.throwIfAborted();
-          step = JSON.parse(await engine.resume(encode(response))) as Step;
+          step = JSON.parse(await timed('resume', () => engine.resume(encode(response)))) as Step;
           if (loadedKey !== undefined) {
             resident.delete(loadedKey);
             resident.set(loadedKey, true);

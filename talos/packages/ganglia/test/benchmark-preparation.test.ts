@@ -76,6 +76,8 @@ test('missing, disabled or unsatisfied V1 preparation cannot silently change the
     { trainingQueries: 0, warmupQueries: 2 },
     { trainingQueries: 10, warmupQueries: 0 },
     { trainingQueries: 11, warmupQueries: 2 },
+    { trainingQueries: 10, warmupQueries: 2, catalogCandidates: 0 },
+    { trainingQueries: 10, warmupQueries: 2, catalogLinks: 1.5 },
   ])
     assert.throws(() =>
       benchmarkPreparation({ ...adapter.defaults, preparation }, adapter, 'map02'),

@@ -10,6 +10,8 @@ use std::sync::Arc;
 mod geometry;
 #[path = "search/locomotion.rs"]
 mod locomotion;
+#[path = "search/training.rs"]
+mod training;
 use geometry::{EPS, distance, lerp};
 type Point = [f64; 3];
 fn array(v: &Value) -> &[Value] {
@@ -666,6 +668,63 @@ fn edge_successors(
     }
     Ok(successors)
 }
+/// Reverse shortest paths through an optimistic graph: walking may cross any
+/// terrain, devices keep their fixed clocks and flights use their speed cap. Unlike one global maximum
+/// device speed, this lower bound still pays for reaching each device entrance.
+fn remaining_costs(
+    graph: &Graph,
+    goal: Point,
+    radius: f64,
+    speed: f64,
+    air_speed: f64,
+) -> Result<Vec<f64>, String> {
+    let n = graph.points.len();
+    let mut costs = graph
+        .points
+        .iter()
+        .map(|&p| (horizontal(p, goal) - radius).max(0.) / speed)
+        .collect::<Vec<_>>();
+    let mut reverse = vec![Vec::new(); n];
+    for (from, edges) in graph.edges.iter().enumerate() {
+        for edge in edges {
+            if edge.segment.mode != "walk" {
+                let duration = edge.segment.times.last().unwrap_or(&0.)
+                    - edge.segment.times.first().unwrap_or(&0.);
+                let bound = if edge.terminal {
+                    // Boost expiry may move the first collection point before
+                    // the original terminal endpoint.
+                    0.
+                } else if matches!(edge.segment.mode.as_str(), "jump" | "drop") {
+                    (horizontal(graph.points[from], graph.points[edge.to]) / air_speed)
+                        .min(duration)
+                } else {
+                    duration
+                };
+                reverse[edge.to].push((from, bound));
+            }
+        }
+    }
+    let mut done = vec![false; n];
+    for _ in 0..n {
+        crate::cancel::check()?;
+        let node = (0..n)
+            .filter(|&i| !done[i])
+            .min_by(|&a, &b| costs[a].total_cmp(&costs[b]))
+            .unwrap();
+        done[node] = true;
+        for &(from, duration) in &reverse[node] {
+            costs[from] = costs[from].min(costs[node] + duration);
+        }
+        for from in 0..n {
+            if !done[from] {
+                costs[from] = costs[from]
+                    .min(costs[node] + horizontal(graph.points[from], graph.points[node]) / speed);
+            }
+        }
+    }
+    Ok(costs)
+}
+
 #[derive(Clone, Copy)]
 struct GroundJob {
     lower_bound: f64,
@@ -1040,7 +1099,7 @@ fn solve_world(
     // Work and retained geometry are different budgets. Dense detail meshes
     // must not turn a bounded trajectory search into an all-pairs mesh graph.
     let sample_budget = max_candidates.min(max_links.saturating_mul(2));
-    let mut truncated = false;
+    let mut truncated = config["catalogTruncated"] == true;
     let mut samples = 0;
     let mut supported_paths = std::collections::HashMap::new();
     let mut repair_spans = Vec::new();
@@ -1089,7 +1148,8 @@ fn solve_world(
                     supported_paths.insert((from, to), path.points);
                 }
                 crate::world::GroundProbe::Rejected(failure) => {
-                    let navigation = matches!(&failure, crate::world::GroundFailure::Navigation);
+                    let navigation =
+                        !matches!(&failure, crate::world::GroundFailure::ProofBudget { .. });
                     feedback["direct"] = ground_failure(failure, &mut repair_spans, &mut truncated);
                     if navigation {
                         let remaining = limit - ground_probes;
@@ -1634,6 +1694,35 @@ fn solve_world(
         graph.action_ids.insert(id.into());
         known.push(c.clone());
     }
+    let mut incoming_attempts = 0;
+    if config["catalogTraining"] == true {
+        let goal_points = targets.iter().map(|&i| graph.points[i]).collect::<Vec<_>>();
+        let root_points = seeds
+            .iter()
+            .map(|&(i, _, _, _)| graph.points[i])
+            .collect::<Vec<_>>();
+        let (connections, used) = training::incoming(
+            world,
+            &goal_points,
+            &root_points,
+            spacing,
+            (max_candidates.saturating_sub(ground_probes) / 4).min(1024),
+            &mut truncated,
+        )?;
+        incoming_attempts = used;
+        for connection in connections {
+            let mut segment: Segment = serde_json::from_value(
+                serde_json::to_value(connection).map_err(|e| e.to_string())?,
+            )
+            .map_err(|e| e.to_string())?;
+            classify_flight(&mut segment, world.movement.run_air_speed);
+            if segment.required_gait.is_some() && !has_locomotion {
+                continue;
+            }
+            let from = graph.node(segment.points[0]);
+            graph.generated(from, segment, false, None, &authority)?;
+        }
+    }
     let count = graph.points.len();
     profile("nodes", &started, count);
     let max_attempts = max_candidates;
@@ -1652,7 +1741,7 @@ fn solve_world(
         })
         .collect::<Vec<_>>();
     let largest_multiplier = boosts.iter().map(|b| b.usage.multiplier).fold(1., f64::max);
-    let mut attempts = ground_probes;
+    let mut attempts = ground_probes + incoming_attempts;
     let mut action_sources = if stage >= 2 {
         (0..count)
             .filter(|&a| geometry.project(graph.points[a], tolerance).is_some())
@@ -1930,43 +2019,39 @@ fn solve_world(
             * walking_multiplier,
         f64::max,
     );
-    // A trained library introduces many resource alternatives. Order live labels
-    // toward the goal instead of exhausting every cheap nearby prefix first.
-    // Retain actual costs for dominance and keep all physical/resource proofs.
-    let action_speed = graph
-        .edges
-        .iter()
-        .flatten()
-        .flat_map(|edge| {
-            edge.segment
-                .points
-                .windows(2)
-                .zip(edge.segment.times.windows(2))
-                .map(|(points, times)| horizontal(points[0], points[1]) / (times[1] - times[0]))
-        })
-        .fold(maximum_walk_speed, f64::max)
-        * largest_multiplier;
     let goal_radius = if interaction.is_object() {
         number(interaction, "radius", 0.)?
     } else {
         tolerance
     };
-    let estimates = graph
-        .points
-        .iter()
-        .map(|&p| (horizontal(p, goal) - goal_radius).max(0.) / action_speed)
-        .collect::<Vec<_>>();
+    let estimates = remaining_costs(
+        &graph,
+        goal,
+        goal_radius,
+        maximum_walk_speed,
+        world
+            .movement
+            .model
+            .max_horizontal_speed
+            .max(world.movement.model.start_horizontal_speed.unwrap_or(0.))
+            .max(1e-6)
+            * largest_multiplier,
+    )?;
     let mut walking_phases = Vec::new();
     let mut unexplored_detours = 0usize;
-    // Known-action lookup is a quick direct-walk pass. A trained catalog must
-    // not trigger a full detour proof for every pair before fresh discovery.
-    // Stage 2 also starts direct, then restores ordinary detours. Restart labels
+    // Known-action lookup starts with direct walks. Connected catalog chains
+    // then admit lazily ordered detour proofs; incomplete prefixes leave those
+    // proofs to fresh discovery. Restart labels
     // so earlier dominance cannot suppress paths introduced by the larger graph.
-    for pass in 0..if stage >= 2 { 2 } else { 1 } {
+    for pass in 0..if stage >= 2 || (stage == 1 && config["catalogConnected"] == true) {
+        2
+    } else {
+        1
+    } {
         let direct_only = stage >= 1 && pass == 0;
         let phase = if direct_only {
             "direct"
-        } else if stage >= 2 {
+        } else if stage >= 1 {
             "detours"
         } else {
             "full"
@@ -2000,6 +2085,14 @@ fn solve_world(
                 queue.pop();
             }
             let next_label_cost = queue.peek().map_or(f64::INFINITY, |item| item.cost);
+            // The caller already owns a feasible route. More expensive optimistic
+            // labels/jobs cannot improve it; retain the caller's incumbent.
+            let cost_limit = config["costLimit"].as_f64().unwrap_or(f64::INFINITY);
+            if next_label_cost.min(ground_jobs.peek().map_or(f64::INFINITY, |j| j.lower_bound))
+                >= cost_limit
+            {
+                break;
+            }
             if ground_jobs
                 .peek()
                 .is_some_and(|job| job.lower_bound <= next_label_cost)
@@ -2147,7 +2240,7 @@ fn solve_world(
                     {
                         continue;
                     }
-                    if !direct_only && stage >= 2 && !supported_paths.contains_key(&(label.node, b))
+                    if !direct_only && stage >= 1 && !supported_paths.contains_key(&(label.node, b))
                     {
                         if queued_pairs.insert((label.node, b)) {
                             let source_cost = rows[label.node]
@@ -2954,7 +3047,25 @@ fn landing_proposals(
 ) -> Result<Vec<Point>, String> {
     let stratum = world.movement.model.max_jump_height.max(3.);
     let mut bands = std::collections::BTreeMap::<i64, Vec<_>>::new();
-    for surface in &world.surfaces {
+    // Fall time grows with drop height. This envelope includes every landing
+    // the existing per-face test can accept, without scanning the whole map.
+    let reach = free_flight_range(
+        world,
+        source[1],
+        source[1] - world.movement.max_drop,
+        crate::model::Mode::Jump,
+        1.,
+    )
+    .ok()
+    .flatten()
+    .unwrap_or(world.movement.max_horizontal_distance)
+        + EPS;
+    let nearby = world.surface_candidates(&crate::model::Bounds {
+        min: [source[0] - reach, source[2] - reach],
+        max: [source[0] + reach, source[2] + reach],
+    });
+    for owner in nearby {
+        let surface = &world.surfaces[owner];
         let y = surface.vertices.iter().map(|p| p[1]).sum::<f64>() / surface.vertices.len() as f64;
         if y >= source[1] - world.movement.max_vertical || source[1] - y > world.movement.max_drop {
             continue;

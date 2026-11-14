@@ -450,3 +450,40 @@ test('Rust resends snapshots after a failed search evicts a resident world', asy
     await solver.close();
   }
 });
+
+test('Rust physical walking uses continuous raw support across a navigation gap', async () => {
+  const face = (a: number, b: number): Vec3[] => [
+    [a, 0, -1],
+    [b, 0, -1],
+    [b, 0, 1],
+    [a, 0, 1],
+  ];
+  const floor = face(-2, 2);
+  const raw = [floor[0], floor[2], floor[1], floor[0], floor[3], floor[2]];
+  const input: PhysicalInput = {
+    ...physical,
+    ground: {
+      ...physical.ground,
+      surfaces: [
+        { id: 'left', vertices: face(-2, -0.2) },
+        { id: 'right', vertices: face(0.2, 2) },
+      ],
+    },
+    collision: { positions: raw.flat(), indices: [0, 1, 2, 3, 4, 5] },
+  };
+  const query: RouteQuery = { starts: [start([-1, 0.01, 0])], goal: [1, 0.01, 0] };
+  const model = createPhysicalWorld(input, 'complete');
+  assert.ok(model.configured().walkTrace([-1, 0.01, 0], [1, 0.01, 0]));
+  const solver = await prepareRouteSolver(
+    { ...config, maxCandidates: 0 },
+    { kind: 'physical', input },
+  );
+  try {
+    const result = await solver.solve(query);
+    assert.equal(result.route.status, 'complete');
+    const evaluation = createPhysicalVerifier(() => [model])(query, result.route);
+    assert.equal(evaluation.valid, true, JSON.stringify(evaluation));
+  } finally {
+    await solver.close();
+  }
+});

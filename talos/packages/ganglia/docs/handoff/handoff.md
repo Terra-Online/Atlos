@@ -24,8 +24,9 @@ request. It retains proved nonterminal connections even when no complete route
 exists, without resource-label search, ground-detour fallback or scene retries.
 Training returns `catalog-trained`, not a fabricated completed route. Frozen
 service queries still run ordinary route/resource search and independent replay.
-Frozen catalog retrieval ranks approach, traversal and remaining distance and
-admits the configured `maxLinks` allowance into the active query graph. Authored
+Frozen catalog retrieval indexes directed navigation SCCs and selects connected
+action chains, with bounded progress prefixes and intra-region crossings when
+NAV connectivity hides physical cracks. Search still proves their ground joins. Authored
 World actions remain available. Every selected catalog connection still passes
 authority and full trajectory replay; omitted proposals mark search truncated,
 and ordinary bounded fresh discovery remains available.
@@ -42,13 +43,14 @@ measurement continues after the worker is reusable. Training timeout still stops
 incomplete preparation. Retained TS
 baseline reports are reused; fresh TS and stress runs are excluded by the user.
 
-The configured warmup diagnostic confirms that the lower-floor request exhausts
-the 300-second watchdog, restarts its worker and loses its trained catalog. The
-upper-floor request then completes with independent physical replay valid. Full
-warmup evaluations and timing are retained in
-`.local/research/rust-configured-full50-warmup-diagnostic/`. No scored performance
-result exists from that attempt. Failed warmup logs each request's evaluation,
-status, reason and timing before rejecting readiness.
+The earlier configured-warmup diagnostic predates cooperative cancellation: its
+lower-floor timeout restarted the worker and lost training. The corrected
+`8eed53ee` full-population run retained its worker after an upper-floor warmup
+timeout and continued scoring. It was stopped for solver optimization after 37
+scored attempts; the journal contains 11 complete native traces, 20 candidate-budget
+failures and six timeouts. Batch physical evaluation had not run, so those traces
+are not accepted physical completions. Artifacts are in
+`.local/research/rust-lifecycle-full50-8eed53ee/`.
 
 Resource labels and lazy ground jobs now share goal-directed queue priorities.
 The remaining horizontal distance is divided by the graph's maximum action or
@@ -57,11 +59,28 @@ dominance and retained label caps. All resource/geometry proofs and budgets rema
 unchanged. This addresses cheap-prefix expansion in trained action graphs;
 full-population acceptance remains required.
 
-Known-action lookup now checks direct supported walks and existing actions
-without eagerly solving all catalog endpoint detours. Full discovery still
-restores ordinary detour proofs after its direct pass. This prevents optional
-catalog reuse from delaying fresh discovery indefinitely; omitted lookup detours
-mark the local result truncated. Stage-zero walking retains full ground paths.
+Known-action lookup tries direct supported walks first. Positive catalog chains
+also admit lazily ranked ground detours before fresh discovery. Stage-zero walking
+retains full ground paths. Resource queues use reverse shortest-path potentials
+through an optimistic complete walking graph, fixed device clocks and flight
+speed bounds. Terminal actions keep a zero bound because boost replay can move
+the first collection point. This
+retains a lower bound without treating an unrelated fast device as the speed of
+every part of the map. A feasible route bounds optional improvement.
+
+Service preparation can spend separate `catalogCandidates` and `catalogLinks`
+budgets; defaults are 32,000 and 256, while serving retains 8,000 and 64. Goal-side
+training proposes incoming jumps across support regions and proves every retained
+flight. World caches exact directed ground proofs within its immutable facts;
+new coverage or placements construct separate caches. Continuous raw support can
+certify physical walks across imported NAV gaps while explicit passage masks and
+directions remain authoritative. Coarse scene planning tries exact endpoint
+support before its broad projection fallback and orders work toward the goal.
+Landing discovery queries the prepared support BVH within a conservative flight
+envelope and evaluates four flight phases without heap allocation. Whole-route
+resource labels share immutable output blocks, and a completed single prefix
+reuses its already-composed route and continuation when no terminal is appended.
+Full-population performance acceptance of these optimizations is pending.
 
 ## Rust rewrite integration, 2026-11-14
 

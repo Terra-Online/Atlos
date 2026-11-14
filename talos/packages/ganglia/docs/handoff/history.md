@@ -1,5 +1,55 @@
 # Route solver history and validation evidence
 
+## Rust prepared-search optimization, 2026-11-14
+
+Profiling attributed trained latency to weak global-speed queue bounds, repeated
+ground proofs and broad coarse endpoint projection. The port's catalog retrieval
+ranked isolated edges rather than connected chains. The retained changes add a
+directed SCC index, keep intra-SCC physical crossings, bound improvement by a
+feasible incumbent, retain immutable World ground proofs, and use an optimistic
+reverse graph potential. Exact coarse endpoint projection precedes broad fallback.
+Startup discovery has separate 32,000-candidate/256-link budgets and a bounded
+physically proved goal-side incoming search.
+
+Exploratory trained diagnostics use two representative requests, a 60-second
+per-request limit and independent physical replay; they are not the full benchmark.
+The connected-index/precompute diagnostic reduced the lower-floor request from
+34.262 to 8.964 seconds with valid replay. The upper-floor request still timed out.
+Increasing startup discovery to 128,000 candidates with 256 or 1,024 links raised
+readiness to 173.873/220.969 seconds without resolving the upper request and was
+not adopted. A coarse-corridor sampling experiment caused both requests to time
+out and was removed. Raw support admission and incoming training remain physically
+strict; repeated-query proof caching alone did not establish a speed improvement.
+Evidence is `.local/research/native-*-probe.log` and matching `*-result.json` files.
+These measurements contain profiling overhead and carry no aggregate speedup claim.
+
+Two-axis review found the index incorrectly omitted same-SCC physical crossings
+and retained prepared indexes after close; both were corrected. A genuine raw-gap
+regression proves a learned crossing remains usable with zero fresh discovery.
+The raw-support fallback initially displaced directed NAV failure feedback and
+broke an existing hidden-crack regression. Restoring its NAV failure cause and
+retaining the directed detour proof fixes the original route assertion. The
+stronger goal potential intentionally prioritizes a useful farther device over a
+nearby dead end; the ordering assertion now expresses that behavior while keeping
+route, resource and far-unavailable-pair protections. Placement changes must reject
+cached walks whose supporting body has moved. Full-population acceptance remains
+pending after focused validation.
+
+A one-second CPU sample (`/tmp/ganglia-host-profile.sample.txt`) exposed repeated
+whole-map landing scans and phase-vector allocation. BVH selection now narrows
+those scans without changing the physical flight proof. The spatial diagnostic
+reduced training readiness from 56.264 to 45.720 seconds; its lower request remained
+8.964 seconds and the upper request still reached the 60-second diagnostic limit.
+Host timers measured normalization below one millisecond. Added composition timers
+then exposed two identical whole-route scheduling passes of 2.106/2.143 seconds.
+Labels now share immutable trace blocks, and a completed no-terminal prefix reuses
+its route and continuation. Terminal concatenation continues whole-route scheduling.
+The final focused pass has 147 Rust unit tests, two authored integration tests,
+450 retained TS tests and 25 N-API physical/lifecycle fixtures passing. Two-axis
+rechecks also corrected terminal-action potential bounds and found no remaining
+required correctness findings in the reviewed deltas. Full benchmark results must
+bind the finalized source and binary; diagnostic improvements are not acceptance.
+
 ## Benchmark lifecycle correction
 
 Review identified unused native cancellation, immediate worker killing, frozen

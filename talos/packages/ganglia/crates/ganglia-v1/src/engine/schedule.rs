@@ -3,6 +3,7 @@
 use super::{Point, complete, distance, lerp, number, point, route_points};
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, VecDeque};
+use std::sync::Arc;
 const EPS: f64 = 1e-9;
 
 #[derive(Clone, PartialEq, serde::Deserialize)]
@@ -28,8 +29,10 @@ struct State {
 struct Label {
     state: State,
     duration: f64,
-    segments: Vec<Value>,
-    decisions: Vec<Value>,
+    // Resource labels share completed trace blocks; only the winning trace
+    // is flattened, so branching does not copy every previous geometry knot.
+    segments: Vec<Arc<Vec<Value>>>,
+    decisions: Vec<Arc<Value>>,
     // Absolute first trigger time on this label's retimed trace. Device rides
     // advance duration even when they carry no character-speed annotation.
     boost_pickups: BTreeMap<String, f64>,
@@ -58,6 +61,22 @@ pub(super) struct Composed {
 /// Return continuation from the selected retimed trace, never from an
 /// independently solved piece's reset resource summary.
 pub(super) fn compose_state(
+    pieces: &[Value],
+    options: &Value,
+    boost_facts: &[Value],
+    entry: &Value,
+) -> Result<Option<Composed>, String> {
+    let began = std::time::Instant::now();
+    let result = compose_inner(pieces, options, boost_facts, entry);
+    if std::env::var_os("GANGLIA_PROFILE").is_some() {
+        eprintln!(
+            "{}",
+            json!({"native":"engine","phase":"compose","pieces":pieces.len(),"elapsedMs":began.elapsed().as_secs_f64()*1000.})
+        );
+    }
+    result
+}
+fn compose_inner(
     pieces: &[Value],
     options: &Value,
     boost_facts: &[Value],
@@ -315,7 +334,17 @@ pub(super) fn compose_state(
         }
     }
     let mut output_points = vec![points[0]];
-    for segment in &best.segments {
+    let segments = best
+        .segments
+        .iter()
+        .flat_map(|block| block.iter().cloned())
+        .collect::<Vec<_>>();
+    let decisions = best
+        .decisions
+        .iter()
+        .map(|value| value.as_ref())
+        .collect::<Vec<_>>();
+    for segment in &segments {
         for v in segment["points"].as_array().unwrap().iter().skip(1) {
             let p = point(v)?;
             if distance(*output_points.last().unwrap(), p) > EPS {
@@ -324,9 +353,9 @@ pub(super) fn compose_state(
         }
     }
     let mut route = json!({"status":"complete","start":first["start"],"arrivalCost":first["arrivalCost"],
-        "cost":number(first,"arrivalCost",0.)+best.duration,"points":output_points,"segments":best.segments,
+        "cost":number(first,"arrivalCost",0.)+best.duration,"points":output_points,"segments":segments,
         "length":output_points.windows(2).map(|p|distance(p[0],p[1])).sum::<f64>(),
-        "schedule":best.decisions,"boosts":boosts});
+        "schedule":decisions,"boosts":boosts});
     if !placements.is_empty() {
         route["placements"] = json!(placements);
     }
@@ -503,9 +532,10 @@ fn schedule_block(
         }
         next.duration += seconds;
         next.state = state;
-        next.segments.extend(output);
-        next.decisions
-            .push(json!({"segments":[segment],"allowSprint":sprint,"allowDash":dash}));
+        next.segments.push(Arc::new(output));
+        next.decisions.push(Arc::new(
+            json!({"segments":[segment],"allowSprint":sprint,"allowDash":dash}),
+        ));
     }
     Ok(Some(next))
 }

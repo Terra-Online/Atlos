@@ -999,7 +999,12 @@ fn flight_replay_rejects_support_lost_when_default_box_is_moved() {
         .unwrap();
     let segment = serde_json::to_value(&flight).unwrap();
     assert!(w.replay_flight(&segment, None).unwrap());
+    let roof = ([-0.2, 1.01, 0.], [0.2, 1.01, 0.]);
+    assert!(w.ground_path(roof.0, roof.1).unwrap().is_some());
+    // The exact same endpoints cannot reuse a positive proof after moving
+    // the body that supplied their support.
     let moved = w.place_following("box", [4., 0., 0.]).unwrap().unwrap();
+    assert!(moved.ground_path(roof.0, roof.1).unwrap().is_none());
     assert!(
         flight
             .points

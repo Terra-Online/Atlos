@@ -7,6 +7,7 @@ import type { PhysicalInput } from '#@/src/solver/physical.ts';
 import { verticalProjectionCandidates } from '#@/src/v1/geo/support-projector.ts';
 import { projectPoint } from '#@/src/v1/geo/surfaces.ts';
 import { jumpDuration } from '#@/src/v1/motion/jumps.ts';
+import { actionCatalogStats } from '#@/src/v1/route/action-catalog.ts';
 import { registerCatalogSurfaces } from '#@/src/v1/route/action-catalog.ts';
 import { pruneGroundDetours } from '#@/src/v1/route/ground-detours.ts';
 import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
@@ -101,9 +102,12 @@ export const solvePhysicalRoute = async (
     locomotion: input.locomotion,
   };
   const timing: Record<string, number> = {};
+  const training = actionCatalogStats().phase === 'training';
   const limits = {
-    maxCandidates: policy.maxCandidates,
-    maxLinks: policy.maxLinks,
+    maxCandidates: training
+      ? (policy.preparation.catalogCandidates ?? policy.maxCandidates)
+      : policy.maxCandidates,
+    maxLinks: training ? (policy.preparation.catalogLinks ?? policy.maxLinks) : policy.maxLinks,
     sampleSpacing: policy.sampleSpacing,
   };
   const prepareReuse: Record<string, boolean> = {};
