@@ -377,3 +377,49 @@ test('coverage preparation re-solves earlier queries after a later query adds a 
     await rm(f.root, { recursive: true, force: true });
   }
 });
+
+test('a cancelled local solve does not poison the prepared scene input', async () => {
+  const f = await fixture();
+  try {
+    await f.region('scene-testscene/regions/full');
+    const data = await loadSceneData(f.root, 'testscene');
+    const prepared = prepareSceneResources(
+      data,
+      async () => ({
+        async solve(options) {
+          options.signal?.throwIfAborted();
+          return { status: 'unavailable' };
+        },
+      }),
+      1,
+      'adapter',
+    );
+    const job = await prepared.resources.query(
+      'testscene',
+      source,
+      request.arrival.position,
+      request.target,
+      approach(),
+    );
+    assert.ok(job);
+    const controller = new AbortController();
+    controller.abort();
+    await assert.rejects(
+      prepared.resources.solve(
+        job,
+        request,
+        true,
+        { version: 1, step: 0 },
+        { signal: controller.signal },
+      ),
+      /abort/i,
+    );
+    prepared.verifyInputs();
+    assert.equal(
+      (await prepared.resources.solve(job, request, true, { version: 1, step: 0 }))?.status,
+      'ready',
+    );
+  } finally {
+    await rm(f.root, { recursive: true, force: true });
+  }
+});

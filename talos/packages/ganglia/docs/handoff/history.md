@@ -1,5 +1,38 @@
 # Route solver history and validation evidence
 
+## Soft cancellation without worker replacement, 2026-11-14
+
+The user explicitly rejected killing or replacing workers after timeout and clarified
+that two measured rounds were never a standing requirement. The 40 ms deadline and
+20 ms grace values were fixture settings; production used 300 seconds plus a 1-second
+kill grace. The grace/kill/replacement/restoration paths have now been removed.
+Timeout and caller abort send a request-specific event, retain the occupied slot
+until computation exits, and preserve the process/catalog for subsequent requests.
+An actual crash invalidates the run. Fatal input/protocol cleanup requests cancellation
+and orderly close; it does not signal-kill processes. Legacy recovery report counters
+are fixed at zero. An unyielding stage can exceed the soft threshold; there is no
+promise of bounded cancellation latency or automatic process replacement.
+
+TS phase checkpoints now yield the event loop and check AbortSignal around scene
+planning, physical preparation/discovery phases and result emission. Window resources
+forward the signal, including target-first approaches, to the existing adapter/host
+signal contract. Cancellation exceptions no longer poison scene input validation.
+The Rust binding already carries abort events to atomic engine/search/world checks;
+no Rust algorithm or binary change was needed.
+
+Worker regressions cover a stage that exceeds its soft threshold, retained PID and
+trained catalog, healthy peers, actual process failure, journal/input failure cleanup,
+and continued queries. Kill/replacement-specific assertions were removed to reflect
+the new contract. Real TS seam tests exercise asynchronous cancellation between phases
+and scene reuse after an aborted local solve. No 20/40 ms cancellation limits remain.
+
+`benchmark:history` now exposes `--rounds` and defaults to one, matching the normal
+CLI. AGENTS.md no longer prescribes two rounds. Historical two-round reports remain
+accurately attributed to those experiments. Measurement identity records cooperative
+cancellation to prevent automatic speed comparison with the old lifecycle. No new
+full-scene timing run was requested or performed. Package formatting, lint, typecheck
+and all 456 TS tests pass, including 14 worker lifecycle cases.
+
 ## Verification approximation policy, 2026-11-14
 
 The user authorized practical defaults and configurable representation tolerances

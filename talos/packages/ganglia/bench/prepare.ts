@@ -28,7 +28,7 @@ const { values } = parseArgs({
 });
 if (values.help) {
   console.log(
-    'Usage: node bench/prepare.ts [--adapter <module-path>] --config <exporter-config> --workload <json-file | map02-long-range | map02-long-detours | map02-stress> [--offset <index>] [--limit <count>] [--scene <name; default map02>] [--data-root <path>] [--extractor <path>] [--solver-config <json-file>]. Builds missing physical regions through the real solver with batchConcurrency=1 and a hard 300-second per-query SLO. Timeouts count as failed routes. This is data preparation, not a performance run.',
+    'Usage: node bench/prepare.ts [--adapter <module-path>] --config <exporter-config> --workload <json-file | map02-long-range | map02-long-detours | map02-stress> [--offset <index>] [--limit <count>] [--scene <name; default map02>] [--data-root <path>] [--extractor <path>] [--solver-config <json-file>]. Builds missing physical regions through the real solver with batchConcurrency=1 and a 300-second soft per-query cancellation threshold. Timeouts count as failed routes. This is data preparation, not a performance run.',
   );
 } else {
   try {

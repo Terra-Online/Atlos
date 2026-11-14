@@ -1,3 +1,4 @@
+import { checkpoint } from '#@/src/solver/checkpoint.ts';
 import type {
   PreparedRouteSolver,
   RouteQuery,
@@ -54,6 +55,7 @@ export async function preparePhysicalSolver(
         {
           ...context,
           cache: preparation,
+          checkpoint: () => checkpoint(options.signal),
           progress(progress) {
             options.signal?.throwIfAborted();
             context.progress?.(progress);
@@ -107,6 +109,7 @@ export async function preparePhysicalSolver(
                 optimizing: optimizing || index < query.starts.length - 1,
               });
             options.signal?.throwIfAborted();
+            await checkpoint(options.signal);
             await context.observe?.(
               { ...best, diagnostics: { truncated } },
               optimizing || index < query.starts.length - 1,

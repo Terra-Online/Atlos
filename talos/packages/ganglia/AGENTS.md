@@ -24,7 +24,7 @@ release native artifact with `pnpm rust:build`, then run the configured benchmar
 
 ```sh
 pnpm --silent benchmark:full --adapter ganglia-v1-rust --workload map02 \
-  --workers 1 --concurrency 1 --rounds 2 --json > /tmp/ganglia-rust.json
+  --workers 1 --concurrency 1 --json > /tmp/ganglia-rust.json
 ```
 
 `GangliaV1Config.preparation` is required and defaults to ten catalog-training
@@ -40,8 +40,12 @@ scoring because catalogs retain physical connections rather than complete-query
 answers; report that overlap and call this the full population, not an unseen
 holdout. Warmup uses separate goals and excludes scored queries. Service startup
 must use the configured training, freeze and warmup order on the same prepared
-solver. Timeouts cancel the current request and preserve prepared state. A worker
-that cannot cancel is replaced and retrained before accepting more requests.
+solver. Both benchmark entry points default to one measured round; use `--rounds`
+only when repetition is explicitly desired. No two-round convention is implied.
+Timeouts request cooperative cancellation. Wait for the current solver stage to
+reach a checkpoint before reusing the same worker. Never kill or replace workers
+on a deadline, cancellation grace period or failed request. Actual process crashes
+invalidate the run. Cancellation tail time stays in the measured service latency.
 
 `bench/workload.ts` defines preset data roots. Use `--data-root`, `--extractor` and
 `--config` for explicit datasets, adapters and policy. Verify game build, package

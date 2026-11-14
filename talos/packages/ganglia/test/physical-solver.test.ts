@@ -278,3 +278,38 @@ test('physical solver retains incomplete placement coverage at the prepared seam
   assert.equal(result.diagnostics.truncated, true);
   await solver.close();
 });
+
+test('physical solver observes event-loop cancellation at a stage boundary and remains reusable', async () => {
+  const solver = await preparePhysicalSolver(input, gangliaV1Defaults);
+  const controller = new AbortController();
+  const query = {
+    starts: [
+      {
+        id: 'start',
+        position: [1, 0, 1] as [number, number, number],
+        cost: 0,
+        state: 'available' as const,
+      },
+    ],
+    goal: [9, 0, 1] as [number, number, number],
+  };
+  let requested = false;
+  try {
+    await assert.rejects(
+      solver.solve(query, {
+        signal: controller.signal,
+        onEvent(event) {
+          if (event.type === 'progress' && !requested) {
+            requested = true;
+            setTimeout(() => controller.abort(), 0);
+          }
+        },
+      }),
+      /abort/i,
+    );
+    assert.equal(requested, true);
+    assert.equal((await solver.solve(query)).route.status, 'complete');
+  } finally {
+    await solver.close();
+  }
+});

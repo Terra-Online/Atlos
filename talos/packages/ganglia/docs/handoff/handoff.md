@@ -21,7 +21,7 @@ retain their physical checks. Ordinary goal tolerance requires a local supported
 connection, so a nearby point behind an obstacle cannot satisfy the goal.
 
 Benchmark metadata binds the verification version and default policy in `rules`;
-reference comparison and worker restoration require matching rule identities.
+reference comparison and worker input validation require matching rule identities.
 The saved `1e942192` first-round traces now yield six valid executions, 33 unsupported
 or obstructed walks and 11 unsupported takeoffs. This is an audit of unchanged saved
 intent, not a new solver timing measurement. The prior historical benchmark remains
@@ -64,7 +64,7 @@ search. No Rust prototype preload or N-API solver is used by this baseline.
 `pnpm benchmark:history --output <report.json>` uses the frozen `4ec7b65f`
 measurement core with the current worker lifecycle. It always trains ten map02
 requests, freezes the catalog, warms two disjoint requests, and scores all fifty
-normal requests twice in one worker/lane. Training retains the historical
+normal requests once by default in one worker/lane (`--rounds` opts into repetition). Training retains the historical
 8,000-candidate/64-link budget. `--reference <report.json>` optionally compares
 modeled costs for identical requests and records input/adapter binding matches.
 The historical gate covers reported completion, modeled cost, SLO and repeatability.
@@ -85,14 +85,25 @@ The report and per-request journal are under
 
 ## Benchmark request lifecycle
 
-The worker pool owns cooperative cancellation and prepared-state restoration.
-Timeout and caller abort send an ID-bound cancellation to the active solver; the
-slot cannot accept another query until the prior computation settles. Unresponsive
-workers are killed only after a cancellation grace period. Replacement workers
-replay the declared training sequence before advertising readiness; healthy slots
-continue working. Warmup quality is reported independently of scored quality.
-The CLI journals each completed request immediately and atomically saves the final
-report, including failed quality gates or an interrupted-run summary.
+The worker pool requests ID-bound cooperative cancellation after the soft query
+threshold or caller abort. The slot remains busy until its execution returns from
+a checkpoint; cancellation tail time is measured. No worker is killed, replaced or
+retrained. A long synchronous stage may exceed the threshold before yielding.
+Healthy peers continue serving; actual process failure invalidates the run.
+Fatal protocol/input failures request cooperative cleanup rather than force exit.
+Legacy recovery counters remain zero for report compatibility.
+
+TS scene and physical stages yield to the event loop before checking AbortSignal.
+Both forward windows and target-side approaches pass that signal through the scene
+adapter into physical preparation. Aborts release the lane without poisoning input
+identity. Native solvers retain their existing atomic cancellation checkpoints.
+Warmup failures remain outcomes and scoring continues after cleanup; incomplete
+training still prevents service readiness. The CLI journals each completed request.
+
+Both `benchmark:full` and `benchmark:history` default to one measured round. `--rounds`
+can request repetition; earlier two-round results record specific experiments, not
+a standing user requirement. No new solver performance measurement accompanies this
+lifecycle change. Report measurement identity names cooperative cancellation.
 
 ## Required V1 service preparation, 2026-11-14
 

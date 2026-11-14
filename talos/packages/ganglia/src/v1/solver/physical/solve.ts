@@ -48,6 +48,7 @@ export interface PhysicalContext {
   generation?: string;
   cache?: PhysicalCache;
   progress?: (progress: Record<string, unknown>) => void;
+  checkpoint?: () => Promise<void>;
   emit: (
     result: PhysicalResult,
     optimizing: boolean,
@@ -209,6 +210,7 @@ export const solvePhysicalRoute = async (
     return;
   }
   let goal = target?.position ?? request.target;
+  await context.checkpoint?.();
   progress({ phase: 'ground-search', surfaces: ground.surfaces.length });
   const groundStart = performance.now();
   let groundKey = JSON.stringify([generation, request.walls]);
@@ -275,6 +277,7 @@ export const solvePhysicalRoute = async (
       },
       !(context.effort === 'walking') && !(context.effort === 'devices' && !deviceInput),
     );
+    await context.checkpoint?.();
     progress({ phase: 'ground-route', cost: walking.cost });
   }
   if (context.effort === 'walking' || (context.effort === 'devices' && !deviceInput)) {
@@ -325,6 +328,7 @@ export const solvePhysicalRoute = async (
   const maxHorizontalDistance =
     maximumDuration * Math.max(model.maxHorizontalSpeed, model.startHorizontalSpeed);
   diagnostics.model = { ...model, runAirSpeed };
+  await context.checkpoint?.();
   progress({ phase: 'collision-index', triangles: collision.indices.length / 3 });
   // The complete body and curved-arc chord inflation must remain in the indexed world.
   const curveInflationMargin =
@@ -370,6 +374,7 @@ export const solvePhysicalRoute = async (
   let boosts: SpeedBoost[] = [];
   let knownConnections = options.connections ?? [];
   if (deviceInput) {
+    await context.checkpoint?.();
     progress({ phase: 'device-links' });
     const deviceStart = performance.now();
     const deviceKey = JSON.stringify([groundKey, deviceInput]);
@@ -395,6 +400,7 @@ export const solvePhysicalRoute = async (
       ground.build.cellSize &&
       ground.build.cellHeight
     ) {
+      await context.checkpoint?.();
       progress({ phase: 'moving-supports', devices: deviceInput.movingSupports.length });
       const movingStart = performance.now();
       const baseProject = groundPlanner.project;
@@ -532,6 +538,7 @@ export const solvePhysicalRoute = async (
     if (!deviceInput?.followingSupports?.length) {
       return null;
     }
+    await context.checkpoint?.();
     progress({ phase: 'following-supports', devices: deviceInput.followingSupports.length });
     const followingStart = performance.now();
     if (!ground.build?.bounds || !ground.build.cellSize || !ground.build.cellHeight) {
@@ -603,6 +610,7 @@ export const solvePhysicalRoute = async (
     ground.build.cellHeight !== undefined &&
     ground.build.bounds
   ) {
+    await context.checkpoint?.();
     progress({ phase: 'goal-refinement' });
     const refineStart = performance.now();
     const refinementBuild = {
@@ -675,6 +683,7 @@ export const solvePhysicalRoute = async (
     deviceInput?.movingSupports?.length || followingTarget ? null : ground.surfaces,
     ground.options.portals,
   );
+  await context.checkpoint?.();
   progress({ phase: 'jump-discovery', goalFaces: candidates.length });
   const searchStart = performance.now();
   const result = planJumpRoute(
@@ -719,6 +728,7 @@ export const solvePhysicalRoute = async (
     };
     timing.groundDetours = performance.now() - comparisonStart;
   }
+  await context.checkpoint?.();
   progress({ phase: 'route-search', connections: connections.length });
   if (route.status === 'complete') {
     await emit({ status: 'candidate', route, connections, groundedTarget: route.points.at(-1) });
