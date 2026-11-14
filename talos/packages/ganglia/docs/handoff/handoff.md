@@ -49,11 +49,26 @@ stage changes require new work. Stage 1 is omitted when no known actions or boos
 pickups distinguish it from stage 0. Subsequent queries always search afresh.
 Six-request acceptance remains to be established.
 
-The assembled checkpoint passes 136 Rust unit tests, two authored-action tests,
-22 native integration fixtures and the retained 440 TypeScript tests. Release
+Following-fact growth revalidates selected prefixes and retained partial/incumbent
+proofs. Every known default body remains present in later sparse Worlds even when
+not moved. Provider authority conflicts are fatal and cannot recover an older
+incumbent. Native computation runs on libuv with task-scoped cooperative
+cancellation, keeping the JavaScript event loop available for AbortSignal and IO.
+Rejection resets suspended work and the host residency mirror; subsequent queries
+can reuse the prepared solver.
+
+The assembled checkpoint passes 140 Rust unit tests, two authored-action tests,
+23 native integration fixtures and the retained 440 TypeScript tests. Release
 N-API build, feature-enabled all-target Clippy, TypeScript checking, lint and
 format checks pass. This validates the new contracts and focused fixtures; it
 does not establish whole-map acceptance.
+
+The six-request/two-round run at `2c3cdec2` was stopped before its final report
+after the authority/cancellation audit found required fixes. Its incomplete record
+is `.local/research/rust-solver-rewrite/six-query-2c3cdec2/incomplete.json`.
+After the fixes, the full upper Scene diagnostic again passes physical replay at
+the identical modeled cost, taking 37.697 seconds; evidence is
+`.local/research/rust-solver-rewrite/parent-upper-async/`.
 
 `crates/ganglia-v1` owns independent native world, search and engine modules.
 The retained TypeScript implementation is selectable as `ganglia-v1-ts` (the

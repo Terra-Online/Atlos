@@ -964,6 +964,85 @@ fn earlier_piece_replay_forwards_collection_geometry_and_ignores_the_unused_futu
 }
 
 static TERMINAL_PREFIX_SOLVES: AtomicUsize = AtomicUsize::new(0);
+
+#[test]
+fn omitted_following_facts_keep_default_body_collision_in_later_worlds() {
+    let original = World::new(placement_replay_snapshot()).unwrap();
+    let following = original
+        .devices
+        .following_supports
+        .iter()
+        .map(|support| (support.id.clone(), serde_json::to_value(support).unwrap()))
+        .collect();
+    let mut later = placement_replay_snapshot();
+    later["input"]["devices"]["followingSupports"] = json!([]);
+    let later = Arc::new(World::new(later).unwrap());
+    let a = [-2., 0.01, 0.];
+    let b = [2., 0.01, 0.];
+    assert!(later.clear(a, b, 0.).unwrap());
+    assert!(
+        !placed_world(later, &[], &following)
+            .unwrap()
+            .clear(a, b, 0.)
+            .unwrap()
+    );
+}
+
+#[test]
+fn new_following_authority_invalidates_retained_routes_and_prefixes() {
+    let supplied = placement_replay_snapshot();
+    let known = Arc::new(World::new(supplied.clone()).unwrap());
+    let mut empty = supplied;
+    empty["input"]["devices"]["followingSupports"] = json!([]);
+    let before = Arc::new(World::new(empty).unwrap());
+    let trace = route([-2., 0.01, 0.], [2., 0.01, 0.]);
+    let local = json!({"goal":[2.,0.01,0.]});
+    assert!(trace_clear(&before, &trace, &local).unwrap());
+    let proof = Proof {
+        world: before,
+        route: trace.clone(),
+        query: local,
+    };
+    let mut engine = Engine::with_search(json!({}), input(), success).unwrap();
+    engine.start(query()).unwrap();
+    let q = engine.query.as_mut().unwrap();
+    q.incumbent = Some(json!({"route":trace}));
+    q.incumbent_proofs = vec![proof.clone()];
+    q.partial = q.incumbent.clone();
+    q.partial_proofs = vec![proof.clone()];
+    q.tail = false;
+    q.window.as_mut().unwrap().proofs = vec![proof];
+    engine.solve_window(known).unwrap();
+    let q = engine.query.as_ref().unwrap();
+    assert!(q.incumbent.is_none());
+    assert!(q.partial.is_none());
+    assert!(q.window.is_none());
+    assert_eq!(q.last_reason, "following-facts-invalidates-prefix");
+}
+
+#[test]
+fn conflicting_authority_cannot_recover_an_existing_incumbent() {
+    let supplied = placement_replay_snapshot();
+    let known = World::new(supplied.clone()).unwrap();
+    let mut engine = Engine::with_search(json!({}), input(), success).unwrap();
+    engine.start(query()).unwrap();
+    engine.remember_world(&known).unwrap();
+    engine.query.as_mut().unwrap().incumbent =
+        Some(json!({"route":route([5.,0.01,0.],[6.,0.01,0.])}));
+    let mut conflict = supplied;
+    conflict["input"]["devices"]["followingSupports"][0]["maxDistance"] = json!(999.);
+    let error = engine
+        .remember_world(&World::new(conflict).unwrap())
+        .unwrap_err();
+    assert!(
+        engine
+            .recover(Err(error))
+            .unwrap_err()
+            .starts_with("Physical authority conflict:")
+    );
+    assert!(engine.query.is_none());
+}
+
 fn prefix_selects_distant_box(w: &World, q: &Value, c: &Value) -> Result<Value, String> {
     if q["interaction"]["airborne"] == true {
         return fail_all(w, q, c);

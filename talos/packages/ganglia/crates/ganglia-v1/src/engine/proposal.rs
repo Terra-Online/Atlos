@@ -357,6 +357,7 @@ impl Navigation {
             }
         }
         while let Some(Label { node, cost, .. }) = heap.pop() {
+            crate::cancel::check()?;
             if cost != costs[node] {
                 continue;
             }

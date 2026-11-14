@@ -1165,6 +1165,7 @@ pub(super) fn probe_route(
     let mut pending = BinaryHeap::from([Label(heuristic(base), base)]);
     let mut reached = false;
     while let Some(Label(priority, i)) = pending.pop() {
+        crate::cancel::check()?;
         let cost = costs[&i];
         if priority > cost + heuristic(i) + 1e-9 {
             continue;
@@ -1423,12 +1424,14 @@ fn search_ground(
     // Failed chords reject that witness only; an exhausted repair budget leaves
     // this finite ground proposal unresolved, not physically impossible.
     for generation in 1..=512 {
+        crate::cancel::check()?;
         let mut pending = BinaryHeap::new();
         costs[base] = 0.;
         generations[base] = generation;
         pending.push(Label(heuristic(base), base));
         let mut reached = false;
         while let Some(Label(priority, i)) = pending.pop() {
+            crate::cancel::check()?;
             let cost = costs[i];
             if priority > cost + heuristic(i) + 1e-9 {
                 continue;

@@ -100,6 +100,24 @@ test('Rust discovers a multihop route and emits replayable flight controls', asy
   }
 });
 
+test('Rust computation serves timer aborts and the prepared solver remains reusable', async () => {
+  const solver = await prepareRouteSolver(config, input);
+  const query: RouteQuery = { starts: [start([2, 0, 0])], goal: [16, 0, 0] };
+  const controller = new AbortController();
+  const reason = new Error('cancel active native computation');
+  const pending = solver.solve(query, { signal: controller.signal });
+  const timer = setTimeout(() => controller.abort(reason), 5);
+  try {
+    await assert.rejects(pending, (error) => error === reason);
+    const result = await solver.solve(query);
+    assert.equal(result.route.status, 'complete');
+    certify(query, result.route);
+  } finally {
+    clearTimeout(timer);
+    await solver.close();
+  }
+});
+
 test('Rust selects arrivals by full cost and honors ordered waypoints', async () => {
   const solver = await prepareRouteSolver({ ...config, maxCandidates: 0 }, input);
   const query: RouteQuery = {

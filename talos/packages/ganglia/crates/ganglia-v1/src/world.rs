@@ -177,6 +177,7 @@ fn standing_height(height: f64, support: f64, mesh_support: bool) -> f64 {
 }
 impl World {
     pub fn new(snapshot: Value) -> Result<Self, String> {
+        crate::cancel::check()?;
         let kind = snapshot
             .get("kind")
             .and_then(Value::as_str)

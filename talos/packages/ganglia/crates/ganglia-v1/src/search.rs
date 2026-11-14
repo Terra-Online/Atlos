@@ -695,6 +695,7 @@ impl Ord for GroundJob {
 /// Solve an immutable prepared World using native search only.
 /// Physical proofs and canonical paths come from World; all labels are query-local.
 pub fn solve(world: &crate::world::World, query: &Value, config: &Value) -> Result<Value, String> {
+    crate::cancel::check()?;
     let mut best = solve_world(world, query, config)?;
     // Refinement repairs absent navigation coverage. A failed connection between
     // supported endpoints calls for action/window discovery, not rebuilding the
@@ -908,6 +909,7 @@ fn solve_world(
     query: &Value,
     config: &Value,
 ) -> Result<Value, String> {
+    crate::cancel::check()?;
     let started = std::time::Instant::now();
     let m = &world.movement;
     let snapshot = json!({"movement":{"speed":m.speed,"maxVertical":m.max_vertical,"profile":m.profile,"model":m.model,"locomotion":world.locomotion,"runAirSpeed":m.run_air_speed,"maxSlope":m.max_slope,"maxDrop":m.max_drop,"maxHorizontalDistance":m.max_horizontal_distance,"activeBoost":m.active_boost},"boosts":world.boosts});
@@ -1066,6 +1068,7 @@ fn solve_world(
         let limit = (max_candidates / 8).min(max_links.saturating_mul(4));
         let expansion_limit = max_candidates.min(max_links.saturating_mul(max_links));
         for (from, to) in pairs {
+            crate::cancel::check()?;
             if ground_probes >= limit {
                 truncated = true;
                 break;
@@ -1647,6 +1650,7 @@ fn solve_world(
     let mut source_cursor = 0usize;
     if stage >= 2 && movement["model"].is_object() {
         while source_cursor < action_sources.len() {
+            crate::cancel::check()?;
             let remaining = max_attempts.saturating_sub(attempts);
             if remaining == 0 {
                 truncated = true;
@@ -1937,6 +1941,7 @@ fn solve_world(
         let mut jobs_proved = 0usize;
         let mut jobs_rejected = 0usize;
         loop {
+            crate::cancel::check()?;
             while queue.peek().is_some_and(|item| !arena[item.label].active) {
                 queue.pop();
             }

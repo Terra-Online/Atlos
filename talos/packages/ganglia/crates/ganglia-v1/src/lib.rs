@@ -1,3 +1,4 @@
+mod cancel;
 pub mod engine;
 pub mod model;
 #[cfg(feature = "napi")]

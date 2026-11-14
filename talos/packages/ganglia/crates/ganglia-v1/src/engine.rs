@@ -88,6 +88,10 @@ struct Query {
     pending: Option<u64>,
     partial: Option<Value>,
     incumbent: Option<Value>,
+    partial_proofs: Vec<Proof>,
+    incumbent_proofs: Vec<Proof>,
+    partial_terminal: Option<Value>,
+    incumbent_terminal: Option<Value>,
     boost_facts: BTreeMap<String, Value>,
     following_facts: BTreeMap<String, Value>,
     // Expanded load requests can resolve to the same immutable physical window.
@@ -131,6 +135,7 @@ struct Window {
     terminal_verified: bool,
 }
 
+#[derive(Clone)]
 struct Proof {
     world: Arc<World>,
     route: Value,
@@ -292,6 +297,10 @@ impl Engine {
             pending: None,
             partial: None,
             incumbent: None,
+            partial_proofs: vec![],
+            incumbent_proofs: vec![],
+            partial_terminal: None,
+            incumbent_terminal: None,
             boost_facts,
             following_facts: BTreeMap::new(),
             failed_searches: BTreeMap::new(),
@@ -406,6 +415,7 @@ impl Engine {
             // A verified terminal remains useful even when no global prefix can
             // be proposed. Keep it before any coarse-planning early return.
             if let Some((_, _, terminal)) = assets.first() {
+                q.partial_terminal = Some(terminal["route"].clone());
                 q.partial = Some(json!({"route":terminal["route"],"connections":[],
                     "supportBoxes":terminal["supportBoxes"].as_array().cloned().unwrap_or_default(),
                     "partial":true,"diagnostics":{"truncated":q.truncated,"candidateAttempts":0}}));
@@ -569,6 +579,10 @@ impl Engine {
         match result {
             Ok(value) => Ok(value),
             Err(error) => {
+                if error.starts_with("Physical authority conflict:") {
+                    self.query = None;
+                    return Err(error);
+                }
                 if self
                     .query
                     .as_ref()
@@ -597,6 +611,7 @@ impl Engine {
 
     fn drive(&mut self) -> Result<Value, String> {
         loop {
+            crate::cancel::check()?;
             if self.query.as_ref().unwrap().proposal.is_none() {
                 let q = self.query.as_mut().unwrap();
                 if q.attempt >= number(&self.config, "maxAttempts", 6.) as usize {
@@ -752,6 +767,8 @@ impl Engine {
                             continue;
                         }
                         if q.tail {
+                            q.partial_proofs = w.proofs.clone();
+                            q.partial_terminal = None;
                             q.partial = Some(result);
                             self.begin_forward()?;
                             continue;
@@ -888,7 +905,7 @@ impl Engine {
                 .get(placement["device"].as_str().unwrap_or(""))
                 .is_some_and(|fact| fact["spawn"] == placement["position"])
         });
-        if !changed {
+        if !changed && q.following_facts.is_empty() {
             self.query
                 .as_mut()
                 .unwrap()
@@ -939,9 +956,19 @@ impl Engine {
     }
 
     fn replay_terminal(&mut self, world: Arc<World>) -> Result<(), String> {
-        self.remember_world(&world)?;
+        let facts_changed = self.remember_world(&world)?;
         let q = self.query.as_ref().unwrap();
         let placements = self.terminal_placements()?;
+        if facts_changed {
+            for proof in &q.window.as_ref().unwrap().proofs {
+                let valid = placed_world(proof.world.clone(), &placements, &q.following_facts)
+                    .and_then(|configured| trace_clear(&configured, &proof.route, &proof.query))
+                    .unwrap_or(false);
+                if !valid {
+                    return self.fail_candidate("following-facts-invalidates-prefix");
+                }
+            }
+        }
         let verified =
             placed_world(world, &placements, &q.following_facts).and_then(|configured| {
                 trace_clear(
@@ -966,7 +993,7 @@ impl Engine {
         Ok(())
     }
 
-    fn remember_world(&mut self, world: &World) -> Result<(), String> {
+    fn remember_world(&mut self, world: &World) -> Result<bool, String> {
         let facts = &mut self.query.as_mut().unwrap().boost_facts;
         for boost in &world.boosts {
             let value = serde_json::to_value(boost).map_err(|e| e.to_string())?;
@@ -974,26 +1001,81 @@ impl Engine {
                 .get(&boost.effect.id)
                 .is_some_and(|previous| *previous != value)
             {
-                return Err("Boost facts changed during scene query".into());
+                return Err(
+                    "Physical authority conflict: boost facts changed during scene query".into(),
+                );
             }
             facts.insert(boost.effect.id.clone(), value);
         }
         let following = &mut self.query.as_mut().unwrap().following_facts;
+        let mut changed = false;
         for device in &world.devices.following_supports {
             let value = serde_json::to_value(device).map_err(|e| e.to_string())?;
             if following
                 .get(&device.id)
                 .is_some_and(|previous| *previous != value)
             {
-                return Err("Following support facts changed during scene query".into());
+                return Err("Physical authority conflict: following support facts changed during scene query".into());
             }
+            changed |= !following.contains_key(&device.id);
             following.insert(device.id.clone(), value);
+        }
+        if changed {
+            self.revalidate_retained()?;
+        }
+        Ok(changed)
+    }
+
+    fn revalidate_retained(&mut self) -> Result<(), String> {
+        let q = self.query.as_ref().unwrap();
+        let valid =
+            |result: &Value, proofs: &[Proof], terminal: Option<&Value>| -> Result<bool, String> {
+                let placements = route_placements(std::slice::from_ref(&result["route"]))?;
+                for proof in proofs {
+                    let world = placed_world(proof.world.clone(), &placements, &q.following_facts)?;
+                    if !trace_clear(&world, &proof.route, &proof.query)? {
+                        return Ok(false);
+                    }
+                }
+                if let Some(terminal) = terminal {
+                    return Ok(self.cache.iter().any(|cached| {
+                        placed_world(cached.world.clone(), &placements, &q.following_facts)
+                            .and_then(|world| trace_clear(&world, terminal, &q.original))
+                            .unwrap_or(false)
+                    }));
+                }
+                Ok(true)
+            };
+        let incumbent_valid = q
+            .incumbent
+            .as_ref()
+            .map(|result| {
+                valid(result, &q.incumbent_proofs, q.incumbent_terminal.as_ref()).unwrap_or(false)
+            })
+            .unwrap_or(true);
+        let partial_valid = q
+            .partial
+            .as_ref()
+            .map(|result| {
+                valid(result, &q.partial_proofs, q.partial_terminal.as_ref()).unwrap_or(false)
+            })
+            .unwrap_or(true);
+        let q = self.query.as_mut().unwrap();
+        if !incumbent_valid {
+            q.incumbent = None;
+            q.incumbent_proofs.clear();
+            q.incumbent_terminal = None;
+        }
+        if !partial_valid {
+            q.partial = None;
+            q.partial_proofs.clear();
+            q.partial_terminal = None;
         }
         Ok(())
     }
 
     fn solve_window(&mut self, base_world: Arc<World>) -> Result<(), String> {
-        self.remember_world(&base_world)?;
+        let facts_changed = self.remember_world(&base_world)?;
         let q = self.query.as_ref().unwrap();
         let w = q.window.as_ref().unwrap();
         let end = w.end.unwrap();
@@ -1009,6 +1091,14 @@ impl Engine {
             )?;
         }
         let world = placed_world(base_world.clone(), &fixed, &q.following_facts)?;
+        if facts_changed {
+            for proof in &w.proofs {
+                let configured = placed_world(proof.world.clone(), &fixed, &q.following_facts)?;
+                if !trace_clear(&configured, &proof.route, &proof.query)? {
+                    return self.fail_candidate("following-facts-invalidates-prefix");
+                }
+            }
+        }
         let mut arrival = w.arrival.clone();
         arrival["position"] = json!(w.position);
         if !w.pieces.is_empty() {
@@ -1316,6 +1406,11 @@ impl Engine {
             number(&result["route"], "cost", f64::INFINITY)
                 < number(&best["route"], "cost", f64::INFINITY)
         }) {
+            q.incumbent_proofs = q.window.as_ref().unwrap().proofs.clone();
+            q.incumbent_terminal = q
+                .terminal
+                .as_ref()
+                .map(|terminal| terminal["route"].clone());
             q.incumbent = Some(result);
         }
         let arrival = q.proposal.as_ref().unwrap().arrival["id"]
@@ -1420,7 +1515,7 @@ fn placed_world(
     placements: &[Value],
     following: &BTreeMap<String, Value>,
 ) -> Result<Arc<World>, String> {
-    if placements.is_empty() {
+    if placements.is_empty() && following.is_empty() {
         return Ok(world);
     }
     let mut devices = world
@@ -1431,17 +1526,9 @@ fn placed_world(
         .collect::<Result<Vec<_>, _>>()
         .map_err(|e| e.to_string())?;
     let mut changed = false;
-    for placement in placements {
-        let id = placement["device"]
-            .as_str()
-            .ok_or("Placement requires device")?;
-        if !devices.iter().any(|d| d["id"] == id) {
-            devices.push(
-                following
-                    .get(id)
-                    .ok_or("Missing carried following support facts")?
-                    .clone(),
-            );
+    for (id, fact) in following {
+        if !devices.iter().any(|d| d["id"] == *id) {
+            devices.push(fact.clone());
             changed = true;
         }
     }
@@ -1452,6 +1539,9 @@ fn placed_world(
         let mut bound = world.snapshot().clone();
         bound["input"]["devices"]["followingSupports"] = json!(devices);
         world = Arc::new(World::new(bound)?);
+    }
+    if placements.is_empty() {
+        return Ok(world);
     }
     Ok(Arc::new(
         world

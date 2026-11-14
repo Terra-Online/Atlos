@@ -9,8 +9,8 @@ import type { GangliaV1Config } from '#@/src/solver/ganglia-v1.ts';
 import type { Corridor, WindowJob, WindowRequest } from '#@/src/solver/resources.ts';
 
 interface NativeEngine {
-  start(query: string): string;
-  resume(response: string): string;
+  start(query: string): Promise<string>;
+  resume(response: string): Promise<string>;
   close(): void;
   cancel(): void;
   catalogPhase(phase: string): void;
@@ -105,10 +105,13 @@ export async function prepareGangliaV1Rust<Source, Job extends WindowJob>(
   };
   const solve = (query: RouteQuery, options?: SolveOptions) =>
     enqueue(async () => {
+      const abort = () => engine.cancel();
+      options?.signal?.addEventListener('abort', abort, { once: true });
       try {
         options?.signal?.throwIfAborted();
         options?.onEvent?.({ type: 'progress', phase: 'prepare' });
-        let step = JSON.parse(engine.start(encode(query))) as Step;
+        options?.signal?.throwIfAborted();
+        let step = JSON.parse(await engine.start(encode(query))) as Step;
         while (step.type === 'load') {
           options?.signal?.throwIfAborted();
           if (input.kind !== 'scene')
@@ -171,7 +174,8 @@ export async function prepareGangliaV1Rust<Source, Job extends WindowJob>(
           }
           options?.signal?.throwIfAborted();
           options?.onEvent?.({ type: 'progress', phase: 'search' });
-          step = JSON.parse(engine.resume(encode(response))) as Step;
+          options?.signal?.throwIfAborted();
+          step = JSON.parse(await engine.resume(encode(response))) as Step;
           if (loadedKey !== undefined) {
             resident.delete(loadedKey);
             resident.set(loadedKey, true);
@@ -188,7 +192,10 @@ export async function prepareGangliaV1Rust<Source, Job extends WindowJob>(
         // Release a suspended query after cancellation or failed host IO so the
         // next submission starts with fresh query state.
         engine.cancel();
+        options?.signal?.throwIfAborted();
         throw error;
+      } finally {
+        options?.signal?.removeEventListener('abort', abort);
       }
     });
   return {

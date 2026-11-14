@@ -1,5 +1,42 @@
 # Route solver history and validation evidence
 
+## Native authority growth and responsive cancellation, 2026-11-14
+
+Independent audit found that later sparse Worlds could lose an already known
+default following body when no placement was selected. Newly discovered default
+bodies could also invalidate earlier pieces or a retained incumbent without
+replay. Query-local Worlds now include all known following facts; fact growth
+replays active prefixes and retained partial/incumbent proofs under the full
+union. Following/boost authority conflicts are fatal instead of recovering an
+older incumbent. Three Engine regressions cover omitted default bodies, late
+authority invalidation and conflicting facts after a complete candidate.
+
+Synchronous N-API start/resume blocked timer aborts during native computation.
+They now return AsyncTasks running on libuv. Each task owns the engine mutex,
+with a cooperative atomic cancellation token installed only on its compute
+thread. Coarse planning, discovery, resource expansion, ground repair and BVH
+construction check that token. Abort sets it without waiting for the mutex;
+compute and promise resolution both reject canceled work. Host callbacks are
+followed by signal checks, and abort listeners are removed after each solve.
+The timer-abort/prepared-reuse regression fails on the retained synchronous binary
+with `Missing expected rejection` and passes with the new native implementation.
+
+The earlier six-request run at `2c3cdec2` was stopped during its measured batch
+before a final report, after these audit findings. Source remained frozen; no
+aggregate quality or speedup result is inferred from the incomplete run. Its
+local directory retains the log and `incomplete.json`.
+
+The corrected full upper Scene diagnostic again returns a complete, nonpartial
+route with physical replay valid, no issues and identical cost
+4.525145145919718 seconds. Solve time is 37.697 seconds; total process wall time
+is 43.568 seconds. Evidence and unchanged-source bindings are in
+`.local/research/rust-solver-rewrite/parent-upper-async/`; native binary SHA-256 is
+`c5cf3a88d25a6d4cfa413e1c851a0a52a749abf0f05f685517c57b5ee4d247c2`.
+All 140 Rust unit tests, two authored-action tests, 23 N-API fixtures and 440 TS
+tests pass, along with release N-API build, feature-enabled all-target Clippy,
+package formatting/lint/typecheck and Rustfmt. Scoped correctness and Standards
+rechecks found no remaining required issues after callback abort checks.
+
 ## Finite native geometry jobs and Scene retries, 2026-11-14
 
 Ground-path fallback jobs are selected lazily against active resource labels using

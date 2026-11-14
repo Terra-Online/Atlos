@@ -304,11 +304,12 @@ impl Index {
             scope,
         };
         if !index.faces.is_empty() {
-            index.build((0..index.faces.len()).collect());
+            index.build((0..index.faces.len()).collect())?;
         }
         Ok(index)
     }
-    fn build(&mut self, mut ids: Vec<usize>) -> usize {
+    fn build(&mut self, mut ids: Vec<usize>) -> Result<usize, String> {
+        crate::cancel::check()?;
         let mut b = [
             f64::INFINITY,
             f64::INFINITY,
@@ -317,7 +318,10 @@ impl Index {
             f64::NEG_INFINITY,
             f64::NEG_INFINITY,
         ];
-        for &id in &ids {
+        for (offset, &id) in ids.iter().enumerate() {
+            if offset % 1024 == 0 {
+                crate::cancel::check()?;
+            }
             let f = bounds(&self.faces[id]);
             for a in 0..3 {
                 b[a] = b[a].min(f[a]);
@@ -342,11 +346,11 @@ impl Index {
                 (a[axis] + a[axis + 3]).total_cmp(&(c[axis] + c[axis + 3]))
             });
             let right = ids.split_off(ids.len() / 2);
-            let l = self.build(ids);
-            let r = self.build(right);
+            let l = self.build(ids)?;
+            let r = self.build(right)?;
             self.nodes[slot].left = Some((l, r));
         }
-        slot
+        Ok(slot)
     }
     pub fn candidates(&self, b: Bounds3) -> Vec<usize> {
         let mut result = vec![];
