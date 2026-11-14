@@ -62,6 +62,20 @@ fn walking(world: &World, a: Point, b: Point) -> Result<Option<f64>, String> {
     }
 }
 
+fn detour(world: &World, a: Point, b: Point) -> Result<Option<f64>, String> {
+    match world.ground_path(a, b) {
+        Ok(Some(path))
+            if distance(path.points[0], a) <= 1e-5
+                && distance(*path.points.last().unwrap(), b) <= 1e-5 =>
+        {
+            Ok(Some(path.length))
+        }
+        Ok(_) => Ok(None),
+        Err(error) if crate::world::is_coverage_error(&error) => Ok(None),
+        Err(error) => Err(error),
+    }
+}
+
 impl Roadmap {
     pub fn prepare(world: &World, entries: &[Entry]) -> Result<Self, String> {
         let speed = world
@@ -153,19 +167,18 @@ impl Roadmap {
         })
     }
 
-    fn nearby(&self, point: Point) -> Vec<usize> {
+    fn nearby(&self, point: Point, radius: f64) -> Vec<usize> {
         let mut nodes: Vec<_> = self
             .representatives
             .iter()
             .copied()
-            .filter(|&id| distance(point, self.points[id]) <= RADIUS * 2.)
+            .filter(|&id| distance(point, self.points[id]) <= radius)
             .collect();
         nodes.sort_by(|&a, &b| {
             distance(point, self.points[a])
                 .total_cmp(&distance(point, self.points[b]))
                 .then(a.cmp(&b))
         });
-        nodes.truncate(NEIGHBORS);
         nodes
     }
 
@@ -201,12 +214,29 @@ impl Roadmap {
             return Ok(None);
         };
         let mut finishes = HashMap::new();
-        for id in self.nearby(goal) {
+        for id in self.nearby(goal, RADIUS * 2.) {
             if let Some(length) = walking(world, self.points[id], goal)? {
                 finishes.insert(id, length / self.speed);
+                if finishes.len() == NEIGHBORS {
+                    break;
+                }
             }
         }
         if finishes.is_empty() {
+            for id in self.nearby(goal, RADIUS * 4.).into_iter().take(4) {
+                if let Some(length) = detour(world, self.points[id], goal)? {
+                    finishes.insert(id, length / self.speed);
+                    break;
+                }
+            }
+        }
+        if finishes.is_empty() {
+            if std::env::var_os("GANGLIA_PROFILE").is_some() {
+                eprintln!(
+                    "{}",
+                    serde_json::json!({"native":"catalog","phase":"roadmap-query","goal":goal,"reason":"no-goal-attachment"})
+                );
+            }
             return Ok(None);
         }
         let mut costs = vec![f64::INFINITY; self.points.len()];
@@ -217,7 +247,8 @@ impl Roadmap {
             let Some(start) = world.standing_foot(start)? else {
                 continue;
             };
-            for id in self.nearby(start) {
+            let mut attached = 0;
+            for id in self.nearby(start, RADIUS * 2.) {
                 if let Some(length) = walking(world, start, self.points[id])? {
                     let cost = overhead + length / self.speed;
                     if cost < costs[id] {
@@ -225,9 +256,31 @@ impl Roadmap {
                         origins[id] = Some(start);
                         pending.push(Label(cost, id));
                     }
+                    attached += 1;
+                    if attached == NEIGHBORS {
+                        break;
+                    }
+                }
+            }
+            // A fresh endpoint can lie around a corner from every learned
+            // representative. Prove a local approach instead of restarting the
+            // whole scene search; the prepared World retains its exact path.
+            if attached == 0 {
+                for id in self.nearby(start, RADIUS * 4.).into_iter().take(4) {
+                    if let Some(length) = detour(world, start, self.points[id])? {
+                        let cost = overhead + length / self.speed;
+                        if cost < costs[id] {
+                            costs[id] = cost;
+                            origins[id] = Some(start);
+                            pending.push(Label(cost, id));
+                        }
+                        break;
+                    }
                 }
             }
         }
+        let attachments = costs.iter().filter(|cost| cost.is_finite()).count();
+        let mut visited = 0;
         let mut winner = None;
         let mut best = f64::INFINITY;
         while let Some(Label(cost, node)) = pending.pop() {
@@ -238,6 +291,7 @@ impl Roadmap {
             if cost >= best {
                 break;
             }
+            visited += 1;
             if let Some(tail) = finishes.get(&node)
                 && cost + tail < best
             {
@@ -253,6 +307,13 @@ impl Roadmap {
                     pending.push(Label(next, edge.to));
                 }
             }
+        }
+        if std::env::var_os("GANGLIA_PROFILE").is_some() {
+            eprintln!(
+                "{}",
+                serde_json::json!({"native":"catalog","phase":"roadmap-query","goal":goal,
+                "starts":attachments,"finishes":finishes.len(),"visited":visited,"complete":winner.is_some(),"cost":best})
+            );
         }
         let Some(mut node) = winner else {
             return Ok(None);

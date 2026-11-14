@@ -1230,7 +1230,29 @@ fn solve_world(
             s.vertices.iter().map(|p| p[axis]).sum::<f64>() / s.vertices.len() as f64
         })
     };
+    let improving = config["costLimit"].as_f64().is_some();
+    let origins: Vec<_> = seeds
+        .iter()
+        .map(|&(id, _, _, _)| graph.points[id])
+        .collect();
+    let departure_distance = |p: Point| {
+        origins
+            .iter()
+            .map(|&q| distance(p, q))
+            .fold(f64::INFINITY, f64::min)
+    };
+    let departure_height = |p: Point| {
+        origins
+            .iter()
+            .map(|q| (p[1] - q[1]).abs())
+            .fold(f64::INFINITY, f64::min)
+    };
     let proximity = |p: Point| {
+        // Once a route exists, compare departures near the fresh origin even
+        // when the useful cliff lies away from the straight goal corridor.
+        if improving {
+            return departure_distance(p);
+        }
         let near = anchors
             .iter()
             .map(|&q| horizontal(p, q))
@@ -1312,12 +1334,28 @@ fn solve_world(
     // line, which can rank every upper takeoff below irrelevant middle floors.
     let total = bands.iter().map(|(_, band)| band.len()).sum::<usize>();
     let mut surfaces = Vec::new();
+    if improving {
+        let mut departures: Vec<_> = bands
+            .iter()
+            .flat_map(|(_, band)| band.iter())
+            .filter(|(_, surface)| departure_height(center(surface)) <= stratum)
+            .collect();
+        departures.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1.id.cmp(&b.1.id)));
+        surfaces.extend(
+            departures
+                .into_iter()
+                .take(face_budget / 2)
+                .map(|(_, surface)| *surface),
+        );
+    }
     'bands: for rank in 0..bands.iter().map(|(_, band)| band.len()).max().unwrap_or(0) {
         for (_, band) in &bands {
             if surfaces.len() >= face_budget {
                 break 'bands;
             }
-            if let Some((_, surface)) = band.get(rank) {
+            if let Some((_, surface)) = band.get(rank)
+                && !surfaces.iter().any(|s| s.id == surface.id)
+            {
                 surfaces.push(*surface);
             }
         }
@@ -1333,7 +1371,13 @@ fn solve_world(
             .movement
             .model
             .max_horizontal_speed
-            .max(world.movement.profile.radius * 2.);
+            .max(world.movement.profile.radius * 2.)
+            .max(config["costLimit"].as_f64().map_or(0., |cost| {
+                cost * options
+                    .speed
+                    .max(options.sprint_speed)
+                    .max(options.dash.as_ref().map_or(0., |dash| dash.speed))
+            }));
         let bounds = crate::model::Bounds {
             min: [0, 2].map(|axis| {
                 anchors
@@ -1476,26 +1520,34 @@ fn solve_world(
                     .then(a.1[0].0.total_cmp(&b.1[0].0))
                     .then(a.0.cmp(&b.0))
             });
-            'boundaries: for rank in 0..bands.iter().map(|(_, b)| b.len()).max().unwrap_or(0) {
-                for (_, band) in &bands {
-                    if let Some(&(_, p, inward)) = band.get(rank) {
-                        for inset in [
-                            world.movement.profile.radius * 0.5,
-                            world.movement.profile.radius,
-                        ] {
-                            if samples >= boundary_limit {
-                                truncated = true;
-                                break 'boundaries;
-                            }
-                            let p = std::array::from_fn(|i| p[i] + inward[i] * inset);
-                            if let Some(p) = optional_proof(world.standing_foot(p), &mut truncated)?
-                            {
-                                let before = graph.points.len();
-                                graph.node(p);
-                                if graph.points.len() > before {
-                                    samples += 1;
-                                }
-                            }
+            let mut ordered = Vec::new();
+            if improving {
+                let mut departures: Vec<_> = bands
+                    .iter()
+                    .flat_map(|(_, band)| band.iter().copied())
+                    .filter(|(_, p, _)| departure_height(*p) <= stratum)
+                    .collect();
+                departures.sort_by(|a, b| a.0.total_cmp(&b.0));
+                ordered.extend(departures.into_iter().take(boundary_limit / 4));
+            }
+            for rank in 0..bands.iter().map(|(_, b)| b.len()).max().unwrap_or(0) {
+                ordered.extend(bands.iter().filter_map(|(_, band)| band.get(rank).copied()));
+            }
+            'boundaries: for (_, p, inward) in ordered {
+                for inset in [
+                    world.movement.profile.radius * 0.5,
+                    world.movement.profile.radius,
+                ] {
+                    if samples >= boundary_limit {
+                        truncated = true;
+                        break 'boundaries;
+                    }
+                    let p = std::array::from_fn(|i| p[i] + inward[i] * inset);
+                    if let Some(p) = optional_proof(world.standing_foot(p), &mut truncated)? {
+                        let before = graph.points.len();
+                        graph.node(p);
+                        if graph.points.len() > before {
+                            samples += 1;
                         }
                     }
                 }
@@ -1710,8 +1762,11 @@ fn solve_world(
         for pair in array(&config["catalogWalks"]) {
             let a = point(&pair[0])?;
             let b = point(&pair[1])?;
-            if let Some(crate::world::GroundProbe::Supported(path)) =
-                optional_proof(world.probe_ground(a, b).map(Some), &mut truncated)?
+            let proof = world.probe_ground(a, b).and_then(|probe| match probe {
+                crate::world::GroundProbe::Supported(path) => Ok(Some(path)),
+                crate::world::GroundProbe::Rejected(_) => world.ground_path(a, b),
+            });
+            if let Some(path) = optional_proof(proof, &mut truncated)?
                 && distance(path.points[0], a) <= 1e-5
                 && distance(*path.points.last().unwrap(), b) <= 1e-5
             {
@@ -1731,6 +1786,35 @@ fn solve_world(
                 );
             }
         }
+    }
+    if std::env::var_os("GANGLIA_PROFILE").is_some()
+        && stage >= 1
+        && config["catalogTraining"] != true
+    {
+        let mut reached = vec![false; graph.points.len()];
+        let mut pending = Vec::new();
+        for &(id, _, _, _) in &seeds {
+            reached[id] = true;
+            pending.push(id);
+        }
+        let mut cursor = 0;
+        while cursor < pending.len() {
+            let id = pending[cursor];
+            cursor += 1;
+            for edge in &graph.edges[id] {
+                if !reached[edge.to] {
+                    reached[edge.to] = true;
+                    pending.push(edge.to);
+                }
+            }
+        }
+        eprintln!(
+            "{}",
+            json!({"native":"search","phase":"prepared-connectivity",
+            "actions":known.len(),"requestedActions":array(&config["catalogConnections"]).len(),
+            "walks":array(&config["catalogWalks"]).len(),"nodes":graph.points.len(),
+            "reachable":pending.len(),"goalReachable":targets.iter().any(|&i|reached[i])})
+        );
     }
     let mut incoming_attempts = 0;
     if config["catalogTraining"] == true {
@@ -2081,13 +2165,18 @@ fn solve_world(
     // then admit lazily ordered detour proofs; incomplete prefixes leave those
     // proofs to fresh discovery. Restart labels
     // so earlier dominance cannot suppress paths introduced by the larger graph.
-    for pass in 0..if stage >= 2 || (stage == 1 && config["catalogConnected"] == true) {
+    let prepared = stage >= 1 && !improving && !array(&config["catalogWalks"]).is_empty();
+    let passes = if stage >= 2 || (stage == 1 && config["catalogConnected"] == true) {
         2
     } else {
         1
-    } {
-        let direct_only = stage >= 1 && pass == 0;
-        let phase = if direct_only {
+    };
+    for pass in 0..passes + usize::from(prepared) {
+        let prepared_only = prepared && pass == 0;
+        let direct_only = stage >= 1 && pass == usize::from(prepared);
+        let phase = if prepared_only {
+            "prepared"
+        } else if direct_only {
             "direct"
         } else if stage >= 1 {
             "detours"
@@ -2264,7 +2353,7 @@ fn solve_world(
                     }
                 }
             }
-            if !walked[label.node] {
+            if !prepared_only && !walked[label.node] {
                 walked[label.node] = true;
                 let p = graph.points[label.node];
                 // Ground successors are materialized only from reached action nodes.
@@ -2381,7 +2470,7 @@ fn solve_world(
         }
         truncated |= direct_only && unexplored_detours > 0;
         if winner.is_some() {
-            // Returning the direct graph's winner avoids all detour proofs.
+            // A proved sparse/direct graph winner avoids detour proofs.
             // Unexplored alternatives may offer a cheaper route.
             break;
         }

@@ -1,5 +1,50 @@
 # Route solver history and validation evidence
 
+## Sparse prepared scheduling and fresh-start refinement, 2026-11-15
+
+Search schedules the selected prepared graph before expanding direct walks and
+full detours. A source-bound slow-case diagnostic dropped ground-jump-4-2 from
+about 52 s to 0.30 s with common physical acceptance. Roadmap attachments now seek
+physically successful neighbors within the finite neighborhood; if no direct link
+exists, at most four nearby local ground-detour proposals can attach a fresh
+endpoint. Query-selected spans are re-proved, retaining real geometry and resources.
+
+TS source comparison identified its incumbent-guided departure refinement. Native
+improvement now reserves spatial sampling for departure neighborhoods, including
+cliffs away from the straight goal corridor, using the incumbent cost to bound
+useful walking reach. The previous worst-cost request ground-jump-21-1 improved
+from cost 8.792 s to 5.876 s, versus retained TS 6.651 s, with common physical replay.
+The departure diagnostic completed the two slow upper cases in 2.63/2.72 s and the
+worst-cost case in 0.90 s. These remain diagnostic observations, not accepted full
+population speedup. Evidence: `.local/research/native-local-approach-result.json`
+and `native-departure-result.json`.
+
+A direct copy of TS's smaller catalog refinement budgets plus incumbent sample
+hints lost useful departures under Rust's different candidate ordering; withdrawn.
+Limiting improvement walking to nearest neighbors did not consistently reduce
+latency; withdrawn. Faithful migration still requires TS's candidate ranking and
+local incumbent refinement, rather than budget reduction alone. The retained
+source passes 149 Rust unit tests, two authored integration tests and 26 N-API
+physical/lifecycle fixtures; Clippy passes. Full 50-request validation remains
+required and the 2x objective remains active. No remote push is authorized.
+
+## Prepared graph full-population failure, 2026-11-15
+
+Commit `894f9fa` completed and physically verified all 50 normal map02 requests
+with zero timeouts, after configured training, freeze and warmup. It did not meet
+the objective: mean serial time was 19805.902 ms/query, with long fallback searches
+on several upper-floor starts. Paired modeled cost improved on average (geometric
+mean ratio 0.975642) but the worst ratio remained 1.321836, on ground-jump-21-1.
+The unchanged worst-cost gate failed. No speedup is accepted.
+
+The source-bound report is `.local/research/native-roadmap-50/report.json` and its
+adjacent event journal. This result supersedes extrapolation from the fast two-case
+diagnostic. Followup separates missing roadmap attachments/connectivity from
+physical admission and resource-search expansion, and first schedules the already
+proved sparse graph before adding direct all-pairs walks or detours. Targeted
+replays use cooperative deadlines; the next full run waits for representative
+slow and worst-cost requests to show a worthwhile improvement.
+
 ## Prepared native connection graph, 2026-11-15
 
 The walking-only raw-contact correction passed its new N-API common-verifier
