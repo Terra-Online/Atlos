@@ -31,14 +31,32 @@ complete revision and coverage identities. No completed-query result or persiste
 query failure cache exists. Catalog banks bind the same identities and freeze
 before measured service. Sampled discovery and finite labels can truncate search.
 
-This integration is not accepted as a complete replacement. Six native fixtures
-pass the shared independent physical evaluator, and the retained 438-test suite
-passes. The real map02 lower-floor query at workload offset 10 still times out at
-300 seconds. Profiling isolates broad coarse transfer projections and resource
-label expansion; optimization and route-quality acceptance remain open. No valid
-speedup is established, and the old prototype is retained until the replacement
-works. Whole-map completion, route cost and real-map physical replay are required
-before deleting it or claiming completion.
+The hardened integration passes 79 Rust unit tests, two authored-action end-to-end
+tests and eleven N-API fixtures. The fixtures use the independent common physical
+evaluator for raw ground, multihop flights, launches, moving rides, following
+placement, airborne collection and whole-route resources, including boost expiry
+across several scene windows. The retained 438-test TypeScript suite also passes.
+Authored surface endpoints and support IDs are preserved, and waypoints retain
+their original height contract. Generated actions use content-derived identities
+so catalog training does not replace unrelated actions at the same local index.
+
+This integration is not accepted as a complete replacement. Matched map02 query
+`new-goal-near-lower-floor-ground-jump-6-1` passes physical verification in the
+retained TS implementation at cost 7.684124 seconds, but native full-scene retries
+still hit the 300-second SLO. Narrowing sampled walking proofs and fixing ground
+repair reduces local work; it does not establish whole-route acceptance. A
+captured native window solves in about three seconds but remains unavailable.
+World accepts the separately captured valid flight, including nearby takeoffs;
+source/landing proposal coverage remains the current reachability gap. In this
+window, 95.3% of supported sampled feet were farther than 2 cm from imported nav
+planes, within the configured 0.5 m tolerance. Generated admission now uses the
+contract tolerance while retaining raw support and collision proofs. Remaining
+sampling work must cover real support boundaries and independent height strata.
+
+No valid speedup is established, and the prototype remains until replacement
+acceptance. Whole-map completion, route cost and real-map physical replay are
+required before deleting it or claiming completion. Diagnostic reference routes
+are never inputs to the production native solver.
 
 ## Workspace migration checkpoint, 2026-11-14
 

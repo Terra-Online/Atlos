@@ -42,12 +42,27 @@ impl<'a> Geometry<'a> {
         }
         Ok(points)
     }
+    pub fn endpoint(
+        &self,
+        p: Point,
+        tolerance: f64,
+        surface: Option<&str>,
+    ) -> Result<bool, String> {
+        if surface.is_some_and(|id| self.world.surface(id).is_none()) {
+            return Err("invalid movement support surface".into());
+        }
+        let projections = self.world.project_with_tolerance(p, tolerance, None)?;
+        Ok(projections
+            .iter()
+            .any(|q| surface.is_none_or(|id| q.surface == id))
+            && self.world.standing_foot(p)?.is_some())
+    }
     pub fn project(&self, p: Point, tolerance: f64) -> Option<Point> {
         self.world
             .project_with_tolerance(p, tolerance, None)
             .ok()?
-            .first()
-            .and_then(|p| self.world.standing_foot(p.position).ok().flatten())
+            .first()?;
+        self.world.standing_foot(p).ok().flatten()
     }
     pub fn path(&self, a: Point, b: Point) -> Option<Vec<Point>> {
         self.world

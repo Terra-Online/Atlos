@@ -184,7 +184,7 @@ fn composition_cannot_reset_sprint_activation_at_window_boundary() {
 }
 
 #[test]
-fn composition_rejects_discontinuity_and_expired_boost() {
+fn composition_rejects_discontinuity_and_expires_walk_boost() {
     let a = route([0., 0., 0.], [1., 0., 0.]);
     let b = route([2., 0., 0.], [3., 0., 0.]);
     assert!(
@@ -197,11 +197,13 @@ fn composition_rejects_discontinuity_and_expired_boost() {
     let boost = json!({"id":"boost","duration":1.5,"multiplier":1.});
     a["segments"][0]["boost"] = boost.clone();
     b["segments"][0]["boost"] = boost;
-    assert!(
-        schedule::compose(&[a, b], &input()["locomotion"])
-            .unwrap()
-            .is_none()
-    );
+    b["segments"][0]["boost"]["duration"] = json!(0.5);
+    let fact = json!({"id":"boost","duration":1.5,"multiplier":1.,"position":[0.,0.,0.],"interaction":{"radius":0.}});
+    let joined = schedule::compose_with_boosts(&[a, b], &input()["locomotion"], &[fact])
+        .unwrap()
+        .unwrap();
+    assert!(joined["segments"].as_array().unwrap().last().unwrap()["boost"].is_null());
+    assert!((number(&joined, "cost", 0.) - 2.).abs() < 1e-9);
 }
 
 static CALLS: AtomicUsize = AtomicUsize::new(0);
@@ -345,13 +347,19 @@ fn native_scene_walk_emits_replayable_schedule_and_pays_arrival_once() {
     )
     .unwrap();
     let mut step = e.start(query()).unwrap();
+    let mut loads = 0;
     for _ in 0..30 {
         if step["type"] == "complete" {
             break;
         }
+        loads += 1;
         step=e.resume(json!({"id":step["effect"]["id"],"snapshot":snapshot,"revision":"floor-v1","coverage":{"kind":"complete"}})).unwrap();
     }
     assert_eq!(step["type"], "complete");
+    assert_eq!(
+        loads, 1,
+        "a canonical feet offset must not cause a repeated full-query physical load"
+    );
     let result = &step["result"];
     assert_eq!(result["route"]["status"], "complete");
     assert_eq!(result["partial"], false);
@@ -381,6 +389,242 @@ fn native_scene_walk_emits_replayable_schedule_and_pays_arrival_once() {
         e.cache.front().unwrap().world.snapshot()["coverage"],
         "complete"
     );
+}
+
+#[test]
+fn composition_preserves_late_sprint_controls_across_piece_boundaries() {
+    let mut a = route([0., 0., 0.], [10., 0., 0.]);
+    a["segments"][0]["gait"] = json!("run");
+    a["schedule"] = json!([{"segments":a["segments"],"allowSprint":false,"allowDash":false}]);
+    let mut b = route([10., 0., 0.], [12., 0., 0.]);
+    b["points"] = json!([
+        [10., 0., 0.],
+        [10.015, 0., 0.],
+        [11., 0., 0.],
+        [12., 0., 0.]
+    ]);
+    let sprint = json!({"mode":"walk","points":[[10.,0.,0.],[10.015,0.,0.],[11.,0.,0.]],"times":[0.,0.01,0.5025],"gait":"sprint"});
+    let jump = json!({"mode":"jump","requiredGait":"sprint","points":[[11.,0.,0.],[12.,0.,0.]],"times":[0.,1.]});
+    b["segments"] = json!([sprint, jump]);
+    b["schedule"] = json!([
+        {"segments":[{"mode":"walk","points":[[10.,0.,0.],[11.,0.,0.]],"times":[0.,1.]}],"allowSprint":true,"allowDash":false},
+        {"segments":[jump],"allowSprint":true,"allowDash":false}]);
+    let policy = json!({"speed":1.,"sprintSpeed":2.,"sprintAcceleration":100.,"stamina":{"capacity":1.,"initial":1.,"activationCost":0.,"sprintDrain":1.,"recoveryRate":0.,"recoveryDelay":0.,"reserve":0.}});
+    let joined = schedule::compose(&[a, b], &policy)
+        .unwrap()
+        .expect("run 10m, then sprint 1m before takeoff is feasible");
+    assert!((number(&joined, "cost", 0.) - 11.5025).abs() < 1e-9);
+    assert!((number(&joined["locomotion"], "final", 0.) - 0.4975).abs() < 1e-9);
+    assert_eq!(joined["schedule"][0]["allowSprint"], false);
+    assert_eq!(
+        joined["segments"].as_array().unwrap().last().unwrap()["requiredGait"],
+        "sprint"
+    );
+}
+
+#[test]
+fn supplied_schedules_cannot_reset_stamina_between_pieces() {
+    let mut pieces = vec![];
+    for offset in [0., 2.] {
+        let mut piece = route([offset, 0., 0.], [offset + 2., 0., 0.]);
+        let walk = json!({"mode":"walk","points":[[offset,0.,0.],[offset+1.,0.,0.]],"times":[0.,0.5025],"gait":"sprint"});
+        let jump = json!({"mode":"jump","requiredGait":"sprint","points":[[offset+1.,0.,0.],[offset+2.,0.,0.]],"times":[0.,1.]});
+        piece["points"] = json!([
+            [offset, 0., 0.],
+            [offset + 1., 0., 0.],
+            [offset + 2., 0., 0.]
+        ]);
+        piece["segments"] = json!([walk, jump]);
+        piece["schedule"] = json!([
+            {"segments":[{"mode":"walk","points":[[offset,0.,0.],[offset+1.,0.,0.]],"times":[0.,1.]}],"allowSprint":true,"allowDash":false},
+            {"segments":[jump],"allowSprint":true,"allowDash":false}]);
+        pieces.push(piece);
+    }
+    let policy = json!({"speed":1.,"sprintSpeed":2.,"sprintAcceleration":100.,"stamina":{"capacity":1.,"initial":1.,"activationCost":1.,"recoveryRate":0.,"recoveryDelay":0.,"reserve":0.}});
+    assert!(schedule::compose(&pieces[..1], &policy).unwrap().is_some());
+    assert!(schedule::compose(&pieces[1..], &policy).unwrap().is_some());
+    assert!(
+        schedule::compose(&pieces, &policy).unwrap().is_none(),
+        "two required activations cannot share one unit of nonrecovering stamina"
+    );
+}
+
+#[test]
+fn boost_expiry_keeps_a_slower_feasible_schedule() {
+    let boost = json!({"id":"boost","duration":5.,"multiplier":1.});
+    let mut a = route([0., 0., 0.], [4., 0., 0.]);
+    a["segments"][0]["boost"] = boost.clone();
+    let mut b = route([4., 0., 0.], [5., 0., 0.]);
+    b["segments"][0]["mode"] = json!("jump");
+    b["segments"][0]["times"] = json!([0., 3.]);
+    b["segments"][0]["boost"] = boost;
+    b["segments"][0]["boost"]["duration"] = json!(1.);
+    b["segments"][0]["boostExpiry"] = json!(1.);
+    let policy = json!({"speed":1.,"sprintSpeed":2.,"sprintAcceleration":100.});
+    let fact = json!({"id":"boost","duration":5.,"multiplier":1.,"position":[0.,0.,0.],"interaction":{"radius":0.}});
+    let joined = schedule::compose_with_boosts(&[a, b], &policy, &[fact])
+        .unwrap()
+        .expect("running for 4s preserves the in-flight expiry at 5s");
+    assert!((number(&joined, "cost", 0.) - 7.).abs() < 1e-9);
+    assert_eq!(joined["schedule"][0]["allowSprint"], false);
+}
+
+#[test]
+fn remaining_boost_metadata_is_not_double_charged_and_rides_advance_time() {
+    let boost = json!({"id":"boost","duration":3.,"multiplier":2.});
+    let mut first = route([0., 0., 0.], [2., 0., 0.]);
+    first["segments"][0]["boost"] = boost.clone();
+    let mut ride = route([2., 0., 0.], [4., 0., 0.]);
+    ride["segments"][0]["mode"] = json!("rope");
+    ride["segments"][0]["times"] = json!([0., 0.5]);
+    let mut last = route([4., 0., 0.], [6., 0., 0.]);
+    last["segments"][0]["boost"] = boost;
+    last["segments"][0]["boost"]["duration"] = json!(1.5);
+    let mut fact = json!({"id":"boost","duration":3.,"multiplier":2.,"position":[0.,0.,0.],"interaction":{"radius":0.}});
+    let pieces = vec![first, ride, last];
+    let joined = schedule::compose_with_boosts(&pieces, &input()["locomotion"], &[fact.clone()])
+        .unwrap()
+        .unwrap();
+    assert!((number(&joined, "cost", 0.) - 2.5).abs() < 1e-9);
+    assert!(joined["segments"][1]["boost"].is_null());
+    assert!((number(&joined["segments"][2]["boost"], "duration", 0.) - 1.5).abs() < 1e-9);
+    // The same authored ride consumes the final quarter second of a shorter
+    // buff. The following walk remains feasible at ordinary speed.
+    fact["duration"] = json!(1.25);
+    let expired = schedule::compose_with_boosts(&pieces, &input()["locomotion"], &[fact])
+        .unwrap()
+        .unwrap();
+    assert!((number(&expired, "cost", 0.) - 3.5).abs() < 1e-9);
+    assert!(expired["segments"].as_array().unwrap().last().unwrap()["boost"].is_null());
+}
+
+#[test]
+fn pickup_time_follows_the_selected_retimed_trace() {
+    let mut before = route([0., 0., 0.], [2., 0., 0.]);
+    before["segments"][0]["gait"] = json!("run");
+    before["schedule"] =
+        json!([{"segments":before["segments"],"allowSprint":false,"allowDash":false}]);
+    let mut boosted = route([2., 0., 0.], [4., 0., 0.]);
+    boosted["segments"][0]["boost"] = json!({"id":"boost","multiplier":2.,"duration":1.});
+    boosted["segments"][0]["gait"] = json!("run");
+    boosted["segments"][0]["times"] = json!([0., 1.]);
+    boosted["schedule"] =
+        json!([{"segments":boosted["segments"],"allowSprint":false,"allowDash":false}]);
+    let fact = json!({"id":"boost","multiplier":2.,"duration":1.,"position":[2.,0.,0.],"interaction":{"radius":0.5}});
+    let policy = json!({"speed":1.,"sprintSpeed":2.,"sprintAcceleration":100.});
+    let joined = schedule::compose_with_boosts(&[before, boosted], &policy, &[fact])
+        .unwrap()
+        .unwrap();
+    // The chosen sprint reaches x=1.5 at 0.7525s and the centre at 1.0025s.
+    // Its remaining boost at the second segment is therefore 0.75s, independent
+    // of the slower supplied prefix's 1.5s first-hit time.
+    assert!((number(&joined, "cost", 0.) - 1.5075).abs() < 1e-9);
+    assert!(
+        (number(
+            &joined["schedule"][1]["segments"][0]["boost"],
+            "duration",
+            0.
+        ) - 0.75)
+            .abs()
+            < 1e-9
+    );
+    assert!((number(&joined["boosts"][0], "elapsed", 0.) - 0.755).abs() < 1e-9);
+}
+
+fn fresh_sprint_each_window(w: &World, q: &Value, c: &Value) -> Result<Value, String> {
+    let mut result = success(w, q, c)?;
+    let a = point(&q["starts"][0]["position"])?;
+    let b = point(&q["goal"])?;
+    let middle = lerp(a, b, 0.5);
+    result["route"]["points"] = json!([a, middle, b]);
+    result["route"]["segments"] = json!([
+        {"mode":"walk","points":[a,middle],"times":[0.,distance(a,middle)]},
+        {"mode":"jump","requiredGait":"sprint","points":[middle,b],"times":[0.,1.]}
+    ]);
+    Ok(result)
+}
+#[test]
+fn whole_route_resource_failure_rejects_arrival_without_a_spatial_window() {
+    let mut source = input();
+    source["locomotion"] = json!({"speed":1.,"sprintSpeed":2.,"sprintAcceleration":100.,"stamina":{
+        "capacity":1.,"initial":1.,"activationCost":1.,"recoveryRate":0.,"recoveryDelay":0.,"reserve":0.}});
+    let mut engine = Engine::with_search(
+        json!({"maxAttempts":1,"tileSpan":16,"gridSpan":8,"maxTiles":4,"margin":1}),
+        source,
+        fresh_sprint_each_window,
+    )
+    .unwrap();
+    let mut request = query();
+    request["goal"] = json!([60., 0., 0.]);
+    let step = engine.start(request).unwrap();
+    let result = finish(&mut engine, step);
+    assert_eq!(
+        result["partial"], true,
+        "the feasible tail survives failure of the whole resource schedule"
+    );
+    assert_eq!(result["diagnostics"]["truncated"], true);
+}
+
+#[test]
+fn provided_controls_preserve_trace_and_allow_improvement() {
+    let mut piece = route([0., 0., 0.], [2., 0., 0.]);
+    piece["points"] = json!([[0., 0., 0.], [1., 0., 1.], [2., 0., 0.]]);
+    piece["segments"][0]["points"] = piece["points"].clone();
+    piece["segments"][0]["times"] = json!([0., 2_f64.sqrt(), 2. * 2_f64.sqrt()]);
+    piece["schedule"] = json!([{"segments":[{"mode":"walk","points":[[0.,0.,0.],[2.,0.,0.]],"times":[0.,2.]}],"allowSprint":false,"allowDash":false}]);
+    assert_eq!(
+        schedule::compose(&[piece], &input()["locomotion"]).unwrap_err(),
+        "Route schedule changes the physical trace"
+    );
+    let mut valid = route([0., 0., 0.], [2., 0., 0.]);
+    valid["schedule"] =
+        json!([{"segments":valid["segments"],"allowSprint":false,"allowDash":false}]);
+    let policy = json!({"speed":1.,"sprintSpeed":2.,"sprintAcceleration":100.});
+    let improved = schedule::compose(&[valid], &policy).unwrap().unwrap();
+    assert!(number(&improved, "cost", 2.) < 2.);
+    assert_eq!(improved["schedule"][0]["allowSprint"], true);
+}
+
+fn error_on_later_arrival(w: &World, q: &Value, c: &Value) -> Result<Value, String> {
+    if point(&q["starts"][0]["position"])?[0] > 20. {
+        Err("later alternative failed".into())
+    } else {
+        success(w, q, c)
+    }
+}
+#[test]
+fn completed_incumbent_survives_an_error_in_an_alternative_arrival() {
+    let mut e =
+        Engine::with_search(json!({"maxAttempts":2}), input(), error_on_later_arrival).unwrap();
+    let mut q = query();
+    q["starts"][0]["cost"] = json!(0.);
+    q["starts"]
+        .as_array_mut()
+        .unwrap()
+        .push(json!({"id":"b","position":[30.,0.,0.],"cost":1.,"state":"available"}));
+    let step = e.start(q).unwrap();
+    let result = finish(&mut e, step);
+    assert_eq!(result["route"]["status"], "complete");
+    assert_eq!(result["route"]["start"], "a");
+    assert_eq!(result["route"]["cost"], 10.);
+    assert_eq!(result["diagnostics"]["truncated"], true);
+    assert_eq!(result["diagnostics"]["candidateAttempts"], 2);
+}
+
+#[test]
+fn explicit_ground_range_keeps_its_own_forward_projection_pass() {
+    let mut e = Engine::with_search(json!({}), input(), success).unwrap();
+    let mut q = query();
+    q["starts"][0]["groundRange"] = json!([2, 4]);
+    let tail = e.start(q).unwrap();
+    assert_eq!(tail["effect"]["arrival"]["id"], "target-approach");
+    let forward = e
+        .resume(response(&tail, "r1", json!({"kind":"complete"})))
+        .unwrap();
+    assert_eq!(forward["type"], "load");
+    assert_eq!(forward["effect"]["arrival"]["id"], "a");
+    assert_eq!(forward["effect"]["arrival"]["groundRange"], json!([2, 4]));
+    assert_eq!(finish(&mut e, forward)["partial"], false);
 }
 
 #[test]

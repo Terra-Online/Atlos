@@ -3,28 +3,6 @@ type Point = [f64; 3];
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub(super) struct ScheduleBoost {
-    pub multiplier: f64,
-}
-
-#[derive(serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub(super) struct ScheduleSegment {
-    pub mode: String,
-    pub points: Vec<Vec<f64>>,
-    pub times: Vec<f64>,
-    pub boost: Option<ScheduleBoost>,
-    pub required_gait: Option<String>,
-}
-
-#[derive(serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub(super) struct ScheduleBlock {
-    pub segments: Vec<ScheduleSegment>,
-}
-
-#[derive(serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub(super) struct ScheduleStamina {
     pub capacity: f64,
     pub initial: f64,
@@ -152,83 +130,6 @@ fn maximum<const N: usize>(values: [f64; N]) -> f64 {
     })
 }
 
-pub(super) fn prepare(blocks: Vec<ScheduleBlock>) -> Result<Vec<Block>> {
-    blocks
-        .into_iter()
-        .map(|block| {
-            if block.segments.is_empty() {
-                return Err(invalid());
-            }
-            let segments = block
-                .segments
-                .into_iter()
-                .map(|segment| {
-                    let mode = Mode::parse(&segment.mode)?;
-                    if segment.points.len() < 2
-                        || segment.times.len() != segment.points.len()
-                        || segment.times.iter().any(|v| !v.is_finite())
-                        || segment
-                            .points
-                            .iter()
-                            .any(|p| p.len() != 3 || p.iter().any(|v| !v.is_finite()))
-                    {
-                        return Err(invalid());
-                    }
-                    let multiplier = segment.boost.map(|boost| boost.multiplier).unwrap_or(1.0);
-                    if !multiplier.is_finite() || multiplier < 1.0 {
-                        return Err(invalid());
-                    }
-                    let required_sprint = match segment.required_gait.as_deref() {
-                        None => false,
-                        Some("sprint") => true,
-                        _ => return Err(invalid()),
-                    };
-                    let mut spans = Vec::new();
-                    if mode == Mode::Walk {
-                        for pair in segment.points.windows(2) {
-                            let a = [pair[0][0], pair[0][1], pair[0][2]];
-                            let b = [pair[1][0], pair[1][1], pair[1][2]];
-                            let length = if (0..3).any(|axis| (a[axis] - b[axis]).is_infinite()) {
-                                f64::INFINITY
-                            } else {
-                                super::geometry::distance(a, b)
-                            };
-                            if length <= EPSILON {
-                                continue;
-                            }
-                            spans.push(Span {
-                                start: a,
-                                end: b,
-                                length,
-                                direction: [
-                                    (b[0] - a[0]) / length,
-                                    (b[1] - a[1]) / length,
-                                    (b[2] - a[2]) / length,
-                                ],
-                            });
-                        }
-                    }
-                    Ok(Segment {
-                        source: super::Segment {
-                            mode: segment.mode.clone(),
-                            points: segment.points.iter().map(|p| [p[0], p[1], p[2]]).collect(),
-                            times: segment.times.clone(),
-                            required_gait: segment.required_gait.clone(),
-                            ..Default::default()
-                        },
-                        mode,
-                        spans,
-                        duration: *segment.times.last().expect("validated times"),
-                        multiplier,
-                        required_sprint,
-                    })
-                })
-                .collect::<Result<Vec<_>>>()?;
-            Ok(Block { segments })
-        })
-        .collect()
-}
-
 pub(super) fn validate_options(options: &ScheduleOptions) -> Result<()> {
     if [
         options.speed,
@@ -308,44 +209,57 @@ fn sprint_distance(seconds: f64, speed: f64, cap: f64, acceleration: f64) -> f64
 }
 
 #[derive(Default)]
-struct Clocks {
+struct Clocks<'a, const MATERIALIZE: bool> {
     completed: f64,
-    output: Option<super::Segment>,
+    output: Option<(Gait, f64)>,
+    segment: Option<super::Segment>,
     segments: Vec<super::Segment>,
-    source: super::Segment,
+    source: Option<&'a super::Segment>,
 }
-impl Clocks {
+impl<const MATERIALIZE: bool> Clocks<'_, MATERIALIZE> {
     fn end_output(&mut self) {
-        if let Some(s) = self.output.take() {
-            self.completed += s.times.last().copied().unwrap_or(0.);
-            self.segments.push(s);
+        if let Some((_, duration)) = self.output.take() {
+            self.completed += duration;
+        }
+        if let Some(segment) = self.segment.take() {
+            self.segments.push(segment);
         }
     }
     fn append(&mut self, gait: Gait, elapsed: f64, start: Point, end: Point) {
+        if self.output.is_some_and(|(previous, _)| previous != gait) {
+            self.end_output();
+        }
+        let output = self.output.get_or_insert((gait, 0.));
+        output.1 += elapsed;
+        if !MATERIALIZE {
+            return;
+        }
         let gait = match gait {
             Gait::Run => "run",
             Gait::Sprint => "sprint",
             Gait::Dash => "dash",
         };
-        if self
-            .output
-            .as_ref()
-            .is_some_and(|s| s.gait.as_deref() != Some(gait))
-        {
-            self.end_output();
-        }
-        let s = self.output.get_or_insert_with(|| super::Segment {
-            gait: Some(gait.into()),
-            points: vec![start],
-            times: vec![0.],
-            ..self.source.clone()
+        let s = self.segment.get_or_insert_with(|| {
+            let source = self.source.expect("scheduled segment");
+            super::Segment {
+                mode: source.mode.clone(),
+                points: vec![start],
+                times: vec![0.],
+                gait: Some(gait.into()),
+                connection: source.connection.clone(),
+                required_gait: source.required_gait.clone(),
+                traversal: source.traversal.clone(),
+                boost: source.boost.clone(),
+                flight: source.flight.clone(),
+                extra: source.extra.clone(),
+            }
         });
         s.points.push(end);
-        s.times.push(s.times.last().unwrap() + elapsed);
+        s.times.push(output.1);
     }
 }
 
-pub(super) fn schedule(
+fn schedule<const MATERIALIZE: bool>(
     block: &Block,
     options: &ScheduleOptions,
     mut state: State,
@@ -378,10 +292,10 @@ pub(super) fn schedule(
     }
     // Keep each output's clock, including zero-time additions and original
     // segment/dash boundaries. Summing phase durations changes rounding and ties.
-    let mut clocks = Clocks::default();
+    let mut clocks = Clocks::<MATERIALIZE>::default();
     for segment in &block.segments {
         clocks.end_output();
-        clocks.source = segment.source.clone();
+        clocks.source = Some(&segment.source);
         if segment.mode != Mode::Walk {
             if segment.required_sprint && !state.sprinting {
                 return None;
@@ -389,7 +303,9 @@ pub(super) fn schedule(
             state.dash_cooldown = maximum([0.0, state.dash_cooldown - segment.duration]);
             state.dash_remaining = 0.0;
             clocks.completed += segment.duration;
-            clocks.segments.push(segment.source.clone());
+            if MATERIALIZE {
+                clocks.segments.push(segment.source.clone());
+            }
             if stamina
                 .and_then(|s| s.recovery_during_non_walk)
                 .unwrap_or(false)
@@ -662,6 +578,57 @@ pub(super) fn continuation(a: State, b: State) -> bool {
             _ => false,
         }
 }
+pub(super) fn compile(segment: &super::Segment) -> Option<Block> {
+    let mode = Mode::parse(&segment.mode).ok()?;
+    let multiplier = segment.boost.as_ref().map_or(1., |b| b.multiplier);
+    if !multiplier.is_finite()
+        || multiplier < 1.
+        || segment.times.iter().any(|t| !t.is_finite())
+        || segment.points.iter().flatten().any(|v| !v.is_finite())
+        || segment
+            .required_gait
+            .as_ref()
+            .is_some_and(|v| v != "sprint")
+    {
+        return None;
+    }
+    if segment.points.len() < 2 || segment.times.len() != segment.points.len() {
+        return None;
+    }
+    let mut spans = Vec::new();
+    if mode == Mode::Walk {
+        for pair in segment.points.windows(2) {
+            let length = super::geometry::distance(pair[0], pair[1]);
+            if length > EPSILON {
+                spans.push(Span {
+                    start: pair[0],
+                    end: pair[1],
+                    length,
+                    direction: super::geometry::sub(pair[1], pair[0]).map(|v| v / length),
+                });
+            }
+        }
+    }
+    Some(Block {
+        segments: vec![Segment {
+            source: segment.clone(),
+            mode,
+            spans,
+            duration: *segment.times.last()?,
+            multiplier: segment.boost.as_ref().map_or(1., |b| b.multiplier),
+            required_sprint: segment.required_gait.as_deref() == Some("sprint"),
+        }],
+    })
+}
+pub(super) fn evaluate(
+    block: &Block,
+    options: &ScheduleOptions,
+    state: State,
+    sprint: bool,
+    dash: bool,
+) -> Option<(State, f64)> {
+    schedule::<false>(block, options, state, sprint, dash).map(|(state, time, _)| (state, time))
+}
 pub(super) fn advance(
     segment: &super::Segment,
     options: &ScheduleOptions,
@@ -669,19 +636,5 @@ pub(super) fn advance(
     sprint: bool,
     dash: bool,
 ) -> Option<(State, f64, Vec<super::Segment>)> {
-    let raw = ScheduleSegment {
-        mode: segment.mode.clone(),
-        points: segment.points.iter().map(|p| p.to_vec()).collect(),
-        times: segment.times.clone(),
-        boost: segment.boost.as_ref().map(|b| ScheduleBoost {
-            multiplier: b.multiplier,
-        }),
-        required_gait: segment.required_gait.clone(),
-    };
-    let mut blocks = prepare(vec![ScheduleBlock {
-        segments: vec![raw],
-    }])
-    .ok()?;
-    blocks[0].segments[0].source = segment.clone();
-    schedule(&blocks[0], options, state, sprint, dash)
+    schedule::<true>(&compile(segment)?, options, state, sprint, dash)
 }

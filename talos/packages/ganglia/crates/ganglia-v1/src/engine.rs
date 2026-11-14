@@ -76,6 +76,7 @@ struct Query {
     pending: Option<u64>,
     partial: Option<Value>,
     incumbent: Option<Value>,
+    boost_facts: BTreeMap<String, Value>,
     excluded_arrivals: HashSet<String>,
     excluded_edges: HashSet<String>,
     attempt: usize,
@@ -235,6 +236,7 @@ impl Engine {
             pending: None,
             partial: None,
             incumbent: None,
+            boost_facts: BTreeMap::new(),
             excluded_arrivals: HashSet::new(),
             excluded_edges: HashSet::new(),
             attempt: 0,
@@ -433,8 +435,6 @@ impl Engine {
         // Native search consumes the same PhysicalWork stage as V1. Catalog
         // entries are verified connections, never cached completed routes.
         config["physicalWork"] = json!({"version":1,"step":stage});
-        config["catalogFrozen"] = json!(self.catalog.frozen);
-        config["catalogRevision"] = json!(self.catalog.revision);
         if let Some(bank) = key.and_then(|k| self.catalog.banks.get(k)) {
             config["catalogConnections"] = json!(bank.values().collect::<Vec<_>>());
         }
@@ -470,7 +470,7 @@ impl Engine {
                 if self
                     .query
                     .as_ref()
-                    .and_then(|q| q.partial.as_ref())
+                    .and_then(|q| q.incumbent.as_ref().or(q.partial.as_ref()))
                     .is_some()
                 {
                     Ok(self.finish(&error, true))
@@ -609,7 +609,11 @@ impl Engine {
                 {
                     pieces.push(t["route"].clone());
                 }
-                match schedule::compose(&pieces, &self.input["locomotion"])? {
+                match schedule::compose_with_boosts(
+                    &pieces,
+                    &self.input["locomotion"],
+                    &q.boost_facts.values().cloned().collect::<Vec<_>>(),
+                )? {
                     Some(route) => {
                         q.truncated |= route["search"]["truncated"] == true
                             || route["locomotion"]["search"]["truncated"] == true;
@@ -618,10 +622,13 @@ impl Engine {
                             "diagnostics":{"truncated":q.truncated,"candidateAttempts":q.attempt}});
                         if q.tail
                             && q.tail_covers_start
-                            && route_points(&result["route"])?[0]
-                                == point(&q.proposal.as_ref().unwrap().arrival["position"])?
                             && w.waypoint == q.original["waypoints"].as_array().map_or(0, Vec::len)
                         {
+                            // The tail used the original available start and its
+                            // physical projection rules. Canonical supported feet
+                            // can differ from raw navigation height; requiring
+                            // coordinate equality would repeat the entire solve.
+                            // Explicit ground ranges still require the forward pass.
                             let arrival = &q.proposal.as_ref().unwrap().arrival;
                             result["partial"] = json!(false);
                             result["route"]["start"] = arrival["id"].clone();
@@ -736,6 +743,17 @@ impl Engine {
     }
 
     fn solve_window(&mut self, world: Arc<World>) -> Result<(), String> {
+        let facts = &mut self.query.as_mut().unwrap().boost_facts;
+        for boost in &world.boosts {
+            let value = serde_json::to_value(boost).map_err(|e| e.to_string())?;
+            if facts
+                .get(&boost.effect.id)
+                .is_some_and(|previous| *previous != value)
+            {
+                return Err("Boost facts changed during scene query".into());
+            }
+            facts.insert(boost.effect.id.clone(), value);
+        }
         let q = self.query.as_ref().unwrap();
         let w = q.window.as_ref().unwrap();
         let end = w.end.unwrap();
@@ -805,6 +823,15 @@ impl Engine {
             }
             result["diagnostics"]["truncated"] = json!(incomplete);
         }
+        if std::env::var_os("GANGLIA_PROFILE").is_some() {
+            eprintln!(
+                "{}",
+                json!({"native":"engine","phase":"window",
+                "start":arrival["position"],"target":supported,"stage":w.stage,
+                "status":result["route"]["status"],"cost":result["route"]["cost"],
+                "groundAttempts":result["diagnostics"]["groundAttempts"]})
+            );
+        }
         let q = self.query.as_mut().unwrap();
         let w = q.window.as_mut().unwrap();
         q.truncated |= truncated(&result);
@@ -832,7 +859,13 @@ impl Engine {
             {
                 reason = "target-projection-error".into();
             } else {
-                w.waypoint = consume_waypoints(&points, &waypoints, w.waypoint, 0.5, 3.)?;
+                w.waypoint = consume_waypoints(
+                    &points,
+                    &waypoints,
+                    w.waypoint,
+                    1e-6,
+                    world.movement.max_vertical + 1e-6,
+                )?;
                 if final_window && !q.tail && w.waypoint < waypoints.len() {
                     reason = "ordered-waypoint-unreached".into();
                 } else {
@@ -880,7 +913,14 @@ impl Engine {
         q.last_reason = reason.into();
         let p = q.proposal.as_ref().unwrap();
         let w = q.window.as_ref().unwrap();
-        let failed = &w.points[w.cursor..=w.end.unwrap_or(w.cursor)];
+        // A whole-route resource failure happens after all windows finish.
+        // It has no active spatial witness; reject the arrival rather than
+        // indexing past the guide or closing an unrelated transfer edge.
+        let failed = if w.cursor < w.points.len() {
+            &w.points[w.cursor..=w.end.unwrap_or(w.cursor)]
+        } else {
+            &[]
+        };
         if let Some(edge) = p.edges.iter().find(|e| {
             e.unresolved
                 && !q.excluded_edges.contains(&e.key)
@@ -1119,28 +1159,26 @@ fn consume_waypoints(
             let b = path[segment + 1];
             let dx = b[0] - a[0];
             let dz = b[2] - a[2];
-            let ox = a[0] - p[0];
-            let oz = a[2] - p[2];
-            let aa = dx * dx + dz * dz;
-            let bb = 2. * (ox * dx + oz * dz);
-            let cc = ox * ox + oz * oz - radius * radius;
+            let squared = dx * dx + dz * dz;
             let mut lo = earliest;
             let mut hi: f64 = 1.;
-            if aa <= 1e-24 {
-                if cc > 0. {
+            if squared > 0. {
+                let center = ((p[0] - a[0]) * dx + (p[2] - a[2]) * dz) / squared;
+                let gap = (a[0] + center * dx - p[0]).hypot(a[2] + center * dz - p[2]);
+                if gap > radius {
                     segment += 1;
                     earliest = 0.;
                     continue;
                 }
-            } else {
-                let discriminant = bb * bb - 4. * aa * cc;
-                if discriminant < 0. {
-                    segment += 1;
-                    earliest = 0.;
-                    continue;
-                }
-                lo = lo.max((-bb - discriminant.sqrt()) / (2. * aa));
-                hi = hi.min((-bb + discriminant.sqrt()) / (2. * aa));
+                // Projection avoids cancellation in a long span's quadratic
+                // discriminant when the waypoint cylinder is only micrometres wide.
+                let half = ((radius * radius - gap * gap).max(0.) / squared).sqrt();
+                lo = lo.max(center - half);
+                hi = hi.min(center + half);
+            } else if horizontal(a, p) > radius {
+                segment += 1;
+                earliest = 0.;
+                continue;
             }
             let dy = b[1] - a[1];
             if dy.abs() <= 1e-12 {

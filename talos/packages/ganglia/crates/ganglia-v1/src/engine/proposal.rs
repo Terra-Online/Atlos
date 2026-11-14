@@ -14,6 +14,103 @@ pub(super) struct Navigation {
     max_vertical: f64,
     components: Vec<usize>,
     members: Vec<Vec<usize>>,
+    seams: HashMap<[i64; 3], BTreeMap<usize, Vec<Witness>>>,
+}
+const CELL: Point = [8., 50., 8.];
+const ALTERNATIVES: usize = 4;
+
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+struct Witness {
+    surface: usize,
+    vertex: usize,
+}
+
+struct Representatives {
+    witnesses: [Option<Witness>; 9],
+    distances: [f64; 9],
+}
+impl Representatives {
+    fn new() -> Self {
+        Self {
+            witnesses: [None; 9],
+            distances: [f64::INFINITY; 9],
+        }
+    }
+    fn consider(&mut self, witness: Witness, position: Point, cell: [i64; 3]) {
+        // Keep the nearest source vertex to each cell corner and its centre.
+        // This bounds retrieval independently of navmesh triangle density. The
+        // retained vertices are coarse proposals, never support/clearance proof.
+        for slot in 0..9 {
+            let target = std::array::from_fn(|axis| {
+                let fraction = if slot == 8 {
+                    0.5
+                } else {
+                    ((slot >> axis) & 1) as f64
+                };
+                (cell[axis] as f64 + fraction) * CELL[axis]
+            });
+            let score = squared(position, target);
+            if score < self.distances[slot]
+                || (score == self.distances[slot]
+                    && self.witnesses[slot].is_none_or(|old| witness < old))
+            {
+                self.distances[slot] = score;
+                self.witnesses[slot] = Some(witness);
+            }
+        }
+    }
+    fn finish(self) -> Vec<Witness> {
+        let mut result = self.witnesses.into_iter().flatten().collect::<Vec<_>>();
+        result.sort_unstable();
+        result.dedup();
+        result
+    }
+}
+
+fn cell(position: Point) -> [i64; 3] {
+    std::array::from_fn(|axis| (position[axis] / CELL[axis]).floor() as i64)
+}
+fn squared(a: Point, b: Point) -> f64 {
+    (0..3).map(|axis| (a[axis] - b[axis]).powi(2)).sum()
+}
+
+#[derive(PartialEq)]
+struct Nearest {
+    score: f64,
+    index: usize,
+}
+impl Eq for Nearest {}
+impl PartialOrd for Nearest {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for Nearest {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.score
+            .total_cmp(&other.score)
+            .then_with(|| self.index.cmp(&other.index))
+    }
+}
+
+fn nearest(members: &[usize], centers: &[Point], target: Point, limit: usize) -> Vec<usize> {
+    let mut heap = BinaryHeap::with_capacity(limit + 1);
+    for &index in members {
+        let candidate = Nearest {
+            score: squared(centers[index], target),
+            index,
+        };
+        if heap.len() < limit {
+            heap.push(candidate);
+        } else if heap.peek().is_some_and(|worst| candidate < *worst) {
+            heap.pop();
+            heap.push(candidate);
+        }
+    }
+    heap.into_sorted_vec()
+        .into_iter()
+        .map(|item| item.index)
+        .collect()
 }
 #[derive(Clone)]
 pub(super) struct Edge {
@@ -62,6 +159,7 @@ impl Navigation {
         self.ids.clear();
         self.components.clear();
         self.members.clear();
+        self.seams.clear();
     }
     pub fn new(data: &Value) -> Result<Self, String> {
         if data.is_null() {
@@ -73,6 +171,7 @@ impl Navigation {
                 max_vertical: 3.,
                 components: vec![],
                 members: vec![],
+                seams: HashMap::new(),
             });
         }
         let options = &data["options"];
@@ -150,6 +249,30 @@ impl Navigation {
             components[i] = root(&mut components, i);
             members[components[i]].push(i);
         }
+        let mut sampled: HashMap<[i64; 3], BTreeMap<usize, Representatives>> = HashMap::new();
+        for (surface, face) in world.surfaces.iter().enumerate() {
+            for (vertex, &position) in face.vertices.iter().enumerate() {
+                let key = cell(position);
+                sampled
+                    .entry(key)
+                    .or_default()
+                    .entry(components[surface])
+                    .or_insert_with(Representatives::new)
+                    .consider(Witness { surface, vertex }, position, key);
+            }
+        }
+        let seams = sampled
+            .into_iter()
+            .map(|(key, groups)| {
+                (
+                    key,
+                    groups
+                        .into_iter()
+                        .map(|(component, reps)| (component, reps.finish()))
+                        .collect(),
+                )
+            })
+            .collect();
         Ok(Self {
             world: Some(world),
             centers,
@@ -158,6 +281,7 @@ impl Navigation {
             max_vertical: vertical,
             components,
             members,
+            seams,
         })
     }
 
@@ -241,7 +365,7 @@ impl Navigation {
             }
             let component = self.components[node];
             if expanded_components.insert(component) {
-                for (from, edge) in self.transfers(component, arrivals, goal)? {
+                for (from, edge) in self.transfers(component, arrivals, goal, excluded)? {
                     transfers.entry(from).or_default().push(edge);
                 }
             }
@@ -324,55 +448,100 @@ impl Navigation {
         component: usize,
         arrivals: &[Value],
         goal: Point,
+        excluded: &HashSet<String>,
     ) -> Result<Vec<(usize, Edge)>, String> {
         let world = self.world.as_ref().unwrap();
-        let mut sources = self.members[component].clone();
-        sources.sort_by(|&a, &b| {
-            distance(self.centers[a], goal).total_cmp(&distance(self.centers[b], goal))
-        });
-        let mut selected = sources.iter().take(12).copied().collect::<Vec<_>>();
+        let sources = &self.members[component];
+        let mut selected = nearest(sources, &self.centers, goal, 12);
         for arrival in arrivals.iter().filter(|a| a["state"] == "available") {
             let start = point(&arrival["position"])?;
-            sources.sort_by(|&a, &b| {
-                distance(self.centers[a], start).total_cmp(&distance(self.centers[b], start))
-            });
-            selected.extend(sources.iter().take(4).copied());
+            selected.extend(nearest(sources, &self.centers, start, 4));
         }
         selected.sort_unstable();
         selected.dedup();
-        let domain: Interaction =
-            serde_json::from_value(json!({"radius":16_f64.hypot(50.),"maxVertical":50.}))
-                .map_err(|e| e.to_string())?;
-        let mut candidates: BTreeMap<(usize, usize), Edge> = BTreeMap::new();
+        let mut candidates: BTreeMap<(usize, usize), Vec<Edge>> = BTreeMap::new();
         // Unknown transfers are query-directed finite proposals. Materialize
-        // only reached component interfaces, never every nearby mesh-face pair
-        // at scene preparation. Geometry and motion validation stay physical.
+        // only reached component interfaces. Cells exclude the source component
+        // before visiting representatives, so dense connected floors do not cause
+        // repeated broad projection, face cloning, or sorting. Both ends are
+        // retained vertices; physical support/flight validation remains in World.
+        // Nine representatives per component/cell and four alternatives per
+        // source face/target component define finite proposal coverage, not an
+        // equivalence claim with continuous nearest-surface projection.
         for from in selected {
-            for &vertex in &world.surfaces[from].vertices {
-                for hit in world.project_with_tolerance(vertex, 50., Some(&domain))? {
-                    let to = self.ids[&hit.surface];
-                    if from == to || horizontal(vertex, hit.position) > 16. {
-                        continue;
-                    }
-                    let edge = Edge::new(
-                        format!("transfer:{}:{}", world.surfaces[from].id, hit.surface),
-                        to,
-                        vec![self.centers[from], vertex, hit.position, self.centers[to]],
-                        true,
-                    );
-                    let key = (from, self.components[to]);
-                    if candidates
-                        .get(&key)
-                        .is_none_or(|old| edge.rank() < old.rank())
-                    {
-                        candidates.insert(key, edge);
+            for (source, &vertex) in world.surfaces[from].vertices.iter().enumerate() {
+                let origin = cell(vertex);
+                for dx in -2..=2 {
+                    for dy in -1..=1 {
+                        for dz in -2..=2 {
+                            let Some(groups) =
+                                self.seams
+                                    .get(&[origin[0] + dx, origin[1] + dy, origin[2] + dz])
+                            else {
+                                continue;
+                            };
+                            for (&target_component, witnesses) in groups {
+                                if target_component == component {
+                                    continue;
+                                }
+                                for witness in witnesses {
+                                    let to = witness.surface;
+                                    let target = world.surfaces[to].vertices[witness.vertex];
+                                    if (vertex[1] - target[1]).abs() > 50.
+                                        || horizontal(vertex, target) > 16.
+                                    {
+                                        continue;
+                                    }
+                                    let key = format!(
+                                        "transfer:{}:{}:{source}:{}",
+                                        world.surfaces[from].id,
+                                        world.surfaces[to].id,
+                                        witness.vertex
+                                    );
+                                    // Reject the actual retained witness before ranking;
+                                    // a failed cheapest seam must reveal other witnesses.
+                                    if excluded.contains(&key) {
+                                        continue;
+                                    }
+                                    let path =
+                                        [self.centers[from], vertex, target, self.centers[to]];
+                                    let length =
+                                        path.windows(2).map(|p| distance(p[0], p[1])).sum::<f64>();
+                                    let list =
+                                        candidates.entry((from, target_component)).or_default();
+                                    let score = length
+                                        + if path[3][1] - path[0][1] > 2.1 {
+                                            1_000_000.
+                                        } else {
+                                            10_000.
+                                        };
+                                    let rank = list.partition_point(|old| {
+                                        old.rank().total_cmp(&score).then_with(|| old.key.cmp(&key))
+                                            != Ordering::Greater
+                                    });
+                                    if rank < ALTERNATIVES {
+                                        list.insert(
+                                            rank,
+                                            Edge {
+                                                key,
+                                                to,
+                                                length,
+                                                points: path.to_vec(),
+                                                unresolved: true,
+                                            },
+                                        );
+                                        list.truncate(ALTERNATIVES);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
         Ok(candidates
             .into_iter()
-            .map(|((from, _), edge)| (from, edge))
+            .flat_map(|((from, _), edges)| edges.into_iter().map(move |edge| (from, edge)))
             .collect())
     }
 }
@@ -397,5 +566,107 @@ impl Edge {
             } else {
                 0.
             }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn face(id: &str, x: f64, y: f64) -> Value {
+        json!({"id":id,"vertices":[[x-1.,y,-1.],[x+1.,y,-1.],[x+1.,y,1.],[x-1.,y,1.]]})
+    }
+    fn navigation(faces: Vec<Value>, portals: Vec<Value>) -> Navigation {
+        Navigation::new(
+            &json!({"surfaces":faces,"options":{"speed":1.,"maxVertical":0.5,"portals":portals}}),
+        )
+        .unwrap()
+    }
+    fn start(x: f64) -> Vec<Value> {
+        vec![json!({"id":"start","position":[x,0.,0.],"cost":0.,"state":"available"})]
+    }
+
+    #[test]
+    fn rejected_seam_reveals_another_witness_in_the_same_target_component() {
+        let nav = navigation(
+            vec![face("a", 0., 0.), face("b", 6., 0.), face("c", 10., 0.)],
+            vec![json!({"from":"b","to":"c","points":[[7.,0.,0.],[9.,0.,0.]]})],
+        );
+        let component = nav.components[nav.ids["a"]];
+        let first = nav
+            .transfers(component, &start(0.), [10., 0., 0.], &HashSet::new())
+            .unwrap();
+        assert!(
+            first.len() >= 2,
+            "fixture must expose alternative physical witnesses"
+        );
+        let rejected = first[0].1.key.clone();
+        let excluded = HashSet::from([rejected.clone()]);
+        let retry = nav
+            .transfers(component, &start(0.), [10., 0., 0.], &excluded)
+            .unwrap();
+        assert!(!retry.is_empty());
+        assert!(retry.iter().all(|(_, edge)| edge.key != rejected));
+        let restored = nav
+            .transfers(component, &start(0.), [10., 0., 0.], &HashSet::new())
+            .unwrap();
+        assert_eq!(
+            first.iter().map(|(_, e)| &e.key).collect::<Vec<_>>(),
+            restored.iter().map(|(_, e)| &e.key).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn coarse_seams_cross_negative_cells_and_respect_horizontal_vertical_limits() {
+        let nav = navigation(
+            vec![
+                face("a", -8., 0.),
+                face("b", 8., 50.),
+                face("too-high", 8., 100.001),
+                face("too-far", 40., 0.),
+            ],
+            vec![],
+        );
+        let source = nav.ids["a"];
+        let transfers = nav
+            .transfers(
+                nav.components[source],
+                &start(-8.),
+                [8., 50., 0.],
+                &HashSet::new(),
+            )
+            .unwrap();
+        assert!(transfers.iter().any(|(_, edge)| edge.to == nav.ids["b"]));
+        assert!(
+            transfers
+                .iter()
+                .all(|(_, edge)| edge.to != nav.ids["too-high"] && edge.to != nav.ids["too-far"])
+        );
+        for (from, edge) in transfers {
+            let world = nav.world.as_ref().unwrap();
+            assert!(world.surfaces[from].vertices.contains(&edge.points[1]));
+            assert!(world.surfaces[edge.to].vertices.contains(&edge.points[2]));
+            assert!(horizontal(edge.points[1], edge.points[2]) <= 16.);
+            assert!((edge.points[1][1] - edge.points[2][1]).abs() <= 50.);
+        }
+    }
+
+    #[test]
+    fn bounded_nearest_selection_keeps_equal_distance_input_order() {
+        let centers = vec![
+            [1., 0., 0.],
+            [-1., 0., 0.],
+            [0., 0., 1.],
+            [0., 0., -1.],
+            [100., 0., 0.],
+        ];
+        assert_eq!(
+            nearest(&[4, 3, 2, 1, 0], &centers, [0., 0., 0.], 3),
+            vec![0, 1, 2]
+        );
+        assert_eq!(
+            nearest(&[4, 3, 2, 1, 0], &centers, [100., 0., 0.], 1),
+            vec![4]
+        );
     }
 }

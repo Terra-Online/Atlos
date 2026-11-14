@@ -21,7 +21,7 @@ type Step =
   | { type: 'complete'; result: RouteResult }
   | {
       type: 'load';
-      effect:
+      effect: { partial?: RouteResult } & (
         | { id: number; kind: 'terminals'; query: RouteQuery }
         | {
             kind: 'window';
@@ -33,7 +33,8 @@ type Step =
             arrival: WindowRequest['arrival'];
             interaction?: WindowRequest['interaction'];
             waypoints?: WindowRequest['waypoints'];
-          };
+          }
+      );
     };
 
 // Typed geometry buffers cross the native seam as arrays. No solver callbacks
@@ -113,6 +114,9 @@ export async function prepareGangliaV1Rust<Source, Job extends WindowJob>(
           if (input.kind !== 'scene')
             throw new Error('Native solver requested scene IO without a scene');
           const effect = step.effect;
+          if (effect.partial)
+            options?.onEvent?.({ type: 'candidate', result: effect.partial, optimizing: true });
+          options?.signal?.throwIfAborted();
           let response: unknown;
           let loadedKey: string | undefined;
           if (effect.kind === 'terminals') {

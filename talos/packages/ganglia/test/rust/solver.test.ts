@@ -246,3 +246,67 @@ test('Rust whole-route sprint and dash schedule passes independent resource repl
     await solver.close();
   }
 });
+
+test('Rust releases a suspended query after aborted IO and closes resources once', async () => {
+  const controller = new AbortController();
+  const cancelled = new Error('fixture IO cancelled');
+  let queued = true;
+  let waits = 0;
+  let closes = 0;
+  const query: RouteQuery = { starts: [start([15, 0, 0])], goal: [17, 0, 0] };
+  const solver = await prepareRouteSolver(
+    { ...config, maxCandidates: 0 },
+    {
+      kind: 'scene',
+      scene: {
+        scene: 'fixture',
+        source: 'fixture-source',
+        walls: [],
+        navigation: {
+          surfaces,
+          options: { speed: 7, maxVertical: 0.5, profile: movement.profile },
+        },
+      },
+      locomotion: physical.locomotion,
+      resources: {
+        query: async () => ({ status: queued ? ('building' as const) : ('ready' as const) }),
+        physical: async () => ({
+          input: physical,
+          revision: 'fixture/1',
+          coverage: 'complete' as const,
+        }),
+        wait: async (signal) => {
+          waits++;
+          assert.equal(signal, controller.signal);
+          controller.abort(cancelled);
+          signal?.throwIfAborted();
+        },
+        close: async () => {
+          closes++;
+        },
+        solve: async () => {
+          throw new Error('TypeScript solving must not run');
+        },
+        ground: async () => {
+          throw new Error('TypeScript ground preparation must not run');
+        },
+        key: () => 'fixture/1',
+        route: () => ({}),
+      },
+    },
+  );
+  try {
+    await assert.rejects(
+      solver.solve(query, { signal: controller.signal }),
+      (error) => error === cancelled,
+    );
+    assert.equal(waits, 1);
+    queued = false;
+    const result = await solver.solve(query);
+    assert.equal(result.route.status, 'complete');
+    certify(query, result.route);
+  } finally {
+    await Promise.all([solver.close(), solver.close()]);
+  }
+  assert.equal(closes, 1);
+});

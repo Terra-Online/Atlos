@@ -258,6 +258,10 @@ fn boost_and_fixed_launch_actions_preserve_models() {
         .unwrap();
     assert_eq!(pad.mode, Mode::Launch);
     assert_eq!(pad.extra["flight"]["control"]["mode"], "jump");
+    let model = pad.extra["flight"]["model"].as_object().unwrap();
+    assert!(!model.contains_key("airAcceleration"));
+    assert!(!model.contains_key("airDeceleration"));
+    assert!(!model.contains_key("startHorizontalSpeed"));
     validate_connection(pad).unwrap();
 }
 #[test]
@@ -383,4 +387,173 @@ fn supported_run_off_has_prefix_and_replay_witness() {
     assert!(c.points.iter().any(|p| p[0] > -0.1 && p[1] > 1.9));
     assert_eq!(c.points.last(), Some(&[2., 0.01, 0.]));
     validate_connection(&c).unwrap();
+}
+
+#[test]
+fn refine_preserves_unmasked_authored_directed_portals() {
+    let mut collision = floor(-3., 0., -2., 2., 0.);
+    merge(&mut collision, floor(0., 3., -2., 2., 0.005));
+    let mut v = snapshot(collision);
+    v["input"]["ground"]["surfaces"] = json!([
+ {"id":"left","vertices":[[-3.,0.,-2.],[0.,0.,-2.],[0.,0.,2.],[-3.,0.,2.]]},
+ {"id":"right","vertices":[[0.,0.005,-2.],[3.,0.005,-2.],[3.,0.005,2.],[0.,0.005,2.]]}]);
+    v["input"]["ground"]["options"]["portals"] = json!([{"from":"left","to":"right","points":[[0.,0.,0.],[0.,0.005,0.]],"entry":[[0.,0.,-1.],[0.,0.,1.]],"exit":[[0.,0.005,-1.],[0.,0.005,1.]]}]);
+    let w = World::new(v).unwrap();
+    let forward = w.ground_path([-1., 0., 0.], [1., 0.005, 0.]).unwrap();
+    assert!(forward.is_some(), "authored forward passage must be usable");
+    assert!(
+        w.ground_path([1., 0.005, 0.], [-1., 0., 0.])
+            .unwrap()
+            .is_none()
+    );
+    let refined = w
+        .refine(Bounds {
+            min: [-2., -1.5],
+            max: [2., 1.5],
+        })
+        .unwrap();
+    assert!(
+        refined
+            .ground_path([-1., 0., 0.], [1., 0.005, 0.])
+            .unwrap()
+            .is_some()
+    );
+    assert!(
+        refined
+            .ground_path([1., 0.005, 0.], [-1., 0., 0.])
+            .unwrap()
+            .is_none(),
+        "refinement must not authorize a reverse seam"
+    );
+}
+
+#[test]
+fn ground_paths_preserve_valid_authored_feet() {
+    let mut value = snapshot(floor(-3., 3., -2., 2., -0.005));
+    value["input"]["ground"]["surfaces"] = json!([
+        {"id":"navigation","vertices":[[-3.,0.,-2.],[-3.,0.,2.],[3.,0.,2.],[3.,0.,-2.]]}
+    ]);
+    let world = World::new(value).unwrap();
+    let from = [-1., 0., 0.];
+    let to = [1., 0.005, 0.];
+    assert_eq!(world.standing_foot(from).unwrap(), Some(from));
+    assert_eq!(world.standing_foot(to).unwrap(), Some(to));
+    let path = world.ground_path(from, to).unwrap().unwrap();
+    assert_eq!(path.points.first(), Some(&from));
+    assert_eq!(path.points.last(), Some(&to));
+    assert!(
+        path.points
+            .windows(2)
+            .all(|p| world.clear(p[0], p[1], 0.).unwrap())
+    );
+    let blocked = World::new(snapshot(floor(-3., 3., -2., 2., 0.))).unwrap();
+    assert_ne!(blocked.standing_foot(from).unwrap(), Some(from));
+}
+
+#[test]
+fn surface_input_support_does_not_require_collision_triangles() {
+    let surface =
+        json!({"id":"navigation","vertices":[[-3.,0.,-2.],[-3.,0.,2.],[3.,0.,2.],[3.,0.,-2.]]});
+    let physical = snapshot(CollisionGeometry::default());
+    let mut input = physical["input"]["ground"]["options"].clone();
+    input["surfaces"] = json!([surface.clone()]);
+    input["collision"] = json!({"positions":[],"indices":[]});
+    input["walls"] = json!([]);
+    input["movement"] = physical["input"]["movement"].clone();
+    input["movement"]["speed"] = json!(4.);
+    input["movement"]["maxVertical"] = json!(0.5);
+    input["movement"]["profile"] = json!({"radius":0.2,"height":1.8});
+    let world = World::new(json!({"kind":"surfaces","input":input})).unwrap();
+    let start = world.standing_foot([-1., 0., 0.]).unwrap().unwrap();
+    assert_eq!(start, [-1., 0., 0.]);
+    let end = world.standing_foot([1., 0., 0.]).unwrap().unwrap();
+    let path = world.ground_path(start, end).unwrap().unwrap();
+    assert_eq!(path.points.first(), Some(&start));
+    assert_eq!(path.points.last(), Some(&end));
+    let mut physical = physical;
+    physical["input"]["ground"]["surfaces"] = json!([surface]);
+    let raw = World::new(physical).unwrap();
+    assert!(raw.standing_foot([-1., 0., 0.]).unwrap().is_none());
+    assert!(
+        raw.ground_path([-1., 0., 0.], [1., 0., 0.])
+            .unwrap()
+            .is_none()
+    );
+}
+
+#[test]
+fn ground_repair_finds_supported_detour_past_multiple_blocked_chords() {
+    let columns = 24;
+    let mut value = snapshot(floor(0., columns as f64, 0., 2., 0.));
+    value["input"]["ground"]["options"]["profile"] = json!({"radius":0.1,"height":1.7});
+    value["input"]["ground"]["surfaces"] = serde_json::Value::Array(
+        (0..columns)
+            .flat_map(|x| {
+                (0..2).map(move |z| {
+                    json!({
+                        "id":format!("{x}/{z}"),
+                        "vertices":[[x,0,z],[x+1,0,z],[x+1,0,z+1],[x,0,z+1]]
+                    })
+                })
+            })
+            .collect(),
+    );
+    value["input"]["ground"]["options"]["walls"] = serde_json::Value::Array(
+        (1..columns)
+            .map(|x| {
+                json!({
+                    "min":[x as f64-0.02,0.,0.25],
+                    "max":[x as f64+0.02,3.,0.75],"state":"active"
+                })
+            })
+            .collect(),
+    );
+    let world = World::new(value).unwrap();
+    let start = [0.2, 0.01, 0.5];
+    let goal = [columns as f64 - 0.2, 0.01, 0.5];
+    assert!(!world.clear(start, goal, 0.).unwrap());
+    for (a, b) in [(start, goal), (goal, start)] {
+        let path = world.ground_path(a, b).unwrap().unwrap();
+        assert!(distance(*path.points.first().unwrap(), a) < 1e-9);
+        assert!(distance(*path.points.last().unwrap(), b) < 1e-9);
+        assert!(path.length > distance(a, b));
+        assert!(path.points.iter().all(|p| (p[1] - 0.01).abs() < 1e-9));
+        assert!(
+            path.points
+                .windows(2)
+                .all(|p| world.clear(p[0], p[1], 0.).unwrap())
+        );
+        let repeated = world.ground_path(a, b).unwrap().unwrap();
+        assert!((path.length - repeated.length).abs() < 1e-8);
+    }
+}
+
+#[test]
+fn ground_detours_ignore_unloaded_proposals_without_granting_access() {
+    let mut value = snapshot(floor(-3., 3., -2., 2., 0.));
+    value["coverage"] = json!({
+        "bounds":{"min":[-3.,-2.],"max":[3.,2.]},"tileSpan":10.,
+        "tiles":[{"x":-1,"z":-1},{"x":-1,"z":0},{"x":0,"z":-1},{"x":0,"z":0}]
+    });
+    value["input"]["ground"]["options"]["walls"] = json!([
+        {"min":[-0.05,0.,-0.3],"max":[0.05,3.,0.3],"state":"active"},
+        {"min":[2.8,0.,1.8],"max":[3.2,3.,2.2],"state":"active"}
+    ]);
+    let world = World::new(value).unwrap();
+    let path = world
+        .ground_path([-1., 0.01, 0.], [1., 0.01, 0.])
+        .unwrap()
+        .unwrap();
+    assert!(path.length > 2.);
+    assert!(
+        path.points
+            .iter()
+            .all(|&p| world.in_coverage(p, world.movement.profile.radius))
+    );
+    assert!(
+        path.points
+            .windows(2)
+            .all(|p| world.clear(p[0], p[1], 0.).unwrap())
+    );
+    assert!(world.standing_foot([3.1, 0., 2.1]).is_err());
 }

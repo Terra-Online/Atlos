@@ -479,19 +479,17 @@ pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, S
         }) else {
             return Ok(None);
         };
-        let mut p = if let Some(ground) = w.ground_at(
+        let Some((ground, mesh_support)) = w.ground_support(
             hit.position,
             w.movement.max_vertical,
             w.movement.max_vertical,
             w.movement.profile.radius,
-        )? {
-            ground.position
-        } else if w.collision.faces.is_empty() {
-            hit.position
-        } else {
+        )?
+        else {
             return Ok(None);
         };
-        p[1] += 0.01;
+        let mut p = ground.position;
+        p[1] = standing_height(seed[1], p[1], mesh_support);
         if let Some(&previous) = out.last() {
             let delta = p[1] - previous[1];
             if delta
@@ -611,6 +609,9 @@ fn detour_points(w: &World, a: Vec3, b: Vec3) -> Result<Vec<Projection>, String>
         if !seen.insert(key) {
             continue;
         }
+        if !w.in_coverage(seed, w.movement.profile.radius) {
+            continue;
+        }
         let Some(foot) = w.standing_foot(seed)? else {
             continue;
         };
@@ -634,13 +635,40 @@ pub(super) struct Graph {
     by_surface: Vec<Vec<usize>>,
     proofs: std::sync::Arc<std::sync::Mutex<Proofs>>,
 }
-type Proofs = BTreeMap<(usize, usize), Option<Vec<Vec3>>>;
+// Frontier expansion needs a scalar cost; replay points are shared only when
+// a selected path needs them. Repeated repairs never copy whole proof traces.
+#[derive(Clone, Debug)]
+struct Proof {
+    path: Option<std::sync::Arc<Vec<Vec3>>>,
+    length: f64,
+}
+impl Proof {
+    fn new(path: Option<Vec<Vec3>>) -> Self {
+        let length = path
+            .as_ref()
+            .map_or(f64::INFINITY, |points| path_length(points));
+        Self {
+            path: path.map(std::sync::Arc::new),
+            length,
+        }
+    }
+}
+type Proofs = BTreeMap<(usize, usize), Proof>;
 impl Graph {
     fn new(w: &World) -> Self {
         let mut points = vec![];
         let mut owners = vec![];
         let mut by_surface = vec![vec![]; w.surfaces.len()];
         for portal in &w.portals {
+            // Only materialize representatives whose full standing footprint is
+            // loaded. Coverage is eligibility, never a substitute for a proof.
+            if portal
+                .points
+                .iter()
+                .any(|&point| !w.in_coverage(point, w.movement.profile.radius))
+            {
+                continue;
+            }
             for (point, owner) in [
                 (portal.points[0], w.surface_ids[&portal.from]),
                 (portal.points[1], w.surface_ids[&portal.to]),
@@ -731,19 +759,24 @@ fn search_ground(
     for (i, &surface) in local_owners.iter().enumerate() {
         locals.entry(surface).or_default().push(base + i);
     }
-    let mut proofs: HashMap<(usize, usize), Option<Vec<Vec3>>> = HashMap::new();
+    let mut proofs: HashMap<(usize, usize), Proof> = HashMap::new();
+    // Node IDs are dense and stable throughout repairs. Generations avoid
+    // clearing the global arrays or rebuilding hash tables for each search.
+    let count = base + local.len();
+    let mut costs = vec![0.; count];
+    let mut previous = vec![usize::MAX; count];
+    let mut generations = vec![0_u16; count];
     // Optimistic topology chooses a path before expensive support/capsule replay.
     // Failed chords reject that witness only; an exhausted repair budget leaves
     // this finite ground proposal unresolved, not physically impossible.
-    'repair: for _ in 0..512 {
-        let mut costs = HashMap::new();
-        let mut previous: HashMap<usize, usize> = HashMap::new();
+    for generation in 1..=512 {
         let mut pending = BinaryHeap::new();
-        costs.insert(base, 0.);
+        costs[base] = 0.;
+        generations[base] = generation;
         pending.push(Label(heuristic(base), base));
         let mut reached = false;
         while let Some(Label(priority, i)) = pending.pop() {
-            let cost = costs[&i];
+            let cost = costs[i];
             if priority > cost + heuristic(i) + 1e-9 {
                 continue;
             }
@@ -779,14 +812,15 @@ fn search_ground(
                     proofs.insert(key, proof);
                 }
                 let length = match proofs.get(&key) {
-                    Some(None) => continue,
-                    Some(Some(path)) => path_length(path),
+                    Some(proof) if proof.path.is_none() => continue,
+                    Some(proof) => proof.length,
                     None => (point(i)[0] - point(j)[0]).hypot(point(i)[2] - point(j)[2]),
                 };
                 let next = cost + length;
-                if next < *costs.get(&j).unwrap_or(&f64::INFINITY) {
-                    costs.insert(j, next);
-                    previous.insert(j, i);
+                if generations[j] != generation || next < costs[j] {
+                    generations[j] = generation;
+                    costs[j] = next;
+                    previous[j] = i;
                     pending.push(Label(next + heuristic(j), j));
                 }
             }
@@ -796,37 +830,54 @@ fn search_ground(
         }
         let mut nodes = vec![base + 1];
         while *nodes.last().unwrap() != base {
-            nodes.push(
-                *previous
-                    .get(nodes.last().unwrap())
-                    .ok_or("Broken ground frontier")?,
-            );
+            let parent = previous[*nodes.last().unwrap()];
+            if parent == usize::MAX {
+                return Err("Broken ground frontier".into());
+            }
+            nodes.push(parent);
         }
         nodes.reverse();
         let mut points = vec![];
+        let mut actual_cost = 0.;
+        let mut rejected = false;
         for pair in nodes.windows(2) {
             let key = (pair[0], pair[1]);
             if let std::collections::hash_map::Entry::Vacant(entry) = proofs.entry(key) {
-                let path = direct(w, point(pair[0]), point(pair[1]))?;
+                let proof = Proof::new(direct(w, point(pair[0]), point(pair[1]))?);
                 if pair[0] < base && pair[1] < base {
                     let mut cache = graph
                         .proofs
                         .lock()
                         .map_err(|_| "Ground proof cache poisoned")?;
                     if cache.len() < 65_536 {
-                        cache.insert(key, path.clone());
+                        cache.insert(key, proof.clone());
                     }
                 }
-                entry.insert(path);
+                entry.insert(proof);
             }
-            let Some(path) = proofs[&key].as_ref() else {
-                continue 'repair;
+            let Some(path) = proofs[&key].path.as_ref() else {
+                rejected = true;
+                continue;
             };
-            for &p in path {
+            actual_cost += proofs[&key].length;
+            for &p in path.iter() {
                 if points.last() != Some(&p) {
                     points.push(p);
                 }
             }
+        }
+        // Validate every selected chord before repairing topology. Otherwise
+        // each obstructed chord restarts the same global search while leaving
+        // later failures on that path unknown. No rejected path is returned.
+        if rejected {
+            continue;
+        }
+        // Successful replay can increase an optimistic horizontal edge length.
+        // Repair those costs as well: a collision-free path is eligible to return
+        // only after the optimistic frontier agrees with its verified cost.
+        let lower = costs[base + 1];
+        if actual_cost > lower + 1e-9 * lower.abs().max(1.) {
+            continue;
         }
         // Collapse tessellation turns only after tracing the replacement chords.
         let mut simplified = vec![points[0]];

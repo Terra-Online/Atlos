@@ -2,7 +2,7 @@
 //! extra energy alone is unsafe dominance with automatic sprint restart.
 use super::{Point, complete, distance, lerp, number, point, route_points};
 use serde_json::{Value, json};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashSet, VecDeque};
 const EPS: f64 = 1e-9;
 
 #[derive(Clone, PartialEq)]
@@ -24,9 +24,21 @@ struct Label {
     duration: f64,
     segments: Vec<Value>,
     decisions: Vec<Value>,
+    // Absolute first trigger time on this label's retimed trace. Device rides
+    // advance duration even when they carry no character-speed annotation.
+    boost_pickups: BTreeMap<String, f64>,
 }
 
+#[cfg(test)]
 pub(super) fn compose(pieces: &[Value], options: &Value) -> Result<Option<Value>, String> {
+    compose_with_boosts(pieces, options, &[])
+}
+
+pub(super) fn compose_with_boosts(
+    pieces: &[Value],
+    options: &Value,
+    boost_facts: &[Value],
+) -> Result<Option<Value>, String> {
     let Some(first) = pieces.first() else {
         return Ok(None);
     };
@@ -38,7 +50,6 @@ pub(super) fn compose(pieces: &[Value], options: &Value) -> Result<Option<Value>
     let mut max_labels: f64 = 0.;
     let mut truncated = false;
     let mut has_search = false;
-    let mut boosts = vec![];
     let mut placements = vec![];
     for (i, piece) in pieces.iter().enumerate() {
         if !complete(piece) {
@@ -62,9 +73,6 @@ pub(super) fn compose(pieces: &[Value], options: &Value) -> Result<Option<Value>
                 .ok_or("Route requires segments")?
                 .clone(),
         );
-        if let Some(v) = piece["boosts"].as_array() {
-            boosts.extend(v.clone());
-        }
         if let Some(v) = piece["placements"].as_array() {
             placements.extend(v.clone());
         }
@@ -151,12 +159,19 @@ pub(super) fn compose(pieces: &[Value], options: &Value) -> Result<Option<Value>
         dash: 0.,
         dashes: 0,
     };
-    let mut labels = vec![Label {
+    let initial_label = Label {
         state,
         duration: 0.,
         segments: vec![],
         decisions: vec![],
-    }];
+        boost_pickups: BTreeMap::new(),
+    };
+    // Supplied decision seams may spend stamina only near a required-sprint
+    // takeoff. Merging adjacent walks for optional optimization must not erase
+    // that already feasible control sequence. Replay all pieces from one entry
+    // state, rather than trusting their independently reset resource reports.
+    let incumbent = replay_provided(pieces, options, initial_label.clone(), boost_facts)?;
+    let mut labels = vec![initial_label];
     let limit = 256;
     let mut schedule_truncated = false;
     for block in blocks {
@@ -172,31 +187,29 @@ pub(super) fn compose(pieces: &[Value], options: &Value) -> Result<Option<Value>
         };
         for label in &labels {
             for &(sprint, dash) in &controls {
-                let Some((state, segments)) =
-                    advance(&block, options, label.state.clone(), sprint, dash)?
+                let Some(candidate) =
+                    schedule_block(label, &block, options, sprint, dash, boost_facts)?
                 else {
                     continue;
                 };
-                let duration = label.duration + segments.iter().map(duration).sum::<f64>();
-                if next
-                    .iter()
-                    .any(|n| same_state(&n.state, &state) && n.duration <= duration + EPS)
-                {
+                if next.iter().any(|n| {
+                    same_state(&n.state, &candidate.state)
+                        && n.boost_pickups == candidate.boost_pickups
+                        && n.duration <= candidate.duration + EPS
+                }) {
                     continue;
                 }
-                next.retain(|n| !(same_state(&n.state, &state) && duration <= n.duration + EPS));
-                let mut candidate = label.clone();
-                candidate.state = state;
-                candidate.duration = duration;
-                candidate.segments.extend(segments);
-                candidate
-                    .decisions
-                    .push(json!({"segments":block,"allowSprint":sprint,"allowDash":dash}));
+                next.retain(|n| {
+                    !(same_state(&n.state, &candidate.state)
+                        && n.boost_pickups == candidate.boost_pickups
+                        && candidate.duration <= n.duration + EPS)
+                });
                 next.push(candidate);
             }
         }
         if next.is_empty() {
-            return Ok(None);
+            labels.clear();
+            break;
         }
         if next.len() > limit {
             next.sort_by(|a, b| a.duration.total_cmp(&b.duration));
@@ -213,29 +226,22 @@ pub(super) fn compose(pieces: &[Value], options: &Value) -> Result<Option<Value>
         }
         labels = next;
     }
-    let best = labels
-        .into_iter()
-        .min_by(|a, b| {
-            a.duration
-                .total_cmp(&b.duration)
-                .then_with(|| a.state.energy.total_cmp(&b.state.energy))
-        })
-        .unwrap();
-    let mut elapsed: HashMap<String, f64> = HashMap::new();
-    for segment in &best.segments {
-        if let Some(id) = segment["boost"]["id"].as_str() {
-            let before = *elapsed.get(id).unwrap_or(&0.);
-            let budget = number(&segment["boost"], "duration", 0.);
-            if let Some(expiry) = segment["boostExpiry"].as_f64() {
-                if (before + expiry - budget).abs() > 1e-6 {
-                    return Ok(None);
-                }
-            } else if before + duration(segment) > budget + 1e-6 {
-                return Ok(None);
-            }
-            elapsed.insert(id.into(), before + duration(segment));
-        }
-    }
+    let best = labels.into_iter().chain(incumbent).min_by(|a, b| {
+        a.duration
+            .total_cmp(&b.duration)
+            .then_with(|| a.state.energy.total_cmp(&b.state.energy))
+    });
+    let Some(best) = best else { return Ok(None) };
+    let used = best
+        .segments
+        .iter()
+        .filter_map(|s| s["boost"]["id"].as_str())
+        .collect::<HashSet<_>>();
+    let boosts=boost_facts.iter().filter(|fact|fact["id"].as_str().is_some_and(|id|used.contains(id))).filter_map(|fact|{
+        let pickup=best.boost_pickups.get(fact["id"].as_str()?)?;
+        Some(json!({"id":fact["id"],"duration":fact["duration"],"multiplier":fact["multiplier"],"position":fact["position"],
+            "elapsed":(best.duration-pickup).max(0.).min(number(fact,"duration",0.))}))
+    }).collect::<Vec<_>>();
     let mut output_points = vec![points[0]];
     for segment in &best.segments {
         for v in segment["points"].as_array().unwrap().iter().skip(1) {
@@ -270,6 +276,351 @@ pub(super) fn compose(pieces: &[Value], options: &Value) -> Result<Option<Value>
         route["goalHit"] = map_hit(hit, &source, route["segments"].as_array().unwrap())?;
     }
     Ok(Some(route))
+}
+
+fn observe_pickups(
+    pickups: &mut BTreeMap<String, f64>,
+    facts: &[Value],
+    segment: &Value,
+    start: f64,
+) -> Result<(), String> {
+    if facts.is_empty() {
+        return Ok(());
+    }
+    let points = segment["points"]
+        .as_array()
+        .ok_or("Segment requires points")?;
+    let times = segment["times"]
+        .as_array()
+        .ok_or("Segment requires times")?;
+    for fact in facts {
+        let id = fact["id"].as_str().ok_or("Boost fact requires id")?;
+        if pickups.contains_key(id) {
+            continue;
+        }
+        let target = point(&fact["position"])?;
+        for i in 0..points.len() {
+            let previous = i.saturating_sub(1);
+            if let Some(fraction) = crate::search::hit(
+                point(&points[previous])?,
+                point(&points[i])?,
+                target,
+                &fact["interaction"],
+            ) {
+                let before = times[previous].as_f64().ok_or("Invalid segment clocks")?;
+                let after = times[i].as_f64().ok_or("Invalid segment clocks")?;
+                pickups.insert(id.into(), start + before + fraction * (after - before));
+                break;
+            }
+        }
+    }
+    Ok(())
+}
+
+fn schedule_block(
+    label: &Label,
+    block: &[Value],
+    options: &Value,
+    sprint: bool,
+    dash: bool,
+    facts: &[Value],
+) -> Result<Option<Label>, String> {
+    let mut next = label.clone();
+    let mut pending = VecDeque::from(block.to_vec());
+    while let Some(mut segment) = pending.pop_front() {
+        // Establish a pickup at the entry before validating an annotated motion.
+        // Later contacts use actual scheduled sample clocks, rather than source
+        // sample times or graph-node arrival times.
+        if !facts.is_empty() {
+            let entry = segment["points"][0].clone();
+            observe_pickups(
+                &mut next.boost_pickups,
+                facts,
+                &json!({"points":[entry],"times":[0.]}),
+                next.duration,
+            )?;
+        }
+        let mut remaining = None;
+        if let Some(id) = segment["boost"]["id"].as_str() {
+            let fact = facts
+                .iter()
+                .find(|f| f["id"] == id)
+                .ok_or("Missing boost pickup facts")?;
+            let Some(pickup) = next.boost_pickups.get(id) else {
+                return Ok(None);
+            };
+            let left = pickup + number(fact, "duration", 0.) - next.duration;
+            if (number(&segment["boost"], "multiplier", 0.) - number(fact, "multiplier", 0.)).abs()
+                > 1e-9
+            {
+                return Ok(None);
+            }
+            if left <= EPS {
+                if segment["mode"] != "walk" {
+                    return Ok(None);
+                }
+                segment.as_object_mut().unwrap().remove("boost");
+            } else {
+                // BoostUse.duration is remaining life at segment entry. It is
+                // metadata, not another full lifetime from which to subtract
+                // accumulated boosted time.
+                segment["boost"]["duration"] = json!(left);
+                remaining = Some(left);
+                if let Some(expiry) = segment["boostExpiry"].as_f64()
+                    && (expiry - left).abs() > 1e-6
+                {
+                    return Ok(None);
+                }
+            }
+        }
+        let Some((state, mut output)) = advance(
+            std::slice::from_ref(&segment),
+            options,
+            next.state.clone(),
+            sprint,
+            dash,
+        )?
+        else {
+            return Ok(None);
+        };
+        let seconds = output.iter().map(duration).sum::<f64>();
+        if let Some(left) = remaining
+            && segment["boostExpiry"].is_null()
+            && seconds > left + 1e-6
+        {
+            if segment["mode"] != "walk" {
+                return Ok(None);
+            }
+            let points = route_points(&segment)?;
+            let length = points.windows(2).map(|p| distance(p[0], p[1])).sum::<f64>();
+            let mut low = 0.;
+            let mut high = length;
+            for _ in 0..48 {
+                let middle = (low + high) / 2.;
+                let (prefix, _) = split_walk(&segment, middle, options)?;
+                let t = advance(&[prefix], options, next.state.clone(), sprint, dash)?
+                    .map(|(_, s)| s.iter().map(duration).sum::<f64>());
+                if t.is_some_and(|t| t < left) {
+                    low = middle;
+                } else {
+                    high = middle;
+                }
+            }
+            let (prefix, mut suffix) = split_walk(&segment, (low + high) / 2., options)?;
+            suffix.as_object_mut().unwrap().remove("boost");
+            pending.push_front(suffix);
+            pending.push_front(prefix);
+            continue;
+        }
+        let mut elapsed = next.duration;
+        for materialized in &mut output {
+            observe_pickups(&mut next.boost_pickups, facts, materialized, elapsed)?;
+            if let Some(id) = materialized["boost"]["id"].as_str() {
+                let fact = facts.iter().find(|f| f["id"] == id).unwrap();
+                let left = next.boost_pickups[id] + number(fact, "duration", 0.) - elapsed;
+                materialized["boost"]["duration"] = json!(left.max(0.));
+            }
+            elapsed += duration(materialized);
+        }
+        next.duration += seconds;
+        next.state = state;
+        next.segments.extend(output);
+        next.decisions
+            .push(json!({"segments":[segment],"allowSprint":sprint,"allowDash":dash}));
+    }
+    Ok(Some(next))
+}
+
+fn split_walk(segment: &Value, at: f64, options: &Value) -> Result<(Value, Value), String> {
+    let points = route_points(segment)?;
+    let mut first = vec![points[0]];
+    let mut second = vec![];
+    let mut remaining = at;
+    for pair in points.windows(2) {
+        let length = distance(pair[0], pair[1]);
+        if !second.is_empty() {
+            second.push(pair[1]);
+        } else if remaining >= length {
+            first.push(pair[1]);
+            remaining -= length;
+        } else {
+            let cut = lerp(
+                pair[0],
+                pair[1],
+                if length > 0. { remaining / length } else { 0. },
+            );
+            first.push(cut);
+            second.extend([cut, pair[1]]);
+        }
+    }
+    if second.is_empty() {
+        second = vec![*points.last().unwrap(); 2];
+    }
+    let make = |points: Vec<Point>| {
+        let mut times = vec![0.];
+        for pair in points.windows(2) {
+            times.push(
+                times.last().unwrap() + distance(pair[0], pair[1]) / number(options, "speed", 1.),
+            );
+        }
+        let mut result = segment.clone();
+        result["points"] = json!(points);
+        result["times"] = json!(times);
+        result
+    };
+    Ok((make(first), make(second)))
+}
+
+fn replay_provided(
+    pieces: &[Value],
+    options: &Value,
+    mut label: Label,
+    boost_facts: &[Value],
+) -> Result<Option<Label>, String> {
+    for piece in pieces {
+        let source = piece["segments"]
+            .as_array()
+            .ok_or("Route requires segments")?;
+        let decisions = if let Some(schedule) = piece["schedule"].as_array() {
+            schedule.clone()
+        } else {
+            // Authored terminal assets can lack an explicit schedule. Non-walk
+            // controls preserve the active entry gait; named walking gaits also
+            // provide a recoverable control witness. Unspecified walks still use
+            // the ordinary bounded scheduler, without inventing an incumbent.
+            let mut recovered = vec![];
+            for segment in source {
+                let (sprint, dash) = if segment["mode"] != "walk" {
+                    (true, false)
+                } else {
+                    match segment["gait"].as_str() {
+                        Some("run") => (false, false),
+                        Some("sprint") => (true, false),
+                        Some("dash") => (true, true),
+                        _ => return Ok(None),
+                    }
+                };
+                recovered.push(json!({"segments":[segment],"allowSprint":sprint,"allowDash":dash}));
+            }
+            recovered
+        };
+        let mut canonical = vec![];
+        for decision in &decisions {
+            let segments = decision["segments"]
+                .as_array()
+                .filter(|s| !s.is_empty())
+                .ok_or("Invalid route schedule segments")?;
+            for segment in segments {
+                let points = segment["points"]
+                    .as_array()
+                    .ok_or("Schedule segment requires points")?;
+                if points.len() < 2 {
+                    return Err("Schedule segment requires two points".into());
+                }
+                for p in points {
+                    point(p)?;
+                }
+                validate_times(segment, points.len())?;
+            }
+            canonical.extend(segments.clone());
+        }
+        if !same_trace(source, &canonical)? {
+            return Err("Route schedule changes the physical trace".into());
+        }
+        for decision in decisions {
+            let sprint = decision["allowSprint"]
+                .as_bool()
+                .ok_or("Invalid route schedule sprint control")?;
+            let dash = decision["allowDash"]
+                .as_bool()
+                .ok_or("Invalid route schedule dash control")?;
+            let block = decision["segments"].as_array().unwrap();
+            let Some(replayed) = schedule_block(&label, block, options, sprint, dash, boost_facts)?
+            else {
+                return Ok(None);
+            };
+            label = replayed;
+        }
+    }
+    Ok(Some(label))
+}
+
+fn same_trace(actual: &[Value], canonical: &[Value]) -> Result<bool, String> {
+    fn runs(segments: &[Value]) -> Result<Vec<(Value, Vec<Point>)>, String> {
+        let mut result: Vec<(Value, Vec<Point>)> = vec![];
+        for segment in segments {
+            let mut identity = segment.clone();
+            let points = segment["points"]
+                .as_array()
+                .ok_or("Segment requires points")?
+                .iter()
+                .map(point)
+                .collect::<Result<Vec<_>, _>>()?;
+            let fields = identity.as_object_mut().ok_or("Invalid segment")?;
+            fields.remove("gait");
+            if segment["mode"] == "walk" {
+                fields.remove("points");
+                fields.remove("times");
+                if let Some((previous, path)) = result.last_mut()
+                    && *previous == identity
+                {
+                    if distance(*path.last().unwrap(), points[0]) > 1e-6 {
+                        return Err("Discontinuous route schedule".into());
+                    }
+                    path.extend_from_slice(&points[1..]);
+                    continue;
+                }
+            }
+            result.push((identity, points));
+        }
+        Ok(result)
+    }
+    fn corners(points: Vec<Point>) -> Vec<Point> {
+        let mut result: Vec<Point> = vec![];
+        for point in points {
+            if result
+                .last()
+                .is_some_and(|&last| distance(last, point) <= 1e-9)
+            {
+                continue;
+            }
+            while result.len() >= 2 {
+                let a = result[result.len() - 2];
+                let b = result[result.len() - 1];
+                let length = distance(a, point);
+                let along = if length > 0. {
+                    (0..3)
+                        .map(|i| (b[i] - a[i]) * (point[i] - a[i]))
+                        .sum::<f64>()
+                        / (length * length)
+                } else {
+                    -1.
+                };
+                if !(0. ..=1.).contains(&along) || distance(lerp(a, point, along), b) > 1e-7 {
+                    break;
+                }
+                result.pop();
+            }
+            result.push(point);
+        }
+        result
+    }
+    let actual = runs(actual)?;
+    let canonical = runs(canonical)?;
+    if actual.len() != canonical.len() {
+        return Ok(false);
+    }
+    for ((identity, a), (other, b)) in actual.into_iter().zip(canonical) {
+        if identity != other {
+            return Ok(false);
+        }
+        let a = corners(a);
+        let b = corners(b);
+        if a.len() != b.len() || a.iter().zip(b).any(|(&p, q)| distance(p, q) > 1e-6) {
+            return Ok(false);
+        }
+    }
+    Ok(true)
 }
 
 fn same_state(a: &State, b: &State) -> bool {

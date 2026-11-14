@@ -96,6 +96,20 @@ fn number(v: &Value, key: &str, fallback: f64) -> f64 {
 fn finite(p: Vec3) -> bool {
     p.iter().all(|v| v.is_finite())
 }
+// Keep already supported feet exact: authored actions and walking successors
+// must meet without changing their execution witnesses. The shared physical
+// verifier accepts clearances between 5 and 10 mm, including numerical tolerance.
+// A surface input also authorizes exact navigation feet when raw collision has
+// no supporting face; the mesh is its supplied support contract.
+fn standing_height(height: f64, support: f64, mesh_support: bool) -> f64 {
+    if (mesh_support && (height - support).abs() <= 1e-6)
+        || (0.005 - 1e-6..=0.01 + 1e-6).contains(&(height - support))
+    {
+        height
+    } else {
+        support + 0.01
+    }
+}
 impl World {
     pub fn new(snapshot: Value) -> Result<Self, String> {
         let kind = snapshot
@@ -446,6 +460,19 @@ impl World {
         down: f64,
         radius: f64,
     ) -> Result<Option<GroundHit>, String> {
+        Ok(self
+            .ground_support(p, up, down, radius)?
+            .map(|(hit, _)| hit))
+    }
+    // Keep support provenance local. Supplied navigation can authorize mesh
+    // feet in surface inputs; physical snapshots still need raw static support.
+    fn ground_support(
+        &self,
+        p: Vec3,
+        up: f64,
+        down: f64,
+        radius: f64,
+    ) -> Result<Option<(GroundHit, bool)>, String> {
         self.require_coverage(p, p, radius)?;
         let base = self
             .collision
@@ -453,22 +480,26 @@ impl World {
         let overlay = self
             .support
             .ground(p, up, down, self.movement.max_slope, radius)?;
-        // Imported static navigation may be offset from collision. Only moving faces
-        // participate in this overlay; static physical support always comes from raw collision.
-        let overlay = overlay.filter(|h| {
-            self.surfaces[self.owners[h.triangle]]
+        let overlay = overlay.and_then(|hit| {
+            let moving = self.surfaces[self.owners[hit.triangle]]
                 .extra
-                .contains_key("supportDevice")
+                .contains_key("supportDevice");
+            let mesh_support = !moving && self.snapshot["kind"] == "surfaces" && base.is_none();
+            (moving || mesh_support).then_some((hit, mesh_support))
         });
         Ok(match (base, overlay) {
-            (None, b) => b,
-            (a, None) => a,
-            (Some(a), Some(b)) => Some(if radius > 0. {
-                if a.position[1] >= b.position[1] { a } else { b }
+            (None, hit) => hit,
+            (Some(hit), None) => Some((hit, false)),
+            (Some(a), Some((b, mesh))) => Some(if radius > 0. {
+                if a.position[1] >= b.position[1] {
+                    (a, false)
+                } else {
+                    (b, mesh)
+                }
             } else if (a.position[1] - p[1]).abs() <= (b.position[1] - p[1]).abs() {
-                a
+                (a, false)
             } else {
-                b
+                (b, mesh)
             }),
         })
     }
@@ -487,9 +518,11 @@ impl World {
     ) -> Result<Vec<Projection>, String> {
         ground::project(self, p, tolerance, interaction)
     }
-    /// Supported feet include a 1 cm clearance gap, matching the shared flight model.
+    /// Preserve feet already 5–10 mm above physical support, or on an authorized
+    /// surface mesh with no raw support. Other seeds receive 1 cm clearance.
+    /// Every accepted position still needs full-body clearance.
     pub fn standing_foot(&self, p: Vec3) -> Result<Option<Vec3>, String> {
-        let Some(h) = self.ground_at(
+        let Some((h, mesh_support)) = self.ground_support(
             p,
             self.movement.max_vertical,
             self.movement.max_vertical,
@@ -499,7 +532,7 @@ impl World {
             return Ok(None);
         };
         let mut foot = h.position;
-        foot[1] += 0.01;
+        foot[1] = standing_height(p[1], foot[1], mesh_support);
         if self
             .project_with_tolerance(foot, self.movement.profile.radius.max(0.02), None)?
             .is_empty()
@@ -519,9 +552,13 @@ impl World {
             .surfaces
             .iter()
             .any(|surface| surface.portals.is_some())
+            || self.snapshot["input"]["ground"]["options"]["portals"]
+                .as_array()
+                .is_some_and(|portals| !portals.is_empty())
         {
-            // A raw rebuild cannot recover author-supplied edge masks. Retain
-            // those constraints instead of turning a rejected walk into passage.
+            // A raw rebuild cannot recover authored edge masks or directed
+            // portals. Retain their mesh ownership instead of authorizing new
+            // passages or discarding an explicitly supplied transfer.
             return Self::new(self.snapshot.clone());
         }
         let mut v = self.snapshot.clone();

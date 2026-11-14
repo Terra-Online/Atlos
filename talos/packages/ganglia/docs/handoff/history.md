@@ -67,6 +67,78 @@ physical search generated about 7,457 attempts in 2.14 seconds and expanded
 not an accepted latency or speedup result. Prototype removal and full native
 acceptance remain pending real-route completion and independent verification.
 
+## Native route contract hardening and bounded planning, 2026-11-14
+
+The native host integration checkpoint is `16503fce`. Independent physical replay
+then exposed fixed-launch witnesses retaining character steering fields and
+fixed moving rides retaining expired character boosts. Launch witnesses now bind
+only pad authority; fixed device trajectories keep their authored geometry and
+clocks. Character boost lifetime still advances through them. Scene composition
+replays supplied controls from one continuous resource state, retains them as a
+feasible incumbent, and checks expiry before selecting the winner. Pickup clocks
+come from the retimed trace's first trigger intersection. Every motion consumes
+elapsed lifetime, walks split at expiry, and receipts reflect the completed trace.
+A later alternative error preserves an already completed route. Canonical feet
+no longer force a duplicate whole-query tail solve, while explicit ground ranges
+retain their forward projection pass.
+
+Support hardening preserves 5–10 mm physical feet and authoritative surface-only
+mesh feet without changing authored actions. Physical snapshots retain raw static
+support authority. Refinement preserves authored portal direction and masks.
+Known actions enforce declared support IDs, including matching non-nearest
+projections. Ordered waypoint tests use the original query height and continuous
+XZ cylinders of radius 1e-6 with the configured vertical tolerance. Generated
+action identities bind motion, witness and entry conditions, rather than local
+node order, and are deduplicated against the admitted catalog.
+
+Performance changes retain exact energy/recovery-delay continuation dominance.
+Edge spans compile once, ordinary label transitions omit playback/JSON allocation,
+and only the winning chain is replayed. Two resource-rich differential cases
+preserve full result JSON, including clocks, geometry, cost and truncation.
+Coarse transfer proposals use bounded spatial representatives. Stage 2 walking
+proposes every essential anchor plus at most eight sampled neighbors; stages 0
+and 1 retain their full anchor graphs. Omitted sample choices mark truncation.
+Ground repair validates all selected chords, repairs increased validated costs,
+uses generation-tagged dense arrays and shares cached traces with numeric lengths.
+Loaded body coverage filters proposals before proof; every retained chord still
+needs support, directed passage and capsule validation.
+
+Ground diagnostics do not prove a real-map speedup. A synthetic blocked-chord
+case changed 239 repairs/95.65 ms to four repairs/11.00 ms at identical length and
+point count. A matched supported map pair preserved length 60.16626729712284 and
+636 points but increased 233.82 ms to 731.55 ms before the final shared-trace
+representation change. An unavailable pair now returns conservative None after
+finite repair instead of throwing on an unloaded detour seed. This motivated
+reducing the number of sampled ground proposals, rather than claiming a faster
+individual path search.
+
+The matched one-query TS baseline uses map02, resource-relocation workload offset
+10, one worker/lane, one round and no catalog training. It passes independent
+physical replay at cost 7.68412422083312, query time 67,143.217 ms and end-to-end
+73,353.018 ms (`/tmp/ganglia-ts-native-comparison.json`). Native diagnostic reports
+v4 and v5 still time out at 300,000 ms; comparison correctly withholds speedup.
+V5 performed 66 local action searches before the watchdog. A captured first window
+contains 202,311 surfaces, 514,520 derived portals and 4,167,671 collision triangles.
+After ranked actions, the isolated native core takes about 3,033 ms and generates
+1,845 actions but remains unavailable, with no descent larger than 1.28 m.
+
+A bounded sample of 600 corridor face centers found 596 supported clear feet;
+568 (95.3%) had nav offsets above 2 cm, all within the 0.5 m contract. Median was
+7.94 cm and maximum 19.17 cm. Generated source/landing admission now uses the
+contract tolerance and validates original physical feet. Candidate ordering
+excludes zero displacement, applies necessary free-flight reach bounds, and
+retains run-off/collection exceptions. A separate valid TS diagnostic flight
+falls 42.59 m; Rust World accepts its default control and four nearby takeoffs,
+with trajectory agreement around 3.2e-13 m. That diagnostic reference is never
+used by production solving. Boundary and height-stratified proposal coverage
+remain open work, so this checkpoint makes no complete-rewrite claim.
+
+Validation of this hardened checkpoint: 79 Rust unit tests plus two authored-action
+end-to-end tests pass; eleven N-API fixtures pass, including common physical replay
+and abort/close lifecycle; Clippy with warnings denied, N-API release build,
+TypeScript checking, lint, formatting and diff checks pass. The retained 438-test
+suite passed during host integration and its implementation is unchanged here.
+
 ## Atlos base integration, 2026-11-14
 
 Merged `feat/3d-preview` at `162ca793` into the editable workspace integration.

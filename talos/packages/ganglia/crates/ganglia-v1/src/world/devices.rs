@@ -246,8 +246,12 @@ impl World {
                         };
                         m.max_horizontal_speed =
                             (end[0] - start[0]).hypot(end[2] - start[2]) / time + 1e-7;
+                        // Fixed pads supply their own velocity, independent of
+                        // character air controls retained in the movement facts.
                         m.start_horizontal_speed = None;
                         m.air_overspeed_deceleration = None;
+                        m.air_acceleration = None;
+                        m.air_deceleration = None;
                         if let Some(mut c) =
                             self.flight_with_control(start, end, &m, &FlightControl::default())?
                         {
