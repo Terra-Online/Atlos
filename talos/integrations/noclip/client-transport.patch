@@ -1,10 +1,10 @@
 diff --git a/packages/viewer/src/package/package-source.ts b/packages/viewer/src/package/package-source.ts
-index d01cf7a0..97b0587b 100644
+index a89fa91c..d80af09b 100644
 --- a/packages/viewer/src/package/package-source.ts
 +++ b/packages/viewer/src/package/package-source.ts
-@@ -54,10 +54,10 @@ const checkSize = (path: string, actual: number, expected: number): void => {
-  * @param baseUrl the package directory's URL; a trailing slash is added if missing
-  * @returns a source issuing one HTTP range request per read
+@@ -145,10 +145,10 @@ export const parseByteRanges = (body: Uint8Array<ArrayBuffer>, boundary: string)
+  * @returns a source issuing one HTTP range request per read, or per several where the server answers
+  *   multi-range requests
   */
 -export const httpSource = (baseUrl: string): PackageSource => {
 +export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): PackageSource => {

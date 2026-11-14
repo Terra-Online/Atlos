@@ -1,5 +1,5 @@
 diff --git a/packages/extractor/package.json b/packages/extractor/package.json
-index fa7c03a9..2d8701e4 100644
+index fa7c03a9..d3590cc4 100644
 --- a/packages/extractor/package.json
 +++ b/packages/extractor/package.json
 @@ -13,6 +13,7 @@
@@ -12000,7 +12000,7 @@ index 00000000..5764aae7
 +	assert.equal(deviceConnections(input, setup([floor('floor', 0, 0)])).boosts.length, 0);
 +});
 diff --git a/packages/extractor/src/game/world/world-index.ts b/packages/extractor/src/game/world/world-index.ts
-index 34a06000..58322140 100644
+index 3449a3ef..4688a99a 100644
 --- a/packages/extractor/src/game/world/world-index.ts
 +++ b/packages/extractor/src/game/world/world-index.ts
 @@ -103,7 +103,7 @@ export class WorldIndex {
@@ -12060,15 +12060,15 @@ index 34a06000..58322140 100644
  
  	/**
 diff --git a/packages/extractor/src/pack/convert/assets.ts b/packages/extractor/src/pack/convert/assets.ts
-index a444b124..a6ee6c2c 100644
+index 12c05220..15d7881a 100644
 --- a/packages/extractor/src/pack/convert/assets.ts
 +++ b/packages/extractor/src/pack/convert/assets.ts
-@@ -486,7 +486,7 @@ const describeSurfaces = (
- 			unsupported[key] = (unsupported[key] ?? 0) + 1;
- 			materials.debug[id].unsupported = surface.reason;
+@@ -509,7 +509,7 @@ const describeSurfaces = (
+ 				motion = moving;
+ 			}
  		}
--		return { status: 'ready', cull: material.cull, surface };
-+		return { status: 'ready', cull: material.cull, renderQueue: material.renderQueue, surface };
+-		return { status: 'ready', cull: material.cull, surface, gaps, motion };
++		return { status: 'ready', cull: material.cull, renderQueue: material.renderQueue, surface, gaps, motion };
  	});
  	return { entries, unsupported };
  };
@@ -12128,3 +12128,16 @@ index 00000000..4ca43fc5
 +	process.exit(0);
 +});
 +send({ type: 'ready', version: 1 });
+diff --git a/packages/extractor/src/commands/oem-views.ts b/packages/extractor/src/commands/oem-views.ts
+--- a/packages/extractor/src/commands/oem-views.ts
++++ b/packages/extractor/src/commands/oem-views.ts
+@@ -162,6 +162,9 @@
+ 		};
+ 		const source: PackageSource = {
+ 			label: scene,
++			readRanges(path, ranges, signal) {
++				return Promise.all(ranges.map(range => source.readRange(path, range, signal)));
++			},
+ 			async readFile(path) {
+ 				return Uint8Array.from(await readFile(join(root, entry.path, path)));
+ 			},

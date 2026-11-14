@@ -1887,7 +1887,7 @@ index 00000000..5dbe61ba
 +	return { x, z, vertices: points, polygons: faces };
 +};
 diff --git a/packages/package-format/src/materials.ts b/packages/package-format/src/materials.ts
-index c2f8bd38..9c1bb0c6 100644
+index 98be5e5e..a7447ce5 100644
 --- a/packages/package-format/src/materials.ts
 +++ b/packages/package-format/src/materials.ts
 @@ -17,6 +17,8 @@ export interface ReadyMaterial {
@@ -1898,7 +1898,7 @@ index c2f8bd38..9c1bb0c6 100644
 +	renderQueue?: number;
  	/** what the material draws, interpreted by the extractor */
  	surface: MaterialSurface;
- }
+ 	/**
 diff --git a/packages/package-format/src/navigation.test.ts b/packages/package-format/src/navigation.test.ts
 new file mode 100644
 index 00000000..b275f914

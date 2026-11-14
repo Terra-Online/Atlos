@@ -1,8 +1,8 @@
 diff --git a/packages/viewer/src/package/package-source.ts b/packages/viewer/src/package/package-source.ts
-index 97b0587b..8be9dd23 100644
+index d80af09b..7842e2d8 100644
 --- a/packages/viewer/src/package/package-source.ts
 +++ b/packages/viewer/src/package/package-source.ts
-@@ -29,6 +29,8 @@ export interface ByteRange {
+@@ -44,6 +44,8 @@ export interface ByteRange {
  	length: number;
  	/** the whole file's size in the opened package's manifest */
  	fileSize: number;
@@ -11,9 +11,9 @@ index 97b0587b..8be9dd23 100644
  }
  
  /**
-@@ -54,10 +56,10 @@ const checkSize = (path: string, actual: number, expected: number): void => {
-  * @param baseUrl the package directory's URL; a trailing slash is added if missing
-  * @returns a source issuing one HTTP range request per read
+@@ -145,10 +147,10 @@ export const parseByteRanges = (body: Uint8Array<ArrayBuffer>, boundary: string)
+  * @returns a source issuing one HTTP range request per read, or per several where the server answers
+  *   multi-range requests
   */
 -export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): PackageSource => {
 +export const httpSource = (baseUrl: string, fetcher: (url:URL,init:RequestInit,range?:ByteRange)=>Promise<Response> = fetch): PackageSource => {
@@ -25,13 +25,28 @@ index 97b0587b..8be9dd23 100644
  		if (!response.ok) {
  			throw new Error(`${path}: HTTP ${response.status}`);
  		}
-@@ -69,11 +71,12 @@ export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): Pack
- 			const response = await fetchOk(path, { signal });
- 			return new Uint8Array(await response.arrayBuffer());
+@@ -172,12 +174,12 @@ export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): Pack
+ 			if (multiRange === 'refused' || ranges.length < 2) {
+ 				return single();
+ 			}
+-			const response = await fetch(new URL(path, new URL(base, location.href)), {
++			const response = await fetcher(new URL(path, new URL(base, location.href)), {
+ 				signal,
+ 				headers: {
+ 					range: `bytes=${ranges.map(({ offset, length }) => `${offset}-${offset + length - 1}`).join(',')}`,
+ 				},
+-			}).catch((err: unknown) => {
++			}, { offset: ranges[0].offset, length: ranges.reduce((sum, r) => sum + r.length, 0), fileSize: ranges[0].fileSize, content: ranges.flatMap(r => r.content ?? []) }).catch((err: unknown) => {
+ 				// from a server that has answered in parts, a failure is the network's
+ 				if (multiRange === 'answered' || signal?.aborted === true) {
+ 					throw err;
+@@ -216,11 +218,12 @@ export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): Pack
+ 				return part.bytes.slice(offset - part.offset, offset - part.offset + length);
+ 			});
  		},
 -		async readRange(path, { offset, length, fileSize }, signal) {
 +		async readRange(path, range, signal) {
-+			const {offset,length,fileSize}=range;
++			const { offset, length, fileSize } = range;
  			const response = await fetchOk(path, {
  				signal,
  				headers: { range: `bytes=${offset}-${offset + length - 1}` },
@@ -41,15 +56,54 @@ index 97b0587b..8be9dd23 100644
  			const partial = response.status === 206;
  			// `bytes <first>-<last>/<size>`; the size may be `*` (unknown)
 diff --git a/packages/viewer/src/streaming/stream-manager.ts b/packages/viewer/src/streaming/stream-manager.ts
-index 99229533..f4247c03 100644
+index 4e6a0616..17aaf2a1 100644
 --- a/packages/viewer/src/streaming/stream-manager.ts
 +++ b/packages/viewer/src/streaming/stream-manager.ts
-@@ -499,7 +499,7 @@ export class StreamManager {
+@@ -542,7 +542,7 @@ export class StreamManager {
  		this.#package.source
- 			.readRange(
+ 			.readRanges(
  				shard.path,
--				{ offset: start, length: end - start, fileSize: shard.archiveSize },
-+				{ offset: start, length: end - start, fileSize: shard.archiveSize, content: members.map(item=>{const r=this.#shardRange(item.blob);return {kind:RESIDENT_KINDS[item.kind]??'other',bytes:r.end-r.start};}) },
+-				reads.map(({ start, end }) => ({ offset: start, length: end - start, fileSize: shard.archiveSize })),
++				reads.map(({ start, end, members }) => ({ offset: start, length: end - start, fileSize: shard.archiveSize, content: members.map(item => { const r = this.#shardRange(item.blob); return { kind: RESIDENT_KINDS[item.kind] ?? 'other', bytes: r.end - r.start }; }) })),
  				request.abort.signal,
  			)
- 			.then((bytes) => {
+ 			.then((parts) => {
+diff --git a/packages/viewer/src/package/resource-metadata.test.ts b/packages/viewer/src/package/resource-metadata.test.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/viewer/src/package/resource-metadata.test.ts
+@@ -0,0 +1,34 @@
++import assert from 'node:assert/strict';
++import { it } from 'node:test';
++
++import { httpSource, type ByteRange } from './package-source.ts';
++
++it('routes multipart reads through the host transport with all semantic bytes', async () => {
++	const previous = Object.getOwnPropertyDescriptor(globalThis, 'location');
++	Object.defineProperty(globalThis, 'location', { configurable: true, value: { href: 'https://example.test/' } });
++	try {
++		const calls: { header: string | null; range: ByteRange | undefined }[] = [];
++		const source = httpSource('https://example.test/packages/', async (_url, init, range) => {
++			calls.push({ header: new Headers(init.headers).get('range'), range });
++			return new Response(
++				'--parts\r\nContent-Range: bytes 0-1/8\r\n\r\nab\r\n' +
++				'--parts\r\nContent-Range: bytes 6-7/8\r\n\r\ngh\r\n--parts--\r\n',
++				{ status: 206, headers: { 'content-type': 'multipart/byteranges; boundary=parts' } },
++			);
++		});
++		const parts = await source.readRanges('shard.czar', [
++			{ offset: 0, length: 2, fileSize: 8, content: [{ kind: 'geometry', bytes: 2 }] },
++			{ offset: 6, length: 2, fileSize: 8, content: [{ kind: 'texture', bytes: 2 }] },
++		]);
++		assert.deepEqual(parts.map(bytes => new TextDecoder().decode(bytes)), ['ab', 'gh']);
++		assert.equal(calls.length, 1);
++		assert.equal(calls[0].header, 'bytes=0-1,6-7');
++		assert.deepEqual(calls[0].range?.content, [
++			{ kind: 'geometry', bytes: 2 },
++			{ kind: 'texture', bytes: 2 },
++		]);
++	} finally {
++		if (previous) Object.defineProperty(globalThis, 'location', previous);
++		else Reflect.deleteProperty(globalThis, 'location');
++	}
++});

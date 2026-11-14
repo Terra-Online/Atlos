@@ -347,6 +347,25 @@ gate establishes completion/physical validity within the SLO, not paired route
 cost or aggregate speedup. One round leaves repeatability unmeasured. Complete
 50-request local and 14-request stress acceptance remains pending.
 
+## Noclip v114 repack, 2026-11-14
+
+The user authorized the seven-scene rollout to upstream `1a8dfb80`, format v114.
+The maintained integration preserves local renderer/photography and physical-input
+contracts. Multipart fetches retain the host transport and semantic-byte metadata;
+offline decoding adopts the worker's row bounds, and the photography look wrapper
+retains upstream material animation. Transform-only clip fixtures supply an empty
+material sampler required by the new ClipMotion contract. No solver source or
+production route semantics changed.
+
+Seven full scene packages pass manifest and archive-size checks. The regenerated
+OEM dataset contains 11,608 points; its framing uses the same open-traversal state
+profile as World. Point-view generation and catalog rollout are separate from
+retained physical-route evidence. World application/worker typechecks, 56 UI tests
+and eight routing/network tests pass. Generated tests pass 977/983, including the
+multipart transport regression. The six failures are identical to the v106 patched
+baseline run against the same current Ganglia workspace, with all assertions
+retained. This source migration makes no route performance or acceptance claim.
+
 ## Noclip v106 integration, 2026-11-14
 
 Advanced the maintained upstream archive from `978acf5b` to
