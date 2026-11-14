@@ -1,5 +1,52 @@
 # Route solver history and validation evidence
 
+## Historical TS recovery and benchmark compatibility, 2026-11-14
+
+The user stopped Rust optimization and requested a historical pure-TS solver with
+a recent usable benchmark framework. No native solve remains active. The pushed
+native checkpoint is `d3adcfce`; its full-population attempt was stopped after three
+scored attempts (two native complete traces and one 300-second timeout), before
+batch physical evaluation. Its journal remains under
+`.local/research/rust-optimized-full50-d3adcfce/`.
+
+History identifies the earlier regression boundary at the independent-physical
+milestone (`48e6e791`, integrated as `f3f58f07`). That change also inserted
+`executeRoute` into V1 candidate emission, built a physical world inside solving,
+and rejected candidates after navigation search without feeding the physical
+rejection back into that search. The historical record already documents lost
+TS solutions and long searches at this boundary, before the Rust rewrite.
+
+Restoring only `physical/prepared.ts` from `d35e4997` recovers the failing upper
+request in pure TS. Ten preparation requests all complete and reproduce the
+historical catalog size of 239 actions. The current strict benchmark still rejects
+the returned route because its endpoint differs by approximately 0.0183 metres in
+XZ, while the new route-contract check permits only 1e-6 metres. The two warmups
+are rejected by the newer supported-walk check. Recovered search completion does
+not establish acceptance under that different physical representation contract.
+
+The compatibility replay uses the `4ec7b65f` completion/cost/repeatability core and
+current cooperative-timeout/journal worker pool. It preserves all fifty original
+map02 queries, ten training requests and two disjoint warmups, runs two measured
+rounds and loads no Rust kernel. The exploratory replay completes 100/100 attempts,
+with identical outcomes and truncation across rounds and no timeouts. Mean serial
+service time is 1345.458 ms; batch time is 134.577 s, readiness is 79.331 s and
+measured end-to-end time is 213.924 s. Against the retained `aa985494` full-fifty
+report, modeled-cost geometric mean/worst ratios are 0.952314/1.039298. Adapter
+bindings differ, so the comparison is explicitly historical. The separate modern
+physical audit rejects 25 walks and 25 endpoints. Its result remains visible.
+
+The exploratory driver saved the complete measurement before its post-run RPC
+audit failed because JSON-reloaded results lacked worker ownership. The audit was
+completed independently with `loadScene.verify` over the same journal, without
+running a solver. The maintained entry point uses this independent post-shutdown
+method. Artifacts are `full.json`, `full.events.jsonl`, `physical-audit.json`,
+`full.ts`, and `run-4ec7b65f.ts` under `.local/research/ts-history-compat/`.
+The maintained reproduction is `scripts/benchmark-history.ts` with the frozen
+`scripts/history-runner.ts`; the ordinary physical benchmark is unchanged. The two cache/continuation tests
+restore their original navigation-coordinate assertions: the 5 mm execution lift
+was introduced by the removed candidate postprocessor in `f3f58f07`. Package
+formatting, lint, typecheck and all 450 TS tests pass for this restoration.
+
 ## Rust prepared-search optimization, 2026-11-14
 
 Profiling attributed trained latency to weak global-speed queue bounds, repeated

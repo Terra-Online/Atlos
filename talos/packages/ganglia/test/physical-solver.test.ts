@@ -130,8 +130,9 @@ test('physical jump planning continues its raw ground solve without repeating th
     assert.equal(first.route.status, 'complete');
     if (first.route.status === 'complete') {
       assert.equal(first.route.arrivalCost, 3);
-      assert.deepEqual(first.route.points[0], [1, 0.005, 1]);
-      assert.deepEqual(first.route.points.at(-1), [9, 0.005, 1]);
+      // V1 returns navigation-space candidates; physical execution is evaluated separately.
+      assert.deepEqual(first.route.points[0], query.starts[0].position);
+      assert.deepEqual(first.route.points.at(-1), query.goal);
       assert.ok(first.route.cost > 3);
     }
     assert.equal(calls, 1);

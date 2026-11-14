@@ -1,5 +1,34 @@
 # Route solver handoff
 
+## Historical pure-TS compatibility baseline, 2026-11-14
+
+The active task restores a usable historical TS solver/benchmark combination.
+Rust performance work is paused. The unfinished native-admission experiment is
+preserved in the local stash named `paused-native-admission-investigation`.
+
+`src/v1/solver/physical/prepared.ts` is restored to `d35e4997`, before the
+physical-execution adapter was inserted into candidate emission. Existing witness
+metadata and the independent physical verifier remain available. TS returns the
+historical navigation-space candidate; evaluating that candidate is external to
+search. No Rust prototype preload or N-API solver is used by this baseline.
+
+`pnpm benchmark:history --output <report.json>` uses the frozen `4ec7b65f`
+measurement core with the current worker lifecycle. It always trains ten map02
+requests, freezes the catalog, warms two disjoint requests, and scores all fifty
+normal requests twice in one worker/lane. Training retains the historical
+8,000-candidate/64-link budget. `--reference <report.json>` optionally compares
+modeled costs for identical requests and records input/adapter binding matches.
+The historical gate covers reported completion, modeled cost, SLO and repeatability.
+A separate post-shutdown physical audit replays the saved first-round submissions
+against provider-normalized facts. Both outcomes are explicit in the report.
+
+The exploratory full replay completes 100/100 attempts with stable outcomes and
+no timeouts in 213.924 seconds including preparation. Its historical gate passes;
+its separate physical audit rejects all fifty distinct routes: twenty-five for
+unsupported/obstructed walks and twenty-five for endpoint mismatch. These are
+separate acceptance contracts. The measured input and sources are retained in
+`.local/research/ts-history-compat/`; final entry-point validation remains pending.
+
 ## Benchmark request lifecycle
 
 The worker pool owns cooperative cancellation and prepared-state restoration.
