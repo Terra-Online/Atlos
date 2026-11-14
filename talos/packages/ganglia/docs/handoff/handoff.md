@@ -1,5 +1,31 @@
 # Route solver handoff
 
+## Exact-flight and boundary ownership diagnostic, 2026-11-15
+
+Replayed saved TS jump witnesses from lower-floor cases 17/18/19 directly against
+Rust World using the captured normalized physical window. All four TS jumps are
+accepted both by native generation at their exact endpoints and native witness
+replay. Most nearest native sampled takeoffs fail the corresponding exact landing.
+This rules out a general motion-model inability for those successful witnesses.
+The diagnostic tool/artifacts are `.local/research/roadmap-inspect/src/bin/flights.rs`
+and `/tmp/ganglia-native-ts-flight-inspection.log`.
+
+A local boundary inventory finds navigation boundaries only 0.14--0.56 m from
+those TS takeoffs, and raw support boundaries 0.045--0.44 m away. The geometry
+exists; bounded representative selection loses its useful neighborhoods. Evidence:
+`/tmp/ganglia-native-ts-flight-boundaries.log`. A nearest-approach plus route-directed
+representative trial retained valid routes but did not resolve 17/18 cost gates;
+removed (`native-region-exits-result.json`). Production source remains `6571e5c`.
+
+The next migration needs TS's separation of geometric candidate pool and final
+resource graph. Native currently inserts sampled proposals directly into the graph
+and gives each source a small flight quota; TS keeps finer seeds/pairs independently
+and admits proved actions. Increasing graph samples would inflate all-pairs walking,
+while rearranging the existing small sample graph cannot recover absent witnesses.
+Implement a bounded separate candidate pool and admit only successful action
+endpoints before retrying source or landing ranking. The objective remains unmet;
+no remote push is authorized.
+
 ## Continuous landing diagnostics, 2026-11-15
 
 Compared TS `motion/landings.ts` with native angular landing proposals. TS emits
