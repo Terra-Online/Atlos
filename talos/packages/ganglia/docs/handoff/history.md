@@ -1,5 +1,41 @@
 # Route solver history and validation evidence
 
+## Noclip v106 integration, 2026-11-14
+
+Advanced the maintained upstream archive from `978acf5b` to
+`ff48e1a715039b76b60bd30f6ad0c8a0cc978f04`, six upstream commits. The changes add
+gameplay water-volume inspection, lit-decal ordering beneath water, sludge-erosion
+decals and subsurface dithered water materials. Package format advances from v104
+to v106. All nine maintained patches apply without conflicts; the normalized
+physical-input accessor and Solver boundaries are unchanged. Frozen source,
+adapter and dataset identities still govern historical benchmark comparisons.
+
+Frozen-lockfile installation, World application/worker and extractor typechecks,
+56 World UI tests, eight World routing/network tests and the noclip preparation
+regression pass. All 181 generated package test files run: 949/955 tests pass.
+The six failures are in `player-route.test.ts`; rerunning the old patched upstream
+with the same current workspace bindings reproduces all six. Four assert terrain
+height instead of the current 5 mm physical foot clearance; the others concern a
+moving-platform target and a jump-down cost expectation. These remain existing
+TS integration gaps, with assertions retained. No solver changes or new solver
+speedup measurements belong to this update.
+
+World source-only build passes with the local validation catalog URL. The normal
+build requires missing private font shards, so production packaging is not
+certified. A fresh complete map02 pack produces v106 generation
+`3e108bab4960540a072569ce58e6beaf`, 251 archives and 14,319,007,472 bytes.
+The manifest, material-table decode and archive-size checks pass. The pack reports
+one unresolved material hash and one unresolved geometry hash in StringPathHash;
+it is not an asset-completeness certification. `water volumes map02` reads 61
+volumes with no unsupported records. Evidence is retained under
+`.local/validation/noclip-ff48e1a7/` and packages under
+`.local/data/noclip-ff48e1a7/map02/`.
+
+No production catalog is switched. Remaining data rollout requires repacking all
+seven OEM scenes, exporting companion/navigation metadata, rebuilding point views
+and passing `oem-check`, followed by GPU framing/navigation/photography checks.
+Existing v104 release bytes retain their original format and bindings.
+
 ## Matched final-source native query, 2026-11-14
 
 Commit `102e323c` completes the matched lower-floor-6 request with independent

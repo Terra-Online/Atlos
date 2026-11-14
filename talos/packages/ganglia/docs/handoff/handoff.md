@@ -178,9 +178,14 @@ scope.
 The `feat/3d-preview` integration at `162ca793` uses indexed open-traversal
 state picks for offline point framing and validation, matching World's default
 visibility. Moving-platform decode transfers and initial-pose framing are
-maintained in the renderer patch. Noclip remains pinned to `978acf5`, which is
-newer than that base branch's pin; the solver and World routing source are
-unchanged by this merge.
+maintained in the renderer patch. Noclip is now pinned to `ff48e1a7` (package
+format v106). All nine integration patches apply unchanged, including the raw
+normalized physical-input accessor. Existing v104 packages require repacking and
+fresh companion/navigation/view bindings before changing the deployed catalog.
+The local v106 map02 package passes manifest and 251-archive inventory checks,
+including non-core archive sizes;
+the complete seven-scene OEM release and GPU visual acceptance remain pending.
+Solver and World routing source are unchanged by this upstream update.
 
 ## Shared TypeScript model and evaluation, 2026-11-14
 
