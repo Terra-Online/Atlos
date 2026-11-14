@@ -1,5 +1,54 @@
 # Route solver history and validation evidence
 
+## Native physical contracts and scene continuation, 2026-11-14
+
+The broad failure at `a0796a09` exposes two walking defects. Native radius-aware
+standing support can bridge a raw crack that directed imported navigation also
+spans. Physical walking now additionally unions eligible raw centerline support
+intervals. A durable N-API regression with a 0.1 m raw gap and continuous nav is
+red before this fix and green afterward; common endpoints stand, while common
+walking rejects the gap. Separately, resource cuts can interpolate feet below
+the standing clearance range. A continuous lower clearance sweep and a common
+supporting-face upper bound now certify retained chords; failing chords refine
+before scheduling. The captured source chord passes 514 arbitrary common subcut
+checks. Supplied valid endpoints and authored actions remain unchanged.
+
+World hardening materializes default following bodies, validates supported box
+placements jointly, replaces selected default poses and retains raw static facts.
+Source exclusions remain separate from generated walls. Physical moving support
+uses eligible source winding before hit reduction. Fixed-pad direct height uses
+canonical landing feet. Three durable common replay fixtures cover default box
+collision/roof support, moving support under higher imported nav and a pad whose
+height is determined by aim clearance. Earlier device fixtures remain intact.
+
+Search now replays authority-bound generated catalog witnesses before using
+generated nav tolerance. Authored IDs keep their endpoint contract. Per-arrival
+continuation carries stamina, gait, delay, dash and boost state, including sparse
+boost facts and expired pickup identity. Engine supplies this state from the
+selected recomposed prefix, retains following facts across sparse windows,
+deduplicates placements and checks earlier pieces under new placements. Final
+goals use original query geometry; terminal approaches retain bounded alternatives
+and useful partials before coarse prefix planning. Host cache recovery is committed
+as `3824b16`; its regression fails with a native cache miss on the old host and
+passes after clearing residency on errors.
+
+Consolidated validation passes 106 Rust unit tests, two authored-action tests,
+eighteen N-API fixtures plus the three new device regressions, release N-API build,
+all-target Clippy with warnings denied, TypeScript checking, lint, formatting and
+diff checks. The former following-search fixture supplied `geometryKind:convex`,
+an unsupported `movable` assumption and noncanonical corner order. Common
+placement rejects those facts; it now supplies a canonical box and supported
+assumption while retaining the reachability and placement assertions.
+
+The post-fix upper-floor diagnostic does not complete after five local stages and
+is stopped. A one-second stack sample, `/tmp/ganglia-upper-contract.sample`, puts
+740 of 741 main-stack samples under Search geometry paths, mostly LazySP ground
+repair. Its log is `/tmp/ganglia-native-upper-contract-debug.log`; the original
+invalid trace is retained as `/tmp/ganglia-native-upper-before-contract-result.json`.
+No runtime or speedup claim follows. Direct physical-failure feedback and bounded
+raw-boundary discovery are subsequent work. Earlier-flight support and adaptive
+witness replay after a later placement also remain under review.
+
 ## Native boundary discovery and supported walking, 2026-11-14
 
 The subsequent broader replay at committed `a0796a09` retains that source digest

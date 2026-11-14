@@ -21,6 +21,13 @@
 //!   resume only when a load has settled. The host never invokes a TS solver.
 //! * An effect may include `partial:<RouteResult>` for candidate publication.
 //!   A partial has a physically verified target approach but no requested start.
+//!   Valid terminal approaches are retained before coarse planning; alternatives
+//!   and available-arrival trials share the query's candidate budget.
+//! * Internal window arrivals carry `continuation:{resource,boost?,usedBoost?}`.
+//!   Resource fields match Search's exact stamina/gait/dash continuation. Active
+//!   boosts include immutable trigger facts for sparse windows that omit them.
+//!   Completed results expose continuation from the selected recomposed trace.
+//!   Following bindings likewise persist per query without changing cached Worlds.
 //!
 //! Only one query may be in flight per Engine. Batch lanes own separate engines.
 //! `cancel()` completes a suspended query; `close()` is idempotent and releases
@@ -72,11 +79,13 @@ pub struct Engine {
 struct Query {
     original: Value,
     terminal: Option<Value>,
+    terminals: VecDeque<Terminal>,
     awaiting_terminals: bool,
     pending: Option<u64>,
     partial: Option<Value>,
     incumbent: Option<Value>,
     boost_facts: BTreeMap<String, Value>,
+    following_facts: BTreeMap<String, Value>,
     excluded_arrivals: HashSet<String>,
     excluded_edges: HashSet<String>,
     attempt: usize,
@@ -88,6 +97,12 @@ struct Query {
     // reject an otherwise usable global proposal.
     tail: bool,
     tail_covers_start: bool,
+}
+
+struct Terminal {
+    asset: Option<Value>,
+    excluded_arrivals: HashSet<String>,
+    excluded_edges: HashSet<String>,
 }
 
 struct Window {
@@ -103,6 +118,8 @@ struct Window {
     connections: Vec<Value>,
     failures: HashSet<String>,
     waypoint: usize,
+    continuation: Option<Value>,
+    proofs: Vec<(Arc<World>, Value)>,
 }
 
 impl Engine {
@@ -229,14 +246,32 @@ impl Engine {
             return Ok(json!({"type":"complete","result":result}));
         }
         let airborne = query["interaction"]["airborne"] == true;
+        let mut boost_facts = BTreeMap::new();
+        for arrival in query["starts"].as_array().unwrap() {
+            let active = &arrival["continuation"]["boost"];
+            if active["position"].is_array() && active["interaction"].is_object() {
+                let fact: crate::model::Boost = serde_json::from_value(active.clone())
+                    .map_err(|e| format!("Invalid carried boost: {e}"))?;
+                let value = serde_json::to_value(&fact).map_err(|e| e.to_string())?;
+                if boost_facts
+                    .get(&fact.effect.id)
+                    .is_some_and(|previous| *previous != value)
+                {
+                    return Err("Conflicting carried boost facts".into());
+                }
+                boost_facts.insert(fact.effect.id, value);
+            }
+        }
         self.query = Some(Query {
             original: query,
             terminal: None,
+            terminals: VecDeque::new(),
             awaiting_terminals: airborne,
             pending: None,
             partial: None,
             incumbent: None,
-            boost_facts: BTreeMap::new(),
+            boost_facts,
+            following_facts: BTreeMap::new(),
             excluded_arrivals: HashSet::new(),
             excluded_edges: HashSet::new(),
             attempt: 0,
@@ -309,32 +344,69 @@ impl Engine {
             if let Some(message) = response["error"].as_str() {
                 return Ok(self.finish(message, true));
             }
-            let mut best = f64::INFINITY;
-            for terminal in response["terminals"].as_array().unwrap() {
+            let mut assets = vec![];
+            for (order, terminal) in response["terminals"].as_array().unwrap().iter().enumerate() {
                 let route = &terminal["route"];
                 if !complete(route) {
                     continue;
                 }
-                let entry = route_points(route)?
-                    .first()
-                    .copied()
-                    .ok_or("Empty terminal route")?;
+                let points = route_points(route)?;
+                let endpoint = *points.last().unwrap();
+                if crate::search::hit(
+                    endpoint,
+                    endpoint,
+                    point(&q.original["goal"])?,
+                    &q.original["interaction"],
+                )
+                .is_none()
+                {
+                    continue;
+                }
+                let entry = points[0];
                 let estimate = q.original["starts"]
                     .as_array()
                     .unwrap()
                     .iter()
                     .filter(|a| a["state"] == "available")
-                    .filter_map(|a| {
-                        point(&a["position"])
-                            .ok()
-                            .map(|p| number(a, "cost", 0.) + distance(p, entry) / speed)
+                    .map(|a| {
+                        number(a, "cost", 0.)
+                            + distance(point(&a["position"]).unwrap(), entry) / speed
                     })
                     .fold(f64::INFINITY, f64::min)
                     + number(route, "cost", 0.);
-                if estimate < best {
-                    best = estimate;
-                    q.terminal = Some(terminal.clone());
-                }
+                assets.push((estimate, order, terminal.clone()));
+            }
+            assets.sort_by(|a, b| a.0.total_cmp(&b.0).then_with(|| a.1.cmp(&b.1)));
+            let limit = number(&self.config, "maxAttempts", 6.) as usize;
+            q.truncated |= assets.len() > limit;
+            assets.truncate(limit);
+            // A verified terminal remains useful even when no global prefix can
+            // be proposed. Keep it before any coarse-planning early return.
+            if let Some((_, _, terminal)) = assets.first() {
+                q.partial = Some(json!({"route":terminal["route"],"connections":[],
+                    "supportBoxes":terminal["supportBoxes"].as_array().cloned().unwrap_or_default(),
+                    "partial":true,"diagnostics":{"truncated":q.truncated,"candidateAttempts":0}}));
+            }
+            for (_, _, terminal) in assets {
+                q.terminals.push_back(Terminal {
+                    asset: Some(terminal),
+                    excluded_arrivals: HashSet::new(),
+                    excluded_edges: HashSet::new(),
+                });
+            }
+            // Authored approaches do not exclude a naturally discovered direct
+            // approach. All terminal/arrival trials share maxAttempts.
+            if q.terminals.len() < limit {
+                q.terminals.push_back(Terminal {
+                    asset: None,
+                    excluded_arrivals: HashSet::new(),
+                    excluded_edges: HashSet::new(),
+                });
+            } else {
+                q.truncated = true;
+            }
+            if let Some(terminal) = q.terminals.pop_front() {
+                q.terminal = terminal.asset;
             }
             q.awaiting_terminals = false;
         } else if let Some(error) = response["error"].as_str() {
@@ -514,6 +586,9 @@ impl Engine {
                     .collect::<Vec<_>>();
                 if !starts.iter().any(|a| a["state"] == "available") {
                     let reason = q.last_reason.clone();
+                    if self.next_terminal(false) {
+                        continue;
+                    }
                     return Ok(self.finish(&reason, false));
                 }
                 q.attempt += 1;
@@ -546,6 +621,9 @@ impl Engine {
                     }
                 }
                 let Some(proposal) = proposal else {
+                    if self.next_terminal(false) {
+                        continue;
+                    }
                     return Ok(self.finish("no-global-candidate", false));
                 };
                 let points = densify(
@@ -555,13 +633,6 @@ impl Engine {
                 );
                 let arrival = proposal.arrival.clone();
                 q.proposal = Some(proposal);
-                if let Some(terminal) = &q.terminal
-                    && q.partial.is_none()
-                {
-                    q.partial = Some(json!({"route":terminal["route"],"connections":[],
-                        "supportBoxes":terminal["supportBoxes"].as_array().cloned().unwrap_or_default(),
-                        "partial":true,"arrival":arrival,"diagnostics":{"truncated":q.truncated,"candidateAttempts":q.attempt}}));
-                }
                 q.tail = q.partial.is_none();
                 let mut first = points.len() - 1;
                 if q.tail {
@@ -609,15 +680,17 @@ impl Engine {
                 {
                     pieces.push(t["route"].clone());
                 }
-                match schedule::compose_with_boosts(
+                match schedule::compose_state(
                     &pieces,
                     &self.input["locomotion"],
                     &q.boost_facts.values().cloned().collect::<Vec<_>>(),
+                    &w.arrival["continuation"],
                 )? {
-                    Some(route) => {
+                    Some(composed) => {
+                        let route = composed.route;
                         q.truncated |= route["search"]["truncated"] == true
                             || route["locomotion"]["search"]["truncated"] == true;
-                        let mut result = json!({"route":route,"connections":w.connections,"supportBoxes":w.support,
+                        let mut result = json!({"route":route,"continuation":composed.continuation,"connections":w.connections,"supportBoxes":w.support,
                             "arrival":q.proposal.as_ref().unwrap().arrival,"partial":q.tail,
                             "diagnostics":{"truncated":q.truncated,"candidateAttempts":q.attempt}});
                         if q.tail
@@ -709,6 +782,9 @@ impl Engine {
                 arrival["cost"] = json!(0);
                 arrival.as_object_mut().unwrap().remove("groundRange");
             }
+            if let Some(continuation) = &w.continuation {
+                arrival["continuation"] = continuation.clone();
+            }
             let interaction = if end + 1 == w.points.len() && q.terminal.is_none() {
                 q.original["interaction"].clone()
             } else {
@@ -742,7 +818,8 @@ impl Engine {
         Ok(())
     }
 
-    fn solve_window(&mut self, world: Arc<World>) -> Result<(), String> {
+    fn solve_window(&mut self, base_world: Arc<World>) -> Result<(), String> {
+        let world = base_world.clone();
         let facts = &mut self.query.as_mut().unwrap().boost_facts;
         for boost in &world.boosts {
             let value = serde_json::to_value(boost).map_err(|e| e.to_string())?;
@@ -754,15 +831,40 @@ impl Engine {
             }
             facts.insert(boost.effect.id.clone(), value);
         }
+        let following = &mut self.query.as_mut().unwrap().following_facts;
+        for device in &world.devices.following_supports {
+            let value = serde_json::to_value(device).map_err(|e| e.to_string())?;
+            if following
+                .get(&device.id)
+                .is_some_and(|previous| *previous != value)
+            {
+                return Err("Following support facts changed during scene query".into());
+            }
+            following.insert(device.id.clone(), value);
+        }
         let q = self.query.as_ref().unwrap();
         let w = q.window.as_ref().unwrap();
         let end = w.end.unwrap();
         let final_window = end + 1 == w.points.len();
+        let mut fixed = route_placements(&w.pieces)?;
+        if let Some(terminal) = &q.terminal {
+            merge_placements(
+                &mut fixed,
+                terminal["route"]["placements"]
+                    .as_array()
+                    .map(Vec::as_slice)
+                    .unwrap_or(&[]),
+            )?;
+        }
+        let world = placed_world(base_world.clone(), &fixed, &q.following_facts)?;
         let mut arrival = w.arrival.clone();
         arrival["position"] = json!(w.position);
         if !w.pieces.is_empty() {
             arrival["cost"] = json!(0);
             arrival.as_object_mut().unwrap().remove("groundRange");
+        }
+        if let Some(continuation) = &w.continuation {
+            arrival["continuation"] = continuation.clone();
         }
         let waypoints = q.original["waypoints"]
             .as_array()
@@ -771,7 +873,7 @@ impl Engine {
         // Ordered waypoints are consumed as the route advances, never restarted
         // from the first waypoint for every physical window.
         let mut supported = w.points[end];
-        if !final_window || q.terminal.is_some() || q.original["interaction"].is_null() {
+        if !final_window {
             let vertical = number(&self.config, "maxTargetError", 3.);
             let allowance = serde_json::from_value::<crate::model::Interaction>(
                 json!({"radius":vertical.hypot(0.5),"maxVertical":vertical}),
@@ -804,13 +906,15 @@ impl Engine {
             local["interaction"] = q.original["interaction"].clone();
         }
         let key = self.cache.front().unwrap().key.clone();
-        let config = self.search_config(w.stage, Some(&key));
+        let mut config = self.search_config(w.stage, Some(&key));
+        config["fixedPlacements"] = json!(fixed);
         let mut result = (self.solve)(&world, &local, &config)?;
         if complete(&result["route"]) && w.stage < 2 {
             // Feasibility does not make walking or a known device the fastest
             // route. Compare a bounded full-action alternative in the same
             // immutable world before accepting this window.
             let mut improvement = self.search_config(2, Some(&key));
+            improvement["fixedPlacements"] = json!(fixed);
             improvement["maxCandidates"] =
                 json!(number(&self.config, "maxCandidates", 0.).min(640.) as u64);
             let candidate = (self.solve)(&world, &local, &improvement)?;
@@ -832,6 +936,43 @@ impl Engine {
                 "groundAttempts":result["diagnostics"]["groundAttempts"]})
             );
         }
+        let mut merged = fixed.clone();
+        if complete(&result["route"]) {
+            if merge_placements(
+                &mut merged,
+                result["route"]["placements"]
+                    .as_array()
+                    .map(Vec::as_slice)
+                    .unwrap_or(&[]),
+            )
+            .is_err()
+            {
+                return self.fail_candidate("conflicting-following-placement");
+            }
+            result["route"]["placements"] = json!(merged);
+        }
+        let mut composed = if complete(&result["route"]) {
+            let mut pieces = w.pieces.clone();
+            pieces.push(result["route"].clone());
+            schedule::compose_state(
+                &pieces,
+                &self.input["locomotion"],
+                &q.boost_facts.values().cloned().collect::<Vec<_>>(),
+                &w.arrival["continuation"],
+            )?
+        } else {
+            None
+        };
+        if merged != fixed {
+            // Newly selected static placements apply to the whole route. Their
+            // collision cannot invalidate an earlier independently proved piece.
+            for (proof_world, proof_route) in &w.proofs {
+                let configured = placed_world(proof_world.clone(), &merged, &q.following_facts)?;
+                if !trace_clear(&configured, proof_route)? {
+                    return self.fail_candidate("placement-invalidates-prefix");
+                }
+            }
+        }
         let q = self.query.as_mut().unwrap();
         let w = q.window.as_mut().unwrap();
         q.truncated |= truncated(&result);
@@ -843,7 +984,7 @@ impl Engine {
             .as_str()
             .unwrap_or("no-verified-route")
             .to_string();
-        if complete(route) {
+        if complete(route) && composed.is_some() {
             let points = route_points(route)?;
             let entry = points[0];
             let exit = *points.last().unwrap();
@@ -851,12 +992,26 @@ impl Engine {
                 return self.fail_candidate("entry-discontinuity");
             }
             let goal = w.points[end];
-            let interaction =
-                final_window && q.terminal.is_none() && !q.original["interaction"].is_null();
-            if !interaction
-                && ((exit[1] - goal[1]).abs() > number(&self.config, "maxTargetError", 3.)
-                    || horizontal(exit, goal) > 0.5)
-            {
+            let reaches = if final_window && q.terminal.is_none() {
+                if q.original["interaction"].is_null() {
+                    horizontal(exit, goal) <= 1e-6
+                        && (exit[1] - goal[1]).abs() <= world.movement.max_vertical + 1e-6
+                } else {
+                    crate::search::hit(
+                        exit,
+                        exit,
+                        point(&q.original["goal"])?,
+                        &q.original["interaction"],
+                    )
+                    .is_some()
+                }
+            } else if final_window {
+                distance(exit, goal) <= 1e-6
+            } else {
+                (exit[1] - goal[1]).abs() <= number(&self.config, "maxTargetError", 3.)
+                    && horizontal(exit, goal) <= 0.5
+            };
+            if !reaches {
                 reason = "target-projection-error".into();
             } else {
                 w.waypoint = consume_waypoints(
@@ -869,7 +1024,10 @@ impl Engine {
                 if final_window && !q.tail && w.waypoint < waypoints.len() {
                     reason = "ordered-waypoint-unreached".into();
                 } else {
-                    w.pieces.push(route.clone());
+                    let composed = composed.take().unwrap();
+                    w.pieces = vec![composed.route];
+                    w.continuation = Some(composed.continuation);
+                    w.proofs.push((base_world, route.clone()));
                     if let Some(v) = result["supportBoxes"].as_array() {
                         w.support.extend(v.clone());
                     }
@@ -885,6 +1043,9 @@ impl Engine {
                     return Ok(());
                 }
             }
+        }
+        if complete(route) && composed.is_none() {
+            reason = "resource-schedule".into();
         }
         w.failures.insert(signature);
         if w.stage < 2 {
@@ -935,7 +1096,28 @@ impl Engine {
         }
         q.proposal = None;
         q.window = None;
+        self.next_terminal(true);
         Ok(())
+    }
+
+    fn next_terminal(&mut self, retain: bool) -> bool {
+        let q = self.query.as_mut().unwrap();
+        let Some(next) = q.terminals.pop_front() else {
+            return false;
+        };
+        if retain {
+            q.terminals.push_back(Terminal {
+                asset: q.terminal.take(),
+                excluded_arrivals: std::mem::take(&mut q.excluded_arrivals),
+                excluded_edges: std::mem::take(&mut q.excluded_edges),
+            });
+        }
+        q.terminal = next.asset;
+        q.excluded_arrivals = next.excluded_arrivals;
+        q.excluded_edges = next.excluded_edges;
+        q.proposal = None;
+        q.window = None;
+        true
     }
 
     fn accept_complete(&mut self, result: Value) -> Option<Value> {
@@ -965,10 +1147,14 @@ impl Engine {
                 && !q.excluded_arrivals.contains(a["id"].as_str().unwrap_or(""))
                 && number(a, "cost", 0.) < cost
         });
-        if remaining && q.attempt < number(&self.config, "maxAttempts", 6.) as usize {
+        let alternatives = !q.terminals.is_empty();
+        if (remaining || alternatives)
+            && q.attempt < number(&self.config, "maxAttempts", 6.) as usize
+        {
+            self.next_terminal(remaining);
             return None;
         }
-        let limited = remaining;
+        let limited = remaining || alternatives;
         Some(self.finish("candidate-budget", limited))
     }
 
@@ -1003,8 +1189,109 @@ impl Window {
             connections: vec![],
             failures: HashSet::new(),
             waypoint: 0,
+            continuation: None,
+            proofs: vec![],
         })
     }
+}
+
+fn merge_placements(placements: &mut Vec<Value>, additions: &[Value]) -> Result<(), String> {
+    for addition in additions {
+        let id = addition["device"]
+            .as_str()
+            .ok_or("Placement requires device")?;
+        let position = point(&addition["position"])?;
+        if let Some(previous) = placements.iter().find(|p| p["device"] == id) {
+            if distance(point(&previous["position"])?, position) > 1e-6 {
+                return Err("Conflicting support placements".into());
+            }
+        } else {
+            placements.push(addition.clone());
+        }
+    }
+    Ok(())
+}
+fn route_placements(pieces: &[Value]) -> Result<Vec<Value>, String> {
+    let mut placements = vec![];
+    for piece in pieces {
+        merge_placements(
+            &mut placements,
+            piece["placements"]
+                .as_array()
+                .map(Vec::as_slice)
+                .unwrap_or(&[]),
+        )?;
+    }
+    Ok(placements)
+}
+fn placed_world(
+    mut world: Arc<World>,
+    placements: &[Value],
+    following: &BTreeMap<String, Value>,
+) -> Result<Arc<World>, String> {
+    if placements.is_empty() {
+        return Ok(world);
+    }
+    let mut devices = world
+        .devices
+        .following_supports
+        .iter()
+        .map(serde_json::to_value)
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+    let mut changed = false;
+    for placement in placements {
+        let id = placement["device"]
+            .as_str()
+            .ok_or("Placement requires device")?;
+        if !devices.iter().any(|d| d["id"] == id) {
+            devices.push(
+                following
+                    .get(id)
+                    .ok_or("Missing carried following support facts")?
+                    .clone(),
+            );
+            changed = true;
+        }
+    }
+    if changed {
+        // Missing device metadata in a later sparse window does not erase an
+        // already selected pose. Enrich only query-local facts; keep this window's
+        // exact coverage and raw collision snapshot intact.
+        let mut bound = world.snapshot().clone();
+        bound["input"]["devices"]["followingSupports"] = json!(devices);
+        world = Arc::new(World::new(bound)?);
+    }
+    Ok(Arc::new(
+        world
+            .with_placements(placements)?
+            .ok_or("Carried following placement is unavailable")?,
+    ))
+}
+fn trace_clear(world: &World, route: &Value) -> Result<bool, String> {
+    for segment in route["segments"]
+        .as_array()
+        .ok_or("Route requires segments")?
+    {
+        let points = route_points(segment)?;
+        for pair in points.windows(2) {
+            if !world.clear(pair[0], pair[1], 0.)? {
+                return Ok(false);
+            }
+            if segment["mode"] == "walk" {
+                let Some(path) = world.ground_path(pair[0], pair[1])? else {
+                    return Ok(false);
+                };
+                if distance(path.points[0], pair[0]) > 1e-6
+                    || distance(*path.points.last().unwrap(), pair[1]) > 1e-6
+                    || (path.length - distance(pair[0], pair[1])).abs() > 1e-6
+                {
+                    return Ok(false);
+                }
+            }
+        }
+    }
+    Ok(true)
 }
 
 fn validate_query(q: &Value) -> Result<(), String> {

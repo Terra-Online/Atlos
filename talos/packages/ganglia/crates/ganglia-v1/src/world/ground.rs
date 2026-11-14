@@ -363,6 +363,87 @@ fn support_intervals(w: &World, a: Vec3, b: Vec3) -> Vec<(f64, f64, usize)> {
     out.sort_by(|a, b| a.0.total_cmp(&b.0));
     out
 }
+// Navigation authorizes directed passage; physical inputs additionally need
+// continuous centerline support from raw terrain or eligible device roofs.
+// Capsule-radius support alone can bridge a crack with no surface underfoot.
+fn physical_support(w: &World, a: Vec3, b: Vec3) -> bool {
+    if w.snapshot["kind"] != "physical" {
+        return true;
+    }
+    let tolerance =
+        (number(&w.snapshot["input"]["ground"]["build"], "cellHeight", 0.1) * 3. + 0.01).max(0.02);
+    let query = [
+        a[0].min(b[0]),
+        a[1].min(b[1]) - tolerance,
+        a[2].min(b[2]),
+        a[0].max(b[0]),
+        a[1].max(b[1]) + tolerance,
+        a[2].max(b[2]),
+    ];
+    let mut intervals = vec![];
+    for index in [&w.collision, &w.moving_support] {
+        for id in index.candidates(query) {
+            let t = index.faces[id];
+            let u = sub(t[1], t[0]);
+            let v = sub(t[2], t[0]);
+            let normal = cross(u, v);
+            if normal[1] <= 0.
+                || normal[1] / hypot(normal) < w.movement.max_slope.to_radians().cos()
+            {
+                continue;
+            }
+            let determinant = u[0] * v[2] - u[2] * v[0];
+            if determinant.abs() < 1e-12 {
+                continue;
+            }
+            let weights = |p: Vec3| {
+                let x = p[0] - t[0][0];
+                let z = p[2] - t[0][2];
+                let b = (x * v[2] - z * v[0]) / determinant;
+                let c = (u[0] * z - u[2] * x) / determinant;
+                [1. - b - c, b, c]
+            };
+            let first = weights(a);
+            let last = weights(b);
+            let mut near: f64 = 0.;
+            let mut far: f64 = 1.;
+            let mut clip = |x: f64, y: f64| {
+                if x < 0. && y < 0. {
+                    far = -1.;
+                } else {
+                    if x < 0. {
+                        near = near.max(x / (x - y));
+                    }
+                    if y < 0. {
+                        far = far.min(x / (x - y));
+                    }
+                }
+            };
+            for i in 0..3 {
+                clip(first[i] + 1e-9, last[i] + 1e-9);
+            }
+            let low = a[1] - (0..3).map(|i| first[i] * t[i][1]).sum::<f64>();
+            let high = b[1] - (0..3).map(|i| last[i] * t[i][1]).sum::<f64>();
+            clip(tolerance - low, tolerance - high);
+            clip(tolerance + low, tolerance + high);
+            if near <= far {
+                intervals.push((near, far));
+            }
+        }
+    }
+    intervals.sort_by(|a, b| a.0.total_cmp(&b.0));
+    let mut end: f64 = 0.;
+    for (near, far) in intervals {
+        if near > end + 1e-8 {
+            return false;
+        }
+        end = end.max(far);
+        if end >= 1. - 1e-8 {
+            return true;
+        }
+    }
+    false
+}
 fn crossing(a: Vec3, b: Vec3, aperture: [Vec3; 2]) -> Option<(f64, f64)> {
     let cross = |x: [f64; 2], y: [f64; 2]| x[0] * y[1] - x[1] * y[0];
     let r = [b[0] - a[0], b[2] - a[2]];
@@ -540,6 +621,56 @@ pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, S
     }
     Ok(Some(refined))
 }
+// A triangle rounded by a sphere is convex; its upper support height is
+// concave over XZ. One face supporting both endpoints within the upper
+// clearance bound therefore supports the entire chord within that bound.
+// The lowered sphere sweep proves the complementary lower bound for all faces.
+fn stable_clearance(w: &World, a: Vec3, b: Vec3) -> bool {
+    if w.snapshot["kind"] != "physical" {
+        return true;
+    }
+    let radius = w.movement.profile.radius;
+    let tolerance =
+        (number(&w.snapshot["input"]["ground"]["build"], "cellHeight", 0.1) * 3. + 0.01).max(0.02);
+    let low = 0.005 - 0.5e-6;
+    let high = 0.01 + 0.5e-6;
+    let center = |p: Vec3| [p[0], p[1] + radius - low, p[2]];
+    let query = [
+        a[0].min(b[0]) - radius,
+        a[1].min(b[1]) - tolerance - radius,
+        a[2].min(b[2]) - radius,
+        a[0].max(b[0]) + radius,
+        a[1].max(b[1]) + tolerance + radius,
+        a[2].max(b[2]) + radius,
+    ];
+    let mut upper = false;
+    for index in [&w.collision, &w.moving_support] {
+        for id in index.candidates(query) {
+            let face = index.faces[id];
+            let normal = cross(sub(face[1], face[0]), sub(face[2], face[0]));
+            let length = hypot(normal);
+            if normal[1] <= 0. || normal[1] / length < w.movement.max_slope.to_radians().cos() {
+                continue;
+            }
+            let normal = normal.map(|v| v / length);
+            let ha = collision::sphere_support(a, face, normal, radius);
+            let hb = collision::sphere_support(b, face, normal, radius);
+            // Phase-free roofs outside the ground query's upper range are
+            // support alternatives, not solids. Concavity proves this face
+            // stays outside that range for the entire chord.
+            if ha > a[1] + tolerance && hb > b[1] + tolerance {
+                continue;
+            }
+            if collision::segment_triangle(center(a), center(b), face) <= radius * radius {
+                return false;
+            }
+            let ca = a[1] - ha;
+            let cb = b[1] - hb;
+            upper |= (low..=high).contains(&ca) && (low..=high).contains(&cb);
+        }
+    }
+    upper
+}
 fn replay_foot(w: &World, p: Vec3) -> Result<Option<Vec3>, String> {
     let Some((ground, mesh_support)) = w.ground_support(
         p,
@@ -592,11 +723,34 @@ fn refine_supported_chord(
         }
     }
     if count == 1 {
-        if !w.clear(a, b, 0.)? {
+        if !physical_support(w, a, b) || !w.clear(a, b, 0.)? {
             return Ok(false);
         }
-        out.push(b);
-        return Ok(true);
+        if stable_clearance(w, a, b) {
+            out.push(b);
+            return Ok(true);
+        }
+        let seed = mix(a, b, 0.5);
+        let Some(mut foot) = replay_foot(w, seed)? else {
+            return Ok(false);
+        };
+        if w.snapshot["kind"] == "physical" {
+            let Some(hit) = w.ground_at(
+                seed,
+                w.movement.max_vertical,
+                w.movement.max_vertical,
+                w.movement.profile.radius,
+            )?
+            else {
+                return Ok(false);
+            };
+            foot[1] = hit.position[1] + 0.0075;
+            if !w.clear(foot, foot, 0.)? {
+                return Ok(false);
+            }
+        }
+        return Ok(refine_supported_chord(w, a, foot, depth + 1, budget, out)?
+            && refine_supported_chord(w, foot, b, depth + 1, budget, out)?);
     }
     let mut trace = vec![a];
     for i in 1..count {

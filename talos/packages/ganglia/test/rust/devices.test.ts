@@ -219,3 +219,72 @@ test('Rust following box placement enables two independently certified jumps', a
   invalid.placements!.find((placement) => placement.device === 'box')!.position = [10, 0, 0];
   assert.equal(verify(request, invalid).valid, false);
 });
+
+test('Rust default following body blocks floor walking and supplies its unplaced roof', async () => {
+  const body = Array.from({ length: 8 }, (_, bits): Vec3 => [
+    bits & 1 ? 0.5 : -0.5,
+    bits & 2 ? 1 : 0,
+    bits & 4 ? 0.5 : -0.5,
+  ]);
+  const input = physical([surface('floor', -4, 4, 0, -3, 3)], {
+    devices: [],
+    ropes: [],
+    followingSupports: [
+      {
+        id: 'default-box',
+        level: 'test',
+        model: 'box',
+        spawn: [0, 0, 0],
+        bodies: [body],
+        geometryKind: 'box',
+        maxDistance: 4,
+        initialState: 0,
+        assumption: 'placement-within-activity-range',
+      },
+    ],
+  });
+  const around = await replay(input, query([-2, 0, 0], [2, 0, 0]));
+  assert.ok(around.route.points.some((p) => Math.abs(p[2]) > 0.5));
+  await replay(input, query([-0.2, 1.01, 0], [0.2, 1.01, 0]));
+});
+
+test('Rust physical moving roof survives a higher static navigation approximation', async () => {
+  const input = physical([surface('raw-floor', -3, 3, 0)], {
+    devices: [],
+    ropes: [],
+    movingSupports: [
+      {
+        id: 'roof',
+        family: 'platform',
+        level: 'test',
+        model: 'roof',
+        assumption: 'phase-free-swept-support',
+        surfaces: [surface('moving-roof', -2, 2, 0.05)],
+        transfers: [],
+      },
+    ],
+  });
+  input.ground.surfaces = [surface('navigation', -3, 3, 0.08)];
+  input.devices!.movingSupports![0].surfaces[0].vertices.reverse();
+  const { route } = await replay(input, query([-1, 0.06, 0], [1, 0.06, 0]));
+  assert.ok(route.points.every((p) => Math.abs(p[1] - 0.06) < 1e-6));
+});
+
+test('Rust fixed launch derives direct height from canonical landing clearance', async () => {
+  const input = physical([surface('left', -5, 0, 0), surface('right', 3, 8, 2)], {
+    devices: [
+      device('pad', 'launch', [-1, 0, 0], {
+        fixedLaunch: true,
+        aim: [4, 2, 0],
+        height: 0.1,
+        aimClearance: 0.5,
+      }),
+    ],
+    ropes: [],
+  });
+  const { route } = await replay(input, query([-3, 0, 0], [6, 2, 0]));
+  const launch = route.segments.find((segment) => segment.mode === 'launch');
+  assert.ok(launch?.flight);
+  const { start, end, model } = launch.flight;
+  assert.ok(Math.abs(model.maxJumpHeight - (end[1] + 0.5 - start[1])) < 1e-10);
+});

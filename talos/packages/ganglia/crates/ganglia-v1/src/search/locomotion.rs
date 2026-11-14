@@ -80,7 +80,8 @@ pub(super) struct Block {
     segments: Vec<Segment>,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub(super) struct State {
     pub energy: f64,
     pub minimum: f64,
@@ -565,6 +566,38 @@ pub(super) fn initial(options: &ScheduleOptions) -> State {
         dash_cooldown: 0.,
         dash_remaining: 0.,
     }
+}
+pub(super) fn read_state(value: &serde_json::Value, options: &ScheduleOptions) -> Result<State> {
+    let state: State = serde_json::from_value(value.clone()).map_err(|_| invalid())?;
+    if [
+        state.energy,
+        state.minimum,
+        state.delay,
+        state.velocity,
+        state.dash_cooldown,
+        state.dash_remaining,
+    ]
+    .iter()
+    .any(|v| !v.is_finite() || *v < 0.)
+        || state.minimum > state.energy + EPSILON
+        || options
+            .stamina
+            .as_ref()
+            .map_or(state.energy > EPSILON, |s| {
+                state.energy > s.capacity + EPSILON
+            })
+        || options.dash.as_ref().map_or(
+            state.dash_remaining > EPSILON || state.dash_cooldown > EPSILON,
+            |d| state.dash_remaining > d.duration + EPSILON,
+        )
+        || state.previous_direction.is_some_and(|v| {
+            v.iter().any(|x| !x.is_finite())
+                || (v.iter().map(|x| x * x).sum::<f64>() - 1.).abs() > 1e-6
+        })
+    {
+        return Err(invalid());
+    }
+    Ok(state)
 }
 pub(super) fn continuation(a: State, b: State) -> bool {
     a.sprinting == b.sprinting

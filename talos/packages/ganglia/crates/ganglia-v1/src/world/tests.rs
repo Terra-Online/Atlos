@@ -347,7 +347,9 @@ fn following_placement_checks_full_footprint_range_and_body_collision() {
         .unwrap()
         .unwrap();
     assert!((h.position[1] - 1.).abs() < 1e-8);
-    assert!(w.clear([-1., 0.01, 0.], [3., 0.01, 0.], 0.).unwrap());
+    assert!(!w.clear([-1., 0.01, 0.], [3., 0.01, 0.], 0.).unwrap());
+    assert!(!w.clear([0., 0.01, 0.], [0., 0.01, 0.], 0.).unwrap());
+    assert!(placed.clear([0., 0.01, 0.], [0., 0.01, 0.], 0.).unwrap());
     let mut cracked = snapshot({
         let mut c = floor(-6., 0.99, -6., 6., 0.);
         merge(&mut c, floor(1.01, 6., -6., 6., 0.));
@@ -692,4 +694,168 @@ fn capsule_support_bend_is_not_replaced_by_endpoint_interpolation() {
             .windows(2)
             .all(|p| distance(p[0], p[1]) <= 0.045 + 1e-10 && w.clear(p[0], p[1], 0.).unwrap())
     );
+}
+
+#[test]
+fn physical_walk_needs_raw_centerline_support_even_when_capsule_bridges_gap() {
+    let mut collision = floor(-2., -0.05, -1., 1., 0.);
+    merge(&mut collision, floor(0.05, 2., -1., 1., 0.));
+    let mut input = snapshot(collision);
+    input["input"]["ground"]["options"]["profile"]["radius"] = json!(0.3);
+    input["input"]["ground"]["surfaces"] = json!([
+        {"id":"navigation","vertices":[[-2.,0.,-1.],[2.,0.,-1.],[2.,0.,1.],[-2.,0.,1.]]}
+    ]);
+    let w = World::new(input).unwrap();
+    assert!(w.standing_foot([0., 0.01, 0.]).unwrap().is_some());
+    assert!(
+        w.ground_path([-1., 0.01, 0.], [1., 0.01, 0.])
+            .unwrap()
+            .is_none()
+    );
+}
+
+fn following_box(id: &str, x: f64) -> Value {
+    let body: Vec<Vec3> = (0..8)
+        .map(|bits| {
+            [
+                x + if bits & 1 == 0 { -0.5 } else { 0.5 },
+                if bits & 2 == 0 { 0. } else { 1. },
+                if bits & 4 == 0 { -0.5 } else { 0.5 },
+            ]
+        })
+        .collect();
+    json!({"id":id,"spawn":[x,0.,0.],"bodies":[body],"geometryKind":"box","maxDistance":8.,
+        "initialState":0.,"assumption":"placement-within-activity-range"})
+}
+#[test]
+fn following_batch_replaces_defaults_jointly_and_retains_fixed_bindings() {
+    let mut input = snapshot(floor(-10., 10., -3., 3., 0.));
+    input["input"]["devices"] =
+        json!({"followingSupports":[following_box("a",0.),following_box("b",2.)]});
+    let w = World::new(input.clone()).unwrap();
+    assert!(w.place_following("a", [2., 0., 0.]).unwrap().is_none());
+    let poses = vec![
+        json!({"device":"a","position":[2.,0.,0.]}),
+        json!({"device":"b","position":[4.,0.,0.]}),
+    ];
+    let moved = w.with_placements(&poses).unwrap().unwrap();
+    assert!(moved.clear([0., 0.01, 0.], [0., 0.01, 0.], 0.).unwrap());
+    assert!(!moved.clear([2., 0.01, 0.], [2., 0.01, 0.], 0.).unwrap());
+    assert!(
+        (moved
+            .ground_at([2., 1.1, 0.], 0.2, 0.2, 0.2)
+            .unwrap()
+            .unwrap()
+            .position[1]
+            - 1.)
+            .abs()
+            < 1e-9
+    );
+    assert_eq!(
+        moved.snapshot()["input"]["collision"],
+        input["input"]["collision"]
+    );
+    let repeated = moved.with_placements(&poses).unwrap().unwrap();
+    assert_eq!(
+        repeated.snapshot()["placements"].as_array().unwrap().len(),
+        2
+    );
+    assert!(moved.place_following("a", [3., 0., 0.]).is_err());
+}
+#[test]
+fn following_placement_rejects_unsupported_models_exclusions_and_other_defaults() {
+    let mut input = snapshot(floor(-10., 10., -3., 3., 0.));
+    input["input"]["devices"] = json!({"followingSupports":[following_box("a",0.)]});
+    input["input"]["ground"]["options"]["walls"] = json!([
+        {"min":[1.5,0.,-0.5],"max":[2.5,1.,0.5],"state":"active"}
+    ]);
+    let w = World::new(input.clone()).unwrap();
+    assert!(w.place_following("a", [2., 0., 0.]).unwrap().is_none());
+    input["input"]["ground"]["options"]["walls"] = json!([]);
+    input["input"]["devices"]["followingSupports"][0]["geometryKind"] = json!("convex");
+    let w = World::new(input).unwrap();
+    assert!(!w.clear([0., 0.01, 0.], [0., 0.01, 0.], 0.).unwrap());
+    assert!(w.place_following("a", [2., 0., 0.]).unwrap().is_none());
+}
+#[test]
+fn following_outside_loaded_window_keeps_pose_binding_without_geometry() {
+    let mut input = snapshot(floor(-10., 10., -3., 3., 0.));
+    input["coverage"] = json!({"bounds":{"min":[-10.,-3.],"max":[10.,3.]}});
+    input["input"]["devices"] = json!({"followingSupports":[following_box("far",100.)]});
+    let w = World::new(input).unwrap();
+    let moved = w.place_following("far", [101., 0., 0.]).unwrap().unwrap();
+    assert_eq!(
+        moved.snapshot()["placements"][0]["position"],
+        json!([101., 0., 0.])
+    );
+    assert!(
+        !moved
+            .surfaces
+            .iter()
+            .any(|s| s.id.starts_with("following/"))
+    );
+}
+#[test]
+fn moving_support_is_not_hidden_by_higher_imported_navigation() {
+    let mut input = snapshot(floor(-3., 3., -3., 3., 0.));
+    input["input"]["ground"]["surfaces"] = json!([
+        {"id":"navigation","vertices":[[-3.,0.08,-3.],[3.,0.08,-3.],[3.,0.08,3.],[-3.,0.08,3.]]}
+    ]);
+    input["input"]["devices"] = json!({"movingSupports":[{"id":"platform","family":"platform",
+        "assumption":"phase-free-swept-support","surfaces":[{"id":"roof","vertices":[[-2.,0.05,-2.],[2.,0.05,-2.],[2.,0.05,2.],[-2.,0.05,2.]]}]}]});
+    input["input"]["devices"]["movingSupports"][0]["surfaces"][0]["vertices"]
+        .as_array_mut()
+        .unwrap()
+        .reverse();
+    let w = World::new(input).unwrap();
+    let hit = w.ground_at([0., 0.1, 0.], 0.5, 0.5, 0.2).unwrap().unwrap();
+    assert!((hit.position[1] - 0.05).abs() < 1e-9);
+}
+#[test]
+fn fixed_launch_direct_height_uses_canonical_landing_feet() {
+    let mut collision = floor(-2., 2., -2., 2., 0.);
+    merge(&mut collision, floor(4., 6., -2., 2., 2.));
+    let mut input = snapshot(collision);
+    input["input"]["devices"] = json!({"devices":[{"id":"pad","kind":"launch","position":[0.,0.,0.],
+        "goal":{"position":[0.,0.,0.],"interaction":{"radius":0.5}},"seeds":[[0.,0.,0.]],
+        "unitScale":true,"fixedLaunch":true,"height":0.1,"aim":[5.,2.,0.],"aimClearance":0.5}]});
+    let w = World::new(input).unwrap();
+    let launch = w
+        .known_actions()
+        .iter()
+        .find(|c| c.id == "launch/pad")
+        .unwrap();
+    let start = launch.points[0];
+    let end = *launch.points.last().unwrap();
+    assert!(
+        (launch.extra["flight"]["model"]["maxJumpHeight"]
+            .as_f64()
+            .unwrap()
+            - (end[1] + 0.5 - start[1]))
+            .abs()
+            < 1e-10
+    );
+}
+
+#[test]
+fn rounded_support_chords_preserve_standing_at_arbitrary_scheduler_cuts() {
+    let fixture: Value = serde_json::from_str(include_str!("fixtures/scheduler-cut.json")).unwrap();
+    let w = World::new(fixture["snapshot"].clone()).unwrap();
+    let a: Vec3 = serde_json::from_value(fixture["a"].clone()).unwrap();
+    let b: Vec3 = serde_json::from_value(fixture["b"].clone()).unwrap();
+    let path = w.ground_path(a, b).unwrap().unwrap();
+    for pair in path.points.windows(2) {
+        for i in 0..=257 {
+            let foot = collision::mix(pair[0], pair[1], i as f64 / 257.);
+            let hit = w
+                .ground_at(foot, 0.31, 0.31, w.movement.profile.radius)
+                .unwrap()
+                .unwrap();
+            let clearance = foot[1] - hit.position[1];
+            assert!(
+                (0.005 - 1e-6..=0.01 + 1e-6).contains(&clearance),
+                "unsupported scheduler cut {foot:?}: {clearance}"
+            );
+        }
+    }
 }

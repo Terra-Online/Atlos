@@ -6,6 +6,7 @@ mod boundaries;
 mod collision;
 mod devices;
 mod flight;
+mod following;
 mod ground;
 #[cfg(test)]
 mod tests;
@@ -76,8 +77,11 @@ pub struct World {
     /// Original normalized host envelope, including source revision and witness metadata.
     pub snapshot: Value,
     walls: Vec<Wall>,
+    source_walls: Vec<Wall>,
     collision: Index,
+    following_collision: Index,
     support: Index,
+    moving_support: Index,
     owners: Vec<usize>,
     surface_ids: BTreeMap<String, usize>,
     portal_owners: Vec<Vec<usize>>,
@@ -202,6 +206,47 @@ impl World {
                 }
             }
         }
+        let declared = if snapshot.get("coverage").is_some() {
+            snapshot["coverage"].clone()
+        } else {
+            input["coverage"].clone()
+        };
+        let mut coverage = Coverage {
+            collision_bounds,
+            support_bounds,
+            declared,
+            bounds: None,
+            tiles: None,
+            tile_span: 0.,
+        };
+        if !coverage.declared.is_null() && coverage.declared.as_str() != Some("complete") {
+            let bounds: Bounds = decode(&coverage.declared["bounds"], "coverage bounds")?;
+            if (0..2).any(|i| {
+                !bounds.min[i].is_finite()
+                    || !bounds.max[i].is_finite()
+                    || bounds.min[i] > bounds.max[i]
+            }) {
+                return Err("Invalid coverage bounds".into());
+            }
+            coverage.bounds = Some(bounds);
+            if let Some(tiles) = coverage.declared["tiles"].as_array() {
+                let span = coverage.declared["tileSpan"]
+                    .as_f64()
+                    .ok_or("Missing coverage tile span")?;
+                if !span.is_finite() || span <= 0. {
+                    return Err("Invalid coverage tile span".into());
+                }
+                let mut keys = HashSet::new();
+                for v in tiles {
+                    keys.insert((
+                        v["x"].as_i64().ok_or("Invalid coverage tile x")?,
+                        v["z"].as_i64().ok_or("Invalid coverage tile z")?,
+                    ));
+                }
+                coverage.tiles = Some(keys);
+                coverage.tile_span = span;
+            }
+        }
         let devices: Devices = optional(&input["devices"], "devices")?.unwrap_or_default();
         for d in &devices.moving_supports {
             for s in &d.surfaces {
@@ -216,6 +261,20 @@ impl World {
                 surfaces.push(s);
             }
         }
+        let following = following::materialize(
+            &snapshot,
+            &devices,
+            &collision,
+            &walls,
+            &coverage,
+            movement.max_slope,
+        )?
+        .ok_or("Invalid following placement")?;
+        surfaces.extend(following.surfaces);
+        let following_collision = Index::from_faces(following.faces, None)?;
+        let source_walls = walls.clone();
+        let mut walls = walls;
+        walls.extend(following.walls);
         let mut surface_ids = BTreeMap::new();
         let mut faces = vec![];
         let mut owners = vec![];
@@ -242,6 +301,22 @@ impl World {
                 }
             }
         }
+        // Physical support reduction must never let an ineligible imported
+        // navigation face hide a valid moving or following support roof.
+        let moving_faces = surfaces
+            .iter()
+            .filter(|surface| surface.extra.contains_key("supportDevice"))
+            .flat_map(|surface| {
+                (1..surface.vertices.len() - 1).map(|i| {
+                    [
+                        surface.vertices[0],
+                        surface.vertices[i],
+                        surface.vertices[i + 1],
+                    ]
+                })
+            })
+            .collect();
+        let moving_support = Index::from_faces(moving_faces, None)?;
         let support = Index::from_faces(faces, None)?;
         let mut portals: Vec<Portal> =
             optional(&options["portals"], "portals")?.unwrap_or_default();
@@ -298,47 +373,6 @@ impl World {
         serde_json::to_string(&snapshot)
             .map_err(|e| e.to_string())?
             .hash(&mut h);
-        let declared = if snapshot.get("coverage").is_some() {
-            snapshot["coverage"].clone()
-        } else {
-            input["coverage"].clone()
-        };
-        let mut coverage = Coverage {
-            collision_bounds,
-            support_bounds,
-            declared,
-            bounds: None,
-            tiles: None,
-            tile_span: 0.,
-        };
-        if !coverage.declared.is_null() && coverage.declared.as_str() != Some("complete") {
-            let bounds: Bounds = decode(&coverage.declared["bounds"], "coverage bounds")?;
-            if (0..2).any(|i| {
-                !bounds.min[i].is_finite()
-                    || !bounds.max[i].is_finite()
-                    || bounds.min[i] > bounds.max[i]
-            }) {
-                return Err("Invalid coverage bounds".into());
-            }
-            coverage.bounds = Some(bounds);
-            if let Some(tiles) = coverage.declared["tiles"].as_array() {
-                let span = coverage.declared["tileSpan"]
-                    .as_f64()
-                    .ok_or("Missing coverage tile span")?;
-                if !span.is_finite() || span <= 0. {
-                    return Err("Invalid coverage tile span".into());
-                }
-                let mut keys = HashSet::new();
-                for v in tiles {
-                    keys.insert((
-                        v["x"].as_i64().ok_or("Invalid coverage tile x")?,
-                        v["z"].as_i64().ok_or("Invalid coverage tile z")?,
-                    ));
-                }
-                coverage.tiles = Some(keys);
-                coverage.tile_span = span;
-            }
-        }
         let mut world = Self {
             surfaces,
             portals,
@@ -352,8 +386,11 @@ impl World {
             outcomes: vec![],
             snapshot,
             walls,
+            source_walls,
             collision,
+            following_collision,
             support,
+            moving_support,
             owners,
             surface_ids,
             portal_owners,
@@ -468,7 +505,10 @@ impl World {
         inflation: f64,
     ) -> Result<Option<Hit>, String> {
         self.require_coverage(a, b, p.radius + inflation)?;
-        self.collision.sweep(a, b, p, inflation)
+        if let Some(hit) = self.collision.sweep(a, b, p, inflation)? {
+            return Ok(Some(hit));
+        }
+        self.following_collision.sweep(a, b, p, inflation)
     }
     pub fn wall_blocked(&self, a: Vec3, b: Vec3, inflation: f64) -> bool {
         walls::blocked(self.walls(), a, b, self.movement.profile, inflation)
@@ -503,16 +543,29 @@ impl World {
         let base = self
             .collision
             .ground(p, up, down, self.movement.max_slope, radius)?;
-        let overlay = self
-            .support
+        let moving = self
+            .moving_support
             .ground(p, up, down, self.movement.max_slope, radius)?;
-        let overlay = overlay.and_then(|hit| {
-            let moving = self.surfaces[self.owners[hit.triangle]]
-                .extra
-                .contains_key("supportDevice");
-            let mesh_support = !moving && self.snapshot["kind"] == "surfaces" && base.is_none();
-            (moving || mesh_support).then_some((hit, mesh_support))
-        });
+        let mesh = if self.snapshot["kind"] == "surfaces" && base.is_none() {
+            self.support
+                .ground(p, up, down, self.movement.max_slope, radius)?
+        } else {
+            None
+        };
+        let overlay = match (moving, mesh) {
+            (Some(a), Some(b))
+                if if radius > 0. {
+                    b.position[1] > a.position[1]
+                } else {
+                    (b.position[1] - p[1]).abs() < (a.position[1] - p[1]).abs()
+                } =>
+            {
+                Some((b, true))
+            }
+            (Some(a), _) => Some((a, false)),
+            (None, Some(b)) => Some((b, true)),
+            (None, None) => None,
+        };
         Ok(match (base, overlay) {
             (None, hit) => hit,
             (Some(hit), None) => Some((hit, false)),

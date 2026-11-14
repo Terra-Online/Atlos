@@ -70,6 +70,122 @@ struct Boost {
     position: Point,
     interaction: Value,
 }
+struct Entry {
+    state: locomotion::State,
+    boost: Option<usize>,
+    remaining: f64,
+    used_boost: Option<String>,
+}
+fn merge_carried_boost(
+    active: &Value,
+    world_facts: &Value,
+    boosts: &mut Vec<Boost>,
+) -> Result<(), String> {
+    let usage: BoostUse = serde_json::from_value(active.clone()).map_err(|e| e.to_string())?;
+    if !usage.multiplier.is_finite()
+        || !usage.duration.is_finite()
+        || usage.multiplier <= 1.
+        || usage.duration <= 0.
+    {
+        return Err("invalid carried boost".into());
+    }
+    let fact = array(world_facts).iter().find(|b| b["id"] == usage.id);
+    let position = active
+        .get("position")
+        .or_else(|| fact.and_then(|f| f.get("position")))
+        .ok_or("carried boost position missing")?;
+    let interaction = active
+        .get("interaction")
+        .or_else(|| fact.and_then(|f| f.get("interaction")))
+        .ok_or("carried boost interaction missing")?;
+    validate_interaction(interaction)?;
+    let interaction = serde_json::to_value(
+        serde_json::from_value::<crate::model::Interaction>(interaction.clone())
+            .map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())?;
+    let position = point(position)?;
+    if let Some(fact) = fact {
+        let authored: BoostUse = serde_json::from_value(fact.clone()).map_err(|e| e.to_string())?;
+        if usage.multiplier != authored.multiplier
+            || usage.duration != authored.duration
+            || point(&fact["position"])? != position
+            || fact["interaction"] != interaction
+        {
+            return Err("conflicting carried boost fact".into());
+        }
+    }
+    if let Some(existing) = boosts.iter().find(|b| b.usage.id == usage.id) {
+        if existing.usage.multiplier != usage.multiplier
+            || existing.usage.duration != usage.duration
+            || existing.position != position
+            || existing.interaction != interaction
+        {
+            return Err("conflicting carried boost fact".into());
+        }
+    } else {
+        boosts.push(Boost {
+            usage,
+            position,
+            interaction,
+        });
+    }
+    Ok(())
+}
+fn read_entry(
+    start: &Value,
+    options: &locomotion::ScheduleOptions,
+    boosts: &[Boost],
+) -> Result<Entry, String> {
+    let raw = &start["continuation"];
+    if raw.is_null() {
+        return Ok(Entry {
+            state: locomotion::initial(options),
+            boost: None,
+            remaining: 0.,
+            used_boost: None,
+        });
+    }
+    if !raw.is_object() {
+        return Err("invalid arrival continuation".into());
+    }
+    let state = locomotion::read_state(&raw["resource"], options)?;
+    let mut used_boost = if raw["usedBoost"].is_null() {
+        None
+    } else {
+        Some(
+            raw["usedBoost"]
+                .as_str()
+                .ok_or("invalid used boost")?
+                .to_owned(),
+        )
+    };
+    let (boost, remaining) = if raw["boost"].is_null() {
+        (None, 0.)
+    } else {
+        let active = &raw["boost"];
+        let id = active["id"].as_str().ok_or("invalid carried boost")?;
+        let i = boosts
+            .iter()
+            .position(|b| b.usage.id == id)
+            .ok_or("missing carried boost fact")?;
+        let remaining = number(active, "remaining", -1.)?;
+        if remaining < 0.
+            || remaining > boosts[i].usage.duration + EPS
+            || used_boost.as_ref().is_some_and(|used| used != id)
+        {
+            return Err("invalid carried boost lifetime".into());
+        }
+        used_boost = Some(id.to_owned());
+        (if remaining > EPS { Some(i) } else { None }, remaining)
+    };
+    Ok(Entry {
+        state,
+        boost,
+        remaining,
+        used_boost,
+    })
+}
 struct Edge {
     to: usize,
     segment: Arc<Segment>,
@@ -178,6 +294,7 @@ impl Graph {
         mut segment: Segment,
         terminal: bool,
         required_boost: Option<String>,
+        authority: &str,
     ) -> Result<(), String> {
         let mut emitted = serde_json::to_value(&segment).map_err(|e| e.to_string())?;
         let fields = emitted.as_object_mut().ok_or("invalid generated action")?;
@@ -191,28 +308,128 @@ impl Graph {
         } else {
             fields.remove("requiredBoost");
         }
-        let payload = serde_json::to_vec(&emitted).map_err(|e| e.to_string())?;
-        let digest = |domain: u8| {
-            let mut hash = std::collections::hash_map::DefaultHasher::new();
-            "ganglia-motion-v1".hash(&mut hash);
-            domain.hash(&mut hash);
-            payload.hash(&mut hash);
-            hash.finish()
-        };
-        let id = format!("rust/action/{:016x}{:016x}", digest(0), digest(1));
+        let id = generated_id(&emitted, authority)?;
         if !self.action_ids.insert(id.clone()) {
             return Ok(());
         }
         segment.extra.remove("id");
+        segment.extra.insert("nativeGenerated".into(), json!(1));
         segment.connection = Some(id.clone());
         emitted["id"] = json!(id);
         emitted["connection"] = json!(id);
         emitted["state"] = json!("open");
+        emitted["nativeGenerated"] = json!(1);
         let to = self.node(*segment.points.last().ok_or("empty generated action")?);
         self.generated.push(emitted);
         self.edge(from, to, segment, terminal, required_boost);
         Ok(())
     }
+}
+// Content identity is deterministic, not a capability. Admission additionally
+// replays the witness using immutable World movement authority and collision.
+fn generated_id(value: &Value, authority: &str) -> Result<String, String> {
+    let mut value = value.clone();
+    let fields = value.as_object_mut().ok_or("invalid generated action")?;
+    for key in ["id", "connection", "state", "nativeGenerated"] {
+        fields.remove(key);
+    }
+    let payload = serde_json::to_vec(&value).map_err(|e| e.to_string())?;
+    let digest = |domain: u8| {
+        let mut hash = std::collections::hash_map::DefaultHasher::new();
+        "ganglia-motion-v2".hash(&mut hash);
+        domain.hash(&mut hash);
+        authority.hash(&mut hash);
+        payload.hash(&mut hash);
+        hash.finish()
+    };
+    Ok(format!("rust/action/{:016x}{:016x}", digest(0), digest(1)))
+}
+fn physical_authority(world: &crate::world::World) -> Result<String, String> {
+    let m = &world.movement;
+    serde_json::to_string(&json!({"revision":world.revision,"profile":m.profile,
+        "model":m.model,"speed":m.speed,"runAirSpeed":m.run_air_speed,
+        "maxVertical":m.max_vertical,"maxSlope":m.max_slope,"maxDrop":m.max_drop,
+        "maxHorizontalDistance":m.max_horizontal_distance,"stepUp":m.step_up,
+        "stepDown":m.step_down,"locomotion":world.locomotion}))
+    .map_err(|e| e.to_string())
+}
+fn admit_generated(
+    world: &crate::world::World,
+    raw: &Value,
+    segment: &Segment,
+    authority: &str,
+    boosts: &[Boost],
+) -> Result<bool, String> {
+    if raw["terminal"] == true
+        || !matches!(segment.mode.as_str(), "jump" | "drop")
+        || raw["id"].as_str() != Some(generated_id(raw, authority)?.as_str())
+    {
+        return Ok(false);
+    }
+    if segment.boost.is_some()
+        || segment.gait.is_some()
+        || segment.traversal.is_some()
+        || !raw["boostExpiry"].is_null()
+    {
+        return Ok(false);
+    }
+    let Some(witness) = &segment.flight else {
+        return Ok(false);
+    };
+    let mut model = world.movement.model.clone();
+    let multiplier = if let Some(id) = raw["requiredBoost"].as_str() {
+        let Some(boost) = boosts.iter().find(|b| b.usage.id == id) else {
+            return Ok(false);
+        };
+        boost.usage.multiplier
+    } else {
+        1.
+    };
+    model.max_horizontal_speed *= multiplier;
+    model.start_horizontal_speed = model.start_horizontal_speed.map(|v| v * multiplier);
+    let start = point(&witness["start"])?;
+    let end = point(&witness["end"])?;
+    let control: crate::world::FlightControl =
+        serde_json::from_value(witness["control"].clone()).map_err(|e| e.to_string())?;
+    // Expiry controls belong to selected schedules, not learned static actions.
+    if control.expire_after.is_some() || control.expired_horizontal_speed.is_some() {
+        return Ok(false);
+    }
+    if control.mode
+        != if segment.mode == "jump" {
+            crate::model::Mode::Jump
+        } else {
+            crate::model::Mode::Drop
+        }
+    {
+        return Ok(false);
+    }
+    let replay = match witness["kind"].as_str() {
+        Some("flight") => world.flight_with_control(start, end, &model, &control)?,
+        Some("run-off") => world.run_off(start, end, &model, &control)?,
+        _ => return Ok(false),
+    };
+    let Some(replay) = replay else {
+        return Ok(false);
+    };
+    let mut expected: Segment =
+        serde_json::from_value(serde_json::to_value(replay).map_err(|e| e.to_string())?)
+            .map_err(|e| e.to_string())?;
+    classify_flight(&mut expected, world.movement.run_air_speed * multiplier);
+    Ok(segment.required_gait == expected.required_gait
+        && segment.flight == expected.flight
+        && segment.points.len() == expected.points.len()
+        && segment.times.len() == expected.times.len()
+        && segment
+            .points
+            .iter()
+            .zip(&expected.points)
+            .all(|(&a, &b)| distance(a, b) <= EPS)
+        && segment
+            .times
+            .iter()
+            .zip(&expected.times)
+            .all(|(a, b)| (a - b).abs() <= EPS))
 }
 #[derive(Clone)]
 enum Step {
@@ -235,7 +452,7 @@ struct Label {
     step: Option<Step>,
     boost: Option<usize>,
     remaining: f64,
-    used_boost: Option<usize>,
+    used_boost: Option<String>,
     minimum: f64,
     dashes: usize,
     active: bool,
@@ -323,6 +540,12 @@ pub fn solve(world: &crate::world::World, query: &Value, config: &Value) -> Resu
     let mut placement_truncated = false;
     let max_placements = budget(config, "maxShortcutCandidates", 64)?;
     'placements: for device in &world.devices.following_supports {
+        if array(&config["fixedPlacements"])
+            .iter()
+            .any(|p| p["device"] == device.id)
+        {
+            continue;
+        }
         let positions = following_positions(
             world,
             device,
@@ -475,6 +698,7 @@ fn solve_world(
     let m = &world.movement;
     let snapshot = json!({"movement":{"speed":m.speed,"maxVertical":m.max_vertical,"profile":m.profile,"model":m.model,"locomotion":world.locomotion,"runAirSpeed":m.run_air_speed,"maxSlope":m.max_slope,"maxDrop":m.max_drop,"maxHorizontalDistance":m.max_horizontal_distance,"activeBoost":m.active_boost},"boosts":world.boosts});
     let geometry = geometry::Geometry::new(world)?;
+    let authority = physical_authority(world)?;
     let stage = config["physicalWork"]["step"].as_u64().unwrap_or(2);
     let movement = &snapshot["movement"];
     let speed = number(movement, "speed", 1.)?;
@@ -513,6 +737,18 @@ fn solve_world(
             interaction: b["interaction"].clone(),
         });
     }
+    // A later sparse window may omit the original trigger. Its selected prefix
+    // supplies the immutable pickup fact and remaining lifetime without altering
+    // the prepared World's raw geometry or movement authority.
+    for start in array(&query["starts"])
+        .iter()
+        .filter(|s| s["state"] == "available")
+    {
+        let active = &start["continuation"]["boost"];
+        if !active.is_null() {
+            merge_carried_boost(active, &snapshot["boosts"], &mut boosts)?;
+        }
+    }
     let mut graph = Graph {
         points: Vec::new(),
         edges: Vec::new(),
@@ -545,7 +781,7 @@ fn solve_world(
         if let Some(p) = geometry.project(p, tolerance)
             && geometry.clear(p, p, 0.)
         {
-            seeds.push((graph.anchor(p), i, cost));
+            seeds.push((graph.anchor(p), i, cost, read_entry(s, &options, &boosts)?));
         }
     }
     let mut targets = Vec::new();
@@ -918,6 +1154,11 @@ fn solve_world(
             }
         }
     }
+    let authored_ids = world
+        .known_actions()
+        .iter()
+        .map(|c| c.id.as_str())
+        .collect::<std::collections::HashSet<_>>();
     let mut known = Vec::new();
     let mut connection_ids = std::collections::HashSet::new();
     for c in &known_actions {
@@ -936,8 +1177,19 @@ fn solve_world(
         let a = segment.points[0];
         let b = *segment.points.last().unwrap();
         let terminal = c["terminal"] == true;
-        let endpoint = number(c, "endpointTolerance", 1e-6)?;
-        if endpoint < 0. || endpoint > tolerance.min(geometry.radius).max(1e-6) {
+        let generated = !authored_ids.contains(id) && c["nativeGenerated"] == 1;
+        if generated && !admit_generated(world, c, &segment, &authority, &boosts)? {
+            continue;
+        }
+        // Authored endpoint tolerances remain strict. A generated catalog fact
+        // receives the same nav-membership tolerance as fresh discovery only
+        // after its authority, identity and full physical trajectory replay pass.
+        let endpoint = if generated {
+            tolerance
+        } else {
+            number(c, "endpointTolerance", 1e-6)?
+        };
+        if !generated && (endpoint < 0. || endpoint > tolerance.min(geometry.radius).max(1e-6)) {
             return Err("invalid connection endpoint tolerance".into());
         }
         let support = |key: &str| -> Result<Option<&str>, String> {
@@ -1077,7 +1329,7 @@ fn solve_world(
                 if segment.required_gait.is_some() && !has_locomotion {
                     continue;
                 }
-                graph.generated(a, segment, terminal, None)?;
+                graph.generated(a, segment, terminal, None, &authority)?;
             }
             'targets: for &b in &action_targets {
                 let terminal = interaction["airborne"] == true && targets.contains(&b);
@@ -1130,6 +1382,7 @@ fn solve_world(
                                 segment,
                                 terminal,
                                 boost.map(|i| boosts[i].usage.id.clone()),
+                                &authority,
                             )?;
                         }
                     }
@@ -1143,8 +1396,8 @@ fn solve_world(
     let mut arena = Vec::<Label>::new();
     let mut rows = vec![Vec::<usize>::new(); graph.points.len()];
     let mut queue = BinaryHeap::new();
-    for (node, origin, cost) in seeds {
-        let state = locomotion::initial(&options);
+    for (node, origin, cost, entry) in seeds {
+        let state = entry.state;
         let stage = advance_stage(&[graph.points[node]], 0, &waypoints, tolerance);
         let label = Label {
             node,
@@ -1155,11 +1408,11 @@ fn solve_world(
             state,
             parent: None,
             step: None,
-            boost: None,
-            remaining: 0.,
-            used_boost: None,
-            minimum: state.energy,
-            dashes: 0,
+            boost: entry.boost,
+            remaining: entry.remaining,
+            used_boost: entry.used_boost,
+            minimum: state.minimum,
+            dashes: state.dash_count,
             active: true,
         };
         insert(
@@ -1213,7 +1466,7 @@ fn solve_world(
         expanded += 1;
         // A pickup is a zero-time state transition. A route can consume one pickup;
         // revisiting its trigger cannot mint unlimited duration or reset resources.
-        if label.used_boost.is_none() {
+        if stage >= 1 && label.used_boost.is_none() {
             for (i, b) in boosts.iter().enumerate() {
                 if hit(
                     graph.points[label.node],
@@ -1227,7 +1480,7 @@ fn solve_world(
                     next.parent = Some(item.label);
                     next.step = None;
                     next.boost = Some(i);
-                    next.used_boost = Some(i);
+                    next.used_boost = Some(b.usage.id.clone());
                     next.remaining = b.usage.duration;
                     insert(
                         next,
@@ -1385,7 +1638,7 @@ fn solve_world(
                     step: Some(step),
                     boost,
                     remaining,
-                    used_boost: label.used_boost,
+                    used_boost: label.used_boost.clone(),
                     minimum: state.minimum,
                     dashes,
                     active: true,
@@ -1462,7 +1715,7 @@ fn solve_world(
         .sum::<f64>();
     let mut route = json!({"status":"complete","start":starts[chosen.origin]["id"],"cost":chosen.cost,"arrivalCost":chosen.arrival,"length":length,"points":points,"segments":segments,"schedule":schedule,"placements":[],"search":search});
     if has_locomotion {
-        route["locomotion"] = json!({"initial":locomotion::initial(&options).energy,"final":chosen.state.energy,"minimum":chosen.minimum,"dashes":chosen.dashes,"search":{"truncated":truncated,"maxLabels":max_labels}});
+        route["locomotion"] = json!({"initial":arena[chain[0]].state.energy,"final":chosen.state.energy,"minimum":chosen.minimum,"dashes":chosen.dashes,"search":{"truncated":truncated,"maxLabels":max_labels}});
     }
     if interaction["airborne"] == true
         && let Some((index, (p, t))) = segments
@@ -1473,12 +1726,26 @@ fn solve_world(
     {
         route["goalHit"] = json!({"segment":index,"position":p,"time":t});
     }
-    if let Some(i) = chosen.used_boost {
-        let b = &boosts[i];
+    if let Some(b) = chosen
+        .used_boost
+        .as_ref()
+        .and_then(|id| boosts.iter().find(|b| &b.usage.id == id))
+    {
         route["boosts"] = json!([{"id":b.usage.id,"duration":b.usage.duration,"multiplier":b.usage.multiplier,"position":b.position,"elapsed":b.usage.duration-chosen.remaining}]);
     }
+    let mut continuation = json!({"resource":chosen.state});
+    if let Some(id) = &chosen.used_boost {
+        continuation["usedBoost"] = json!(id);
+    }
+    if let Some(i) = chosen.boost {
+        let b = &boosts[i];
+        continuation["boost"] = json!({"id":b.usage.id,"multiplier":b.usage.multiplier,
+            "duration":b.usage.duration,"remaining":chosen.remaining,
+            "position":b.position,"interaction":b.interaction});
+    }
+
     Ok(
-        json!({"route":route,"connections":connections,"diagnostics":{"truncated":truncated,"candidateAttempts":attempts,"groundAttempts":ground_attempts,"groundDegree":ground_degree},"arrival":starts[chosen.origin],"groundedTarget":points.last()}),
+        json!({"route":route,"connections":connections,"diagnostics":{"truncated":truncated,"candidateAttempts":attempts,"groundAttempts":ground_attempts,"groundDegree":ground_degree},"arrival":starts[chosen.origin],"groundedTarget":points.last(),"continuation":continuation}),
     )
 }
 fn profile(phase: &str, started: &std::time::Instant, count: usize) {

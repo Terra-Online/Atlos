@@ -240,6 +240,11 @@ impl World {
                         }
                     }
                     for end in candidates {
+                        let direct = (end[0] - aim[0]).hypot(end[2] - aim[2])
+                            <= self.movement.profile.radius;
+                        m.max_jump_height = d.height.max(
+                            (if direct { end[1] } else { aim[1] }) + d.aim_clearance - start[1],
+                        );
                         let Some(time) = super::flight::duration(start[1], end[1], &m, Mode::Jump)?
                         else {
                             continue;
@@ -326,7 +331,9 @@ impl World {
         let moving: Vec<Surface> = self
             .surfaces
             .iter()
-            .filter(|s| s.extra.contains_key("supportDevice"))
+            .filter(|s| {
+                s.extra.contains_key("supportDevice") && !s.extra.contains_key("followingDevice")
+            })
             .cloned()
             .collect();
         for s in moving {
@@ -366,113 +373,38 @@ impl World {
         }
         Ok(())
     }
-    /// A following support is an alternative placement, never an always-solid
-    /// obstacle across its activity range. The returned World owns that one pose.
-    pub fn place_following(&self, id: &str, position: Vec3) -> Result<Option<World>, String> {
-        let Some(d) = self.devices.following_supports.iter().find(|d| d.id == id) else {
-            return Err("Unknown following support".into());
-        };
-        if !finite(position) || !d.max_distance.is_finite() || d.max_distance < 0. {
-            return Err("Invalid following placement".into());
-        }
-        if distance(position, d.spawn) > d.max_distance + 1e-9 {
+    /// Bind all requested following poses at once. Existing bindings are fixed:
+    /// identical entries deduplicate and conflicting positions are errors.
+    /// Inadmissible geometry returns None without changing this World.
+    pub fn with_placements(&self, placements: &[Value]) -> Result<Option<World>, String> {
+        let mut snapshot = self.snapshot.clone();
+        let bound = super::following::merge_placements(&snapshot, &self.devices, placements)?;
+        snapshot["placements"] = serde_json::to_value(bound).map_err(|e| e.to_string())?;
+        // Validate jointly against original raw static geometry. Materialized
+        // default bodies are not raw facts and are replaced, never accumulated.
+        if super::following::materialize(
+            &snapshot,
+            &self.devices,
+            &self.collision,
+            &self.source_walls,
+            &self.coverage,
+            self.movement.max_slope,
+        )?
+        .is_none()
+        {
             return Ok(None);
         }
-        let delta = sub(position, d.spawn);
-        let mut roofs = vec![];
-        let mut body_faces = vec![];
-        for (i, body) in d.bodies.iter().enumerate() {
-            if body.len() < 4 || body.iter().any(|&p| !finite(p)) {
-                return Err("Invalid following body".into());
-            }
-            let shifted: Vec<Vec3> = body
-                .iter()
-                .map(|p| std::array::from_fn(|a| p[a] + delta[a]))
-                .collect();
-            let low = shifted.iter().map(|p| p[1]).fold(f64::INFINITY, f64::min);
-            let high = shifted
-                .iter()
-                .map(|p| p[1])
-                .fold(f64::NEG_INFINITY, f64::max);
-            let bottom = hull(
-                shifted
-                    .iter()
-                    .filter(|p| (p[1] - low).abs() < 1e-5)
-                    .copied()
-                    .collect(),
-            );
-            let top = hull(
-                shifted
-                    .iter()
-                    .filter(|p| (p[1] - high).abs() < 1e-5)
-                    .copied()
-                    .collect(),
-            );
-            if top.len() < 3 || bottom.len() < 3 {
-                return Ok(None);
-            }
-            // Subtract coplanar static triangles from the complete footprint. Checking
-            // corners alone would allow a movable body to bridge unsupported holes.
-            if !footprint_supported(&bottom, low, &self.collision.faces) {
-                return Ok(None);
-            }
-            let min: Vec3 =
-                std::array::from_fn(|a| shifted.iter().map(|p| p[a]).fold(f64::INFINITY, f64::min));
-            let max: Vec3 = std::array::from_fn(|a| {
-                shifted
-                    .iter()
-                    .map(|p| p[a])
-                    .fold(f64::NEG_INFINITY, f64::max)
-            });
-            for face in &self.collision.faces {
-                let fmin: Vec3 = std::array::from_fn(|a| {
-                    face.iter().map(|p| p[a]).fold(f64::INFINITY, f64::min)
-                });
-                let fmax: Vec3 = std::array::from_fn(|a| {
-                    face.iter().map(|p| p[a]).fold(f64::NEG_INFINITY, f64::max)
-                });
-                if fmax[1] > low + 1e-5
-                    && (0..3).all(|a| fmin[a] < max[a] - 1e-6 && fmax[a] > min[a] + 1e-6)
-                {
-                    return Ok(None);
-                }
-            }
-            body_faces.extend(convex_faces(&shifted));
-            let mut extra = Extra::new();
-            extra.insert(
-                "placement".into(),
-                serde_json::json!({"device":id,"position":position}),
-            );
-            roofs.push(Surface {
-                id: format!("following/{id}/{i}"),
-                vertices: top,
-                portals: None,
-                extra,
-            });
-        }
-        let mut snapshot = self.snapshot.clone();
-        let arr = snapshot["input"]["devices"]["movingSupports"].as_array_mut();
-        let support = serde_json::json!({"id":format!("following/{id}"),"family":"following","surfaces":roofs,"transfers":[],"assumption":"placement-within-activity-range"});
-        if let Some(arr) = arr {
-            arr.push(support)
-        } else {
-            snapshot["input"]["devices"]["movingSupports"] = serde_json::json!([support]);
-        }
-        let mut geometry: CollisionGeometry = decode(&snapshot["input"]["collision"], "collision")?;
-        for face in body_faces {
-            let base = geometry.positions.len() / 3;
-            geometry.positions.extend(face.into_iter().flatten());
-            geometry.indices.extend([base, base + 1, base + 2]);
-        }
-        snapshot["input"]["collision"] =
-            serde_json::to_value(geometry).map_err(|e| e.to_string())?;
         World::new(snapshot).map(Some)
     }
+    pub fn place_following(&self, id: &str, position: Vec3) -> Result<Option<World>, String> {
+        self.with_placements(&[serde_json::json!({"device":id,"position":position})])
+    }
 }
+
 fn side(a: Vec3, b: Vec3, p: Vec3) -> f64 {
     (b[0] - a[0]) * (p[2] - a[2]) - (b[2] - a[2]) * (p[0] - a[0])
 }
-fn hull(mut points: Vec<Vec3>) -> Vec<Vec3> {
+pub(super) fn hull(mut points: Vec<Vec3>) -> Vec<Vec3> {
     points.sort_by(|a, b| a[0].total_cmp(&b[0]).then_with(|| a[2].total_cmp(&b[2])));
     points.dedup();
     if points.len() < 3 {
@@ -524,7 +456,7 @@ fn half_clip(poly: &[Vec3], a: Vec3, b: Vec3, keep_inside: bool) -> Vec<Vec3> {
     }
     out
 }
-fn footprint_supported(poly: &[Vec3], height: f64, faces: &[[Vec3; 3]]) -> bool {
+pub(super) fn footprint_supported(poly: &[Vec3], height: f64, faces: &[[Vec3; 3]]) -> bool {
     let mut uncovered = vec![poly.to_vec()];
     for t in faces {
         if t.iter().any(|p| (p[1] - height).abs() > 1e-5) || side(t[0], t[1], t[2]) >= -1e-9 {
@@ -557,7 +489,7 @@ fn footprint_supported(poly: &[Vec3], height: f64, faces: &[[Vec3; 3]]) -> bool 
 
 // Triangulate each supporting plane once. Coplanar vertices form one polygon,
 // avoiding overlapping triangle fans on a box face or a convex collider face.
-fn convex_faces(points: &[Vec3]) -> Vec<[Vec3; 3]> {
+pub(super) fn convex_faces(points: &[Vec3]) -> Vec<[Vec3; 3]> {
     let mut planes: Vec<(Vec3, f64)> = vec![];
     let mut out = vec![];
     for i in 0..points.len() {

@@ -31,8 +31,8 @@ complete revision and coverage identities. No completed-query result or persiste
 query failure cache exists. Catalog banks bind the same identities and freeze
 before measured service. Sampled discovery and finite labels can truncate search.
 
-The hardened integration passes 92 Rust unit tests, two authored-action end-to-end
-tests and twelve N-API fixtures. The fixtures use the independent common physical
+The hardened integration passes 106 Rust unit tests, two authored-action end-to-end
+tests and twenty-one N-API fixtures. The fixtures use the independent common physical
 evaluator for raw ground, multihop flights, launches, moving rides, following
 placement, airborne collection and whole-route resources, including boost expiry
 across several scene windows. The retained 438-test TypeScript suite also passes.
@@ -68,10 +68,27 @@ physical gate. All six return native complete traces, but five fail common repla
 with `Unsupported or obstructed walk` in both rounds. Only the lower-floor query
 above is physically accepted. Training hits its 300-second watchdog; measured
 requests have no timeouts. Results and truncation are stable across rounds. No
-aggregate speedup is accepted. Follow-up work addresses support behavior at
-scheduled walking cuts, default following bodies and placement eligibility,
-final goal geometry, catalog endpoint admission and resource/placement state
-across windows.
+aggregate speedup is accepted. The resulting hardening adds raw centerline
+support in addition to directed nav proofs and certifies walking clearance across
+arbitrary resource cuts. Following bodies exist at their default spawn; joint
+placements replace those bodies and obey supported box/exclusion contracts.
+Moving support selection excludes ineligible static navigation before reduction.
+Direct fixed launches derive height from canonical landing feet.
+
+Scene continuation carries exact resource clocks and active boost facts from the
+selected recomposed prefix. Following facts and placements survive sparse windows;
+identical poses deduplicate and conflicting poses reject. Final completion checks
+the original goal geometry, and bounded terminal alternatives retain their target
+partials before coarse planning. Generated catalog admission binds native content
+identity and physical authority, then replays the witness before granting generated
+nav tolerance. Authored tolerances stay strict. Failed resumes clear the host's
+snapshot residency mirror.
+
+Broader route acceptance remains open: with stricter raw support, the formerly
+fast upper-floor diagnostic spends most sampled time repairing ground proposals
+and has no complete candidate before it is stopped. Discovery at raw support
+interfaces inside imported nav is required. Revalidation after a later placement
+also needs complete earlier-flight support and witness checks.
 
 ## Workspace migration checkpoint, 2026-11-14
 

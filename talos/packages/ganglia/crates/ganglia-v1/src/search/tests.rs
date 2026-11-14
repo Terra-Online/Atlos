@@ -283,17 +283,17 @@ fn following_support_placement_opens_an_otherwise_unreachable_platform() {
     world["movement"]["model"] = json!({"gravity":10.,"fallingGravity":10.,"maxJumpHeight":0.5,"maxFallingSpeed":20.,"apexTime":0.,"maxHorizontalSpeed":3.});
     world["movement"]["runAirSpeed"] = json!(3.);
     world["movement"]["stepUp"] = json!(0.1);
-    let body = vec![
-        [-0.5, 0., -0.5],
-        [0.5, 0., -0.5],
-        [0.5, 0., 0.5],
-        [-0.5, 0., 0.5],
-        [-0.5, 0.4, -0.5],
-        [0.5, 0.4, -0.5],
-        [0.5, 0.4, 0.5],
-        [-0.5, 0.4, 0.5],
-    ];
-    world["devices"] = json!({"followingSupports":[{"id":"box","spawn":[0.,0.,0.],"bodies":[body],"geometryKind":"convex","maxDistance":4.5,"initialState":0.,"assumption":"movable"}]});
+    // Supplied placement bodies use the common box corner bit order: X/Y/Z.
+    let body = (0..8)
+        .map(|bits| {
+            [
+                if bits & 1 != 0 { 0.5 } else { -0.5 },
+                if bits & 2 != 0 { 0.4 } else { 0. },
+                if bits & 4 != 0 { 0.5 } else { -0.5 },
+            ]
+        })
+        .collect::<Vec<_>>();
+    world["devices"] = json!({"followingSupports":[{"id":"box","spawn":[0.,0.,0.],"bodies":[body],"geometryKind":"box","maxDistance":4.5,"initialState":0.,"assumption":"placement-within-activity-range"}]});
     let q = json!({"starts":[start("a",-1.,0.,"available")],"goal":[4.,0.8,0.]});
     let p =
         json!({"sampleSpacing":0.5,"maxCandidates":4000,"maxLinks":10,"maxShortcutCandidates":16});
@@ -819,4 +819,213 @@ fn continuous_landing_inside_large_lower_polygon_connects_to_grounded_goal() {
             .last()
             .is_some_and(|s| s["mode"] == "walk")
     );
+}
+
+fn carried_resource(energy: f64, sprinting: bool) -> Value {
+    json!({"energy":energy,"minimum":energy,"dashCount":0,"delay":0.,
+        "sprinting":sprinting,"hasActivated":sprinting,"velocity":2.,
+        "previousDirection":null,"dashCooldown":0.,"dashRemaining":0.})
+}
+#[test]
+fn arrival_resource_continuations_keep_gait_stamina_and_dash_clocks_separate() {
+    let mut action = connection("sprint-rope", 0., 10., 0.25);
+    action["requiredGait"] = json!("sprint");
+    let mut snapshot = scene(vec![surface("a", 0.), surface("b", 10.)], vec![action]);
+    snapshot["movement"]["locomotion"] = json!({"speed":2.,"sprintSpeed":4.,"sprintAcceleration":2.,
+        "dash":{"speed":8.,"duration":0.3,"cooldown":2.,"cost":1.},
+        "stamina":{"capacity":2.,"initial":2.,"activationCost":1.,"sprintDrain":1.,
+            "recoveryRate":1.,"recoveryDelay":0.5,"reserve":0.}});
+    let mut tired = start("tired", 0., 0., "available");
+    tired["continuation"] = json!({"resource":carried_resource(0.,false)});
+    let mut ready = start("ready", 0., 0.5, "available");
+    let mut resource = carried_resource(1.5, true);
+    resource["minimum"] = json!(0.5);
+    resource["delay"] = json!(0.4);
+    resource["dashCount"] = json!(3);
+    resource["dashCooldown"] = json!(1.5);
+    resource["dashRemaining"] = json!(0.2);
+    ready["continuation"] = json!({"resource":resource});
+    let query = json!({"starts":[tired,ready.clone()],"goal":[10.,0.,0.]});
+    let result = solve_snapshot(&snapshot, &query, &json!({"maxCandidates":0})).unwrap();
+    complete(&result);
+    assert_eq!(result["route"]["start"], "ready");
+    assert!((result["route"]["cost"].as_f64().unwrap() - 0.75).abs() < EPS);
+    let output = &result["continuation"]["resource"];
+    assert_eq!(output["energy"], 1.5);
+    assert_eq!(output["minimum"], 0.5);
+    assert_eq!(output["dashCount"], 3);
+    assert_eq!(output["dashRemaining"], 0.);
+    assert_eq!(output["dashCooldown"], 1.25);
+    assert_eq!(output["delay"], 0.4);
+    let stationary = solve_snapshot(
+        &snapshot,
+        &json!({"starts":[ready],"goal":[0.,0.,0.]}),
+        &json!({"maxCandidates":0}),
+    )
+    .unwrap();
+    complete(&stationary);
+    assert_eq!(stationary["route"]["locomotion"]["minimum"], 0.5);
+    assert_eq!(stationary["route"]["locomotion"]["dashes"], 3);
+}
+#[test]
+fn carried_boost_enables_flight_without_trigger_in_sparse_world_and_cannot_restart() {
+    let mut snapshot = scene(vec![surface("a", 0.), surface("b", 7.)], vec![]);
+    snapshot["movement"]["model"] = json!({"gravity":10.,"fallingGravity":10.,"maxJumpHeight":1.,
+        "maxFallingSpeed":20.,"apexTime":0.,"maxHorizontalSpeed":4.});
+    snapshot["movement"]["runAirSpeed"] = json!(4.);
+    let mut arrival = start("arrival", 0., 0., "available");
+    arrival["continuation"] = json!({"resource":carried_resource(0.,false),"usedBoost":"earlier",
+        "boost":{"id":"earlier","multiplier":2.,"duration":3.,"remaining":1.,
+            "position":[-20.,0.01,0.],"interaction":{"radius":0.2}}});
+    let query = json!({"starts":[arrival.clone()],"goal":[7.,0.,0.]});
+    let policy = json!({"maxCandidates":1024,"maxLinks":2,"sampleSpacing":100.});
+    let result = solve_snapshot(&snapshot, &query, &policy).unwrap();
+    complete(&result);
+    assert_eq!(result["continuation"]["usedBoost"], "earlier");
+    assert!(
+        result["continuation"]["boost"]["remaining"]
+            .as_f64()
+            .unwrap()
+            < 1.
+    );
+    assert!(
+        array(&result["route"]["segments"])
+            .iter()
+            .any(|s| s["mode"] == "jump" && s["boost"]["id"] == "earlier")
+    );
+    snapshot["boosts"] = json!([{"id":"earlier","multiplier":2.,"duration":3.,
+        "position":[0.,0.01,0.],"interaction":{"radius":0.2}}]);
+    arrival["continuation"]
+        .as_object_mut()
+        .unwrap()
+        .remove("boost");
+    let expired = solve_snapshot(
+        &snapshot,
+        &json!({"starts":[arrival],"goal":[7.,0.,0.]}),
+        &policy,
+    )
+    .unwrap();
+    assert_ne!(
+        expired["route"]["status"], "complete",
+        "expired used trigger must not restart"
+    );
+}
+
+#[test]
+fn generated_catalog_train_freeze_reuses_flight_and_run_off_above_offset_navigation() {
+    for run_off in [false, true] {
+        let (surfaces, from, to) = if run_off {
+            (
+                vec![
+                    json!({"id":"upper","vertices":[[-4.,2.,-2.],[0.,2.,-2.],[0.,2.,2.],[-4.,2.,2.]]}),
+                    json!({"id":"lower","vertices":[[-4.,0.,-2.],[5.,0.,-2.],[5.,0.,2.],[-4.,0.,2.]]}),
+                ],
+                [-1., 2.01, 0.],
+                [2., 0.01, 0.],
+            )
+        } else {
+            (
+                vec![surface("a", 0.), surface("b", 4.)],
+                [0., 0.01, 0.],
+                [4., 0.01, 0.],
+            )
+        };
+        let mut raw = scene(surfaces, vec![]);
+        // Change navigation only: raw collision stays on the physical floors.
+        for face in raw["surfaces"].as_array_mut().unwrap() {
+            for p in face["vertices"].as_array_mut().unwrap() {
+                p[1] = json!(p[1].as_f64().unwrap() + if run_off { 0.08 } else { 0.2 });
+            }
+        }
+        raw["movement"]["model"] = json!({"gravity":10.,"fallingGravity":10.,"maxJumpHeight":1.,
+            "maxFallingSpeed":20.,"apexTime":0.,"maxHorizontalSpeed":5.});
+        raw["movement"]["runAirSpeed"] = json!(5.);
+        // Ordinary flight previously emitted radius as authored tolerance;
+        // a valid radius greater than maxVertical made frozen reuse an error.
+        if !run_off {
+            raw["movement"]["profile"]["radius"] = json!(0.6);
+        }
+        let snapshot = json!({"kind":"surfaces","revision":"catalog-offset","coverage":"complete","input":raw});
+        let world = crate::world::World::new(snapshot.clone()).unwrap();
+        let connection = if run_off {
+            world
+                .run_off(
+                    from,
+                    to,
+                    &world.movement.model,
+                    &crate::world::FlightControl {
+                        mode: crate::model::Mode::Drop,
+                        ..Default::default()
+                    },
+                )
+                .unwrap()
+                .unwrap()
+        } else {
+            world
+                .flight(from, to, crate::model::Mode::Jump)
+                .unwrap()
+                .unwrap()
+        };
+        let physical = serde_json::to_value(&connection).unwrap();
+        let mut segment: Segment = serde_json::from_value(physical.clone()).unwrap();
+        classify_flight(&mut segment, world.movement.run_air_speed);
+        let mut graph = Graph {
+            points: vec![],
+            edges: vec![],
+            generated: vec![],
+            action_ids: Default::default(),
+            anchors: Default::default(),
+        };
+        let source = graph.node(from);
+        let authority = physical_authority(&world).unwrap();
+        graph
+            .generated(source, segment, false, None, &authority)
+            .unwrap();
+        let generated = graph.generated[0].clone();
+        let query = json!({"starts":[{"id":"start","position":from,"cost":0.,"state":"available"}],"goal":to});
+        let policy =
+            json!({"maxCandidates":0,"catalogConnections":[generated],"physicalWork":{"step":1}});
+        let mut engine = crate::engine::Engine::new(policy.clone(), snapshot.clone()).unwrap();
+        engine.catalog("train").unwrap();
+        let trained = engine.start(query.clone()).unwrap()["result"].clone();
+        complete(&trained);
+        let stats = engine.catalog("freeze").unwrap();
+        assert_eq!(stats["actions"], 1);
+        let frozen = engine.start(query.clone()).unwrap()["result"].clone();
+        complete(&frozen);
+        assert_eq!(engine.catalog("stats").unwrap()["actions"], 1);
+        let learned = &trained["connections"][0];
+        assert_eq!(learned["points"], physical["points"]);
+        assert_eq!(learned["times"], physical["times"]);
+        assert_eq!(learned["flight"], physical["flight"]);
+        // Explicitly disable discovery while reusing the learned bank contents.
+        let mut reuse = policy.clone();
+        reuse["catalogConnections"] = trained["connections"].clone();
+        let reused = solve(&world, &query, &reuse).unwrap();
+        complete(&reused);
+        assert_eq!(reused["diagnostics"]["candidateAttempts"], 0);
+        assert_eq!(reused["route"]["cost"], frozen["route"]["cost"]);
+        // A marker and a recomputed content ID cannot authorize a forged model.
+        let mut forged = learned.clone();
+        forged["flight"]["model"]["maxJumpHeight"] = json!(100.);
+        let forged_id = generated_id(&forged, &authority).unwrap();
+        forged["id"] = json!(forged_id);
+        forged["connection"] = forged["id"].clone();
+        reuse["catalogConnections"] = json!([forged]);
+        assert_ne!(
+            solve(&world, &query, &reuse).unwrap()["route"]["status"],
+            "complete"
+        );
+        // World-authored actions retain their explicit tolerance even when a
+        // caller copies a valid generated marker and physical witness onto them.
+        let mut authored = learned.clone();
+        authored["endpointTolerance"] = json!(0.02);
+        let mut authored_input = snapshot.clone();
+        authored_input["input"]["connections"] = json!([authored]);
+        let authored_world = crate::world::World::new(authored_input).unwrap();
+        assert_ne!(
+            solve(&authored_world, &query, &json!({"maxCandidates":0})).unwrap()["route"]["status"],
+            "complete"
+        );
+    }
 }

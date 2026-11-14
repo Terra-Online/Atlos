@@ -2,20 +2,26 @@
 //! extra energy alone is unsafe dominance with automatic sprint restart.
 use super::{Point, complete, distance, lerp, number, point, route_points};
 use serde_json::{Value, json};
-use std::collections::{BTreeMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, VecDeque};
 const EPS: f64 = 1e-9;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct State {
     energy: f64,
     minimum: f64,
     delay: f64,
     sprinting: bool,
+    #[serde(rename = "hasActivated")]
     activated: bool,
     velocity: f64,
+    #[serde(rename = "previousDirection")]
     direction: Option<Point>,
+    #[serde(rename = "dashCooldown")]
     cooldown: f64,
+    #[serde(rename = "dashRemaining")]
     dash: f64,
+    #[serde(rename = "dashCount")]
     dashes: usize,
 }
 #[derive(Clone)]
@@ -27,6 +33,7 @@ struct Label {
     // Absolute first trigger time on this label's retimed trace. Device rides
     // advance duration even when they carry no character-speed annotation.
     boost_pickups: BTreeMap<String, f64>,
+    used_boost: Option<String>,
 }
 
 #[cfg(test)]
@@ -34,11 +41,28 @@ pub(super) fn compose(pieces: &[Value], options: &Value) -> Result<Option<Value>
     compose_with_boosts(pieces, options, &[])
 }
 
+#[cfg(test)]
 pub(super) fn compose_with_boosts(
     pieces: &[Value],
     options: &Value,
     boost_facts: &[Value],
 ) -> Result<Option<Value>, String> {
+    Ok(compose_state(pieces, options, boost_facts, &Value::Null)?.map(|composed| composed.route))
+}
+
+pub(super) struct Composed {
+    pub route: Value,
+    pub continuation: Value,
+}
+
+/// Return continuation from the selected retimed trace, never from an
+/// independently solved piece's reset resource summary.
+pub(super) fn compose_state(
+    pieces: &[Value],
+    options: &Value,
+    boost_facts: &[Value],
+    entry: &Value,
+) -> Result<Option<Composed>, String> {
     let Some(first) = pieces.first() else {
         return Ok(None);
     };
@@ -73,8 +97,10 @@ pub(super) fn compose_with_boosts(
                 .ok_or("Route requires segments")?
                 .clone(),
         );
-        if let Some(v) = piece["placements"].as_array() {
-            placements.extend(v.clone());
+        if let Some(v) = piece["placements"].as_array()
+            && super::merge_placements(&mut placements, v).is_err()
+        {
+            return Ok(None);
         }
         if !piece["search"].is_null() {
             has_search = true;
@@ -129,7 +155,10 @@ pub(super) fn compose_with_boosts(
         if let Some(hit) = goal_hit {
             route["goalHit"] = hit;
         }
-        return Ok(Some(route));
+        return Ok(Some(Composed {
+            route,
+            continuation: Value::Null,
+        }));
     }
     let speed = number(options, "speed", f64::NAN);
     let sprint = number(options, "sprintSpeed", f64::NAN);
@@ -147,7 +176,7 @@ pub(super) fn compose_with_boosts(
         blocks = split_dash(blocks, options)?;
     }
     let initial = number(&options["stamina"], "initial", 0.);
-    let state = State {
+    let mut state = State {
         energy: initial,
         minimum: initial,
         delay: 0.,
@@ -159,12 +188,30 @@ pub(super) fn compose_with_boosts(
         dash: 0.,
         dashes: 0,
     };
+    let mut pickups = BTreeMap::new();
+    if !entry["resource"].is_null() {
+        state = serde_json::from_value(entry["resource"].clone())
+            .map_err(|e| format!("Invalid continuation: {e}"))?;
+    }
+    if let Some(id) = entry["boost"]["id"].as_str() {
+        pickups.insert(
+            id.into(),
+            number(&entry["boost"], "remaining", 0.) - number(&entry["boost"], "duration", 0.),
+        );
+    }
+    let initial = state.energy;
+    let used_boost = entry["usedBoost"].as_str().map(str::to_owned).or_else(|| {
+        pieces
+            .iter()
+            .find_map(|p| p["boosts"][0]["id"].as_str().map(str::to_owned))
+    });
     let initial_label = Label {
         state,
         duration: 0.,
         segments: vec![],
         decisions: vec![],
-        boost_pickups: BTreeMap::new(),
+        boost_pickups: pickups,
+        used_boost,
     };
     // Supplied decision seams may spend stamina only near a required-sprint
     // takeoff. Merging adjacent walks for optional optimization must not erase
@@ -194,6 +241,7 @@ pub(super) fn compose_with_boosts(
                 };
                 if next.iter().any(|n| {
                     same_state(&n.state, &candidate.state)
+                        && n.used_boost == candidate.used_boost
                         && n.boost_pickups == candidate.boost_pickups
                         && n.duration <= candidate.duration + EPS
                 }) {
@@ -201,6 +249,7 @@ pub(super) fn compose_with_boosts(
                 }
                 next.retain(|n| {
                     !(same_state(&n.state, &candidate.state)
+                        && n.used_boost == candidate.used_boost
                         && n.boost_pickups == candidate.boost_pickups
                         && candidate.duration <= n.duration + EPS)
                 });
@@ -232,16 +281,39 @@ pub(super) fn compose_with_boosts(
             .then_with(|| a.state.energy.total_cmp(&b.state.energy))
     });
     let Some(best) = best else { return Ok(None) };
-    let used = best
-        .segments
-        .iter()
-        .filter_map(|s| s["boost"]["id"].as_str())
-        .collect::<HashSet<_>>();
-    let boosts=boost_facts.iter().filter(|fact|fact["id"].as_str().is_some_and(|id|used.contains(id))).filter_map(|fact|{
-        let pickup=best.boost_pickups.get(fact["id"].as_str()?)?;
-        Some(json!({"id":fact["id"],"duration":fact["duration"],"multiplier":fact["multiplier"],"position":fact["position"],
-            "elapsed":(best.duration-pickup).max(0.).min(number(fact,"duration",0.))}))
-    }).collect::<Vec<_>>();
+    let consumed = best.used_boost.clone().or_else(|| {
+        boost_facts
+            .iter()
+            .filter_map(|fact| {
+                let id = fact["id"].as_str()?;
+                let pickup = *best.boost_pickups.get(id)?;
+                (pickup + number(fact, "duration", 0.) > best.duration + EPS)
+                    .then_some((pickup, id))
+            })
+            .min_by(|a, b| a.0.total_cmp(&b.0).then_with(|| a.1.cmp(b.1)))
+            .map(|(_, id)| id.to_owned())
+    });
+    let mut continuation = json!({"resource":{
+        "energy":best.state.energy,"minimum":best.state.minimum,"dashCount":best.state.dashes,
+        "delay":best.state.delay,"sprinting":best.state.sprinting,"hasActivated":best.state.activated,
+        "velocity":best.state.velocity,"previousDirection":best.state.direction,
+        "dashCooldown":best.state.cooldown,"dashRemaining":best.state.dash}});
+    let mut boosts = vec![];
+    if let Some(id) = consumed {
+        continuation["usedBoost"] = json!(id);
+        if let Some(fact) = boost_facts.iter().find(|f| f["id"] == id)
+            && let Some(pickup) = best.boost_pickups.get(&id)
+        {
+            let duration = number(fact, "duration", 0.);
+            let remaining = (pickup + duration - best.duration).max(0.).min(duration);
+            boosts.push(json!({"id":id,"duration":duration,"multiplier":fact["multiplier"],"position":fact["position"],"elapsed":duration-remaining}));
+            if remaining > EPS {
+                let mut active = fact.clone();
+                active["remaining"] = json!(remaining);
+                continuation["boost"] = active;
+            }
+        }
+    }
     let mut output_points = vec![points[0]];
     for segment in &best.segments {
         for v in segment["points"].as_array().unwrap().iter().skip(1) {
@@ -275,7 +347,10 @@ pub(super) fn compose_with_boosts(
     if let Some(hit) = goal_hit {
         route["goalHit"] = map_hit(hit, &source, route["segments"].as_array().unwrap())?;
     }
-    Ok(Some(route))
+    Ok(Some(Composed {
+        route,
+        continuation,
+    }))
 }
 
 fn observe_pickups(
@@ -342,6 +417,10 @@ fn schedule_block(
         }
         let mut remaining = None;
         if let Some(id) = segment["boost"]["id"].as_str() {
+            if next.used_boost.as_deref().is_some_and(|used| used != id) {
+                return Ok(None);
+            }
+            next.used_boost = Some(id.to_owned());
             let fact = facts
                 .iter()
                 .find(|f| f["id"] == id)
@@ -558,6 +637,12 @@ fn same_trace(actual: &[Value], canonical: &[Value]) -> Result<bool, String> {
                 .collect::<Result<Vec<_>, _>>()?;
             let fields = identity.as_object_mut().ok_or("Invalid segment")?;
             fields.remove("gait");
+            // Remaining boost lifetime is rebound to each materialized entry.
+            // Its identity/multiplier and every fixed flight control still bind
+            // the physical trace; the label replay validates the actual clock.
+            if let Some(boost) = fields.get_mut("boost").and_then(Value::as_object_mut) {
+                boost.remove("duration");
+            }
             if segment["mode"] == "walk" {
                 fields.remove("points");
                 fields.remove("times");

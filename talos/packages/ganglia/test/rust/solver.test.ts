@@ -180,6 +180,53 @@ test('Rust builds support from raw collision when physical ground is empty', asy
   }
 });
 
+test('Rust physical walking cannot bridge a raw gap hidden by navigation', async () => {
+  const navigation: Surface = {
+    id: 'approximate-floor',
+    vertices: [
+      [-2, 0, -1],
+      [2, 0, -1],
+      [2, 0, 1],
+      [-2, 0, 1],
+    ],
+  };
+  const floors: Vec3[][] = [
+    [-2, -0.05],
+    [0.05, 2],
+  ].map(([a, b]) => [
+    [a, 0, -1],
+    [b, 0, -1],
+    [b, 0, 1],
+    [a, 0, 1],
+  ]);
+  const raw = floors.flatMap((v) => [
+    [v[0], v[2], v[1]],
+    [v[0], v[3], v[2]],
+  ]);
+  const input: PhysicalInput = {
+    ...physical,
+    ground: { ...physical.ground, surfaces: [navigation] },
+    collision: {
+      positions: raw.flat(2),
+      indices: Array.from({ length: raw.length * 3 }, (_, i) => i),
+    },
+  };
+  const configured = createPhysicalWorld(input, 'complete').configured();
+  assert.ok(configured.standing([-1, 0.01, 0]));
+  assert.ok(configured.standing([1, 0.01, 0]));
+  assert.equal(configured.walkTrace([-1, 0.01, 0], [1, 0.01, 0]), null);
+  const solver = await prepareRouteSolver(
+    { ...config, maxCandidates: 0 },
+    { kind: 'physical', input },
+  );
+  try {
+    const result = await solver.solve({ starts: [start([-1, 0.01, 0])], goal: [1, 0.01, 0] });
+    assert.notEqual(result.route.status, 'complete');
+  } finally {
+    await solver.close();
+  }
+});
+
 test('Rust airborne collection is certified before a later collision', async () => {
   const points = [3, 0, -2, 3, 4, -2, 3, 4, 2, 3, 0, 2];
   const count = physical.collision.positions.length / 3;

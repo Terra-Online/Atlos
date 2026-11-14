@@ -673,3 +673,98 @@ fn failed_arrival_is_query_local_and_alternative_gets_a_fresh_attempt() {
     let step = e.start(query()).unwrap();
     assert_eq!(step["effect"]["kind"], "window");
 }
+
+#[test]
+fn terminal_partial_is_retained_without_any_coarse_prefix() {
+    let mut scene = input();
+    scene["scene"]["navigation"]["surfaces"] = json!([]);
+    let mut e = Engine::with_search(json!({}), scene, fail_all).unwrap();
+    let mut q = query();
+    q["interaction"] = json!({"airborne":true,"radius":0.5});
+    let step = e.start(q).unwrap();
+    let terminal = route([9., 0., 0.], [10., 0., 0.]);
+    let result = e
+        .resume(json!({"id":step["effect"]["id"],"terminals":[{"id":"target","route":terminal}]}))
+        .unwrap();
+    assert_eq!(result["type"], "complete");
+    assert_eq!(result["result"]["partial"], true);
+    assert_eq!(result["result"]["route"], terminal);
+    assert_eq!(result["result"]["reason"], "no-global-candidate");
+}
+
+fn blocked_first_terminal(w: &World, q: &Value, c: &Value) -> Result<Value, String> {
+    if q["goal"][0].as_f64() == Some(9.) {
+        fail_all(w, q, c)
+    } else {
+        success(w, q, c)
+    }
+}
+#[test]
+fn failed_cheapest_terminal_reveals_an_alternative_within_shared_budget() {
+    let mut e =
+        Engine::with_search(json!({"maxAttempts":2}), input(), blocked_first_terminal).unwrap();
+    let mut q = query();
+    q["starts"][0]["cost"] = json!(0.);
+    q["interaction"] = json!({"airborne":true,"radius":0.5});
+    let step = e.start(q).unwrap();
+    let step = e
+        .resume(json!({"id":step["effect"]["id"],"terminals":[
+        {"id":"blocked","route":route([9.,0.,0.],[10.,0.,0.])},
+        {"id":"reachable","route":route([8.,0.,0.],[10.,0.,0.])}]}))
+        .unwrap();
+    let result = finish(&mut e, step);
+    assert_eq!(result["partial"], false, "{result}");
+    assert!(
+        route_points(&result["route"])
+            .unwrap()
+            .contains(&[8., 0., 0.])
+    );
+    assert_eq!(result["diagnostics"]["candidateAttempts"], 2);
+}
+
+#[test]
+fn composition_deduplicates_identical_placements_and_rejects_conflicting_poses() {
+    let mut a = route([0., 0., 0.], [1., 0., 0.]);
+    let mut b = route([1., 0., 0.], [2., 0., 0.]);
+    a["placements"] = json!([{"device":"box","position":[1.,0.,0.]}]);
+    b["placements"] = a["placements"].clone();
+    let policy = json!({"speed":1.,"sprintSpeed":1.,"sprintAcceleration":1.});
+    let joined = schedule::compose(&[a.clone(), b.clone()], &policy)
+        .unwrap()
+        .unwrap();
+    assert_eq!(joined["placements"].as_array().unwrap().len(), 1);
+    b["placements"][0]["position"] = json!([2., 0., 0.]);
+    assert!(schedule::compose(&[a, b], &policy).unwrap().is_none());
+}
+
+#[test]
+fn continuation_comes_from_selected_retimed_prefix_and_keeps_expired_pickup_used() {
+    let policy = json!({"speed":1.,"sprintSpeed":2.,"sprintAcceleration":10.,"stamina":{
+        "capacity":4.,"initial":4.,"activationCost":0.,"sprintDrain":1.,"recoveryRate":0.,"recoveryDelay":0.,"reserve":0.}});
+    let fact = json!({"id":"boost","duration":0.1,"multiplier":2.,"position":[0.,0.,0.],"interaction":{"radius":0.}});
+    let mut piece = route([0., 0., 0.], [2., 0., 0.]);
+    piece["segments"][0]["boost"] = json!({"id":"boost","duration":0.1,"multiplier":2.});
+    let facts = [fact];
+    let result = schedule::compose_state(&[piece], &policy, &facts, &Value::Null)
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        result.continuation["resource"]["energy"],
+        result.route["locomotion"]["final"]
+    );
+    assert!(number(&result.continuation["resource"], "energy", 4.) < 4.);
+    assert_eq!(result.continuation["usedBoost"], "boost");
+    assert!(result.continuation["boost"].is_null());
+    // Materialized expiry seams permit additional controls on a later pass.
+    // The supplied feasible schedule must remain an incumbent while per-entry
+    // remaining metadata is rebound to the selected clocks.
+    let repeated = schedule::compose_state(
+        std::slice::from_ref(&result.route),
+        &policy,
+        &facts,
+        &Value::Null,
+    )
+    .unwrap()
+    .unwrap();
+    assert!(number(&repeated.route, "cost", 0.) <= number(&result.route, "cost", 0.) + 1e-6);
+}
