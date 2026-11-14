@@ -19,6 +19,8 @@ interface Configuration {
   /** Report complete local placement proofs; the caller must require a proof
    * for every selected placement across the full snapshot set. */
   scopedPlacements?: boolean;
+  /** Optional mesh-contact skin, supplied by verification policy; source support stays unchanged. */
+  contactTolerance?: number;
 }
 
 export type Coverage =
@@ -247,7 +249,11 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
         if (!covered(a, b, body.radius + (body.inflation ?? 0)))
           throw new Error('Incomplete swept body coverage');
         if (solidBlocked(a, b, body.inflation ?? 0)) return { triangle: -1, distance: 0 };
-        return base.sweepCapsule(a, b, body) ?? added.sweepCapsule(a, b, body);
+        const skin = Math.min(options.contactTolerance ?? 0, body.radius / 2, body.height / 4);
+        const shape = { ...body, radius: body.radius - skin, height: body.height - 2 * skin };
+        const start: Vec3 = [a[0], a[1] + skin, a[2]],
+          end: Vec3 = [b[0], b[1] + skin, b[2]];
+        return base.sweepCapsule(start, end, shape) ?? added.sweepCapsule(start, end, shape);
       },
       groundAt(p, options) {
         if (!covered(p, p, options.radius ?? 0)) throw new Error('Incomplete support coverage');
@@ -322,7 +328,7 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
       const clearance = p[1] - hit.position[1];
       const feet: Vec3 = [
         p[0],
-        clearance >= 0.005 - 1e-6 && clearance <= 0.01 + 1e-6 ? p[1] : hit.position[1] + 0.005,
+        clearance >= -1e-6 && clearance <= 0.01 + 1e-6 ? p[1] : hit.position[1] + 0.005,
         p[2],
       ];
       return !blocked(feet, feet) &&
@@ -334,11 +340,47 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
     const solidBlocked = createWallChecker(solidWalls, profile);
     const combinedBlocked = (a: Vec3, b: Vec3, inflation = 0) =>
       blocked(a, b, inflation) || solidBlocked(a, b, inflation);
+    const stepTrace = (a: Vec3, b: Vec3): Vec3[] | null => {
+      const start = standing(a),
+        end = standing(b),
+        rise = b[1] - a[1];
+      if (
+        !start ||
+        !end ||
+        distance(start, a) > 1e-5 ||
+        distance(end, b) > 1e-5 ||
+        rise > input.movement.stepUp + 1e-6 ||
+        -rise > input.movement.stepDown + 1e-6 ||
+        !continuousSupport(a, b)
+      )
+        return null;
+      const corner: Vec3 = rise > 0 ? [a[0], b[1], a[2]] : [b[0], a[1], b[2]];
+      if (
+        combinedBlocked(a, corner) ||
+        combinedBlocked(corner, b) ||
+        world.sweepCapsule(a, corner, profile) ||
+        world.sweepCapsule(corner, b, profile)
+      )
+        return null;
+      return [a, corner, b];
+    };
     return {
       validatedPlacements,
       world,
       blocked: combinedBlocked,
       standing,
+      stepTrace,
+      supportedSpan(a: Vec3, b: Vec3, tolerance: number) {
+        if (!continuousSupport(a, b) || combinedBlocked(a, b) || world.sweepCapsule(a, b, profile))
+          return false;
+        const count = Math.max(1, Math.ceil(distance(a, b) / Math.max(0.025, profile.radius / 8)));
+        for (let i = 0; i <= count; i++) {
+          const point = at(a, b, i / count),
+            feet = standing(point);
+          if (!feet || distance(feet, point) > tolerance) return false;
+        }
+        return true;
+      },
       walkTrace(a: Vec3, b: Vec3): Vec3[] | null {
         if (!continuousSupport(a, b)) return null;
         const count = Math.max(1, Math.ceil(distance(a, b) / Math.max(0.025, profile.radius / 4)));
@@ -362,19 +404,9 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
           const feet = standing(at(a, b, i / count));
           if (!feet) return null;
           if (combinedBlocked(previous, feet) || world.sweepCapsule(previous, feet, profile)) {
-            const rise = feet[1] - previous[1];
-            if (rise > input.movement.stepUp + 1e-6 || -rise > input.movement.stepDown + 1e-6)
-              return null;
-            const corner: Vec3 =
-              rise > 0 ? [previous[0], feet[1], previous[2]] : [feet[0], previous[1], feet[2]];
-            if (
-              combinedBlocked(previous, corner) ||
-              combinedBlocked(corner, feet) ||
-              world.sweepCapsule(previous, corner, profile) ||
-              world.sweepCapsule(corner, feet, profile)
-            )
-              return null;
-            append(corner);
+            const step = stepTrace(previous, feet);
+            if (!step) return null;
+            append(step[1]);
           }
           append(feet);
           previous = feet;

@@ -1,5 +1,39 @@
 # Route solver handoff
 
+## Verifier walking approximation, 2026-11-14
+
+Verification version 3 separates walking representation from flight precision.
+`walkSnap` defaults to 0.35 m and bounds vertical navigation-height projection;
+projection uses this policy rather than the world's narrower contact lookup.
+`walkTraceTolerance` defaults to 0.025 m for walking polyline approximation.
+`walkContactTolerance` defaults to 0.01 m of raw-mesh capsule skin overlap,
+used only for walking. Full-body coverage, terrain support radius, explicit walls
+and placement exclusions remain unchanged. Flight replay retains
+`traceTolerance = 0.005 m` and strict collision. Humans can tune walking parameters
+independently. Capsule collision sweeps, continuous support coverage,
+resource replay and terminal-event checks remain active.
+
+Continuous walks are checked across gait/control splits, so a legal raised step
+corner does not need independent standing support. Sparse snapshots certify each
+physical span. Collision-free feet can retain clearance from zero to 1 cm; the
+existing 5 mm offset is not a mandatory minimum. Standing samples bound interior
+walking approximation: a broad support envelope alone cannot authorize a floating
+chord. A shallow-valley regression requires strict rejection or supported execution
+with recomputed length and cost. No search, catalog, training or solver code changed
+in this milestone; the experimental solver-side walk repair was withdrawn.
+
+The frozen `2ba25713` full-population run completed 50 searches and accepted 12
+physically, with all takeoff failures eliminated. Replaying those exact saved routes
+under version 3 accepts 46/50. Four still fail walk endpoint support. This is verifier-only replay, not a
+new search timing or speedup result. The source report remains under
+`.local/research/ts-support-2ba2571/`; the replay and diagnostic input are under
+`.local/research/current-physical-failures/verifier-audit.json` and
+`verifier-audit.ts`. The original benchmark quality gate is not claimed to pass.
+
+Package formatting, lint, typecheck and 461 TS tests pass. Standards and Spec
+rechecks found no remaining required code findings after closing an intermediate
+support-envelope bypass with the shallow-valley regression.
+
 ## Current-route support correction in progress, 2026-11-14
 
 The failed `c316ac52` run exposed two geometric inconsistencies. A representative
@@ -18,8 +52,8 @@ package formatting, lint, typecheck and 457 TS tests pass. Verification identity
 advances to version 2. The Rust negative-gap fixture now uses a gap wider than its
 capsule footprint; no Rust implementation or binary was changed.
 
-A frozen current-source generation run is required before acceptance. Saved-route
-replay is diagnostic only: it exposes additional real nearby steep-face collision
+The subsequent frozen `2ba25713` run accepted 12/50; see the version 3
+replay above. Saved-route replay is diagnostic only: it exposes additional real nearby steep-face collision
 and unsupported endpoints. Those are not waived by these fixes. Local geometry
 probes and extracted source facts live under `.local/research/current-physical-failures/`.
 

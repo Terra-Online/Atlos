@@ -23,7 +23,11 @@ export function executeWalking(
     ).values(),
   ];
   const configured = worlds.map((w) =>
-    w.configured(route.placements, { followingSupports: following, scopedPlacements: true }),
+    w.configured(route.placements, {
+      followingSupports: following,
+      scopedPlacements: true,
+      contactTolerance: policy.walkContactTolerance,
+    }),
   );
   let maxWalkSnap = 0;
   const execute = (segment: Segment): Segment => {
@@ -37,8 +41,22 @@ export function executeWalking(
       let correction = 0;
       for (const physical of configured) {
         try {
-          const start = physical.standing(a),
-            end = physical.standing(b);
+          // Navigation quantization is independent of the physical model's
+          // narrow standing-contact tolerance. Bound projection by the caller's
+          // walk policy, then validate the resulting capsule feet normally.
+          const project = (point: Vec3) => {
+            const retained = physical.standing(point);
+            if (retained) return retained;
+            const hit = physical.world.groundAt(point, {
+              maxUp: policy.walkSnap,
+              maxDown: policy.walkSnap,
+              maxSlope: input.movement.maxSlope,
+              radius: input.ground.options.profile.radius,
+            });
+            return hit ? physical.standing([point[0], hit.position[1] + 0.005, point[2]]) : null;
+          };
+          const start = project(a),
+            end = project(b);
           if (!start || !end) {
             failures.add('Unsupported walk endpoint');
             continue;

@@ -1,5 +1,5 @@
 /** Metres and seconds throughout. These tolerances describe representation and
- * reporting error, never extra movement speed, resources or collision clearance.
+ * reporting error, never extra movement speed or resources. Contact tolerance bounds skin overlap.
  * These defaults are tunable: if human review finds a tolerance too strict for
  * practical use, it may be relaxed to an appropriate value. */
 export interface VerificationPolicy {
@@ -7,6 +7,10 @@ export interface VerificationPolicy {
   goalTolerance: number;
   /** Distance between submitted and control-replayed traces; collision remains checked. */
   traceTolerance: number;
+  /** Polyline approximation of supported walking, independent of flight replay precision. */
+  walkTraceTolerance: number;
+  /** Allowed walking capsule skin overlap with raw triangles; flight and walls remain strict. */
+  walkContactTolerance: number;
   /** Timestamp rounding when comparing the submitted resource replay. */
   timeTolerance: number;
   /** Maximum vertical correction of walk intent; zero requires physical feet directly. */
@@ -19,8 +23,10 @@ export interface VerificationPolicy {
 export const verificationDefaults: Readonly<VerificationPolicy> = Object.freeze({
   goalTolerance: 0.05,
   traceTolerance: 0.005,
+  walkTraceTolerance: 0.025,
+  walkContactTolerance: 0.01,
   timeTolerance: 0.001,
-  walkSnap: 0.2,
+  walkSnap: 0.35,
   costTolerance: 0.01,
   lengthTolerance: 0.01,
   relativeTolerance: 0.001,
