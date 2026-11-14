@@ -65,8 +65,23 @@ process.once('message', async (message: WorkerRequest) => {
       added: Number(stats.actions),
     };
   };
+  // Replacement owns restoration, so callers cannot accidentally dispatch into
+  // a frozen empty catalog. The same declared training sequence is replayed.
+  if (setup.trainingQueries?.length) {
+    if (rustSolver) rustSolver.setCatalogPhase('training');
+    else setActionCatalogPhase('training');
+    for (const query of setup.trainingQueries)
+      await solver.solve(query, { signal: AbortSignal.timeout(setup.timeoutMs ?? 300_000) });
+    if (rustSolver) rustSolver.setCatalogPhase(catalogPhase);
+    else setActionCatalogPhase(catalogPhase);
+  }
   const preparationMs = scene.timings.preparationMs + performance.now() - preparationStarted;
+  let active: { id: number; controller: AbortController } | undefined;
   process.on('message', async (message: WorkerRequest) => {
+    if (message.type === 'cancel') {
+      if (active?.id === message.id) active.controller.abort();
+      return;
+    }
     if (message.type === 'close') {
       await solver.close();
       send({ type: 'closed' });
@@ -100,9 +115,12 @@ process.once('message', async (message: WorkerRequest) => {
     }
     if (message.type !== 'solve') throw new Error('Unexpected scene worker setup');
     const { id, query, events } = message;
+    const controller = new AbortController();
+    active = { id, controller };
     resetTimings(scene.timings);
     try {
       const result = await solver.solve(query, {
+        signal: controller.signal,
         onEvent: events ? (event) => send({ type: 'event', id, event }) : undefined,
       });
       scene.verifyInputs();
@@ -117,6 +135,8 @@ process.once('message', async (message: WorkerRequest) => {
       });
     } catch (error) {
       send({ type: 'error', id, error: error instanceof Error ? error.message : String(error) });
+    } finally {
+      active = undefined;
     }
   });
   send({

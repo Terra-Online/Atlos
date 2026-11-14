@@ -1,5 +1,24 @@
 # Route solver history and validation evidence
 
+## Benchmark lifecycle correction
+
+Review identified unused native cancellation, immediate worker killing, frozen
+empty replacement catalogs, all-success warmup gating and end-only reporting.
+The cooperative-timeout regression fails the original worker pool because the
+next query executes in a different process. It now retains the worker and training.
+Native cancellation also preserves a nonempty frozen catalog in the real N-API
+fixture. Forced replacement replays training before readiness; healthy peers keep
+serving. The warmup regression previously threw on an invalid route and now
+records that failure while scoring the unchanged workload. Every request is
+written to a JSONL journal before the next dispatch, so incomplete runs preserve
+their observed outcomes. The `8ee68d40` benchmark was canceled after 208.492 seconds
+to implement this lifecycle correction; it has no scored performance result.
+
+Package formatting, lint, typecheck and 448 TS tests pass. The focused real N-API
+abort test preserves the nonempty frozen catalog and independently certifies the
+next route. Service timing includes cancellation settling; the cancellation
+interval is also exposed separately.
+
 ## Direct walking during catalog lookup, 2026-11-14
 
 The frozen `38a5cf23` configured run completes the lower-floor warmup in 70.427

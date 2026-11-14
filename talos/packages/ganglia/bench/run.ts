@@ -42,6 +42,9 @@ const summarize = (result: RouteResult, evaluation = evaluateRoute(result.route)
     truncated: result.diagnostics.truncated,
     timedOut: result.reason === 'timeout' || (wallMs !== undefined && wallMs > QUERY_SLO_MS),
     ...(wallMs === undefined ? {} : { wallMs }),
+    ...('cancellationMs' in result.diagnostics
+      ? { cancellationMs: result.diagnostics.cancellationMs }
+      : {}),
     queueMs:
       'queueMs' in result.diagnostics && typeof result.diagnostics.queueMs === 'number'
         ? result.diagnostics.queueMs
@@ -124,18 +127,11 @@ export async function runBenchmark(
       wallMs: performance.now() - warmupStarted,
       recoverySetupMs: recoverySetup() - recoveryBefore,
       quality: summarizeQuality(warmupResults),
+      results: warmupResults,
     };
     intervals.warmup.endedMs = performance.now();
-    if (solver.config.preparation && warmup.quality.completed !== warmupCases.length) {
-      console.error(
-        JSON.stringify({
-          phase: 'service-not-ready',
-          warmup,
-          results: warmupResults,
-        }),
-      );
-      throw new Error('Configured service warmup failed physical/completion validation');
-    }
+    // Warmup exercises the prepared solver. Failed queries remain outcomes,
+    // while the worker module guarantees request cleanup before this returns.
     await onPhase?.('batch');
     intervals.queries.startedMs = performance.now();
     const samples: {

@@ -13,6 +13,8 @@ const send = (message: WorkerReply) => process.send!(message);
 process.once('message', async (message: WorkerRequest) => {
   if (message.type !== 'setup') throw new Error('Fixture requires setup');
   const setup = message.setup;
+  let trained = setup.trainingQueries?.length ?? 0;
+  const catalog = () => ({ ...actionCatalogStats(), added: trained });
   setActionCatalogPhase(setup.catalogPhase ?? 'disabled');
   if (setup.dataRoot === 'slow-start') await new Promise((resolve) => setTimeout(resolve, 80));
   if (setup.dataRoot === 'startup-failure') throw new Error('fixture startup failure');
@@ -44,7 +46,12 @@ process.once('message', async (message: WorkerRequest) => {
       if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) throw error;
     }
   }
+  let cancel: (() => void) | undefined;
   process.on('message', async (message: WorkerRequest) => {
+    if (message.type === 'cancel') {
+      cancel?.();
+      return;
+    }
     if (message.type === 'close') {
       if (setup.dataRoot === 'close-failure') process.exit(2);
       send({ type: 'closed' });
@@ -53,7 +60,7 @@ process.once('message', async (message: WorkerRequest) => {
     }
     if (message.type === 'catalog-phase' || message.type === 'benchmark-phase') {
       if (message.type === 'catalog-phase') setActionCatalogPhase(message.phase);
-      send({ type: 'control', id: message.id, catalog: actionCatalogStats() });
+      send({ type: 'control', id: message.id, catalog: catalog() });
       return;
     }
     if (message.type !== 'solve') throw new Error('Unexpected fixture setup');
@@ -85,7 +92,16 @@ process.once('message', async (message: WorkerRequest) => {
     if (query.goal[1] >= 3) {
       const end = performance.now() + query.goal[0];
       while (performance.now() < end) {}
-    } else await new Promise((resolve) => setTimeout(resolve, query.goal[0]));
+    } else
+      await new Promise<void>((resolve) => {
+        const timer = setTimeout(resolve, query.goal[0]);
+        cancel = () => {
+          clearTimeout(timer);
+          resolve();
+        };
+      });
+    cancel = undefined;
+    if (actionCatalogStats().phase === 'training') trained++;
     const result: RouteResult = {
       route: {
         status: 'complete',
@@ -113,7 +129,7 @@ process.once('message', async (message: WorkerRequest) => {
       timings,
       memory: workerMemory(),
       metadata,
-      catalog: actionCatalogStats(),
+      catalog: catalog(),
     });
   });
   send({
@@ -122,7 +138,7 @@ process.once('message', async (message: WorkerRequest) => {
     inputLoadMs: 1,
     preparationMs: 2,
     memory: workerMemory(),
-    catalog: actionCatalogStats(),
+    catalog: catalog(),
     metadata,
   });
 });

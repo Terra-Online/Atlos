@@ -32,14 +32,16 @@ requests and two warmup requests. The built-in benchmark adapter binds those
 counts to tracked requests in `bench/scenes/map02.ts`, independently of the scored
 workload. Omitting command-line options preserves preparation. Optional training
 and warmup flags are not supported. The V1 scoring entry rejects missing training
-records, an unfrozen catalog, wrong warmup counts or failed warmup validation.
+records, an unfrozen catalog or wrong warmup counts. Warmup outcomes, including
+timeouts and invalid routes, are reported separately and do not block scoring.
 
 All fifty requests from `bench/scenes/map02.ts` remain scored. Training can overlap
 scoring because catalogs retain physical connections rather than complete-query
 answers; report that overlap and call this the full population, not an unseen
 holdout. Warmup uses separate goals and excludes scored queries. Service startup
 must use the configured training, freeze and warmup order on the same prepared
-solver. A training timeout that loses the worker's catalog stops preparation.
+solver. Timeouts cancel the current request and preserve prepared state. A worker
+that cannot cancel is replaced and retrained before accepting more requests.
 
 `bench/workload.ts` defines preset data roots. Use `--data-root`, `--extractor` and
 `--config` for explicit datasets, adapters and policy. Verify game build, package
@@ -47,7 +49,11 @@ format and preparation provenance. Freeze source, inputs and native binary for a
 run. Include `--reference <retained-report.json>` only for a compatible existing
 control; missing baseline coverage does not require another TS run.
 
-Retain raw JSON, commands, bindings and all request outcomes. Report completion,
+Use `--output /absolute/path/report.json` to select the report destination; without
+it the CLI creates a fresh temporary directory and prints its path. Each request
+is appended to the adjacent `.events.jsonl` journal as it finishes. Aborted runs
+retain their journal and an interrupted summary. Retain raw JSON, commands,
+bindings and all request outcomes. Report completion,
 physical validity, partial results, failures, timeouts, modeled cost and serial
 latency distribution for the complete population. Use the independent verifier
 and unchanged quality gates. A small regression subset is diagnostic evidence;

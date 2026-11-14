@@ -111,7 +111,7 @@ test('markdown exposes timeout failures and successful throughput without claimi
     execution: { mode: 'serial', workers: 0, lanes: 1 },
     config: gangliaV1Defaults,
     querySloMs: 300_000,
-    warmup: { ids: [], wallMs: 0, recoverySetupMs: 0, quality: summarizeQuality([]) },
+    warmup: { results: [], ids: [], wallMs: 0, recoverySetupMs: 0, quality: summarizeQuality([]) },
     intervals: {
       warmup: { startedMs: 0, endedMs: 0 },
       queries: { startedMs: 0, endedMs: 1 },

@@ -1,5 +1,16 @@
 # Route solver handoff
 
+## Benchmark request lifecycle
+
+The worker pool owns cooperative cancellation and prepared-state restoration.
+Timeout and caller abort send an ID-bound cancellation to the active solver; the
+slot cannot accept another query until the prior computation settles. Unresponsive
+workers are killed only after a cancellation grace period. Replacement workers
+replay the declared training sequence before advertising readiness; healthy slots
+continue working. Warmup quality is reported independently of scored quality.
+The CLI journals each completed request immediately and atomically saves the final
+report, including failed quality gates or an interrupted-run summary.
+
 ## Required V1 service preparation, 2026-11-14
 
 `GangliaV1Config.preparation` requires positive training and warmup request counts,
@@ -26,8 +37,9 @@ scored requests; warmup uses separate goals. This is a trained full population,
 not an unseen holdout. Optional CLI training/warmup switches have been removed.
 Old flat policy files inherit required preparation from algorithm defaults.
 Explicit missing/disabled policy, absent training records, unfrozen catalogs,
-wrong warmup counts or invalid warmup cannot enter V1 scoring. A training timeout
-stops before scoring because worker replacement loses the catalog. Retained TS
+wrong warmup counts cannot enter V1 scoring. Warmup failures are recorded and
+measurement continues after the worker is reusable. Training timeout still stops
+incomplete preparation. Retained TS
 baseline reports are reused; fresh TS and stress runs are excluded by the user.
 
 The configured warmup diagnostic confirms that the lower-floor request exhausts
