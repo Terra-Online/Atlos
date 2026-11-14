@@ -1,5 +1,23 @@
 # Route solver history and validation evidence
 
+## Sparse scheduling full-population checkpoint, 2026-11-15
+
+Commit `947366c` completes and independently physically verifies all 50 normal
+map02 requests, with zero timeouts. Mean serial time is 1547.401 ms/query, against
+retained TS 1589.410 ms/query. The 2x objective is unmet. Paired cost geometric mean
+is 0.950314; worst ratio 1.121001 on ground-jump-18-1 fails the unchanged 1.05 limit.
+Nearby lower-floor starts 17 and 19 also exceed that limit. No speedup is accepted.
+Evidence is `.local/research/native-continuation-50/report.json` and its adjacent
+journal, with configured training10, freeze, warmup2 and one measured round.
+
+The user's current direction is to reuse TS's implemented optimizations. Next
+migration target is `src/v1/route/route-shortcuts.ts`: sample walking portions of
+the incumbent, rank feasible forward pairs by saved modeled time, physically
+validate only the bounded best proposals, and jointly retime the accumulated graph.
+Copying only TS's smaller budget before copying candidate ranking failed earlier.
+Preserve the fast prepared-only resource pass and successful local attachments.
+Do not push Rust work until the user explicitly says ready.
+
 ## Sparse prepared scheduling and fresh-start refinement, 2026-11-15
 
 Search schedules the selected prepared graph before expanding direct walks and
