@@ -69,6 +69,8 @@ export const typeCheck = async (runner, app = 'all', prepare = true) => {
         intel: 'apps/intel',
         'user-hub': 'apps/user-hub',
         world: 'apps/world',
+        extractor: '.cache/noclip/packages/extractor',
+        ganglia: 'packages/ganglia',
         search: 'oem-search',
         relink: 'oem-relink',
     };
@@ -76,21 +78,26 @@ export const typeCheck = async (runner, app = 'all', prepare = true) => {
         throw new Error(`Unknown type-check app: ${app}`);
     // Typed lint also uses these projects; keep memory use bounded on CI.
     for (const [name, project] of Object.entries(projects)) {
-        if (app === 'all' || app === name)
-            await runner.run('pnpm', [
-                ...(name === 'world' ? ['--filter', '@atlos/world'] : []),
-                'exec',
-                'tsc',
-                '--noEmit',
-                '--project',
-                name === 'world' ? '.' : project,
-            ]);
+        if (app !== 'all' && app !== name) continue;
+        const packageName = name === 'world'
+            ? '@atlos/world'
+            : name === 'extractor' ? '@endfield-noclip/extractor'
+            : name === 'ganglia' ? '@opendfieldmap/ganglia' : null;
+        await runner.run('pnpm', [
+            ...(packageName ? ['--filter', packageName] : []),
+            'exec',
+            'tsc',
+            '--noEmit',
+            '--project',
+            packageName ? '.' : project,
+        ]);
+        if (name === 'world') await runner.run('pnpm', ['--filter', packageName, 'exec', 'tsc', '--noEmit', '--project', 'tsconfig.worker.json']);
     }
 };
 
 export const test = async (runner, app = 'all') => {
     if (
-        !['all', 'main', 'intel', 'user-hub', 'scripts', 'relink', 'world'].includes(app)
+        !['all', 'main', 'intel', 'user-hub', 'scripts', 'relink', 'world', 'ganglia'].includes(app)
     )
         throw new Error(`Unknown test app: ${app}`);
     if (app === 'all' || app === 'scripts')
@@ -107,7 +114,12 @@ export const test = async (runner, app = 'all') => {
                   : ['oem-relink']),
         ]);
     }
-    if (app === 'all' || app === 'world') await runner.run('pnpm', ['exec', 'vitest', 'run', '--config', 'apps/world/vitest.config.ts']);
+    if (app === 'all' || app === 'ganglia')
+        await runner.run('pnpm', ['--filter', '@opendfieldmap/ganglia', 'test']);
+    if (app === 'all' || app === 'world') {
+        await runner.run('pnpm', ['exec', 'vitest', 'run', '--config', 'apps/world/vitest.config.ts']);
+        await runner.run('node', ['--test', 'apps/world/dev-route-server.test.mjs', 'apps/world/route-worker.test.mjs', 'apps/world/bench/network.test.mjs']);
+    }
     if (app === 'all' || app === 'intel')
         await runner.run('pnpm', [
             'exec',

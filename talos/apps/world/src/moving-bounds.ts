@@ -1,24 +1,25 @@
 import type { Segment, Vec3 } from '@opendfieldmap/ganglia';
 
 export type Box = { min: Vec3; max: Vec3 };
-export type SupportBox = Box & {
-    device: string;
-    family: string;
-    role: 'board' | 'leave' | 'use';
-};
+import type { SupportBox } from './services/routing';
+export type { SupportBox } from './services/routing';
 
 /** Optional route annotations never substitute for the selected trajectory. */
 export function supportBoxes(value: unknown): SupportBox[] {
     if (!Array.isArray(value)) return [];
     const vector = (v: unknown): v is Vec3 =>
         Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
-    return (value as unknown[]).filter((box): box is SupportBox => {
+    return value.filter((box: unknown): box is SupportBox => {
         if (box === null || typeof box !== 'object') return false;
-        const { min, max, device, family, role } = box as Record<string, unknown>;
+        const { min, max, device, family, role } = box as Record<
+            string,
+            unknown
+        >;
         return (
             typeof device === 'string' &&
             typeof family === 'string' &&
-            typeof role === 'string' && ['board', 'leave', 'use'].includes(role) &&
+            typeof role === 'string' &&
+            ['board', 'leave', 'use'].includes(role) &&
             vector(min) &&
             vector(max) &&
             min.every((number, axis) => number <= max[axis])

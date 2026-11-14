@@ -27,8 +27,9 @@ configure route data and the private game configuration. Neither keys nor game c
 
 ## updating
 
-The current pin uses package format v104, including upstream terrain-hole fixes, emissive albedo
-and moving-platform instance paths. Older archives must be repacked before using this viewer.
+The current pin uses package format v106, including sludge-erosion decals, subsurface
+water materials and decal ordering beneath water. Existing v104 archives must be repacked
+before using this viewer.
 Export companion and navigation metadata against the new states before rebaking point views with
 `oem-views --rebuild`. The exporter and `oem-check` use the indexed `openTraversalPicks` profile,
 matching World's default completed progression with doors open and activations enabled. Using only
@@ -38,13 +39,14 @@ without mutating shared decoded rows. Publish the resulting immutable catalog on
 confirms complete pose coverage and generation/visibility bindings. A context-only fallback remains
 an unconfirmed view, not proof that the target is visible.
 
-1. Fast-forward the clean upstream noclip checkout to `upstream/trunk`.
-2. Regenerate `upstream.tar.gz` with `git archive --format=tar.gz upstream/trunk`, record its commit
+1. Fast-forward the clean upstream noclip checkout to its upstream `trunk`.
+2. Regenerate `upstream.tar.gz` with `git archive --format=tar.gz <upstream-remote>/trunk`, record its commit
    and SHA-256 in `source.json`, and port each patch to that baseline. Review the package-format version
    before replacing the active viewer; a breaking format requires repacking the retained maps.
 3. Run preparation, installation, World tests/type checking/build and the generated extractor tests.
    Check a real map, target framing, navigation and photography before accepting the migration.
-4. Keep one current upstream archive and one Ganglia package. Remove replaced artifacts after
+4. Keep one current upstream archive. Ganglia is the editable `packages/ganglia` workspace
+   package, shared by World and the extractor. Remove replaced upstream artifacts after
    validation; do not add old-format readers or keep backup source trees.
 
 The patches migrate the previously committed implementation recorded by `migratedFrom` in

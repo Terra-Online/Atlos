@@ -1,3 +1,5 @@
+import { scenes } from "./services/scene";
+import { installWorkload } from "./services/workload";
 import { useLayerStore } from '@/store/layer';
 import { getCurrentLocale, setLocale } from '@/locale';
 import {
@@ -33,7 +35,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 
-import { httpSource, type Viewer } from '@endfield-noclip/viewer/host';
+import { type Viewer } from '@endfield-noclip/viewer/host';
 
 import { createMinimap, type Sample } from './minimap';
 import { Regions } from './regions';
@@ -134,6 +136,7 @@ export const Preview = ({
             viewer.camera.fovY = saved.fovY;
             viewer.controls.speed = saved.speed;
         }
+        let loadError:string|null=null;
         let catalog: Catalog | null = null,
             selected: Point | null = null,
             preparing: Point | null = null;
@@ -201,13 +204,7 @@ export const Preview = ({
         };
         const minimap = () => map?.update(readMinimap);
         const read = async (path: string): Promise<unknown> => {
-            const response = await fetch(new URL(path, launch.catalog), {
-                signal: abort.signal,
-            });
-            if (!response.ok) {
-                throw new Error(`OEM data: HTTP ${response.status}`);
-            }
-            return response.json();
+            return scenes.json(new URL(path,launch.catalog),abort.signal);
         };
         const drain = async () => {
             if (busy) {
@@ -215,6 +212,7 @@ export const Preview = ({
             }
             busy = true;
             setLoading(true);
+            loadError=null;
             try {
                 while (desired && !abort.signal.aborted) {
                     const request = desired;
@@ -320,7 +318,7 @@ export const Preview = ({
                                 pack.generation
                         ) {
                             await viewer.load(
-                                httpSource(
+                                scenes.package(
                                     new URL(pack.path, launch.catalog).href,
                                 ),
                                 target.level,
@@ -470,6 +468,7 @@ export const Preview = ({
                                 'routePreview',
                                 routePreview.current,
                             );
+                        if(import.meta.env.DEV && new URL(location.href).searchParams.has('benchmark'))url.searchParams.set('benchmark','1');
                         if (planRoute.current)
                             url.searchParams.set('planRoute', 'nearest');
                         url.hash = '';
@@ -486,6 +485,7 @@ export const Preview = ({
                                 error instanceof Error
                                     ? error.message
                                     : String(error);
+                            loadError=message;
                             setStatus(message);
                             if ('stream' in request) {
                                 failedCrossing = destinationKey(request.stream);
@@ -623,8 +623,11 @@ export const Preview = ({
             );
             if (destination) request({ stream: destination });
         }, 150);
+        const stopWorkload = import.meta.env.DEV && new URL(location.href).searchParams.has('benchmark')
+            ? installWorkload(viewer,{select:id=>request({point:id}),current:()=>selected,pending:()=>busy||!!desired,failure:()=>loadError,release:()=>catalog?.release}) : ()=>{};
         void drain();
         return () => {
+            stopWorkload();
             save();
             stopSettings();
             clearInterval(auto);

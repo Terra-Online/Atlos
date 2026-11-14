@@ -437,7 +437,7 @@ index 00000000..e04651d0
 +
 +## reproducible route export
 +
-+install the checked-in Ganglia alpha archive with the workspace dependencies. then run:
++install Atlos's workspace dependencies, including its editable Ganglia package. then run:
 +
 +```sh
 +pnpm extract navmesh map01 -o /tmp/navigation.json --config endfield.local.json
@@ -1363,7 +1363,7 @@ index 391150c6..e7f3f8c7 100644
  state ([material and shader](game-data/assets.md#material-and-shader), decoded as
  [extraction.md](extraction.md#asset-classes) describes) into what it draws
 diff --git a/docs/status.md b/docs/status.md
-index a9734f6a..e48bad65 100644
+index 055739b3..ada2fc0e 100644
 --- a/docs/status.md
 +++ b/docs/status.md
 @@ -42,6 +42,14 @@ packs or renders correctly.
@@ -1381,7 +1381,7 @@ index a9734f6a..e48bad65 100644
  - ambient ([ambient](viewer/lighting.md#ambient)): checked against an in-game shot only at Jingyu's
    cave arch; the volume's default SH isn't recovered ([open](game-data/lighting.md#open)); the
    lookup has no jitter or forward-shifted clipmap centres; the AO multi-bounce fit uses the albedo's
-@@ -723,3 +731,77 @@ an entry when it's done or ruled out.
+@@ -729,3 +737,77 @@ an entry when it's done or ruled out.
  - `world vars <scene>`: join AutoName, MapConfig, LevelData and DynamicStreaming variables
  - `world scripts find <type>`: print level-script nodes of a type
  - `vfs table <name>`: dump a config table
@@ -1395,7 +1395,7 @@ index a9734f6a..e48bad65 100644
 +  runtime availability, script changes and interaction visibility remain separate conditions.
 +
 +- navigation topology, current air-wall geometry and teleport/base seeds can be exported and fed to
-+  the Ganglia alpha package; route-bound camera candidates and forced cache rebuilding are available
++  the Ganglia workspace package; route-bound camera candidates and forced cache rebuilding are available
 +  ([navigation](navigation.md), [precompute](oem-precompute.md#arrival-route-constraints))
 +- dynamic-state selection, complete player area coverage and missing industrial ground remain
 +  unresolved. matching partial portals and authored directed seams are imported; the example point's
@@ -1460,10 +1460,10 @@ index a9734f6a..e48bad65 100644
 +  corridor search and full player dynamics remain open. The English development route panel uses the
 +  existing host component.
 diff --git a/docs/viewer/frame.md b/docs/viewer/frame.md
-index 97a0c50e..5d19ff45 100644
+index e7b1f3e0..3ba55af5 100644
 --- a/docs/viewer/frame.md
 +++ b/docs/viewer/frame.md
-@@ -39,6 +39,12 @@ passes up to the lens flare run at the render size, the canvas's device-pixel si
+@@ -40,6 +40,12 @@ passes up to the lens flare run at the render size, the canvas's device-pixel si
  what each post pass computes is in [post-processing](post-processing.md) and
  [sky and fog](sky-and-fog.md).
  

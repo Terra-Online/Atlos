@@ -1,0 +1,55 @@
+diff --git a/packages/viewer/src/package/package-source.ts b/packages/viewer/src/package/package-source.ts
+index 97b0587b..8be9dd23 100644
+--- a/packages/viewer/src/package/package-source.ts
++++ b/packages/viewer/src/package/package-source.ts
+@@ -29,6 +29,8 @@ export interface ByteRange {
+ 	length: number;
+ 	/** the whole file's size in the opened package's manifest */
+ 	fileSize: number;
++	/** Stored blob bytes by semantic kind; excludes coalescing gaps and HTTP overhead. */
++	content?: {kind:string;bytes:number}[];
+ }
+ 
+ /**
+@@ -54,10 +56,10 @@ const checkSize = (path: string, actual: number, expected: number): void => {
+  * @param baseUrl the package directory's URL; a trailing slash is added if missing
+  * @returns a source issuing one HTTP range request per read
+  */
+-export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): PackageSource => {
++export const httpSource = (baseUrl: string, fetcher: (url:URL,init:RequestInit,range?:ByteRange)=>Promise<Response> = fetch): PackageSource => {
+ 	const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+-	const fetchOk = async (path: string, init: RequestInit): Promise<Response> => {
+-		const response = await fetcher(new URL(path, new URL(base, location.href)), init);
++	const fetchOk = async (path: string, init: RequestInit, range?:ByteRange): Promise<Response> => {
++		const response = await fetcher(new URL(path, new URL(base, location.href)), init, range);
+ 		if (!response.ok) {
+ 			throw new Error(`${path}: HTTP ${response.status}`);
+ 		}
+@@ -69,11 +71,12 @@ export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): Pack
+ 			const response = await fetchOk(path, { signal });
+ 			return new Uint8Array(await response.arrayBuffer());
+ 		},
+-		async readRange(path, { offset, length, fileSize }, signal) {
++		async readRange(path, range, signal) {
++			const {offset,length,fileSize}=range;
+ 			const response = await fetchOk(path, {
+ 				signal,
+ 				headers: { range: `bytes=${offset}-${offset + length - 1}` },
+-			});
++			},range);
+ 			const bytes = new Uint8Array(await response.arrayBuffer());
+ 			const partial = response.status === 206;
+ 			// `bytes <first>-<last>/<size>`; the size may be `*` (unknown)
+diff --git a/packages/viewer/src/streaming/stream-manager.ts b/packages/viewer/src/streaming/stream-manager.ts
+index 99229533..f4247c03 100644
+--- a/packages/viewer/src/streaming/stream-manager.ts
++++ b/packages/viewer/src/streaming/stream-manager.ts
+@@ -499,7 +499,7 @@ export class StreamManager {
+ 		this.#package.source
+ 			.readRange(
+ 				shard.path,
+-				{ offset: start, length: end - start, fileSize: shard.archiveSize },
++				{ offset: start, length: end - start, fileSize: shard.archiveSize, content: members.map(item=>{const r=this.#shardRange(item.blob);return {kind:RESIDENT_KINDS[item.kind]??'other',bytes:r.end-r.start};}) },
+ 				request.abort.signal,
+ 			)
+ 			.then((bytes) => {

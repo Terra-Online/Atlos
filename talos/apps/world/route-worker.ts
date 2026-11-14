@@ -1,3 +1,4 @@
+import type { PhysicalTask } from './physical-task.ts';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
@@ -9,11 +10,11 @@ export function createRouteWorker(options: {
     extractor: string;
     node: string;
     idleMs?: number;
+    entry?: string;
 }) {
-    const entry = resolve(
-        options.extractor,
-        'packages/extractor/src/route-worker.ts',
-    );
+    const entry =
+        options.entry ??
+        resolve(options.extractor, 'packages/extractor/src/route-worker.ts');
     let available: Promise<boolean> | undefined;
     let child: ChildProcess | undefined;
     let fallback: ChildProcess | undefined;
@@ -34,10 +35,14 @@ export function createRouteWorker(options: {
         current.task.emit('close', code, signal);
     };
     const startChild = () => {
-        const process = spawn(options.node, ['--max-old-space-size=6144', entry], {
-            cwd: options.extractor,
-            stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
-        });
+        const process = spawn(
+            options.node,
+            ['--max-old-space-size=6144', entry, options.extractor],
+            {
+                cwd: options.extractor,
+                stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
+            },
+        );
         child = process;
         process.stdout?.on('data', (bytes) => {
             if (child === process) active?.task.stdout.write(bytes);
@@ -111,7 +116,9 @@ export function createRouteWorker(options: {
         return process;
     };
     return {
-        async start(args: string[]): Promise<Task | ChildProcess> {
+        async start(
+            args: string[] | PhysicalTask,
+        ): Promise<Task | ChildProcess> {
             if (closed) throw new Error('Route worker is closed');
             available ??= access(entry).then(
                 () => true,
@@ -123,6 +130,10 @@ export function createRouteWorker(options: {
             if (!supported) {
                 if (fallback)
                     throw new Error('Route worker lane is already busy');
+                if (!Array.isArray(args))
+                    throw new Error(
+                        'Physical resource adapter worker is unavailable',
+                    );
                 const process = spawn(
                     options.node,
                     [
@@ -155,13 +166,18 @@ export function createRouteWorker(options: {
                 reused,
             );
             active = { id, task };
-            process.send({ id, args: args.slice(1) }, (error) => {
-                if (error && active?.id === id) {
-                    task.stderr.write(`${error.name}: ${error.message}\n`);
-                    finish(1, null);
-                    process.kill('SIGTERM');
-                }
-            });
+            process.send(
+                Array.isArray(args)
+                    ? { id, args: args.slice(1) }
+                    : { id, files: args },
+                (error) => {
+                    if (error && active?.id === id) {
+                        task.stderr.write(`${error.name}: ${error.message}\n`);
+                        finish(1, null);
+                        process.kill('SIGTERM');
+                    }
+                },
+            );
             return task;
         },
         discard() {

@@ -1,14 +1,16 @@
+import { sceneCatalog } from './scene-resources';
+import { createHash } from 'node:crypto';
+import { hashFiles } from '../../scripts/release-snapshot.mjs';
 import { resolve } from 'node:path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, type UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import { fontShardsPlugin } from '../../scripts/fonts/vite-plugin.mjs';
 import { resourceConfig } from '../../scripts/release-artifact.mjs';
 import { routeServer } from './dev-route-server';
-import worldPackage from './package.json';
 import { getDeployChannel } from '../../scripts/release-channel.js';
 
-export default defineConfig(async ({ command, mode }) => {
+export default defineConfig(async ({ command, mode }): Promise<UserConfig> => {
     const root = resolve(import.meta.dirname, '../..');
     const env = { ...loadEnv(mode, root, ''), ...process.env };
     if (command === 'build' && !env.VITE_WORLD_CATALOG_URL)
@@ -35,10 +37,21 @@ export default defineConfig(async ({ command, mode }) => {
             react(),
             svgr(),
             routeServer(env.WORLD_ROUTING_DIRECTORY, {
+                sceneBinding: sceneCatalog(env.VITE_WORLD_CATALOG_URL),
                 extractor: resolve(root, '.cache/noclip'),
                 config: env.WORLD_GAME_CONFIG,
                 node: env.WORLD_EXTRACTOR_NODE,
-                solver: worldPackage.dependencies['@opendfieldmap/ganglia'],
+                solver:
+                    'workspace:' +
+                    createHash('sha256')
+                        .update(
+                            JSON.stringify(
+                                await hashFiles(
+                                    resolve(root, 'packages/ganglia/src'),
+                                ),
+                            ),
+                        )
+                        .digest('hex'),
             }),
         ],
         resolve: {

@@ -190,12 +190,12 @@ export async function main(argv = process.argv.slice(2)) {
         output: { type: 'string' }, cpu: { type: 'boolean', default: false },
         baseline: { type: 'boolean', default: false },
     } });
-    if (!['player-route', 'player-ground', 'candidate-worker'].includes(values.command) ||
-        !values.args || !values.output || (values.command !== 'candidate-worker' && !values.extractor)) {
-        throw new Error('Usage: profile-route-stages.mjs --command <player-route|player-ground|candidate-worker> --args <JSON file> --output <new directory> [--extractor <root>] [--cpu] [--baseline]');
+    if (!['player-route', 'player-ground'].includes(values.command) ||
+        !values.args || !values.output || !values.extractor) {
+        throw new Error('Usage: profile-route-stages.mjs --command <player-route|player-ground> --args <JSON file> --output <new directory> --extractor <root> [--cpu] [--baseline]');
     }
     const input = JSON.parse(await readFile(resolve(values.args), 'utf8'));
-    if (values.command !== 'candidate-worker' && (!Array.isArray(input) || input.some(arg => typeof arg !== 'string'))) {
+    if (!Array.isArray(input) || input.some(arg => typeof arg !== 'string')) {
         throw new Error('Extractor arguments must be a JSON array of strings');
     }
     const directory = resolve(values.output);
@@ -203,26 +203,21 @@ export async function main(argv = process.argv.slice(2)) {
     // to this experiment and prevents accidental reuse of prior evidence.
     await mkdir(directory);
     const profiler = createStageProfiler();
-    const candidatePath = values.command === 'candidate-worker' ? resolve(import.meta.dirname, '../apps/world/candidate-worker.ts') : undefined;
-    const hooks = installStageHooks(profiler, { candidatePath, instrument: !values.baseline });
+    const hooks = installStageHooks(profiler, { instrument: !values.baseline });
     const setupStart = performance.now();
-    let run, cache;
-    if (candidatePath) {
-        ({ profileCandidatePlan: run } = await import(pathToFileURL(candidatePath)));
-    } else {
-        ({ run } = await import(pathToFileURL(resolve(values.extractor, `packages/extractor/src/commands/${values.command}.ts`))));
-        if (values.command === 'player-route') {
-            const { createRouteCache } = await import(pathToFileURL(resolve(values.extractor, 'packages/extractor/src/route-cache.ts')));
-            cache = createRouteCache();
-        }
+    const { run } = await import(pathToFileURL(resolve(values.extractor, `packages/extractor/src/commands/${values.command}.ts`)));
+    let cache;
+    if (values.command === 'player-route') {
+        const { createRouteCache } = await import(pathToFileURL(resolve(values.extractor, 'packages/extractor/src/route-cache.ts')));
+        cache = createRouteCache();
     }
     const setupMs = performance.now() - setupStart;
-    const sdkModule = hooks.modules.find(module => module.path.includes('/@opendfieldmap/ganglia/src/'));
+    const sdkModule = hooks.modules.find(module => /\/(?:@opendfieldmap|packages)\/ganglia\/src\//.test(module.path));
     const sdkPath = sdkModule?.path.slice(0, sdkModule.path.lastIndexOf('/src/'));
     const sdk = sdkPath ? { path: sdkPath, ...JSON.parse(await readFile(resolve(sdkPath, 'package.json'), 'utf8')) } : null;
     const runtime = { node: process.version, execPath: process.execPath, execArgv: process.execArgv,
         platform: process.platform, arch: process.arch, sdkVersion: sdk?.version, sdkPath };
-    const identities = values.command === 'candidate-worker' ? await inputIdentity(['--ground', input.navigation]) : await inputIdentity(input);
+    const identities = await inputIdentity(input);
     const reports = [];
     const originalLog = console.log;
     try {
@@ -230,14 +225,11 @@ export async function main(argv = process.argv.slice(2)) {
             const trial = resolve(directory, kind);
             await mkdir(trial);
             const output = resolve(trial, 'result.json');
-            let args = input;
-            if (values.command !== 'candidate-worker') {
-                args = replaceArgument(input, ['-o', '--output'], output);
-                if (values.command === 'player-ground') {
-                    args = replaceArgument(args, ['--collision-output'], resolve(trial, 'collision.json'));
-                    args = replaceArgument(args, ['--input-cache'], resolve(directory, 'input-cache'));
-                    args = replaceArgument(args, ['--tile-cache'], resolve(directory, 'tile-cache'));
-                }
+            let args = replaceArgument(input, ['-o', '--output'], output);
+            if (values.command === 'player-ground') {
+                args = replaceArgument(args, ['--collision-output'], resolve(trial, 'collision.json'));
+                args = replaceArgument(args, ['--input-cache'], resolve(directory, 'input-cache'));
+                args = replaceArgument(args, ['--tile-cache'], resolve(directory, 'tile-cache'));
             }
             const commandOutput = [];
             console.log = (...parts) => {
@@ -254,12 +246,7 @@ export async function main(argv = process.argv.slice(2)) {
             const cpuBefore = process.cpuUsage();
             let error;
             try {
-                if (values.command === 'candidate-worker') {
-                    const result = await run(input);
-                    await writeFile(output, JSON.stringify(result));
-                } else {
-                    await run(args, cache ? { cache, progress: event => profiler.progress(event) } : undefined);
-                }
+                await run(args, cache ? { cache, progress: event => profiler.progress(event) } : undefined);
             } catch (cause) { error = { message: cause.message, stack: cause.stack }; }
             const elapsedMs = performance.now() - started;
             const cpuUsage = process.cpuUsage(cpuBefore);
@@ -270,8 +257,7 @@ export async function main(argv = process.argv.slice(2)) {
             const report = { kind, command: values.command, args, setupMs, cpuUsage, runtime,
                 memory: process.memoryUsage(), instrumentation: !values.baseline,
                 cachePolicy: values.command === 'player-route' ? 'application-cold then shared RouteCache; existing physical inputs; fresh result paths; input identity hashing has warmed OS file pages' :
-                    values.command === 'player-ground' ? 'fresh local input/tile caches for cold; same caches and process for warm; OS file cache uncontrolled' :
-                        'application-cold candidate plan then prepared navigation reuse in same process; input identity hashing has warmed OS file pages',
+                    'fresh local input/tile caches for cold; same caches and process for warm; OS file cache uncontrolled',
                 inputFiles: identities, ...snapshot, elapsedMs, intervals, error,
                 intervalSemantics: 'time after each progress event until the next; completion events are not stage start markers',
                 stopwatchSemantics: 'inclusive/self are wall time; self excludes union of nested selected calls within each parent; concurrently awaited sibling self times can overlap; totals across stages are not elapsed wall time',

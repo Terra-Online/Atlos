@@ -1,0 +1,1823 @@
+diff --git a/packages/extractor/src/route-cache.test.ts b/packages/extractor/src/route-cache.test.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/route-cache.test.ts
+@@ -0,0 +1,63 @@
++import assert from 'node:assert/strict';
++import { mkdtemp, rm, writeFile } from 'node:fs/promises';
++import { tmpdir } from 'node:os';
++import { join } from 'node:path';
++import { test } from 'node:test';
++
++import { createRouteCache } from './route-cache.ts';
++
++const inputs = async (directory: string, suffix = '') => {
++	const files = {
++		ground: join(directory, 'ground' + suffix),
++		collision: join(directory, 'collision' + suffix),
++		movement: join(directory, 'movement' + suffix),
++	};
++	await Promise.all(
++		Object.values(files).map((path) =>
++			writeFile(path, JSON.stringify({ value: path })),
++		),
++	);
++	return files;
++};
++
++test('input changes invalidate decoded regions and reject reads from an older generation', async () => {
++	const directory = await mkdtemp(join(tmpdir(), 'route-cache-'));
++	try {
++		const files = await inputs(directory);
++		const other = await inputs(directory, '-other');
++		const cache = createRouteCache();
++		const generation = await cache.begin(files);
++		const value = await cache.read('ground', files.ground);
++		assert.equal(await cache.read('ground', files.ground), value);
++		await writeFile(files.ground, '{"value":"changed"}');
++		await assert.rejects(
++			cache.read('ground', files.ground),
++			/changed after preparation/,
++		);
++		const next = await cache.begin(files);
++		assert.notEqual(next, generation);
++		assert.deepEqual(await cache.read('ground', files.ground), {
++			value: 'changed',
++		});
++		await cache.begin(other);
++		await cache.begin(files);
++		assert.notEqual(await cache.read('ground', files.ground), value);
++	} finally {
++		await rm(directory, { recursive: true, force: true });
++	}
++});
++
++test('oversized regions are decoded independently', async () => {
++	const directory = await mkdtemp(join(tmpdir(), 'route-cache-budget-'));
++	try {
++		const files = await inputs(directory);
++		const disabled = createRouteCache(0);
++		await disabled.begin(files);
++		assert.notEqual(
++			await disabled.read('ground', files.ground),
++			await disabled.read('ground', files.ground),
++		);
++	} finally {
++		await rm(directory, { recursive: true, force: true });
++	}
++});
+diff --git a/packages/extractor/src/write-route.ts b/packages/extractor/src/write-route.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/write-route.ts
+@@ -0,0 +1,15 @@
++import { writeFile, rename, rm } from 'node:fs/promises';
++import { resolve } from 'node:path';
++export function routeWriter(output: string, inputs: readonly string[]) {
++	if (inputs.some((path) => resolve(path) === resolve(output)))
++		throw new Error('route output must not overwrite an input');
++	return async (value: unknown) => {
++		const temporary = `${output}.${process.pid}.tmp`;
++		try {
++			await writeFile(temporary, JSON.stringify(value));
++			await rename(temporary, output);
++		} finally {
++			await rm(temporary, { force: true });
++		}
++	};
++}
+diff --git a/packages/extractor/src/route-cache.ts b/packages/extractor/src/route-cache.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/route-cache.ts
+@@ -0,0 +1,104 @@
++import { createPhysicalPreparation } from '@opendfieldmap/ganglia/solver/host';
++import { readFile, stat } from 'node:fs/promises';
++import { resolve } from 'node:path';
++
++type Entry = { key: string; value: unknown };
++type Files = { ground: string; collision: string; movement: string };
++
++const fileIdentity = async (path: string) => {
++	const absolute = resolve(path);
++	const info = await stat(absolute, { bigint: true });
++	return {
++		path: absolute,
++		bytes: Number(info.size),
++		key: JSON.stringify(
++			[absolute, info.dev, info.ino, info.size, info.mtimeNs, info.ctimeNs].map(
++				String,
++			),
++		),
++	};
++};
++
++/**
++ * @param maxInputBytes maximum serialized bytes retained for one physical input region
++ * @returns a single-region preparation cache; failed work and oversized regions are never retained
++ * @throws for a negative or non-integer input byte limit
++ */
++export const createRouteCache = (maxInputBytes = 512 * 1024 * 1024) => {
++	if (!Number.isSafeInteger(maxInputBytes) || maxInputBytes < 0) {
++		throw new Error('invalid route input cache limit');
++	}
++	let generation = '';
++	let enabled = false;
++	let inputBytes = 0;
++	let expected = new Map<string, string>();
++	const inputs = new Map<string, Entry>();
++	const prepared = createPhysicalPreparation();
++	const clear = () => {
++		generation = '';
++		enabled = false;
++		inputs.clear();
++		prepared.clear();
++		expected.clear();
++	};
++	return {
++		clear,
++		preparation: {
++			clear: prepared.clear,
++			async solve(...args: Parameters<typeof prepared.solve>) {
++				try {
++					return await prepared.solve(...args);
++				} finally {
++					if (!enabled) prepared.clear();
++				}
++			},
++		},
++		async begin(files: Files) {
++			const identities = await Promise.all(
++				Object.values(files).map(fileIdentity),
++			);
++			const key = JSON.stringify(identities.map((entry) => entry.key));
++			if (key !== generation) {
++				// Release the preceding region before decoding its replacement.
++				clear();
++				generation = key;
++			}
++			inputBytes = identities.reduce((sum, entry) => sum + entry.bytes, 0);
++			enabled = inputBytes <= maxInputBytes;
++			if (!enabled) prepared.clear();
++			expected = new Map(identities.map((entry) => [entry.path, entry.key]));
++			return key;
++		},
++		async read<T>(
++			slot: 'ground' | 'collision' | 'movement' | 'devices',
++			path: string,
++		): Promise<T> {
++			const identity = await fileIdentity(path);
++			if (slot !== 'devices' && expected.get(identity.path) !== identity.key) {
++				clear();
++				throw new Error('route input changed after preparation began');
++			}
++			if (slot === 'devices' && inputBytes + identity.bytes > maxInputBytes) {
++				enabled = false;
++				inputs.clear();
++				prepared.clear();
++			}
++			const existing = inputs.get(slot);
++			if (enabled && existing?.key === identity.key) {
++				return existing.value as T;
++			}
++			const value: unknown = JSON.parse(await readFile(identity.path, 'utf8'));
++			const after = await fileIdentity(identity.path);
++			if (after.key !== identity.key) {
++				clear();
++				throw new Error('route input changed while reading');
++			}
++			if (enabled && identity.bytes <= maxInputBytes) {
++				inputs.set(slot, { key: identity.key, value });
++			}
++			return value as T;
++		},
++	};
++};
++
++export type RouteCache = ReturnType<typeof createRouteCache>;
+diff --git a/packages/extractor/src/game/physical-input.ts b/packages/extractor/src/game/physical-input.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/game/physical-input.ts
+@@ -0,0 +1,373 @@
++import { gangliaV1Defaults } from '@opendfieldmap/ganglia/solver';
++import { readFile } from 'node:fs/promises';
++import { isDeepStrictEqual } from 'node:util';
++import { isObject, numberField } from '@endfield-noclip/formats/unity/values';
++import { retimeGroundRoute } from "@opendfieldmap/ganglia/solver/host";
++import { type GroundArrival, type GroundOptions, type InteractionGoal, type LocomotionOptions, type Surface, type Vec3, type Wall } from "@opendfieldmap/ganglia";
++import type {
++	BuildOptions,
++	CollisionGeometry,
++} from '@opendfieldmap/ganglia/build';
++import {
++	type PhysicalInput,
++	type PhysicalMovement,
++} from '@opendfieldmap/ganglia/solver';
++import {
++	createPhysicalPreparation,
++	validateWaypoints,
++	type PhysicalWork,
++} from '@opendfieldmap/ganglia/solver/host';
++import {
++	walkableCollisionIndices,
++	type CollisionRecord,
++} from './collision-ground.ts';
++import { normalizeDevices, deviceConnections } from './traversal-links.ts';
++import { roundExclusions } from './round-exclusions.ts';
++import type { RouteCache } from '../route-cache.ts';
++type Source = { buildGuid: string; contentHash: string };
++type Profile = { radius: number; height: number };
++type Ground = {
++	version: number;
++	scene: string;
++	source: Source;
++	selection: unknown;
++	coverage: unknown;
++	surfaces: Surface[];
++	options: GroundOptions;
++	build?: Partial<BuildOptions & { tileCells: number }>;
++};
++type Collision = CollisionGeometry & {
++	records?: CollisionRecord[];
++	scene: string;
++	source: Source;
++	selection: unknown;
++	coverage: unknown;
++	options: { profile: Profile };
++};
++const physicalGeometries = new WeakMap<Collision, CollisionGeometry>();
++type Movement = {
++	version: number;
++	source: Source;
++	defaultProfile: Profile;
++	sustainedSprint: LocomotionOptions;
++	assets: { path: string; settings: unknown }[];
++};
++type Request = {
++	scene: string;
++	source: Source;
++	arrival: GroundArrival & { groundRange?: [number, number] };
++	target: Vec3;
++	interaction?: InteractionGoal;
++	walls: Wall[];
++	waypoints?: Vec3[];
++	solverConfig?: import('@opendfieldmap/ganglia/solver').SolverConfig;
++};
++
++const vector = (point: unknown): point is Vec3 =>
++	Array.isArray(point) && point.length === 3 && point.every(Number.isFinite);
++const sameSource = (a: Source, b: Source) =>
++	a &&
++	b &&
++	typeof a.buildGuid === 'string' &&
++	a.buildGuid.length > 0 &&
++	typeof a.contentHash === 'string' &&
++	a.contentHash.length > 0 &&
++	a.buildGuid === b.buildGuid &&
++	a.contentHash === b.contentHash;
++const sameProfile = (a: Profile, b: Profile) =>
++	a && b && a.radius === b.radius && a.height === b.height;
++export interface PhysicalResources {
++	ground: string;
++	collision: string;
++	movement: string;
++	devices?: string;
++}
++export const physicalResources = (value: unknown): PhysicalResources => {
++	if (!isObject(value)) throw new Error('Invalid physical scene resources');
++	const { ground, collision, movement, devices } = value;
++	if (
++		typeof ground !== 'string' ||
++		!ground ||
++		typeof collision !== 'string' ||
++		!collision ||
++		typeof movement !== 'string' ||
++		!movement
++	)
++		throw new Error('Missing physical scene resources');
++	if (devices !== undefined && typeof devices !== 'string')
++		throw new Error('Invalid device resource');
++	return { ground, collision, movement, devices };
++};
++export type PhysicalReport = {
++	version: number;
++	scene: string;
++	source: Source;
++	motionValidation: string;
++	coverage: { ground: unknown; collision: unknown };
++	diagnostics: unknown;
++	status: string;
++	route?: Extract<
++		import('@opendfieldmap/ganglia').Route,
++		{ status: 'complete' }
++	>;
++	reason?: string;
++	connections: import('@opendfieldmap/ganglia').GroundConnection[];
++	groundedTarget?: Vec3;
++	supportBoxes?: import('@opendfieldmap/ganglia/solver').RouteResult['supportBoxes'];
++	optimizing: boolean;
++};
++export const preparePhysicalRoute = async (
++	values: PhysicalResources,
++	value: unknown,
++	context?: {
++		cache: RouteCache;
++		progress?: (value: { phase: string }) => void;
++	},
++) => {
++	if (!value || typeof value !== 'object')
++		throw new Error('invalid physical route request');
++	const request = value as Request;
++	validateWaypoints(request.waypoints);
++	const progress = context?.progress ?? (() => {});
++	progress({ phase: 'read-inputs' });
++	const generation = context
++		? await context.cache.begin({
++				ground: values.ground,
++				collision: values.collision,
++				movement: values.movement,
++			})
++		: '';
++	const reads: [Promise<Ground>, Promise<Collision>, Promise<Movement>] = [
++		context
++			? context.cache.read<Ground>('ground', values.ground)
++			: readFile(values.ground, 'utf8').then(JSON.parse),
++		context
++			? context.cache.read<Collision>('collision', values.collision)
++			: readFile(values.collision, 'utf8').then(JSON.parse),
++		context
++			? context.cache.read<Movement>('movement', values.movement)
++			: readFile(values.movement, 'utf8').then(JSON.parse),
++	];
++	const deviceRead: Promise<Parameters<typeof deviceConnections>[0] | null> =
++		values.devices
++			? context
++				? context.cache.read('devices', values.devices)
++				: readFile(values.devices, 'utf8').then(JSON.parse)
++			: Promise.resolve(null);
++	const [ground, collision, movement, deviceInput] = await Promise.all([
++		...reads,
++		deviceRead,
++	]).catch(async (error: unknown) => {
++		// Drain parallel input reads before the worker clears its cache for the next request.
++		await Promise.allSettled([...reads, deviceRead]);
++		throw error;
++	});
++	if (
++		!ground ||
++		!collision ||
++		!movement ||
++		!request ||
++		ground.version !== 1 ||
++		movement.version !== 1 ||
++		!request.scene ||
++		request.scene !== ground.scene ||
++		request.scene !== collision.scene ||
++		!sameSource(request.source, ground.source) ||
++		!sameSource(request.source, collision.source) ||
++		!sameSource(request.source, movement.source)
++	) {
++		throw new Error('physical route inputs must share a scene and build');
++	}
++	const profile = ground.options?.profile;
++	if (
++		!profile ||
++		![profile.radius, profile.height].every(
++			(value) => Number.isFinite(value) && value > 0,
++		) ||
++		profile.height < 2 * profile.radius ||
++		!sameProfile(profile, collision.options?.profile) ||
++		!sameProfile(profile, movement.defaultProfile) ||
++		!isDeepStrictEqual(ground.selection, collision.selection)
++	) {
++		throw new Error(
++			'physical route inputs must share body profile and collision selection',
++		);
++	}
++	if (
++		!Array.isArray(ground.surfaces) ||
++		!Array.isArray(movement.assets) ||
++		!Array.isArray(request.walls) ||
++		!Array.isArray(ground.options.walls) ||
++		!(Array.isArray(collision.positions) || collision.positions instanceof Float32Array || collision.positions instanceof Float64Array) ||
++		collision.positions.length < 9 ||
++		collision.positions.length % 3 !== 0 ||
++		!(Array.isArray(collision.indices) || collision.indices instanceof Uint16Array || collision.indices instanceof Uint32Array) ||
++		collision.indices.length < 3 ||
++		collision.indices.length % 3 !== 0 ||
++		!request.arrival ||
++		!vector(request.arrival.position) ||
++		!vector(request.target) ||
++		!Number.isFinite(ground.options.maxVertical) ||
++		ground.options.maxVertical < 0 ||
++		!movement.sustainedSprint
++	) {
++		throw new Error('invalid physical route request');
++	}
++	retimeGroundRoute({ status: 'unmapped' }, movement.sustainedSprint);
++	const defaults = movement.assets.find((asset) =>
++		asset.path.endsWith('/MovementSetting_Default.asset'),
++	);
++	if (!defaults || !isObject(defaults.settings)) {
++		throw new Error('missing default movement settings');
++	}
++	const settings = defaults.settings;
++	const physicalMovement: PhysicalMovement = {
++		get model() {
++			return {
++				gravity: numberField(settings, '_gravity'),
++				fallingGravity: numberField(settings, '_fallingGravity'),
++				maxJumpHeight: numberField(settings, '_maxJumpHeight'),
++				maxFallingSpeed: numberField(settings, '_maxFallingSpeed'),
++				apexTime: numberField(settings, '_apexTime'),
++				maxHorizontalSpeed: numberField(
++					settings,
++					'_inAirMaxHorizontalSpeedSprint',
++				),
++				startHorizontalSpeed: Math.min(
++					numberField(settings, '_startHorizontalSpeedSprint'),
++					numberField(settings, '_inAirMaxInitHorizontalSpeed'),
++				),
++				airOverspeedDeceleration: numberField(
++					settings,
++					'_inAirDecelerationWithInputSprint',
++				),
++				airAcceleration: numberField(settings, '_inAirAcceleration'),
++				airDeceleration: numberField(
++					settings,
++					'_inAirDecelerationNoInputSprint',
++				),
++			};
++		},
++		get maxSlope() {
++			return numberField(settings, '_slopeLimit');
++		},
++		get runAirSpeed() {
++			return numberField(settings, '_inAirMaxHorizontalSpeedRun');
++		},
++		get stepUp() {
++			return numberField(settings, '_stepOffset');
++		},
++		stepDown: numberField(settings, '_stepDownOffset'),
++	};
++	const physicalDevices = deviceInput
++		? {
++				...normalizeDevices(
++					deviceInput,
++					{ scene: ground.scene, source: ground.source },
++					profile.radius,
++				),
++				movingSupports: deviceInput.movingSupports,
++				followingSupports: deviceInput.followingSupports,
++			}
++		: null;
++
++	const input: PhysicalInput = {
++		ground: {
++			...ground,
++			options: {
++				...ground.options,
++				profile,
++				walls: [...ground.options.walls, ...request.walls],
++			},
++		},
++		collision: {
++			...collision,
++			get indices() {
++				let geometry = physicalGeometries.get(collision);
++				if (!geometry) {
++					geometry = {
++						positions: collision.positions,
++						indices: walkableCollisionIndices(collision),
++					};
++					physicalGeometries.set(collision, geometry);
++				}
++				return geometry.indices;
++			},
++		},
++		get roundedWalls() {
++			return roundExclusions(
++				[...ground.options.walls, ...request.walls],
++				collision.coverage,
++			);
++		},
++		movement: physicalMovement,
++		locomotion: movement.sustainedSprint,
++		devices: physicalDevices,
++	};
++	let preparation = context?.cache.preparation;
++	return {
++		// Normalized raw facts for native solvers and independent evaluation.
++		input,
++		async solve(
++			options: {
++				work?: PhysicalWork;
++				signal?: AbortSignal;
++				onProgress?: (progress: {
++					phase: string;
++					completed?: number;
++					total?: number;
++				}) => void;
++				onResult?: (report: PhysicalReport) => void | Promise<void>;
++			} = {},
++		) {
++			let final: PhysicalReport | undefined;
++			const active = preparation ??= createPhysicalPreparation();
++			const report = (
++				result: import('@opendfieldmap/ganglia/solver').RouteResult,
++				optimizing: boolean,
++				diagnostics: unknown,
++			) => ({
++				version: 1,
++				scene: request.scene,
++				source: request.source,
++				motionValidation: 'model-based',
++				coverage: { ground: ground.coverage, collision: collision.coverage },
++				diagnostics,
++				status:
++					result.route.status === 'complete' ? 'candidate' : 'unavailable',
++				...(result.route.status === 'complete' ? { route: result.route } : {}),
++				reason: result.reason,
++				connections: result.connections,
++				groundedTarget: result.groundedTarget,
++				supportBoxes: result.supportBoxes,
++				optimizing,
++			});
++			try {
++				await active.solve(
++					input,
++					{
++						starts: [request.arrival],
++						goal: request.target,
++						interaction: request.interaction,
++						waypoints: request.waypoints,
++					},
++					{
++						binding: JSON.stringify([generation, request.walls]),
++						config: request.solverConfig ?? gangliaV1Defaults,
++						work: options.work,
++						signal: options.signal,
++						onProgress: options.onProgress,
++						async onResult(result, optimizing, diagnostics) {
++							final = report(result, optimizing, diagnostics);
++							await options.onResult?.(final);
++						},
++					},
++				);
++				if (!final) throw new Error('Physical solver produced no result');
++				return final;
++			} finally {
++				if (!context) active.clear();
++			}
++		},
++	};
++};
+diff --git a/packages/extractor/src/game/traversal-links.ts b/packages/extractor/src/game/traversal-links.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/game/traversal-links.ts
+@@ -0,0 +1,305 @@
++import {
++	trsMatrix,
++	transformPoint,
++	unityEulerQuaternion,
++} from '@endfield-noclip/formats/unity/transform';
++import type { TypeTreeObject } from '@endfield-noclip/formats/unity/type-tree';
++import { isObject, numberField } from '@endfield-noclip/formats/unity/values';
++
++import { createDeviceConnections } from "@opendfieldmap/ganglia/solver/host";
++import { type DeviceFacts } from "@opendfieldmap/ganglia/solver";
++import type { Surface, Vec3, Wall } from '@opendfieldmap/ganglia';
++import type { CollisionWorld } from '@opendfieldmap/ganglia/collision';
++
++import type { FollowingSupport } from './following-supports.ts';
++import { interactionPoint, interactionRules } from './interaction-rules.ts';
++import type { SweptSupport } from './swept-supports.ts';
++import { ropePairs, type traversalDevice } from './traversal-devices.ts';
++
++type Device = NonNullable<ReturnType<typeof traversalDevice>>;
++type Source = { buildGuid: string; contentHash: string };
++type Input = {
++	version: number;
++	scene: string;
++	source: Source;
++	devices: Device[];
++	templates: Record<string, unknown>;
++	movingSupports?: SweptSupport[];
++	followingSupports?: FollowingSupport[];
++};
++type Options = {
++	scene: string;
++	source: Source;
++	surfaces: Surface[];
++	world: CollisionWorld;
++	settings: TypeTreeObject;
++	profile: { radius: number; height: number };
++	walls: Wall[];
++};
++const float = (b: bigint) => {
++	const data = new DataView(new ArrayBuffer(4));
++	data.setUint32(0, Number(BigInt.asUintN(32, b)), true);
++	return data.getFloat32(0, true);
++};
++
++// this reader handles only direct scalar/vector device values. expressions retain unknown state.
++const parameter = (value: unknown): unknown => {
++	if (!isObject(value) || !Array.isArray(value.valueArray)) {
++		return undefined;
++	}
++	const bits: bigint[] = [];
++	for (const atom of value.valueArray) {
++		if (
++			!isObject(atom) ||
++			typeof atom.valueBit64 !== 'string' ||
++			!/^-?\d+$/.test(atom.valueBit64)
++		) {
++			return undefined;
++		}
++		bits.push(BigInt(atom.valueBit64));
++	}
++	if (
++		value.type === 1 &&
++		bits.length === 1 &&
++		(bits[0] === 0n || bits[0] === 1n)
++	) {
++		return bits[0] === 1n;
++	}
++	if (value.type === 3 && bits.length === 1) {
++		return Number(bits[0]);
++	}
++	if ((value.type === 5 || value.type === 6) && bits.length === 1) {
++		return float(bits[0]);
++	}
++	if (value.type === 11 && bits.length === 3) {
++		return bits.map(float);
++	}
++	return undefined;
++};
++const properties = (list: unknown) =>
++	new Map(
++		(Array.isArray(list) ? list : []).flatMap((p) =>
++			isObject(p) && typeof p.key === 'string'
++				? [[p.key, parameter(p.value)] as const]
++				: [],
++		),
++	);
++const forcedState = (key: string) =>
++	key === 'state' || key === 'is_locked' || key === 'has_power';
++const effective = (device: Device, raw: unknown, component: string) => {
++	if (!isObject(raw) || !Array.isArray(raw.components)) {
++		return null;
++	}
++	const selected = raw.components.find(
++		(c) =>
++			isObject(c) && typeof c.type === 'string' && c.type.includes(component),
++	);
++	if (!isObject(selected)) {
++		return null;
++	}
++	const values = properties(selected.properties);
++	for (const list of [raw.config, raw.saved]) {
++		for (const [key, value] of properties(list)) {
++			values.set(key, value);
++		}
++	}
++	const variants = Array.isArray(raw.variants) ? raw.variants : [];
++	const entry = variants.find(
++		(v) => Array.isArray(v) && v[0] === device.template,
++	);
++	const variant = Array.isArray(entry) && isObject(entry[1]) ? entry[1] : null;
++	if (variant) {
++		for (const [key, value] of properties(variant.diffProperties)) {
++			values.set(key, value);
++		}
++		for (const diff of Array.isArray(variant.componentDiffProperties)
++			? variant.componentDiffProperties
++			: []) {
++			if (
++				Array.isArray(diff) &&
++				typeof diff[0] === 'string' &&
++				diff[0].includes(component.replace('ComponentData', '')) &&
++				isObject(diff[1])
++			) {
++				for (const [key, value] of properties(diff[1].value)) {
++					values.set(key, value);
++				}
++			}
++		}
++	}
++	for (const [key, value] of properties(device.placement.properties)) {
++		values.set(key, value);
++	}
++	// component-scoped/runtime overrides need an explicit resolver before replacing direct fields.
++	for (const override of device.placement.componentProperties) {
++		// the versioned interactive schema uses key 169 for the jump-machine component.
++		if (
++			Array.isArray(override) &&
++			override[0] === 169 &&
++			component === 'JumpMachineComponentData'
++		) {
++			for (const [key, value] of properties(override[1])) {
++				if (forcedState(key)) {
++					continue;
++				}
++				if (properties(device.placement.properties).has(key)) {
++					return null;
++				}
++				values.set(key, value);
++			}
++			continue;
++		}
++		if (
++			Array.isArray(override) &&
++			[...properties(override[1])].some(
++				([key, value]) =>
++					!forcedState(key) &&
++					values.has(key) &&
++					JSON.stringify(values.get(key)) !== JSON.stringify(value),
++			)
++		) {
++			return null;
++		}
++	}
++	if (
++		[
++			...properties(device.placement.mapProperties),
++			...properties(device.placement.globalProperties),
++		].some(([key]) => !forcedState(key))
++	) {
++		return null;
++	}
++	return values;
++};
++
++const offset = (d: Device, p: Vec3): Vec3 => {
++	const v = transformPoint(
++		trsMatrix(d.position, unityEulerQuaternion(d.rotation), [1, 1, 1]),
++		p,
++	);
++	return [v[0], v[1], v[2]];
++};
++
++export const normalizeDevices = (
++	input: Input,
++	options: Pick<Options, 'scene' | 'source'>,
++	radius = 0.3,
++): DeviceFacts => {
++	if (
++		input.version !== 1 ||
++		input.scene !== options.scene ||
++		input.source.buildGuid !== options.source.buildGuid ||
++		input.source.contentHash !== options.source.contentHash ||
++		!Array.isArray(input.devices) ||
++		!isObject(input.templates)
++	)
++		throw new Error('device inputs must share scene and build');
++	const entry = (device: Device) => {
++		const raw = input.templates[device.template];
++		if (
++			!isObject(raw) ||
++			!Array.isArray(raw.components) ||
++			typeof raw.source !== 'string'
++		) {
++			return null;
++		}
++		const template = {
++			componentList: raw.components
++				.filter(isObject)
++				.map((c) => ({ $type: c.type, propertyList: c.properties })),
++			templateVariant: raw.variants,
++		};
++		const rules = interactionRules(template, {
++			...input.source,
++			path: raw.source,
++		});
++		return interactionPoint(
++			{
++				...device.placement,
++				entityDataIdKey: device.template,
++				levelLogicId: device.id,
++				position: device.position,
++				rotation: device.rotation,
++				scale: device.scale,
++			},
++			device.level,
++			template,
++			rules,
++		).navigationGoal;
++	};
++	const devices = input.devices.map((d) => {
++		const component =
++			d.kind === 'accelerate'
++				? 'TriggerObserverComponentData'
++				: d.kind === 'launch'
++					? 'JumpMachineComponentData'
++					: 'InteractiveVerticalRopeComponentData';
++		const p = effective(d, input.templates[d.template], component);
++		const goal = entry(d);
++		return {
++			id: d.id,
++			kind: d.kind,
++			position: d.position,
++			goal,
++			seeds: [offset(d, [0, 0, -1]), offset(d, [0, 0, 1])],
++			rotation: d.rotation,
++			unitScale: d.scale.every((v) => v === 1),
++			resolved: !!p,
++			speed:
++				Number(p?.get('move_speed')) > 0
++					? Number(p?.get('move_speed'))
++					: Number(p?.get('speed')),
++			overhead: Number(p?.get('duration')),
++			duration: p?.get('accelerate_buff'),
++			fixedLaunch:
++				!!p &&
++				p.get('free_jump') === false &&
++				typeof p.get('use_electric') === 'boolean' &&
++				p.get('unlock_height_limit') === false,
++			aim: p?.get('target_position'),
++			height: Number(p?.get('height')),
++			aimClearance: 3,
++			boostMultiplier: 2.2,
++			nearbyOffsets: (radius: number) => [
++				offset(d, [0, 0, -radius]),
++				offset(d, [0, 0, radius]),
++				...[radius * 2, 1].flatMap((r) =>
++					Array.from({ length: 8 }, (_, i) =>
++						offset(d, [
++							Math.cos((i * Math.PI) / 4) * r,
++							0,
++							Math.sin((i * Math.PI) / 4) * r,
++						]),
++					),
++				),
++			],
++		};
++	});
++	// Fixed launch pads retain the game controller's 3 m aim clearance;
++	// accelerate_buff supplies duration and the authored +1.2 scalar gives 2.2x speed.
++	// World-space seeds avoid making the solver interpret game transforms.
++	return {
++		devices: devices.map(({ nearbyOffsets, seeds, rotation, ...d }) => ({
++			...d,
++			seeds: nearbyOffsets(radius),
++		})),
++		ropes: ropePairs(input.devices).pairs,
++	};
++};
++export const deviceConnections = (input: Input, options: Options) =>
++	createDeviceConnections(
++		normalizeDevices(input, options, options.profile.radius),
++		{
++			surfaces: options.surfaces,
++			world: options.world,
++			profile: options.profile,
++			walls: options.walls,
++			model: {
++				gravity: numberField(options.settings, '_gravity'),
++				fallingGravity: numberField(options.settings, '_fallingGravity'),
++				maxFallingSpeed: numberField(options.settings, '_maxFallingSpeed'),
++				apexTime: numberField(options.settings, '_apexTime'),
++			},
++			maxSlope: numberField(options.settings, '_slopeLimit'),
++		},
++	);
+diff --git a/packages/extractor/src/game/swept-supports.ts b/packages/extractor/src/game/swept-supports.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/game/swept-supports.ts
+@@ -0,0 +1,2 @@
++export { sweepSupports, supportBounds, supportEndpoints } from "@opendfieldmap/ganglia/solver/host";
++export { type SweptSupport, type PoseBounds, type PoseSpan } from "@opendfieldmap/ganglia/solver";
+diff --git a/packages/extractor/src/commands/player-route.ts b/packages/extractor/src/commands/player-route.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/commands/player-route.ts
+@@ -0,0 +1,66 @@
++import { parseArgs } from 'node:util';
++import {
++	preparePhysicalRoute,
++	physicalResources,
++} from '../game/physical-input.ts';
++import { physicalWork } from '@opendfieldmap/ganglia/solver/host';
++import { readFile } from 'node:fs/promises';
++import { routeWriter } from '../write-route.ts';
++import type { RouteCache } from '../route-cache.ts';
++export const summary = 'solve a physical player route';
++export const usage =
++	'usage: endfield-extract player-route --ground <file> --collision <file> --movement-settings <file> --request <file> -o <result>';
++export const run = async (
++	args: string[],
++	context?: {
++		cache: RouteCache;
++		progress: (value: Record<string, unknown>) => void;
++	},
++): Promise<void> => {
++	const { values } = parseArgs({
++		args,
++		options: {
++			ground: { type: 'string' },
++			collision: { type: 'string' },
++			'movement-settings': { type: 'string' },
++			request: { type: 'string' },
++			output: { type: 'string', short: 'o' },
++			devices: { type: 'string' },
++			'ground-only': { type: 'boolean' },
++			'devices-only': { type: 'boolean' },
++		},
++	});
++	let resources: ReturnType<typeof physicalResources>;
++	try {
++		resources = physicalResources({
++			...values,
++			movement: values['movement-settings'],
++			devices: values['ground-only'] ? undefined : values.devices,
++		});
++	} catch {
++		throw new Error(usage);
++	}
++	if (!values.request || !values.output) throw new Error(usage);
++	const write = routeWriter(values.output, [
++		resources.ground,
++		resources.collision,
++		resources.movement,
++		values.request,
++		...(resources.devices ? [resources.devices] : []),
++	]);
++	const progress =
++		context?.progress ??
++		((value: object) => console.log(JSON.stringify(value)));
++	const prepared = await preparePhysicalRoute(
++		resources,
++		JSON.parse(await readFile(values.request, 'utf8')),
++		context ? { cache: context.cache, progress } : undefined,
++	);
++	await prepared.solve({
++		work: physicalWork(
++			values['ground-only'] ? 0 : values['devices-only'] ? 1 : 2,
++		),
++		onProgress: progress,
++		onResult: write,
++	});
++};
+diff --git a/packages/extractor/src/commands/player-route.test.ts b/packages/extractor/src/commands/player-route.test.ts
+new file mode 100644
+--- /dev/null
++++ b/packages/extractor/src/commands/player-route.test.ts
+@@ -0,0 +1,855 @@
++import assert from 'node:assert/strict';
++import { fork } from 'node:child_process';
++import { once } from 'node:events';
++import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
++import { tmpdir } from 'node:os';
++import { join } from 'node:path';
++import { test } from 'node:test';
++import { deserialize } from 'node:v8';
++
++import type { Wall } from '@opendfieldmap/ganglia';
++
++import type { FollowingSupport } from '../game/following-supports.ts';
++import { sweepSupports, type SweptSupport } from '../game/swept-supports.ts';
++import { createRouteCache } from '../route-cache.ts';
++
++import { run } from './player-route.ts';
++import { preparePhysicalRoute } from '../game/physical-input.ts';
++import { encodeCollision } from './player-ground.ts';
++
++const source = { buildGuid: 'build', contentHash: 'content' };
++const profile = { radius: 0.25, height: 1 };
++const selection = { sceneState: 0, area: 0 };
++const locomotion = { speed: 1, sprintSpeed: 2, sprintAcceleration: 1 };
++const fixture = (bounds?: { min: number[]; max: number[] }) => ({
++	ground: {
++		...(bounds ? { build: { bounds } } : {}),
++		version: 1,
++		scene: 'scene',
++		source,
++		selection,
++		coverage: { complete: false },
++		surfaces: [
++			{
++				id: 'floor',
++				vertices: [
++					[0, 0, 0],
++					[10, 0, 0],
++					[10, 0, 10],
++					[0, 0, 10],
++				],
++			},
++		],
++		options: { speed: 1, maxVertical: 0.5, walls: [] as Wall[], profile },
++	},
++	collision: {
++		scene: 'scene',
++		source,
++		selection,
++		coverage: { complete: false },
++		options: { profile },
++		positions: [0, 0, 0, 10, 0, 0, 10, 0, 10, 0, 0, 10],
++		indices: [0, 2, 1, 0, 3, 2],
++	},
++	movement: {
++		version: 1,
++		source,
++		defaultProfile: profile,
++		sustainedSprint: locomotion,
++		assets: [
++			{
++				path: 'MovementSetting/MovementSetting_Default.asset',
++				settings: {
++					_gravity: 10,
++					_stepDownOffset: 0.6,
++					_fallingGravity: 10,
++					_maxJumpHeight: 1,
++					_maxFallingSpeed: 10,
++					_apexTime: 0,
++					_inAirMaxHorizontalSpeedSprint: 2,
++					_startHorizontalSpeedSprint: 2,
++					_inAirMaxInitHorizontalSpeed: 12.5,
++					_inAirDecelerationWithInputSprint: 5,
++					_inAirMaxHorizontalSpeedRun: 1,
++					_inAirAcceleration: 60,
++					_inAirDecelerationNoInputSprint: 10,
++					_slopeLimit: 45,
++				},
++			},
++		],
++	},
++	request: {
++		scene: 'scene',
++		source,
++		arrival: { id: 'player', state: 'available', cost: 0, position: [1, 0, 1] },
++		target: [9, 0, 9],
++		walls: [],
++	},
++});
++
++const execute = async (
++	data: ReturnType<typeof fixture>,
++	extra: Record<string, unknown> = {},
++	stage: 'all' | 'walking' | 'devices' = 'all',
++	devices?: {
++		version: number;
++		scene: string;
++		source: typeof source;
++		devices: [];
++		templates: {};
++		movingSupports: SweptSupport[];
++		followingSupports?: FollowingSupport[];
++	},
++) => {
++	const directory = await mkdtemp(join(tmpdir(), 'player-route-'));
++	try {
++		const files = ['ground', 'collision', 'movement', 'request'] as const;
++		for (const file of files) {
++			await writeFile(
++				join(directory, file + '.json'),
++				JSON.stringify(
++					file === 'request' ? { ...data.request, ...extra } : data[file],
++				),
++			);
++		}
++		const output = join(directory, 'result.json');
++		if (devices) {
++			await writeFile(join(directory, 'devices.json'), JSON.stringify(devices));
++		}
++		await run([
++			'--ground',
++			join(directory, 'ground.json'),
++			'--collision',
++			join(directory, 'collision.json'),
++			'--movement-settings',
++			join(directory, 'movement.json'),
++			'--request',
++			join(directory, 'request.json'),
++			'-o',
++			output,
++			...(stage === 'all'
++				? []
++				: [stage === 'walking' ? '--ground-only' : '--devices-only']),
++			...(devices ? ['--devices', join(directory, 'devices.json')] : []),
++		]);
++		return JSON.parse(await readFile(output, 'utf8'));
++	} finally {
++		await rm(directory, { recursive: true, force: true });
++	}
++};
++
++test('plans arbitrary ground endpoints through the CLI and retains source/coverage/resource timing', async () => {
++	const result = await execute(fixture());
++	assert.equal(result.status, 'candidate');
++	assert.equal(result.motionValidation, 'model-based');
++	assert.deepEqual(result.source, source);
++	assert.deepEqual(result.route.points[0], [1, 0, 1]);
++	assert.deepEqual(result.route.points.at(-1), [9, 0, 9]);
++	assert.ok(result.route.cost < Math.hypot(8, 8));
++	assert.deepEqual(result.connections, []);
++	assert.equal(result.supportBoxes, undefined);
++	assert.equal(result.diagnostics.timingMs.annotationPreparation, undefined);
++	assert.equal(result.coverage.ground.complete, false);
++});
++
++test('a target supported only by an imported moving platform reaches device preparation', async () => {
++	const data = fixture({ min: [0, 0], max: [10, 10] });
++	Object.assign(data.ground.build!, { cellSize: 0.1, cellHeight: 0.05 });
++	Object.assign(data.movement.assets[0].settings, { _stepOffset: 0.4 });
++	data.request.target = [5, 5, 5];
++	const cap = (y: number): [number, number, number][] => [
++		[4, y, 4],
++		[4, y, 6],
++		[6, y, 6],
++		[6, y, 4],
++	];
++	const support: SweptSupport = {
++		id: 'lift',
++		family: 'platform',
++		model: 'fixture',
++		level: 'level',
++		assumption: 'phase-free-swept-support',
++		...sweepSupports('lift', [[cap(0)], [cap(5)]], 2),
++	};
++	const result = await execute(data, {}, 'devices', {
++		version: 1,
++		scene: 'scene',
++		source,
++		devices: [],
++		templates: {},
++		movingSupports: [support],
++	});
++	assert.equal(result.status, 'candidate');
++	assert.equal(result.route.status, 'complete');
++	assert.ok(
++		result.connections.some((connection: { id: string }) =>
++			connection.id.startsWith('moving-ride/'),
++		),
++	);
++	assert.ok(result.diagnostics.movingSupports.addedSurfaces > 0);
++	assert.deepEqual(
++		result.supportBoxes.map((box: { role: string; max: number[] }) => [
++			box.role,
++			box.max[1],
++		]),
++		[
++			['board', 0],
++			['use', 5],
++		],
++	);
++	assert.equal(result.route.supportBoxes, undefined);
++	assert.ok(result.diagnostics.timingMs.annotationPreparation >= 0);
++	assert.ok(result.diagnostics.timingMs.annotations >= 0);
++});
++
++test('the foreground walking stage finishes before airborne collision indexing', async () => {
++	const result = await execute(fixture(), {}, 'walking');
++	assert.equal(result.status, 'candidate');
++	assert.equal(result.optimizing, false);
++	assert.ok(
++		result.route.segments.every(
++			(segment: { mode: string }) => segment.mode === 'walk',
++		),
++	);
++	assert.equal(result.diagnostics.collisionScope, undefined);
++});
++
++test('refines failed round-envelope connectivity while retaining completed ground search ordering', async () => {
++	const data = fixture();
++	const id = 'capsule-axis-envelope/1/2/3';
++	const wall: Wall & { id: string } = {
++		id,
++		min: [-1, 1, -1],
++		max: [3, 5, 3],
++		state: 'unknown',
++	};
++	data.ground.options.walls.push(wall);
++	Object.assign(data.collision.coverage, {
++		approximations: [
++			{
++				kind: 'capsule-axis-envelope',
++				id: 1,
++				component: 2,
++				index: 3,
++				bounds: { min: [-1, 1, -1], max: [3, 5, 3] },
++				outerRadius: 2,
++				padding: 0.001,
++			},
++		],
++	});
++	const recovered = await execute(
++		data,
++		{
++			arrival: { ...data.request.arrival, position: [1.9, 0, 1.9] },
++		},
++		'walking',
++	);
++	assert.equal(recovered.status, 'candidate');
++	assert.deepEqual(recovered.diagnostics.roundOccupancy, {
++		refined: true,
++		groundStatus: 'complete',
++	});
++	assert.equal((await execute(data, {}, 'walking')).status, 'unavailable');
++	const clear = await execute(
++		data,
++		{
++			arrival: { ...data.request.arrival, position: [7, 0, 1] },
++		},
++		'walking',
++	);
++	assert.equal(clear.status, 'candidate');
++	assert.equal(clear.diagnostics.roundOccupancy, undefined);
++});
++
++test('known-action queries finish without jump discovery when no device inputs are supplied', async () => {
++	const result = await execute(fixture(), {}, 'devices');
++	assert.equal(result.status, 'candidate');
++	assert.equal(result.optimizing, false);
++	assert.equal(result.diagnostics.collisionScope, undefined);
++	assert.equal(result.diagnostics.searches, undefined);
++});
++
++test('plans to the supplied interaction region instead of snapping an outside marker onto another floor', async () => {
++	const result = await execute(fixture(), {
++		target: [13, 0, 5],
++		interaction: { radius: 4 },
++	});
++	assert.equal(result.status, 'candidate');
++	const end = result.route.points.at(-1);
++	assert.ok(Math.hypot(end[0] - 13, end[1], end[2] - 5) <= 4);
++	assert.ok(end[0] <= 10);
++	const below = await execute(fixture(), { target: [9, 2, 9] });
++	assert.equal(below.status, 'candidate');
++	assert.equal(below.groundedTarget[1], 0);
++});
++
++test('rejects mismatched source and capsule inputs and keeps unavailable arrival state explicit', async () => {
++	const wrongSource = fixture();
++	wrongSource.collision.source = { ...source, contentHash: 'other' };
++	await assert.rejects(execute(wrongSource), /share a scene and build/);
++	const wrongProfile = fixture();
++	wrongProfile.collision.options.profile = { ...profile, radius: 0.3 };
++	await assert.rejects(execute(wrongProfile), /share body profile/);
++	const unavailable = await execute(fixture(), {
++		arrival: { id: 'locked', state: 'unknown', cost: 0, position: [1, 0, 1] },
++	});
++	assert.equal(unavailable.status, 'unavailable');
++	assert.equal(unavailable.reason, 'arrival-unavailable');
++});
++
++test('model-discovered jumps exceeding running air speed retain their sprint-entry requirement', async () => {
++	const data = fixture();
++	data.ground.surfaces = [
++		{
++			id: 'left',
++			vertices: [
++				[0, 0, 0],
++				[2, 0, 0],
++				[2, 0, 2],
++				[0, 0, 2],
++			],
++		},
++		{
++			id: 'right',
++			vertices: [
++				[3, 0, 0],
++				[6, 0, 0],
++				[6, 0, 2],
++				[3, 0, 2],
++			],
++		},
++	];
++	data.collision.positions = [
++		0, 0, 0, 2, 0, 0, 2, 0, 2, 0, 0, 2, 3, 0, 0, 6, 0, 0, 6, 0, 2, 3, 0, 2,
++	];
++	data.collision.indices = [0, 2, 1, 0, 3, 2, 4, 6, 5, 4, 7, 6];
++	data.request.target = [5, 0, 1];
++	data.movement.assets[0].settings = {
++		...data.movement.assets[0].settings,
++		_inAirMaxHorizontalSpeedSprint: 4,
++	};
++	const result = await execute(data);
++	assert.equal(result.status, 'candidate');
++	assert.ok(result.connections.length > 0);
++	assert.ok(
++		result.connections.some(
++			(connection: { requiredGait?: string }) =>
++				connection.requiredGait === 'sprint',
++		),
++	);
++	assert.ok(
++		result.route.segments.some(
++			(segment: { mode: string }) => segment.mode === 'jump',
++		),
++	);
++	const scope = result.diagnostics.collisionScope;
++	assert.ok(
++		Math.abs(
++			scope.padding - (0.25 + (Math.hypot(10, 60) * 0.1 ** 2) / 8 + 0.01),
++		) < 1e-12,
++	);
++	assert.deepEqual(scope.bounds.min, [-scope.padding, -scope.padding]);
++	assert.deepEqual(scope.bounds.max, [6 + scope.padding, 2 + scope.padding]);
++});
++
++test('mandatory physical exclusions survive an empty caller wall list at the start and goal', async () => {
++	for (const center of [1, 9]) {
++		const data = fixture();
++		data.ground.options.walls = [
++			{
++				min: [center - 0.5, -1, center - 0.5],
++				max: [center + 0.5, 2, center + 0.5],
++				state: 'unknown',
++			},
++		];
++		const result = await execute(data);
++		assert.equal(result.status, 'unavailable');
++		assert.equal(result.route, undefined);
++	}
++});
++
++test('searches a many-face interaction goal once and retains the reachable landing region', async () => {
++	const data = fixture();
++	const floor = (id: string, x0: number, x1: number) => ({
++		id,
++		vertices: [
++			[x0, 0, 0],
++			[x1, 0, 0],
++			[x1, 0, 2],
++			[x0, 0, 2],
++		],
++	});
++	data.ground.surfaces = [floor('start', 0, 2)];
++	for (let index = 0; index < 20; index++) {
++		data.ground.surfaces.push(
++			floor('landing/' + index, 3 + index * 0.15, 3 + (index + 1) * 0.15),
++		);
++	}
++	data.collision.positions = [
++		0, 0, 0, 2, 0, 0, 2, 0, 2, 0, 0, 2, 3, 0, 0, 6, 0, 0, 6, 0, 2, 3, 0, 2,
++	];
++	data.collision.indices = [0, 2, 1, 0, 3, 2, 4, 6, 5, 4, 7, 6];
++	const result = await execute(data, {
++		target: [5, 1, 1],
++		interaction: { radius: 1.5 },
++	});
++	assert.equal(result.status, 'candidate');
++	assert.equal(result.diagnostics.strategy, 'surface-action-graph');
++	// local shortcut refinement is a separate post-feasibility phase; it must not
++	// multiply the two broad searches by the number of interaction faces.
++	assert.equal(
++		result.diagnostics.searches.filter(
++			(search: { reason: string }) => search.reason !== 'route-shortcuts',
++		).length,
++		2,
++	);
++	assert.ok(result.diagnostics.searches[0].goalFaces > 8);
++	assert.equal(result.diagnostics.searches[0].reason, 'searched');
++	assert.ok(result.diagnostics.searches[0].accepted > 0);
++	const end = result.route.points.at(-1);
++	assert.ok(Math.hypot(end[0] - 5, end[1] - 1, end[2] - 1) <= 1.5 + 1e-8);
++});
++
++test('compares jump-down actions even when the ground-only route already succeeds', async () => {
++	const data = fixture();
++	const floor = (
++		id: string,
++		x0: number,
++		x1: number,
++		y: number,
++		z0: number,
++		z1: number,
++	) => ({
++		id,
++		vertices: [
++			[x0, y, z0],
++			[x1, y, z0],
++			[x1, y, z1],
++			[x0, y, z1],
++		],
++	});
++	data.ground.surfaces = [
++		floor('upper', 0, 4, 4, -2, 2),
++		{
++			id: 'ramp',
++			vertices: [
++				[0, 4, 2],
++				[4, 4, 2],
++				[4, 0, 20],
++				[0, 0, 20],
++			],
++		},
++		floor('back', 0, 15, 0, 20, 24),
++		floor('lower', 7, 15, 0, -2, 20),
++	];
++	const triangles = data.ground.surfaces.flatMap((surface) => [
++		[surface.vertices[0], surface.vertices[2], surface.vertices[1]],
++		[surface.vertices[0], surface.vertices[3], surface.vertices[2]],
++	]);
++	data.collision.positions = triangles.flat(2);
++	data.collision.indices = Array.from(
++		{ length: triangles.length * 3 },
++		(_, index) => index,
++	);
++	data.request.arrival.position = [2, 4, 0];
++	data.request.target = [10, 0, 0];
++	data.movement.assets[0].settings = {
++		...data.movement.assets[0].settings,
++		_maxJumpHeight: 2,
++		_inAirMaxHorizontalSpeedSprint: 3,
++	};
++	const result = await execute(data);
++	assert.equal(result.status, 'candidate');
++	assert.equal(result.diagnostics.groundStatus, 'complete');
++	assert.ok(result.route.cost < result.diagnostics.baselineCost / 2);
++	assert.equal(result.diagnostics.selectedCost, result.route.cost);
++	assert.ok(
++		result.route.segments.some(
++			(segment: { mode: string }) => segment.mode === 'jump',
++		),
++	);
++});
++
++test('retains the selected physical build extent around empty air', async () => {
++	const result = await execute(fixture({ min: [-2, -3], max: [12, 13] }));
++	const scope = result.diagnostics.collisionScope;
++	assert.deepEqual(scope.bounds.min, [-2 - scope.padding, -3 - scope.padding]);
++	assert.deepEqual(scope.bounds.max, [12 + scope.padding, 13 + scope.padding]);
++	await assert.rejects(
++		execute(fixture({ min: [2, 0], max: [1, 10] })),
++		/build bounds/,
++	);
++});
++
++test('settles authored arrivals within the player step-down limit without snapping to another storey', async () => {
++	for (const [height, expected] of [
++		[0.54, 'candidate'],
++		[0.59, 'candidate'],
++		[1.8, 'unavailable'],
++		[-0.54, 'unavailable'],
++	] as const) {
++		const data = fixture();
++		data.request.arrival.position[1] = height;
++		const result = await execute(data, {}, 'walking');
++		assert.equal(result.status, expected);
++		if (expected === 'candidate') {
++			assert.deepEqual(result.route.points[0], [1, 0, 1]);
++			assert.equal(result.diagnostics.arrival.requested[1], height);
++		} else {
++			assert.equal(result.reason, 'arrival-unmapped');
++		}
++	}
++});
++
++test('factory centres project only inside their explicit source volume and still obey exclusions', async () => {
++	const data = fixture();
++	const arrival = {
++		...data.request.arrival,
++		position: [1, 12, 1],
++		groundRange: [-1, 20],
++	};
++	const result = await execute(data, { arrival }, 'walking');
++	assert.equal(result.status, 'candidate');
++	assert.deepEqual(result.route.points[0], [1, 0, 1]);
++	const outside = await execute(
++		data,
++		{ arrival: { ...arrival, groundRange: [2, 20] } },
++		'walking',
++	);
++	assert.equal(outside.reason, 'arrival-unmapped');
++	await assert.rejects(
++		execute(data, { arrival: { ...arrival, groundRange: [20, -1] } }),
++		/support range/,
++	);
++	data.ground.options.walls = [
++		{ min: [0, -1, 0], max: [2, 2, 2], state: 'active' },
++	];
++	assert.equal(
++		(await execute(data, { arrival }, 'walking')).status,
++		'unavailable',
++	);
++});
++
++test('preparation reuse preserves independent target searches and invalidates changed exclusions', async () => {
++	const directory = await mkdtemp(join(tmpdir(), 'player-route-reuse-'));
++	try {
++		const data = fixture({ min: [0, 0], max: [10, 10] });
++		const ground = {
++			...data.ground,
++			build: { ...data.ground.build, cellSize: 0.15, cellHeight: 0.05 },
++		};
++		const movement = {
++			...data.movement,
++			assets: [
++				{
++					...data.movement.assets[0],
++					settings: { ...data.movement.assets[0].settings, _stepOffset: 0.4 },
++				},
++			],
++		};
++		for (const [name, value] of Object.entries({
++			ground,
++			collision: data.collision,
++			movement,
++		})) {
++			await writeFile(join(directory, name + '.json'), JSON.stringify(value));
++		}
++		const cache = createRouteCache();
++		const output = join(directory, 'cached.json');
++		const request = join(directory, 'request.json');
++		const args = [
++			'--ground',
++			join(directory, 'ground.json'),
++			'--collision',
++			join(directory, 'collision.json'),
++			'--movement-settings',
++			join(directory, 'movement.json'),
++			'--request',
++			request,
++			'-o',
++			output,
++		];
++		for (const [index, target] of [
++			[9, 0, 9],
++			[9, 0, 9],
++			[8, 0, 8],
++			[8, 0, 8],
++		].entries()) {
++			await writeFile(request, JSON.stringify({ ...data.request, target }));
++			await run(args, { cache, progress: () => {} });
++			const reused = JSON.parse(await readFile(output, 'utf8'));
++			await run([...args.slice(0, -1), join(directory, 'fresh.json')]);
++			const fresh = JSON.parse(
++				await readFile(join(directory, 'fresh.json'), 'utf8'),
++			);
++			assert.deepEqual(reused.route, fresh.route);
++			assert.deepEqual(reused.connections, fresh.connections);
++			assert.equal(reused.diagnostics.prepareReuse.ground, index > 0);
++			assert.equal(reused.diagnostics.prepareReuse.collision, index > 0);
++			assert.equal(
++				reused.diagnostics.prepareReuse.refinement,
++				index === 1 || index === 3,
++			);
++		}
++		await writeFile(
++			request,
++			JSON.stringify({
++				...data.request,
++				walls: [{ min: [0, -1, 0], max: [2, 2, 2], state: 'active' }],
++			}),
++		);
++		await run([...args, '--ground-only'], { cache, progress: () => {} });
++		const blocked = JSON.parse(await readFile(output, 'utf8'));
++		assert.equal(blocked.status, 'unavailable');
++		assert.equal(blocked.diagnostics.prepareReuse.ground, false);
++		const wrong = { ...movement, defaultProfile: { radius: 0.3, height: 1 } };
++		await writeFile(join(directory, 'movement.json'), JSON.stringify(wrong));
++		await assert.rejects(
++			run(args, { cache, progress: () => {} }),
++			/share body profile/,
++		);
++	} finally {
++		await rm(directory, { recursive: true, force: true });
++	}
++});
++
++test('the IPC worker keeps ordered progress and survives a failed request before reusing terrain', async () => {
++	const directory = await mkdtemp(join(tmpdir(), 'player-route-worker-'));
++	const child = fork(new URL('../route-worker.ts', import.meta.url), [], {
++		execArgv: [],
++		stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
++	});
++	const messages: {
++		type: string;
++		id?: string;
++		progress?: { phase: string };
++		error?: string;
++	}[] = [];
++	let stdout = '',
++		stderr = '';
++	child.stdout?.on('data', (bytes) => {
++		stdout += String(bytes);
++	});
++	child.stderr?.on('data', (bytes) => {
++		stderr += String(bytes);
++	});
++	child.on('message', (value) => {
++		messages.push(value as (typeof messages)[number]);
++	});
++	const waitFor = (id: string | undefined, terminal: string[]) =>
++		new Promise<void>((resolve, reject) => {
++			const ready = () =>
++				messages.some(
++					(value) => value.id === id && terminal.includes(value.type),
++				);
++			if (ready()) {
++				resolve();
++				return;
++			}
++			const timer = setTimeout(() => {
++				cleanup();
++				reject(new Error('worker request timed out: ' + String(id)));
++			}, 10000);
++			const listener = () => {
++				if (ready()) {
++					cleanup();
++					resolve();
++				}
++			};
++			const exited = () => {
++				cleanup();
++				reject(new Error('worker exited before completion'));
++			};
++			const cleanup = () => {
++				clearTimeout(timer);
++				child.off('message', listener);
++				child.off('exit', exited);
++			};
++			child.on('message', listener);
++			child.on('exit', exited);
++		});
++	try {
++		await waitFor(undefined, ['ready']);
++		child.send({ id: 'bad', args: [] });
++		await waitFor('bad', ['error']);
++		assert.match(messages.find((value) => value.id === 'bad')!.error!, /usage/);
++		const data = fixture();
++		for (const [name, value] of Object.entries(data)) {
++			await writeFile(join(directory, name + '.json'), JSON.stringify(value));
++		}
++		for (const [index, target] of [
++			[9, 0, 9],
++			[8, 0, 8],
++		].entries()) {
++			await writeFile(
++				join(directory, 'request.json'),
++				JSON.stringify({ ...data.request, target }),
++			);
++			const output = join(directory, 'result-' + index + '.json');
++			const args = [
++				'--ground',
++				join(directory, 'ground.json'),
++				'--collision',
++				join(directory, 'collision.json'),
++				'--movement-settings',
++				join(directory, 'movement.json'),
++				'--request',
++				join(directory, 'request.json'),
++				'-o',
++				output,
++				'--ground-only',
++			];
++			const id = 'query-' + index;
++			child.send({ id, args });
++			await waitFor(id, ['done', 'error']);
++			const events = messages.filter((value) => value.id === id);
++			assert.equal(events.at(-1)!.type, 'done');
++			assert.equal(events[0].progress!.phase, 'read-inputs');
++			const result = JSON.parse(await readFile(output, 'utf8'));
++			assert.equal(result.status, 'candidate');
++			assert.deepEqual(result.route.points.at(-1), target);
++			assert.equal(result.diagnostics.prepareReuse.ground, index > 0);
++		}
++		assert.equal(
++			stdout,
++			'',
++			'structured progress must use the ordered IPC channel',
++		);
++		assert.equal(stderr, '');
++	} finally {
++		if (child.exitCode === null && child.signalCode === null) {
++			const exited = once(child, 'exit');
++			child.kill();
++			await exited;
++		}
++		await rm(directory, { recursive: true, force: true });
++	}
++});
++
++const followingFixture = () => {
++	const data = fixture({ min: [0, 0], max: [10, 10] });
++	Object.assign(data.ground.build!, { cellSize: 0.1, cellHeight: 0.05 });
++	Object.assign(data.movement.assets[0].settings, {
++		_stepOffset: 0.4,
++		_inAirMaxHorizontalSpeedSprint: 4,
++		_inAirMaxHorizontalSpeedRun: 4,
++	});
++	data.ground.surfaces.push({
++		id: 'upper',
++		vertices: [
++			[7, 1.6, 4],
++			[7, 1.6, 6],
++			[9, 1.6, 6],
++			[9, 1.6, 4],
++		],
++	});
++	data.collision.positions.push(7, 1.6, 4, 7, 1.6, 6, 9, 1.6, 6, 9, 1.6, 4);
++	data.collision.indices.push(4, 5, 6, 4, 6, 7);
++	data.request.target = [8, 1.6, 5];
++	const box: FollowingSupport = {
++		id: 'following',
++		level: 'level',
++		model: 'fixture',
++		geometryKind: 'box',
++		initialState: 0,
++		assumption: 'placement-within-activity-range',
++		spawn: [2, 0, 5],
++		bodies: [
++			Array.from({ length: 8 }, (_, bits): [number, number, number] => [
++				2 + (bits & 1 ? 0.8 : -0.8),
++				bits & 2 ? 0.8 : 0,
++				5 + (bits & 4 ? 0.8 : -0.8),
++			]),
++		],
++		maxDistance: 65,
++	};
++	const devices = {
++		version: 1,
++		scene: 'scene',
++		source,
++		devices: [] as [],
++		templates: {},
++		movingSupports: [],
++		followingSupports: [box],
++	};
++	return { data, devices };
++};
++
++test('device-only fallback exports one assumed placement without control operations', async () => {
++	const { data, devices } = followingFixture();
++	const result = await execute(data, {}, 'devices', devices);
++	assert.equal(
++		result.status,
++		'candidate',
++		JSON.stringify(result.diagnostics.followingSupports),
++	);
++	assert.equal(result.supportBoxes[0].family, 'following-box');
++	assert.equal(result.operations, undefined);
++	assert.equal(
++		result.diagnostics.followingSupports.assumption,
++		'placement-within-activity-range',
++	);
++	assert.ok(result.diagnostics.timingMs.following >= 0);
++});
++
++test('full fallback runs after ordinary jumps fail and preserves an already complete baseline', async () => {
++	const { data, devices } = followingFixture();
++	const result = await execute(data, {}, 'all', devices);
++	assert.equal(
++		result.status,
++		'candidate',
++		JSON.stringify(result.diagnostics.followingSupports),
++	);
++	assert.equal(result.supportBoxes[0].family, 'following-box');
++	const existing = await execute(
++		data,
++		{ target: [3, 0, 2] },
++		'devices',
++		devices,
++	);
++	assert.equal(existing.status, 'candidate');
++	assert.equal(existing.operations, undefined);
++	assert.equal(existing.diagnostics.followingSupports, undefined);
++});
++
++test('walking queries reject malformed coarse waypoints before returning a result', async () => {
++	const data = fixture({ min: [0, 0], max: [10, 10] });
++	await assert.rejects(
++		execute(data, { waypoints: 'invalid' }, 'walking'),
++		/coarse waypoints/,
++	);
++});
++
++test('physical preparation accepts typed collision snapshots and rejects unsupported geometry containers', async () => {
++	const data = fixture();
++	const inputs: Record<string, unknown> = { ...data };
++	const cache = createRouteCache();
++	cache.begin = async () => 'typed-fixture';
++	cache.read = async <T>(slot: string) => inputs[slot] as T;
++	const prepare = () => preparePhysicalRoute({ ground: 'ground', collision: 'collision', movement: 'movement' }, data.request, { cache });
++	try {
++		const baseline = await (await prepare()).solve({ work: { version: 1, step: 0 } });
++		const encoded = encodeCollision(data.collision, 'v8');
++		assert.ok(Buffer.isBuffer(encoded));
++		for (const geometry of [
++			deserialize(encoded),
++			{ ...data.collision, positions: Float32Array.from(data.collision.positions), indices: Uint16Array.from(data.collision.indices) },
++		]) {
++			inputs.collision = geometry;
++			const report = await (await prepare()).solve({ work: { version: 1, step: 0 } });
++			assert.equal(report.status, 'candidate');
++			assert.deepEqual(report.route, baseline.route);
++			assert.deepEqual(report.source, source);
++			assert.deepEqual(report.coverage, baseline.coverage);
++		}
++		for (const geometry of [
++			{ ...data.collision, positions: false },
++			{ ...data.collision, positions: Int32Array.from(data.collision.positions) },
++			{ ...data.collision, indices: Float64Array.from(data.collision.indices) },
++			{ ...data.collision, indices: new Uint32Array([0, 1]) },
++		]) {
++			inputs.collision = geometry;
++			await assert.rejects(prepare(), /invalid physical route request/);
++		}
++	} finally { cache.clear(); }
++});

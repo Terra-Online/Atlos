@@ -909,10 +909,10 @@ index 2cac49c2..b9b132b5 100644
  		throw new Error(`zstd frame decoded to ${raw.byteLength} bytes, expected ${rawLength ?? 'more'}`);
  	}
 diff --git a/packages/viewer/src/render/frame/frame-graph.ts b/packages/viewer/src/render/frame/frame-graph.ts
-index 055f3d23..d0fd4e78 100644
+index cae28474..d26c4aa5 100644
 --- a/packages/viewer/src/render/frame/frame-graph.ts
 +++ b/packages/viewer/src/render/frame/frame-graph.ts
-@@ -428,6 +428,25 @@ export const encodeFrame = (
+@@ -431,6 +431,25 @@ export const encodeFrame = (
  		outputWidth,
  		outputHeight,
  		settings: settings.post,
@@ -939,10 +939,10 @@ index 055f3d23..d0fd4e78 100644
  	return draws;
  };
 diff --git a/packages/viewer/src/render/frame/render-targets.ts b/packages/viewer/src/render/frame/render-targets.ts
-index 48a8998b..97c13e3a 100644
+index efcd22e1..d68ef024 100644
 --- a/packages/viewer/src/render/frame/render-targets.ts
 +++ b/packages/viewer/src/render/frame/render-targets.ts
-@@ -302,7 +302,8 @@ export class RenderTargets {
+@@ -334,7 +334,8 @@ export class RenderTargets {
  		};
  		if (this.format.stencil) {
  			depth.stencilLoadOp = 'load';
@@ -982,10 +982,10 @@ index e8337c00..a23b93a3 100644
  
  /**
 diff --git a/packages/viewer/src/render/meshes/mesh-renderer.ts b/packages/viewer/src/render/meshes/mesh-renderer.ts
-index ecb797be..45030059 100644
+index fae53a7e..0ed30f82 100644
 --- a/packages/viewer/src/render/meshes/mesh-renderer.ts
 +++ b/packages/viewer/src/render/meshes/mesh-renderer.ts
-@@ -72,7 +72,17 @@ const createLookTable = (device: GPUDevice): GrowableBuffer =>
+@@ -73,7 +73,17 @@ const createLookTable = (device: GPUDevice): GrowableBuffer =>
  		usage: GPUBufferUsage.STORAGE,
  	});
  
@@ -1003,7 +1003,7 @@ index ecb797be..45030059 100644
  	geometry: ResidentGeometry;
  	indexCount: number;
  	firstIndex: number;
-@@ -181,6 +191,7 @@ export class MeshRenderer {
+@@ -196,6 +206,7 @@ export class MeshRenderer {
  	#entries: DrawEntry[] = [];
  	/** prepared draws in {@link DRAW_RANGES} order; entries past {@link #drawCount} are reused next frame */
  	#draws: PreparedDraw[] = [];
@@ -1011,7 +1011,7 @@ index ecb797be..45030059 100644
  	#drawCount = 0;
  	/**
  	 * the transparent pass's draw order, as `[draw, first, count, phase]` quads: the draws that write the
-@@ -442,6 +453,7 @@ export class MeshRenderer {
+@@ -483,6 +494,7 @@ export class MeshRenderer {
  
  	/** draws nothing this frame */
  	clear(): void {
@@ -1019,7 +1019,7 @@ index ecb797be..45030059 100644
  		this.#drawCount = 0;
  		this.#sortedRuns.length = 0;
  		this.instanceCount = 0;
-@@ -523,6 +535,7 @@ export class MeshRenderer {
+@@ -564,6 +576,7 @@ export class MeshRenderer {
  			}
  			range.end = d;
  		}
@@ -1027,7 +1027,7 @@ index ecb797be..45030059 100644
  		this.#drawCount = d;
  		this.#prepareSorted();
  		this.#flushLooks();
-@@ -556,6 +569,9 @@ export class MeshRenderer {
+@@ -597,6 +610,9 @@ export class MeshRenderer {
  			const range = this.#range(phase.range);
  			for (let i = range.castOnlyEnd; i < range.end; i++) {
  				const draw = this.#draws[i];
@@ -1037,7 +1037,7 @@ index ecb797be..45030059 100644
  				if (draw.stencil?.replace === true || draw.distances.length === 0) {
  					runs.push(i, 0, draw.count, p);
  					continue;
-@@ -726,6 +742,7 @@ export class MeshRenderer {
+@@ -768,6 +784,7 @@ export class MeshRenderer {
  		const draw = this.#draws[d];
  		if (draw === undefined) {
  			this.#draws[d] = {
@@ -1045,7 +1045,7 @@ index ecb797be..45030059 100644
  				geometry: resident,
  				indexCount: range.indexCount,
  				firstIndex: range.firstIndex,
-@@ -743,6 +760,7 @@ export class MeshRenderer {
+@@ -785,6 +802,7 @@ export class MeshRenderer {
  				bands: bucket.bands,
  			};
  		} else {
@@ -1053,7 +1053,7 @@ index ecb797be..45030059 100644
  			draw.geometry = resident;
  			draw.indexCount = range.indexCount;
  			draw.firstIndex = range.firstIndex;
-@@ -763,6 +781,21 @@ export class MeshRenderer {
+@@ -805,6 +823,21 @@ export class MeshRenderer {
  			draw.distances = bucket.distances;
  			draw.bands = bucket.bands;
  		}
@@ -1075,7 +1075,7 @@ index ecb797be..45030059 100644
  		if (!bucket.castOnly && gpu === null) {
  			this.instanceCount += span.count;
  			this.triangles += (span.count * range.indexCount) / 3;
-@@ -826,6 +859,21 @@ export class MeshRenderer {
+@@ -868,6 +901,21 @@ export class MeshRenderer {
  		return this.#encode(which, pass, -1);
  	}
  
@@ -1097,7 +1097,7 @@ index ecb797be..45030059 100644
  	/** builds the groups of a pass's effect draws, which also bind the main pass's outputs */
  	#bindEffectGroups(which: MeshPass, inputs: EffectInputs): void {
  		for (const phase of PASS_PHASES[which]) {
-@@ -878,7 +926,7 @@ export class MeshRenderer {
+@@ -920,7 +968,7 @@ export class MeshRenderer {
  	 * encodes a pass's phases in order; nothing if any of its or its paired pass's pipelines isn't ready.
  	 * `layer` limits each draw to the rows that shadow layer draws, or is -1 for all of them
  	 */
@@ -1106,7 +1106,7 @@ index ecb797be..45030059 100644
  		if (this.#drawCount === 0) {
  			return 0;
  		}
-@@ -902,6 +950,14 @@ export class MeshRenderer {
+@@ -944,6 +992,14 @@ export class MeshRenderer {
  			material: null,
  		};
  		let draws = 0;
@@ -1121,7 +1121,7 @@ index ecb797be..45030059 100644
  		if (which === 'transparent') {
  			const phases = PASS_PHASES.transparent;
  			const runs = this.#sortedRuns;
-@@ -926,6 +982,9 @@ export class MeshRenderer {
+@@ -968,6 +1024,9 @@ export class MeshRenderer {
  			const to = phase.shadow ? range.castersEnd : range.end;
  			for (let i = from; i < to; i++) {
  				const draw = this.#draws[i];
@@ -5298,7 +5298,7 @@ index 6f50ebaa..5752b618 100644
  	}
  }
 diff --git a/packages/viewer/src/viewer/options.ts b/packages/viewer/src/viewer/options.ts
-index 8772c38c..de1431cd 100644
+index 7ebbc6a0..9f8a645f 100644
 --- a/packages/viewer/src/viewer/options.ts
 +++ b/packages/viewer/src/viewer/options.ts
 @@ -3,6 +3,10 @@ import type { PostSettings, Tonemapper } from '../render/post/settings.ts';
@@ -5312,7 +5312,7 @@ index 8772c38c..de1431cd 100644
  	terrain: boolean;
  	/** draw the terrain's baked albedo and normal pages; off (or without BC textures) shows stand-in colours */
  	terrainSurface: boolean;
-@@ -61,6 +65,12 @@ export interface ViewerOptions {
+@@ -67,6 +71,12 @@ export interface ViewerOptions {
  	renderScale: number;
  	/** exposure compensation on top of the level's exposure, EV */
  	exposure: number;
@@ -5325,7 +5325,7 @@ index 8772c38c..de1431cd 100644
  	/** adapt the exposure to the view as the game's auto exposure does */
  	autoExposure: boolean;
  	tonemapper: Tonemapper;
-@@ -99,6 +109,8 @@ export interface ViewerOptions {
+@@ -105,6 +115,8 @@ export interface ViewerOptions {
  
  /** defaults for {@link ViewerOptions} */
  export const DEFAULT_OPTIONS: ViewerOptions = {
@@ -5334,7 +5334,7 @@ index 8772c38c..de1431cd 100644
  	terrain: true,
  	terrainSurface: true,
  	terrainSplat: true,
-@@ -124,6 +136,9 @@ export const DEFAULT_OPTIONS: ViewerOptions = {
+@@ -131,6 +143,9 @@ export const DEFAULT_OPTIONS: ViewerOptions = {
  	antialiasing: true,
  	renderScale: 1,
  	exposure: 0,
@@ -5344,7 +5344,7 @@ index 8772c38c..de1431cd 100644
  	autoExposure: true,
  	tonemapper: 'game',
  	sky: true,
-@@ -153,6 +168,9 @@ export const DEFAULT_OPTIONS: ViewerOptions = {
+@@ -160,6 +175,9 @@ export const DEFAULT_OPTIONS: ViewerOptions = {
   */
  export const postSettings = (options: ViewerOptions, scene: boolean): PostSettings => ({
  	exposure: options.exposure,
@@ -5355,7 +5355,7 @@ index 8772c38c..de1431cd 100644
  	tonemapper: options.tonemapper,
  	sky: options.sky,
 diff --git a/packages/viewer/src/viewer/renderer.ts b/packages/viewer/src/viewer/renderer.ts
-index 5804e4ac..f9112494 100644
+index 60bb2aea..b1e9faa2 100644
 --- a/packages/viewer/src/viewer/renderer.ts
 +++ b/packages/viewer/src/viewer/renderer.ts
 @@ -40,6 +40,22 @@ const INSTANCE_ROWS = 1_500_000;
@@ -5390,7 +5390,7 @@ index 5804e4ac..f9112494 100644
  }
  
  /** the GPU side of the viewer: the device's renderers and targets, and the frame they encode together */
-@@ -188,6 +206,7 @@ export class Renderer {
+@@ -186,6 +204,7 @@ export class Renderer {
  
  	/** drops what the passes carry over from earlier frames, after a cut to somewhere else */
  	cut(): void {
@@ -5398,7 +5398,7 @@ index 5804e4ac..f9112494 100644
  		for (const history of this.#histories) {
  			history.reset();
  		}
-@@ -304,6 +323,19 @@ export class Renderer {
+@@ -302,6 +321,19 @@ export class Renderer {
  			},
  			this.frame,
  		);

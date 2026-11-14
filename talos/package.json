@@ -29,7 +29,8 @@
     "dev:world": "node ./scripts/dev-app.mjs world",
     "world:build": "node ./scripts/world.mjs build",
     "world:deploy": "node ./scripts/world.mjs deploy",
-    "noclip:prepare": "node ./scripts/noclip.mjs prepare"
+    "noclip:prepare": "node ./scripts/noclip.mjs prepare",
+    "bench:world": "node scripts/bench-world.mjs"
   },
   "browserslist": [
     "defaults"
@@ -111,5 +112,10 @@
     "vitest": "^3.2.4",
     "wrangler": "^4.104.0"
   },
-  "packageManager": "pnpm@10.5.0+sha512.11106a5916c7406fe4b8cb8e3067974b8728f47308a4f5ac5e850304afa6f57e2847d7950dfe78877d8d36bfb401d381c4215db3a4c3547ffa63c14333a6fa51"
+  "packageManager": "pnpm@10.5.0+sha512.11106a5916c7406fe4b8cb8e3067974b8728f47308a4f5ac5e850304afa6f57e2847d7950dfe78877d8d36bfb401d381c4215db3a4c3547ffa63c14333a6fa51",
+  "pnpm": {
+    "overrides": {
+      "@opendfieldmap/ganglia": "workspace:*"
+    }
+  }
 }

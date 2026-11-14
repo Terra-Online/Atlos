@@ -32,17 +32,35 @@ Use comments to explain design decisions, important constraints, non-obvious beh
 
 Update related comments and documentation when changing an implementation, and remove obsolete descriptions. Prefer clear names and straightforward structure when the code can communicate the intent itself. Avoid boilerplate commentary, TODOs without context, and claims that are no longer supported by the implementation.
 
+## Documentation standards
+
+Create standalone documentation only when explicitly requested by a human.
+Otherwise, place necessary explanations in code comments.
+
+Apply these rules to both code comments and other documentation:
+
+- **Stateless and self-contained:** text must be understandable without the agent
+  session, PR discussion or other conversational context. Do not refer to local
+  development documents or describe what the code used to do. References to
+  external sources and GitHub issues or PRs are allowed.
+- **Do not duplicate implementation:** explain decisions, constraints and reasons
+  for surprising choices that the code cannot express. If a small implementation
+  change elsewhere would make the text stale, remove the duplicated detail.
+  Capture useful rationale directly; do not create formal ADRs by default.
+- **How-to and handoff exception:** a human-requested explanation saved for another
+  human or agent may repeat necessary implementation details. State its scope and
+  freshness conditions, and update or remove it when it becomes outdated.
+
 ## Route Solver Handoff
 
 Before investigating or changing Ganglia/World route solving, spatial generation,
 action discovery, caching, or solver performance, read the two canonical English
-records in the Ganglia repository:
+records in the Ganglia workspace package:
 
-- [Current implementation and open work](../Ganglia/docs/handoff/handoff.md).
-- [Strategy history and testing standards](../Ganglia/docs/handoff/history.md).
+- [Current implementation and open work](talos/packages/ganglia/docs/handoff/handoff.md).
+- [Strategy history and testing standards](talos/packages/ganglia/docs/handoff/history.md).
 
-The links assume a sibling Ganglia checkout; locate that repository if the workspace
-layout differs. Check the recorded versions against current source and the user's
+Check the recorded versions against current source and the user's
 latest requirements. Consult implemented, rejected, reverted, and inconclusive
 approaches before repeating work; identify the changed premise for a retry.
 

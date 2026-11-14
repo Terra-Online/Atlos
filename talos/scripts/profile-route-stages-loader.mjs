@@ -8,30 +8,30 @@ export const profilerKey = '__atlosRouteStageProfiler';
 // Keep per-vertex and per-sweep helpers out of the stopwatch pass. Their CPU
 // contribution remains visible in the optional sampling profile.
 const ganglia = {
-    'build.mjs': ['buildGroundTiles', 'buildGroundSurfaces', 'buildHeightLayers', 'supportHeightRanges', 'joinTiles', 'boundaryEdges'],
-    'support-field.mjs': ['buildSupportField'],
-    'ground.mjs': ['createGroundPlanner', 'planGroundRoute', 'plan', 'straightenRoute'],
-    'surfaces.mjs': ['surfaceGraph', 'surfacePortals'],
-    'routes.mjs': ['prepareRoutePlanner', 'prepareGraph', 'search'],
-    'support-projector.mjs': ['createSupportProjector'],
-    'goals.mjs': ['createGoalProjector'],
-    'straighten.mjs': ['createGroundStraightener'],
-    'connectivity.mjs': ['groundComponents', 'directedComponents', 'condenseComponents'],
-    'collision.mjs': ['createCollisionWorld'],
-    'jump-planner.mjs': ['planJumpRoute', 'solveJumpRoute', 'planDirectedRoute', 'planBaseRoute'],
-    'shortcuts.mjs': ['findJumpFrontier', 'findJumpShortcuts', 'findConnections', 'prepareGeometry'],
-    'traversal.mjs': ['findJumpConnections', 'exposedBoundaries', 'findChain', 'candidatesFor', 'validate'],
-    'movement-geometry.mjs': ['movementGeometry'],
-    'route-shortcuts.mjs': ['findRouteShortcuts'],
-    'ground-detours.mjs': ['pruneGroundDetours'],
-    'airborne-goal.mjs': ['planAirborneGoal'],
-    'boosted-route.mjs': ['planBoostedRoute'],
-    'resource-search.mjs': ['searchResources'],
-    'distance-field.mjs': ['advanceDistanceField'],
+    'build.ts': ['buildGroundTiles', 'buildGroundSurfaces', 'buildHeightLayers', 'supportHeightRanges', 'joinTiles', 'boundaryEdges'],
+    'support-field.ts': ['buildSupportField'],
+    'ground.ts': ['createGroundPlanner', 'planGroundRoute', 'plan', 'straightenRoute'],
+    'surfaces.ts': ['surfaceGraph', 'surfacePortals'],
+    'routes.ts': ['prepareRoutePlanner', 'prepareGraph', 'search'],
+    'support-projector.ts': ['createSupportProjector'],
+    'goals.ts': ['createGoalProjector'],
+    'straighten.ts': ['createGroundStraightener'],
+    'connectivity.ts': ['groundComponents', 'directedComponents', 'condenseComponents'],
+    'collision.ts': ['createCollisionWorld'],
+    'jump-planner.ts': ['planJumpRoute', 'solveJumpRoute', 'planDirectedRoute', 'planBaseRoute'],
+    'shortcuts.ts': ['findJumpFrontier', 'findJumpShortcuts', 'findConnections', 'prepareGeometry'],
+    'traversal.ts': ['findJumpConnections', 'exposedBoundaries', 'findChain', 'candidatesFor', 'validate'],
+    'movement-geometry.ts': ['movementGeometry'],
+    'route-shortcuts.ts': ['findRouteShortcuts'],
+    'ground-detours.ts': ['pruneGroundDetours'],
+    'airborne-goal.ts': ['planAirborneGoal'],
+    'boosted-route.ts': ['planBoostedRoute'],
+    'resource-search.ts': ['searchResources'],
+    'distance-field.ts': ['advanceDistanceField'],
     // The resource DP can call scheduleBlock millions of times. Inspect that
     // hot path through CPU sampling to avoid per-call stopwatch overhead.
-    'locomotion.mjs': ['retimeGroundRoute'],
-    'candidate-planner.mjs': ['createCandidatePlanner', 'plan'],
+    'locomotion.ts': ['retimeGroundRoute'],
+    'candidate-planner.ts': ['createCandidatePlanner', 'plan'],
 };
 const extractor = {
     'commands/player-route.ts': ['run'],
@@ -67,7 +67,7 @@ const ioModules = new Set([
 ]);
 
 function selection(path) {
-    const sdk = path.match(/\/@opendfieldmap\/ganglia\/src\/(?:geo\/|reach\/|motion\/|search\/|resource\/|route\/)?([^/]+)$/);
+    const sdk = path.match(/\/(?:@opendfieldmap|packages)\/ganglia\/src\/(?:v1\/)?(?:model\/|geo\/|reach\/|motion\/|search\/|resource\/|route\/)?([^/]+)$/);
     if (sdk && ganglia[sdk[1]]) return { module: `ganglia/${sdk[1]}`, names: new Set(ganglia[sdk[1]]) };
     const source = path.match(/\/packages\/extractor\/src\/(.+)$/);
     if (source && extractor[source[1]]) return { module: `extractor/${source[1]}`,
@@ -88,9 +88,8 @@ function functionName(node) {
  * arguments and return/throw behavior. Constructors and generators are excluded. */
 export function transformSource(source, path, options = {}) {
     const selected = options.selection ?? selection(path);
-    const candidate = options.candidatePath === path;
-    if (!selected && !candidate) return { source, labels: [] };
-    const config = selected ?? { module: 'world/candidate-worker.ts', names: new Set(['plan']) };
+    if (!selected) return { source, labels: [] };
+    const config = selected;
     const tree = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true,
         path.endsWith('.ts') ? ts.ScriptKind.TS : ts.ScriptKind.JS);
     const edits = [], labels = [];
@@ -132,10 +131,6 @@ export function transformSource(source, path, options = {}) {
                 edits.push({ start: node.body.end, end: node.body.end, text: '));}' });
             }
         }
-        if (candidate && ts.isIfStatement(node) && node.expression.getText(tree) === 'process.send') {
-            edits.push({ start: node.getStart(tree), end: node.end, text: 'export { plan as profileCandidatePlan };' });
-            return;
-        }
         const className = (ts.isClassDeclaration(node) || ts.isClassExpression(node)) && node.name?.text;
         const scope = name ?? className;
         ts.forEachChild(node, child => visit(child, scope ? [...parents, scope] : parents));
@@ -147,7 +142,7 @@ export function transformSource(source, path, options = {}) {
     return { source: transformed, labels };
 }
 
-export function installStageHooks(profiler, { candidatePath, instrument = true } = {}) {
+export function installStageHooks(profiler, { instrument = true } = {}) {
     globalThis[profilerKey] = profiler;
     const modules = [];
     const hooks = registerHooks({
@@ -157,12 +152,11 @@ export function installStageHooks(profiler, { candidatePath, instrument = true }
             const path = fileURLToPath(url);
             const source = typeof loaded.source === 'string' ? loaded.source : Buffer.from(loaded.source).toString('utf8');
             const identity = { path, bytes: Buffer.byteLength(source), sha256: createHash('sha256').update(source).digest('hex') };
-            if (!selection(path) && path !== candidatePath) {
+            if (!selection(path)) {
                 modules.push({ ...identity, labels: [] });
                 return loaded;
             }
             const result = transformSource(source, path, {
-                candidatePath,
                 ...(!instrument ? { selection: { module: '', names: new Set() } } : {}),
             });
             modules.push({ ...identity, labels: result.labels });

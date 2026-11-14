@@ -1,3 +1,12 @@
+import type { PhysicalTask } from './physical-task.ts';
+import {
+    physicalCoverage,
+    physicalMargin,
+    physicalWork,
+    physicalWorkPlan,
+    type PhysicalWork,
+} from '@opendfieldmap/ganglia/solver/host';
+export { physicalTileSpan } from '@opendfieldmap/ganglia/solver/host';
 import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createHash, randomUUID } from 'node:crypto';
@@ -12,12 +21,10 @@ import {
 import { relative, resolve } from 'node:path';
 import type { InteractionGoal, Vec3, Wall } from '@opendfieldmap/ganglia';
 import type { TravelArrival } from './travel-arrivals.ts';
-import type { Corridor } from './coarse-route.ts';
-import { createWindowRoute } from './window-route.ts';
+import type { Corridor } from '@opendfieldmap/ganglia/solver';
 import { createRouteWorker } from './route-worker.ts';
 
 type Source = { buildGuid: string; contentHash: string };
-type Artifact = { source?: Source; scene?: string; surfaces?: unknown[]; status?: string; optimizing?: boolean; message?: string };
 type Options = {
     directory?: string;
     extractor?: string;
@@ -43,75 +50,17 @@ export type RouteRequest = {
     interaction?: InteractionGoal;
     walls: Wall[];
     waypoints?: Vec3[];
+    solverConfig?: import('@opendfieldmap/ganglia/solver').SolverConfig;
+};
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    value !== null && typeof value === 'object' && !Array.isArray(value);
+const parseRecord = (text: string): Record<string, unknown> => {
+    const value: unknown = JSON.parse(text);
+    if (!isRecord(value)) throw new Error('Expected a JSON object');
+    return value;
 };
 const hash = (value: unknown) =>
     createHash('sha256').update(JSON.stringify(value)).digest('hex');
-
-export const physicalTileSpan = 256 * 0.15;
-export const physicalMargins = [24, 64, 128, 256] as const;
-
-/** Check cheap known movement for every origin before bounded jump discovery. */
-export const routeAttempts = (anchorCount: number, knownFirst = true) => {
-    const origins = Array.from({ length: anchorCount }, (_, anchorIndex) => ({
-        anchorIndex, marginIndex: 0,
-    }));
-    const searches = origins.flatMap(({ anchorIndex }) =>
-        Array.from({ length: physicalMargins.length * 2 }, (_, marginIndex) => ({
-            anchorIndex, marginIndex,
-        })),
-    ).sort((a, b) => a.anchorIndex + a.marginIndex - b.anchorIndex - b.marginIndex ||
-        a.marginIndex - b.marginIndex);
-    return knownFirst ? [...origins, ...searches] : searches;
-};
-
-type Approach = { margin: number; corridor?: Corridor };
-
-const coverage = (start: number[], target: number[], approach: Approach) => {
-    const { margin, corridor } = approach;
-    const min = corridor?.bounds.min ?? [
-        Math.min(start[0], target[0]) - margin,
-        Math.min(start[2], target[2]) - margin,
-    ];
-    const max = corridor?.bounds.max ?? [
-        Math.max(start[0], target[0]) + margin,
-        Math.max(start[2], target[2]) + margin,
-    ];
-    const bounds = [
-        Math.floor(min[0] / 32) * 32,
-        Math.floor(min[1] / 32) * 32,
-        Math.ceil(max[0] / 32) * 32,
-        Math.ceil(max[1] / 32) * 32,
-    ];
-    const tiles =
-        corridor?.tiles.length ??
-        (Math.ceil(bounds[2] / physicalTileSpan) -
-            Math.floor(bounds[0] / physicalTileSpan)) *
-            (Math.ceil(bounds[3] / physicalTileSpan) -
-                Math.floor(bounds[1] / physicalTileSpan));
-    return { bounds, tiles };
-};
-
-/** Rank both coverage proposals by the same tile estimate used by the builder.
- * A failed attempt advances to another proposal without classifying the route
- * by endpoint distance or elevation. All original widening choices remain.
- */
-export const physicalApproaches = (
-    start: number[],
-    target: number[],
-    corridors: Corridor[],
-): Approach[] =>
-    [
-        ...physicalMargins.map((margin) => ({ margin })),
-        ...corridors.map((corridor, index) => ({
-            margin: physicalMargins[
-                Math.min(index, physicalMargins.length - 1)
-            ],
-            corridor,
-        })),
-    ].sort(
-        (a, b) =>
-            coverage(start, target, a).tiles - coverage(start, target, b).tiles,
-    );
 
 /** Ground construction and known-action queries share a foreground lane.
  * Queries over ready ground precede further queued builds. Jump optimization
@@ -130,6 +79,7 @@ export function physicalRouteBuilder(options: Options) {
         job.result = result;
     };
     const workerOptions = {
+        entry: resolve(import.meta.dirname, 'solver-worker.ts'),
         extractor: options.extractor ?? '',
         node: options.node || process.execPath,
     };
@@ -141,12 +91,12 @@ export function physicalRouteBuilder(options: Options) {
     const workerRegions = new Map<(typeof solverWorkers)[number], string>();
     const workerUses = new Map<(typeof solverWorkers)[number], number>();
     let workerUse = 0;
-    const startSolver = async (args: string[]) => {
-        const region = hash(
-            ['--ground', '--collision', '--movement-settings'].map(
-                (flag) => args[args.indexOf(flag) + 1],
-            ),
-        );
+    const startSolver = async (files: PhysicalTask) => {
+        const region = hash([
+            files.resources.ground,
+            files.resources.collision,
+            files.resources.movement,
+        ]);
         // A completed foreground device check can hand its prepared region to
         // optimization; the other worker remains available for foreground work.
         const worker =
@@ -167,7 +117,7 @@ export function physicalRouteBuilder(options: Options) {
         if (workerRegions.get(worker) !== region) worker.discard();
         busyWorkers.add(worker);
         try {
-            const task = await worker.start(args);
+            const task = await worker.start(files);
             workerRegions.set(worker, region);
             workerUses.set(worker, ++workerUse);
             task.once('close', () => busyWorkers.delete(worker));
@@ -208,7 +158,7 @@ export function physicalRouteBuilder(options: Options) {
             { cwd: options.extractor },
         )
             .then(({ stdout }) => {
-                const result = JSON.parse(stdout) as { generator?: string };
+                const result = parseRecord(stdout);
                 if (typeof result.generator !== 'string' || !result.generator)
                     throw new Error(
                         'Missing physical ground generator identity',
@@ -269,7 +219,7 @@ export function physicalRouteBuilder(options: Options) {
     };
     const enqueue = (
         current: Job,
-        args: string[],
+        args: string[] | PhysicalTask,
         {
             background,
             context,
@@ -327,23 +277,22 @@ export function physicalRouteBuilder(options: Options) {
                 current.status = 'building';
                 record('started');
                 const launch = async () => {
-                    const child =
-                        args[0] === 'player-route'
-                            ? await startSolver(args)
-                            : spawn(
-                                  options.node || process.execPath,
-                                  [
-                                      resolve(
-                                          options.extractor!,
-                                          'packages/extractor/src/cli.ts',
-                                      ),
-                                      ...args,
-                                  ],
-                                  {
-                                      cwd: options.extractor,
-                                      stdio: ['ignore', 'pipe', 'pipe'],
-                                  },
-                              );
+                    const child = !Array.isArray(args)
+                        ? await startSolver(args)
+                        : spawn(
+                              options.node || process.execPath,
+                              [
+                                  resolve(
+                                      options.extractor!,
+                                      'packages/extractor/src/cli.ts',
+                                  ),
+                                  ...args,
+                              ],
+                              {
+                                  cwd: options.extractor,
+                                  stdio: ['ignore', 'pipe', 'pipe'],
+                              },
+                          );
                     current.child = child;
                     record('solver-started', {
                         pid: child.pid,
@@ -361,7 +310,7 @@ export function physicalRouteBuilder(options: Options) {
                         pending = lines.pop() || '';
                         for (const line of lines) {
                             try {
-                                const progress = JSON.parse(line) as { [key: string]: unknown; phase?: string; elapsedMs?: number; cached?: boolean; completed?: number; total?: number };
+                                const progress = parseRecord(line);
                                 record('progress', {
                                     ...progress,
                                     durationMs: progress.elapsedMs,
@@ -370,7 +319,7 @@ export function physicalRouteBuilder(options: Options) {
                                     current.message =
                                         'Reading collision sources…';
                                 if (progress.phase === 'ground-tile')
-                                    current.message = `${progress.cached ? 'Reusing' : 'Preparing'} route terrain (${progress.completed}/${progress.total})`;
+                                    current.message = `${progress.cached ? 'Reusing' : 'Preparing'} route terrain (${String(progress.completed)}/${String(progress.total)})`;
                                 if (progress.phase === 'ground')
                                     current.message = 'Physical ground ready';
                                 if (progress.phase === 'ground-search')
@@ -382,15 +331,15 @@ export function physicalRouteBuilder(options: Options) {
                                 if (progress.phase === 'goal-refinement')
                                     current.message = 'Refining target access…';
                                 if (progress.phase === 'direction-search')
-                                    current.message = `Exploring route regions (${progress.completed}/${progress.total})`;
+                                    current.message = `Exploring route regions (${String(progress.completed)}/${String(progress.total)})`;
                                 if (progress.phase === 'device-entry-search')
-                                    current.message = `Finding device approaches (${progress.completed}/${progress.total})`;
+                                    current.message = `Finding device approaches (${String(progress.completed)}/${String(progress.total)})`;
                                 if (progress.phase === 'ground-route') {
                                     current.message =
                                         'Walking route ready. Comparing alternatives…';
                                     void readFile(current.output, 'utf8')
                                         .then((bytes) => {
-                                            const result = JSON.parse(bytes) as Artifact;
+                                            const result = parseRecord(bytes);
                                             if (
                                                 current.status === 'building' &&
                                                 result.status === 'candidate'
@@ -429,10 +378,13 @@ export function physicalRouteBuilder(options: Options) {
                         void (async () => {
                             delete current.child;
                             if (code === 0) {
-                                const result = JSON.parse(
+                                const result: unknown = JSON.parse(
                                     await readFile(current.output, 'utf8'),
-                                ) as Artifact;
-                                if (args[0] === 'player-ground')
+                                );
+                                if (
+                                    Array.isArray(args) &&
+                                    args[0] === 'player-ground'
+                                )
                                     retainGround(current, result);
                                 else current.result = result;
                                 current.status = 'ready';
@@ -490,7 +442,7 @@ export function physicalRouteBuilder(options: Options) {
         };
         if (background) optimization = optimization.then(run);
         else {
-            foreground.push({ run, query: args[0] === 'player-route' });
+            foreground.push({ run, query: !Array.isArray(args) });
             drain();
         }
     };
@@ -502,11 +454,14 @@ export function physicalRouteBuilder(options: Options) {
         request: { startBuild: boolean; margin?: number; corridor?: Corridor },
     ) => {
         if (!configured || closed) return null;
-        const margin = request.margin ?? physicalMargins[0];
+        const margin = request.margin ?? physicalMargin;
         if (!Number.isFinite(margin) || margin < 0)
             throw new Error('Invalid physical coverage margin');
         const corridor = request.corridor;
-        const { bounds, tiles } = coverage(start, target, { margin, corridor });
+        const { bounds, tiles } = physicalCoverage(start, target, {
+            margin,
+            corridor,
+        });
         if (!bounds.every(Number.isSafeInteger) || tiles > 512) {
             return {
                 status: 'failed' as const,
@@ -553,10 +508,11 @@ export function physicalRouteBuilder(options: Options) {
             if (existing) return existing;
             jobs.set(key, job);
             try {
-                const result = JSON.parse(await readFile(output, 'utf8')) as Artifact;
+                const result = parseRecord(await readFile(output, 'utf8'));
                 if (
-                    result.source?.buildGuid === source.buildGuid &&
-                    result.source?.contentHash === source.contentHash &&
+                    isRecord(result.source) &&
+                    result.source.buildGuid === source.buildGuid &&
+                    result.source.contentHash === source.contentHash &&
                     Array.isArray(result.surfaces)
                 ) {
                     await cacheLog(job, {
@@ -580,7 +536,9 @@ export function physicalRouteBuilder(options: Options) {
                     scene,
                     `--bounds=${bounds.join(',')}`,
                     '--terminal-scene',
-                    ...(staticSupports ? ['--static-supports', staticSupports.path] : []),
+                    ...(staticSupports
+                        ? ['--static-supports', staticSupports.path]
+                        : []),
                     '--scene-state',
                     '0',
                     '--area',
@@ -625,10 +583,11 @@ export function physicalRouteBuilder(options: Options) {
                 const current = job;
                 pending = readFile(current.output, 'utf8')
                     .then((bytes) => {
-                        const result = JSON.parse(bytes) as Artifact;
+                        const result = parseRecord(bytes);
                         if (
-                            result.source?.buildGuid !== source.buildGuid ||
-                            result.source?.contentHash !== source.contentHash ||
+                            !isRecord(result.source) ||
+                            result.source.buildGuid !== source.buildGuid ||
+                            result.source.contentHash !== source.contentHash ||
                             !Array.isArray(result.surfaces)
                         )
                             throw new Error('Invalid retained physical ground');
@@ -694,23 +653,20 @@ export function physicalRouteBuilder(options: Options) {
         ground: Job,
         request: RouteRequest,
         startSolve: boolean,
-        stage: 'walking' | 'devices' | 'all' = 'all',
+        work: PhysicalWork = physicalWork(2),
     ) => {
         if (!configured || closed || ground.status !== 'ready') return null;
         const settings = await movementFile();
-        const devices =
-            stage === 'walking' ? undefined : await deviceFile(request.scene);
+        const plan = physicalWorkPlan(work);
+        const devices = plan.devices
+            ? await deviceFile(request.scene)
+            : undefined;
         // Traversals depend on endpoints, interaction volumes and exclusions, even when ground tiles are shared.
         const key = hash({
-            stage:
-                stage === 'walking'
-                    ? 'walking-route'
-                    : stage === 'devices'
-                      ? 'device-route'
-                      : 'route',
+            work,
             ground: ground.output,
             request,
-            policy: stage === 'walking' ? 14 : 18,
+            policy: plan.policy,
             devices: devices?.fingerprint,
             movement: settings.fingerprint,
             solver: options.solver,
@@ -722,10 +678,6 @@ export function physicalRouteBuilder(options: Options) {
         const existing = jobs.get(key);
         if (existing) return existing;
         const output = resolve(directory, `${request.scene}-${key}.json`);
-        const input = resolve(
-            directory,
-            `${request.scene}-${key}-request.json`,
-        );
         job = {
             status: 'queued',
             message: 'Queued physical route search…',
@@ -734,19 +686,21 @@ export function physicalRouteBuilder(options: Options) {
         };
         jobs.set(key, job);
         try {
-            const result = JSON.parse(await readFile(output, 'utf8')) as Artifact;
+            const result = parseRecord(await readFile(output, 'utf8'));
             if (
                 result.scene === request.scene &&
-                result.source?.buildGuid === request.source.buildGuid &&
-                result.source?.contentHash === request.source.contentHash &&
-                ['candidate', 'unavailable'].includes(result.status ?? '')
+                isRecord(result.source) &&
+                result.source.buildGuid === request.source.buildGuid &&
+                result.source.contentHash === request.source.contentHash &&
+                (result.status === 'candidate' ||
+                    result.status === 'unavailable')
             ) {
                 job.result = result;
                 if (result.optimizing !== true) {
                     job.status = 'ready';
                     job.message = 'Physical route data ready';
                     await cacheLog(job, {
-                        stage,
+                        work,
                         scene: request.scene,
                         point: request.point,
                         source: request.source,
@@ -757,58 +711,38 @@ export function physicalRouteBuilder(options: Options) {
         } catch {
             /* Rebuild missing or incomplete query artifacts. */
         }
-        const temporary = `${input}.${process.pid}.tmp`;
         try {
-            await writeFile(temporary, JSON.stringify(request));
-            await rename(temporary, input);
-            const args = [
-                'player-route',
-                '--ground',
-                ground.output,
-                '--collision',
-                ground.collision,
-                '--movement-settings',
-                settings.path,
-                '--request',
-                input,
-                '-o',
-                output,
-                ...(devices ? ['--devices', devices.path] : []),
-            ];
-            enqueue(
-                job,
-                stage === 'all'
-                    ? args
-                    : [
-                          ...args,
-                          stage === 'walking'
-                              ? '--ground-only'
-                              : '--devices-only',
-                      ],
-                {
-                    background: stage === 'all',
-                    context: {
-                        stage,
-                        scene: request.scene,
-                        point: request.point,
-                        source: request.source,
-                        from: request.arrival.position,
-                        target: request.target,
-                    },
+            const files: PhysicalTask = {
+                resources: {
+                    ground: ground.output,
+                    collision: ground.collision,
+                    movement: settings.path,
+                    devices: devices?.path,
                 },
-            );
+                request,
+                output,
+                work,
+            };
+            enqueue(job, files, {
+                background: plan.background,
+                context: {
+                    work,
+                    scene: request.scene,
+                    point: request.point,
+                    source: request.source,
+                    from: request.arrival.position,
+                    target: request.target,
+                },
+            });
         } catch (error) {
             job.status = 'failed';
             job.message = String(error);
-            await unlink(temporary).catch(() => {});
         }
         return job;
     };
     return {
         query,
         solve,
-        windows: (request: RouteRequest, points: Vec3[], settings: Parameters<typeof createWindowRoute>[3]) =>
-            createWindowRoute({ query, solve }, request, points, settings),
         async close() {
             closed = true;
             for (const worker of solverWorkers) worker.close();

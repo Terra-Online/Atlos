@@ -634,4 +634,4 @@ World 52/52、Ganglia 242/242 的既有验证结果保留。本轮补跑 server�
   --output /tmp/atlos-ground-profile-new --cpu
 ```
 
-`player-route` 使用相同格式的参数数组。`candidate-worker` 使用 candidate-input.json 并复用普通 worker 的 plan 实现。加 --baseline 可关闭函数插桩。
+`player-route` 使用相同格式的参数数组。加 --baseline 可关闭函数插桩。历史 candidate-worker 数据属于独立候选 worker 实现；当前候选规划由 Ganglia 的场景 solver 负责，使用 Ganglia 的全场景 benchmark 测量。
