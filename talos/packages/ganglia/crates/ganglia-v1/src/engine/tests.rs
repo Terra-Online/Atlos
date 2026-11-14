@@ -256,7 +256,7 @@ fn connections_without_route(_: &World, _: &Value, config: &Value) -> Result<Val
     assert_eq!(config["catalogTraining"], true);
     assert_eq!(config["physicalWork"]["step"], 2);
     Ok(json!({"route":{"status":"no-verified-route"},
-        "connections":[{"id":"proved-local-connection","state":"open","mode":"jump"}],
+        "connections":[{"id":"proved-local-connection","state":"open","mode":"jump","points":[[0.,0.01,0.],[1.,0.01,0.]],"times":[0.,1.]}],
         "diagnostics":{"truncated":true}}))
 }
 
@@ -1220,4 +1220,80 @@ fn future_terminal_is_replayed_after_prefix_poses_change_its_original_scene() {
             assert!(trace_clear(&configured, &step["result"]["route"], &q).unwrap());
         }
     }
+}
+
+#[test]
+fn frozen_catalog_selects_connected_chains_and_preserves_one_way_navigation() {
+    let mut facts = snapshot();
+    facts["input"]["surfaces"] = json!((0..4).map(|i|json!({"id":format!("s{i}"),"vertices":[[i as f64*10.-1.,0.,-1.],[i as f64*10.+1.,0.,-1.],[i as f64*10.+1.,0.,1.],[i as f64*10.-1.,0.,1.]]})).collect::<Vec<_>>());
+    facts["input"]["portals"] = json!([{"from":"s0","to":"s1","points":[[0.,0.,0.],[10.,0.,0.]]}]);
+    let world = World::new(facts).unwrap();
+    let action = |id: &str, a: f64, b: f64| json!({"id":id,"points":[[a,0.01,0.],[b,0.01,0.]],"times":[0.,1.]});
+    let bank = BTreeMap::from([
+        ("ab".into(), action("ab", 10., 20.)),
+        ("bc".into(), action("bc", 20., 30.)),
+    ]);
+    let index = catalog::Index::prepare(&world, &bank).unwrap();
+    let query = |x: f64| json!({"starts":[{"position":[x,0.01,0.],"state":"available","cost":0.}],"goal":[30.,0.,0.]});
+    assert_eq!(
+        index.select(&world, &query(0.), 2).unwrap().actions,
+        vec!["ab", "bc"]
+    );
+    assert!(!index.select(&world, &query(0.), 1).unwrap().connects_goal);
+    let bank = BTreeMap::from([("only".into(), action("only", 0., 30.))]);
+    let index = catalog::Index::prepare(&world, &bank).unwrap();
+    assert!(
+        index
+            .select(&world, &query(10.), 2)
+            .unwrap()
+            .actions
+            .is_empty(),
+        "a directed walk cannot be reversed to reach an action"
+    );
+}
+
+#[test]
+fn frozen_catalog_preserves_a_physical_crossing_inside_one_navigation_region() {
+    let mut positions = Vec::new();
+    let mut indices = Vec::new();
+    for (a, b) in [(-3., -0.3), (0.3, 3.)] {
+        let base = positions.len() / 3;
+        positions.extend([a, 0., -2., b, 0., -2., b, 0., 2., a, 0., 2.]);
+        indices.extend([base, base + 2, base + 1, base, base + 3, base + 2]);
+    }
+    let movement = json!({"speed":2.,"maxVertical":0.5,"profile":{"radius":0.1,"height":1.8},"runAirSpeed":2.,"maxDrop":100.,"maxHorizontalDistance":100.,"model":{"gravity":10.,"fallingGravity":10.,"maxJumpHeight":1.,"maxFallingSpeed":20.,"apexTime":0.,"maxHorizontalSpeed":2.}});
+    let world=World::new(json!({"kind":"physical","input":{"ground":{"surfaces":[{"id":"nav","vertices":[[-3.,0.,-2.],[3.,0.,-2.],[3.,0.,2.],[-3.,0.,2.]]}],"options":movement},"movement":movement,"collision":{"positions":positions,"indices":indices}}})).unwrap();
+    let a = [-0.6, 0.01, 0.];
+    let b = [0.6, 0.01, 0.];
+    assert!(world.ground_path(a, b).unwrap().is_none());
+    let flight = world
+        .flight(a, b, crate::model::Mode::Jump)
+        .unwrap()
+        .unwrap();
+    let mut value = serde_json::to_value(flight).unwrap();
+    value["id"] = json!("learned-crossing");
+    let bank = BTreeMap::from([("learned-crossing".into(), value)]);
+    let index = catalog::Index::prepare(&world, &bank).unwrap();
+    let q = json!({"starts":[{"id":"a","position":a,"state":"available","cost":0.}],"goal":b});
+    let selected = index.select(&world, &q, 4).unwrap();
+    assert_eq!(selected.actions, vec!["learned-crossing"]);
+    let actions = selected
+        .actions
+        .iter()
+        .map(|id| bank[id].clone())
+        .collect::<Vec<_>>();
+    let result = search::solve(
+        &world,
+        &q,
+        &json!({"maxCandidates":0,"physicalWork":{"step":1},"catalogConnections":actions}),
+    )
+    .unwrap();
+    assert_eq!(result["route"]["status"], "complete", "{result}");
+    assert!(
+        result["route"]["segments"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|s| s["connection"] == "learned-crossing")
+    );
 }

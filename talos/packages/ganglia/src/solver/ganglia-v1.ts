@@ -14,7 +14,11 @@ export interface GangliaV1Config {
    * then warms the same prepared solver. Native training discovers connections
    * in one loaded window per request without requiring a complete scene route.
    * Request populations belong to the host. */
-  readonly preparation: ServicePreparation;
+  readonly preparation: ServicePreparation & {
+    /** Discovery work per training window; defaults can spend more than a query. */
+    readonly catalogCandidates?: number;
+    readonly catalogLinks?: number;
+  };
   /** Candidate work per local search, renewed for other windows/arrivals/retries.
    * This is not a whole-query work limit. V1 caps optional discovery at 640 when
    * walking or known devices already provide a complete route. */
@@ -45,7 +49,12 @@ export interface GangliaV1Config {
 
 export const gangliaV1Defaults: GangliaV1Config = Object.freeze({
   algorithm: 'ganglia-v1',
-  preparation: Object.freeze({ trainingQueries: 10, warmupQueries: 2 }),
+  preparation: Object.freeze({
+    trainingQueries: 10,
+    warmupQueries: 2,
+    catalogCandidates: 32000,
+    catalogLinks: 256,
+  }),
   maxCandidates: 8000,
   maxShortcutCandidates: 512,
   sampleSpacing: 1,
@@ -59,7 +68,7 @@ export const gangliaV1Defaults: GangliaV1Config = Object.freeze({
   maxTargetError: 3,
 });
 
-export function validateServicePreparation(policy: ServicePreparation | undefined) {
+export function validateServicePreparation(policy: GangliaV1Config['preparation'] | undefined) {
   if (
     !policy ||
     !Number.isSafeInteger(policy.trainingQueries) ||
@@ -68,4 +77,7 @@ export function validateServicePreparation(policy: ServicePreparation | undefine
     policy.warmupQueries < 1
   )
     throw new Error('Ganglia V1 service requires positive trainingQueries and warmupQueries');
+  for (const budget of [policy.catalogCandidates, policy.catalogLinks])
+    if (budget !== undefined && (!Number.isSafeInteger(budget) || budget < 1))
+      throw new Error('Invalid catalog preparation budget');
 }

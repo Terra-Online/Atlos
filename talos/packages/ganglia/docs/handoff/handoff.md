@@ -51,33 +51,84 @@ facility imports are input failures; unresolved complex/source capabilities rema
 visible rather than becoming a completeness claim. Configured service scoring
 still requires training, catalog freeze and warmup through its existing entry.
 
-Current real diagnostics have exposed unsupported submitted walks on 018 and
-rejected walking proposals suppressing further search on 042. Neither is accepted
-as a completed sample. Missing static-support imports in the historical physical
-exports were independently identified and corrected for three control windows;
-those new inputs require their own comparisons. Both corrected 021 diagnostics
-aborted at the 6 GiB heap limit; the second reached action search with the bounded
-preparation cache. A 022 attempt exhausted the request deadline. These remain active correctness/memory gaps, not
-successful regressions or accepted speedups.
+The 927ff425 baseline was stopped at the user's request after ten finished cases
+(nine incomplete, one timeout); case 011 was interrupted separately. All results
+remain retained and the scheduled progress automation is deleted. The baseline
+must not restart automatically. These records predate the rollback below and do
+not validate the restored solver.
 
-A bounded local walking proposal now runs after rejected original navigation,
-before raw rebuilding. It samples a half-metre lattice inside the unchanged raw
-coverage, with at most 2048 expansions and 64 physical shortcut proofs. Every
-connector and its support bends pass the existing physical rules. Original and
-shortened paths remain separate proposals; full execution/resource cost chooses
-the incumbent, then ordinary improvement continues. The execution snapshot is
-reused. Ordered-waypoint, already-rebuilt and authored-connection inputs currently
-skip this proposal. The authored guard preserves an existing faster rope route;
-removing it requires keeping local incumbents while still allowing better known
-actions and bounded rebuilding to compete. A missed proposal proves no
-unreachability and does not remove ordinary action discovery.
+## Restore historical TS planning semantics, 2026-11-14
 
-Both cold and warm ordinary 022 queries now form independently valid complete
-routes, in 54.786 and 40.839 seconds, modeled time 3.427270 seconds. Per-point
-quality and matched timing acceptance remain pending. Its
-best tested local shortcut version costs 3.344167 seconds against an unconfirmed
-historical protection target of 3.321579 seconds. Geometry-only shortening also
-produced a slower resource schedule; both witnesses are retained for comparison.
+The prototype branch incorporates upstream 1e942192 and the followup through
+9d4fac29. Ordinary TS planning no longer materializes candidates with executeRoute
+or gates inner search on the independent physical world. The prototype's added
+candidate callbacks, physical-rejection rebuild loop and local lattice fallback
+are removed with that integration. Independent physical replay remains a separate
+benchmark/audit step and may report an invalid candidate without changing the
+solver's search decisions. A returned complete candidate is therefore not itself
+a physical acceptance certificate.
+
+Circular wheels, nearby joint-box discovery, the mechanism manifest, FIFO
+projection caching and bounded immutable graph preparation are retained. The
+upstream capsule-support and final-goal corrections are also retained. Historical
+927ff425 experiments, including the 022 local-lattice route, remain in Git and the
+ignored research artifacts; they are not active solver behavior after this rollback.
+
+## Physical regression followup, 2026-11-14
+
+The shared world's continuous support proof now bounds capsule feet between the
+vertical terrain height and the slope's tangent-sphere height. Finite-face edge
+and corner contacts lie within this envelope, matching collision `groundAt`.
+Using vertical terrain height alone rejected supported walks at small cell heights. Continuous raw support coverage, exact submitted feet,
+swept collision and resource replay remain required.
+
+TS window routing now projects final point goals vertically and rejects horizontal
+endpoint drift above 1e-6 metres. The 0.5-metre support adjustment remains available
+for intermediate coarse anchors; explicit final interactions retain their own
+region semantics. This corrects an older solver behavior exposed by the independent
+verifier, rather than relaxing the goal contract.
+
+Analytic slope and prepared-window regressions fail before these fixes and pass
+afterward. Package formatting, lint, typecheck and 453 TS tests pass. Replaying the
+fifty saved historical submissions still rejects 25 unsupported/obstructed walks
+and 25 old shifted endpoints. Saved trajectories are neither repaired nor replaced
+by this audit. Navigation-space heights still need physical execution before these
+routes can satisfy the newer contract. No new solver performance run was made;
+the baseline below remains bound to its measured `1e942192` source.
+
+## Historical pure-TS compatibility baseline, 2026-11-14
+
+A usable historical TS solver/benchmark combination is retained.
+Rust performance work is paused. The unfinished native-admission experiment is
+preserved in the local stash named `paused-native-admission-investigation`.
+
+`src/v1/solver/physical/prepared.ts` is restored to `d35e4997`, before the
+physical-execution adapter was inserted into candidate emission. Existing witness
+metadata and the independent physical verifier remain available. TS returns the
+historical navigation-space candidate; evaluating that candidate is external to
+search. No Rust prototype preload or N-API solver is used by this baseline.
+
+`pnpm benchmark:history --output <report.json>` uses the frozen `4ec7b65f`
+measurement core with the current worker lifecycle. It always trains ten map02
+requests, freezes the catalog, warms two disjoint requests, and scores all fifty
+normal requests twice in one worker/lane. Training retains the historical
+8,000-candidate/64-link budget. `--reference <report.json>` optionally compares
+modeled costs for identical requests and records input/adapter binding matches.
+The historical gate covers reported completion, modeled cost, SLO and repeatability.
+A separate post-shutdown physical audit replays the saved first-round submissions
+against provider-normalized facts. Both outcomes are explicit in the report.
+
+The maintained entry point passed on clean commit `1e942192`: 100/100 attempts
+complete, zero timeouts/recoveries and identical outcomes/truncation across two
+rounds. Mean serial service is 1359.696 ms; readiness is 80.284 s, measured batch
+136.001 s and end-to-end 216.412 s (221.150 s including the separate audit).
+Historical cost geometric mean/worst ratios are 0.952314/1.039298, within the
+unchanged 1.01/1.05 gates. The physical audit rejects all fifty distinct routes:
+twenty-five unsupported/obstructed walks and twenty-five endpoint mismatches.
+Historical completion and modern physical acceptance remain distinct contracts.
+The report and per-request journal are under
+`.local/research/ts-history-final-1e942192/`; exploratory evidence is preserved under
+`.local/research/ts-history-compat/`.
 
 ## Benchmark request lifecycle
 
@@ -103,8 +154,9 @@ request. It retains proved nonterminal connections even when no complete route
 exists, without resource-label search, ground-detour fallback or scene retries.
 Training returns `catalog-trained`, not a fabricated completed route. Frozen
 service queries still run ordinary route/resource search and independent replay.
-Frozen catalog retrieval ranks approach, traversal and remaining distance and
-admits the configured `maxLinks` allowance into the active query graph. Authored
+Frozen catalog retrieval indexes directed navigation SCCs and selects connected
+action chains, with bounded progress prefixes and intra-region crossings when
+NAV connectivity hides physical cracks. Search still proves their ground joins. Authored
 World actions remain available. Every selected catalog connection still passes
 authority and full trajectory replay; omitted proposals mark search truncated,
 and ordinary bounded fresh discovery remains available.
@@ -121,15 +173,14 @@ measurement continues after the worker is reusable. Training timeout still stops
 incomplete preparation. Retained TS
 baseline reports are reused; fresh TS and stress runs are excluded by the user.
 
-The historical configured warmup diagnostic, before the lifecycle correction
-above, confirms that the lower-floor request exhausts
-the 300-second watchdog, restarts its worker and loses its trained catalog. The
-upper-floor request then completes with independent physical replay valid. Full
-warmup evaluations and timing are retained in
-`.local/research/rust-configured-full50-warmup-diagnostic/`. No scored performance
-result exists from that attempt. That version rejected readiness on failed
-warmup. Current workers retain or restore training, record warmup failures, and
-continue scoring once reusable; warmup quality remains visible separately.
+The earlier configured-warmup diagnostic predates cooperative cancellation: its
+lower-floor timeout restarted the worker and lost training. The corrected
+`8eed53ee` full-population run retained its worker after an upper-floor warmup
+timeout and continued scoring. It was stopped for solver optimization after 37
+scored attempts; the journal contains 11 complete native traces, 20 candidate-budget
+failures and six timeouts. Batch physical evaluation had not run, so those traces
+are not accepted physical completions. Artifacts are in
+`.local/research/rust-lifecycle-full50-8eed53ee/`.
 
 Resource labels and lazy ground jobs now share goal-directed queue priorities.
 The remaining horizontal distance is divided by the graph's maximum action or
@@ -138,11 +189,28 @@ dominance and retained label caps. All resource/geometry proofs and budgets rema
 unchanged. This addresses cheap-prefix expansion in trained action graphs;
 full-population acceptance remains required.
 
-Known-action lookup now checks direct supported walks and existing actions
-without eagerly solving all catalog endpoint detours. Full discovery still
-restores ordinary detour proofs after its direct pass. This prevents optional
-catalog reuse from delaying fresh discovery indefinitely; omitted lookup detours
-mark the local result truncated. Stage-zero walking retains full ground paths.
+Known-action lookup tries direct supported walks first. Positive catalog chains
+also admit lazily ranked ground detours before fresh discovery. Stage-zero walking
+retains full ground paths. Resource queues use reverse shortest-path potentials
+through an optimistic complete walking graph, fixed device clocks and flight
+speed bounds. Terminal actions keep a zero bound because boost replay can move
+the first collection point. This
+retains a lower bound without treating an unrelated fast device as the speed of
+every part of the map. A feasible route bounds optional improvement.
+
+Service preparation can spend separate `catalogCandidates` and `catalogLinks`
+budgets; defaults are 32,000 and 256, while serving retains 8,000 and 64. Goal-side
+training proposes incoming jumps across support regions and proves every retained
+flight. World caches exact directed ground proofs within its immutable facts;
+new coverage or placements construct separate caches. Continuous raw support can
+certify physical walks across imported NAV gaps while explicit passage masks and
+directions remain authoritative. Coarse scene planning tries exact endpoint
+support before its broad projection fallback and orders work toward the goal.
+Landing discovery queries the prepared support BVH within a conservative flight
+envelope and evaluates four flight phases without heap allocation. Whole-route
+resource labels share immutable output blocks, and a completed single prefix
+reuses its already-composed route and continuation when no terminal is appended.
+Full-population performance acceptance of these optimizations is pending.
 
 ## Rust rewrite integration, 2026-11-14
 
@@ -853,7 +921,7 @@ Prepared movement geometry reuses immutable support, portals, graph, SCCs, proje
 
 Within one `solveJumpRoute` query, verified nonterminal actions remain available to later arrivals without consuming their discovery allowance again. This is a query-local pool, not a cross-goal or persistent global action cache. Origins retain their own link allowances, connection identities remain unique, and partial connections are deduplicated on unsuccessful multi-origin results. Failed prefix-cache entries record the cost bound under which they were searched and can be retried when that bound widens.
 
-The patched extractor's `route-cache.ts` retains one physical input region with a default 512 MiB serialized-input admission threshold. Input-file identity changes clear the preparation generation. Ganglia physical preparation retains two wall views for raw and rounded constraints, with view-local device/moving results and two parent-bound target refinements. Planner-bearing preparations share a conservative 524,288-surface reference budget, reserved before construction; oversized individual graphs may solve without remaining cached. Snapshot collision/execution/repair authority is shared across wall views. This limits cache residency rather than caller-owned or construction-peak memory. Diagnostics expose hit, miss and eviction reasons; a higher hit rate alone establishes no speedup. Source/content-bound tile caching and bounded endpoint projection reuse already exist, while multi-region prepared action assets remain open. `bounds.mjs` also already uses packed build columns and parallel nearest-heap columns, and `jumpDuration` avoids phase-object allocation during candidate retrieval.
+The patched extractor's `route-cache.ts` retains one physical input region with a default 512 MiB serialized-input admission threshold. Input-file identity changes clear the preparation generation. Ganglia physical preparation retains two wall views for raw and rounded constraints, with view-local device/moving results and two parent-bound target refinements. Planner-bearing preparations share a conservative 524,288-surface reference budget, reserved before construction; oversized individual graphs may solve without remaining cached. Collision preparation is shared across wall views. This limits cache residency rather than caller-owned or construction-peak memory. Diagnostics expose hit, miss and eviction reasons; a higher hit rate alone establishes no speedup. Source/content-bound tile caching and bounded endpoint projection reuse already exist, while multi-region prepared action assets remain open. `bounds.mjs` also already uses packed build columns and parallel nearest-heap columns, and `jumpDuration` avoids phase-object allocation during candidate retrieval.
 
 ## Dynamics, inverse constraints and candidate pruning
 

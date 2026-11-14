@@ -358,9 +358,14 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
           const groundKey = builder.key(ground);
           windowGround = await groundCache.get(groundKey, () => builder.ground(ground));
           const vertical = settings.maxTargetError ?? 3;
+          // Intermediate coarse anchors may move to nearby support. A final
+          // point goal only permits vertical projection; a nearest 3D point on
+          // a slope would silently change the requested horizontal destination.
           const supports = windowGround.project(target, {
             maxVertical: vertical,
-            interaction: { radius: Math.hypot(vertical, 0.5), maxVertical: vertical },
+            ...(final
+              ? {}
+              : { interaction: { radius: Math.hypot(vertical, 0.5), maxVertical: vertical } }),
           });
           const support = supports.find(
             (hit) => Math.hypot(hit.position[0] - target[0], hit.position[2] - target[2]) <= 0.5,
@@ -444,7 +449,7 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
           if (
             !(final && request.interaction) &&
             (Math.abs(exit[1] - target[1]) > (settings.maxTargetError ?? 3) ||
-              Math.hypot(exit[0] - target[0], exit[2] - target[2]) > 0.5)
+              Math.hypot(exit[0] - target[0], exit[2] - target[2]) > (final ? 1e-6 : 0.5))
           ) {
             failures.set(key, 'target-projection-error');
           } else {

@@ -291,6 +291,19 @@ impl Navigation {
         goal: Point,
         excluded: &HashSet<String>,
     ) -> Result<Option<Proposal>, String> {
+        if let Some(proposal) = self.plan_projected(arrivals, goal, excluded, false)? {
+            return Ok(Some(proposal));
+        }
+        self.plan_projected(arrivals, goal, excluded, true)
+    }
+
+    fn plan_projected(
+        &self,
+        arrivals: &[Value],
+        goal: Point,
+        excluded: &HashSet<String>,
+        broad: bool,
+    ) -> Result<Option<Proposal>, String> {
         let Some(world) = &self.world else {
             return Ok(None);
         };
@@ -301,8 +314,25 @@ impl Navigation {
             .map_err(|e| e.to_string())?;
         let n = self.centers.len();
         let end = n;
+        let remaining = |node: usize| {
+            if node == end {
+                0.
+            } else {
+                horizontal(self.centers[node], goal)
+            }
+        };
         let mut endpoints = HashMap::new();
-        for hit in world.project_with_tolerance(goal, 96., Some(&domain))? {
+        // Supported endpoints enter the actual directed topology. Broad fallback
+        // handles missing endpoints without synthesizing every nearby start/goal
+        // connection on ordinary queries.
+        let project = |position| {
+            world.project_with_tolerance(
+                position,
+                if broad { 96. } else { self.max_vertical },
+                if broad { Some(&domain) } else { None },
+            )
+        };
+        for hit in project(goal)? {
             let Some(&i) = self.ids.get(&hit.surface) else {
                 continue;
             };
@@ -328,7 +358,7 @@ impl Navigation {
             .filter(|(_, a)| a["state"] == "available")
         {
             let start = point(&a["position"])?;
-            for hit in world.project_with_tolerance(start, 96., Some(&domain))? {
+            for hit in project(start)? {
                 let Some(&i) = self.ids.get(&hit.surface) else {
                     continue;
                 };
@@ -348,7 +378,7 @@ impl Navigation {
                     origins[i] = Some(origin);
                     previous[i] = Some((n + 1, edge));
                     heap.push(Label {
-                        cost,
+                        cost: cost + remaining(i),
                         node: i,
                         order: serial,
                     });
@@ -358,7 +388,7 @@ impl Navigation {
         }
         while let Some(Label { node, cost, .. }) = heap.pop() {
             crate::cancel::check()?;
-            if cost != costs[node] {
+            if cost != costs[node] + remaining(node) {
                 continue;
             }
             if node == end {
@@ -378,13 +408,13 @@ impl Navigation {
                 if excluded.contains(&edge.key) {
                     continue;
                 }
-                let next = cost + edge.rank();
+                let next = costs[node] + edge.rank();
                 if next < costs[edge.to] {
                     costs[edge.to] = next;
                     origins[edge.to] = origins[node];
                     previous[edge.to] = Some((node, edge.clone()));
                     heap.push(Label {
-                        cost: next,
+                        cost: next + remaining(edge.to),
                         node: edge.to,
                         order: serial,
                     });

@@ -641,7 +641,14 @@ pub(super) fn probe(w: &World, a: Vec3, b: Vec3) -> Result<GroundProbe, String> 
                 cost: length / w.movement.speed,
             }))
         }
-        Ok(None) => Ok(GroundProbe::Rejected(failure)),
+        Ok(None) => {
+            // When both proposals fail, retain the missing NAV chord as the
+            // feedback cause so discovery follows its directed detour first.
+            if navigation_permission(w, a, b, false, &mut None)?.is_none() {
+                failure = GroundFailure::Navigation;
+            }
+            Ok(GroundProbe::Rejected(failure))
+        }
         Err(_) if matches!(failure, GroundFailure::ProofBudget { .. }) => {
             Ok(GroundProbe::Rejected(failure))
         }
@@ -660,15 +667,27 @@ fn direct_with_failure(
     if !finite(a) || !finite(b) {
         return Err("Invalid ground path".into());
     }
-    let Some(Permission {
-        mut cuts,
-        intervals,
-        entered,
-        by_owner,
-    }) = navigation_permission(w, a, b, false, &mut None)?
-    else {
-        return Ok(None);
-    };
+    let permission = navigation_permission(w, a, b, false, &mut None)?;
+    if permission.is_none() {
+        if w.snapshot["kind"] != "physical" {
+            return Ok(None);
+        }
+        let Some(intervals) = support_intervals(w, a, b, false, &mut None) else {
+            return Ok(None);
+        };
+        if intervals
+            .iter()
+            .any(|(_, _, owner)| w.authored_navigation.contains(owner))
+        {
+            return Ok(None);
+        }
+    }
+    // Imported navigation is a proposal in physical worlds. Missing mesh
+    // connectivity cannot reject a walk that raw support and capsule replay
+    // prove. Explicit masks/portals and surface-only inputs remain authoritative.
+    let mut cuts = permission
+        .as_ref()
+        .map_or_else(|| vec![0., 1.], |p| p.cuts.clone());
     let span = distance(a, b);
     let n = (span / 0.15).ceil() as usize;
     if n > 100_000 {
@@ -687,19 +706,27 @@ fn direct_with_failure(
     let mut out: Vec<Vec3> = vec![];
     for t in cuts {
         let seed = mix(a, b, t);
-        let hits = w.project_with_tolerance(seed, w.movement.max_vertical, None)?;
-        let Some(hit) = hits.iter().find(|hit| {
-            let owner = w.surface_ids[&hit.surface];
-            by_owner
-                .get(&owner)
-                .into_iter()
-                .flatten()
-                .any(|&i| entered[i] <= t + 1e-8 && intervals[i].1 >= t - 1e-8)
-        }) else {
-            return Ok(None);
+        let support_seed = if let Some(permission) = &permission {
+            let hits = w.project_with_tolerance(seed, w.movement.max_vertical, None)?;
+            let Some(hit) = hits.iter().find(|hit| {
+                let owner = w.surface_ids[&hit.surface];
+                permission
+                    .by_owner
+                    .get(&owner)
+                    .into_iter()
+                    .flatten()
+                    .any(|&i| {
+                        permission.entered[i] <= t + 1e-8 && permission.intervals[i].1 >= t - 1e-8
+                    })
+            }) else {
+                return Ok(None);
+            };
+            hit.position
+        } else {
+            seed
         };
         let Some((ground, mesh_support)) = w.ground_support(
-            hit.position,
+            support_seed,
             w.movement.max_vertical,
             w.movement.max_vertical,
             w.movement.profile.radius,
@@ -1336,11 +1363,11 @@ pub(super) fn path(w: &World, a: Vec3, b: Vec3) -> Result<Option<GroundPath>, St
     let to = w.surface_ids[&goals[0].surface];
     // Connectivity only rejects disconnected support; it never certifies a
     // route, substitutes for directed passage, or skips collision validation.
-    if w.components[from] != w.components[to] {
-        return Ok(None);
-    }
     if let Some(points) = direct(w, a, b)? {
         return Ok(Some(make(points)));
+    }
+    if w.components[from] != w.components[to] {
+        return Ok(None);
     }
     let graph = w.ground_graph.get_or_init(|| Graph::new(w));
     if let Some(points) = search_ground(w, graph, a, b, from, to, &[])? {

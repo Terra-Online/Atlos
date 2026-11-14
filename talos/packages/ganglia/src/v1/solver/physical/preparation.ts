@@ -11,8 +11,6 @@ export type CacheStats = {
     views: number;
     ground: number;
     collision: number;
-    execution: number;
-    repair: number;
     devices: number;
     moving: number;
     refinement: number;
@@ -44,11 +42,11 @@ const plannerSurfaceLimit = 524_288;
  * Reserve before constructing a replacement, after releasing obsolete local
  * planner references. This bounds cache ownership, not memory owned by callers
  * or one graph's transient construction. It never limits search or input facts.
- * A view replacement does not invalidate independent sibling views or execution
- * authority. Call begin with a new generation when any source/model facts change.
+ * A view replacement does not invalidate independent sibling views or collision
+ * preparation. Call begin with a new generation when any source/model facts change.
  */
 export function createPhysicalCache() {
-  const shared = new Map<'collision' | 'execution' | 'repair', Entry>();
+  const shared = new Map<'collision', Entry>();
   const views = new Map<string, View>();
   const refinements: Refinement[] = [];
   const reservations = new Set<{ surfaces: number }>();
@@ -149,8 +147,6 @@ export function createPhysicalCache() {
           views: views.size,
           ground: entries.filter((v) => v.ground).length,
           collision: Number(shared.has('collision')),
-          execution: Number(shared.has('execution')),
-          repair: Number(shared.has('repair')),
           devices: entries.filter((v) => v.devices).length,
           moving: entries.filter((v) => v.moving).length,
           refinement: refinements.length,
@@ -184,7 +180,7 @@ export function createPhysicalCache() {
           reservations.delete(reservation);
         }
       };
-      if (slot === 'collision' || slot === 'execution' || slot === 'repair') {
+      if (slot === 'collision') {
         const found = shared.get(slot);
         if (found?.key === key) {
           count(hits, slot);
@@ -195,12 +191,11 @@ export function createPhysicalCache() {
         if (found) {
           count(evictions, slot, 'key-change');
           shared.delete(slot);
-          if (slot === 'collision')
-            for (const view of views.values()) {
-              drop(view, 'devices', 'dependency');
-              drop(view, 'moving', 'dependency');
-              dropRefinements(view, 'dependency');
-            }
+          for (const view of views.values()) {
+            drop(view, 'devices', 'dependency');
+            drop(view, 'moving', 'dependency');
+            dropRefinements(view, 'dependency');
+          }
         }
         const value = await create();
         if (version === epoch) shared.set(slot, { key, value });

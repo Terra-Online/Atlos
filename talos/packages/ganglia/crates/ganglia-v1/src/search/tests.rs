@@ -1636,8 +1636,8 @@ fn pending_ground_proofs_finish_local_device_chain_before_far_unavailable_pairs(
     geometry::PATH_PROOFS.with(|proofs| {
         let proofs = proofs.borrow();
         assert!(
-            (proofs[0].1[0] - 0.5).abs() < 1e-6,
-            "near proof is ranked first"
+            (proofs[0].1[0] - 3.).abs() < 1e-6,
+            "goal-aware lower bounds prioritize the useful farther transfer over a nearby dead end"
         );
         assert!(
             proofs.iter().any(|(_, to)| (to[0] - 3.).abs() < 1e-6),
@@ -1701,4 +1701,75 @@ fn generated_interior_landing_becomes_a_source_for_the_next_flight() {
     assert!(work["interiorLandings"].as_u64().unwrap() > 0);
     assert!(work["interiorLandings"].as_u64().unwrap() <= original);
     assert!(work["queuedSources"].as_u64().unwrap() <= original * 2);
+}
+
+#[test]
+fn incumbent_bound_keeps_cheaper_routes_and_stops_non_improving_search() {
+    let world = scene(
+        vec![surface("a", 0.), surface("b", 10.)],
+        vec![connection("ab", 0., 10., 2.)],
+    );
+    let query = json!({"starts":[start("a",0.,0.,"available")],"goal":[10.,0.,0.]});
+    let better =
+        solve_snapshot(&world, &query, &json!({"maxCandidates":0,"costLimit":3.})).unwrap();
+    complete(&better);
+    assert_eq!(better["route"]["cost"], 2.);
+    let bounded =
+        solve_snapshot(&world, &query, &json!({"maxCandidates":0,"costLimit":1.})).unwrap();
+    assert_eq!(bounded["route"]["status"], "no-verified-route");
+}
+
+#[test]
+fn goal_side_training_proves_incoming_flights_across_support_regions() {
+    let rectangle = |id: &str, x0: f64, x1: f64, y: f64| {
+        json!({"id":id,
+        "vertices":[[x0,y,-2.],[x1,y,-2.],[x1,y,2.],[x0,y,2.]]})
+    };
+    let mut snapshot = scene(
+        vec![
+            rectangle("upper", -3., 3., 12.),
+            rectangle("middle", 5., 11., 5.),
+            rectangle("goal", 13., 17., 0.),
+        ],
+        vec![],
+    );
+    snapshot["movement"]["model"]["maxJumpHeight"] = json!(1.);
+    snapshot["movement"]["model"]["maxHorizontalSpeed"] = json!(5.);
+    snapshot["movement"]["runAirSpeed"] = json!(5.);
+    let world = crate::world::World::new(json!({"kind":"surfaces","input":snapshot})).unwrap();
+    let mut truncated = false;
+    let (connections, attempts) = training::incoming(
+        &world,
+        &[[15., 0.01, 0.]],
+        &[[0., 12.01, 0.]],
+        2.,
+        128,
+        &mut truncated,
+    )
+    .unwrap();
+    assert!(attempts <= 128);
+    assert!(
+        connections
+            .iter()
+            .any(|c| c.points[0][1] > 4. && c.points.last().unwrap()[1] < 1.),
+        "missing incoming flight: {connections:?}"
+    );
+    assert!(
+        connections.iter().any(|c| c.points[0][1] > 11.
+            && c.points.last().unwrap()[1] > 4.
+            && c.points.last().unwrap()[1] < 6.),
+        "missing upstream flight: {connections:?}"
+    );
+    for c in connections {
+        assert!(
+            world
+                .flight(
+                    c.points[0],
+                    *c.points.last().unwrap(),
+                    crate::model::Mode::Jump
+                )
+                .unwrap()
+                .is_some()
+        );
+    }
 }

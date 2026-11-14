@@ -8,6 +8,7 @@ mod devices;
 mod flight;
 mod following;
 mod ground;
+mod ground_cache;
 #[cfg(test)]
 mod tests;
 mod walls;
@@ -137,7 +138,9 @@ pub struct World {
     surface_ids: BTreeMap<String, usize>,
     portal_owners: Vec<Vec<usize>>,
     components: Vec<usize>,
+    authored_navigation: HashSet<usize>,
     ground_graph: std::sync::OnceLock<ground::Graph>,
+    ground_cache: std::sync::Arc<std::sync::Mutex<ground_cache::Cache>>,
 }
 pub fn distance(a: Vec3, b: Vec3) -> f64 {
     hypot(sub(a, b))
@@ -376,6 +379,18 @@ impl World {
             portals
                 .extend(optional::<Vec<Portal>>(&input["portals"], "portals")?.unwrap_or_default());
         }
+        let mut authored_navigation: HashSet<usize> = surfaces
+            .iter()
+            .enumerate()
+            .filter_map(|(i, s)| s.portals.as_ref().map(|_| i))
+            .collect();
+        for portal in &portals {
+            for id in [&portal.from, &portal.to] {
+                if let Some(&owner) = surface_ids.get(id) {
+                    authored_navigation.insert(owner);
+                }
+            }
+        }
         let mut stitching = movement.clone();
         if !generated {
             // Supplied meshes authorize height-changing seams explicitly.
@@ -447,7 +462,9 @@ impl World {
             surface_ids,
             portal_owners,
             components,
+            authored_navigation,
             ground_graph: std::sync::OnceLock::new(),
+            ground_cache: Default::default(),
         };
         world.prepare_devices()?;
         Ok(world)
@@ -690,8 +707,34 @@ impl World {
         }
         Ok(Some(foot))
     }
+    /// Source-ordered polygon owners selected by the prepared support BVH.
+    pub(crate) fn surface_candidates(&self, bounds: &Bounds) -> Vec<usize> {
+        let mut owners = self
+            .support
+            .candidates([
+                bounds.min[0],
+                f64::NEG_INFINITY,
+                bounds.min[1],
+                bounds.max[0],
+                f64::INFINITY,
+                bounds.max[1],
+            ])
+            .into_iter()
+            .map(|triangle| self.owners[triangle])
+            .collect::<Vec<_>>();
+        owners.sort_unstable();
+        owners.dedup();
+        owners
+    }
     pub fn ground_path(&self, a: Vec3, b: Vec3) -> Result<Option<GroundPath>, String> {
-        ground::path(self, a, b)
+        crate::cancel::check()?;
+        let key = [a, b].map(|p| p.map(f64::to_bits));
+        if let Some(cached) = self.ground_cache.lock().unwrap().get(&key) {
+            return Ok(cached);
+        }
+        let path = ground::path(self, a, b)?;
+        self.ground_cache.lock().unwrap().insert(key, path.clone());
+        Ok(path)
     }
     /// Rebuild an immutable finer support mesh from the same bound raw triangles.
     /// No world or caller-owned query state is mutated.

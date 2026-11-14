@@ -44,6 +44,8 @@ use serde_json::{Value, json};
 use std::collections::{BTreeMap, HashSet, VecDeque};
 use std::sync::Arc;
 
+#[path = "engine/catalog.rs"]
+mod catalog;
 #[path = "engine/proposal.rs"]
 mod proposal;
 #[path = "engine/schedule.rs"]
@@ -65,6 +67,7 @@ struct Catalog {
     // Revisions and coverage are part of the key. An action witnessed in one
     // sparse window cannot silently become evidence in another window.
     banks: BTreeMap<String, BTreeMap<String, Value>>,
+    prepared: BTreeMap<String, catalog::Index>,
 }
 
 pub struct Engine {
@@ -267,7 +270,11 @@ impl Engine {
                 .world
                 .clone();
             let key = self.cache.front().unwrap().key.clone();
-            let result = (self.solve)(&world, &query, &self.search_config(2, Some(&key)))?;
+            let result = (self.solve)(
+                &world,
+                &query,
+                &self.search_config(2, Some(&key), &world, &query)?,
+            )?;
             self.learn(&key, &result);
             return Ok(json!({"type":"complete","result":result}));
         }
@@ -475,6 +482,7 @@ impl Engine {
         self.query = None;
         self.cache.clear();
         self.catalog.banks.clear();
+        self.catalog.prepared.clear();
         self.navigation.clear();
         self.input = Value::Null;
     }
@@ -494,6 +502,14 @@ impl Engine {
                 self.catalog.training = true;
             }
             "freeze" => {
+                for cached in &self.cache {
+                    if let Some(bank) = self.catalog.banks.get(&cached.key) {
+                        self.catalog.prepared.insert(
+                            cached.key.clone(),
+                            catalog::Index::prepare(&cached.world, bank)?,
+                        );
+                    }
+                }
                 self.catalog.frozen = true;
                 self.catalog.training = false;
             }
@@ -545,17 +561,54 @@ impl Engine {
         Ok(world)
     }
 
-    fn search_config(&self, stage: usize, key: Option<&str>) -> Value {
+    fn search_config(
+        &self,
+        stage: usize,
+        key: Option<&str>,
+        world: &World,
+        query: &Value,
+    ) -> Result<Value, String> {
         let mut config = self.config.clone();
         // Native search consumes the same PhysicalWork stage as V1. Catalog
         // entries are verified connections, never cached completed routes.
         config["physicalWork"] =
             json!({"version":1,"step":if self.catalog.training { 2 } else { stage }});
         config["catalogTraining"] = json!(self.catalog.training);
-        if let Some(bank) = key.and_then(|k| self.catalog.banks.get(k)) {
-            config["catalogConnections"] = json!(bank.values().collect::<Vec<_>>());
+        if self.catalog.training {
+            for (source, target) in [
+                ("catalogCandidates", "maxCandidates"),
+                ("catalogLinks", "maxLinks"),
+            ] {
+                if !self.config["preparation"][source].is_null() {
+                    let value = self.config["preparation"][source]
+                        .as_u64()
+                        .filter(|value| *value > 0)
+                        .ok_or("Invalid catalog preparation budget")?;
+                    config[target] = json!(value);
+                }
+            }
         }
-        config
+
+        if let Some(bank) = key.and_then(|k| self.catalog.banks.get(k)) {
+            if self.catalog.frozen
+                && let Some(index) = key.and_then(|k| self.catalog.prepared.get(k))
+            {
+                let selected =
+                    index.select(world, query, number(&self.config, "maxLinks", 64.) as usize)?;
+                config["catalogConnected"] = json!(selected.connects_goal);
+                config["catalogTruncated"] = json!(selected.actions.len() < bank.len());
+                config["catalogConnections"] = json!(
+                    selected
+                        .actions
+                        .iter()
+                        .filter_map(|id| bank.get(id))
+                        .collect::<Vec<_>>()
+                );
+            } else {
+                config["catalogConnections"] = json!(bank.values().collect::<Vec<_>>());
+            }
+        }
+        Ok(config)
     }
 
     fn learn(&mut self, key: &str, result: &Value) {
@@ -735,12 +788,30 @@ impl Engine {
                 {
                     pieces.push(t["route"].clone());
                 }
-                match schedule::compose_state(
-                    &pieces,
-                    &self.input["locomotion"],
-                    &q.boost_facts.values().cloned().collect::<Vec<_>>(),
-                    &w.arrival["continuation"],
-                )? {
+                // Each accepted window already recomposes the entire prefix
+                // from its original entry. Without a terminal to append, its
+                // selected route and continuation are the final whole-route proof.
+                let composed = if q.terminal.is_none() && pieces.len() == 1 {
+                    w.continuation
+                        .as_ref()
+                        .map(|continuation| schedule::Composed {
+                            route: pieces[0].clone(),
+                            continuation: continuation.clone(),
+                        })
+                } else {
+                    None
+                };
+                let composed = if composed.is_some() {
+                    composed
+                } else {
+                    schedule::compose_state(
+                        &pieces,
+                        &self.input["locomotion"],
+                        &q.boost_facts.values().cloned().collect::<Vec<_>>(),
+                        &w.arrival["continuation"],
+                    )?
+                };
+                match composed {
                     Some(composed) => {
                         let route = composed.route;
                         q.truncated |= route["search"]["truncated"] == true
@@ -1152,8 +1223,17 @@ impl Engine {
         if final_window && q.terminal.is_none() {
             local["interaction"] = q.original["interaction"].clone();
         }
+        if self.catalog.training {
+            let goal = point(&q.original["goal"])?;
+            // A loaded region may cover the entire declared training request.
+            // Learn toward that goal instead of the coarse planner's first seam.
+            if world.project(goal, None).is_ok_and(|hits| !hits.is_empty()) {
+                local["goal"] = q.original["goal"].clone();
+                local["interaction"] = q.original["interaction"].clone();
+            }
+        }
         let key = self.cache.front().unwrap().key.clone();
-        let mut config = self.search_config(w.stage, Some(&key));
+        let mut config = self.search_config(w.stage, Some(&key), &world, &local)?;
         config["fixedPlacements"] = json!(fixed);
         if self.catalog.training {
             // One loaded physical window supplies bounded, verified connections.
@@ -1185,8 +1265,9 @@ impl Engine {
             // Feasibility does not make walking or a known device the fastest
             // route. Compare a bounded full-action alternative in the same
             // immutable world before accepting this window.
-            let mut improvement = self.search_config(2, Some(&key));
+            let mut improvement = self.search_config(2, Some(&key), &world, &local)?;
             improvement["fixedPlacements"] = json!(fixed);
+            improvement["costLimit"] = result["route"]["cost"].clone();
             improvement["maxCandidates"] =
                 json!(number(&self.config, "maxCandidates", 0.).min(640.) as u64);
             let candidate = (self.solve)(&world, &local, &improvement)?;

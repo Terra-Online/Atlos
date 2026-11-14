@@ -35,14 +35,32 @@ impl Default for FlightControl {
         }
     }
 }
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 struct Phase {
     y: f64,
     v: f64,
     a: f64,
     time: f64,
 }
-fn phases(start: f64, end: f64, m: &JumpModel, mode: Mode) -> Result<Option<Vec<Phase>>, String> {
+// Rise, optional apex pause, accelerated fall, terminal-speed fall.
+// Range queries use this same model without a heap allocation per surface.
+struct Phases {
+    items: [Phase; 4],
+    len: usize,
+}
+impl Phases {
+    fn push(&mut self, phase: Phase) {
+        self.items[self.len] = phase;
+        self.len += 1;
+    }
+}
+impl std::ops::Deref for Phases {
+    type Target = [Phase];
+    fn deref(&self) -> &[Phase] {
+        &self.items[..self.len]
+    }
+}
+fn phases(start: f64, end: f64, m: &JumpModel, mode: Mode) -> Result<Option<Phases>, String> {
     if !matches!(mode, Mode::Jump | Mode::Drop)
         || [
             start,
@@ -77,7 +95,10 @@ fn phases(start: f64, end: f64, m: &JumpModel, mode: Mode) -> Result<Option<Vec<
     if end > peak {
         return Ok(None);
     }
-    let mut out = vec![];
+    let mut out = Phases {
+        items: [Phase::default(); 4],
+        len: 0,
+    };
     if mode == Mode::Jump {
         let v = (2. * m.gravity * m.max_jump_height).sqrt();
         out.push(Phase {

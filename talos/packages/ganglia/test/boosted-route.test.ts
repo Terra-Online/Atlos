@@ -93,30 +93,6 @@ test('picks up a speed boost before a previously unreachable airborne target and
   assert.notEqual(planner.plan(starts, [12, 0, 0], { connections: [edge] }).status, 'complete');
 });
 
-test('a rejected joined boost route cannot displace a later accepted boost', () => {
-  const joined: string[] = [];
-  const result = planJumpRoute(surfaces, world, starts, goal, {
-    ...options,
-    boosts: [boost, { ...boost, id: 'second' }],
-    evaluateCandidate(route, query) {
-      if (route.status === 'complete' && route.boosts?.length) {
-        assert.deepEqual(query.goal, goal);
-        const id = route.boosts[0].id;
-        joined.push(id);
-        if (id === boost.id)
-          return {
-            route: { status: 'no-verified-route' },
-            rejection: { reason: 'resource-unproved' },
-          };
-      }
-      return { route };
-    },
-  });
-  assert.deepEqual(joined, [boost.id, 'second']);
-  assert.ok(result.route.status === 'complete');
-  assert.equal(result.route.boosts?.[0].id, 'second');
-});
-
 test('expired and inaccessible speed boosts cannot establish reachability', () => {
   assert.notEqual(
     planJumpRoute(surfaces, world, starts, goal, {

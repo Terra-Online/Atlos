@@ -1,6 +1,5 @@
 use super::collision::{dot, mix};
 use super::*;
-use std::collections::BTreeSet;
 
 // Imported portals use the same world-space boundary tolerance as the shared
 // TypeScript geometry contract. Only collinear entry intervals subtract length.
@@ -52,19 +51,7 @@ pub(super) fn query(world: &World, bounds: Bounds) -> Result<Vec<Boundary>, Stri
     }
     // The support index selects owning polygons; fans contribute no artificial
     // boundary edges. Sorted owners preserve source order across BVH traversal.
-    let owners: BTreeSet<_> = world
-        .support
-        .candidates([
-            bounds.min[0],
-            f64::NEG_INFINITY,
-            bounds.min[1],
-            bounds.max[0],
-            f64::INFINITY,
-            bounds.max[1],
-        ])
-        .into_iter()
-        .map(|triangle| world.owners[triangle])
-        .collect();
+    let owners = world.surface_candidates(&bounds);
     let mut result = vec![];
     for owner in owners {
         let surface = &world.surfaces[owner];

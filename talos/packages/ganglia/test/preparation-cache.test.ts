@@ -55,12 +55,12 @@ test('physical queries reuse both wall views while solving each requested endpoi
   try {
     for (const [i, x] of [9, 8, 9].entries()) {
       const result = await solver.solve({
-        starts: [{ id: 'start', state: 'available', cost: 0, position: [1, 0.005, 1] }],
-        goal: [x, 0.005, 1],
+        starts: [{ id: 'start', state: 'available', cost: 0, position: [1, 0, 1] }],
+        goal: [x, 0, 1],
       });
       assert.equal(result.route.status, 'complete');
       if (result.route.status === 'complete')
-        assert.deepEqual(result.route.points.at(-1), [x, 0.005, 1]);
+        assert.deepEqual(result.route.points.at(-1), [x, 0, 1]);
       assert.equal(observed.ground, i > 0);
       assert.equal(observed.roundGround, i > 0);
     }
@@ -89,8 +89,8 @@ test('raw and rounded constraints retain independent preparations across repeate
         assert.equal(result.reused, round > 0);
       }
       assert.equal(
-        (await cache.memo('execution', 'physical', () => build('execution'))).value,
-        'execution',
+        (await cache.memo('collision', 'physical', () => build('collision'))).value,
+        'collision',
       );
     }
   }
@@ -98,7 +98,7 @@ test('raw and rounded constraints retain independent preparations across repeate
     raw: 1,
     'raw/devices': 1,
     'raw/moving': 1,
-    execution: 1,
+    collision: 1,
     rounded: 1,
     'rounded/devices': 1,
     'rounded/moving': 1,
@@ -164,33 +164,29 @@ test('generation changes invalidate model-bound work and discard late preparatio
         finish = resolve;
       }),
   );
-  await cache.memo('execution', 'same-key', () => 'old-model');
+  await cache.memo('collision', 'same-key', () => 'old-model');
   cache.begin('new');
   assert.equal((await cache.memo('ground', 'same-key', () => 'new-ground')).value, 'new-ground');
   finish('old-ground');
   assert.equal((await late).value, 'old-ground');
   assert.equal((await cache.memo('ground', 'same-key', () => 'wrong')).value, 'new-ground');
-  assert.equal((await cache.memo('execution', 'same-key', () => 'new-model')).value, 'new-model');
+  assert.equal((await cache.memo('collision', 'same-key', () => 'new-model')).value, 'new-model');
   assert.ok(cache.stats().misses['ground:generation'] >= 1);
   cache.clear();
   assert.equal(cache.stats().resident.views, 0);
-  assert.equal(cache.stats().resident.execution, 0);
+  assert.equal(cache.stats().resident.collision, 0);
 });
 
-test('explicit graph release preserves source authority and its single repair snapshot', async () => {
+test('explicit graph release preserves collision preparation until its source changes', async () => {
   const cache = createPhysicalCache();
   cache.begin('snapshot');
   await cache.memo('ground', 'raw', () => 'raw');
   await cache.memo('collision', 'collision', () => 'collision');
-  await cache.memo('execution', 'execution', () => 'execution');
-  await cache.memo('repair', 'repair', () => 'repaired-input');
   cache.release('ground');
   assert.equal(cache.stats().resident.views, 0);
   assert.equal((await cache.memo('collision', 'collision', () => 'wrong')).value, 'collision');
-  assert.equal((await cache.memo('execution', 'execution', () => 'wrong')).value, 'execution');
-  assert.equal((await cache.memo('repair', 'repair', () => 'wrong')).value, 'repaired-input');
   cache.begin('new-source');
-  assert.equal((await cache.memo('repair', 'repair', () => 'new-input')).value, 'new-input');
+  assert.equal((await cache.memo('collision', 'collision', () => 'new-input')).value, 'new-input');
 });
 
 test('large coarse, moving and target graphs share a budget before construction', async () => {

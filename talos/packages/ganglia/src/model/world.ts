@@ -317,11 +317,16 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
             if (y < 0) far = Math.min(far, x / (x - y));
           };
           for (let i = 0; i < 3; i++) clip(first[i] + 1e-9, last[i] + 1e-9);
+          // For a center projected inside this finite face, sphere support lies
+          // between the vertical plane height and the infinite-plane tangent
+          // height. Edge/corner contacts can lie below the latter. This envelope
+          // proves continuous coverage; standing and sweeps prove actual feet.
+          const lift = profile.radius * (Math.hypot(...normal) / normal[1] - 1);
           const offset = (point: Vec3, w: number[]) =>
             point[1] - w.reduce((sum, n, i) => sum + n * vertices[i][1], 0);
           const low = offset(a, first),
             high = offset(b, last);
-          clip(tolerance - low, tolerance - high);
+          clip(tolerance + lift - low, tolerance + lift - high);
           clip(tolerance + low, tolerance + high);
           if (near <= far) intervals.push([near, far]);
         }

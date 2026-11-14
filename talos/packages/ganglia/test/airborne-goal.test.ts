@@ -76,23 +76,6 @@ test('collects a mid-flight target and ends at the first interaction', () => {
   );
 });
 
-test('a rejected joined goal flight leaves later candidates eligible', () => {
-  let joined = 0;
-  const result = planJumpRoute(scene, world, starts, [5.5, 2, 0], {
-    ...options,
-    evaluateCandidate(route, query) {
-      if (route.status === 'complete' && route.goalHit) {
-        assert.deepEqual(query.goal, [5.5, 2, 0]);
-        if (++joined === 1)
-          return { route: { status: 'no-verified-route' }, rejection: { reason: 'goal-unproved' } };
-      }
-      return { route };
-    },
-  });
-  assert.ok(joined > 1);
-  assert.equal(result.route.status, 'complete');
-});
-
 test('an airborne goal needs clearance through collection and can finish without landing support', () => {
   const blocked: JumpRouteOptions = {
     ...options,

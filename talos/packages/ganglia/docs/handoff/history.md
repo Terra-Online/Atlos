@@ -1,5 +1,26 @@
 # Route solver history and validation evidence
 
+## Roll back intrusive TS execution checks, 2026-11-14
+
+At the user's request, merge upstream through 9d4fac29, including 1e942192
+which restores historical TS candidate semantics. Remove the prototype callbacks
+that gate inner candidates, rejection-driven raw rebuilding and local walking
+fallback introduced in 927ff425. Keep independent benchmark replay, mechanism
+coverage definitions, wheel/box algorithms and unrelated preparation improvements.
+The stopped 266-case census remains incomplete: ten finished requests, zero valid
+completions, nine incomplete and one timeout; case 011 is user-interrupted. Neither
+that census nor earlier checks validate the rollback. No broad replay is restarted.
+
+Validation of the rollback: package formatting, lint and typecheck pass. The full
+TS suite passes 487/488; the pre-existing trained-worker restoration deadline
+fixture still fails, with its original deadline and assertions unchanged. Focused
+physical/preparation/verifier checks pass 39 tests and route checks pass 32 tests.
+Rust passes 147 unit and two authored-action tests; release N-API build and all 25
+native integration tests pass. Logs are `/tmp/ganglia-rollback-check.log`,
+`/tmp/ganglia-rollback-rust-tests.log` and `/tmp/ganglia-rollback-native-tests.log`.
+No real-scene completion or performance recovery is claimed by these checks.
+
+
 ## TS mechanism replay and isolated strategy trials, 2026-11-14
 
 The main 266 definitions now use `NNN-{seven-character-token}` with the existing
@@ -284,6 +305,176 @@ World moving-bounds/route-inspection tests. These are not test results for the
 new branch baseline. The regenerated input audit
 resolves 707 source references across 121 files. These checks verify the input
 definitions and existing annotation behavior, not the new real-scene routes.
+
+## Physical rules and goal-projection regression investigation, 2026-11-14
+
+The review starts from committed `a361c555` and compares the shared physical
+milestone (`48e6e791`) with the extracted `d35e4997` rules and retained V1 behavior.
+Two independently reproduced defects are corrected:
+
+- `createPhysicalWorld.walkTrace` clipped support intervals against vertical plane
+  height, while `groundAt(radius)` uses tangent-sphere support. For the plane y=x,
+  a radius-0.2 capsule's feet are 0.082842712474619 metres above the vertical plane
+  projection. With 5 mm clearance, the same legal walk passed at cellHeight=0.1
+  but failed at 0.01. The new analytic public-verifier regression demonstrated RED
+  before allowing the slope lift and GREEN afterward. Independent review also
+  reproduced a finite-edge false negative in the initial correction: edge/corner
+  sphere support can sit below infinite-plane support. An additional RED→GREEN
+  regression verifies a path parallel to a ramp edge; interval clipping now retains
+  the vertical lower bound and extends only the upper bound by the plane lift.
+  Existing unsupported-gap, floating-foot, slope-distance, collision and resource
+  negative tests still pass.
+- V1 `createWindowRoute` used nearest 3D region projection for final point goals as
+  well as intermediate anchors. On y=0.5x, requested [2,1.1,0] became [2.04,1.02,0]
+  instead of vertically projected [2,1,0]. The prepared-window regression reproduced
+  this before the fix. Final point goals now retain XZ and their existing configured
+  vertical tolerance; intermediate anchors and explicit interactions preserve their
+  contracts. Final result admission also checks XZ rather than accepting 0.5 m drift.
+  This behavior predates the verifier and is visible in the imported TS solver.
+
+Saved real-data submissions explain why these fixes do not certify the historical
+routes. The first lower-floor route starts at navigation y=298.30939069046434;
+provider collision gives capsule feet y=298.2302319151454 at the same XZ, a
+0.07915877531894-metre discrepancy. Its next knot differs by approximately 0.111 m.
+The verifier correctly refuses to charge navigation-space distances as executed
+physical motion. The upper-floor endpoint shift of approximately 0.0183 m follows
+from the broader final-target projection policy above. No goal tolerance was widened.
+
+Diagnostics normalize provider facts without invoking search. The source comparison
+and first failing spans are retained under `.local/research/physical-regression/`
+(`inspect.ts`, `inspection.json`). A post-fix independent replay of all fifty saved
+`1e942192` first-round submissions is `physical-audit.json`: the same 25 walking and
+25 endpoint failures remain, because the audit never repairs stored routes. This is
+verification evidence, not a new timing or solver-completion benchmark. Package
+formatting, lint, typecheck and all 453 TS tests pass. The historical report and its
+source binding remain unchanged; Rust optimization remains paused.
+
+## Historical TS recovery and benchmark compatibility, 2026-11-14
+
+The user stopped Rust optimization and requested a historical pure-TS solver with
+a recent usable benchmark framework. No native solve remains active. The pushed
+native checkpoint is `d3adcfce`; its full-population attempt was stopped after three
+scored attempts (two native complete traces and one 300-second timeout), before
+batch physical evaluation. Its journal remains under
+`.local/research/rust-optimized-full50-d3adcfce/`.
+
+History identifies the earlier regression boundary at the independent-physical
+milestone (`48e6e791`, integrated as `f3f58f07`). That change also inserted
+`executeRoute` into V1 candidate emission, built a physical world inside solving,
+and rejected candidates after navigation search without feeding the physical
+rejection back into that search. The historical record already documents lost
+TS solutions and long searches at this boundary, before the Rust rewrite.
+
+Restoring only `physical/prepared.ts` from `d35e4997` recovers the failing upper
+request in pure TS. Ten preparation requests all complete and reproduce the
+historical catalog size of 239 actions. The current strict benchmark still rejects
+the returned route because its endpoint differs by approximately 0.0183 metres in
+XZ, while the new route-contract check permits only 1e-6 metres. The two warmups
+are rejected by the newer supported-walk check. Recovered search completion does
+not establish acceptance under that different physical representation contract.
+
+The compatibility replay uses the `4ec7b65f` completion/cost/repeatability core and
+current cooperative-timeout/journal worker pool. It preserves all fifty original
+map02 queries, ten training requests and two disjoint warmups, runs two measured
+rounds and loads no Rust kernel. The exploratory replay completes 100/100 attempts,
+with identical outcomes and truncation across rounds and no timeouts. Mean serial
+service time is 1345.458 ms; batch time is 134.577 s, readiness is 79.331 s and
+measured end-to-end time is 213.924 s. Against the retained `aa985494` full-fifty
+report, modeled-cost geometric mean/worst ratios are 0.952314/1.039298. Adapter
+bindings differ, so the comparison is explicitly historical. The separate modern
+physical audit rejects 25 walks and 25 endpoints. Its result remains visible.
+
+The exploratory driver saved the complete measurement before its post-run RPC
+audit failed because JSON-reloaded results lacked worker ownership. The audit was
+completed independently with `loadScene.verify` over the same journal, without
+running a solver. The maintained entry point uses this independent post-shutdown
+method. Artifacts are `full.json`, `full.events.jsonl`, `physical-audit.json`,
+`full.ts`, and `run-4ec7b65f.ts` under `.local/research/ts-history-compat/`.
+The maintained reproduction is `scripts/benchmark-history.ts` with the frozen
+`scripts/history-runner.ts`; the ordinary physical benchmark is unchanged. The two cache/continuation tests
+restore their original navigation-coordinate assertions: the 5 mm execution lift
+was introduced by the removed candidate postprocessor in `f3f58f07`. Package
+formatting, lint, typecheck and all 450 TS tests pass for this restoration.
+
+The committed entry point then ran successfully on clean `1e942192`, with source
+SHA-256 `25f91bd7c7cb5c559a2450b9c20ccd92a72c6dff5dd51532a480cbb152323539`.
+Its 100 attempts complete without timeout/recovery and with identical round
+outcomes/truncation. Mean serial service is 1359.696 ms, P95 4924.530 ms and maximum
+6752.247 ms. Ten training requests complete in 78.568 s, producing 239 actions;
+readiness is 80.284 s, batch 136.001 s and end-to-end 216.412 s. The independent
+first-round physical audit completes in a further 4.738 s and rejects the same
+25 walks/25 endpoints. Package checks pass all 450 TS tests.
+
+The `aa985494` archived control uses the same fifty queries and identical consumed
+input hashes, but a different adapter and preparation policy (one entire unmeasured
+batch rather than catalog training plus two disjoint warmups). Its 849.195-second
+single batch corresponds to 16.984 s/request; the restored two-round batch averages
+1.360 s/request, a 12.49× historical workload comparison. This does not isolate one
+algorithm change or establish modern physical acceptance. Modeled cost ratios remain
+0.952314 geometric mean and 1.039298 worst, passing the original 1.01/1.05 limits.
+The current training set contains the first ten scored requests and stores actions,
+not completed-route answers; this is the full-population workload, not a holdout-only
+score. Raw report and result journal: `.local/research/ts-history-final-1e942192/`.
+
+```sh
+cd talos/packages/ganglia
+pnpm benchmark:history \
+  --output ../../../.local/research/ts-history-final-1e942192/report.json \
+  --reference ../../../.local/research/full-batch-50.json
+```
+
+Use a fresh output path for a rerun; the journal refuses to overwrite prior evidence.
+The run used Node v26.13.0 with the script's 6144 MiB heap and no native preload.
+
+## Rust prepared-search optimization, 2026-11-14
+
+Profiling attributed trained latency to weak global-speed queue bounds, repeated
+ground proofs and broad coarse endpoint projection. The port's catalog retrieval
+ranked isolated edges rather than connected chains. The retained changes add a
+directed SCC index, keep intra-SCC physical crossings, bound improvement by a
+feasible incumbent, retain immutable World ground proofs, and use an optimistic
+reverse graph potential. Exact coarse endpoint projection precedes broad fallback.
+Startup discovery has separate 32,000-candidate/256-link budgets and a bounded
+physically proved goal-side incoming search.
+
+Exploratory trained diagnostics use two representative requests, a 60-second
+per-request limit and independent physical replay; they are not the full benchmark.
+The connected-index/precompute diagnostic reduced the lower-floor request from
+34.262 to 8.964 seconds with valid replay. The upper-floor request still timed out.
+Increasing startup discovery to 128,000 candidates with 256 or 1,024 links raised
+readiness to 173.873/220.969 seconds without resolving the upper request and was
+not adopted. A coarse-corridor sampling experiment caused both requests to time
+out and was removed. Raw support admission and incoming training remain physically
+strict; repeated-query proof caching alone did not establish a speed improvement.
+Evidence is `.local/research/native-*-probe.log` and matching `*-result.json` files.
+These measurements contain profiling overhead and carry no aggregate speedup claim.
+
+Two-axis review found the index incorrectly omitted same-SCC physical crossings
+and retained prepared indexes after close; both were corrected. A genuine raw-gap
+regression proves a learned crossing remains usable with zero fresh discovery.
+The raw-support fallback initially displaced directed NAV failure feedback and
+broke an existing hidden-crack regression. Restoring its NAV failure cause and
+retaining the directed detour proof fixes the original route assertion. The
+stronger goal potential intentionally prioritizes a useful farther device over a
+nearby dead end; the ordering assertion now expresses that behavior while keeping
+route, resource and far-unavailable-pair protections. Placement changes must reject
+cached walks whose supporting body has moved. Full-population acceptance remains
+pending after focused validation.
+
+A one-second CPU sample (`/tmp/ganglia-host-profile.sample.txt`) exposed repeated
+whole-map landing scans and phase-vector allocation. BVH selection now narrows
+those scans without changing the physical flight proof. The spatial diagnostic
+reduced training readiness from 56.264 to 45.720 seconds; its lower request remained
+8.964 seconds and the upper request still reached the 60-second diagnostic limit.
+Host timers measured normalization below one millisecond. Added composition timers
+then exposed two identical whole-route scheduling passes of 2.106/2.143 seconds.
+Labels now share immutable trace blocks, and a completed no-terminal prefix reuses
+its route and continuation. Terminal concatenation continues whole-route scheduling.
+The final focused pass has 147 Rust unit tests, two authored integration tests,
+450 retained TS tests and 25 N-API physical/lifecycle fixtures passing. Two-axis
+rechecks also corrected terminal-action potential bounds and found no remaining
+required correctness findings in the reviewed deltas. Full benchmark results must
+bind the finalized source and binary; diagnostic improvements are not acceptance.
 
 ## Benchmark lifecycle correction
 
