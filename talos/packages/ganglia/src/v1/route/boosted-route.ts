@@ -5,6 +5,7 @@ import type { SpeedBoost } from '#@/src/movement.ts';
 import type { GroundArrival, Route } from '#@/src/route.ts';
 import { jumpConnection } from '#@/src/v1/motion/jumps.ts';
 import { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
+import { evaluateCandidate } from '#@/src/v1/route/candidate.ts';
 import type { JumpDiagnostics, PlannerOptions, JumpResult } from '#@/src/v1/route/jump-planner.ts';
 
 const findPickup = (route: Extract<Route, { status: 'complete' }>, boost: SpeedBoost) => {
@@ -137,6 +138,8 @@ export function planBoostedRoute(
         groundPlanner: undefined,
         connections: approach.connections,
         activeBoost: boost.id,
+        // The tail gains pickup history and boost annotations when joined below.
+        evaluateCandidate: undefined,
         speed: options.speed * multiplier,
         locomotion,
         model: {
@@ -261,7 +264,6 @@ export function planBoostedRoute(
       elapsed = boost.duration;
     }
     evidence.status = 'complete';
-    if (best.route.status === 'complete' && best.route.cost <= route.cost) continue;
     if (options.interaction?.airborne) {
       for (let index = 0; index < route.segments.length; index++) {
         const segment = route.segments[index],
@@ -284,6 +286,17 @@ export function planBoostedRoute(
     route.boosts = [
       { ...annotation, duration: boost.duration, position: beforePickup.position, elapsed },
     ];
+    route = evaluateCandidate(
+      route,
+      { starts, goal, interaction: options.interaction },
+      options.evaluateCandidate,
+    );
+    evidence.status = route.status;
+    if (
+      route.status !== 'complete' ||
+      (best.route.status === 'complete' && best.route.cost <= route.cost)
+    )
+      continue;
     const connections = [
       ...approach.connections,
       ...tail.connections

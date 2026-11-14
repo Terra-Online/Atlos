@@ -1,12 +1,14 @@
 # Real-scene mechanism acceptance inputs
 
-This is a shared, frozen **acceptance specification requiring runner adaptation**.
+This is a shared, frozen **acceptance specification** consumed by
+`bench/mechanism-run.ts --mode physical-diagnostic`.
 The user authorized sharing these case definitions and source bindings. Raw game
 assets, collision/navigation snapshots, profiles and private configuration remain
 local. No solver implementation or successful full-suite replay is included.
 
-The 266 distinct target positions span map01/map02 and 16 authored levels, plus
-six navigation-derived contacts without an authored level assignment. They include
+The main collection contains 266 distinct real entity/contact target positions
+across map01/map02 and 16 authored levels. Six non-entity navigation queries are
+retained separately as geometry probes. They include
 113 retained regressions, 137 mechanism-selected cases, 12 multi-box cases and four
 circular-waterwheel cases. Failures in the retained population remain included.
 New mechanism selections are opportunities to exercise a feature, not proof that
@@ -23,19 +25,39 @@ The circular and joint-box TS prototypes do not turn these unrun cases into pass
 - `cases.csv`: human-readable case index.
 - `coverage.json` / `coverage.csv`: intended mechanism-to-case mapping, all unrun.
 - `multi-box.csv`: the eight two-box and four three-box cases.
+- `legacy-id-map.csv`: old report IDs mapped to current IDs, including explicit
+  query replacements and geometry-probe references.
+- `geometry-probes.json`: six unchanged geometric queries that have no map token;
+  they remain mechanism probes outside the main 266 entity/contact cases.
 - `development-controls.json`: two source-ground waterwheel entry/exit controls
   retained after successful bounded physical replay. These are development
   regressions, separate from the 266-case population and not unseen holdouts.
 
-Case IDs retain their original `v250-` prefix after expansion to 266. Preserve IDs
-when adapting runners. Record any changed query, setup, source or scoring rule as
-a new workload revision rather than silently replacing the comparison control.
+Main IDs use `001-{token}` through `266-{token}`, with the seven-character token
+from the existing `encodePointIdToken` codec in
+`talos/src/services/routing/pointToken.ts`. `tokenSourceId` and `tokenRole` identify
+what the token represents. Conveyor cases use their real conveyor group actor ID;
+this is a facility contact, not a collectible marker. Existing 113 regression
+tokens are preserved exactly. Historical result filenames are not rewritten.
+
+Revision 5 repairs six unrun targets that were navigation surfaces rather than
+map entities. Their full original queries remain in `geometry-probes.json`. The
+main replacements preserve starts and use source interaction goals/rules. Four
+are within 30m horizontally and 1m vertically. Cases 236 and 242 instead select
+new real navigation targets 50.153m and 185.241m away (height differences 0.151m
+and 0.508m); these are explicitly not equivalent nearby replacements. None had
+passed acceptance before this correction. Coverage lists separate main case IDs
+and geometry-probe IDs so renaming does not erase the original portal/layer tests.
+
+Preserve these IDs when adapting runners. Record changed query, setup, source or
+scoring rules as a new workload revision, retaining the old comparison control.
 
 ## Adaptation contract
 
 The current `bench/workload.ts` custom-workload path expects a plain query array.
 **Do not pass this manifest directly to `--workload`, or strip it down to queries
-and call the result full mechanism acceptance.** It requires these adaptations:
+and call the result full mechanism acceptance.** The mechanism runner applies
+the following contracts; full-population acceptance remains pending:
 
 1. Partition by scene and physical input/setup. Resolve logical `exports/` and
    `retained/` resource names through explicitly configured local roots. The

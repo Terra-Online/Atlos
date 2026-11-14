@@ -1,5 +1,141 @@
 # Route solver history and validation evidence
 
+## TS mechanism replay and isolated strategy trials, 2026-11-14
+
+The main 266 definitions now use `NNN-{seven-character-token}` with the existing
+application codec; the 113 historical tokens are preserved exactly. Legacy IDs
+remain mapped to historical results. Six non-entity navigation queries remain
+unchanged in a separate geometry-probe collection. Their main replacements use
+real source entities; 236 and 242 are explicitly new navigation cases, not nearby
+equivalents. No historical outcome was rewritten.
+
+A separate physical-diagnostic entry consumes scene/setup instead of stripping
+them into a query array. It applies complete locomotion policies and allowed box
+sets, retains other bodies, verifies whole submitted routes independently, audits
+static-facility imports, journals results and closes its workers. It supports a
+frozen external kernel/extractor binding and per-case scene roots. This entry
+performs no catalog training/freeze/warmup and supplies no service speedup claim.
+
+The historical sixteen physical windows omitted static-support imports. Corrected
+v114 windows for map01_lv003, map01_lv007 and map02_lv003 retain new provenance
+under `.local/research/ts-progression-20261114/inputs/corrected/`. For 021, adding
+source static prefab 300000004 restores support near the target height; the first
+actual solve still aborts with SIGABRT around 293.5 seconds at the 6144 MiB heap
+limit. Restored target support alone is not a completed route. Unsupported complex
+colliders and source capability gaps are not silently classified as irrelevant.
+
+Initial diagnostics compare frozen committed `792472cd` with working TS snapshots
+on those same corrected inputs, with no CPU sampler and a 300-second parent
+watchdog. On 018 both versions fail independent walk replay: control cold/warm
+43.701/0.825 seconds, candidate 38.451/0.873 seconds. On 042 both return no verified
+route: control 32.671/1.754 seconds, candidate 93.679/11.841 seconds. These are failed
+runs and the slower candidate remains a suspected regression. Control 016 is also
+unresolved in 88.371 seconds. This is diagnosis, not the required three-group
+interleaved performance acceptance. Reports and full routes remain under the
+corresponding `control-*` and `candidate-*` directories in the research root.
+
+A separate resource-queue experiment is preserved under
+`experiments/resource-goal-queue/`, including patch, source binding and probe.
+It orders labels by actual elapsed cost plus an admissible graph-speed estimate,
+retaining exact resource continuation and actual-cost dominance. Termination uses
+the smallest queued lower bound. On a synthetic graph with 1000 dead ends, the
+same 50.125-second route needs 18 expansions instead of 2003; a 20-expansion budget
+changes unresolved to complete. Existing resource/locomotion tests pass (27), and
+a focused bounded-queue regression passes. Timing is noisy; this is only a local
+work-reduction proof, pending real-scene integration and per-point comparisons.
+The experiment is retained independently rather than promoted on synthetic gains.
+Review found two exact counterexamples in the first estimate: ordinary authored
+`times` may differ from `edge.cost`, and accepted endpoint/scheduler tolerances
+can shorten resource geometry. The isolated revision separates ordinary and
+resource speed bounds and accounts for per-leg skipped distance. Both exact
+counterexamples and all 28 focused resource/locomotion tests pass after correction;
+finite-label order dependence still requires real per-point acceptance.
+
+A second frozen 021 diagnostic with the unified preparation surface budget still
+aborts from heap exhaustion in 283.701 seconds, now located in action search after
+preparation/refinement. The budget is not a solution to this real case. A subsequent
+022 candidate also reaches the 300-second watchdog. Neither run is retried merely
+with more heap. Both full reports and source snapshots remain retained.
+
+Candidate acceptance now reaches inner jump, airborne and boost route selection;
+rejected proposals cannot set an incumbent or suppress later alternatives. A small
+physical platform-edge fixture reproduces 018: capsule support raises feet beyond
+continuous centre-support coverage. Finite subdivision does not make that path
+valid. Execution now rechecks submitted retimed walks under the original physical
+thresholds and rejects the false completion. The common verifier is unchanged.
+Finding a valid replacement route remains necessary.
+
+Moving augmentation previously built equal portal arrays with different identities,
+and empty augmentation copied surfaces while retaining the previous planner.
+Movement discovery therefore missed immutable graph reuse. Moving/refinement now
+retain the exact planner-bound surface/portal references; an integration fixture
+checks actual graph identity for both augmented and unchanged meshes. This is a
+work-reuse fix awaiting real-scene timing, not an accepted speedup. The combined
+physical/composition/verifier/preparation fixtures pass 44 tests; the separate
+candidate/jump/airborne/boost focused group passes 36. Package typecheck and focused
+lint pass at this source checkpoint. The named-case/runner tests pass 10 and the
+scene adapter tests pass 5. Full-population acceptance is still pending.
+
+The bounded raw-geometry lattice experiment first forms a complete independently
+valid 022 route: 6.330 seconds total diagnostic time, 1.317 seconds of search,
+442 expanded nodes and 1113 checked connectors, modeled time 3.427270 seconds and
+length 26.853022 metres. It does not use the ordinary Solver entry. Its independent
+verifier passes without threshold changes. The same strategy fails 018 after a
+finite exploration; both outcomes remain in `local-ground-probe-v2.*`.
+
+Physical farthest-visible shortcuts reduce 022 to 3.344167 seconds with 128 checks
+(`local-ground-probe-v3.*`). A 55-check layered variant shortens geometry further
+but costs 3.392700 seconds (`v4`), demonstrating why geometry cannot order complete
+resource schedules. The historical 3.321579-second result remains an explicit
+protection target; it has not yet been independently re-established on corrected
+inputs. These prototypes are neither accepted per-point non-regression nor service
+speedup claims.
+
+The integrated proposal uses a shared 2048-expansion cap and 64 shortcut proofs,
+immutable parent chains, original sparse coverage, cancellation checks and the
+same strict per-leg proofs. It returns original and shortened schedules for full
+execution and actual-cost comparison. A query attempts it once after original
+navigation fails and before raw rebuilding, reusing execution preparation.
+Success clears the repair request but continues ordinary improvement. Inputs with
+ordered waypoints, a prior rebuild or authored ground connections currently skip
+it. The authored restriction preserves the existing five-second rope regression
+without altering its expected result; a valid slower local route must not hide a
+better known action. The integration passes 50 focused tests and the module's five
+focused tests, including independent replay, sparse holes, budgets and cancellation;
+package typecheck and focused lint pass. Ordinary 022/042 acceptance is pending.
+
+The ordinary physical-diagnostic entry now completes 022 in both application-cold
+and same-preparation rounds, independently physically valid: 54.786/40.839 seconds,
+modeled cost 3.427270 seconds, length 26.853022 metres. The preceding same-input
+candidate timed out at 300 seconds. Reports are
+`candidate-022-local-integrated/report.json` in the research root. This is an
+ordinary-entry completion gain, not the interleaved service-performance acceptance.
+The cost remains 3.18% above the unconfirmed historical protection target; no old
+cost target is silently replaced. Local proposals expand 443 nodes and use 1180
+proofs, plus 64 shortcut checks. Warm phase costs include 17.476 seconds ground,
+9.710 refinement, 10.645 action search, 1.923 local walking and 0.508 execution;
+preparation remains a major opportunity despite valid reachability.
+
+The isolated resource-time local-grid variant exhausts 2048 label expansions after
+reaching only 74 geometric nodes, retaining 14,557 exact continuation labels with
+no goal. Search itself takes 0.460 seconds, observed total 5.355 seconds. The
+variant remains preserved in `experiments/local-resource-grid/`; adding labels is
+not accepted as its next strategy. A revised queue estimate is a distinct trial.
+
+Final package format, lint and typecheck pass. The full TS suite passes 499/500;
+the same trained-worker restoration deadline fixture fails as at the upstream
+merge checkpoint. Its timeout and assertions are unchanged. The raw check log is
+`milestone-check.log`. This is not a green full-suite claim. No native/Rust source
+is changed and no native performance claim belongs to this milestone.
+
+Current acceptance supersedes the old 5% cost tolerance: independently valid old
+successes must not regress per point, route cost allows only numerical error, and
+comparable latency uses three interleaved pairs (five for suspected regression),
+with same-version noise controls. Failure-to-success may take longer inside the
+common SLO and becomes a new guard. Unknown, unavailable, incomplete and timed-out
+cases remain in the denominator. Historical trajectories lacking flight controls
+are protection targets requiring evidence, not automatically physically valid.
+
 ## Merge request lifecycle updates, 2026-11-14
 
 Merged four upstream commits through `8eed53ee` into `chan/algo-progression`.

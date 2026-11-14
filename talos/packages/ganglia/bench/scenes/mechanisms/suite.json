@@ -1,5 +1,5 @@
 {
-  "schema": 4,
+  "schema": 5,
   "name": "real-scene-validation",
   "selectionSeed": 2501114,
   "selectionDate": "2026-11-14",
@@ -91,9 +91,9 @@
       }
     }
   },
-  "scope": "266 distinct real-scene target positions: 250 base queries (four conveyor contacts corrected), plus 12 multi-box and 4 circular-waterwheel acceptance cases. No generated worlds.",
+  "scope": "266 real source entity/contact cases plus six separate geometry probes. Original 113 regression tokens remain exact; six unrun geometry targets are replaced, not relabeled as map entities.",
   "selectionPolicy": "Retained cases keep failures. New selection uses authored inputs and source geometry, not new solver results.",
-  "executionStatus": "NOT RUN: input selection and source-reference audit only; no new TS/Rust or alpha77 comparison.",
+  "executionStatus": "Execution is established by separately bound result reports; selection metadata and historical observations do not certify current physical acceptance.",
   "preparation": {
     "defaultPhysical": "full-scene-navigation plus on-demand source collision; no completed-route cache",
     "defaultWorldState": "terminal/completed progression; facilities assumed enabled; teleports assumed unlocked unless query says otherwise",
@@ -110,7 +110,7 @@
       "no partial, coverage-limited or timed-out result classified complete"
     ],
     "exercise": "Report a separate exercised/not-exercised result for each exercise assertion. A valid alternative does not establish mechanism coverage.",
-    "comparison": "Same inputs, setup, budgets and cache conditions; compare gained/lost valid solutions first. Cost may regress at most 5% on independently valid common solutions.",
+    "comparison": "Preserve each independently valid old success on matched inputs, setup, budgets and lifecycle: reachability, modeled route time and comparable end-to-end solve time must not regress per point. Route time permits numerical roundoff only. Use three interleaved timing groups, five for suspected regression, with same-version noise controls. Failure-to-success within the common SLO is progress and becomes a new guard. Preserve unconfirmed historical best results as explicit protection targets.",
     "deadlineSeconds": 300,
     "cleanup": "Close owned browser pages and terminate owned profiler/worker processes after every profile batch. Do not stop unrelated development services."
   },
@@ -118,7 +118,9 @@
     "Moving-platform phase synchronization and waiting are explicitly excluded by the user; they are not acceptance gaps."
   ],
   "amendments": [
-    "Original conveyor cases v250-184 through v250-187 now use contacts within one source-derived fixed box pose. This replaces long sweep-face contact queries under the corrected stepping-box contract. Other query definitions are unchanged."
+    "Original conveyor cases v250-184 through v250-187 now use contacts within one source-derived fixed box pose. This replaces long sweep-face contact queries under the corrected stepping-box contract. Other query definitions are unchanged.",
+    "Revision 5: all 266 main IDs use real entity tokens. Six unrun non-entity navigation queries are preserved verbatim as separate geometry probes and replaced with source interaction targets. Cases 236 and 242 are explicitly new navigation cases at 50.153m and 185.241m horizontal distance, not equivalent nearby replacements. Historical result IDs remain unchanged; legacy-id-map.csv records the mapping.",
+    "Revision 6: the user supersedes the historical 5% route-cost tolerance with strict per-point quality and comparable latency acceptance. Query/setup definitions are unchanged; results remain in separately bound reports."
   ],
   "supportPolicy": {
     "vertical": "Source pose caps plus validated bidirectional ride connections, without a fictitious shaft wall.",
@@ -139,7 +141,7 @@
   "summary": {
     "total": 266,
     "distinctPhysicalGoals": 266,
-    "authoredInteractiveTargets": 208,
+    "authoredInteractiveTargets": 214,
     "groups": {
       "retained-regression": 113,
       "rope": 20,
@@ -158,28 +160,28 @@
       "map02": 148
     },
     "levels": {
-      "map01_lv001": 35,
+      "map01_lv001": 36,
       "map01_lv002": 16,
       "map01_lv003": 22,
-      "map01_lv005": 16,
-      "map01_lv006": 11,
+      "map01_lv005": 17,
+      "map01_lv006": 12,
       "map01_lv007": 15,
       "map02_lv001": 22,
       "map02_lv002": 25,
-      "map02_lv003": 13,
+      "map02_lv003": 14,
       "map02_lv004": 16,
-      "map02_lv005": 10,
+      "map02_lv005": 11,
       "map02_lv006": 11,
       "map02_lv007": 14,
       "map02_lv008": 8,
-      "map02_lv009": 12,
-      "map02_lv010": 14,
-      "source-navigation": 6
-    }
+      "map02_lv009": 13,
+      "map02_lv010": 14
+    },
+    "geometryProbeCount": 6
   },
   "cases": [
     {
-      "id": "v250-001",
+      "id": "001-05f0PbU",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv001",
@@ -240,10 +242,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-001",
+      "pointToken": "05f0PbU",
+      "tokenSourceId": "2100430047",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-002",
+      "id": "002-0muxg0t",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv001",
@@ -306,10 +312,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-002",
+      "pointToken": "0muxg0t",
+      "tokenSourceId": "2100430034",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-003",
+      "id": "003-10q4qLT",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv001",
@@ -369,10 +379,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-003",
+      "pointToken": "10q4qLT",
+      "tokenSourceId": "2100430030",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-004",
+      "id": "004-0ahvvCZ",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv001",
@@ -432,10 +446,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-004",
+      "pointToken": "0ahvvCZ",
+      "tokenSourceId": "2100430178",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-005",
+      "id": "005-0yYlwvq",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv001",
@@ -495,10 +513,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-005",
+      "pointToken": "0yYlwvq",
+      "tokenSourceId": "2100021229",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-006",
+      "id": "006-0Q1NHiI",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv001",
@@ -558,10 +580,14 @@
         "actionCount": 3,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-006",
+      "pointToken": "0Q1NHiI",
+      "tokenSourceId": "2100021077",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-007",
+      "id": "007-0QhaueM",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv001",
@@ -621,10 +647,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-007",
+      "pointToken": "0QhaueM",
+      "tokenSourceId": "2100030117",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-008",
+      "id": "008-0v0nIeg",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv001",
@@ -687,10 +717,14 @@
         "actionCount": 3,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-008",
+      "pointToken": "0v0nIeg",
+      "tokenSourceId": "2100460005",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-009",
+      "id": "009-0OP5G5m",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv002",
@@ -741,10 +775,14 @@
       },
       "assertions": ["explicit-goal-hit-at-original-interaction"],
       "status": "selected-unrun",
-      "legacyToken": "0OP5G5m"
+      "legacyToken": "0OP5G5m",
+      "legacyCaseId": "v250-009",
+      "pointToken": "0OP5G5m",
+      "tokenSourceId": "200001493",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-010",
+      "id": "010-1aIYhis",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv002",
@@ -807,10 +845,14 @@
         "actionCount": 3,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-010",
+      "pointToken": "1aIYhis",
+      "tokenSourceId": "200001333",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-011",
+      "id": "011-0Udo2PV",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv002",
@@ -870,10 +912,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-011",
+      "pointToken": "0Udo2PV",
+      "tokenSourceId": "200060448",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-012",
+      "id": "012-0sGWStg",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv002",
@@ -933,10 +979,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-012",
+      "pointToken": "0sGWStg",
+      "tokenSourceId": "200060447",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-013",
+      "id": "013-15Nz7D1",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv002",
@@ -996,10 +1046,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-013",
+      "pointToken": "15Nz7D1",
+      "tokenSourceId": "200150028",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-014",
+      "id": "014-16Cu3eG",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv002",
@@ -1059,10 +1113,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-014",
+      "pointToken": "16Cu3eG",
+      "tokenSourceId": "200060443",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-015",
+      "id": "015-0NR2aFF",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv002",
@@ -1122,10 +1180,14 @@
         "actionCount": 3,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-015",
+      "pointToken": "0NR2aFF",
+      "tokenSourceId": "200001572",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-016",
+      "id": "016-0203i50",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv003",
@@ -1186,10 +1248,14 @@
         "actionCount": 12,
         "goalHit": true,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-016",
+      "pointToken": "0203i50",
+      "tokenSourceId": "300002215",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-017",
+      "id": "017-15jQmmq",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv003",
@@ -1252,10 +1318,14 @@
         "actionCount": 10,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-017",
+      "pointToken": "15jQmmq",
+      "tokenSourceId": "300002231",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-018",
+      "id": "018-0RUWRj5",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv003",
@@ -1315,10 +1385,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-018",
+      "pointToken": "0RUWRj5",
+      "tokenSourceId": "300030040",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-019",
+      "id": "019-0GTMRBs",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv003",
@@ -1378,10 +1452,14 @@
         "actionCount": 5,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-019",
+      "pointToken": "0GTMRBs",
+      "tokenSourceId": "300002519",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-020",
+      "id": "020-0TNtyx0",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv003",
@@ -1441,10 +1519,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-020",
+      "pointToken": "0TNtyx0",
+      "tokenSourceId": "300020207",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-021",
+      "id": "021-0zxbxDM",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv003",
@@ -1504,10 +1586,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-021",
+      "pointToken": "0zxbxDM",
+      "tokenSourceId": "300002655",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-022",
+      "id": "022-0NoVJZ1",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv003",
@@ -1567,10 +1653,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-022",
+      "pointToken": "0NoVJZ1",
+      "tokenSourceId": "300020264",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-023",
+      "id": "023-180Cq68",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv005",
@@ -1631,10 +1721,14 @@
         "actionCount": 3,
         "goalHit": true,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-023",
+      "pointToken": "180Cq68",
+      "tokenSourceId": "3400010221",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-024",
+      "id": "024-0HEqAYx",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv005",
@@ -1697,10 +1791,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-024",
+      "pointToken": "0HEqAYx",
+      "tokenSourceId": "3400270006",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-025",
+      "id": "025-0PCWarH",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv005",
@@ -1760,10 +1858,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-025",
+      "pointToken": "0PCWarH",
+      "tokenSourceId": "3400080330",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-026",
+      "id": "026-0HNEhdR",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv005",
@@ -1823,10 +1925,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-026",
+      "pointToken": "0HNEhdR",
+      "tokenSourceId": "3400230036",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-027",
+      "id": "027-056MV71",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv005",
@@ -1886,10 +1992,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-027",
+      "pointToken": "056MV71",
+      "tokenSourceId": "3400080252",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-028",
+      "id": "028-0XbBKqE",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv005",
@@ -1949,10 +2059,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-028",
+      "pointToken": "0XbBKqE",
+      "tokenSourceId": "3400080333",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-029",
+      "id": "029-022BbT3",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv005",
@@ -2012,10 +2126,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-029",
+      "pointToken": "022BbT3",
+      "tokenSourceId": "3400021030",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-030",
+      "id": "030-0ObwKsX",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv006",
@@ -2076,10 +2194,14 @@
         "actionCount": 1,
         "goalHit": true,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-030",
+      "pointToken": "0ObwKsX",
+      "tokenSourceId": "3500030880",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-031",
+      "id": "031-0oNgQWX",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv006",
@@ -2142,10 +2264,14 @@
         "actionCount": 4,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-031",
+      "pointToken": "0oNgQWX",
+      "tokenSourceId": "3500030860",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-032",
+      "id": "032-0WXaFEP",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv006",
@@ -2205,10 +2331,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-032",
+      "pointToken": "0WXaFEP",
+      "tokenSourceId": "3500071052",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-033",
+      "id": "033-0EiBDC4",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv006",
@@ -2269,10 +2399,14 @@
         "actionCount": 8,
         "goalHit": true,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-033",
+      "pointToken": "0EiBDC4",
+      "tokenSourceId": "3500030757",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-034",
+      "id": "034-038j5x5",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv006",
@@ -2332,10 +2466,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-034",
+      "pointToken": "038j5x5",
+      "tokenSourceId": "3500071268",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-035",
+      "id": "035-0rK93CE",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv006",
@@ -2395,10 +2533,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-035",
+      "pointToken": "0rK93CE",
+      "tokenSourceId": "3500070345",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-036",
+      "id": "036-0h5eHnl",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv006",
@@ -2458,10 +2600,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-036",
+      "pointToken": "0h5eHnl",
+      "tokenSourceId": "3500070440",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-037",
+      "id": "037-0snEngh",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv007",
@@ -2512,10 +2658,14 @@
       },
       "assertions": ["explicit-goal-hit-at-original-interaction"],
       "status": "selected-unrun",
-      "legacyToken": "0snEngh"
+      "legacyToken": "0snEngh",
+      "legacyCaseId": "v250-037",
+      "pointToken": "0snEngh",
+      "tokenSourceId": "2800001658",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-038",
+      "id": "038-0FKNT4J",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv007",
@@ -2578,10 +2728,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-038",
+      "pointToken": "0FKNT4J",
+      "tokenSourceId": "2800001574",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-039",
+      "id": "039-17iHdzb",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv007",
@@ -2641,10 +2795,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-039",
+      "pointToken": "17iHdzb",
+      "tokenSourceId": "2800200046",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-040",
+      "id": "040-11gGRAC",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv007",
@@ -2704,10 +2862,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-040",
+      "pointToken": "11gGRAC",
+      "tokenSourceId": "2800001523",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-041",
+      "id": "041-120uaBj",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv007",
@@ -2767,10 +2929,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-041",
+      "pointToken": "120uaBj",
+      "tokenSourceId": "2800060238",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-042",
+      "id": "042-17Ra2Ox",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv007",
@@ -2831,10 +2997,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-042",
+      "pointToken": "17Ra2Ox",
+      "tokenSourceId": "2800001218",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-043",
+      "id": "043-0yVVC6t",
       "group": "retained-regression",
       "scene": "map01",
       "level": "map01_lv007",
@@ -2894,10 +3064,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-043",
+      "pointToken": "0yVVC6t",
+      "tokenSourceId": "2800060286",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-044",
+      "id": "044-0mJtPOG",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv001",
@@ -2958,10 +3132,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-044",
+      "pointToken": "0mJtPOG",
+      "tokenSourceId": "10100023179",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-045",
+      "id": "045-0MQgcvj",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv001",
@@ -3024,10 +3202,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-045",
+      "pointToken": "0MQgcvj",
+      "tokenSourceId": "10100500002",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-046",
+      "id": "046-026UUmj",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv001",
@@ -3087,10 +3269,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-046",
+      "pointToken": "026UUmj",
+      "tokenSourceId": "10100010380",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-047",
+      "id": "047-0PdYvB2",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv001",
@@ -3153,10 +3339,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-047",
+      "pointToken": "0PdYvB2",
+      "tokenSourceId": "10100023101",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-048",
+      "id": "048-01m3rKW",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv001",
@@ -3216,10 +3406,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-048",
+      "pointToken": "01m3rKW",
+      "tokenSourceId": "10100500003",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-049",
+      "id": "049-05h1MUO",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv001",
@@ -3282,10 +3476,14 @@
         "actionCount": 5,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-049",
+      "pointToken": "05h1MUO",
+      "tokenSourceId": "10100020731",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-050",
+      "id": "050-1aF81KK",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv001",
@@ -3345,10 +3543,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-050",
+      "pointToken": "1aF81KK",
+      "tokenSourceId": "10100010279",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-051",
+      "id": "051-0jbR3nL",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv002",
@@ -3409,10 +3611,14 @@
         "actionCount": 1,
         "goalHit": true,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-051",
+      "pointToken": "0jbR3nL",
+      "tokenSourceId": "22800540114",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-052",
+      "id": "052-0FtSaDp",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv002",
@@ -3475,10 +3681,14 @@
         "actionCount": 3,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-052",
+      "pointToken": "0FtSaDp",
+      "tokenSourceId": "22800540232",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-053",
+      "id": "053-12i1jPL",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv002",
@@ -3538,10 +3748,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-053",
+      "pointToken": "12i1jPL",
+      "tokenSourceId": "22800173098",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-054",
+      "id": "054-16qfshA",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv002",
@@ -3601,10 +3815,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-054",
+      "pointToken": "16qfshA",
+      "tokenSourceId": "22800540203",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-055",
+      "id": "055-18WqlPs",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv002",
@@ -3667,10 +3885,14 @@
         "actionCount": 3,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-055",
+      "pointToken": "18WqlPs",
+      "tokenSourceId": "22800540075",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-056",
+      "id": "056-0s2MO3b",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv002",
@@ -3730,10 +3952,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-056",
+      "pointToken": "0s2MO3b",
+      "tokenSourceId": "22800173034",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-057",
+      "id": "057-16ax8bd",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv002",
@@ -3793,10 +4019,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-057",
+      "pointToken": "16ax8bd",
+      "tokenSourceId": "22800173556",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-058",
+      "id": "058-0G7BIJo",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv003",
@@ -3857,10 +4087,14 @@
         "actionCount": 11,
         "goalHit": true,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-058",
+      "pointToken": "0G7BIJo",
+      "tokenSourceId": "23300050039",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-059",
+      "id": "059-0Qu9OVl",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv003",
@@ -3923,10 +4157,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-059",
+      "pointToken": "0Qu9OVl",
+      "tokenSourceId": "23300000408",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-060",
+      "id": "060-17E2T63",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv003",
@@ -3986,10 +4224,14 @@
         "actionCount": 3,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-060",
+      "pointToken": "17E2T63",
+      "tokenSourceId": "23300050040",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-061",
+      "id": "061-12TfPk6",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv003",
@@ -4049,10 +4291,14 @@
         "actionCount": 4,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-061",
+      "pointToken": "12TfPk6",
+      "tokenSourceId": "23300000403",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-062",
+      "id": "062-01vzLS4",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv003",
@@ -4115,10 +4361,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-062",
+      "pointToken": "01vzLS4",
+      "tokenSourceId": "23300000229",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-063",
+      "id": "063-0r3aVru",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv003",
@@ -4181,10 +4431,14 @@
         "actionCount": 3,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-063",
+      "pointToken": "0r3aVru",
+      "tokenSourceId": "23300220005",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-064",
+      "id": "064-0NGhiIl",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv003",
@@ -4245,10 +4499,14 @@
         "actionCount": 3,
         "goalHit": true,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-064",
+      "pointToken": "0NGhiIl",
+      "tokenSourceId": "23300050042",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-065",
+      "id": "065-0B4uame",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv004",
@@ -4299,10 +4557,14 @@
       },
       "assertions": ["explicit-goal-hit-at-original-interaction"],
       "status": "selected-unrun",
-      "legacyToken": "0B4uame"
+      "legacyToken": "0B4uame",
+      "legacyCaseId": "v250-065",
+      "pointToken": "0B4uame",
+      "tokenSourceId": "23400240011",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-066",
+      "id": "066-0gyCGhy",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv004",
@@ -4365,10 +4627,14 @@
         "actionCount": 3,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-066",
+      "pointToken": "0gyCGhy",
+      "tokenSourceId": "23400083169",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-067",
+      "id": "067-0Sw4Rc4",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv004",
@@ -4428,10 +4694,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-067",
+      "pointToken": "0Sw4Rc4",
+      "tokenSourceId": "23400240137",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-068",
+      "id": "068-0prwiHe",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv004",
@@ -4491,10 +4761,14 @@
         "actionCount": 5,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-068",
+      "pointToken": "0prwiHe",
+      "tokenSourceId": "23400240185",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-069",
+      "id": "069-0SRa7dh",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv004",
@@ -4554,10 +4828,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-069",
+      "pointToken": "0SRa7dh",
+      "tokenSourceId": "23400070056",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-070",
+      "id": "070-0dS8KDH",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv004",
@@ -4617,10 +4895,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-070",
+      "pointToken": "0dS8KDH",
+      "tokenSourceId": "23400250034",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-071",
+      "id": "071-0hIKrIw",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv004",
@@ -4680,10 +4962,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-071",
+      "pointToken": "0hIKrIw",
+      "tokenSourceId": "23400083229",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-072",
+      "id": "072-15dnaLm",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv005",
@@ -4744,10 +5030,14 @@
         "actionCount": 6,
         "goalHit": true,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-072",
+      "pointToken": "15dnaLm",
+      "tokenSourceId": "23200100193",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-073",
+      "id": "073-02Vzxwf",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv005",
@@ -4810,10 +5100,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-073",
+      "pointToken": "02Vzxwf",
+      "tokenSourceId": "23200013440",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-074",
+      "id": "074-1adTUBl",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv005",
@@ -4873,10 +5167,14 @@
         "actionCount": 3,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-074",
+      "pointToken": "1adTUBl",
+      "tokenSourceId": "23200030168",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-075",
+      "id": "075-0LZLMwj",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv005",
@@ -4936,10 +5234,14 @@
         "actionCount": 6,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-075",
+      "pointToken": "0LZLMwj",
+      "tokenSourceId": "23200030208",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-076",
+      "id": "076-0w6rn9Z",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv005",
@@ -4999,10 +5301,14 @@
         "actionCount": 5,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-076",
+      "pointToken": "0w6rn9Z",
+      "tokenSourceId": "23200030420",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-077",
+      "id": "077-11v6zbq",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv005",
@@ -5062,10 +5368,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-077",
+      "pointToken": "11v6zbq",
+      "tokenSourceId": "23200030105",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-078",
+      "id": "078-04A0cNk",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv005",
@@ -5125,10 +5435,14 @@
         "actionCount": 9,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-078",
+      "pointToken": "04A0cNk",
+      "tokenSourceId": "23200030419",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-079",
+      "id": "079-0aFW9d3",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv006",
@@ -5189,10 +5503,14 @@
         "actionCount": 5,
         "goalHit": true,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-079",
+      "pointToken": "0aFW9d3",
+      "tokenSourceId": "25000060298",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-080",
+      "id": "080-11ADd5I",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv006",
@@ -5255,10 +5573,14 @@
         "actionCount": 3,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-080",
+      "pointToken": "11ADd5I",
+      "tokenSourceId": "25000060319",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-081",
+      "id": "081-0hgydMj",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv006",
@@ -5318,10 +5640,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-081",
+      "pointToken": "0hgydMj",
+      "tokenSourceId": "25000060380",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-082",
+      "id": "082-0kWQSL9",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv006",
@@ -5381,10 +5707,14 @@
         "actionCount": 5,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-082",
+      "pointToken": "0kWQSL9",
+      "tokenSourceId": "25000060312",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-083",
+      "id": "083-06ZDued",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv006",
@@ -5444,10 +5774,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-083",
+      "pointToken": "06ZDued",
+      "tokenSourceId": "25000060366",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-084",
+      "id": "084-0yw4EAS",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv006",
@@ -5507,10 +5841,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-084",
+      "pointToken": "0yw4EAS",
+      "tokenSourceId": "25000060367",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-085",
+      "id": "085-037gze6",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv006",
@@ -5573,10 +5911,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-085",
+      "pointToken": "037gze6",
+      "tokenSourceId": "25000060295",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-086",
+      "id": "086-0DEFjDI",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv007",
@@ -5637,10 +5979,14 @@
         "actionCount": 2,
         "goalHit": true,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-086",
+      "pointToken": "0DEFjDI",
+      "tokenSourceId": "10200030387",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-087",
+      "id": "087-0IXOMGu",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv007",
@@ -5703,10 +6049,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-087",
+      "pointToken": "0IXOMGu",
+      "tokenSourceId": "10200270011",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-088",
+      "id": "088-0ZEYOee",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv007",
@@ -5766,10 +6116,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-088",
+      "pointToken": "0ZEYOee",
+      "tokenSourceId": "10200080011",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-089",
+      "id": "089-12sV7lh",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv007",
@@ -5829,10 +6183,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-089",
+      "pointToken": "12sV7lh",
+      "tokenSourceId": "10200160240",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-090",
+      "id": "090-13CZ5Sc",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv007",
@@ -5892,10 +6250,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-090",
+      "pointToken": "13CZ5Sc",
+      "tokenSourceId": "10200030437",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-091",
+      "id": "091-0nbbV7C",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv007",
@@ -5955,10 +6317,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-091",
+      "pointToken": "0nbbV7C",
+      "tokenSourceId": "10200160045",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-092",
+      "id": "092-0byagyz",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv007",
@@ -6018,10 +6384,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-092",
+      "pointToken": "0byagyz",
+      "tokenSourceId": "10200030356",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-093",
+      "id": "093-08fw2Xg",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv008",
@@ -6072,10 +6442,14 @@
       },
       "assertions": ["explicit-goal-hit-at-original-interaction"],
       "status": "selected-unrun",
-      "legacyToken": "08fw2Xg"
+      "legacyToken": "08fw2Xg",
+      "legacyCaseId": "v250-093",
+      "pointToken": "08fw2Xg",
+      "tokenSourceId": "23100030979",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-094",
+      "id": "094-14JKTkX",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv008",
@@ -6138,10 +6512,14 @@
         "actionCount": 4,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-094",
+      "pointToken": "14JKTkX",
+      "tokenSourceId": "23100250004",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-095",
+      "id": "095-0eKtrlq",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv008",
@@ -6201,10 +6579,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-095",
+      "pointToken": "0eKtrlq",
+      "tokenSourceId": "23100340045",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-096",
+      "id": "096-0sdhDkY",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv008",
@@ -6265,10 +6647,14 @@
         "actionCount": 5,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-096",
+      "pointToken": "0sdhDkY",
+      "tokenSourceId": "23100030977",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-097",
+      "id": "097-0l2BG3e",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv008",
@@ -6328,10 +6714,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-097",
+      "pointToken": "0l2BG3e",
+      "tokenSourceId": "23100030865",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-098",
+      "id": "098-0GmzhTb",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv008",
@@ -6391,10 +6781,14 @@
         "actionCount": 3,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-098",
+      "pointToken": "0GmzhTb",
+      "tokenSourceId": "23100031062",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-099",
+      "id": "099-0Q3hfns",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv008",
@@ -6457,10 +6851,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-099",
+      "pointToken": "0Q3hfns",
+      "tokenSourceId": "23100030659",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-100",
+      "id": "100-0jdi5Fc",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv009",
@@ -6521,10 +6919,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-100",
+      "pointToken": "0jdi5Fc",
+      "tokenSourceId": "36100210319",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-101",
+      "id": "101-0HPyJMM",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv009",
@@ -6587,10 +6989,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-101",
+      "pointToken": "0HPyJMM",
+      "tokenSourceId": "36100210557",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-102",
+      "id": "102-1bdioBM",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv009",
@@ -6650,10 +7056,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-102",
+      "pointToken": "1bdioBM",
+      "tokenSourceId": "36100100135",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-103",
+      "id": "103-0skdX7F",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv009",
@@ -6716,10 +7126,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-103",
+      "pointToken": "0skdX7F",
+      "tokenSourceId": "36100210660",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-104",
+      "id": "104-0sPkq7L",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv009",
@@ -6779,10 +7193,14 @@
         "actionCount": 2,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-104",
+      "pointToken": "0sPkq7L",
+      "tokenSourceId": "36100100038",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-105",
+      "id": "105-0NXdLWr",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv009",
@@ -6842,10 +7260,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-105",
+      "pointToken": "0NXdLWr",
+      "tokenSourceId": "36100100096",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-106",
+      "id": "106-0EZIgYG",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv009",
@@ -6905,10 +7327,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-106",
+      "pointToken": "0EZIgYG",
+      "tokenSourceId": "36100190035",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-107",
+      "id": "107-0i7oYsT",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv010",
@@ -6959,10 +7385,14 @@
       },
       "assertions": ["explicit-goal-hit-at-original-interaction"],
       "status": "selected-unrun",
-      "legacyToken": "0i7oYsT"
+      "legacyToken": "0i7oYsT",
+      "legacyCaseId": "v250-107",
+      "pointToken": "0i7oYsT",
+      "tokenSourceId": "37900010020",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-108",
+      "id": "108-0Uj2hLx",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv010",
@@ -7025,10 +7455,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-108",
+      "pointToken": "0Uj2hLx",
+      "tokenSourceId": "37900010700",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-109",
+      "id": "109-0pG4yrQ",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv010",
@@ -7088,10 +7522,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-109",
+      "pointToken": "0pG4yrQ",
+      "tokenSourceId": "37900010023",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-110",
+      "id": "110-05IiY48",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv010",
@@ -7151,10 +7589,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-110",
+      "pointToken": "05IiY48",
+      "tokenSourceId": "37900010025",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-111",
+      "id": "111-0ZCRHJM",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv010",
@@ -7214,10 +7656,14 @@
         "actionCount": 0,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-111",
+      "pointToken": "0ZCRHJM",
+      "tokenSourceId": "37900090027",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-112",
+      "id": "112-0xIqUFU",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv010",
@@ -7277,10 +7723,14 @@
         "actionCount": 3,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-112",
+      "pointToken": "0xIqUFU",
+      "tokenSourceId": "37900090135",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-113",
+      "id": "113-0H7FfhG",
       "group": "retained-regression",
       "scene": "map02",
       "level": "map02_lv010",
@@ -7340,10 +7790,14 @@
         "actionCount": 1,
         "goalHit": false,
         "independentPhysicalReplay": false
-      }
+      },
+      "legacyCaseId": "v250-113",
+      "pointToken": "0H7FfhG",
+      "tokenSourceId": "37900010149",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-114",
+      "id": "114-0HeqZ7W",
       "group": "rope",
       "scene": "map01",
       "level": "map01_lv001",
@@ -7383,10 +7837,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:rope", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-114",
+      "pointToken": "0HeqZ7W",
+      "tokenSourceId": "2100430201",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-115",
+      "id": "115-18KS9uB",
       "group": "rope",
       "scene": "map01",
       "level": "map01_lv001",
@@ -7426,10 +7884,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:drop", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-115",
+      "pointToken": "18KS9uB",
+      "tokenSourceId": "2100430202",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-116",
+      "id": "116-14wnGaQ",
       "group": "rope",
       "scene": "map02",
       "level": "map02_lv001",
@@ -7469,10 +7931,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:rope", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-116",
+      "pointToken": "14wnGaQ",
+      "tokenSourceId": "10100020537",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-117",
+      "id": "117-0j2aVqt",
       "group": "rope",
       "scene": "map02",
       "level": "map02_lv001",
@@ -7512,10 +7978,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:drop", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-117",
+      "pointToken": "0j2aVqt",
+      "tokenSourceId": "10100020538",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-118",
+      "id": "118-06DbXCC",
       "group": "rope",
       "scene": "map01",
       "level": "map01_lv002",
@@ -7555,10 +8025,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:rope", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-118",
+      "pointToken": "06DbXCC",
+      "tokenSourceId": "200001535",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-119",
+      "id": "119-0y9D7Zh",
       "group": "rope",
       "scene": "map01",
       "level": "map01_lv002",
@@ -7598,10 +8072,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:drop", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-119",
+      "pointToken": "0y9D7Zh",
+      "tokenSourceId": "200001536",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-120",
+      "id": "120-16KvS1Z",
       "group": "rope",
       "scene": "map02",
       "level": "map02_lv002",
@@ -7641,10 +8119,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:rope", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-120",
+      "pointToken": "16KvS1Z",
+      "tokenSourceId": "22800530032",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-121",
+      "id": "121-0lgj7hC",
       "group": "rope",
       "scene": "map02",
       "level": "map02_lv002",
@@ -7684,10 +8166,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:drop", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-121",
+      "pointToken": "0lgj7hC",
+      "tokenSourceId": "22800530033",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-122",
+      "id": "122-0dCSgoF",
       "group": "rope",
       "scene": "map01",
       "level": "map01_lv003",
@@ -7727,10 +8213,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:rope", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-122",
+      "pointToken": "0dCSgoF",
+      "tokenSourceId": "300001654",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-123",
+      "id": "123-0Nu79u2",
       "group": "rope",
       "scene": "map01",
       "level": "map01_lv003",
@@ -7770,10 +8260,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:drop", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-123",
+      "pointToken": "0Nu79u2",
+      "tokenSourceId": "300001827",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-124",
+      "id": "124-135bc02",
       "group": "rope",
       "scene": "map02",
       "level": "map02_lv003",
@@ -7813,10 +8307,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:rope", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-124",
+      "pointToken": "135bc02",
+      "tokenSourceId": "23300000155",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-125",
+      "id": "125-0hAYrfF",
       "group": "rope",
       "scene": "map02",
       "level": "map02_lv003",
@@ -7856,10 +8354,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:drop", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-125",
+      "pointToken": "0hAYrfF",
+      "tokenSourceId": "23300000156",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-126",
+      "id": "126-0C7rByM",
       "group": "rope",
       "scene": "map01",
       "level": "map01_lv005",
@@ -7899,10 +8401,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:rope", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-126",
+      "pointToken": "0C7rByM",
+      "tokenSourceId": "3400090337",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-127",
+      "id": "127-0DhzmZK",
       "group": "rope",
       "scene": "map01",
       "level": "map01_lv005",
@@ -7942,10 +8448,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:drop", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-127",
+      "pointToken": "0DhzmZK",
+      "tokenSourceId": "3400090397",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-128",
+      "id": "128-0NHCpNM",
       "group": "rope",
       "scene": "map02",
       "level": "map02_lv004",
@@ -7985,10 +8495,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:rope", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-128",
+      "pointToken": "0NHCpNM",
+      "tokenSourceId": "23400083331",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-129",
+      "id": "129-02dpF3p",
       "group": "rope",
       "scene": "map02",
       "level": "map02_lv004",
@@ -8028,10 +8542,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:drop", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-129",
+      "pointToken": "02dpF3p",
+      "tokenSourceId": "23400083332",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-130",
+      "id": "130-0VuYqRb",
       "group": "rope",
       "scene": "map01",
       "level": "map01_lv006",
@@ -8071,10 +8589,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:rope", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-130",
+      "pointToken": "0VuYqRb",
+      "tokenSourceId": "3500022230",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-131",
+      "id": "131-0a0LG6O",
       "group": "rope",
       "scene": "map01",
       "level": "map01_lv006",
@@ -8114,10 +8636,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:drop", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-131",
+      "pointToken": "0a0LG6O",
+      "tokenSourceId": "3500022231",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-132",
+      "id": "132-0ceqLEE",
       "group": "rope",
       "scene": "map02",
       "level": "map02_lv005",
@@ -8157,10 +8683,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:rope", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-132",
+      "pointToken": "0ceqLEE",
+      "tokenSourceId": "23200013533",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-133",
+      "id": "133-0DKRW1j",
       "group": "rope",
       "scene": "map02",
       "level": "map02_lv005",
@@ -8200,10 +8730,14 @@
         "deviceAvailability": "assumed-enabled"
       },
       "assertions": ["exercise:drop", "respect-rope-direction", "physical-endpoint-support"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-133",
+      "pointToken": "0DKRW1j",
+      "tokenSourceId": "23200013534",
+      "tokenRole": "device-contact"
     },
     {
-      "id": "v250-134",
+      "id": "134-0oCIwR8",
       "group": "launch",
       "scene": "map01",
       "level": "map01_lv001",
@@ -8245,10 +8779,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-134",
+      "pointToken": "0oCIwR8",
+      "tokenSourceId": "2100430015",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-135",
+      "id": "135-0iILRK6",
       "group": "launch",
       "scene": "map02",
       "level": "map02_lv001",
@@ -8290,10 +8828,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-135",
+      "pointToken": "0iILRK6",
+      "tokenSourceId": "10100033031",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-136",
+      "id": "136-09yIS3X",
       "group": "launch",
       "scene": "map01",
       "level": "map01_lv003",
@@ -8336,10 +8878,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-136",
+      "pointToken": "09yIS3X",
+      "tokenSourceId": "300002218",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-137",
+      "id": "137-0n74y9P",
       "group": "launch",
       "scene": "map02",
       "level": "map02_lv002",
@@ -8381,10 +8927,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-137",
+      "pointToken": "0n74y9P",
+      "tokenSourceId": "22800580294",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-138",
+      "id": "138-0l3ZqLu",
       "group": "launch",
       "scene": "map01",
       "level": "map01_lv005",
@@ -8426,10 +8976,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-138",
+      "pointToken": "0l3ZqLu",
+      "tokenSourceId": "3400090489",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-139",
+      "id": "139-0jrAYMx",
       "group": "launch",
       "scene": "map02",
       "level": "map02_lv003",
@@ -8471,10 +9025,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-139",
+      "pointToken": "0jrAYMx",
+      "tokenSourceId": "23300050030",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-140",
+      "id": "140-08mrlXq",
       "group": "launch",
       "scene": "map01",
       "level": "map01_lv006",
@@ -8516,10 +9074,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-140",
+      "pointToken": "08mrlXq",
+      "tokenSourceId": "3500070377",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-141",
+      "id": "141-1aJENqk",
       "group": "launch",
       "scene": "map02",
       "level": "map02_lv004",
@@ -8562,10 +9124,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-141",
+      "pointToken": "1aJENqk",
+      "tokenSourceId": "23400240045",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-142",
+      "id": "142-0tSC5oA",
       "group": "launch",
       "scene": "map01",
       "level": "map01_lv007",
@@ -8610,10 +9176,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-142",
+      "pointToken": "0tSC5oA",
+      "tokenSourceId": "2800220065",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-143",
+      "id": "143-09xDr1Q",
       "group": "launch",
       "scene": "map02",
       "level": "map02_lv006",
@@ -8655,10 +9225,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-143",
+      "pointToken": "09xDr1Q",
+      "tokenSourceId": "25000130007",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-144",
+      "id": "144-0db14Cv",
       "group": "launch",
       "scene": "map02",
       "level": "map02_lv007",
@@ -8700,10 +9274,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-144",
+      "pointToken": "0db14Cv",
+      "tokenSourceId": "10200270048",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-145",
+      "id": "145-1azviWu",
       "group": "launch",
       "scene": "map02",
       "level": "map02_lv009",
@@ -8745,10 +9323,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-145",
+      "pointToken": "1azviWu",
+      "tokenSourceId": "36100090043",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-146",
+      "id": "146-0eIRJ3e",
       "group": "launch",
       "scene": "map02",
       "level": "map02_lv010",
@@ -8790,10 +9372,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-146",
+      "pointToken": "0eIRJ3e",
+      "tokenSourceId": "37900090445",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-147",
+      "id": "147-19ReeBX",
       "group": "launch",
       "scene": "map01",
       "level": "map01_lv001",
@@ -8835,10 +9421,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-147",
+      "pointToken": "19ReeBX",
+      "tokenSourceId": "2100030998",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-148",
+      "id": "148-10g18tw",
       "group": "launch",
       "scene": "map02",
       "level": "map02_lv001",
@@ -8880,10 +9470,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-148",
+      "pointToken": "10g18tw",
+      "tokenSourceId": "10100020575",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-149",
+      "id": "149-0AH1wo4",
       "group": "launch",
       "scene": "map01",
       "level": "map01_lv003",
@@ -8925,10 +9519,14 @@
       },
       "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
       "status": "selected-unrun",
-      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor."
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-149",
+      "pointToken": "0AH1wo4",
+      "tokenSourceId": "300001941",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-150",
+      "id": "150-18H6taZ",
       "group": "boost",
       "scene": "map01",
       "level": "map01_lv001",
@@ -8978,10 +9576,14 @@
         "boost-clock-continues-across-segments",
         "source-duration-and-multiplier"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-150",
+      "pointToken": "18H6taZ",
+      "tokenSourceId": "2100030938",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-151",
+      "id": "151-0VghZMJ",
       "group": "boost",
       "scene": "map02",
       "level": "map02_lv004",
@@ -9031,10 +9633,14 @@
         "boost-clock-continues-across-segments",
         "no-boosted-motion-after-expiry"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-151",
+      "pointToken": "0VghZMJ",
+      "tokenSourceId": "23400083334",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-152",
+      "id": "152-042dpSC",
       "group": "boost",
       "scene": "map01",
       "level": "map01_lv005",
@@ -9084,10 +9690,14 @@
         "boost-clock-continues-across-segments",
         "source-duration-and-multiplier"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-152",
+      "pointToken": "042dpSC",
+      "tokenSourceId": "3400160023",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-153",
+      "id": "153-0FoShyd",
       "group": "boost",
       "scene": "map02",
       "level": "map02_lv002",
@@ -9137,10 +9747,14 @@
         "boost-clock-continues-across-segments",
         "no-boosted-motion-after-expiry"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-153",
+      "pointToken": "0FoShyd",
+      "tokenSourceId": "22800040378",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-154",
+      "id": "154-1ctEzjf",
       "group": "boost",
       "scene": "map01",
       "level": "map01_lv007",
@@ -9190,10 +9804,14 @@
         "boost-clock-continues-across-segments",
         "source-duration-and-multiplier"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-154",
+      "pointToken": "1ctEzjf",
+      "tokenSourceId": "2800223010",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-155",
+      "id": "155-0Kaoviv",
       "group": "boost",
       "scene": "map02",
       "level": "map02_lv004",
@@ -9243,10 +9861,14 @@
         "boost-clock-continues-across-segments",
         "no-boosted-motion-after-expiry"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-155",
+      "pointToken": "0Kaoviv",
+      "tokenSourceId": "23400270012",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-156",
+      "id": "156-0wPCdoe",
       "group": "boost",
       "scene": "map02",
       "level": "map02_lv006",
@@ -9296,10 +9918,14 @@
         "boost-clock-continues-across-segments",
         "source-duration-and-multiplier"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-156",
+      "pointToken": "0wPCdoe",
+      "tokenSourceId": "25000070339",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-157",
+      "id": "157-0gcAdR9",
       "group": "boost",
       "scene": "map02",
       "level": "map02_lv007",
@@ -9349,10 +9975,14 @@
         "boost-clock-continues-across-segments",
         "no-boosted-motion-after-expiry"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-157",
+      "pointToken": "0gcAdR9",
+      "tokenSourceId": "10200160072",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-158",
+      "id": "158-0cuZiEF",
       "group": "boost",
       "scene": "map02",
       "level": "map02_lv010",
@@ -9402,10 +10032,14 @@
         "boost-clock-continues-across-segments",
         "source-duration-and-multiplier"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-158",
+      "pointToken": "0cuZiEF",
+      "tokenSourceId": "37900010246",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-159",
+      "id": "159-0PqRUqq",
       "group": "boost",
       "scene": "map01",
       "level": "map01_lv005",
@@ -9455,10 +10089,14 @@
         "boost-clock-continues-across-segments",
         "no-boosted-motion-after-expiry"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-159",
+      "pointToken": "0PqRUqq",
+      "tokenSourceId": "3400080191",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-160",
+      "id": "160-0uFK88M",
       "group": "boost",
       "scene": "map02",
       "level": "map02_lv002",
@@ -9508,10 +10146,14 @@
         "boost-clock-continues-across-segments",
         "source-duration-and-multiplier"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-160",
+      "pointToken": "0uFK88M",
+      "tokenSourceId": "22800580297",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-161",
+      "id": "161-04xmYx7",
       "group": "boost",
       "scene": "map01",
       "level": "map01_lv007",
@@ -9562,10 +10204,14 @@
         "boost-clock-continues-across-segments",
         "no-boosted-motion-after-expiry"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-161",
+      "pointToken": "04xmYx7",
+      "tokenSourceId": "2800001202",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-162",
+      "id": "162-0DeDqep",
       "group": "boost",
       "scene": "map02",
       "level": "map02_lv004",
@@ -9615,10 +10261,14 @@
         "boost-clock-continues-across-segments",
         "source-duration-and-multiplier"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-162",
+      "pointToken": "0DeDqep",
+      "tokenSourceId": "23400083178",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-163",
+      "id": "163-0AvUSn4",
       "group": "boost",
       "scene": "map02",
       "level": "map02_lv006",
@@ -9671,10 +10321,14 @@
         "boost-clock-continues-across-segments",
         "no-boosted-motion-after-expiry"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-163",
+      "pointToken": "0AvUSn4",
+      "tokenSourceId": "25000070271",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-164",
+      "id": "164-17jhKR2",
       "group": "boost",
       "scene": "map02",
       "level": "map02_lv007",
@@ -9724,10 +10378,14 @@
         "boost-clock-continues-across-segments",
         "source-duration-and-multiplier"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-164",
+      "pointToken": "17jhKR2",
+      "tokenSourceId": "10200030369",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-165",
+      "id": "165-19jRrUJ",
       "group": "boost",
       "scene": "map02",
       "level": "map02_lv010",
@@ -9777,10 +10435,14 @@
         "boost-clock-continues-across-segments",
         "no-boosted-motion-after-expiry"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-165",
+      "pointToken": "19jRrUJ",
+      "tokenSourceId": "37900090398",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-166",
+      "id": "166-0U24Zlh",
       "group": "moving-support",
       "scene": "map01",
       "level": "map01_lv001",
@@ -9827,14 +10489,18 @@
       "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
       "supportModel": {
         "kind": "vertical-reachability",
-        "maxHorizontalSpan": 0.0,
+        "maxHorizontalSpan": 0,
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-166",
+      "pointToken": "0U24Zlh",
+      "tokenSourceId": "2100010064",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-167",
+      "id": "167-1bT3oSX",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv002",
@@ -9881,14 +10547,18 @@
       "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
       "supportModel": {
         "kind": "vertical-reachability",
-        "maxHorizontalSpan": 0.0,
+        "maxHorizontalSpan": 0,
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-167",
+      "pointToken": "1bT3oSX",
+      "tokenSourceId": "22800060108",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-168",
+      "id": "168-0CC3VHS",
       "group": "moving-support",
       "scene": "map01",
       "level": "map01_lv002",
@@ -9935,14 +10605,18 @@
       "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
       "supportModel": {
         "kind": "vertical-reachability",
-        "maxHorizontalSpan": 0.0,
+        "maxHorizontalSpan": 0,
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-168",
+      "pointToken": "0CC3VHS",
+      "tokenSourceId": "200001637",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-169",
+      "id": "169-0dEjgH8",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv004",
@@ -9993,10 +10667,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-169",
+      "pointToken": "0dEjgH8",
+      "tokenSourceId": "23400083019",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-170",
+      "id": "170-10Fcphd",
       "group": "moving-support",
       "scene": "map01",
       "level": "map01_lv003",
@@ -10043,14 +10721,18 @@
       "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
       "supportModel": {
         "kind": "vertical-reachability",
-        "maxHorizontalSpan": 0.0,
+        "maxHorizontalSpan": 0,
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-170",
+      "pointToken": "10Fcphd",
+      "tokenSourceId": "300001604",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-171",
+      "id": "171-0g0saVP",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv007",
@@ -10097,14 +10779,18 @@
       "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
       "supportModel": {
         "kind": "vertical-reachability",
-        "maxHorizontalSpan": 0.0,
+        "maxHorizontalSpan": 0,
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-171",
+      "pointToken": "0g0saVP",
+      "tokenSourceId": "10200030070",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-172",
+      "id": "172-0hxEbRu",
       "group": "moving-support",
       "scene": "map01",
       "level": "map01_lv005",
@@ -10151,14 +10837,18 @@
       "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
       "supportModel": {
         "kind": "vertical-reachability",
-        "maxHorizontalSpan": 0.0,
+        "maxHorizontalSpan": 0,
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-172",
+      "pointToken": "0hxEbRu",
+      "tokenSourceId": "3400020153",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-173",
+      "id": "173-13emvaD",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv008",
@@ -10205,14 +10895,18 @@
       "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
       "supportModel": {
         "kind": "swept-roof-support",
-        "maxHorizontalSpan": 14.0,
+        "maxHorizontalSpan": 14,
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-173",
+      "pointToken": "13emvaD",
+      "tokenSourceId": "23100030436",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-174",
+      "id": "174-0tulIyD",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv009",
@@ -10263,10 +10957,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-174",
+      "pointToken": "0tulIyD",
+      "tokenSourceId": "36100210720",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-175",
+      "id": "175-0kNSRGk",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv010",
@@ -10317,10 +11015,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-175",
+      "pointToken": "0kNSRGk",
+      "tokenSourceId": "37900070125",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-176",
+      "id": "176-0LtPFgt",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv009",
@@ -10371,10 +11073,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-176",
+      "pointToken": "0LtPFgt",
+      "tokenSourceId": "36100010470",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-177",
+      "id": "177-0CroVc6",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv010",
@@ -10425,10 +11131,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-177",
+      "pointToken": "0CroVc6",
+      "tokenSourceId": "37900070003",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-178",
+      "id": "178-16PP0Bz",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv009",
@@ -10479,10 +11189,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-178",
+      "pointToken": "16PP0Bz",
+      "tokenSourceId": "36100210686",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-179",
+      "id": "179-02XMvsf",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv001",
@@ -10533,10 +11247,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-179",
+      "pointToken": "02XMvsf",
+      "tokenSourceId": "10100023320",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-180",
+      "id": "180-0Ih86Fu",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv004",
@@ -10587,10 +11305,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-180",
+      "pointToken": "0Ih86Fu",
+      "tokenSourceId": "23400083309",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-181",
+      "id": "181-0IcVvqu",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv006",
@@ -10641,10 +11363,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-181",
+      "pointToken": "0IcVvqu",
+      "tokenSourceId": "25000060351",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-182",
+      "id": "182-0Ij2NNi",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv002",
@@ -10691,14 +11417,18 @@
       "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
       "supportModel": {
         "kind": "vertical-reachability",
-        "maxHorizontalSpan": 0.0,
+        "maxHorizontalSpan": 0,
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-182",
+      "pointToken": "0Ij2NNi",
+      "tokenSourceId": "22800040141",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-183",
+      "id": "183-0Sy2QdA",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv004",
@@ -10745,14 +11475,18 @@
       "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
       "supportModel": {
         "kind": "vertical-reachability",
-        "maxHorizontalSpan": 0.0,
+        "maxHorizontalSpan": 0,
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-183",
+      "pointToken": "0Sy2QdA",
+      "tokenSourceId": "23400083323",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-184",
+      "id": "184-0rcX2rX",
       "group": "moving-support",
       "scene": "map01",
       "level": "map01_lv007",
@@ -10828,10 +11562,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": false
-      }
+      },
+      "legacyCaseId": "v250-184",
+      "pointToken": "0rcX2rX",
+      "tokenSourceId": "2800000050",
+      "tokenRole": "conveyor-group-contact"
     },
     {
-      "id": "v250-185",
+      "id": "185-1cH9Nck",
       "group": "moving-support",
       "scene": "map01",
       "level": "map01_lv007",
@@ -10907,10 +11645,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-185",
+      "pointToken": "1cH9Nck",
+      "tokenSourceId": "2800000049",
+      "tokenRole": "conveyor-group-contact"
     },
     {
-      "id": "v250-186",
+      "id": "186-07fbs4f",
       "group": "moving-support",
       "scene": "map01",
       "level": "map01_lv007",
@@ -10986,10 +11728,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-186",
+      "pointToken": "07fbs4f",
+      "tokenSourceId": "2800000052",
+      "tokenRole": "conveyor-group-contact"
     },
     {
-      "id": "v250-187",
+      "id": "187-0LaICPF",
       "group": "moving-support",
       "scene": "map01",
       "level": "map01_lv007",
@@ -11065,10 +11811,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-187",
+      "pointToken": "0LaICPF",
+      "tokenSourceId": "2800000048",
+      "tokenRole": "conveyor-group-contact"
     },
     {
-      "id": "v250-188",
+      "id": "188-0AEnhG3",
       "group": "moving-support",
       "scene": "map01",
       "level": "map01_lv001",
@@ -11118,10 +11868,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": false
-      }
+      },
+      "legacyCaseId": "v250-188",
+      "pointToken": "0AEnhG3",
+      "tokenSourceId": "2100010096",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-189",
+      "id": "189-11Pt43w",
       "group": "moving-support",
       "scene": "map01",
       "level": "map01_lv003",
@@ -11171,10 +11925,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": false
-      }
+      },
+      "legacyCaseId": "v250-189",
+      "pointToken": "11Pt43w",
+      "tokenSourceId": "300002051",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-190",
+      "id": "190-0IS16cS",
       "group": "moving-support",
       "scene": "map01",
       "level": "map01_lv005",
@@ -11224,10 +11982,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": false
-      }
+      },
+      "legacyCaseId": "v250-190",
+      "pointToken": "0IS16cS",
+      "tokenSourceId": "3400020015",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-191",
+      "id": "191-0sa7UGN",
       "group": "moving-support",
       "scene": "map01",
       "level": "map01_lv007",
@@ -11277,10 +12039,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": false
-      }
+      },
+      "legacyCaseId": "v250-191",
+      "pointToken": "0sa7UGN",
+      "tokenSourceId": "2800030018",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-192",
+      "id": "192-0UOd852",
       "group": "moving-support",
       "scene": "map01",
       "level": "map01_lv001",
@@ -11331,10 +12097,14 @@
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-192",
+      "pointToken": "0UOd852",
+      "tokenSourceId": "2100010233",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-193",
+      "id": "193-09Oo1y7",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv002",
@@ -11381,14 +12151,18 @@
       "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
       "supportModel": {
         "kind": "vertical-reachability",
-        "maxHorizontalSpan": 0.0,
+        "maxHorizontalSpan": 0,
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-193",
+      "pointToken": "09Oo1y7",
+      "tokenSourceId": "22800333036",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-194",
+      "id": "194-0rc62eo",
       "group": "moving-support",
       "scene": "map01",
       "level": "map01_lv003",
@@ -11435,14 +12209,18 @@
       "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
       "supportModel": {
         "kind": "vertical-reachability",
-        "maxHorizontalSpan": 0.0,
+        "maxHorizontalSpan": 0,
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-194",
+      "pointToken": "0rc62eo",
+      "tokenSourceId": "300001709",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-195",
+      "id": "195-0vacV03",
       "group": "moving-support",
       "scene": "map02",
       "level": "map02_lv005",
@@ -11489,14 +12267,18 @@
       "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
       "supportModel": {
         "kind": "vertical-reachability",
-        "maxHorizontalSpan": 0.0,
+        "maxHorizontalSpan": 0,
         "phase": "excluded",
         "waiting": "excluded",
         "timedRideAvailable": true
-      }
+      },
+      "legacyCaseId": "v250-195",
+      "pointToken": "0vacV03",
+      "tokenSourceId": "23200100268",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-196",
+      "id": "196-0s4x24L",
       "group": "following-box",
       "scene": "map01",
       "level": "map01_lv001",
@@ -11548,10 +12330,14 @@
         "other-box-collision-retained"
       ],
       "status": "selected-unrun",
-      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps."
+      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
+      "legacyCaseId": "v250-196",
+      "pointToken": "0s4x24L",
+      "tokenSourceId": "2100390860",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-197",
+      "id": "197-0AmLGv5",
       "group": "following-box",
       "scene": "map02",
       "level": "map02_lv002",
@@ -11602,10 +12388,14 @@
         "other-box-collision-retained"
       ],
       "status": "selected-unrun",
-      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps."
+      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
+      "legacyCaseId": "v250-197",
+      "pointToken": "0AmLGv5",
+      "tokenSourceId": "22800333116",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-198",
+      "id": "198-0yyZ8SK",
       "group": "following-box",
       "scene": "map01",
       "level": "map01_lv003",
@@ -11659,10 +12449,14 @@
         "other-box-collision-retained"
       ],
       "status": "selected-unrun",
-      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps."
+      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
+      "legacyCaseId": "v250-198",
+      "pointToken": "0yyZ8SK",
+      "tokenSourceId": "300002347",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-199",
+      "id": "199-0aY6nQ5",
       "group": "following-box",
       "scene": "map02",
       "level": "map02_lv007",
@@ -11713,10 +12507,14 @@
         "other-box-collision-retained"
       ],
       "status": "selected-unrun",
-      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps."
+      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
+      "legacyCaseId": "v250-199",
+      "pointToken": "0aY6nQ5",
+      "tokenSourceId": "10200030326",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-200",
+      "id": "200-0z4bAv3",
       "group": "following-box",
       "scene": "map01",
       "level": "map01_lv006",
@@ -11768,10 +12566,14 @@
         "other-box-collision-retained"
       ],
       "status": "selected-unrun",
-      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps."
+      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
+      "legacyCaseId": "v250-200",
+      "pointToken": "0z4bAv3",
+      "tokenSourceId": "3500030874",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-201",
+      "id": "201-0OZJcfx",
       "group": "following-box",
       "scene": "map01",
       "level": "map01_lv001",
@@ -11825,10 +12627,14 @@
         "other-box-collision-retained"
       ],
       "status": "selected-unrun",
-      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps."
+      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
+      "legacyCaseId": "v250-201",
+      "pointToken": "0OZJcfx",
+      "tokenSourceId": "2100010320",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-202",
+      "id": "202-0HFwdHR",
       "group": "following-box",
       "scene": "map02",
       "level": "map02_lv002",
@@ -11879,10 +12685,14 @@
         "other-box-collision-retained"
       ],
       "status": "selected-unrun",
-      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps."
+      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
+      "legacyCaseId": "v250-202",
+      "pointToken": "0HFwdHR",
+      "tokenSourceId": "22800063192",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-203",
+      "id": "203-08oJZYk",
       "group": "following-box",
       "scene": "map01",
       "level": "map01_lv003",
@@ -11936,10 +12746,14 @@
         "other-box-collision-retained"
       ],
       "status": "selected-unrun",
-      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps."
+      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
+      "legacyCaseId": "v250-203",
+      "pointToken": "08oJZYk",
+      "tokenSourceId": "300002545",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-204",
+      "id": "204-19rt1HH",
       "group": "following-box",
       "scene": "map02",
       "level": "map02_lv007",
@@ -11991,10 +12805,14 @@
         "other-box-collision-retained"
       ],
       "status": "selected-unrun",
-      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps."
+      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
+      "legacyCaseId": "v250-204",
+      "pointToken": "19rt1HH",
+      "tokenSourceId": "10200030350",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-205",
+      "id": "205-06MbNfb",
       "group": "following-box",
       "scene": "map01",
       "level": "map01_lv001",
@@ -12045,10 +12863,14 @@
         "other-box-collision-retained"
       ],
       "status": "selected-unrun",
-      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps."
+      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
+      "legacyCaseId": "v250-205",
+      "pointToken": "06MbNfb",
+      "tokenSourceId": "2100330182",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-206",
+      "id": "206-0Bkr6wP",
       "group": "following-box",
       "scene": "map02",
       "level": "map02_lv002",
@@ -12099,10 +12921,14 @@
         "other-box-collision-retained"
       ],
       "status": "selected-unrun",
-      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps."
+      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
+      "legacyCaseId": "v250-206",
+      "pointToken": "0Bkr6wP",
+      "tokenSourceId": "22800040168",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-207",
+      "id": "207-0oi4pkE",
       "group": "following-box",
       "scene": "map01",
       "level": "map01_lv003",
@@ -12153,10 +12979,14 @@
         "other-box-collision-retained"
       ],
       "status": "selected-unrun",
-      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps."
+      "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
+      "legacyCaseId": "v250-207",
+      "pointToken": "0oi4pkE",
+      "tokenSourceId": "300002333",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-208",
+      "id": "208-1craOtr",
       "group": "resources-and-composition",
       "scene": "map01",
       "level": "map01_lv001",
@@ -12227,10 +13057,14 @@
         "whole-route-resource-replay",
         "dash-cooldown-and-recovery-delay"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-208",
+      "pointToken": "1craOtr",
+      "tokenSourceId": "2100430134",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-209",
+      "id": "209-0rH6ayf",
       "group": "resources-and-composition",
       "scene": "map02",
       "level": "map02_lv001",
@@ -12301,10 +13135,14 @@
         "whole-route-resource-replay",
         "dash-cooldown-and-recovery-delay"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-209",
+      "pointToken": "0rH6ayf",
+      "tokenSourceId": "10100010152",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-210",
+      "id": "210-0qyLBCB",
       "group": "resources-and-composition",
       "scene": "map01",
       "level": "map01_lv002",
@@ -12375,10 +13213,14 @@
         "whole-route-resource-replay",
         "dash-cooldown-and-recovery-delay"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-210",
+      "pointToken": "0qyLBCB",
+      "tokenSourceId": "200060466",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-211",
+      "id": "211-0KnP7KD",
       "group": "resources-and-composition",
       "scene": "map02",
       "level": "map02_lv002",
@@ -12449,10 +13291,14 @@
         "whole-route-resource-replay",
         "dash-cooldown-and-recovery-delay"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-211",
+      "pointToken": "0KnP7KD",
+      "tokenSourceId": "22800420036",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-212",
+      "id": "212-1bBsm8d",
       "group": "resources-and-composition",
       "scene": "map01",
       "level": "map01_lv001",
@@ -12520,10 +13366,14 @@
         }
       },
       "assertions": ["minimum-stamina-at-least-reserve", "whole-route-resource-replay"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-212",
+      "pointToken": "1bBsm8d",
+      "tokenSourceId": "2100420290",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-213",
+      "id": "213-16YPmLU",
       "group": "resources-and-composition",
       "scene": "map02",
       "level": "map02_lv001",
@@ -12591,10 +13441,14 @@
         }
       },
       "assertions": ["minimum-stamina-at-least-reserve", "whole-route-resource-replay"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-213",
+      "pointToken": "16YPmLU",
+      "tokenSourceId": "10100010347",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-214",
+      "id": "214-0nuILJY",
       "group": "resources-and-composition",
       "scene": "map01",
       "level": "map01_lv002",
@@ -12662,10 +13516,14 @@
         }
       },
       "assertions": ["minimum-stamina-at-least-reserve", "whole-route-resource-replay"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-214",
+      "pointToken": "0nuILJY",
+      "tokenSourceId": "200001631",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-215",
+      "id": "215-0NWOiBC",
       "group": "resources-and-composition",
       "scene": "map02",
       "level": "map02_lv002",
@@ -12733,10 +13591,14 @@
         }
       },
       "assertions": ["minimum-stamina-at-least-reserve", "whole-route-resource-replay"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-215",
+      "pointToken": "0NWOiBC",
+      "tokenSourceId": "22800173261",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-216",
+      "id": "216-0SK2QRR",
       "group": "resources-and-composition",
       "scene": "map01",
       "level": "map01_lv001",
@@ -12791,10 +13653,14 @@
         "waypoints-in-given-order",
         "resource-and-boost-state-continue-across-waypoints"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-216",
+      "pointToken": "0SK2QRR",
+      "tokenSourceId": "2100021088",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-217",
+      "id": "217-0rv1UwY",
       "group": "resources-and-composition",
       "scene": "map02",
       "level": "map02_lv001",
@@ -12849,10 +13715,14 @@
         "waypoints-in-given-order",
         "resource-and-boost-state-continue-across-waypoints"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-217",
+      "pointToken": "0rv1UwY",
+      "tokenSourceId": "10100010013",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-218",
+      "id": "218-1awU1hb",
       "group": "resources-and-composition",
       "scene": "map01",
       "level": "map01_lv002",
@@ -12910,10 +13780,14 @@
         "waypoints-in-given-order",
         "resource-and-boost-state-continue-across-waypoints"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-218",
+      "pointToken": "1awU1hb",
+      "tokenSourceId": "200001194",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-219",
+      "id": "219-0OTESmy",
       "group": "resources-and-composition",
       "scene": "map02",
       "level": "map02_lv002",
@@ -12971,10 +13845,14 @@
         "waypoints-in-given-order",
         "resource-and-boost-state-continue-across-waypoints"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-219",
+      "pointToken": "0OTESmy",
+      "tokenSourceId": "22800040223",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-220",
+      "id": "220-0S2QOjf",
       "group": "resources-and-composition",
       "scene": "map01",
       "level": "map01_lv001",
@@ -13041,10 +13919,14 @@
         "arrival-cost-in-total",
         "source-facing-and-half-angle"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-220",
+      "pointToken": "0S2QOjf",
+      "tokenSourceId": "2100390910",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-221",
+      "id": "221-07e939z",
       "group": "resources-and-composition",
       "scene": "map02",
       "level": "map02_lv001",
@@ -13111,10 +13993,14 @@
         "arrival-cost-in-total",
         "source-facing-and-half-angle"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-221",
+      "pointToken": "07e939z",
+      "tokenSourceId": "10100023282",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-222",
+      "id": "222-0s94W8v",
       "group": "resources-and-composition",
       "scene": "map01",
       "level": "map01_lv002",
@@ -13181,10 +14067,14 @@
         "arrival-cost-in-total",
         "source-facing-and-half-angle"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-222",
+      "pointToken": "0s94W8v",
+      "tokenSourceId": "200001484",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-223",
+      "id": "223-0tzQ9RW",
       "group": "resources-and-composition",
       "scene": "map02",
       "level": "map02_lv002",
@@ -13251,10 +14141,14 @@
         "arrival-cost-in-total",
         "source-facing-and-half-angle"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-223",
+      "pointToken": "0tzQ9RW",
+      "tokenSourceId": "22800040413",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-224",
+      "id": "224-0aZUrpW",
       "group": "resources-and-composition",
       "scene": "map01",
       "level": "map01_lv001",
@@ -13296,10 +14190,14 @@
         "whole-route-resource-replay",
         "cross-window-continuity"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-224",
+      "pointToken": "0aZUrpW",
+      "tokenSourceId": "2100420285",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-225",
+      "id": "225-07VoQbO",
       "group": "resources-and-composition",
       "scene": "map02",
       "level": "map02_lv001",
@@ -13341,10 +14239,14 @@
         "whole-route-resource-replay",
         "cross-window-continuity"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-225",
+      "pointToken": "07VoQbO",
+      "tokenSourceId": "10100010293",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-226",
+      "id": "226-03kSVkZ",
       "group": "resources-and-composition",
       "scene": "map01",
       "level": "map01_lv002",
@@ -13387,10 +14289,14 @@
         "whole-route-resource-replay",
         "cross-window-continuity"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-226",
+      "pointToken": "03kSVkZ",
+      "tokenSourceId": "200001494",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-227",
+      "id": "227-0RxibO2",
       "group": "resources-and-composition",
       "scene": "map02",
       "level": "map02_lv002",
@@ -13432,10 +14338,14 @@
         "whole-route-resource-replay",
         "cross-window-continuity"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-227",
+      "pointToken": "0RxibO2",
+      "tokenSourceId": "22800060219",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-228",
+      "id": "228-0TGAI0K",
       "group": "boundary-and-rejection",
       "scene": "map01",
       "level": "map01_lv003",
@@ -13473,10 +14383,14 @@
       ],
       "setup": {},
       "assertions": ["no-complete-route-from-unavailable-arrival"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-228",
+      "pointToken": "0TGAI0K",
+      "tokenSourceId": "300001631",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-229",
+      "id": "229-0sUEnMF",
       "group": "boundary-and-rejection",
       "scene": "map02",
       "level": "map02_lv010",
@@ -13514,10 +14428,14 @@
       ],
       "setup": {},
       "assertions": ["no-complete-route-from-unavailable-arrival"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-229",
+      "pointToken": "0sUEnMF",
+      "tokenSourceId": "37900000002",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-230",
+      "id": "230-1cSvWln",
       "group": "boundary-and-rejection",
       "scene": "map01",
       "level": "map01_lv003",
@@ -13566,10 +14484,14 @@
       },
       "assertions": ["no-fabricated-unresolved-launch"],
       "status": "selected-unrun",
-      "note": "A physically valid alternative is acceptable; unresolved device use is not."
+      "note": "A physically valid alternative is acceptable; unresolved device use is not.",
+      "legacyCaseId": "v250-230",
+      "pointToken": "1cSvWln",
+      "tokenSourceId": "300002234",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-231",
+      "id": "231-030cHQk",
       "group": "boundary-and-rejection",
       "scene": "map02",
       "level": "map02_lv010",
@@ -13615,10 +14537,14 @@
       },
       "assertions": ["no-fabricated-unresolved-launch"],
       "status": "selected-unrun",
-      "note": "A physically valid alternative is acceptable; unresolved device use is not."
+      "note": "A physically valid alternative is acceptable; unresolved device use is not.",
+      "legacyCaseId": "v250-231",
+      "pointToken": "030cHQk",
+      "tokenSourceId": "37900010401",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-232",
+      "id": "232-0NBKrKt",
       "group": "boundary-and-rejection",
       "scene": "map01",
       "level": "map01_lv002",
@@ -13662,10 +14588,14 @@
       "setup": {},
       "assertions": ["active-wall-never-crossed", "capsule-radius-and-height-clearance"],
       "status": "selected-unrun",
-      "note": "Detour or unavailable are both legal; a straight-line crossing is not."
+      "note": "Detour or unavailable are both legal; a straight-line crossing is not.",
+      "legacyCaseId": "v250-232",
+      "pointToken": "0NBKrKt",
+      "tokenSourceId": "200090026",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-233",
+      "id": "233-0TCGoU8",
       "group": "boundary-and-rejection",
       "scene": "map01",
       "level": "map01_lv005",
@@ -13709,10 +14639,14 @@
       "setup": {},
       "assertions": ["active-wall-never-crossed", "capsule-radius-and-height-clearance"],
       "status": "selected-unrun",
-      "note": "Detour or unavailable are both legal; a straight-line crossing is not."
+      "note": "Detour or unavailable are both legal; a straight-line crossing is not.",
+      "legacyCaseId": "v250-233",
+      "pointToken": "0TCGoU8",
+      "tokenSourceId": "3400230001",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-234",
+      "id": "234-0sbwizy",
       "group": "boundary-and-rejection",
       "scene": "map01",
       "level": "map01_lv001",
@@ -13761,16 +14695,21 @@
         "uncovered-target-cannot-be-complete",
         "report-coverage-gap-separately-from-blocked"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-234",
+      "pointToken": "0sbwizy",
+      "tokenSourceId": "2100020621",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-235",
+      "id": "235-073LQ6d",
       "group": "navigation-context",
       "scene": "map01",
-      "level": "source-navigation",
+      "level": "map01_lv001",
       "target": {
-        "kind": "navigation-contact",
-        "id": "163713922_NavMeshChunkData.asset/18/5"
+        "kind": "interactive",
+        "id": "2100020950",
+        "template": "int_doodad_ore_cluster_originium"
       },
       "query": {
         "starts": [
@@ -13781,43 +14720,53 @@
             "state": "available"
           }
         ],
-        "goal": [-343.94999384880066, 119.46249389648438, -208.82500886917114],
+        "goal": [-353.6300048828125, 120.1, -213.75999450683594],
         "interaction": {
-          "radius": 0.25,
-          "maxVertical": 0.2
+          "radius": 2.174000084400177
         }
       },
-      "tags": ["portal-interface"],
+      "tags": ["real-navigation"],
       "evidence": [
         {
-          "file": "exports/map01-ground-all.json",
-          "collection": "options.portals",
-          "index": 43184
-        },
-        {
-          "file": "exports/map01-ground-all.json",
-          "collection": "surfaces",
-          "id": "163713922_NavMeshChunkData.asset/17/64"
-        },
-        {
-          "file": "exports/map01-ground-all.json",
-          "collection": "surfaces",
-          "id": "163713922_NavMeshChunkData.asset/18/5"
+          "file": "exports/map01-interaction-points.json",
+          "collection": "points",
+          "id": "2100020950"
         }
       ],
       "setup": {},
-      "assertions": ["respect-declared-portal-direction", "physical-support-and-clearance"],
+      "assertions": [
+        "original-height-goal",
+        "physical-support-and-clearance",
+        "explicit-goal-hit-at-original-interaction"
+      ],
       "status": "selected-unrun",
-      "note": "This exported interface has a reverse portal. It does not establish one-way-only passage coverage."
+      "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
+      "geometryProbe": {
+        "file": "geometry-probes.json",
+        "id": "geometry-235"
+      },
+      "replacement": {
+        "originalProbe": "geometry-235",
+        "originalGoal": [-343.94999384880066, 119.46249389648438, -208.82500886917114],
+        "horizontalDistanceM": 10.865389862427799,
+        "verticalDifferenceM": 0.6375061035156193,
+        "relation": "nearby-source-interaction",
+        "rule": "Same scene, source navigationGoal, previously unused target; height difference at most 1m. Distance exceptions are explicitly retained."
+      },
+      "legacyCaseId": "v250-235",
+      "pointToken": "073LQ6d",
+      "tokenSourceId": "2100020950",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-236",
+      "id": "236-0GSaSqG",
       "group": "navigation-context",
       "scene": "map01",
-      "level": "source-navigation",
+      "level": "map01_lv005",
       "target": {
-        "kind": "navigation-contact",
-        "id": "163713940_NavMeshChunkData.asset/10/0"
+        "kind": "interactive",
+        "id": "3400010111",
+        "template": "int_switch_common"
       },
       "query": {
         "starts": [
@@ -13828,43 +14777,53 @@
             "state": "available"
           }
         ],
-        "goal": [770.5600364685058, 101.43878173828125, -219.10000896453857],
+        "goal": [733.719970703125, 101.28799896538257, -185.0679931640625],
         "interaction": {
-          "radius": 0.25,
-          "maxVertical": 0.2
+          "radius": 1.7000000476837158
         }
       },
-      "tags": ["portal-interface"],
+      "tags": ["real-navigation"],
       "evidence": [
         {
-          "file": "exports/map01-ground-all.json",
-          "collection": "options.portals",
-          "index": 5529
-        },
-        {
-          "file": "exports/map01-ground-all.json",
-          "collection": "surfaces",
-          "id": "163713940_NavMeshChunkData.asset/15/3"
-        },
-        {
-          "file": "exports/map01-ground-all.json",
-          "collection": "surfaces",
-          "id": "163713940_NavMeshChunkData.asset/10/0"
+          "file": "exports/map01-interaction-points.json",
+          "collection": "points",
+          "id": "3400010111"
         }
       ],
       "setup": {},
-      "assertions": ["respect-declared-portal-direction", "physical-support-and-clearance"],
+      "assertions": [
+        "original-height-goal",
+        "physical-support-and-clearance",
+        "explicit-goal-hit-at-original-interaction"
+      ],
       "status": "selected-unrun",
-      "note": "This exported interface has a reverse portal. It does not establish one-way-only passage coverage."
+      "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
+      "geometryProbe": {
+        "file": "geometry-probes.json",
+        "id": "geometry-236"
+      },
+      "replacement": {
+        "originalProbe": "geometry-236",
+        "originalGoal": [770.5600364685058, 101.43878173828125, -219.10000896453857],
+        "horizontalDistanceM": 50.1534499814463,
+        "verticalDifferenceM": 0.1507827728986797,
+        "relation": "new-navigation-case-not-equivalent-nearby-replacement",
+        "rule": "Same scene, source navigationGoal, previously unused target; height difference at most 1m. Distance exceptions are explicitly retained."
+      },
+      "legacyCaseId": "v250-236",
+      "pointToken": "0GSaSqG",
+      "tokenSourceId": "3400010111",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-237",
+      "id": "237-03q9Bxy",
       "group": "navigation-context",
       "scene": "map01",
-      "level": "source-navigation",
+      "level": "map01_lv006",
       "target": {
-        "kind": "navigation-contact",
-        "id": "163943310_NavMeshChunkData.asset/8/23"
+        "kind": "interactive",
+        "id": "3500022149",
+        "template": "int_jumpmachine_free"
       },
       "query": {
         "starts": [
@@ -13875,37 +14834,46 @@
             "state": "available"
           }
         ],
-        "goal": [427.7000063260396, 36.3193359375, 216.10000610351562],
+        "goal": [418.5199890136719, 35.914998626708986, 208.8800048828125],
         "interaction": {
-          "radius": 0.25,
-          "maxVertical": 0.2
+          "radius": 1.5
         }
       },
-      "tags": ["layered-ground", "height-preservation"],
+      "tags": ["real-navigation"],
       "evidence": [
         {
-          "file": "exports/map01-ground-all.json",
-          "collection": "surfaces",
-          "index": 86181,
-          "id": "163943310_NavMeshChunkData.asset/8/44"
-        },
-        {
-          "file": "exports/map01-ground-all.json",
-          "collection": "surfaces",
-          "index": 86160,
-          "id": "163943310_NavMeshChunkData.asset/8/23"
+          "file": "exports/map01-interaction-points.json",
+          "collection": "points",
+          "id": "3500022149"
         }
       ],
       "setup": {},
       "assertions": [
         "original-height-goal",
-        "no-nearest-floor-goal-substitution",
-        "physical-support-and-clearance"
+        "physical-support-and-clearance",
+        "explicit-goal-hit-at-original-interaction"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "geometryProbe": {
+        "file": "geometry-probes.json",
+        "id": "geometry-237"
+      },
+      "replacement": {
+        "originalProbe": "geometry-237",
+        "originalGoal": [427.7000063260396, 36.3193359375, 216.10000610351562],
+        "horizontalDistanceM": 11.679089668391368,
+        "verticalDifferenceM": 0.4043373107910142,
+        "relation": "nearby-source-interaction",
+        "rule": "Same scene, source navigationGoal, previously unused target; height difference at most 1m. Distance exceptions are explicitly retained."
+      },
+      "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
+      "legacyCaseId": "v250-237",
+      "pointToken": "03q9Bxy",
+      "tokenSourceId": "3500022149",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-238",
+      "id": "238-0Zq9MMX",
       "group": "boundary-and-rejection",
       "scene": "map02",
       "level": "map02_lv001",
@@ -13949,10 +14917,14 @@
       "setup": {},
       "assertions": ["active-wall-never-crossed", "capsule-radius-and-height-clearance"],
       "status": "selected-unrun",
-      "note": "Detour or unavailable are both legal; a straight-line crossing is not."
+      "note": "Detour or unavailable are both legal; a straight-line crossing is not.",
+      "legacyCaseId": "v250-238",
+      "pointToken": "0Zq9MMX",
+      "tokenSourceId": "10100010344",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-239",
+      "id": "239-0hp34zJ",
       "group": "boundary-and-rejection",
       "scene": "map02",
       "level": "map02_lv003",
@@ -13996,10 +14968,14 @@
       "setup": {},
       "assertions": ["active-wall-never-crossed", "capsule-radius-and-height-clearance"],
       "status": "selected-unrun",
-      "note": "Detour or unavailable are both legal; a straight-line crossing is not."
+      "note": "Detour or unavailable are both legal; a straight-line crossing is not.",
+      "legacyCaseId": "v250-239",
+      "pointToken": "0hp34zJ",
+      "tokenSourceId": "23300000404",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-240",
+      "id": "240-0tT9xH3",
       "group": "boundary-and-rejection",
       "scene": "map02",
       "level": "map02_lv001",
@@ -14048,16 +15024,21 @@
         "uncovered-target-cannot-be-complete",
         "report-coverage-gap-separately-from-blocked"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-240",
+      "pointToken": "0tT9xH3",
+      "tokenSourceId": "10100020582",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-241",
+      "id": "241-1cxnGbR",
       "group": "navigation-context",
       "scene": "map02",
-      "level": "source-navigation",
+      "level": "map02_lv003",
       "target": {
-        "kind": "navigation-contact",
-        "id": "163124095_NavMeshChunkData.asset/17/59"
+        "kind": "interactive",
+        "id": "23300220004",
+        "template": "int_challenge_start_point_once"
       },
       "query": {
         "starts": [
@@ -14068,43 +15049,53 @@
             "state": "available"
           }
         ],
-        "goal": [-544.6666909853617, 259.56882731119794, -1357.4000237782795],
+        "goal": [-555.0449829101562, 259.5840087890625, -1354.614990234375],
         "interaction": {
-          "radius": 0.25,
-          "maxVertical": 0.2
+          "radius": 3
         }
       },
-      "tags": ["portal-interface"],
+      "tags": ["real-navigation"],
       "evidence": [
         {
-          "file": "exports/map02-ground-all.json",
-          "collection": "options.portals",
-          "index": 71457
-        },
-        {
-          "file": "exports/map02-ground-all.json",
-          "collection": "surfaces",
-          "id": "163124095_NavMeshChunkData.asset/22/2"
-        },
-        {
-          "file": "exports/map02-ground-all.json",
-          "collection": "surfaces",
-          "id": "163124095_NavMeshChunkData.asset/17/59"
+          "file": "exports/map02-interaction-points.json",
+          "collection": "points",
+          "id": "23300220004"
         }
       ],
       "setup": {},
-      "assertions": ["respect-declared-portal-direction", "physical-support-and-clearance"],
+      "assertions": [
+        "original-height-goal",
+        "physical-support-and-clearance",
+        "explicit-goal-hit-at-original-interaction"
+      ],
       "status": "selected-unrun",
-      "note": "This exported interface has a reverse portal. It does not establish one-way-only passage coverage."
+      "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
+      "geometryProbe": {
+        "file": "geometry-probes.json",
+        "id": "geometry-241"
+      },
+      "replacement": {
+        "originalProbe": "geometry-241",
+        "originalGoal": [-544.6666909853617, 259.56882731119794, -1357.4000237782795],
+        "horizontalDistanceM": 10.745480683381704,
+        "verticalDifferenceM": 0.015181477864587123,
+        "relation": "nearby-source-interaction",
+        "rule": "Same scene, source navigationGoal, previously unused target; height difference at most 1m. Distance exceptions are explicitly retained."
+      },
+      "legacyCaseId": "v250-241",
+      "pointToken": "1cxnGbR",
+      "tokenSourceId": "23300220004",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-242",
+      "id": "242-0Dbczof",
       "group": "navigation-context",
       "scene": "map02",
-      "level": "source-navigation",
+      "level": "map02_lv009",
       "target": {
-        "kind": "navigation-contact",
-        "id": "164139909_NavMeshChunkData.asset/4/45"
+        "kind": "interactive",
+        "id": "36100210704",
+        "template": "int_collection_common"
       },
       "query": {
         "starts": [
@@ -14115,43 +15106,53 @@
             "state": "available"
           }
         ],
-        "goal": [-136.5333423614502, 214.60901484803497, 576.1667029062907],
+        "goal": [48.104000091552734, 215.11699829101562, 591.114013671875],
         "interaction": {
-          "radius": 0.25,
-          "maxVertical": 0.2
+          "radius": 2
         }
       },
-      "tags": ["layered-ground", "height-preservation"],
+      "tags": ["real-navigation"],
       "evidence": [
         {
-          "file": "exports/map02-ground-all.json",
-          "collection": "surfaces",
-          "index": 264607,
-          "id": "164139909_NavMeshChunkData.asset/4/9"
-        },
-        {
-          "file": "exports/map02-ground-all.json",
-          "collection": "surfaces",
-          "index": 264643,
-          "id": "164139909_NavMeshChunkData.asset/4/45"
+          "file": "exports/map02-interaction-points.json",
+          "collection": "points",
+          "id": "36100210704"
         }
       ],
       "setup": {},
       "assertions": [
         "original-height-goal",
-        "no-nearest-floor-goal-substitution",
-        "physical-support-and-clearance"
+        "physical-support-and-clearance",
+        "explicit-goal-hit-at-original-interaction"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "geometryProbe": {
+        "file": "geometry-probes.json",
+        "id": "geometry-242"
+      },
+      "replacement": {
+        "originalProbe": "geometry-242",
+        "originalGoal": [-136.5333423614502, 214.60901484803497, 576.1667029062907],
+        "horizontalDistanceM": 185.241383948702,
+        "verticalDifferenceM": 0.5079834429806453,
+        "relation": "new-navigation-case-not-equivalent-nearby-replacement",
+        "rule": "Same scene, source navigationGoal, previously unused target; height difference at most 1m. Distance exceptions are explicitly retained."
+      },
+      "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
+      "legacyCaseId": "v250-242",
+      "pointToken": "0Dbczof",
+      "tokenSourceId": "36100210704",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-243",
+      "id": "243-07Y4dXk",
       "group": "navigation-context",
       "scene": "map02",
-      "level": "source-navigation",
+      "level": "map02_lv005",
       "target": {
-        "kind": "navigation-contact",
-        "id": "163713923_NavMeshChunkData.asset/9/11"
+        "kind": "interactive",
+        "id": "23200013571",
+        "template": "int_trchest_supplybox_03"
       },
       "query": {
         "starts": [
@@ -14162,37 +15163,49 @@
             "state": "available"
           }
         ],
-        "goal": [-260.2833267847697, 250.44000244140625, -235.83334255218506],
+        "goal": [-263.3689880371094, 249.9939971923828, -234.2899932861328],
         "interaction": {
-          "radius": 0.25,
-          "maxVertical": 0.2
+          "radius": 3.5,
+          "maxVertical": 3,
+          "facing": [-0.999816358089447, 0, 0.01916240155696869],
+          "halfAngle": 90
         }
       },
-      "tags": ["layered-ground", "height-preservation"],
+      "tags": ["real-navigation"],
       "evidence": [
         {
-          "file": "exports/map02-ground-all.json",
-          "collection": "surfaces",
-          "index": 94294,
-          "id": "163713923_NavMeshChunkData.asset/9/30"
-        },
-        {
-          "file": "exports/map02-ground-all.json",
-          "collection": "surfaces",
-          "index": 94275,
-          "id": "163713923_NavMeshChunkData.asset/9/11"
+          "file": "exports/map02-interaction-points.json",
+          "collection": "points",
+          "id": "23200013571"
         }
       ],
       "setup": {},
       "assertions": [
         "original-height-goal",
-        "no-nearest-floor-goal-substitution",
-        "physical-support-and-clearance"
+        "physical-support-and-clearance",
+        "explicit-goal-hit-at-original-interaction"
       ],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "geometryProbe": {
+        "file": "geometry-probes.json",
+        "id": "geometry-243"
+      },
+      "replacement": {
+        "originalProbe": "geometry-243",
+        "originalGoal": [-260.2833267847697, 250.44000244140625, -235.83334255218506],
+        "horizontalDistanceM": 3.4501061318768698,
+        "verticalDifferenceM": 0.4460052490234432,
+        "relation": "nearby-source-interaction",
+        "rule": "Same scene, source navigationGoal, previously unused target; height difference at most 1m. Distance exceptions are explicitly retained."
+      },
+      "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
+      "legacyCaseId": "v250-243",
+      "pointToken": "07Y4dXk",
+      "tokenSourceId": "23200013571",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-244",
+      "id": "244-08n80Ny",
       "group": "boundary-and-rejection",
       "scene": "map01",
       "level": "map01_lv005",
@@ -14239,10 +15252,14 @@
       "setup": {},
       "assertions": ["no-invented-support-or-transport", "report-unsupported-source-reason"],
       "status": "selected-unrun",
-      "note": "platform moving subtree unresolved"
+      "note": "platform moving subtree unresolved",
+      "legacyCaseId": "v250-244",
+      "pointToken": "08n80Ny",
+      "tokenSourceId": "3400010137",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-245",
+      "id": "245-0s0ynRr",
       "group": "boundary-and-rejection",
       "scene": "map02",
       "level": "map02_lv009",
@@ -14286,10 +15303,14 @@
       "setup": {},
       "assertions": ["no-invented-support-or-transport", "report-unsupported-source-reason"],
       "status": "selected-unrun",
-      "note": "platform moving subtree unresolved"
+      "note": "platform moving subtree unresolved",
+      "legacyCaseId": "v250-245",
+      "pointToken": "0s0ynRr",
+      "tokenSourceId": "36100190010",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-246",
+      "id": "246-0vtYecw",
       "group": "navigation-context",
       "scene": "map01",
       "level": "map01_lv001",
@@ -14336,10 +15357,14 @@
         "continuous-capsule-support-and-clearance"
       ],
       "status": "selected-unrun",
-      "note": "Historical stair-location evidence only. Reinspect collision treads and replay current result before marking stairs exercised."
+      "note": "Historical stair-location evidence only. Reinspect collision treads and replay current result before marking stairs exercised.",
+      "legacyCaseId": "v250-246",
+      "pointToken": "0vtYecw",
+      "tokenSourceId": "2100021049",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-247",
+      "id": "247-0pFlp1G",
       "group": "navigation-context",
       "scene": "map01",
       "level": "map01_lv001",
@@ -14386,10 +15411,14 @@
         "continuous-capsule-support-and-clearance"
       ],
       "status": "selected-unrun",
-      "note": "Historical stair-location evidence only. Reinspect collision treads and replay current result before marking stairs exercised."
+      "note": "Historical stair-location evidence only. Reinspect collision treads and replay current result before marking stairs exercised.",
+      "legacyCaseId": "v250-247",
+      "pointToken": "0pFlp1G",
+      "tokenSourceId": "2100020749",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-248",
+      "id": "248-0SlUkPj",
       "group": "navigation-context",
       "scene": "map01",
       "level": "map01_lv001",
@@ -14436,10 +15465,14 @@
         "continuous-capsule-support-and-clearance"
       ],
       "status": "selected-unrun",
-      "note": "Historical stair-location evidence only. Reinspect collision treads and replay current result before marking stairs exercised."
+      "note": "Historical stair-location evidence only. Reinspect collision treads and replay current result before marking stairs exercised.",
+      "legacyCaseId": "v250-248",
+      "pointToken": "0SlUkPj",
+      "tokenSourceId": "2100020810",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-249",
+      "id": "249-0ADyrpf",
       "group": "navigation-context",
       "scene": "map01",
       "level": "map01_lv001",
@@ -14474,10 +15507,14 @@
       ],
       "setup": {},
       "assertions": ["exercise:static-bridge-support", "no-closed-or-missing-owner-geometry"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-249",
+      "pointToken": "0ADyrpf",
+      "tokenSourceId": "2100170006",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-250",
+      "id": "250-0HTXfPs",
       "group": "navigation-context",
       "scene": "map02",
       "level": "map02_lv001",
@@ -14512,10 +15549,14 @@
       ],
       "setup": {},
       "assertions": ["exercise:static-bridge-support", "no-closed-or-missing-owner-geometry"],
-      "status": "selected-unrun"
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-250",
+      "pointToken": "0HTXfPs",
+      "tokenSourceId": "10100030203",
+      "tokenRole": "support-contact"
     },
     {
-      "id": "v250-251",
+      "id": "251-0ekRne8",
       "group": "multi-box",
       "scene": "map01",
       "level": "map01_lv001",
@@ -14594,10 +15635,14 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
+      "legacyCaseId": "v250-251",
+      "pointToken": "0ekRne8",
+      "tokenSourceId": "2100330185",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-252",
+      "id": "252-0AKLjci",
       "group": "multi-box",
       "scene": "map02",
       "level": "map02_lv002",
@@ -14677,10 +15722,14 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
+      "legacyCaseId": "v250-252",
+      "pointToken": "0AKLjci",
+      "tokenSourceId": "22800333007",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-253",
+      "id": "253-0b7WQJc",
       "group": "multi-box",
       "scene": "map01",
       "level": "map01_lv003",
@@ -14759,10 +15808,14 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
+      "legacyCaseId": "v250-253",
+      "pointToken": "0b7WQJc",
+      "tokenSourceId": "300070003",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-254",
+      "id": "254-0UUbKsh",
       "group": "multi-box",
       "scene": "map02",
       "level": "map02_lv007",
@@ -14841,10 +15894,14 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
+      "legacyCaseId": "v250-254",
+      "pointToken": "0UUbKsh",
+      "tokenSourceId": "10200030374",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-255",
+      "id": "255-0zeEJwo",
       "group": "multi-box",
       "scene": "map01",
       "level": "map01_lv001",
@@ -14923,10 +15980,14 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
+      "legacyCaseId": "v250-255",
+      "pointToken": "0zeEJwo",
+      "tokenSourceId": "2100130085",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-256",
+      "id": "256-0YYvlTn",
       "group": "multi-box",
       "scene": "map02",
       "level": "map02_lv002",
@@ -15008,10 +16069,14 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
+      "legacyCaseId": "v250-256",
+      "pointToken": "0YYvlTn",
+      "tokenSourceId": "22800040098",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-257",
+      "id": "257-0ihnk8x",
       "group": "multi-box",
       "scene": "map01",
       "level": "map01_lv003",
@@ -15091,10 +16156,14 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
+      "legacyCaseId": "v250-257",
+      "pointToken": "0ihnk8x",
+      "tokenSourceId": "300001894",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-258",
+      "id": "258-191vMgJ",
       "group": "multi-box",
       "scene": "map01",
       "level": "map01_lv001",
@@ -15174,10 +16243,14 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
+      "legacyCaseId": "v250-258",
+      "pointToken": "191vMgJ",
+      "tokenSourceId": "2100021154",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-259",
+      "id": "259-1asm7dr",
       "group": "multi-box",
       "scene": "map01",
       "level": "map01_lv001",
@@ -15266,10 +16339,14 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
+      "legacyCaseId": "v250-259",
+      "pointToken": "1asm7dr",
+      "tokenSourceId": "2100390570",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-260",
+      "id": "260-06gyJ7F",
       "group": "multi-box",
       "scene": "map01",
       "level": "map01_lv003",
@@ -15361,10 +16438,14 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
+      "legacyCaseId": "v250-260",
+      "pointToken": "06gyJ7F",
+      "tokenSourceId": "300002564",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-261",
+      "id": "261-02u3Zc9",
       "group": "multi-box",
       "scene": "map01",
       "level": "map01_lv001",
@@ -15453,10 +16534,14 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
+      "legacyCaseId": "v250-261",
+      "pointToken": "02u3Zc9",
+      "tokenSourceId": "2100390314",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-262",
+      "id": "262-0VmDkfU",
       "group": "multi-box",
       "scene": "map01",
       "level": "map01_lv001",
@@ -15545,10 +16630,14 @@
       ],
       "status": "selected-unrun",
       "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing."
+      "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
+      "legacyCaseId": "v250-262",
+      "pointToken": "0VmDkfU",
+      "tokenSourceId": "2100330083",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-263",
+      "id": "263-00G72Mp",
       "group": "waterwheel-domain",
       "scene": "map02",
       "level": "map02_lv001",
@@ -15613,10 +16702,14 @@
       ],
       "status": "selected-unrun",
       "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
-      "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter."
+      "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter.",
+      "legacyCaseId": "v250-263",
+      "pointToken": "00G72Mp",
+      "tokenSourceId": "10100030166",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-264",
+      "id": "264-0nUxYU8",
       "group": "waterwheel-domain",
       "scene": "map02",
       "level": "map02_lv001",
@@ -15680,10 +16773,14 @@
       ],
       "status": "selected-unrun",
       "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
-      "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter."
+      "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter.",
+      "legacyCaseId": "v250-264",
+      "pointToken": "0nUxYU8",
+      "tokenSourceId": "10100350025",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-265",
+      "id": "265-08CAj73",
       "group": "waterwheel-domain",
       "scene": "map02",
       "level": "map02_lv003",
@@ -15747,10 +16844,14 @@
       ],
       "status": "selected-unrun",
       "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
-      "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter."
+      "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter.",
+      "legacyCaseId": "v250-265",
+      "pointToken": "08CAj73",
+      "tokenSourceId": "23300120142",
+      "tokenRole": "interactive"
     },
     {
-      "id": "v250-266",
+      "id": "266-0csZhw4",
       "group": "waterwheel-domain",
       "scene": "map02",
       "level": "map02_lv003",
@@ -15814,7 +16915,11 @@
       ],
       "status": "selected-unrun",
       "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
-      "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter."
+      "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter.",
+      "legacyCaseId": "v250-266",
+      "pointToken": "0csZhw4",
+      "tokenSourceId": "23300050057",
+      "tokenRole": "interactive"
     }
   ],
   "distribution": {
@@ -16135,5 +17240,11 @@
         "terminalScene": true
       }
     }
-  ]
+  ],
+  "naming": {
+    "format": "NNN-{seven-character point token}",
+    "codec": "talos/src/services/routing/pointToken.ts#encodePointIdToken",
+    "source": "Numeric target entity ID; conveyor contacts use their real source group actor ID.",
+    "geometryProbeCount": 6
+  }
 }

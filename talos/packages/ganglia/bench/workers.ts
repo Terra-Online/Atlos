@@ -74,7 +74,7 @@ export type WorkerReply =
       catalog?: CatalogStats;
     }
   | { type: 'verified'; id: number; evaluation: Evaluation }
-  | { type: 'event'; id: number; event: RouteEvent }
+  | { type: 'event'; id: number; event: RouteEvent; memory?: Memory; detail?: string }
   | { type: 'region'; files: RegionFiles }
   | { type: 'control'; id: number; catalog?: CatalogStats; memory?: Memory }
   | { type: 'error'; id: number; error: string }
@@ -120,9 +120,12 @@ export async function prepareWorkerSolver(options: {
   entry?: URL;
   timeoutMs?: number;
   cancellationGraceMs?: number;
+  /** Optional initial bootstrap bound; heavy diagnostic work belongs to solve. */
+  startupTimeoutMs?: number;
   preparation?: WorkerSetup['preparation'];
   onRegion?: (files: RegionFiles) => void;
   onResult?: (query: RouteQuery, result: WorkerResult) => void;
+  onEvent?: (query: RouteQuery, event: RouteEvent, memory?: Memory, detail?: string) => void;
 }) {
   const timeoutMs = options.timeoutMs ?? QUERY_SLO_MS;
   const cancellationGraceMs = options.cancellationGraceMs ?? 1000;
@@ -134,6 +137,13 @@ export async function prepareWorkerSolver(options: {
     throw new Error('Invalid worker count');
   if (options.preparation && options.count !== 1)
     throw new Error('Preparation requires one worker');
+  if (
+    options.startupTimeoutMs !== undefined &&
+    (!Number.isSafeInteger(options.startupTimeoutMs) ||
+      options.startupTimeoutMs <= 0 ||
+      options.startupTimeoutMs > QUERY_SLO_MS)
+  )
+    throw new Error('Invalid startup timeout');
   const startup = performance.now();
   const config = { ...options.config };
   if (!Number.isSafeInteger(config.batchConcurrency) || config.batchConcurrency < 1)
@@ -326,13 +336,21 @@ export async function prepareWorkerSolver(options: {
       slot.ready = false;
       let ready = false;
       // Recovery includes training and must not hang outside the query watchdog.
-      const restorationTimer = trainingQueries.length
-        ? setTimeout(() => {
-            const error = new Error('Worker training restoration exceeded its deadline');
-            reject(error);
-            fail(error);
-          }, timeoutMs + cancellationGraceMs)
-        : undefined;
+      const startupDeadline = trainingQueries.length
+        ? timeoutMs + cancellationGraceMs
+        : options.startupTimeoutMs;
+      const restorationTimer =
+        startupDeadline !== undefined
+          ? setTimeout(() => {
+              const error = new Error(
+                trainingQueries.length
+                  ? 'Worker training restoration exceeded its deadline'
+                  : 'Worker startup exceeded its deadline',
+              );
+              reject(error);
+              fail(error);
+            }, startupDeadline)
+          : undefined;
       const clearRestoration = () => clearTimeout(restorationTimer);
       worker.once('exit', clearRestoration);
 
@@ -399,6 +417,8 @@ export async function prepareWorkerSolver(options: {
           if (message.type === 'event') {
             if (task.interruption) return;
             try {
+              if (message.memory) sample(slot, message.memory);
+              options.onEvent?.(task.message.query, message.event, message.memory, message.detail);
               task.options.onEvent?.(message.event);
             } catch (error) {
               interrupt(slot, 'aborted', error);
@@ -538,7 +558,12 @@ export async function prepareWorkerSolver(options: {
     if (closed) return Promise.reject(new Error('Scene worker solver is closed'));
     return new Promise<RouteResult>((resolve, reject) => {
       const task: Task = {
-        message: { type: 'solve', id: ++serial, query, events: Boolean(solveOptions.onEvent) },
+        message: {
+          type: 'solve',
+          id: ++serial,
+          query,
+          events: Boolean(solveOptions.onEvent || options.onEvent),
+        },
         options: solveOptions,
         enqueued: performance.now(),
         workerIndex,

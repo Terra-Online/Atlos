@@ -4,6 +4,8 @@ import type { InteractionGoal, LocomotionOptions } from '#@/src/movement.ts';
 import type { GroundOptions } from '#@/src/route.ts';
 
 export type PhysicalGround = {
+  /** Explicit loaded tiles for sparse physical snapshots; absent on untiled inputs. */
+  tiles?: { x: number; z: number }[];
   surfaces: Surface[];
   options: GroundOptions & { profile: NonNullable<GroundOptions['profile']> };
   build?: Partial<BuildOptions & { tileCells: number }>;

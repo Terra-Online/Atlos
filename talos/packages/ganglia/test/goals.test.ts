@@ -117,6 +117,43 @@ test('indexes a snapshot and serves independent repeated queries without mutatio
   assert.deepEqual(source, [1, 0.2, 1]);
 });
 
+test('bounded projection history preserves witnesses through entry and witness-count churn', () => {
+  const surfaces = Array.from({ length: 1024 }, (_, i) => ground(`floor-${i}`, 0, 2));
+  const project = createGoalProjector(surfaces);
+  const empty = { interaction: { radius: 0 } };
+  for (let i = 0; i < 70_000; i++) assert.equal(project([100 + i, 0, 0], empty).length, 0);
+  // Broad cached results exhaust the witness allowance before the entry allowance,
+  // including a transition from a history consisting entirely of empty proofs.
+  for (let i = 0; i < 130; i++) {
+    const point: Vec3 = [1, i / 1000, 1];
+    const result = project(point, { interaction: { radius: 1 } });
+    assert.equal(result.length, surfaces.length);
+    assert.equal(result[0].surface, 'floor-0');
+    assert.equal(result.at(-1)!.surface, 'floor-1023');
+    result[0].position[1] = 100;
+    assert.equal(project(point, { interaction: { radius: 1 } })[0].position[1], 0);
+  }
+  assert.deepEqual(project([100, 0, 0], empty), []);
+  closePoint(project([1, 0, 1], { interaction: { radius: 1 } })[0].position, [1, 0, 1]);
+  const broad = createGoalProjector([...surfaces, ground('uncached', 0, 2)]);
+  const values = broad([1, 0, 1], { interaction: { radius: 1 } });
+  values[0].position[1] = 100;
+  assert.equal(broad([1, 0, 1], { interaction: { radius: 1 } }).length, 1025);
+  assert.equal(broad([1, 0, 1], { interaction: { radius: 1 } })[0].position[1], 0);
+});
+
+test('closest projection FIFO churn retains isolated witnesses and empty-result semantics', () => {
+  const project = createGoalProjector([ground('floor', 0, 2)]);
+  const options = { interaction: { radius: 0.5 } };
+  for (let i = 0; i < 9_000; i++)
+    assert.equal(project.closest([100 + i, 0, 0], options), undefined);
+  const point: Vec3 = [1, 0.2, 1];
+  const result = project.closest(point, options)!;
+  result.position[1] = 100;
+  closePoint(project.closest(point, options)!.position, [1, 0, 1]);
+  assert.equal(project.closest([100, 0, 0], options), undefined);
+});
+
 test('rejects malformed inputs and ignores surfaces without standing area', () => {
   assert.throws(
     () =>

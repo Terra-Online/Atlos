@@ -22,5 +22,18 @@ const presets: Record<string, Workload> = {
 
 export async function readWorkload(name = 'map02'): Promise<Workload> {
   if (presets[name]) return presets[name];
-  return { cases: JSON.parse(await readFile(name, 'utf8')), directory: '' };
+  const cases: unknown = JSON.parse(await readFile(name, 'utf8'));
+  if (
+    !Array.isArray(cases) ||
+    cases.some(
+      (item) =>
+        item &&
+        typeof item === 'object' &&
+        ('setup' in item || 'scene' in item || 'assertions' in item),
+    )
+  )
+    throw new Error(
+      'Scenario manifests require bench/mechanism-run.ts; do not discard scene/setup to score them as query arrays',
+    );
+  return { cases, directory: '' };
 }

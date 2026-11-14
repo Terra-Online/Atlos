@@ -8,17 +8,21 @@ import { verticalProjectionCandidates } from '#@/src/v1/geo/support-projector.ts
 import { projectPoint } from '#@/src/v1/geo/surfaces.ts';
 import { jumpDuration } from '#@/src/v1/motion/jumps.ts';
 import { registerCatalogSurfaces } from '#@/src/v1/route/action-catalog.ts';
+import type { CandidateEvaluation, EvaluateCandidate } from '#@/src/v1/route/candidate.ts';
 import { pruneGroundDetours } from '#@/src/v1/route/ground-detours.ts';
 import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { planJumpRoute, type InitialGroundProof } from '#@/src/v1/route/jump-planner.ts';
 import { refineGoalGround } from '#@/src/v1/solver/ground-refinement.ts';
 import { createDeviceConnections as deviceConnections } from '#@/src/v1/solver/physical/devices.ts';
+import type { ExecutionFailure } from '#@/src/v1/solver/physical/execution.ts';
 import { planFollowingRoute } from '#@/src/v1/solver/physical/following-route.ts';
+import type { localGround } from '#@/src/v1/solver/physical/local-ground.ts';
 import { movingGround } from '#@/src/v1/solver/physical/moving-ground.ts';
 import {
   type SupportBox,
   createMovingRouteAnnotator,
 } from '#@/src/v1/solver/physical/moving-route.ts';
+import type { CacheScope, CacheStats } from '#@/src/v1/solver/physical/preparation.ts';
 export type PhysicalQuery = {
   arrival: GroundArrival & { groundRange?: [number, number] };
   target: Vec3;
@@ -29,11 +33,14 @@ export type PhysicalQuery = {
 
 export interface PhysicalCache {
   memo<T>(
-    slot: 'ground' | 'collision' | 'devices' | 'moving' | 'refinement' | 'execution',
+    slot: 'ground' | 'collision' | 'devices' | 'moving' | 'refinement' | 'execution' | 'repair',
     key: string,
-    create: () => T | Promise<T>,
+    create: (reserve?: (surfaces: number) => void) => T | Promise<T>,
+    scope?: CacheScope,
   ): Promise<{ value: T; reused: boolean }>;
   release(slot: 'ground' | 'moving'): void;
+  begin?(generation: string): void;
+  stats?(): CacheStats;
 }
 export interface PhysicalResult {
   status: string;
@@ -45,6 +52,7 @@ export interface PhysicalResult {
 }
 export interface PhysicalContext {
   generation?: string;
+  groundRevision?: string;
   cache?: PhysicalCache;
   progress?: (progress: Record<string, unknown>) => void;
   emit: (
@@ -52,6 +60,14 @@ export interface PhysicalContext {
     optimizing: boolean,
     diagnostics: Record<string, unknown>,
   ) => void | Promise<void>;
+  /** Only executable candidates may bound later discovery. */
+  prepareEvaluator?: () => Promise<EvaluateCandidate>;
+  localGround?: (arrival: GroundArrival) => Promise<ReturnType<typeof localGround> | undefined>;
+  accept?: (
+    route: Route,
+  ) =>
+    | { route: Route; rejection?: ExecutionFailure; repair?: boolean }
+    | Promise<{ route: Route; rejection?: ExecutionFailure; repair?: boolean }>;
   effort?: 'walking' | 'devices' | 'all';
 }
 const targetSupport = (surfaces: Surface[], target: Vec3) => {
@@ -85,13 +101,16 @@ export const solvePhysicalRoute = async (
   const started = performance.now();
   const progress = context.progress ?? (() => {});
   const generation = context.generation ?? '';
+  context.cache?.begin?.(generation);
+  let groundKey = JSON.stringify([generation, request.walls, context.groundRevision ?? null]);
   const memo = async <T>(
     slot: Parameters<PhysicalCache['memo']>[0],
     key: string,
-    create: () => T | Promise<T>,
+    create: (reserve?: (surfaces: number) => void) => T | Promise<T>,
+    parent?: object,
   ) =>
     context.cache
-      ? context.cache.memo(slot, key, create)
+      ? context.cache.memo(slot, key, create, { view: groundKey, ...(parent ? { parent } : {}) })
       : { value: await create(), reused: false };
   const profile = ground.options.profile;
   const options: GroundOptions & { walls: Wall[] } = {
@@ -113,6 +132,25 @@ export const solvePhysicalRoute = async (
     timingMs: timing,
     truncated: false,
   };
+  let repairRequested = false;
+  let executionMs = 0;
+  const recordEvaluation = (result: CandidateEvaluation) => {
+    if (result.rejection) {
+      diagnostics.executionRejections = Number(diagnostics.executionRejections ?? 0) + 1;
+      diagnostics.lastExecutionRejection = result.rejection;
+      if (result.rejection.reason === 'coverage-missing') diagnostics.truncated = true;
+    }
+    if (result.route.status === 'complete') repairRequested = false;
+    else repairRequested ||= result.repair === true;
+    return result;
+  };
+  const accept = async (route: Route): Promise<Route> => {
+    if (route.status !== 'complete' || !context.accept) return route;
+    const executionStart = performance.now();
+    const result = await context.accept(route);
+    executionMs += performance.now() - executionStart;
+    return recordEvaluation(result).route;
+  };
   let collisionQueryStats: (() => unknown) | undefined;
   let annotateMovingRoute: ReturnType<typeof createMovingRouteAnnotator> | undefined;
   const emit = async (
@@ -126,6 +164,13 @@ export const solvePhysicalRoute = async (
     },
     optimizing = false,
   ) => {
+    if (
+      result.status === 'unavailable' &&
+      !repairRequested &&
+      (diagnostics.lastExecutionRejection as ExecutionFailure | undefined)?.reason ===
+        'walk-unproved'
+    )
+      diagnostics.truncated = true;
     if (collisionQueryStats) {
       diagnostics.collisionQueries = collisionQueryStats();
     }
@@ -139,7 +184,9 @@ export const solvePhysicalRoute = async (
     if (result.route && annotateMovingRoute) {
       timing.annotations = (timing.annotations ?? 0) + performance.now() - annotationStart;
     }
+    timing.execution = executionMs;
     timing.total = performance.now() - started;
+    if (context.cache?.stats) diagnostics.prepareCache = context.cache.stats();
     await context.emit(
       { ...result, ...(supportBoxes.length ? { supportBoxes } : {}) },
       optimizing,
@@ -206,13 +253,14 @@ export const solvePhysicalRoute = async (
   }
   let goal = target?.position ?? request.target;
   progress({ phase: 'ground-search', surfaces: ground.surfaces.length });
-  const groundStart = performance.now();
-  let groundKey = JSON.stringify([generation, request.walls]);
+  const groundStart = performance.now(),
+    groundExecution = executionMs;
   let groundPlanner: ReturnType<typeof createGroundPlanner> | undefined;
   {
-    const preparedGround = await memo('ground', groundKey, () =>
-      createGroundPlanner(ground.surfaces, { ...options }),
-    );
+    const preparedGround = await memo('ground', groundKey, (reserve) => {
+      reserve?.(ground.surfaces.length);
+      return createGroundPlanner(ground.surfaces, { ...options });
+    });
     prepareReuse.ground = preparedGround.reused;
     groundPlanner = preparedGround.value;
   }
@@ -227,9 +275,11 @@ export const solvePhysicalRoute = async (
   // Publish supported walking feasibility before indexing airborne collision and
   // spending the optional action-discovery budget. The parent keeps polling for
   // a faster complete route while this atomic provisional result is available.
-  let walking = groundPlanner.plan([arrival], goal, {
-    interaction: request.interaction,
-  });
+  let walking = await accept(
+    groundPlanner.plan([arrival], goal, {
+      interaction: request.interaction,
+    }),
+  );
   if (walking.status !== 'complete') {
     const rounded = input.roundedWalls ?? options.walls;
     if (rounded.some((wall, index) => wall !== options.walls[index])) {
@@ -237,18 +287,54 @@ export const solvePhysicalRoute = async (
       // Unrelated refinements must not reorder a completed graph's bounded
       // shortcut discovery and displace previously covered action chains.
       options.walls = rounded;
-      groundKey = JSON.stringify([generation, rounded]);
+      groundKey = JSON.stringify([generation, rounded, context.groundRevision ?? null]);
       groundPlanner = undefined;
-      const prepared = await memo('ground', groundKey, () =>
-        createGroundPlanner(ground.surfaces, { ...options }),
-      );
+      const prepared = await memo('ground', groundKey, (reserve) => {
+        reserve?.(ground.surfaces.length);
+        return createGroundPlanner(ground.surfaces, { ...options });
+      });
       groundPlanner = prepared.value;
       prepareReuse.roundGround = prepared.reused;
-      walking = groundPlanner.plan([arrival], goal, { interaction: request.interaction });
+      walking = await accept(
+        groundPlanner.plan([arrival], goal, { interaction: request.interaction }),
+      );
       diagnostics.roundOccupancy = { refined: true, groundStatus: walking.status };
     }
   }
-  let initialGround: InitialGroundProof = {
+  if (
+    walking.status !== 'complete' &&
+    !context.groundRevision &&
+    !request.waypoints?.length &&
+    context.localGround
+  ) {
+    progress({ phase: 'local-ground-search' });
+    const localStart = performance.now();
+    const local = await context.localGround(arrival);
+    timing.localGround = performance.now() - localStart;
+    if (local) {
+      diagnostics.localGround = local.diagnostics;
+      diagnostics.truncated ||=
+        local.diagnostics.truncated || Boolean(local.diagnostics.coverageMissing);
+      for (const proposal of local.routes) {
+        const candidate = await accept(proposal);
+        if (
+          candidate.status === 'complete' &&
+          (walking.status !== 'complete' || candidate.cost < walking.cost)
+        )
+          walking = candidate;
+      }
+      // A later rejected smoothing proposal must not leave repair pending after
+      // the original physically executed chain already established feasibility.
+      if (walking.status === 'complete') walking = await accept(walking);
+    }
+  }
+  if (repairRequested && walking.status !== 'complete') {
+    timing.ground =
+      performance.now() - groundStart - (executionMs - groundExecution) - (timing.localGround ?? 0);
+    await emit({ status: 'unavailable', reason: 'physical-walk-rejected' });
+    return;
+  }
+  let initialGround: InitialGroundProof | undefined = {
     planner: groundPlanner,
     surfaces: ground.surfaces,
     arrival,
@@ -257,7 +343,8 @@ export const solvePhysicalRoute = async (
     connections: [...(options.connections ?? [])],
     route: walking,
   };
-  timing.ground = performance.now() - groundStart;
+  timing.ground =
+    performance.now() - groundStart - (executionMs - groundExecution) - (timing.localGround ?? 0);
   // Interactive optimization starts from an existing supported route. Bound its
   // optional shortcut comparison separately from unresolved reachability work.
   if (walking.status === 'complete') {
@@ -267,7 +354,7 @@ export const solvePhysicalRoute = async (
         status: 'candidate',
         route: walking,
         connections: [],
-        groundedTarget: walking.points.at(-1),
+        groundedTarget: request.interaction ? walking.points.at(-1) : goal,
       },
       !(context.effort === 'walking') && !(context.effort === 'devices' && !deviceInput),
     );
@@ -367,7 +454,8 @@ export const solvePhysicalRoute = async (
   let knownConnections = options.connections ?? [];
   if (deviceInput) {
     progress({ phase: 'device-links' });
-    const deviceStart = performance.now();
+    const deviceStart = performance.now(),
+      deviceExecution = executionMs;
     const deviceKey = JSON.stringify([groundKey, deviceInput]);
     const preparedDevices = await memo('devices', deviceKey, () =>
       deviceConnections(deviceInput, {
@@ -394,7 +482,7 @@ export const solvePhysicalRoute = async (
       progress({ phase: 'moving-supports', devices: deviceInput.movingSupports.length });
       const movingStart = performance.now();
       const baseProject = groundPlanner.project;
-      const moving = await memo('moving', deviceKey, async () => {
+      const moving = await memo('moving', deviceKey, async (reserve) => {
         const added = await movingGround(deviceInput.movingSupports!, geometry, world, {
           build: {
             profile,
@@ -409,11 +497,17 @@ export const solvePhysicalRoute = async (
           surfaces,
           speed: options.speed,
         });
-        const combined = [...surfaces, ...added.surfaces];
+        const combined = added.surfaces.length ? [...surfaces, ...added.surfaces] : surfaces;
+        const portals = added.portals.length
+          ? [...(options.portals ?? []), ...added.portals]
+          : options.portals;
         if (added.surfaces.length) {
-          context.cache?.release('ground');
+          // The seed proof is reusable only with this exact planner and mesh.
+          // Do not retain its replaced heavy graph through the full search.
+          initialGround = undefined;
           groundPlanner = undefined;
         }
+        reserve?.(combined.length);
         const augmented = added.surfaces.length
           ? deviceConnections(deviceInput, {
               surfaces: combined,
@@ -427,6 +521,7 @@ export const solvePhysicalRoute = async (
         const knownIds = new Set(devices.connections.map((connection) => connection.id));
         return {
           ...added,
+          portals,
           additionalDevices: augmented.connections.filter(
             (connection) => !knownIds.has(connection.id),
           ),
@@ -435,12 +530,18 @@ export const solvePhysicalRoute = async (
           planner: added.surfaces.length
             ? createGroundPlanner(combined, {
                 ...options,
-                portals: [...(options.portals ?? []), ...added.portals],
+                portals,
                 connections: [],
               })
             : groundPlanner,
         };
       });
+      if (
+        initialGround &&
+        (initialGround.planner !== moving.value.planner ||
+          initialGround.surfaces !== moving.value.surfaces)
+      )
+        initialGround = undefined;
       world = moving.value.world;
       surfaces = moving.value.surfaces;
       const annotationStart = performance.now();
@@ -454,7 +555,7 @@ export const solvePhysicalRoute = async (
       });
       timing.annotationPreparation = performance.now() - annotationStart;
       groundPlanner = moving.value.planner;
-      options.portals = [...(options.portals ?? []), ...moving.value.portals];
+      options.portals = moving.value.portals;
       options.connections = [
         ...options.connections,
         ...moving.value.connections,
@@ -481,7 +582,14 @@ export const solvePhysicalRoute = async (
           connections: options.connections,
         })
       : walking;
-    // Preserve the raw search baseline before detour pruning changes its cost
+    connected = await accept(connected);
+    if (repairRequested && connected.status !== 'complete' && knownRoute.status !== 'complete') {
+      timing.devices =
+        performance.now() - deviceStart - (timing.moving ?? 0) - (executionMs - deviceExecution);
+      await emit({ status: 'unavailable', reason: 'physical-walk-rejected' });
+      return;
+    }
+    // Preserve the accepted baseline before detour pruning changes its cost
     // and therefore the optional jump-discovery comparison and sampling budget.
     if (options.connections.length)
       initialGround = {
@@ -495,7 +603,8 @@ export const solvePhysicalRoute = async (
       };
     if (connected.status === 'complete' && groundPlanner) {
       const comparison = pruneGroundDetours(connected, groundPlanner, input.locomotion);
-      connected = comparison.route;
+      const improved = await accept(comparison.route);
+      if (improved.status === 'complete') connected = improved;
       diagnostics.deviceDetours = {
         replacements: comparison.replacements,
         queries: comparison.queries,
@@ -508,7 +617,8 @@ export const solvePhysicalRoute = async (
       knownRoute = connected;
       knownConnections = options.connections;
     }
-    timing.devices = performance.now() - deviceStart - (timing.moving ?? 0);
+    timing.devices =
+      performance.now() - deviceStart - (timing.moving ?? 0) - (executionMs - deviceExecution);
     if (connected.status === 'complete') {
       limits.maxCandidates = Math.min(limits.maxCandidates ?? 640, 640);
       if (walking.status !== 'complete' || connected.cost < walking.cost) {
@@ -567,7 +677,8 @@ export const solvePhysicalRoute = async (
     diagnostics.followingSupports = following.diagnostics;
     diagnostics.truncated = diagnostics.truncated === true || following.diagnostics.truncated;
     timing.following = performance.now() - followingStart;
-    return following.route.status === 'complete' ? following : null;
+    const route = await accept(following.route);
+    return route.status === 'complete' ? { ...following, route } : null;
   };
   if (context.effort === 'devices') {
     if (knownRoute.status === 'complete') {
@@ -613,7 +724,7 @@ export const solvePhysicalRoute = async (
     const preparedRefinement = await memo(
       'refinement',
       JSON.stringify([groundKey, goal, request.interaction, model, surfaces.length]),
-      async () => {
+      async (reserve) => {
         if (!groundPlanner) {
           throw new Error('missing coarse ground preparation');
         }
@@ -627,24 +738,34 @@ export const solvePhysicalRoute = async (
         });
         if (refined.surfaces.length) {
           const combined = [...surfaces, ...refined.surfaces];
-          // Retain coarse preparation beside bounded target refinements. This
-          // avoids rebuilding shared geometry as independent queries alternate;
-          // binding and wall changes still invalidate the derived preparations.
+          // The shared planner budget decides whether coarse preparation can
+          // remain resident beside this target refinement.
+          initialGround = undefined;
           groundPlanner = undefined;
-          context.cache?.release('moving');
+          reserve?.(combined.length);
           return {
             refined,
             surfaces: combined,
+            portals: options.portals,
             planner: createGroundPlanner(combined, { ...options, connections: [] }),
           };
         }
-        return { refined, surfaces, planner: groundPlanner };
+        reserve?.(surfaces.length);
+        return { refined, surfaces, portals: options.portals, planner: groundPlanner };
       },
+      surfaces,
     );
     prepareReuse.refinement = preparedRefinement.reused;
     const { refined } = preparedRefinement.value;
+    if (
+      initialGround &&
+      (initialGround.planner !== preparedRefinement.value.planner ||
+        initialGround.surfaces !== preparedRefinement.value.surfaces)
+    )
+      initialGround = undefined;
     surfaces = preparedRefinement.value.surfaces;
     groundPlanner = preparedRefinement.value.planner;
+    options.portals = preparedRefinement.value.portals;
     diagnostics.refinement = { bounds: refined.bounds, addedSurfaces: refined.surfaces.length };
     timing.refinement = performance.now() - refineStart;
   }
@@ -671,8 +792,20 @@ export const solvePhysicalRoute = async (
     deviceInput?.movingSupports?.length || followingTarget ? null : ground.surfaces,
     ground.options.portals,
   );
+  const evaluatorStart = performance.now();
+  const evaluator = await context.prepareEvaluator?.();
+  executionMs += performance.now() - evaluatorStart;
+  const evaluateCandidate: EvaluateCandidate | undefined = evaluator
+    ? (candidate, query) => {
+        const start = performance.now();
+        const evaluation = evaluator(candidate, query);
+        executionMs += performance.now() - start;
+        return recordEvaluation(evaluation);
+      }
+    : undefined;
   progress({ phase: 'jump-discovery', goalFaces: candidates.length });
-  const searchStart = performance.now();
+  const searchStart = performance.now(),
+    searchExecution = executionMs;
   const result = planJumpRoute(
     surfaces,
     world,
@@ -692,12 +825,16 @@ export const solvePhysicalRoute = async (
       waypoints: request.waypoints,
       onProgress: progress,
       model,
+      evaluateCandidate,
     },
     initialGround,
   );
-  timing.search = performance.now() - searchStart;
+  timing.search = performance.now() - searchStart - (executionMs - searchExecution);
+  const truncated = diagnostics.truncated === true || result.diagnostics.truncated;
   Object.assign(diagnostics, result.diagnostics);
-  let { route, connections } = result;
+  diagnostics.truncated = truncated;
+  let connections = result.connections;
+  let route = await accept(result.route);
   if (
     knownRoute.status === 'complete' &&
     (route.status !== 'complete' || knownRoute.cost < route.cost)
@@ -706,14 +843,21 @@ export const solvePhysicalRoute = async (
     connections = knownConnections;
   }
   if (route.status === 'complete' && groundPlanner) {
-    const comparisonStart = performance.now();
+    const comparisonStart = performance.now(),
+      comparisonExecution = executionMs;
     const comparison = pruneGroundDetours(route, groundPlanner, input.locomotion);
-    route = comparison.route;
+    const improved = await accept(comparison.route);
+    if (improved.status === 'complete') route = improved;
     diagnostics.groundDetours = {
       replacements: comparison.replacements,
       queries: comparison.queries,
     };
-    timing.groundDetours = performance.now() - comparisonStart;
+    timing.groundDetours =
+      performance.now() - comparisonStart - (executionMs - comparisonExecution);
+  }
+  if (repairRequested && route.status !== 'complete') {
+    await emit({ status: 'unavailable', reason: 'physical-walk-rejected', connections });
+    return;
   }
   progress({ phase: 'route-search', connections: connections.length });
   if (route.status === 'complete') {

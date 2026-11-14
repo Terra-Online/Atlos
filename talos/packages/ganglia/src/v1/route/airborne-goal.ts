@@ -15,6 +15,7 @@ import {
 } from '#@/src/v1/motion/jumps.ts';
 import { boundaryLanding } from '#@/src/v1/motion/landings.ts';
 import { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
+import { evaluateCandidate } from '#@/src/v1/route/candidate.ts';
 import type { PlannerOptions, JumpResult } from '#@/src/v1/route/jump-planner.ts';
 import { movementGeometry } from '#@/src/v1/route/movement-geometry.ts';
 import { standingFoot, validateDiscovery } from '#@/src/v1/search/traversal.ts';
@@ -504,8 +505,7 @@ export function planAirborneGoal(
         segment.points.slice(1).reduce((sum, p, i) => sum + distance(p, segment.points[i]), 0),
     };
     if (options.locomotion) route = retimeGroundRoute(route, options.locomotion);
-    if (route.status !== 'complete' || (best.status === 'complete' && route.cost >= best.cost))
-      continue;
+    if (route.status !== 'complete') continue;
     for (let index = 0; index < route.segments.length; index++) {
       const part = route.segments[index],
         hit = findGoalHit(part.points, goal, interaction);
@@ -519,6 +519,9 @@ export function planAirborneGoal(
       };
       break;
     }
+    route = evaluateCandidate(route, { starts, goal, interaction }, options.evaluateCandidate);
+    if (route.status !== 'complete' || (best.status === 'complete' && route.cost >= best.cost))
+      continue;
     best = route;
     connections = [
       ...prefix.connections,

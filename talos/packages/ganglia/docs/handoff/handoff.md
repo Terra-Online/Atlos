@@ -21,9 +21,10 @@ inputs and profiles in ignored `.local/`; a Git push does not transfer them.
 The user-authorized shared 266-case mechanism definitions now live in
 [`bench/scenes/mechanisms/`](../../bench/scenes/mechanisms/README.md). They preserve
 queries, scenario setup, assertions and portable source references; raw assets
-remain local. The manifest requires runner adaptation and is not a plain
-`--workload` query array. It is selected and source-audited, not yet physically
-accepted. It supplements configured full-population performance acceptance in
+remain local. The manifest is consumed by `bench/mechanism-run.ts` in explicit
+`physical-diagnostic` mode; it is not a plain `--workload` query array. The runner
+applies scene/setup and independently verifies submissions, but the 266-case
+population has not completed physical acceptance. It supplements configured full-population performance acceptance in
 `AGENTS.md`; retained TS controls are reused and stress is opt-in. Unsupported
 per-case setup must not be silently ignored.
 
@@ -32,6 +33,51 @@ prototypes, alongside source export repairs and the shared acceptance definition
 It is not a completed map-scale acceptance or a measured speedup. Rust search has
 not been ported to the new joint-discovery or circular-contact rules; the shared
 verifier remains the acceptance authority.
+
+## TS mechanism diagnosis and acceptance, 2026-11-14
+
+Main case IDs are `001-{token}` through `266-{token}`, using the application's
+seven-character point codec. The 113 historical tokens are unchanged. Historical
+report IDs resolve through `legacy-id-map.csv`; six non-entity geometric queries
+remain intact in `geometry-probes.json` rather than receiving invented tokens.
+
+The diagnostic runner preserves frozen windows, resource overrides, source box
+ranges, allowed movable IDs and fixed collisions for other boxes. It retains whole
+flight/schedule/placement evidence, reports validity separately from actual
+mechanism use, and includes loading, preparation and replay under its request
+watchdog. It closes workers on completion or failure. Per-case scene roots allow
+on-demand source export without preloading all historical windows. Missing static
+facility imports are input failures; unresolved complex/source capabilities remain
+visible rather than becoming a completeness claim. Configured service scoring
+still requires training, catalog freeze and warmup through its existing entry.
+
+Current real diagnostics have exposed unsupported submitted walks on 018 and
+rejected walking proposals suppressing further search on 042. Neither is accepted
+as a completed sample. Missing static-support imports in the historical physical
+exports were independently identified and corrected for three control windows;
+those new inputs require their own comparisons. Both corrected 021 diagnostics
+aborted at the 6 GiB heap limit; the second reached action search with the bounded
+preparation cache. A 022 attempt exhausted the request deadline. These remain active correctness/memory gaps, not
+successful regressions or accepted speedups.
+
+A bounded local walking proposal now runs after rejected original navigation,
+before raw rebuilding. It samples a half-metre lattice inside the unchanged raw
+coverage, with at most 2048 expansions and 64 physical shortcut proofs. Every
+connector and its support bends pass the existing physical rules. Original and
+shortened paths remain separate proposals; full execution/resource cost chooses
+the incumbent, then ordinary improvement continues. The execution snapshot is
+reused. Ordered-waypoint, already-rebuilt and authored-connection inputs currently
+skip this proposal. The authored guard preserves an existing faster rope route;
+removing it requires keeping local incumbents while still allowing better known
+actions and bounded rebuilding to compete. A missed proposal proves no
+unreachability and does not remove ordinary action discovery.
+
+Both cold and warm ordinary 022 queries now form independently valid complete
+routes, in 54.786 and 40.839 seconds, modeled time 3.427270 seconds. Per-point
+quality and matched timing acceptance remain pending. Its
+best tested local shortcut version costs 3.344167 seconds against an unconfirmed
+historical protection target of 3.321579 seconds. Geometry-only shortening also
+produced a slower resource schedule; both witnesses are retained for comparison.
 
 ## Benchmark request lifecycle
 
@@ -807,7 +853,7 @@ Prepared movement geometry reuses immutable support, portals, graph, SCCs, proje
 
 Within one `solveJumpRoute` query, verified nonterminal actions remain available to later arrivals without consuming their discovery allowance again. This is a query-local pool, not a cross-goal or persistent global action cache. Origins retain their own link allowances, connection identities remain unique, and partial connections are deduplicated on unsuccessful multi-origin results. Failed prefix-cache entries record the cost bound under which they were searched and can be retried when that bound widens.
 
-The patched extractor's `route-cache.ts` retains one physical input region, with a default 512 MiB serialized-input admission threshold and one entry per prepared slot. Input-file identity changes clear the generation. Replacing `ground` invalidates refinement, device and moving preparation, and moving replacement invalidates refinement. Ground, round-occupancy and refined variants can therefore displace each other. Source/content-bound tile caching and bounded endpoint projection reuse already exist, while multi-region prepared action assets remain open. `bounds.mjs` also already uses packed build columns and parallel nearest-heap columns, and `jumpDuration` avoids phase-object allocation during candidate retrieval.
+The patched extractor's `route-cache.ts` retains one physical input region with a default 512 MiB serialized-input admission threshold. Input-file identity changes clear the preparation generation. Ganglia physical preparation retains two wall views for raw and rounded constraints, with view-local device/moving results and two parent-bound target refinements. Planner-bearing preparations share a conservative 524,288-surface reference budget, reserved before construction; oversized individual graphs may solve without remaining cached. Snapshot collision/execution/repair authority is shared across wall views. This limits cache residency rather than caller-owned or construction-peak memory. Diagnostics expose hit, miss and eviction reasons; a higher hit rate alone establishes no speedup. Source/content-bound tile caching and bounded endpoint projection reuse already exist, while multi-region prepared action assets remain open. `bounds.mjs` also already uses packed build columns and parallel nearest-heap columns, and `jumpDuration` avoids phase-object allocation during candidate retrieval.
 
 ## Dynamics, inverse constraints and candidate pruning
 
@@ -1034,7 +1080,7 @@ the existing support index, preserving the original vertical/range checks.
 
 Current placement requires flat static-ground support. Stacking and suspended
 placement have not been confirmed and are not enabled. Synthetic two- and three-box
-relay cases require joint use and pass; the bounded real v250-260 probe attempts
+relay cases require joint use and pass; the bounded real 260-06gyJ7F probe (legacy v250-260) attempts
 26 layouts without a verified route and remains truncated. It does not establish
 real-scene multi-box success or impossibility. Rust can bind supplied joint layouts,
 but its automatic placement discovery remains single-box.

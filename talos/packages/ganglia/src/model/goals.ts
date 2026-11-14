@@ -199,6 +199,12 @@ export function createGoalProjector(surfaces: Surface[]): GoalProjector {
   // Keep ownership separate from returned witnesses and bound arbitrary query history.
   const projections = new Map<string, GoalProjection[]>();
   const closestProjections = new Map<string, GoalProjection | null>();
+  // A separate insertion queue avoids scanning Map tombstones under sustained
+  // FIFO churn. It grows only with actual occupancy and releases evicted keys.
+  const projectionOrder: (string | undefined)[] = [];
+  const closestOrder: (string | undefined)[] = [];
+  let projectionHead = 0;
+  let closestHead = 0;
   let witnesses = 0;
   const copyValue = (value: GoalProjection) => ({
     ...value,
@@ -220,11 +226,14 @@ export function createGoalProjector(surfaces: Surface[]): GoalProjector {
     // misleading memory bound. Return large results without caching them.
     if (values.length > 1024) return values;
     while (projections.size >= 65536 || witnesses + values.length > 65536) {
-      const oldest = projections.keys().next().value!;
+      const oldest = projectionOrder[projectionHead]!;
+      projectionOrder[projectionHead] = undefined;
+      projectionHead = (projectionHead + 1) % 65536;
       witnesses -= projections.get(oldest)!.length;
       projections.delete(oldest);
     }
     witnesses += values.length;
+    projectionOrder[(projectionHead + projections.size) % 65536] = key;
     projections.set(key, copy(values));
     return values;
   };
@@ -319,8 +328,12 @@ export function createGoalProjector(surfaces: Surface[]): GoalProjector {
         bestIndex = surface.index;
       }
     }
-    if (closestProjections.size >= 4096)
-      closestProjections.delete(closestProjections.keys().next().value!);
+    if (closestProjections.size >= 4096) {
+      closestProjections.delete(closestOrder[closestHead]!);
+      closestOrder[closestHead] = undefined;
+      closestHead = (closestHead + 1) % 4096;
+    }
+    closestOrder[(closestHead + closestProjections.size) % 4096] = key;
     closestProjections.set(key, best ? copyValue(best) : null);
     return best;
   };

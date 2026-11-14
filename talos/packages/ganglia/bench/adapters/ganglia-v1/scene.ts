@@ -45,19 +45,26 @@ export type GameAdapter = {
   ): Promise<{ input?: PhysicalInput; solve(options: { work: PhysicalWork }): Promise<Report> }>;
 };
 
+export interface SceneHooks {
+  kernelRoot?: string;
+  transformInput?: (input: PhysicalInput) => PhysicalInput;
+  createPreparation?: typeof createPhysicalPreparation;
+}
+
 export async function loadScene(
   dataRoot: string,
   extractor: string,
   concurrency: number,
   scene = 'map02',
   build?: RegionBuild,
+  hooks: SceneHooks = {},
 ) {
   const loadingStarted = performance.now();
   const dataset = await loadSceneData(dataRoot, scene, build);
   const entry = resolve(extractor, 'packages/extractor/src/game/physical-input.ts');
   const resolvedKernel = createRequire(entry).resolve('@opendfieldmap/ganglia/solver');
   const kernelRoot = resolve(dirname(resolvedKernel), '../..');
-  const sourceRoot = fileURLToPath(new URL('../../../', import.meta.url));
+  const sourceRoot = hooks.kernelRoot ?? fileURLToPath(new URL('../../../', import.meta.url));
   const kernelDigest = async (base: string) => {
     const hash = createHash('sha256');
     for (const name of (await readdir(resolve(base, 'src'), { recursive: true })).sort()) {
@@ -90,6 +97,7 @@ export async function loadScene(
     preparePhysicalRoute,
     concurrency,
     gameAdapterSha256,
+    hooks,
   );
   prepared.timings.preparationMs = performance.now() - loadingStarted - inputLoadMs;
   return {
@@ -136,7 +144,9 @@ export function prepareSceneResources(
   preparePhysicalRoute: GameAdapter['preparePhysicalRoute'],
   concurrency: number,
   gameAdapterSha256: string,
+  hooks: SceneHooks = {},
 ) {
+  const transform = hooks.transformInput ?? ((input: PhysicalInput) => input);
   let inputFailure: { error: unknown } | undefined;
   const failInput = (error: unknown): never => {
     inputFailure ??= { error };
@@ -208,7 +218,7 @@ export function prepareSceneResources(
             },
           },
         );
-        const input = normalized.input;
+        const input = normalized.input && transform(normalized.input);
         if (!input) throw new Error('Exporter did not provide normalized verifier input');
         physicalInputs.set(region.binding, { input, region });
       }
@@ -218,7 +228,7 @@ export function prepareSceneResources(
   // Lane-local caches keep mutable preparation isolated across concurrent solves.
   // Timed input reads are served from the preloaded snapshot.
   const caches = Array.from({ length: concurrency }, () => {
-    const preparation = createPhysicalPreparation();
+    const preparation = (hooks.createPreparation ?? createPhysicalPreparation)();
     const cache = {
       region: undefined as PhysicalRegion | undefined,
       async begin(files: PhysicalFiles) {
@@ -240,6 +250,7 @@ export function prepareSceneResources(
         solve: (...args: Parameters<typeof preparation.solve>) => {
           if (!thisRegion()) throw new Error('Missing verifier input region');
           const region = thisRegion()!;
+          args[0] = transform(args[0]);
           const key = region.binding + JSON.stringify(args[0].ground.options.walls);
           if (!physicalInputs.has(key)) physicalInputs.set(key, { input: args[0], region });
           return preparation.solve(...args);
@@ -301,13 +312,14 @@ export function prepareSceneResources(
         });
         if (!normalized.input)
           throw new Error('Game adapter does not expose normalized physical facts');
+        const input = transform(normalized.input);
         physicalInputs.set(JSON.stringify([job.region.binding, request.walls]), {
-          input: normalized.input,
+          input,
           region: job.region,
         });
         timings.normalizationMs += performance.now() - started;
         return {
-          input: normalized.input,
+          input,
           revision: JSON.stringify([job.region.binding, gameAdapterSha256, request.walls]),
           coverage: {
             bounds: job.region.ground.build.bounds,

@@ -11,6 +11,11 @@ import {
 import { planAirborneGoal } from '#@/src/v1/route/airborne-goal.ts';
 import { planBoostedRoute } from '#@/src/v1/route/boosted-route.ts';
 import {
+  candidatePlanner,
+  evaluateCandidate,
+  type EvaluateCandidate,
+} from '#@/src/v1/route/candidate.ts';
+import {
   type GroundPlanner,
   createGroundPlanner,
   groundPreparation,
@@ -27,6 +32,7 @@ import {
 import { type DiscoveryDiagnostics, findJumpConnections } from '#@/src/v1/search/traversal.ts';
 
 export interface JumpRouteOptions extends GroundOptions {
+  evaluateCandidate?: EvaluateCandidate;
   boosts?: SpeedBoost[];
   /** Optimistic coarse direction samples. At most 128 finite positions. These only
    * guide action discovery; the final route need not visit them. */
@@ -167,9 +173,11 @@ function solveJumpRoute(
     truncated: false,
     searches: [],
   };
+  const plan = candidatePlanner(planner, options.evaluateCandidate);
   let best =
-      initial ??
-      planner.plan(starts, goal, {
+      (initial &&
+        evaluateCandidate(initial, { starts, goal, interaction }, options.evaluateCandidate)) ??
+      plan(starts, goal, {
         interaction,
         endpointTolerance: options.endpointTolerance,
         connections: options.connections ?? [],
@@ -237,7 +245,7 @@ function solveJumpRoute(
     let incumbent =
       starts.length === 1 && connections.length === (options.connections?.length ?? 0)
         ? best
-        : planner.plan([arrival], goal, {
+        : plan([arrival], goal, {
             interaction,
             endpointTolerance: options.endpointTolerance,
             connections,
@@ -264,7 +272,7 @@ function solveJumpRoute(
       connections.push(...search(proposal));
       remaining = stage === 'relations' ? 0 : remaining - proposalBudget;
       if (proposal.connections.length)
-        incumbent = planner.plan([arrival], goal, {
+        incumbent = plan([arrival], goal, {
           interaction,
           endpointTolerance: options.endpointTolerance,
           connections,
@@ -327,7 +335,7 @@ function solveJumpRoute(
       exhausted.clear();
       batches[side] = Math.min(128, remaining);
       connections.push(...additions);
-      incumbent = planner.plan([arrival], goal, {
+      incumbent = plan([arrival], goal, {
         interaction,
         endpointTolerance: options.endpointTolerance,
         connections,
@@ -382,7 +390,7 @@ function solveJumpRoute(
         : [];
     if (alternatives.length) {
       connections = [...connections, ...alternatives];
-      const candidate = planner.plan([arrival], goal, {
+      const candidate = plan([arrival], goal, {
         interaction,
         endpointTolerance: options.endpointTolerance,
         connections,
@@ -414,7 +422,7 @@ function solveJumpRoute(
       const additions = search(local);
       if (additions.length) {
         const localConnections = [...baseConnections, ...additions];
-        const localRoute = planner.plan([arrival], goal, {
+        const localRoute = plan([arrival], goal, {
           interaction,
           endpointTolerance: options.endpointTolerance,
           connections: localConnections,
@@ -430,7 +438,7 @@ function solveJumpRoute(
           localConnections.length === connections.length &&
           localConnections.every((connection, index) => connection === connections[index])
             ? localRoute
-            : planner.plan([arrival], goal, {
+            : plan([arrival], goal, {
                 interaction,
                 endpointTolerance: options.endpointTolerance,
                 connections,
@@ -473,8 +481,15 @@ function planDirectedRoute(
   if (!waypoints?.length)
     return solveJumpRoute(surfaces, world, starts, goal, base, shared, stage, initial);
   const planner = base.groundPlanner ?? createGroundPlanner(surfaces, base);
+  const plan = candidatePlanner(planner, base.evaluateCandidate);
   const initialConnections = base.connections ?? [];
-  initial ??= planner.plan(starts, goal, {
+  if (initial)
+    initial = evaluateCandidate(
+      initial,
+      { starts, goal, interaction: base.interaction },
+      base.evaluateCandidate,
+    );
+  initial ??= plan(starts, goal, {
     interaction: base.interaction,
     endpointTolerance: base.endpointTolerance,
     connections: initialConnections,
@@ -561,7 +576,7 @@ function planDirectedRoute(
     });
     if (connections.length - (base.connections?.length ?? 0) >= base.maxLinks) break;
     if (connections.length > previous) {
-      goalRoute = planner.plan(starts, goal, {
+      goalRoute = plan(starts, goal, {
         interaction: base.interaction,
         endpointTolerance: base.endpointTolerance,
         connections,
@@ -691,8 +706,9 @@ function planBaseRoute(
   // Failed discovery still contains physically validated actions. Entry searches
   // continue that pool and its geometry preparation within this immutable query.
   let known = result.connections;
+  const plan = candidatePlanner(planner, options.evaluateCandidate);
   const probe = (position: Vec3, target: Vec3, interaction?: JumpRouteOptions['interaction']) =>
-    planner.plan([{ id: '@device-entry', position, state: 'available', cost: 0 }], target, {
+    plan([{ id: '@device-entry', position, state: 'available', cost: 0 }], target, {
       interaction,
       endpointTolerance: options.endpointTolerance,
       connections: known,
@@ -789,7 +805,7 @@ function planBaseRoute(
     entryRemaining -= budget;
     result.diagnostics.truncated ||= trial.diagnostics.truncated;
     known = trial.connections;
-    const route = planner.plan(starts, goal, {
+    const route = plan(starts, goal, {
       interaction: options.interaction,
       connections: trial.connections,
     });
@@ -877,10 +893,14 @@ export function planJumpRoute(
   const { actions: selected, seeds } = selectCatalogActions(world, surfaces, starts, goal, options);
   if (selected.length) {
     const connections = [...(options.connections ?? []), ...selected];
-    const route = options.groundPlanner!.plan(starts, goal, {
-      interaction: options.interaction,
-      connections,
-    });
+    const route = candidatePlanner(options.groundPlanner!, options.evaluateCandidate)(
+      starts,
+      goal,
+      {
+        interaction: options.interaction,
+        connections,
+      },
+    );
     noteActionCatalogResult(route.status === 'complete');
     if (route.status === 'complete') {
       // A reused feasible chain may miss a better departure near a fresh start.
