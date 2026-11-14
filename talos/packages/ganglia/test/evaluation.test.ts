@@ -205,3 +205,23 @@ test('a zero-length route can satisfy a waypoint at its available start', () => 
     true,
   );
 });
+
+test('verification accepts configurable goal and report rounding but returns recomputed costs', () => {
+  const submitted = route();
+  submitted.cost += 0.005;
+  submitted.length += 0.005;
+  const request = { ...query, goal: [10.04, 0, 0] as [number, number, number] };
+  const result = verifyRoute(request, submitted, { maxVertical: 0.5 });
+  assert.equal(result.valid, true);
+  assert.equal(result.costSeconds, 4);
+  assert.equal(result.length, 10);
+  assert.equal(
+    verifyRoute(request, submitted, { maxVertical: 0.5, goalTolerance: 0.01 }).valid,
+    false,
+  );
+  assert.equal(
+    verifyRoute({ ...request, interaction: { radius: 0.01 } }, submitted, { maxVertical: 0.5 })
+      .valid,
+    false,
+  );
+});

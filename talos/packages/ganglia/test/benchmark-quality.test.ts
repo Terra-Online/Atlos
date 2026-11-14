@@ -248,6 +248,11 @@ test('references bind the same problem and data while allowing algorithm/config 
   );
   assert.throws(() => readReference({ ...reference, cases: [] }, binding), /do not match/);
   assert.throws(
+    () => readReference({ ...reference, rules: { verification: { version: 1 } } }, binding),
+    /do not match/,
+  );
+
+  assert.throws(
     () => readReference({ ...reference, batch: { results: [row('different', 2)] } }, binding),
     /result\/query mismatch/,
   );

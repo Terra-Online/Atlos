@@ -1,6 +1,7 @@
 import type { Vec3, Wall } from '#@/src/geometry.ts';
 import type { LocomotionOptions } from '#@/src/movement.ts';
 import type { GroundArrival, Route } from '#@/src/route.ts';
+import { checkpoint } from '#@/src/solver/checkpoint.ts';
 import type {
   PreparedRouteSolver,
   RouteQuery,
@@ -104,9 +105,11 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         const starts = query.starts.filter((a) => !excludedArrivals.has(a.id));
         if (!starts.length) return stopped(lastReason ?? 'no-available-arrival');
         attempts++;
+        await checkpoint(options.signal);
         progress('search');
         if (cancelled()) return stopped('aborted', true);
         const proposal = planner.plan(starts, goal, { excludedEdges });
+        await checkpoint(options.signal);
         if (cancelled()) return stopped('aborted', true);
         if (proposal.status !== 'candidate') return stopped('no-global-candidate');
         const arrival = proposal.arrival;
@@ -151,7 +154,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
             partial = publish(terminal.route, [{ supportBoxes: terminal.supportBoxes }], true);
           else {
             while (!cancelled()) {
-              const tail = await window.advanceTail();
+              const tail = await window.advanceTail({ signal: options.signal });
               if ('diagnostics' in tail) truncated ||= tail.diagnostics.truncated;
               if (tail.status === 'partial') {
                 if (tail.coversStart) {

@@ -1,4 +1,6 @@
+import { verificationPolicy, within, type VerificationPolicy } from '#@/src/evaluation/policy.ts';
 import { evaluateRoute, verifyRoute } from '#@/src/evaluation/route.ts';
+import { executeWalking } from '#@/src/evaluation/walking.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
 import { jumpConnection, runOffConnection, jumpDuration } from '#@/src/model/flight.ts';
 import { findGoalHit } from '#@/src/model/goals.ts';
@@ -21,11 +23,12 @@ const sameTrace = (
   a: Pick<Segment, 'points' | 'times'>,
   b: Pick<Segment, 'points' | 'times'>,
   tolerance = 1e-5,
+  timeTolerance = 1e-6,
 ) => {
   if (
-    !close(a.times.at(-1)!, b.times.at(-1)!) ||
-    distance(a.points[0], b.points[0]) > 1e-5 ||
-    distance(a.points.at(-1)!, b.points.at(-1)!) > 1e-5
+    !within(a.times.at(-1)!, b.times.at(-1)!, timeTolerance, 1e-6) ||
+    distance(a.points[0], b.points[0]) > tolerance ||
+    distance(a.points.at(-1)!, b.points.at(-1)!) > tolerance
   )
     return false;
   const position = (trace: typeof a, time: number): Vec3 => {
@@ -65,49 +68,112 @@ const phases = (segments: Segment[]) => {
 const stationary = (s: Segment) =>
   s.times.at(-1) === 0 && s.points.every((p) => distance(p, s.points[0]) <= 1e-9);
 
-// A projection can find nearby support without establishing that the submitted
-// feet are on it. Match both endpoints and charge the actual support-following
-// distance, including bends in the interior of a walking chord.
+// Resource scheduling can split a step at a lifted corner. Geometry belongs to
+// the uninterrupted walk; each control still gets its own resource/boost checks.
+function geometrySegments(segments: Segment[]) {
+  const merged: Segment[] = [];
+  for (const segment of segments) {
+    const previous = merged.at(-1);
+    if (previous?.mode === 'walk' && segment.mode === 'walk') {
+      const elapsed = previous.times.at(-1)!;
+      previous.points.push(...segment.points.slice(1));
+      previous.times.push(...segment.times.slice(1).map((time) => time + elapsed));
+    } else merged.push({ ...segment, points: [...segment.points], times: [...segment.times] });
+  }
+  return merged;
+}
 function supportedWalk(
   segment: Segment,
-  { standing, walkTrace }: Pick<ReturnType<PhysicalWorld['configured']>, 'standing' | 'walkTrace'>,
+  worlds: Pick<
+    ReturnType<PhysicalWorld['configured']>,
+    'standing' | 'walkTrace' | 'stepTrace' | 'blocked' | 'world' | 'supportedSpan'
+  >[],
+  profile: { radius: number; height: number },
+  tolerance: number,
 ) {
-  const start = standing(segment.points[0]);
-  return (
-    !!start &&
-    distance(start, segment.points[0]) <= 1e-5 &&
-    segment.points.slice(1).every((point, index) => {
-      const previous = segment.points[index];
-      const trace = walkTrace(previous, point);
-      if (!trace || distance(trace[0], previous) > 1e-5 || distance(trace.at(-1)!, point) > 1e-5)
+  const supported = (point: Vec3) => {
+    return worlds.some((physical) => {
+      try {
+        const feet = physical.standing(point);
+        return feet && distance(feet, point) <= 1e-5;
+      } catch {
         return false;
-      const length = trace.slice(1).reduce((sum, p, i) => sum + distance(trace[i], p), 0);
-      return Math.abs(length - distance(previous, point)) <= 1e-5 * Math.max(1, length);
-    })
-  );
+      }
+    });
+  };
+  const geometry = (points: Vec3[]) => {
+    const times = [0];
+    for (let i = 1; i < points.length; i++)
+      times.push(times[i - 1] + distance(points[i - 1], points[i]));
+    return { points, times };
+  };
+  if (!supported(segment.points[0])) return false;
+  for (let start = 0; start + 1 < segment.points.length;) {
+    let end = start + 1;
+    while (end < segment.points.length && !supported(segment.points[end])) end++;
+    if (end === segment.points.length) return false;
+    const submitted = geometry(segment.points.slice(start, end + 1));
+    const a = segment.points[start],
+      b = segment.points[end];
+    const matches = (trace: Vec3[] | null) =>
+      trace && sameTrace(submitted, geometry(trace), tolerance, 2 * tolerance);
+    if (
+      !worlds.some((physical) => {
+        try {
+          return (
+            submitted.points.every((point, index) => {
+              const previous = index ? submitted.points[index - 1] : point;
+              return (
+                !physical.blocked(previous, point) &&
+                !physical.world.sweepCapsule(previous, point, profile)
+              );
+            }) &&
+            ((end === start + 1 && physical.supportedSpan(a, b, tolerance)) ||
+              matches(physical.walkTrace(a, b)) ||
+              (end > start + 1 && matches(physical.stepTrace(a, b))))
+          );
+        } catch {
+          return false;
+        }
+      })
+    )
+      return false;
+    start = end;
+  }
+  return true;
 }
 
 /** A verifier owns no search state. It re-executes the submitted controls against
  * provider-owned snapshots; unknown actions, missing witnesses and coverage
  * failures are rejected. A failed search never establishes physical impossibility. */
-export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]) {
-  return (query: RouteQuery, route: Route) => {
-    const trace = evaluateRoute(route);
+export function createPhysicalVerifier(
+  snapshots: () => readonly PhysicalWorld[],
+  options: Partial<VerificationPolicy> = {},
+) {
+  const policy = verificationPolicy(options);
+  const verify = (
+    query: RouteQuery,
+    route: Route,
+    worlds: readonly PhysicalWorld[],
+    navigationWalks = false,
+  ) => {
+    const trace = evaluateRoute(route, policy);
     if (!trace.valid) return { ...trace, scope: 'physical' as const };
-    const worlds = snapshots();
     const first =
       route.status === 'complete' &&
       worlds.find((w) => w.covered(route.points[0], route.points[0]));
     const contract = verifyRoute(query, route, {
       maxVertical: first ? first.input.ground.options.maxVertical : 0,
+      ...policy,
     });
     const issues = [...contract.issues];
+    let verifiedCost = contract.costSeconds;
     const result = () => ({
       ...contract,
       scope: 'physical' as const,
       valid: contract.valid && !issues.length,
       issues,
-      costSeconds: issues.length ? null : contract.costSeconds,
+      costSeconds: issues.length ? null : verifiedCost,
       length: issues.length ? null : contract.length,
     });
     if (!contract.valid || route.status !== 'complete') return result();
@@ -168,10 +234,7 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
       for (const snapshot of worlds) {
         if (!s.points.every((p) => snapshot.covered(p, p))) continue;
         try {
-          const { world, blocked, standing, walkTrace } = snapshot.configured(
-            placements,
-            configuration,
-          );
+          const { world, blocked, standing } = snapshot.configured(placements, configuration);
           const rules = snapshot.input,
             profile = rules.ground.options.profile;
           if (
@@ -179,11 +242,7 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
             JSON.stringify(rules.locomotion) !== JSON.stringify(input.locomotion)
           )
             throw new Error('Movement snapshot mismatch');
-          if (s.mode === 'walk') {
-            if (!supportedWalk(s, { standing, walkTrace }))
-              throw new Error('Unsupported or obstructed walk');
-            return;
-          }
+          if (s.mode === 'walk') return;
           const takeoff = standing(s.points[0]);
           if (!takeoff || distance(takeoff, s.points[0]) > 1e-5)
             throw new Error('Unsupported takeoff');
@@ -332,7 +391,7 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
               witness.kind === 'run-off'
                 ? runOffConnection(witness.start, witness.end, options)
                 : jumpConnection(witness.start, witness.end, options);
-            if (!replay || !sameTrace(s, replay, 0.005))
+            if (!replay || !sameTrace(s, replay, policy.traceTolerance))
               throw new Error('Flight does not match collision-checked controls');
             const airSpeed =
               replay.peakHorizontalSpeed ??
@@ -496,7 +555,8 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
           const before = state;
           const replay = controller.advance([segment], state, block);
           if (!replay) throw new Error('Resource controls are infeasible');
-          physical(segment, elapsed, before.sprinting, replay.duration);
+          if (!navigationWalks || segment.mode !== 'walk')
+            physical(segment, elapsed, before.sprinting, replay.duration);
           output.push(...replay.segments);
           state = replay.state;
           elapsed += replay.duration;
@@ -504,11 +564,35 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
       // Resource replay allows small differences in trajectory representation.
       // Check submitted geometry as well, so that tolerance cannot cross a wall
       // or move an interaction away from the physically supported trajectory.
-      for (const segment of route.segments) {
+      for (const segment of [...geometrySegments(route.segments), ...geometrySegments(output)]) {
+        if (segment.mode === 'walk') {
+          if (navigationWalks) continue;
+          const configured = worlds.flatMap((snapshot) => {
+            try {
+              return [
+                snapshot.configured(placements, {
+                  ...configuration,
+                  contactTolerance: policy.walkContactTolerance,
+                }),
+              ];
+            } catch {
+              return [];
+            }
+          });
+          if (
+            !supportedWalk(
+              segment,
+              configured,
+              input.ground.options.profile,
+              policy.walkTraceTolerance,
+            )
+          )
+            throw new Error('Submitted trajectory intersects collision or lacks support');
+          continue;
+        }
         const clear = worlds.some((snapshot) => {
           try {
             const configured = snapshot.configured(placements, configuration);
-            if (segment.mode === 'walk') return supportedWalk(segment, configured);
             const { world, blocked } = configured;
             const profile = snapshot.input.ground.options.profile;
             return segment.points.every((point, index) => {
@@ -526,7 +610,9 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
       if (
         actual.length !== expected.length ||
         actual.some(
-          (phase, i) => phase.key !== expected[i].key || !sameTrace(phase, expected[i], 0.005),
+          (phase, i) =>
+            phase.key !== expected[i].key ||
+            !sameTrace(phase, expected[i], policy.traceTolerance, policy.timeTolerance),
         )
       )
         throw new Error('Route differs from resource replay');
@@ -538,9 +624,33 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
           (route.locomotion.dashes ?? 0) !== (state.dashCount ?? 0))
       )
         throw new Error('Resource summary differs from replay');
-      const origin = first.configured(placements, configuration).standing(route.points[0]);
-      if (!origin || distance(origin, route.points[0]) > 1e-5)
+      const origin = first
+        .configured(placements, {
+          ...configuration,
+          ...(route.segments[0]?.mode === 'walk'
+            ? { contactTolerance: policy.walkContactTolerance }
+            : {}),
+        })
+        .standing(route.points[0]);
+      if (!navigationWalks && (!origin || distance(origin, route.points[0]) > 1e-5))
         throw new Error('Unsupported route origin');
+      if (!navigationWalks && !query.interaction) {
+        const endpoint = route.points.at(-1)!;
+        if (Math.hypot(endpoint[0] - query.goal[0], endpoint[2] - query.goal[2]) > 1e-6) {
+          // A nearby point across a wall or support gap is a different destination.
+          // Certify a local connection without adding an unrequested approach.
+          const connected = worlds.some((snapshot) => {
+            try {
+              const physical = snapshot.configured(placements, configuration);
+              const goal = physical.standing([query.goal[0], endpoint[1], query.goal[2]]);
+              return goal && physical.walkTrace(endpoint, goal);
+            } catch {
+              return false;
+            }
+          });
+          if (!connected) throw new Error('Goal tolerance crosses an obstacle or support gap');
+        }
+      }
       if (query.interaction?.airborne) {
         for (let index = 0; index < route.segments.length; index++) {
           const segment = route.segments[index],
@@ -565,11 +675,42 @@ export function createPhysicalVerifier(snapshots: () => readonly PhysicalWorld[]
           break;
         }
       }
-      if (!close(route.cost, route.arrivalCost + elapsed))
+      if (
+        !within(
+          route.cost,
+          route.arrivalCost + elapsed,
+          policy.costTolerance,
+          policy.relativeTolerance,
+        )
+      )
         throw new Error('Physical cost differs from route');
+      verifiedCost = route.arrivalCost + elapsed;
     } catch (error) {
       issues.push(error instanceof Error ? error.message : String(error));
     }
     return result();
+  };
+  return (query: RouteQuery, route: Route) => {
+    const worlds = snapshots();
+    const strict = verify(query, route, worlds);
+    if (strict.valid || route.status !== 'complete' || !policy.walkSnap) return strict;
+    // Validate submitted timing, controls, nonwalk geometry and terminal events
+    // before treating walk heights as navigation intent. Never fix invalid controls.
+    const controls = verify(query, route, worlds, true);
+    if (!controls.valid) return controls;
+    try {
+      const executed = executeWalking(route, worlds, policy);
+      const result = verify(query, executed.route, worlds);
+      return {
+        ...result,
+        execution: {
+          maxWalkSnap: executed.maxWalkSnap,
+          costDeltaSeconds: executed.route.cost - route.cost,
+          lengthDelta: executed.route.length - route.length,
+        },
+      };
+    } catch (error) {
+      return { ...strict, issues: [error instanceof Error ? error.message : String(error)] };
+    }
   };
 }

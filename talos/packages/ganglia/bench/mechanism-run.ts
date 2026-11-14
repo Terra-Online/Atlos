@@ -17,6 +17,7 @@ import {
 import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { sourceHash } from '#@/bench/source.ts';
 import { prepareWorkerSolver, type WorkerResult } from '#@/bench/workers.ts';
+import { verificationDefaults } from '#@/src/evaluation/policy.ts';
 import { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -42,7 +43,10 @@ const { values } = parseArgs({
 });
 if (values.help) {
   console.log(
-    'Usage: node bench/mechanism-run.ts --mode physical-diagnostic --exports <source-root> --retained <retained-profile-root> --output <new-report.json> [--suite <manifest>] [--ids id,id] [--rounds 2] [--kernel <frozen-package-root> --kernel-revision <revision>] [--extractor <matching-extractor-root>] [--device-exports <explicitly-rebound-root>] [--scene-data-root <root-with-per-case-directories>] [--prepare-config <private-export-config>] [--config <solver-policy.json>] [--audit]. Each scene case uses <scene-data-root>/<caseId>; heavy load/export/solve/verification is inside the worker query deadline. This diagnostic does not fulfill service training/warmup or publish service speedups.',
+    'Usage: node bench/mechanism-run.ts --mode physical-diagnostic --exports <source-root> --retained <retained-profile-root> --output <new-report.json> [--suite <manifest>] [--ids id,id] [--rounds 2] [--kernel <frozen-package-root> --kernel-revision <revision>] [--extractor <matching-extractor-root>] [--device-exports <explicitly-rebound-root>] [--scene-data-root <root-with-per-case-directories>] [--prepare-config <private-export-config>] [--config <solver-policy.json>] [--audit]. Each scene case uses <scene-data-root>/<caseId>; load/export/solve/verification follows the cooperative query deadline; a running stage completes before cancellation is observed. Worker bootstrap and queueing are outside the deadline, and no worker is killed or replaced. This diagnostic does not fulfill service training/warmup or publish service speedups.',
+  );
+  console.log(
+    'GANGLIA_BENCHMARK_QUERY_SLO_MS sets the cooperative deadline in milliseconds (default 300000).',
   );
 } else {
   if (values.mode !== 'physical-diagnostic')
@@ -93,6 +97,7 @@ if (values.help) {
     servicePreparation: 'not performed; not a service-performance report',
     sourceRevision: values['kernel-revision'] ?? workspaceRevision,
     kernelSourceSha256: await sourceHash(resolve(values.kernel), ['src'], ['package.json']),
+    verification: { version: 3, policy: verificationDefaults },
     kernel: resolve(values.kernel),
     extractor: resolve(values.extractor),
     source: suite.source,
@@ -101,6 +106,10 @@ if (values.help) {
     unselectedIds: suite.cases.filter((c) => !selected.includes(c)).map((c) => c.id),
     rounds,
     deadlineMs: QUERY_SLO_MS,
+    cancellation: 'cooperative-checkpoints',
+    deadlineScope: 'dispatch-through-independent-verification',
+    invalid: false,
+    failure: undefined as string | undefined,
     results,
     interrupted: false,
     unattemptedIds: selected.map((c) => c.id),
@@ -188,7 +197,6 @@ if (values.help) {
           scene: item.scene,
           entry: new URL('./mechanism-worker.ts', import.meta.url),
           timeoutMs: QUERY_SLO_MS,
-          startupTimeoutMs: QUERY_SLO_MS,
           onEvent(_query, event, memory, detail) {
             record({
               phase: 'progress',
@@ -225,6 +233,8 @@ if (values.help) {
             workerStartupMs: prepared.timings.workerStartupMs,
             resultFile,
             solveWallMs: result.diagnostics.solveWallMs,
+            timedOut: result.diagnostics.timedOut,
+            cancellationMs: result.diagnostics.cancellationMs,
             responseMs: result.diagnostics.responseMs,
             cost: detail?.evaluation?.costSeconds,
             evaluation: detail?.evaluation,
@@ -242,20 +252,6 @@ if (values.help) {
               elapsedMs: row.elapsedSinceCaseStartMs,
             }),
           );
-          if (result.reason === 'timeout') {
-            for (let next = round + 1; next < rounds; next++) {
-              const skipped = {
-                id: item.id,
-                round: next,
-                status: 'not-run',
-                reason: 'prior-timeout',
-              };
-              results.push(skipped);
-              record(skipped);
-            }
-            save();
-            break;
-          }
         }
       } catch (error) {
         const row = {
@@ -265,9 +261,12 @@ if (values.help) {
           reason: error instanceof Error ? error.message : String(error),
           elapsedMs: performance.now() - started,
         };
+        report.invalid = true;
+        report.failure = row.reason;
         results.push(row);
         record(row);
         save();
+        break;
       } finally {
         await prepared?.solver.close();
       }
@@ -276,4 +275,5 @@ if (values.help) {
     save();
   }
   console.log(output);
+  if (report.invalid) process.exitCode = 1;
 }

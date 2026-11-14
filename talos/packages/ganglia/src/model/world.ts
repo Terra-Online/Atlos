@@ -9,6 +9,7 @@ import {
   blockedBody,
   onBoxFace,
 } from '#@/src/model/placement.ts';
+import { supportIntervals } from '#@/src/model/support-coverage.ts';
 import { projectPoint } from '#@/src/model/support.ts';
 import { supportBounds } from '#@/src/model/supports.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
@@ -19,6 +20,8 @@ interface Configuration {
   /** Report complete local placement proofs; the caller must require a proof
    * for every selected placement across the full snapshot set. */
   scopedPlacements?: boolean;
+  /** Optional mesh-contact skin, supplied by verification policy; source support stays unchanged. */
+  contactTolerance?: number;
 }
 
 export type Coverage =
@@ -247,7 +250,11 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
         if (!covered(a, b, body.radius + (body.inflation ?? 0)))
           throw new Error('Incomplete swept body coverage');
         if (solidBlocked(a, b, body.inflation ?? 0)) return { triangle: -1, distance: 0 };
-        return base.sweepCapsule(a, b, body) ?? added.sweepCapsule(a, b, body);
+        const skin = Math.min(options.contactTolerance ?? 0, body.radius / 2, body.height / 4);
+        const shape = { ...body, radius: body.radius - skin, height: body.height - 2 * skin };
+        const start: Vec3 = [a[0], a[1] + skin, a[2]],
+          end: Vec3 = [b[0], b[1] + skin, b[2]];
+        return base.sweepCapsule(start, end, shape) ?? added.sweepCapsule(start, end, shape);
       },
       groundAt(p, options) {
         if (!covered(p, p, options.radius ?? 0)) throw new Error('Incomplete support coverage');
@@ -270,8 +277,8 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
         [supportGeometry, supports],
       ] as const) {
         const candidates = index.trianglesInBounds!({
-          min: [Math.min(a[0], b[0]), Math.min(a[2], b[2])],
-          max: [Math.max(a[0], b[0]), Math.max(a[2], b[2])],
+          min: [Math.min(a[0], b[0]) - profile.radius, Math.min(a[2], b[2]) - profile.radius],
+          max: [Math.max(a[0], b[0]) + profile.radius, Math.max(a[2], b[2]) + profile.radius],
         });
         for (const triangle of candidates) {
           const vertices = [0, 1, 2].map((corner): Vec3 => {
@@ -295,40 +302,9 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
             normal[1] / Math.hypot(...normal) < Math.cos((input.movement.maxSlope * Math.PI) / 180)
           )
             continue;
-          const determinant = u[0] * v[2] - u[2] * v[0];
-          if (Math.abs(determinant) < 1e-12) continue;
-          const weights = (point: Vec3) => {
-            const x = point[0] - p[0],
-              z = point[2] - p[2];
-            const b = (x * v[2] - z * v[0]) / determinant,
-              c = (u[0] * z - u[2] * x) / determinant;
-            return [1 - b - c, b, c];
-          };
-          const first = weights(a),
-            last = weights(b);
-          let near = 0,
-            far = 1;
-          const clip = (x: number, y: number) => {
-            if (x < 0 && y < 0) {
-              far = -1;
-              return;
-            }
-            if (x < 0) near = Math.max(near, x / (x - y));
-            if (y < 0) far = Math.min(far, x / (x - y));
-          };
-          for (let i = 0; i < 3; i++) clip(first[i] + 1e-9, last[i] + 1e-9);
-          // For a center projected inside this finite face, sphere support lies
-          // between the vertical plane height and the infinite-plane tangent
-          // height. Edge/corner contacts can lie below the latter. This envelope
-          // proves continuous coverage; standing and sweeps prove actual feet.
-          const lift = profile.radius * (Math.hypot(...normal) / normal[1] - 1);
-          const offset = (point: Vec3, w: number[]) =>
-            point[1] - w.reduce((sum, n, i) => sum + n * vertices[i][1], 0);
-          const low = offset(a, first),
-            high = offset(b, last);
-          clip(tolerance + lift - low, tolerance + lift - high);
-          clip(tolerance + low, tolerance + high);
-          if (near <= far) intervals.push([near, far]);
+          intervals.push(
+            ...supportIntervals(a, b, vertices, normal as Vec3, profile.radius, tolerance),
+          );
         }
       }
       intervals.sort((a, b) => a[0] - b[0]);
@@ -386,7 +362,7 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
       const clearance = p[1] - hit.position[1];
       const feet: Vec3 = [
         p[0],
-        clearance >= 0.005 - 1e-6 && clearance <= 0.01 + 1e-6 ? p[1] : hit.position[1] + 0.005,
+        clearance >= -1e-6 && clearance <= 0.01 + 1e-6 ? p[1] : hit.position[1] + 0.005,
         p[2],
       ];
       return !blocked(feet, feet) &&
@@ -398,11 +374,47 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
     const solidBlocked = createWallChecker(solidWalls, profile);
     const combinedBlocked = (a: Vec3, b: Vec3, inflation = 0) =>
       blocked(a, b, inflation) || solidBlocked(a, b, inflation);
+    const stepTrace = (a: Vec3, b: Vec3): Vec3[] | null => {
+      const start = standing(a),
+        end = standing(b),
+        rise = b[1] - a[1];
+      if (
+        !start ||
+        !end ||
+        distance(start, a) > 1e-5 ||
+        distance(end, b) > 1e-5 ||
+        rise > input.movement.stepUp + 1e-6 ||
+        -rise > input.movement.stepDown + 1e-6 ||
+        !continuousSupport(a, b)
+      )
+        return null;
+      const corner: Vec3 = rise > 0 ? [a[0], b[1], a[2]] : [b[0], a[1], b[2]];
+      if (
+        combinedBlocked(a, corner) ||
+        combinedBlocked(corner, b) ||
+        world.sweepCapsule(a, corner, profile) ||
+        world.sweepCapsule(corner, b, profile)
+      )
+        return null;
+      return [a, corner, b];
+    };
     return {
       validatedPlacements,
       world,
       blocked: combinedBlocked,
       standing,
+      stepTrace,
+      supportedSpan(a: Vec3, b: Vec3, tolerance: number) {
+        if (!continuousSupport(a, b) || combinedBlocked(a, b) || world.sweepCapsule(a, b, profile))
+          return false;
+        const count = Math.max(1, Math.ceil(distance(a, b) / Math.max(0.025, profile.radius / 8)));
+        for (let i = 0; i <= count; i++) {
+          const point = at(a, b, i / count),
+            feet = standing(point);
+          if (!feet || distance(feet, point) > tolerance) return false;
+        }
+        return true;
+      },
       walkTrace(a: Vec3, b: Vec3): Vec3[] | null {
         if (!continuousSupport(a, b)) return null;
         const count = Math.max(1, Math.ceil(distance(a, b) / Math.max(0.025, profile.radius / 4)));
@@ -426,19 +438,9 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
           const feet = standing(at(a, b, i / count));
           if (!feet) return null;
           if (combinedBlocked(previous, feet) || world.sweepCapsule(previous, feet, profile)) {
-            const rise = feet[1] - previous[1];
-            if (rise > input.movement.stepUp + 1e-6 || -rise > input.movement.stepDown + 1e-6)
-              return null;
-            const corner: Vec3 =
-              rise > 0 ? [previous[0], feet[1], previous[2]] : [feet[0], previous[1], feet[2]];
-            if (
-              combinedBlocked(previous, corner) ||
-              combinedBlocked(corner, feet) ||
-              world.sweepCapsule(previous, corner, profile) ||
-              world.sweepCapsule(corner, feet, profile)
-            )
-              return null;
-            append(corner);
+            const step = stepTrace(previous, feet);
+            if (!step) return null;
+            append(step[1]);
           }
           append(feet);
           previous = feet;

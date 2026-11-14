@@ -1,5 +1,202 @@
 # Route solver history and validation evidence
 
+## Merge cooperative cancellation and finite-support verification, 2026-11-14
+
+Merged upstream through 2c99b6c2 into chan/algo-progression. Preserve the prototype
+mechanism corpus, circular supports, nearby joint-box search and preparation-cache
+changes. Resolve worker conflicts in favor of cooperative cancellation, retaining
+case progress/memory events without restoring kill/replacement behavior. Adapt the
+266-case diagnostic entry to the same deadline semantics and verification rules.
+Physical-world integration preserves circular contact handling beside the finite
+triangle support proof and walking policy. Ordinary planning still does not invoke
+the withdrawn executeRoute gate. The previously stopped real-scene baseline remains
+stopped; published upstream 50-case results keep their own source and input scope.
+
+Merge validation: package formatting, lint, typecheck and all 497 TS tests pass.
+All 25 native integration tests pass against the retained release library; Rust
+implementation sources are unchanged by these upstream commits. The focused
+physical/mechanism/worker checks also pass. Logs are
+`/tmp/ganglia-merge-2c99-check.log` and `/tmp/ganglia-merge-2c99-native.log`.
+No real-scene baseline, profiling batch or timing comparison was run.
+
+## Configurable benchmark deadline, 2026-11-14
+
+`GANGLIA_BENCHMARK_QUERY_SLO_MS` overrides the cooperative query deadline and
+reported SLO together; the default remains 300000 ms. The stress diagnostic uses
+60000 ms. Source preparation, warmup and scoring retain the same worker, and
+cancellation waits for solver checkpoints. No hard worker timeout is introduced.
+
+## Verifier walking approximation, 2026-11-14
+
+Verification version 3 separates walking representation from flight precision.
+`walkSnap` defaults to 0.35 m and bounds vertical navigation-height projection;
+projection uses this policy rather than the world's narrower contact lookup.
+`walkTraceTolerance` defaults to 0.025 m for walking polyline approximation.
+`walkContactTolerance` defaults to 0.01 m of raw-mesh capsule skin overlap,
+used only for walking. Full-body coverage, terrain support radius, explicit walls
+and placement exclusions remain unchanged. Flight replay retains
+`traceTolerance = 0.005 m` and strict collision. Humans can tune walking parameters
+independently. Capsule collision sweeps, continuous support coverage,
+resource replay and terminal-event checks remain active.
+
+Continuous walks are checked across gait/control splits, so a legal raised step
+corner does not need independent standing support. Sparse snapshots certify each
+physical span. Collision-free feet can retain clearance from zero to 1 cm; the
+existing 5 mm offset is not a mandatory minimum. Standing samples bound interior
+walking approximation: a broad support envelope alone cannot authorize a floating
+chord. A shallow-valley regression requires strict rejection or supported execution
+with recomputed length and cost. No search, catalog, training or solver code changed
+in this milestone; the experimental solver-side walk repair was withdrawn.
+
+The frozen `2ba25713` full-population run completed 50 searches and accepted 12
+physically, with all takeoff failures eliminated. Replaying those exact saved routes
+under version 3 accepts 46/50. Four still fail walk endpoint support. This is verifier-only replay, not a
+new search timing or speedup result. The source report remains under
+`.local/research/ts-support-2ba2571/`; the replay and diagnostic input are under
+`.local/research/current-physical-failures/verifier-audit.json` and
+`verifier-audit.ts`. The original benchmark quality gate is not claimed to pass.
+
+Package formatting, lint, typecheck and 461 TS tests pass. Standards and Spec
+rechecks found no remaining required code findings after closing an intermediate
+support-envelope bypass with the shallow-valley regression.
+
+## Current-route support correction in progress, 2026-11-14
+
+The failed `c316ac52` run exposed two geometric inconsistencies. A representative
+walking span had a 3.744 mm gap in center-projection support intervals although
+its radius-0.35 capsule had continuous nearby edge support and clear sweeps.
+Continuous support now intersects the finite triangle's exact horizontal capsule
+footprint with its 3D contact envelope, including edges/corners; the horizontal
+reach is never expanded by projection tolerance. Standing and swept-body checks
+still certify actual feet. Gaps wider than the capsule footprint remain rejected.
+
+V1 `standingFoot` previously added infinite-plane slope lift to a radius-zero
+projection. A real rejected takeoff was 7.527 mm above finite-triangle sphere
+support. It now uses the collision model's radius-aware support directly, plus
+existing clearance. Analytic edge-support and footprint-gap regressions pass;
+package formatting, lint, typecheck and 457 TS tests pass. Verification identity
+advances to version 2. The Rust negative-gap fixture now uses a gap wider than its
+capsule footprint; no Rust implementation or binary was changed.
+
+The subsequent frozen `2ba25713` run accepted 12/50; see the version 3
+replay above. Saved-route replay is diagnostic only: it exposes additional real nearby steep-face collision
+and unsupported endpoints. Those are not waived by these fixes. Local geometry
+probes and extracted source facts live under `.local/research/current-physical-failures/`.
+
+## Current-source TS full-population run, 2026-11-14
+
+Clean commit `c316ac5210d32e00581f090442c4829b8365132c` completed the requested
+single measured round with one worker/lane on all fifty map02 requests. Preparation
+trained ten requests (79.844 s, 272 catalog actions), froze the catalog and ran two
+warmups (5.191 s; one physically accepted). Service readiness was 86.190 s.
+
+All fifty searches returned complete traces, but independent physical execution
+accepted only six. Thirty-three failed supported walking and eleven failed takeoff
+support. The completion/physical quality gate failed. This is current generation,
+not replay of a historical journal, so the remaining problem is present in current
+search output. No timeout, process replacement or recovery occurred; the run did
+not exercise a real-data cancellation event.
+
+Mean serial time across all attempts was 1518.433 ms, median 1165.540 ms, P95
+4775.438 ms and maximum 6730.783 ms. Batch wall time was 75.940 s; end-to-end,
+including preparation, validation and shutdown, was 162.983 s. One round provides
+no repeatability measurement. No new speedup is accepted because quality failed.
+
+The report and adjacent event journal are under
+`.local/research/ts-current-soft-c316ac52/`. Source SHA-256 is
+`1bf367cb463f246d629584a56661a5bc596c4c417b01a941e2e7c9066e5447fe`;
+report SHA-256 is `8550684b114f3df8ffa648429eeb1bf0bee462a74c99b488193edd3d35e66c11`.
+The run used Node v26.13.0 with a 6144 MiB heap and no native solver. Configured
+training budgets were 32,000 candidates/256 links; serving retained 8,000/64.
+Source stayed frozen throughout measurement and passed the CLI's final digest check.
+
+```sh
+cd talos/packages/ganglia
+pnpm benchmark:full --adapter ganglia-v1-ts --workers 1 --concurrency 1 --rounds 1 \
+  --output ../../../.local/research/ts-current-soft-c316ac52/report.json
+```
+
+The CLI exited with code 1 after writing the complete report because its quality
+gate failed. No solver/verifier changes or follow-up benchmark were made in this run.
+
+## Soft cancellation without worker replacement, 2026-11-14
+
+The user explicitly rejected killing or replacing workers after timeout and clarified
+that two measured rounds were never a standing requirement. The 40 ms deadline and
+20 ms grace values were fixture settings; production used 300 seconds plus a 1-second
+kill grace. The grace/kill/replacement/restoration paths have now been removed.
+Timeout and caller abort send a request-specific event, retain the occupied slot
+until computation exits, and preserve the process/catalog for subsequent requests.
+An actual crash invalidates the run. Fatal input/protocol cleanup requests cancellation
+and orderly close; it does not signal-kill processes. Legacy recovery report counters
+are fixed at zero. An unyielding stage can exceed the soft threshold; there is no
+promise of bounded cancellation latency or automatic process replacement.
+
+TS phase checkpoints now yield the event loop and check AbortSignal around scene
+planning, physical preparation/discovery phases and result emission. Window resources
+forward the signal, including target-first approaches, to the existing adapter/host
+signal contract. Cancellation exceptions no longer poison scene input validation.
+The Rust binding already carries abort events to atomic engine/search/world checks;
+no Rust algorithm or binary change was needed.
+
+Worker regressions cover a stage that exceeds its soft threshold, retained PID and
+trained catalog, healthy peers, actual process failure, journal/input failure cleanup,
+and continued queries. Kill/replacement-specific assertions were removed to reflect
+the new contract. Real TS seam tests exercise asynchronous cancellation between phases
+and scene reuse after an aborted local solve. No 20/40 ms cancellation limits remain.
+
+`benchmark:history` now exposes `--rounds` and defaults to one, matching the normal
+CLI. AGENTS.md no longer prescribes two rounds. Historical two-round reports remain
+accurately attributed to those experiments. Measurement identity records cooperative
+cancellation to prevent automatic speed comparison with the old lifecycle. No new
+full-scene timing run was requested or performed. Package formatting, lint, typecheck
+and all 456 TS tests pass, including 14 worker lifecycle cases.
+
+## Verification approximation policy, 2026-11-14
+
+The user authorized practical defaults and configurable representation tolerances
+following the physical regression investigation. Implementation starts at `9d4fac29`.
+The independent verifier now distinguishes reported navigation intent from physical
+execution, while retaining the strict collision/resource evaluation underneath.
+
+A public policy supplies 5 cm ordinary goal tolerance, 5 mm trace comparison,
+1 ms resource-replay timestamp comparison, and up to 20 cm vertical walk snapping.
+Reported totals allow 0.01 s / 0.01 m absolute plus 0.1% relative error; evaluation
+returns recomputed totals. Interaction volumes and ordered waypoint rules are not
+expanded. A nearby ordinary goal additionally requires a supported local connection.
+Resource amounts, action authority, takeoff support and actual collision retain
+separate strict checks rather than inheriting a general position tolerance.
+
+Before walk interpretation, the submitted route must match its resource controls,
+nonwalk physics and terminal events. Walk spans are then projected without horizontal
+search, checked against coverage and the snap bound, and resource controls are
+replayed over the physical path. The resulting full route must pass the verifier.
+This charges changed distance/time and catches resource/boost consequences. Execution
+corrections are reported without modifying the submitted object. `walkSnap: 0`
+retains direct physical-trace acceptance. The older slope test's rejection applies
+explicitly to this strict policy; a new default-policy test requires acceptance and
+independently calculated slope travel time, with a positive cost correction.
+
+RED→GREEN coverage includes configurable goal/report rounding, bounded slope
+execution with independently recomputed cost and immutable input, and rejection of
+a near goal behind a thin wall. Existing collision, support-gap, airborne-authority,
+resource and device negatives still pass. Reference validation now includes `rules`
+so reports with different verifier policies cannot silently share acceptance scope.
+Independent review found and reproduced two additional edge cases: a zero-XZ
+walk span omitted its end-height correction, and block-wide resource replay applied
+one segment's boost to later motions. Endpoint corrections are now bounded explicitly,
+and execution carries resource state one segment at a time, matching verification.
+Both review probes are retained as RED→GREEN public-verifier regressions. Package
+formatting, lint, typecheck and all 458 TS tests pass.
+
+The final post-change audit replays all fifty saved first-round submissions from
+`1e942192`, without running search or training. Six pass after execution; 33 fail
+supported walking and 11 fail takeoff support. No remaining failure is a snap-bound
+exceedance, so increasing that limit has no evidence-based justification. Evidence:
+`.local/research/physical-regression/approximation-audit.ts` and
+`approximation-audit.json`. These outcomes do not replace the historical timing
+report or establish a new full-population solver performance result.
+
 ## Roll back intrusive TS execution checks, 2026-11-14
 
 At the user's request, merge upstream through 9d4fac29, including 1e942192

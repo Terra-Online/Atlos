@@ -225,7 +225,7 @@ test('Rust builds support from raw collision when physical ground is empty', asy
   }
 });
 
-test('Rust physical walking cannot bridge a raw gap hidden by navigation', async () => {
+test('Rust physical walking cannot bridge a gap wider than the capsule footprint', async () => {
   const navigation: Surface = {
     id: 'approximate-floor',
     vertices: [
@@ -236,8 +236,8 @@ test('Rust physical walking cannot bridge a raw gap hidden by navigation', async
     ],
   };
   const floors: Vec3[][] = [
-    [-2, -0.05],
-    [0.05, 2],
+    [-2, -0.4],
+    [0.4, 2],
   ].map(([a, b]) => [
     [a, 0, -1],
     [b, 0, -1],

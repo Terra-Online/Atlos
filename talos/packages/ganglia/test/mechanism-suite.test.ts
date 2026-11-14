@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
@@ -14,8 +17,9 @@ import {
 } from '#@/bench/mechanism-suite.ts';
 import { prepareWorkerSolver } from '#@/bench/workers.ts';
 import { readWorkload } from '#@/bench/workload.ts';
+import { verificationDefaults } from '#@/src/evaluation/policy.ts';
 import type { Evaluation } from '#@/src/evaluation/route.ts';
-import type { RouteResult } from '#@/src/solver/contract.ts';
+import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
 import { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
 import type { PhysicalInput, FollowingSupport } from '#@/src/solver/physical.ts';
 
@@ -97,6 +101,43 @@ test('shared manifest remains a complete population and cannot be mistaken for p
     JSON.parse(await readFile(file, 'utf8')).cases[0].query.goal[0],
     suite.cases[0].query.goal[0],
   );
+});
+
+test('diagnostic audit records the configured cooperative deadline and verifier policy without solving', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'ganglia-mechanism-audit-'));
+  const output = join(directory, 'report.json');
+  const suite = await readMechanismSuite(
+    fileURLToPath(new URL('../bench/scenes/mechanisms/suite.json', import.meta.url)),
+  );
+  try {
+    execFileSync(
+      process.execPath,
+      [
+        fileURLToPath(new URL('../bench/mechanism-run.ts', import.meta.url)),
+        '--mode',
+        'physical-diagnostic',
+        '--audit',
+        '--exports',
+        directory,
+        '--retained',
+        directory,
+        '--ids',
+        suite.cases[0].id,
+        '--output',
+        output,
+      ],
+      { env: { ...process.env, GANGLIA_BENCHMARK_QUERY_SLO_MS: '60000' }, stdio: 'pipe' },
+    );
+    const report = JSON.parse(await readFile(output, 'utf8'));
+    assert.equal(report.deadlineMs, 60000);
+    assert.equal(report.cancellation, 'cooperative-checkpoints');
+    assert.equal(report.deadlineScope, 'dispatch-through-independent-verification');
+    assert.deepEqual(report.verification, { version: 3, policy: verificationDefaults });
+    assert.equal(report.results[0].status, 'input-unavailable');
+    assert.equal(report.invalid, false);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 test('portable roots cannot resolve outside their explicitly supplied directories', () => {
   assert.equal(
@@ -195,18 +236,36 @@ test('mechanism witnesses are separate from valid alternative routes', () => {
     { assertion: 'exercise:stair-support-transitions', status: 'unassessed' },
   ]);
 });
-test('diagnostic bootstrap deadline retires an unready worker instead of hanging before query timing', async () => {
-  await assert.rejects(
-    prepareWorkerSolver({
-      count: 1,
-      config: gangliaV1Defaults,
-      dataRoot: 'slow-start',
-      extractor: '',
-      startupTimeoutMs: 10,
-      entry: new URL('./fixtures/scene-worker.ts', import.meta.url),
-    }),
-    /startup exceeded its deadline/,
-  );
+test('diagnostic bootstrap is separate from the cooperative query deadline and forwards memory progress', async () => {
+  const events: unknown[] = [];
+  const prepared = await prepareWorkerSolver({
+    count: 1,
+    config: gangliaV1Defaults,
+    dataRoot: 'slow-start',
+    extractor: '',
+    timeoutMs: 50,
+    entry: new URL('./fixtures/scene-worker.ts', import.meta.url),
+    onEvent(query, event, memory, detail) {
+      events.push({ query, event, memory, detail });
+    },
+  });
+  try {
+    assert.ok(prepared.timings.workerStartupMs >= 80);
+    const query: RouteQuery = {
+      starts: [{ id: 'ready', state: 'available', position: [0, 0, 0], cost: 0 }],
+      goal: [1, 0, 0],
+    };
+    const result = await prepared.solver.solve(query);
+    assert.equal(result.route.status, 'complete');
+    assert.equal(events.length, 1);
+    assert.ok(prepared.metadata.execution.memory.processRssSampledPeakBytes > 0);
+    const event = events[0] as { query: unknown; memory: { rssBytes: number }; detail: string };
+    assert.deepEqual(event.query, query);
+    assert.ok(event.memory.rssBytes > 0);
+    assert.equal(event.detail, 'fixture-search');
+  } finally {
+    await prepared.solver.close();
+  }
 });
 
 test('one displayed conveyor box cannot certify a walk across its whole swept path', async () => {

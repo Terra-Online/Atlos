@@ -44,9 +44,12 @@ const { values } = parseArgs({
 });
 if (values.help) {
   console.log(
-    'Usage: pnpm benchmark:full [--adapter ganglia-v1-ts|ganglia-v1-rust|<module-path>] [--json | --markdown] [--data-root <path>] [--scene <name; default map02>] [--extractor <path>] [--workload <json-file | map02-long-range | map02-long-detours | map02-stress>] [--offset <index>] [--limit <count>] [--concurrency <scene-lanes>] [--workers <prepared solver processes; default 1>] [--rounds <measured batches; default 1>] [--config <json-file>] [--reference <benchmark-json>] [--max-mean-cost-ratio <ratio; default 1.01>] [--max-worst-cost-ratio <ratio; default 1.05>]. Every query has a hard 300-second SLO; timeouts count as failures. Reference comparisons reject lost solutions or excess modeled route cost; stability is checked across measured rounds. V1 service preparation is required by its solver config and supplied by the benchmark adapter.',
+    'Usage: pnpm benchmark:full [--adapter ganglia-v1-ts|ganglia-v1-rust|<module-path>] [--json | --markdown] [--data-root <path>] [--scene <name; default map02>] [--extractor <path>] [--workload <json-file | map02-long-range | map02-long-detours | map02-stress>] [--offset <index>] [--limit <count>] [--concurrency <scene-lanes>] [--workers <prepared solver processes; default 1>] [--rounds <measured batches; default 1>] [--config <json-file>] [--reference <benchmark-json>] [--max-mean-cost-ratio <ratio; default 1.01>] [--max-worst-cost-ratio <ratio; default 1.05>]. After the configured SLO a query receives a cooperative cancellation request; timeouts count as failures. Reference comparisons reject lost solutions or excess modeled route cost; stability is checked across measured rounds. V1 service preparation is required by its solver config and supplied by the benchmark adapter.',
   );
   console.log('GANGLIA_BENCHMARK_HEAP_MB sets the Node heap cap in MiB (default 6144).');
+  console.log(
+    'GANGLIA_BENCHMARK_QUERY_SLO_MS sets the cooperative per-query deadline in milliseconds (default 300000).',
+  );
 } else {
   const outputPath = values.output
     ? resolve(values.output)
@@ -128,6 +131,7 @@ if (values.help) {
       throw new Error('Invalid concurrency');
     const fixed = { ...config, batchConcurrency: concurrency };
     const measurement = {
+      cancellation: 'cooperative-checkpoints',
       warmupCases,
       rounds,
       workers,
@@ -196,8 +200,8 @@ if (values.help) {
               catalogs: prepared.catalogStatsAll(),
             }),
           );
-          // A timeout replaces the worker and loses its trained catalog. Resolve
-          // that preparation failure before dispatching the scored population.
+          // Cancelled training leaves a partial catalog. Require completed service
+          // preparation before dispatching the scored population.
           if (rows.some((batch) => batch.some((result) => result.reason === 'timeout')))
             throw new Error('Catalog training timed out; prepared service is not ready');
         }
@@ -322,7 +326,7 @@ if (values.help) {
             }
           : {}),
         policy:
-          'One algorithm and preparation lifecycle serve every interpretation of this report. Decoded input loading is separate from adapter/source validation, resource indexing and factory preparation. Algorithm-configured catalog training runs identically in every worker, freezes before service readiness, and belongs to service preparation. Algorithm-configured runtime warmup uses separate declared requests. No scored query is prewarmed; every measured round counts and repeatability compares measured rounds. Existing immutable preparation, geometry proofs and frozen catalog data are reused by the same solver; lazy work remains inside query time. Every dispatched query, including training and warmup, has a 300,000 ms parent watchdog. Queueing and initial worker setup are outside that deadline; service, queue and response times are separate. Recovery remains in actual batch wall time. End-to-end time starts at Node process time origin and ends after solver shutdown, including loading, preparation, training, runtime warmup, all measured rounds and recovery. Final source re-verification and report formatting are excluded. Per-worker phase timers overlap and must not be summed into wall time. Memory peaks are sampled. Browser index transfer, restoration and browser execution are unmeasured. OS scheduling/JIT/GC uncontrolled.',
+          'One algorithm and preparation lifecycle serve every interpretation of this report. Decoded input loading is separate from adapter/source validation, resource indexing and factory preparation. Algorithm-configured catalog training runs identically in every worker, freezes before service readiness, and belongs to service preparation. Algorithm-configured runtime warmup uses separate declared requests. No scored query is prewarmed; every measured round counts and repeatability compares measured rounds. Existing immutable preparation, geometry proofs and frozen catalog data are reused by the same solver; lazy work remains inside query time. Every dispatched query, including training and warmup, receives a cooperative cancellation request after 300,000 ms. The worker exits the query at its next checkpoint; no grace-period kill or replacement occurs. Cancellation tail time remains measured. Queueing and initial worker setup are outside that deadline; service, queue and response times are separate. Workers retain their trained state across query cancellation. End-to-end time starts at Node process time origin and ends after solver shutdown, including loading, preparation, training, runtime warmup, all measured rounds and cooperative shutdown. Final source re-verification and report formatting are excluded. Per-worker phase timers overlap and must not be summed into wall time. Memory peaks are sampled. Browser index transfer, restoration and browser execution are unmeasured. OS scheduling/JIT/GC uncontrolled.',
         ...report,
         ...(comparison && referenceBytes
           ? {

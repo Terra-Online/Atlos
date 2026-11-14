@@ -23,14 +23,17 @@ const { values } = parseArgs({
     extractor: { type: 'string' },
     output: { type: 'string' },
     reference: { type: 'string' },
+    rounds: { type: 'string', default: '1' },
     help: { type: 'boolean' },
   },
 });
 if (values.help) {
   console.log(
-    'Usage: pnpm benchmark:history --output <report.json> [--data-root <path>] [--extractor <path>] [--reference <historical-report.json>]. Pure TS; 10 training requests, two warmups, all 50 map02 requests in two rounds. Physical audit is reported separately.',
+    'Usage: pnpm benchmark:history --output <report.json> [--data-root <path>] [--extractor <path>] [--reference <historical-report.json>]. Pure TS; 10 training requests, two warmups, all 50 map02 requests; --rounds defaults to 1. Physical audit is reported separately.',
   );
 } else {
+  const rounds = Number(values.rounds);
+  if (!Number.isSafeInteger(rounds) || rounds < 1) throw new Error('Invalid benchmark rounds');
   if (!values.output) throw new Error('--output is required');
   const root = fileURLToPath(new URL('../', import.meta.url));
   const output = resolve(values.output);
@@ -104,7 +107,7 @@ if (values.help) {
         await prepared.setBenchmarkPhase(next);
         if (next === 'batch') readyMs = performance.now() - began;
       },
-      2,
+      rounds,
       () => prepared.recoverySetupMs,
       preparation.warmup,
     );

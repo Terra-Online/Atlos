@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { createPhysicalWorld, createPhysicalVerifier } from '#@/src/evaluation/index.ts';
+import {
+  createPhysicalWorld,
+  createPhysicalVerifier,
+  type VerificationPolicy,
+} from '#@/src/evaluation/index.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
 import { jumpConnection } from '#@/src/model/flight.ts';
 import { createLocomotionRules } from '#@/src/model/locomotion.ts';
@@ -85,7 +89,11 @@ const walk = (): Segment => ({
   ],
   times: [0, 0.4],
 });
-function verify(input: PhysicalInput, route: Extract<Route, { status: 'complete' }>) {
+function verify(
+  input: PhysicalInput,
+  route: Extract<Route, { status: 'complete' }>,
+  policy: Partial<VerificationPolicy> = {},
+) {
   const world = createPhysicalWorld(input, 'complete');
   const start: GroundArrival = {
     id: 'start',
@@ -93,7 +101,7 @@ function verify(input: PhysicalInput, route: Extract<Route, { status: 'complete'
     cost: 0,
     state: 'available',
   };
-  return createPhysicalVerifier(() => [world])(
+  return createPhysicalVerifier(() => [world], policy)(
     { starts: [start], goal: route.points.at(-1)! },
     route,
   );
@@ -112,16 +120,40 @@ test('consistent claimed timing cannot turn a run into teleportation', () => {
   assert.equal(result.valid, false);
   assert.match(result.issues.join(), /resource replay/);
 });
-test('continuous support rejects a narrow raw collision gap even with a solid navigation polygon', () => {
+test('continuous support includes capsule edge contact but rejects gaps wider than its footprint', () => {
   const input = snapshot();
-  input.collision = {
-    positions: [
-      -10, 0, -10, -10, 0, 10, 0.9999, 0, 10, 0.9999, 0, -10, 1.0001, 0, -10, 1.0001, 0, 10, 10, 0,
-      10, 10, 0, -10,
-    ],
-    indices: [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7],
-  };
-  assert.equal(verify(input, candidate(input, [walk()])).valid, false);
+  for (const gap of [0.0002, 0.5]) {
+    input.collision = {
+      positions: [
+        -10,
+        0,
+        -10,
+        -10,
+        0,
+        10,
+        1 - gap / 2,
+        0,
+        10,
+        1 - gap / 2,
+        0,
+        -10,
+        1 + gap / 2,
+        0,
+        -10,
+        1 + gap / 2,
+        0,
+        10,
+        10,
+        0,
+        10,
+        10,
+        0,
+        -10,
+      ],
+      indices: [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7],
+    };
+    assert.equal(verify(input, candidate(input, [walk()]), { walkSnap: 0 }).valid, gap < 0.4);
+  }
 });
 test('capsule replay rejects an active wall and missing swept body coverage', () => {
   const input = snapshot(),
@@ -291,7 +323,7 @@ test('walking beside a finite ramp edge retains its sphere-edge support', () => 
   assert.equal(result.valid, true, JSON.stringify(result));
 });
 
-test('support correction cannot add uncharged physical distance on a slope', () => {
+test('disabling walk snapping requires the submitted physical slope trace', () => {
   const input = snapshot();
   input.collision.positions = input.collision.positions.map((v, i) =>
     i % 3 === 1 ? 0.6 * input.collision.positions[i - 1] : v,
@@ -304,7 +336,7 @@ test('support correction cannot add uncharged physical distance on a slope', () 
     ],
     times: [0, 0.1],
   };
-  assert.equal(verify(input, candidate(input, [base])).valid, false);
+  assert.equal(verify(input, candidate(input, [base]), { walkSnap: 0 }).valid, false);
 });
 test('flight start and landing must coincide with physical feet, not a projection interval', () => {
   const input = snapshot(),
@@ -428,7 +460,7 @@ test('equivalent knot density and segment splits use the same physical acceptanc
   assert.equal(verify(input, route).valid, true);
 });
 
-test('horizontal and stationary walks must use supported feet rather than nearby projections', () => {
+test('horizontal and stationary walks respect the configured projection limit', () => {
   const input = snapshot();
   for (const endX of [0, 2]) {
     const floating: Segment = {
@@ -441,7 +473,8 @@ test('horizontal and stationary walks must use supported feet rather than nearby
     };
     const route = candidate(input, [floating]);
     if (!endX) delete route.schedule;
-    assert.equal(verify(input, route).valid, false);
+    assert.equal(verify(input, route, { walkSnap: 0.2 }).valid, false);
+    assert.equal(verify(input, route).valid, true);
   }
   const stationary = candidate(input, [
     {
@@ -623,4 +656,276 @@ test('sparse windows share following facts while each selected placement needs c
     ).issues.join(),
     /Conflicting following support facts/,
   );
+});
+
+test('bounded walk execution snaps navigation height and charges the physical distance', () => {
+  const input = snapshot();
+  input.collision.positions = input.collision.positions.map((v, i) =>
+    i % 3 === 1 ? 0.6 * input.collision.positions[i - 1] : v,
+  );
+  const submitted = candidate(input, [
+    {
+      mode: 'walk',
+      points: [
+        [-0.25, 0, 0],
+        [0.25, 0, 0],
+      ],
+      times: [0, 0.1],
+    },
+  ]);
+  const saved = structuredClone(submitted);
+  const world = createPhysicalWorld(input, 'complete');
+  const query = {
+    starts: [{ id: 'start', state: 'available' as const, cost: 0, position: submitted.points[0] }],
+    goal: submitted.points.at(-1)!,
+  };
+  const result = createPhysicalVerifier(() => [world])(query, submitted);
+  assert.equal(result.valid, true, JSON.stringify(result));
+  assert.ok(Math.abs(result.costSeconds! - Math.hypot(0.5, 0.3) / 5) < 1e-6);
+  assert.ok(result.execution!.maxWalkSnap > 0.15);
+  assert.ok(result.execution!.costDeltaSeconds > 0);
+  assert.deepEqual(submitted, saved);
+  assert.equal(
+    createPhysicalVerifier(() => [world], { walkSnap: 0.01 })(query, submitted).valid,
+    false,
+  );
+});
+
+test('goal tolerance cannot collect a point through a separating wall', () => {
+  const input = snapshot();
+  input.ground.options.profile.radius = 0.01;
+  input.collision.positions = [
+    ...input.collision.positions,
+    2.02,
+    0,
+    -1,
+    2.02,
+    2,
+    -1,
+    2.02,
+    2,
+    1,
+    2.02,
+    0,
+    1,
+  ];
+  input.collision.indices = [...input.collision.indices, 4, 5, 6, 4, 6, 7];
+  const route = candidate(input, [walk()]);
+  const world = createPhysicalWorld(input, 'complete');
+  const query = {
+    starts: [{ id: 'start', state: 'available' as const, cost: 0, position: route.points[0] }],
+    goal: [2.04, 0.005, 0] as Vec3,
+  };
+  assert.equal(createPhysicalVerifier(() => [world])(query, route).valid, false);
+});
+
+test('vertical walk intent counts the correction of both endpoints', () => {
+  const input = snapshot();
+  for (const height of [0.3, -0.29]) {
+    const submitted = candidate(input, [
+      {
+        mode: 'walk',
+        points: [
+          [0, 0.005, 0],
+          [0, height, 0],
+        ],
+        times: [0, Math.abs(height - 0.005) / 5],
+      },
+    ]);
+    assert.equal(verify(input, submitted, { walkSnap: 0.01 }).valid, false);
+  }
+});
+
+test('grounded execution preserves boost changes inside a resource control block', () => {
+  const input = snapshot();
+  input.devices = {
+    ropes: [],
+    devices: [
+      {
+        id: 'speed',
+        kind: 'accelerate',
+        position: [0, 0.005, 0],
+        goal: { position: [0, 0.005, 0], interaction: { radius: 0.2 } },
+        seeds: [],
+        unitScale: true,
+        resolved: true,
+        speed: 0,
+        overhead: 0,
+        duration: 10,
+        fixedLaunch: false,
+        aim: null,
+        height: 0,
+        aimClearance: 0,
+        boostMultiplier: 2,
+      },
+    ],
+  };
+  const base: Segment[] = [
+    {
+      mode: 'walk',
+      points: [
+        [0, 0.1, 0],
+        [1, 0.1, 0],
+      ],
+      times: [0, 0.1],
+      boost: { id: 'speed', multiplier: 2, duration: 10 },
+    },
+    {
+      mode: 'walk',
+      points: [
+        [1, 0.1, 0],
+        [2, 0.1, 0],
+      ],
+      times: [0, 0.2],
+    },
+  ];
+  const submitted: Extract<Route, { status: 'complete' }> = {
+    status: 'complete',
+    start: 'start',
+    arrivalCost: 0,
+    cost: 0.3,
+    length: 2,
+    points: [
+      [0, 0.1, 0],
+      [1, 0.1, 0],
+      [2, 0.1, 0],
+    ],
+    segments: base.map((segment) => ({ ...segment, gait: 'run' })),
+    schedule: [{ segments: base, allowSprint: false, allowDash: false }],
+  };
+  const joined = verify(input, submitted);
+  assert.equal(joined.valid, true, JSON.stringify(joined));
+  assert.ok(Math.abs(joined.costSeconds! - 0.3) < 1e-6);
+  submitted.schedule = base.map((segment) => ({
+    segments: [segment],
+    allowSprint: false,
+    allowDash: false,
+  }));
+  assert.deepEqual(verify(input, submitted), joined);
+});
+
+test('collision-free grounded feet do not require an exact artificial clearance', () => {
+  const input = snapshot();
+  for (const height of [0.001, 0.003, 0.005, 0.01]) {
+    const motion = walk();
+    motion.points = motion.points.map(([x, _y, z]) => [x, height, z]);
+    assert.equal(verify(input, candidate(input, [motion]), { walkSnap: 0 }).valid, true);
+  }
+  const below = walk();
+  below.points = below.points.map(([x, _y, z]) => [x, -0.003, z]);
+  assert.equal(verify(input, candidate(input, [below]), { walkSnap: 0 }).valid, false);
+});
+
+test('physical step execution remains valid when a control block ends at its lifted corner', () => {
+  const input = snapshot();
+  input.collision = {
+    positions: [
+      -2, 0, -2, -2, 0, 2, 0, 0, 2, 0, 0, -2, 0, 0.2, -2, 0, 0.2, 2, 2, 0.2, 2, 2, 0.2, -2,
+    ],
+    indices: [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 3, 2, 5, 3, 5, 4],
+  };
+  const physical = createPhysicalWorld(input, 'complete').configured();
+  const points = physical.walkTrace([-0.5, 0.005, 0], [0.5, 0.205, 0]);
+  assert.ok(points);
+  const times = [0];
+  for (let i = 1; i < points.length; i++)
+    times.push(times[i - 1] + Math.hypot(...points[i].map((v, j) => v - points[i - 1][j])) / 5);
+  const motion: Segment = { mode: 'walk', points, times };
+  const route = candidate(input, [motion]);
+  const result = verify(input, route, { walkSnap: 0 });
+  assert.equal(result.valid, true, JSON.stringify(result));
+  const corner = points.findIndex((p) => {
+    const grounded = physical.standing(p);
+    return !grounded || Math.hypot(...p.map((v, i) => v - grounded[i])) > 1e-5;
+  });
+  assert.ok(corner > 0 && corner < points.length - 1);
+  route.schedule = [
+    {
+      segments: [
+        { ...motion, points: points.slice(0, corner + 1), times: times.slice(0, corner + 1) },
+      ],
+      allowSprint: false,
+      allowDash: false,
+    },
+    {
+      segments: [
+        {
+          ...motion,
+          points: points.slice(corner),
+          times: times.slice(corner).map((t) => t - times[corner]),
+        },
+      ],
+      allowSprint: false,
+      allowDash: false,
+    },
+  ];
+  assert.equal(verify(input, route, { walkSnap: 0 }).valid, true);
+});
+
+test('walk projection accounts for a shallow valley instead of accepting a floating chord', () => {
+  const input = snapshot();
+  const vertices: Vec3[] = [],
+    indices: number[] = [];
+  for (const [lo, hi, y] of [
+    [-2, -0.5, 0],
+    [-0.5, 0.5, -0.1],
+    [0.5, 2, 0],
+  ]) {
+    const offset = vertices.length;
+    vertices.push([lo, y, -2], [lo, y, 2], [hi, y, 2], [hi, y, -2]);
+    indices.push(offset, offset + 1, offset + 2, offset, offset + 2, offset + 3);
+  }
+  input.collision = { positions: vertices.flat(), indices };
+  const route = candidate(input, [
+    {
+      mode: 'walk',
+      points: [
+        [-1, 0.005, 0],
+        [1, 0.005, 0],
+      ],
+      times: [0, 0.4],
+    },
+  ]);
+  assert.equal(verify(input, route, { walkSnap: 0 }).valid, false);
+  const executed = verify(input, route);
+  assert.equal(executed.valid, true, executed.issues.join());
+  assert.ok(executed.length! > route.length);
+  assert.ok(executed.costSeconds! > route.cost);
+});
+
+test('walking mesh contact tolerance bounds skin overlap without allowing wall crossings', () => {
+  for (const offset of [0.197, 0.193, 0.18]) {
+    const input = snapshot();
+    input.collision.positions = [
+      ...input.collision.positions,
+      -1,
+      0,
+      offset,
+      3,
+      0,
+      offset,
+      3,
+      2,
+      offset,
+      -1,
+      2,
+      offset,
+    ];
+    input.collision.indices = [...input.collision.indices, 4, 5, 6, 4, 6, 7];
+    const route = candidate(input, [walk()]);
+    assert.equal(verify(input, route, { walkContactTolerance: 0 }).valid, false);
+    assert.equal(verify(input, route).valid, offset > 0.19);
+    assert.equal(verify(input, route, { walkContactTolerance: 0.005 }).valid, offset === 0.197);
+    const crossing = candidate(input, [
+      {
+        mode: 'walk',
+        points: [
+          [0, 0.005, -1],
+          [0, 0.005, 1],
+        ],
+        times: [0, 0.4],
+      },
+    ]);
+    assert.equal(verify(input, crossing).valid, false);
+  }
 });

@@ -1,4 +1,3 @@
-import { spawn } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -13,15 +12,9 @@ const send = (message: WorkerReply) => process.send!(message);
 process.once('message', async (message: WorkerRequest) => {
   if (message.type !== 'setup') throw new Error('Fixture requires setup');
   const setup = message.setup;
-  let trained = setup.trainingQueries?.length ?? 0;
+  let trained = 0;
   const catalog = () => ({ ...actionCatalogStats(), added: trained });
   setActionCatalogPhase(setup.catalogPhase ?? 'disabled');
-  if (setup.dataRoot === 'blocked-restoration' && setup.trainingQueries?.length) {
-    const until = performance.now() + 500;
-    while (performance.now() < until) {
-      /* simulate unresponsive setup */
-    }
-  }
   if (setup.dataRoot === 'slow-start') await new Promise((resolve) => setTimeout(resolve, 80));
   if (setup.dataRoot === 'startup-failure') throw new Error('fixture startup failure');
   const metadata = {
@@ -53,9 +46,10 @@ process.once('message', async (message: WorkerRequest) => {
     }
   }
   let cancel: (() => void) | undefined;
+  let activeId: number | undefined;
   process.on('message', async (message: WorkerRequest) => {
     if (message.type === 'cancel') {
-      cancel?.();
+      if (activeId === message.id) cancel?.();
       return;
     }
     if (message.type === 'close') {
@@ -71,6 +65,7 @@ process.once('message', async (message: WorkerRequest) => {
     }
     if (message.type !== 'solve') throw new Error('Unexpected fixture setup');
     const { id, query, events } = message;
+    activeId = id;
     if (query.goal[1] === 1) process.exit(2);
     if (query.goal[1] === 2) {
       send({ type: 'error', id, error: 'fixture failure' });
@@ -83,21 +78,18 @@ process.once('message', async (message: WorkerRequest) => {
       send({ type: 'region', files: { ground: regionFile, collision: `${regionFile}.collision` } });
     }
     if (query.goal[1] === 7) metadata.hashes.ground = 'changed';
-    if (query.goal[1] === 5) {
-      spawn(
-        process.execPath,
-        [
-          '-e',
-          'setTimeout(()=>require("node:fs").writeFileSync(process.argv[1], "orphan"), 250)',
-          query.starts[0].id,
-        ],
-        { stdio: 'ignore' },
-      );
-    }
-    if (events) send({ type: 'event', id, event: { type: 'progress', phase: 'search' } });
+    if (events)
+      send({
+        type: 'event',
+        id,
+        event: { type: 'progress', phase: 'search' },
+        memory: workerMemory(),
+        detail: 'fixture-search',
+      });
     if (query.goal[1] >= 3) {
       const end = performance.now() + query.goal[0];
       while (performance.now() < end) {}
+      await new Promise<void>((resolve) => setImmediate(resolve));
     } else
       await new Promise<void>((resolve) => {
         const timer = setTimeout(resolve, query.goal[0]);
@@ -107,6 +99,7 @@ process.once('message', async (message: WorkerRequest) => {
         };
       });
     cancel = undefined;
+    activeId = undefined;
     if (actionCatalogStats().phase === 'training') trained++;
     const result: RouteResult = {
       route: {

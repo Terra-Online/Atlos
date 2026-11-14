@@ -187,7 +187,7 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
   let tail: ReturnType<typeof createWindowRoute<Request, Job>> | undefined;
   let tailCoversStart = false;
   return {
-    async advanceTail(): Promise<
+    async advanceTail(options: { signal?: AbortSignal } = {}): Promise<
       | ReturnType<typeof progress>
       | { status: 'incomplete'; reason: string }
       | {
@@ -239,7 +239,7 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
           groundCache,
         );
       }
-      const result = await tail.advance();
+      const result = await tail.advance(options);
       return result.status === 'complete'
         ? {
             status: 'partial' as const,
@@ -405,7 +405,13 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
         const failed = physicalKey === undefined ? undefined : physicalFailure;
         let job: Job | null | undefined;
         if (!failed) {
-          job = await builder.solve(ground, local, true, physicalWork(([0, 1, 2] as const)[stage]));
+          job = await builder.solve(
+            ground,
+            local,
+            true,
+            physicalWork(([0, 1, 2] as const)[stage]),
+            { signal },
+          );
           if (!job || job.status !== 'ready') {
             if (stage === 2) physicalFailure = undefined;
             if (!job) return progress('incomplete', 'solver-unavailable');

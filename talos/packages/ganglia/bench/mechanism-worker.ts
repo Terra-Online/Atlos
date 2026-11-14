@@ -251,7 +251,7 @@ process.once('message', async (message: WorkerRequest) => {
   };
   process.on('message', async (m: WorkerRequest) => {
     if (m.type === 'cancel') {
-      controller?.abort();
+      if (activeId === m.id) controller?.abort();
       return;
     }
     if (m.type === 'close') {
@@ -294,6 +294,7 @@ process.once('message', async (message: WorkerRequest) => {
         await initialize();
         preparationMs = performance.now() - started;
       }
+      controller.signal.throwIfAborted();
       result = await solver!.solve(m.query, {
         signal: controller.signal,
         onEvent: (event) => {
@@ -303,9 +304,11 @@ process.once('message', async (message: WorkerRequest) => {
           }
         },
       });
+      controller.signal.throwIfAborted();
       const t = performance.now();
       evaluation = await verify!(m.query, result.route);
       verificationMs = performance.now() - t;
+      controller.signal.throwIfAborted();
       if (result.route.status !== 'complete' && missingCoverage)
         result = { ...result, reason: 'input-unavailable:requested physical coverage is absent' };
     } catch (error) {
@@ -321,8 +324,8 @@ process.once('message', async (message: WorkerRequest) => {
       result = {
         route: { status: 'no-verified-route' },
         connections: [],
-        diagnostics: { truncated: false },
-        reason: reason + text,
+        diagnostics: { truncated: controller.signal.aborted },
+        reason: controller.signal.aborted ? 'aborted' : reason + text,
       };
     }
     const complete: MechanismResult = {
@@ -359,8 +362,9 @@ process.once('message', async (message: WorkerRequest) => {
     activeId = undefined;
     activeEvents = false;
   });
-  // Heavy normalization, geometry preparation and verification run after solve
-  // dispatch so the existing parent watchdog covers them and exporter children.
+  // This diagnostic dispatch includes input loading and independent verification.
+  // Cancellation waits for the current stage or exporter to finish; the parent
+  // keeps the worker occupied and measures that tail rather than killing it.
   send({
     type: 'ready',
     config: setup.config,

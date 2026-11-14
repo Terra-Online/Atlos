@@ -1,5 +1,135 @@
 # Route solver handoff
 
+## Prototype branch integration, 2026-11-14
+
+The prototype branch includes upstream through 2c99b6c2: cooperative worker
+cancellation, configurable benchmark deadlines, finite capsule support and
+verification-policy version 3. The 266-case diagnostic entry retains its setup,
+input audit and progress recording while following the same cancellation contract.
+Wheel and joint-box prototypes and bounded preparation caches remain present.
+Verification representation tolerances do not authorize per-point route-cost
+regressions: compare recomputed physical totals under matching rule identities.
+The stopped 266-case baseline and its deleted automation must not restart without
+a new user instruction. No merge check supplies a new real-scene performance claim.
+
+## Configurable benchmark deadline, 2026-11-14
+
+`GANGLIA_BENCHMARK_QUERY_SLO_MS` overrides the cooperative query deadline and
+reported SLO together; the default remains 300000 ms. The stress diagnostic uses
+60000 ms. Source preparation, warmup and scoring retain the same worker, and
+cancellation waits for solver checkpoints. No hard worker timeout is introduced.
+
+## Verifier walking approximation, 2026-11-14
+
+Verification version 3 separates walking representation from flight precision.
+`walkSnap` defaults to 0.35 m and bounds vertical navigation-height projection;
+projection uses this policy rather than the world's narrower contact lookup.
+`walkTraceTolerance` defaults to 0.025 m for walking polyline approximation.
+`walkContactTolerance` defaults to 0.01 m of raw-mesh capsule skin overlap,
+used only for walking. Full-body coverage, terrain support radius, explicit walls
+and placement exclusions remain unchanged. Flight replay retains
+`traceTolerance = 0.005 m` and strict collision. Humans can tune walking parameters
+independently. Capsule collision sweeps, continuous support coverage,
+resource replay and terminal-event checks remain active.
+
+Continuous walks are checked across gait/control splits, so a legal raised step
+corner does not need independent standing support. Sparse snapshots certify each
+physical span. Collision-free feet can retain clearance from zero to 1 cm; the
+existing 5 mm offset is not a mandatory minimum. Standing samples bound interior
+walking approximation: a broad support envelope alone cannot authorize a floating
+chord. A shallow-valley regression requires strict rejection or supported execution
+with recomputed length and cost. No search, catalog, training or solver code changed
+in this milestone; the experimental solver-side walk repair was withdrawn.
+
+The frozen `2ba25713` full-population run completed 50 searches and accepted 12
+physically, with all takeoff failures eliminated. Replaying those exact saved routes
+under version 3 accepts 46/50. Four still fail walk endpoint support. This is verifier-only replay, not a
+new search timing or speedup result. The source report remains under
+`.local/research/ts-support-2ba2571/`; the replay and diagnostic input are under
+`.local/research/current-physical-failures/verifier-audit.json` and
+`verifier-audit.ts`. The original benchmark quality gate is not claimed to pass.
+
+Package formatting, lint, typecheck and 461 TS tests pass. Standards and Spec
+rechecks found no remaining required code findings after closing an intermediate
+support-envelope bypass with the shallow-valley regression.
+
+## Current-route support correction in progress, 2026-11-14
+
+The failed `c316ac52` run exposed two geometric inconsistencies. A representative
+walking span had a 3.744 mm gap in center-projection support intervals although
+its radius-0.35 capsule had continuous nearby edge support and clear sweeps.
+Continuous support now intersects the finite triangle's exact horizontal capsule
+footprint with its 3D contact envelope, including edges/corners; the horizontal
+reach is never expanded by projection tolerance. Standing and swept-body checks
+still certify actual feet. Gaps wider than the capsule footprint remain rejected.
+
+V1 `standingFoot` previously added infinite-plane slope lift to a radius-zero
+projection. A real rejected takeoff was 7.527 mm above finite-triangle sphere
+support. It now uses the collision model's radius-aware support directly, plus
+existing clearance. Analytic edge-support and footprint-gap regressions pass;
+package formatting, lint, typecheck and 457 TS tests pass. Verification identity
+advances to version 2. The Rust negative-gap fixture now uses a gap wider than its
+capsule footprint; no Rust implementation or binary was changed.
+
+The subsequent frozen `2ba25713` run accepted 12/50; see the version 3
+replay above. Saved-route replay is diagnostic only: it exposes additional real nearby steep-face collision
+and unsupported endpoints. Those are not waived by these fixes. Local geometry
+probes and extracted source facts live under `.local/research/current-physical-failures/`.
+
+## Current-source TS full-population run, 2026-11-14
+
+Clean commit `c316ac5210d32e00581f090442c4829b8365132c` completed the requested
+single measured round with one worker/lane on all fifty map02 requests. Preparation
+trained ten requests (79.844 s, 272 catalog actions), froze the catalog and ran two
+warmups (5.191 s; one physically accepted). Service readiness was 86.190 s.
+
+All fifty searches returned complete traces, but independent physical execution
+accepted only six. Thirty-three failed supported walking and eleven failed takeoff
+support. The completion/physical quality gate failed. This is current generation,
+not replay of a historical journal, so the remaining problem is present in current
+search output. No timeout, process replacement or recovery occurred; the run did
+not exercise a real-data cancellation event.
+
+Mean serial time across all attempts was 1518.433 ms, median 1165.540 ms, P95
+4775.438 ms and maximum 6730.783 ms. Batch wall time was 75.940 s; end-to-end,
+including preparation, validation and shutdown, was 162.983 s. One round provides
+no repeatability measurement. No new speedup is accepted because quality failed.
+
+The report and adjacent event journal are under
+`.local/research/ts-current-soft-c316ac52/`. Source SHA-256 is
+`1bf367cb463f246d629584a56661a5bc596c4c417b01a941e2e7c9066e5447fe`;
+report SHA-256 is `8550684b114f3df8ffa648429eeb1bf0bee462a74c99b488193edd3d35e66c11`.
+The run used Node v26.13.0 with a 6144 MiB heap and no native solver. Configured
+training budgets were 32,000 candidates/256 links; serving retained 8,000/64.
+Source stayed frozen throughout measurement and passed the CLI's final digest check.
+
+## Configurable verification and bounded walk execution, 2026-11-14
+
+`createPhysicalVerifier(snapshots, options)` accepts a partial `VerificationPolicy`;
+`verificationDefaults` is exported from the evaluation entry. Default ordinary
+point-goal tolerance is 0.05 m, replay trace tolerance 0.005 m, resource timestamp
+comparison tolerance 0.001 s, and maximum vertical walk correction 0.2 m. Reporting
+allows 0.01 s cost / 0.01 m length plus 0.001 relative error, while returned cost and
+length are recomputed. Set `walkSnap: 0` to require submitted physical feet.
+
+A failed direct execution can be interpreted as navigation-height walk intent only
+after its controls, resource schedule, nonwalk geometry and terminal events pass.
+The independent execution helper projects walk spans onto covered physical support,
+retains their horizontal path, and recomputes the whole resource timeline. The
+result then passes the complete physical verifier again. It adds no search, new
+flight or horizontal detour. `Evaluation.execution` reports maximum walk correction
+and cost/length deltas; input routes are unchanged. Flight origins, obstacles,
+coverage, resources, explicit interactions, start identity and ordered waypoints
+retain their physical checks. Ordinary goal tolerance requires a local supported
+connection, so a nearby point behind an obstacle cannot satisfy the goal.
+
+Benchmark metadata binds the verification version and default policy in `rules`;
+reference comparison and worker input validation require matching rule identities.
+The saved `1e942192` first-round traces now yield six valid executions, 33 unsupported
+or obstructed walks and 11 unsupported takeoffs. This is an audit of unchanged saved
+intent, not a new solver timing measurement. The prior historical benchmark remains
+bound to its original rules. Package checks pass 458 TS tests.
+
 ## Algorithm prototype collaboration, 2026-11-14
 
 `chan/algo-progression` starts from `misakavan/3d-preview` and its draft PR targets
@@ -45,7 +175,8 @@ The diagnostic runner preserves frozen windows, resource overrides, source box
 ranges, allowed movable IDs and fixed collisions for other boxes. It retains whole
 flight/schedule/placement evidence, reports validity separately from actual
 mechanism use, and includes loading, preparation and replay under its request
-watchdog. It closes workers on completion or failure. Per-case scene roots allow
+cooperative deadline. Cancellation waits for a checkpoint and preserves the worker;
+normal shutdown closes it orderly. A crashed worker is reported as a failed run. Per-case scene roots allow
 on-demand source export without preloading all historical windows. Missing static
 facility imports are input failures; unresolved complex/source capabilities remain
 visible rather than becoming a completeness claim. Configured service scoring
@@ -111,7 +242,7 @@ search. No Rust prototype preload or N-API solver is used by this baseline.
 `pnpm benchmark:history --output <report.json>` uses the frozen `4ec7b65f`
 measurement core with the current worker lifecycle. It always trains ten map02
 requests, freezes the catalog, warms two disjoint requests, and scores all fifty
-normal requests twice in one worker/lane. Training retains the historical
+normal requests once by default in one worker/lane (`--rounds` opts into repetition). Training retains the historical
 8,000-candidate/64-link budget. `--reference <report.json>` optionally compares
 modeled costs for identical requests and records input/adapter binding matches.
 The historical gate covers reported completion, modeled cost, SLO and repeatability.
@@ -132,14 +263,25 @@ The report and per-request journal are under
 
 ## Benchmark request lifecycle
 
-The worker pool owns cooperative cancellation and prepared-state restoration.
-Timeout and caller abort send an ID-bound cancellation to the active solver; the
-slot cannot accept another query until the prior computation settles. Unresponsive
-workers are killed only after a cancellation grace period. Replacement workers
-replay the declared training sequence before advertising readiness; healthy slots
-continue working. Warmup quality is reported independently of scored quality.
-The CLI journals each completed request immediately and atomically saves the final
-report, including failed quality gates or an interrupted-run summary.
+The worker pool requests ID-bound cooperative cancellation after the soft query
+threshold or caller abort. The slot remains busy until its execution returns from
+a checkpoint; cancellation tail time is measured. No worker is killed, replaced or
+retrained. A long synchronous stage may exceed the threshold before yielding.
+Healthy peers continue serving; actual process failure invalidates the run.
+Fatal protocol/input failures request cooperative cleanup rather than force exit.
+Legacy recovery counters remain zero for report compatibility.
+
+TS scene and physical stages yield to the event loop before checking AbortSignal.
+Both forward windows and target-side approaches pass that signal through the scene
+adapter into physical preparation. Aborts release the lane without poisoning input
+identity. Native solvers retain their existing atomic cancellation checkpoints.
+Warmup failures remain outcomes and scoring continues after cleanup; incomplete
+training still prevents service readiness. The CLI journals each completed request.
+
+Both `benchmark:full` and `benchmark:history` default to one measured round. `--rounds`
+can request repetition; earlier two-round results record specific experiments, not
+a standing user requirement. No new solver performance measurement accompanies this
+lifecycle change. Report measurement identity names cooperative cancellation.
 
 ## Required V1 service preparation, 2026-11-14
 
@@ -526,8 +668,9 @@ are reused by the same algorithm. Deferred V1 preparation remains in query time;
 this refactor does not establish eager, query-independent preparation of all
 scene indexes.
 
-Per-query service time, queue time and response time are separate. The existing
-300-second dispatch watchdog applies to training, warmup and measured requests.
+At this historical lifecycle checkpoint, service time, queue time and response
+time were separate and a 300-second watchdog applied to training, warmup and
+measured requests. Cooperative cancellation above supersedes that watchdog.
 Recovery remains in actual batch wall time. Observed end-to-end time spans Node
 process origin through solver shutdown and includes loading, preparation,
 training, warmup, all measured rounds and recovery. Final source re-verification
@@ -559,9 +702,10 @@ requests exercise layered ground. A physically valid endpoint can be absent from
 coarse navigation, so retain those coverage failures and distinguish them from
 successful long-distance traversal when interpreting latency.
 
-The headless benchmark applies a 300-second SLO to every dispatched query,
-including training, prewarm and physical coverage preparation. A parent process
-kills a timed-out solver process and its exporter descendants. A timeout is a
+At this historical snapshot, the headless benchmark applied a 300-second SLO to
+every dispatched query, including training, prewarm and physical coverage
+preparation, and killed timed-out workers and exporter descendants. The current
+cooperative cancellation contract above replaces that process-killing behavior. A timeout is a
 failed request with no complete route. Input loading and queueing are outside
 the per-query deadline; globally idle replacement loading is reported separately
 and excluded from measured batch time. Attempt throughput includes failures;

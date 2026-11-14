@@ -23,6 +23,7 @@ import {
 } from '#@/bench/scene-data.ts';
 import { createTimings } from '#@/bench/timings.ts';
 import { createPhysicalVerifier } from '#@/src/evaluation/physical.ts';
+import { verificationDefaults } from '#@/src/evaluation/policy.ts';
 import { physicalTileSpan } from '#@/src/model/coverage.ts';
 import { createPhysicalWorld } from '#@/src/model/world.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
@@ -42,7 +43,10 @@ export type GameAdapter = {
     resources: PhysicalFiles,
     request: WindowRequest,
     context: { cache: unknown },
-  ): Promise<{ input?: PhysicalInput; solve(options: { work: PhysicalWork }): Promise<Report> }>;
+  ): Promise<{
+    input?: PhysicalInput;
+    solve(options: { work: PhysicalWork; signal?: AbortSignal }): Promise<Report>;
+  }>;
 };
 
 export interface SceneHooks {
@@ -123,7 +127,10 @@ export async function loadScene(
       gameAdapterSha256,
       kernelSha256,
       resolvedKernel,
-      rules: { maxVertical: dataset.navigation.options.maxVertical },
+      rules: {
+        maxVertical: dataset.navigation.options.maxVertical,
+        verification: { version: 3, policy: verificationDefaults },
+      },
       get inputBytes() {
         return dataset.inputBytes;
       },
@@ -344,7 +351,7 @@ export function prepareSceneResources(
         return failInput(error);
       }
     },
-    solve: async (job, request, _start, work) => {
+    solve: async (job, request, _start, work, options) => {
       const cache = await acquire();
       cache.region = job.region;
       try {
@@ -352,11 +359,12 @@ export function prepareSceneResources(
         const prepared = await preparePhysicalRoute(job.region.files, request, { cache });
         timings.normalizationMs += performance.now() - started;
         started = performance.now();
-        const result = await prepared.solve({ work });
+        const result = await prepared.solve({ work, signal: options?.signal });
         timings.localSolveMs += performance.now() - started;
         observe(result);
         return { status: 'ready', region: job.region, result };
       } catch (error) {
+        if (options?.signal?.aborted) throw error;
         return failInput(error);
       } finally {
         sampleMemory();

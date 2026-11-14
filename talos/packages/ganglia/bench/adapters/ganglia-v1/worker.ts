@@ -64,14 +64,6 @@ process.once('message', async (message: WorkerRequest) => {
       added: Number(stats.actions),
     };
   };
-  // Replacement owns restoration, so callers cannot accidentally dispatch into
-  // a frozen empty catalog. The same declared training sequence is replayed.
-  if (setup.trainingQueries?.length) {
-    if (rustSolver) rustSolver.setCatalogPhase('training');
-    else setActionCatalogPhase('training');
-    for (const query of setup.trainingQueries)
-      await solver.solve(query, { signal: AbortSignal.timeout(setup.timeoutMs ?? 300_000) });
-  }
   if (rustSolver) rustSolver.setCatalogPhase(catalogPhase);
   else setActionCatalogPhase(catalogPhase);
   const preparationMs = scene.timings.preparationMs + performance.now() - preparationStarted;

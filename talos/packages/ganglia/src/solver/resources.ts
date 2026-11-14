@@ -40,7 +40,13 @@ export interface WindowResources<Request extends WindowRequest, Job extends Wind
     target: number[],
     options: { startBuild: boolean; margin: number; corridor: Corridor },
   ): Promise<Job | null>;
-  solve(job: Job, request: Request, start: boolean, work: PhysicalWork): Promise<Job | null>;
+  solve(
+    job: Job,
+    request: Request,
+    start: boolean,
+    work: PhysicalWork,
+    options?: { signal?: AbortSignal },
+  ): Promise<Job | null>;
   /** Identifies one immutable ground snapshot for this prepared solver's lifetime. */
   key(job: Job): string;
   /** Complete revision of external physics read by solve: normalized ground,
