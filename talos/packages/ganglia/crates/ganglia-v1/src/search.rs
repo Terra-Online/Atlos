@@ -1528,7 +1528,30 @@ fn solve_world(
                     .filter(|(_, p, _)| departure_height(*p) <= stratum)
                     .collect();
                 departures.sort_by(|a, b| a.0.total_cmp(&b.0));
-                ordered.extend(departures.into_iter().take(boundary_limit / 4));
+                // V1 spends work across coarse regions before refining body-
+                // scale offsets. Nearby detail triangles must not consume all
+                // launch slots before a neighboring cliff is represented.
+                let size = spacing.max(world.movement.model.max_horizontal_speed);
+                let mut cells = std::collections::BTreeMap::<[i64; 2], Vec<_>>::new();
+                for candidate in departures {
+                    let p = candidate.1;
+                    cells
+                        .entry([(p[0] / size).floor() as i64, (p[2] / size).floor() as i64])
+                        .or_default()
+                        .push(candidate);
+                }
+                let mut cells = cells.into_values().collect::<Vec<_>>();
+                cells.sort_by(|a, b| a[0].0.total_cmp(&b[0].0));
+                'departure: for rank in 0..cells.iter().map(Vec::len).max().unwrap_or(0) {
+                    for cell in &cells {
+                        if ordered.len() >= boundary_limit / 4 {
+                            break 'departure;
+                        }
+                        if let Some(&candidate) = cell.get(rank) {
+                            ordered.push(candidate);
+                        }
+                    }
+                }
             }
             for rank in 0..bands.iter().map(|(_, b)| b.len()).max().unwrap_or(0) {
                 ordered.extend(bands.iter().filter_map(|(_, band)| band.get(rank).copied()));

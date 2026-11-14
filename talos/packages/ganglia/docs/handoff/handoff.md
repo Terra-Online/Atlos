@@ -1,5 +1,33 @@
 # Route solver handoff
 
+## Spatial launch coverage checkpoint, 2026-11-15
+
+A diagnostic dump of the actual improvement graph for ground-jump-18-1 found
+nearest native samples about 5.4 m from the TS critical takeoff and 6.9 m from its
+landing. This confirms a candidate-coverage defect; ranking absent endpoints
+cannot reproduce the TS route. Evidence is `.local/research/native-candidate-graph.json`
+and `native-candidate-dump-result.json`, compared to saved TS report event 34.
+
+Native improvement now follows TS's coarse-before-fine launch enumeration:
+within the existing departure share, interleave spatial regions before consuming
+adjacent body-scale points. Candidate and flight-attempt budgets are unchanged.
+The focused six-request replay passes common physical validation. Request 19-1
+improves to cost 6.215470 s (retained TS 6.998164 s), about 531 ms diagnostic service;
+21-1 costs 5.901076 s, about 604 ms. Cases 17/18 remain over the original cost gate,
+and upper diagnostics remain slow. This is partial improvement, not accepted full
+population quality or speedup. Evidence: `.local/research/native-spread-result.json`.
+Doubling the launch-region share displaced useful landing samples and worsened
+19/21; removed (`native-spread-departures-result.json`).
+
+The retained source passes 149 Rust unit tests, two authored-action integration
+tests, 26 N-API common physical/lifecycle fixtures, Clippy with warnings denied,
+Rustfmt and diff checks. No new full-population benchmark has been run.
+
+Next inspect the TS landing projection/control generator against the missing
+landing neighborhood, preserving the coarse spatial coverage and fixed budgets.
+Do not retry departure-share expansion without changed landing coverage. The 2x
+objective remains active; no remote push is authorized.
+
 ## Approach/departure ranking diagnostics, 2026-11-15
 
 An optimistic approach/departure field trial ranked whole flight journeys over
