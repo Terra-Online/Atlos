@@ -136,9 +136,18 @@ end-to-end time, while batch/service latency covers solving. Other adapters can
 supply the same verification protocol; the harness always checks route/query
 consistency independently.
 
-Validation results and real replay measurements are recorded in the matching
-history entry. The retained six-query workload remains the finite acceptance
-control; full-map performance is a separate outstanding workload.
+Package formatting, lint, typecheck and all 438 tests pass; World application
+and worker typechecks pass. Standards and Spec rechecks are clear. The finite
+six-request/two-round real control failed the completion gate with a reduced
+one-training-request recipe: one distinct request passed physical verification
+in both rounds, while five returned `no-verified-route` in both rounds. There
+were zero watchdog timeouts. Mean serial service time across all twelve attempts
+was 120.353 s/attempt, including failed searches; readiness was 91.006 s and
+end-to-end time was 1540.952 s. The original ten-training-request recipe was
+canceled after 20 min 28 s before readiness. Candidate construction/search
+completion and preparation cost therefore remain open integration work. The
+matching history entry records the complete recipe, failed gate and source-bound
+evidence. Full-map performance remains a separate workload.
 
 ## Benchmark lifecycle, 2026-11-14
 

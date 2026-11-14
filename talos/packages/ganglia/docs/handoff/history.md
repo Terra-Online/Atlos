@@ -1994,8 +1994,39 @@ was discarded because removing its instrumentation changed source during the
 run. The ten-training/six-holdout/two-round control was canceled after 20 min 28 s
 before service readiness. It produced no scored attempts and establishes no
 query SLO or quality result. Evidence is `train10-incomplete-summary.json` in the
-same directory. A smaller declared preparation recipe, one training request,
-no runtime warmup, six holdout requests and two rounds, remains in progress at
-this feature checkpoint. Its original 1.01 geometric-mean and 1.05 worst-route
-cost gates are unchanged. Performance validation is pending; no improvement or
-six-query acceptance is claimed.
+same directory.
+
+The smaller declared preparation recipe completed with one processed training
+request, no runtime warmup, six holdout requests, two rounds, one worker and one
+lane. The quality gate failed: only `new-goal-near-lower-floor-ground-jump-6-1`
+completed in both rounds and passed physical replay. The other five requests
+returned `no-verified-route` in both rounds, losing five reference solutions.
+There were zero watchdog timeouts or worker recoveries. Outcomes and truncation
+were stable across rounds, including the failures. The training request itself
+returned no completed route; its search populated 86 actions before freezing.
+The unchanged cost gates were 1.01 geometric mean and 1.05 worst ratio. The sole
+completed pair has cost ratio 0.983459; that pair does not satisfy the required
+six-request completion gate.
+
+Mean serial service time across all twelve attempts was 120352.946 ms/attempt,
+including failed searches. The successful request averaged 534.429 ms across its
+two samples, 635.596 and 433.262 ms. Each failed request averaged between 90.768
+and 180.994 s. The rounds took 713.119 and 731.116 s, totaling 1444.236 s of batch
+wall time. Successful batch throughput was 0.001385 queries/s. Service readiness
+was 91.006 s, including 89.781 s of catalog training. Observed end-to-end time was
+1540.952 s, with successful throughput 0.001298 queries/s. This is a completion
+and performance regression; no new speedup is accepted. The earlier 6.40x
+cumulative checkpoint retains its own historical workload and timing scope.
+
+Evidence is `.local/research/physical-verifier/serial-train1.json` and
+`validation-summary.json`; the raw report is retained unchanged. It records
+`d35e4997` plus a dirty working tree because measurement began before the feature
+commit. Its source/benchmark digest exactly matches committed `48e6e791`:
+`a34f6d2ae8e2fb8b3b01d08d8445290e3ab0ff026a84b70ed1fdc48e3dc0a36f`.
+The report SHA-256 is
+`9d658d8bff7dd1edf6b2ed24af32efcb494e1e20d054b7f8a926982cd75a1bde`.
+The kernel digest is
+`f82913d3d412b41de140b81610ec3c95afb418e2197a3fcb8f4bd46920fb1c94`,
+and the unchanged game-adapter digest is
+`2c932f2ca8e668f8f4ee6937633d9c77e240986241e2a530f908fbb2cc88c623`.
+No further solver run or algorithm change was made for this measurement followup.
