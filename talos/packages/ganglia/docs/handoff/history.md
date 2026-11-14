@@ -1,5 +1,45 @@
 # Route solver history and validation evidence
 
+## Finite native geometry jobs and Scene retries, 2026-11-14
+
+Ground-path fallback jobs are selected lazily against active resource labels using
+admissible time lower bounds. Directed target coverage is retained, and each
+active resource label receives a newly proved edge independently. The dominant
+cost was World ground search, not queue bookkeeping. Dense repair arrays and
+once-per-source adjacency/proof lookup preserve the exact ground graph and reduce
+the matched negative-pair proof from 2361 to 892 ms.
+
+Generated supported interior landings now join a bounded source/target worklist.
+The synthetic multihop regression fails under the earlier policy and passes when
+a second flight can depart from an unsampled generated landing. The original
+attempt budget and graph-growth cap remain unchanged. The captured upper first
+window finishes all 285 fallback jobs in 27.467 seconds without completion.
+
+Expanded Engine requests can resolve to the same physical revision and coverage.
+Repeating the identical local query, poses, catalog and stage cannot add candidates
+to the same bounded algorithm. Failed searches are therefore reused only inside
+that query. New source revisions and subsequent queries redo the work. Stage 1
+is skipped if no known actions or boost pickups distinguish it from stage 0.
+An Engine regression checks repeated loads, source revision changes and fresh
+queries through the ordinary load/resume interface.
+
+The upper-floor full Scene diagnostic completes in 37.474 seconds through eight
+window loads. Its route is complete and not partial, with modeled cost
+4.525145145919718 seconds and length 34.651995641781866 metres. Shared independent
+physical replay is valid with no issues. Wall time including loading and replay
+is 43.381 seconds under a hard 180-second watchdog. Rust source hashes remained
+unchanged; binary SHA-256 is
+`d3682aeb8b7328e9d5836dfd76624985527f7ac6ef1203b58ca68a9dd10ac877`.
+Raw log, result and source bindings are in
+`.local/research/rust-solver-rewrite/parent-upper-scene/`. This diagnostic establishes
+the complete Scene path, not six-query acceptance or a new speedup.
+
+Validation passes 136 Rust unit tests, two authored-action tests, all 22 N-API
+fixtures and feature-enabled all-target Clippy with warnings denied.
+Package format, lint, typecheck and all 440 retained TypeScript tests pass.
+Cargo build outputs are excluded from formatting; generated artifacts live in
+the repository's `.local/cache/` resource store.
+
 ## Bounded native ground feedback and replay hardening, 2026-11-14
 
 Placement changes can remove a previously used takeoff or intersect a curved

@@ -1389,13 +1389,36 @@ fn search_ground(
     for (i, &surface) in local_owners.iter().enumerate() {
         locals.entry(surface).or_default().push(base + i);
     }
-    let mut proofs: HashMap<(usize, usize), Proof> = HashMap::new();
+    enum State {
+        Unknown,
+        Invalid,
+        Valid(Proof),
+    }
+    impl State {
+        fn known(proof: Proof) -> Self {
+            if proof.path.is_none() {
+                Self::Invalid
+            } else {
+                Self::Valid(proof)
+            }
+        }
+    }
+    struct Edge {
+        to: usize,
+        optimistic: f64,
+        state: State,
+    }
     // Node IDs are dense and stable throughout repairs. Generations avoid
     // clearing the global arrays or rebuilding hash tables for each search.
     let count = base + local.len();
     let mut costs = vec![0.; count];
     let mut previous = vec![usize::MAX; count];
+    let mut previous_edge = vec![usize::MAX; count];
     let mut generations = vec![0_u16; count];
+    // Adjacency and proof slots exist only for visited sources. The finite
+    // directed graph is unchanged; sorting and shared-cache lookup happen once
+    // per source, including memoized shared misses, across all repairs.
+    let mut adjacency: Vec<Option<Vec<Edge>>> = (0..count).map(|_| None).collect();
     // Optimistic topology chooses a path before expensive support/capsule replay.
     // Failed chords reject that witness only; an exhausted repair budget leaves
     // this finite ground proposal unresolved, not physically impossible.
@@ -1414,43 +1437,63 @@ fn search_ground(
                 reached = true;
                 break;
             }
-            let mut successors = graph.by_surface[owner(i)].clone();
-            successors.extend(locals.get(&owner(i)).into_iter().flatten().copied());
-            if i < base && i % 2 == 0 {
-                successors.push(i + 1);
-            }
-            if i >= base && !detours.is_empty() {
-                successors.extend(base..base + local.len());
-            }
-            successors.sort_unstable();
-            successors.dedup();
-            for j in successors {
-                if i == j {
-                    continue;
+            if adjacency[i].is_none() {
+                let mut successors = graph.by_surface[owner(i)].clone();
+                successors.extend(locals.get(&owner(i)).into_iter().flatten().copied());
+                if i < base && i % 2 == 0 {
+                    successors.push(i + 1);
                 }
-                let key = (i, j);
-                if !proofs.contains_key(&key)
-                    && i < base
-                    && j < base
-                    && let Some(proof) = graph
-                        .proofs
-                        .lock()
-                        .map_err(|_| "Ground proof cache poisoned")?
-                        .get(&key)
-                        .cloned()
-                {
-                    proofs.insert(key, proof);
+                if i >= base && !detours.is_empty() {
+                    successors.extend(base..base + local.len());
                 }
-                let length = match proofs.get(&key) {
-                    Some(proof) if proof.path.is_none() => continue,
-                    Some(proof) => proof.length,
-                    None => (point(i)[0] - point(j)[0]).hypot(point(i)[2] - point(j)[2]),
+                successors.sort_unstable();
+                successors.dedup();
+                // A single batch lookup resolves each eligible edge once.
+                // Later concurrent cache fills need not change local Unknown
+                // slots: selected edges still obtain their own physical proof.
+                let cache = if i < base && successors.iter().any(|&j| j < base && j != i) {
+                    Some(
+                        graph
+                            .proofs
+                            .lock()
+                            .map_err(|_| "Ground proof cache poisoned")?,
+                    )
+                } else {
+                    None
+                };
+                adjacency[i] = Some(
+                    successors
+                        .into_iter()
+                        .filter(|&j| j != i)
+                        .map(|j| {
+                            let state = cache
+                                .as_ref()
+                                .and_then(|cache| cache.get(&(i, j)))
+                                .cloned()
+                                .map_or(State::Unknown, State::known);
+                            Edge {
+                                to: j,
+                                optimistic: (point(i)[0] - point(j)[0])
+                                    .hypot(point(i)[2] - point(j)[2]),
+                                state,
+                            }
+                        })
+                        .collect(),
+                );
+            }
+            for (edge_index, edge) in adjacency[i].as_ref().unwrap().iter().enumerate() {
+                let j = edge.to;
+                let length = match &edge.state {
+                    State::Invalid => continue,
+                    State::Valid(proof) => proof.length,
+                    State::Unknown => edge.optimistic,
                 };
                 let next = cost + length;
                 if generations[j] != generation || next < costs[j] {
                     generations[j] = generation;
                     costs[j] = next;
                     previous[j] = i;
+                    previous_edge[j] = edge_index;
                     pending.push(Label(next + heuristic(j), j));
                 }
             }
@@ -1472,7 +1515,8 @@ fn search_ground(
         let mut rejected = false;
         for pair in nodes.windows(2) {
             let key = (pair[0], pair[1]);
-            if let std::collections::hash_map::Entry::Vacant(entry) = proofs.entry(key) {
+            let edge = &mut adjacency[pair[0]].as_mut().unwrap()[previous_edge[pair[1]]];
+            if matches!(edge.state, State::Unknown) {
                 let proof = Proof::new(direct(w, point(pair[0]), point(pair[1]))?);
                 if pair[0] < base && pair[1] < base {
                     let mut cache = graph
@@ -1483,13 +1527,14 @@ fn search_ground(
                         cache.insert(key, proof.clone());
                     }
                 }
-                entry.insert(proof);
+                edge.state = State::known(proof);
             }
-            let Some(path) = proofs[&key].path.as_ref() else {
+            let State::Valid(proof) = &edge.state else {
                 rejected = true;
                 continue;
             };
-            actual_cost += proofs[&key].length;
+            let path = proof.path.as_ref().unwrap();
+            actual_cost += proof.length;
             for &p in path.iter() {
                 if points.last() != Some(&p) {
                     points.push(p);

@@ -513,6 +513,185 @@ impl Ord for Queue {
     }
 }
 
+struct Resources<'a, 'w> {
+    geometry: &'a geometry::Geometry<'w>,
+    options: &'a locomotion::ScheduleOptions,
+    boosts: &'a [Boost],
+    waypoints: &'a [Point],
+    goal: Point,
+    interaction: &'a Value,
+    tolerance: f64,
+    has_locomotion: bool,
+}
+fn edge_successors(
+    edge: &Edge,
+    label: &Label,
+    parent: usize,
+    source: Point,
+    resources: &Resources<'_, '_>,
+    truncated: &mut bool,
+) -> Result<Vec<Label>, String> {
+    let Resources {
+        geometry,
+        options,
+        boosts,
+        waypoints,
+        goal,
+        interaction,
+        tolerance,
+        has_locomotion,
+    } = *resources;
+    let world = geometry.world;
+    let mut successors = Vec::new();
+    if let Some(required) = &edge.required_boost
+        && world.movement.active_boost.as_ref() != Some(required)
+        && !label.boost.is_some_and(|i| boosts[i].usage.id == *required)
+    {
+        return Ok(Vec::new());
+    }
+    let mut boosted;
+    // A character speed boost does not alter a fixed device trajectory.
+    // Its clock still advances across the ride, but attaching it to the
+    // device would claim boosted execution after the buff has expired.
+    let boosted_motion = matches!(edge.segment.mode.as_str(), "walk" | "jump" | "drop")
+        || edge.required_boost.is_some();
+    let segment = if let Some(i) = label.boost.filter(|_| boosted_motion) {
+        boosted = (*edge.segment).clone();
+        boosted.boost = Some(BoostUse {
+            duration: label.remaining,
+            ..boosts[i].usage.clone()
+        });
+        &boosted
+    } else {
+        edge.segment.as_ref()
+    };
+    let choices: &[(bool, bool)] = if segment.mode == "walk" && has_locomotion {
+        if options.dash.is_some() {
+            &[(true, true), (true, false), (false, false)]
+        } else {
+            &[(true, false), (false, false)]
+        }
+    } else {
+        &[(true, false)]
+    };
+    for &(sprint, dash) in choices {
+        let (state, duration, stage, step) = if label.boost.is_none() {
+            let Some((state, duration)) =
+                locomotion::evaluate(&edge.block, options, label.state, sprint, dash)
+            else {
+                continue;
+            };
+            (
+                state,
+                duration,
+                advance_stage(&segment.points, label.stage, waypoints, tolerance),
+                Step::Prepared {
+                    segment: edge.segment.clone(),
+                    sprint,
+                    dash,
+                },
+            )
+        } else {
+            let Some((state, duration, segments, schedule)) = optional_proof(
+                transition(
+                    segment,
+                    options,
+                    label.state,
+                    sprint,
+                    dash,
+                    Some(label.remaining),
+                    world,
+                    if edge.terminal {
+                        Some((goal, interaction))
+                    } else {
+                        None
+                    },
+                ),
+                truncated,
+            )?
+            else {
+                continue;
+            };
+            let trace = segments
+                .iter()
+                .flat_map(|s| s.points.iter().copied())
+                .collect::<Vec<_>>();
+            let stage = advance_stage(&trace, label.stage, waypoints, tolerance);
+            (
+                state,
+                duration,
+                stage,
+                Step::Materialized(Arc::new((segments, schedule))),
+            )
+        };
+        if edge.terminal
+            && (stage != waypoints.len()
+                || !goal_at(
+                    match &step {
+                        Step::Prepared { segment, .. } => *segment.points.last().unwrap(),
+                        Step::Materialized(output) => *output
+                            .0
+                            .last()
+                            .and_then(|s| s.points.last())
+                            .unwrap_or(&source),
+                    },
+                    goal,
+                    interaction,
+                    geometry,
+                    tolerance,
+                ))
+        {
+            continue;
+        }
+        let remaining = (label.remaining - duration).max(0.);
+        let boost = if remaining > EPS { label.boost } else { None };
+        let dashes = state.dash_count;
+        let next = Label {
+            node: edge.to,
+            stage,
+            cost: label.cost + duration,
+            arrival: label.arrival,
+            origin: label.origin,
+            state,
+            parent: Some(parent),
+            step: Some(step),
+            boost,
+            remaining,
+            used_boost: label.used_boost.clone(),
+            minimum: state.minimum,
+            dashes,
+            active: true,
+        };
+        successors.push(next);
+    }
+    Ok(successors)
+}
+#[derive(Clone, Copy)]
+struct GroundJob {
+    lower_bound: f64,
+    from: usize,
+    to: usize,
+}
+impl PartialEq for GroundJob {
+    fn eq(&self, b: &Self) -> bool {
+        self.lower_bound == b.lower_bound && self.from == b.from && self.to == b.to
+    }
+}
+impl Eq for GroundJob {}
+impl PartialOrd for GroundJob {
+    fn partial_cmp(&self, b: &Self) -> Option<Ordering> {
+        Some(self.cmp(b))
+    }
+}
+impl Ord for GroundJob {
+    fn cmp(&self, b: &Self) -> Ordering {
+        b.lower_bound
+            .total_cmp(&self.lower_bound)
+            .then_with(|| b.from.cmp(&self.from))
+            .then_with(|| b.to.cmp(&self.to))
+    }
+}
+
 /// Solve an immutable prepared World using native search only.
 /// Physical proofs and canonical paths come from World; all labels are query-local.
 pub fn solve(world: &crate::world::World, query: &Value, config: &Value) -> Result<Value, String> {
@@ -1440,7 +1619,7 @@ fn solve_world(
     profile("nodes", &started, count);
     let max_attempts = max_candidates;
     profile("graph", &started, count);
-    let action_components = graph
+    let mut action_components = graph
         .points
         .iter()
         .map(|&p| {
@@ -1455,25 +1634,49 @@ fn solve_world(
         .collect::<Vec<_>>();
     let largest_multiplier = boosts.iter().map(|b| b.usage.multiplier).fold(1., f64::max);
     let mut attempts = ground_probes;
+    let mut action_sources = if stage >= 2 {
+        (0..count)
+            .filter(|&a| geometry.project(graph.points[a], tolerance).is_some())
+            .collect::<Vec<_>>()
+    } else {
+        Vec::new()
+    };
+    let original_sources = action_sources.len();
+    let mut target_eligible = vec![true; count];
+    let mut interior_landings = std::collections::HashSet::new();
+    let mut source_cursor = 0usize;
     if stage >= 2 && movement["model"].is_object() {
-        'actions: for a in 0..count {
-            if geometry.project(graph.points[a], tolerance).is_none() {
-                continue;
-            }
+        while source_cursor < action_sources.len() {
             let remaining = max_attempts.saturating_sub(attempts);
             if remaining == 0 {
                 truncated = true;
                 break;
             }
-            let source_end = attempts + (remaining / (count - a).max(1)).max(1);
+            let a = action_sources[source_cursor];
+            source_cursor += 1;
+            // FIFO growth shares the remaining work with every pending source,
+            // including proved interior landings. No source is rediscovered.
+            let pending_sources = action_sources.len() - source_cursor + 1;
+            let source_end = attempts + (remaining / pending_sources).max(1);
             let limit = ((source_end - attempts) / 2).max(1);
-            let action_targets =
-                rank_action_targets(&graph, a, world, largest_multiplier, &action_components)?;
+            let action_targets = rank_action_targets(
+                &graph,
+                a,
+                world,
+                largest_multiplier,
+                &action_components,
+                &target_eligible,
+            )?;
             let mut discovered = Vec::new();
-            // One new landing per sampled source keeps graph growth bounded.
-            // Its outgoing ground successors use the same canonical World paths
-            // and retain every essential anchor, including the final goal.
-            let landing_limit = ((source_end - attempts) / 3).min(16);
+            // Recursive landing proposals have a global growth allowance equal
+            // to the original supported-source count, rather than a fresh node
+            // allowance per newly discovered source.
+            let landing_limit = if interior_landings.len() < original_sources {
+                ((source_end - attempts) / 3).min(16)
+            } else {
+                truncated = true;
+                0
+            };
             if stage >= 2 && landing_limit > 0 {
                 for end in
                     landing_proposals(world, graph.points[a], goal, landing_limit, &mut truncated)?
@@ -1533,7 +1736,14 @@ fn solve_world(
                 if segment.required_gait.is_some() && !has_locomotion {
                     continue;
                 }
+                let before = graph.points.len();
                 graph.generated(a, segment, terminal, None, &authority)?;
+                if !terminal && graph.points.len() > before {
+                    // Nonterminal admission above includes canonical standing
+                    // and nav membership, so this is a supported flight source.
+                    interior_landings.insert(before);
+                    action_sources.push(before);
+                }
             }
             'targets: for &b in &action_targets {
                 let terminal = interaction["airborne"] == true && targets.contains(&b);
@@ -1551,7 +1761,7 @@ fn solve_world(
                     for mode in ["drop", "jump"] {
                         if attempts >= max_attempts {
                             truncated = true;
-                            break 'actions;
+                            break 'targets;
                         }
                         if attempts >= source_end {
                             truncated = true;
@@ -1593,7 +1803,30 @@ fn solve_world(
                     }
                 }
             }
+            for id in action_components.len()..graph.points.len() {
+                action_components.push(
+                    world
+                        .project_with_tolerance(graph.points[id], tolerance, None)
+                        .ok()
+                        .and_then(|hits| {
+                            hits.first()
+                                .and_then(|p| world.support_component(&p.surface))
+                        }),
+                );
+                target_eligible.push(interior_landings.contains(&id));
+            }
         }
+    }
+    let discovery = json!({"originalSources":original_sources,"processedSources":source_cursor,
+        "queuedSources":action_sources.len(),"pendingSources":action_sources.len()-source_cursor,
+        "interiorLandings":interior_landings.len(),"maxInteriorLandings":original_sources});
+    if std::env::var_os("GANGLIA_PROFILE").is_some() {
+        eprintln!(
+            "{}",
+            json!({"native":"search","phase":"discovery",
+            "elapsedMs":started.elapsed().as_secs_f64()*1000.,"worklist":discovery,
+            "candidateAttempts":attempts,"maxCandidates":max_attempts})
+        );
     }
     let max_labels = budget(&movement["locomotion"]["search"], "maxLabels", 256)?.max(2);
     profile("actions", &started, attempts);
@@ -1640,6 +1873,33 @@ fn solve_world(
         })
         .collect::<Vec<_>>();
     let mut ground_attempts = 0usize;
+    let resources = Resources {
+        geometry: &geometry,
+        options: &options,
+        boosts: &boosts,
+        waypoints: &waypoints,
+        goal,
+        interaction,
+        tolerance,
+        has_locomotion,
+    };
+    // Every schedule's 3D walking speed is bounded by its configured gait/dash
+    // cap (including any pickup) or a carried entry velocity. Expiry can only
+    // lower those caps. This gives geometry jobs an optimistic arrival clock.
+    let walking_multiplier = graph
+        .edges
+        .iter()
+        .flatten()
+        .filter_map(|e| e.segment.boost.as_ref().map(|b| b.multiplier))
+        .fold(largest_multiplier, f64::max);
+    let maximum_walk_speed = initial_labels.iter().map(|l| l.state.velocity).fold(
+        options
+            .speed
+            .max(options.sprint_speed)
+            .max(options.dash.as_ref().map_or(0., |d| d.speed))
+            * walking_multiplier,
+        f64::max,
+    );
     let mut walking_phases = Vec::new();
     let mut unexplored_detours = 0usize;
     // Stage 2 first searches only direct canonical walking and proved actions.
@@ -1672,7 +1932,91 @@ fn solve_world(
             );
         }
         let mut walked = vec![false; graph.points.len()];
-        while let Some(item) = queue.pop() {
+        let mut ground_jobs = BinaryHeap::<GroundJob>::new();
+        let mut queued_pairs = std::collections::HashSet::new();
+        let mut jobs_proved = 0usize;
+        let mut jobs_rejected = 0usize;
+        loop {
+            while queue.peek().is_some_and(|item| !arena[item.label].active) {
+                queue.pop();
+            }
+            let next_label_cost = queue.peek().map_or(f64::INFINITY, |item| item.cost);
+            if ground_jobs
+                .peek()
+                .is_some_and(|job| job.lower_bound <= next_label_cost)
+            {
+                let job = ground_jobs.pop().unwrap();
+                ground_attempts += 1;
+                let p = graph.points[job.from];
+                let q = graph.points[job.to];
+                let profiling = std::env::var_os("GANGLIA_PROFILE").is_some();
+                let began = std::time::Instant::now();
+                if profiling {
+                    eprintln!(
+                        "{}",
+                        json!({"native":"search","phase":"ground-job-start",
+                        "elapsedMs":started.elapsed().as_secs_f64()*1000.,
+                        "from":job.from,"to":job.to,"start":p,"target":q,
+                        "lowerBound":job.lower_bound,"pending":ground_jobs.len(),
+                        "expanded":expanded,"proved":jobs_proved,"rejected":jobs_rejected})
+                    );
+                }
+                let path = geometry.path(p, q).filter(|points| {
+                    points.first().is_some_and(|a| distance(*a, p) <= 1e-5)
+                        && points.last().is_some_and(|b| distance(*b, q) <= 1e-5)
+                });
+                if profiling {
+                    eprintln!(
+                        "{}",
+                        json!({"native":"search","phase":"ground-job-end",
+                        "elapsedMs":started.elapsed().as_secs_f64()*1000.,
+                        "durationMs":began.elapsed().as_secs_f64()*1000.,
+                        "from":job.from,"to":job.to,"supported":path.is_some()})
+                    );
+                }
+                let Some(points) = path else {
+                    jobs_rejected += 1;
+                    continue;
+                };
+                jobs_proved += 1;
+                graph.edge(
+                    job.from,
+                    job.to,
+                    Segment {
+                        mode: "walk".into(),
+                        times: walk_times(&points, speed),
+                        points,
+                        ..Default::default()
+                    },
+                    false,
+                    None,
+                );
+                // Proofs belong to a geometric pair, not a particular gait or
+                // waypoint state. Replay the new edge for every live source label.
+                let live = rows[job.from]
+                    .iter()
+                    .copied()
+                    .filter(|&i| arena[i].active)
+                    .collect::<Vec<_>>();
+                let edge = graph.edges[job.from].last().unwrap();
+                for i in live {
+                    let label = arena[i].clone();
+                    for next in edge_successors(edge, &label, i, p, &resources, &mut truncated)? {
+                        insert(
+                            next,
+                            &mut arena,
+                            &mut rows,
+                            &mut queue,
+                            max_labels,
+                            &mut truncated,
+                        );
+                    }
+                }
+                continue;
+            }
+            let Some(item) = queue.pop() else {
+                break;
+            };
             if !arena[item.label].active {
                 continue;
             }
@@ -1742,6 +2086,26 @@ fn solve_world(
                     {
                         continue;
                     }
+                    if !direct_only && stage >= 2 && !supported_paths.contains_key(&(label.node, b))
+                    {
+                        if queued_pairs.insert((label.node, b)) {
+                            let source_cost = rows[label.node]
+                                .iter()
+                                .copied()
+                                .filter(|&i| arena[i].active)
+                                .map(|i| arena[i].cost)
+                                .fold(f64::INFINITY, f64::min);
+                            // Endpoint admission allows 1e-5 at either end;
+                            // subtract it so normalization cannot raise the bound.
+                            let travel = (distance(p, q) - 2e-5).max(0.) / maximum_walk_speed;
+                            ground_jobs.push(GroundJob {
+                                lower_bound: source_cost + travel,
+                                from: label.node,
+                                to: b,
+                            });
+                        }
+                        continue;
+                    }
                     let path = if let Some(points) = supported_paths.get(&(label.node, b)) {
                         Some(points.clone())
                     } else {
@@ -1785,127 +2149,14 @@ fn solve_world(
                 }
             }
             for edge in &graph.edges[label.node] {
-                if let Some(required) = &edge.required_boost
-                    && world.movement.active_boost.as_ref() != Some(required)
-                    && !label.boost.is_some_and(|i| boosts[i].usage.id == *required)
-                {
-                    continue;
-                }
-                let mut boosted;
-                // A character speed boost does not alter a fixed device trajectory.
-                // Its clock still advances across the ride, but attaching it to the
-                // device would claim boosted execution after the buff has expired.
-                let boosted_motion = matches!(edge.segment.mode.as_str(), "walk" | "jump" | "drop")
-                    || edge.required_boost.is_some();
-                let segment = if let Some(i) = label.boost.filter(|_| boosted_motion) {
-                    boosted = (*edge.segment).clone();
-                    boosted.boost = Some(BoostUse {
-                        duration: label.remaining,
-                        ..boosts[i].usage.clone()
-                    });
-                    &boosted
-                } else {
-                    edge.segment.as_ref()
-                };
-                let choices: &[(bool, bool)] = if segment.mode == "walk" && has_locomotion {
-                    if options.dash.is_some() {
-                        &[(true, true), (true, false), (false, false)]
-                    } else {
-                        &[(true, false), (false, false)]
-                    }
-                } else {
-                    &[(true, false)]
-                };
-                for &(sprint, dash) in choices {
-                    let (state, duration, stage, step) = if label.boost.is_none() {
-                        let Some((state, duration)) =
-                            locomotion::evaluate(&edge.block, &options, label.state, sprint, dash)
-                        else {
-                            continue;
-                        };
-                        (
-                            state,
-                            duration,
-                            advance_stage(&segment.points, label.stage, &waypoints, tolerance),
-                            Step::Prepared {
-                                segment: edge.segment.clone(),
-                                sprint,
-                                dash,
-                            },
-                        )
-                    } else {
-                        let Some((state, duration, segments, schedule)) = optional_proof(
-                            transition(
-                                segment,
-                                &options,
-                                label.state,
-                                sprint,
-                                dash,
-                                Some(label.remaining),
-                                world,
-                                if edge.terminal {
-                                    Some((goal, interaction))
-                                } else {
-                                    None
-                                },
-                            ),
-                            &mut truncated,
-                        )?
-                        else {
-                            continue;
-                        };
-                        let trace = segments
-                            .iter()
-                            .flat_map(|s| s.points.iter().copied())
-                            .collect::<Vec<_>>();
-                        let stage = advance_stage(&trace, label.stage, &waypoints, tolerance);
-                        (
-                            state,
-                            duration,
-                            stage,
-                            Step::Materialized(Arc::new((segments, schedule))),
-                        )
-                    };
-                    if edge.terminal
-                        && (stage != waypoints.len()
-                            || !goal_at(
-                                match &step {
-                                    Step::Prepared { segment, .. } => {
-                                        *segment.points.last().unwrap()
-                                    }
-                                    Step::Materialized(output) => *output
-                                        .0
-                                        .last()
-                                        .and_then(|s| s.points.last())
-                                        .unwrap_or(&graph.points[label.node]),
-                                },
-                                goal,
-                                interaction,
-                                &geometry,
-                                tolerance,
-                            ))
-                    {
-                        continue;
-                    }
-                    let remaining = (label.remaining - duration).max(0.);
-                    let boost = if remaining > EPS { label.boost } else { None };
-                    let dashes = state.dash_count;
-                    let next = Label {
-                        node: edge.to,
-                        stage,
-                        cost: label.cost + duration,
-                        arrival: label.arrival,
-                        origin: label.origin,
-                        state,
-                        parent: Some(item.label),
-                        step: Some(step),
-                        boost,
-                        remaining,
-                        used_boost: label.used_boost.clone(),
-                        minimum: state.minimum,
-                        dashes,
-                        active: true,
-                    };
+                for next in edge_successors(
+                    edge,
+                    &label,
+                    item.label,
+                    graph.points[label.node],
+                    &resources,
+                    &mut truncated,
+                )? {
                     insert(
                         next,
                         &mut arena,
@@ -1919,6 +2170,7 @@ fn solve_world(
         }
         walking_phases.push(json!({"kind":phase,"expanded":expanded-began_expanded,
             "groundAttempts":ground_attempts-began_ground,"complete":winner.is_some(),
+            "groundJobs":{"queued":queued_pairs.len(),"proved":jobs_proved,"rejected":jobs_rejected,"pending":ground_jobs.len()},
             "unexploredDetours":if direct_only { unexplored_detours } else { 0 }}));
         if std::env::var_os("GANGLIA_PROFILE").is_some() {
             eprintln!(
@@ -1945,7 +2197,7 @@ fn solve_world(
     profile("ground", &started, ground_attempts);
     let Some(winner) = winner else {
         return Ok(
-            json!({"route":{"status":if arena.is_empty()||targets.is_empty(){"unmapped"}else{"no-verified-route"},"search":search},"connections":connections,"diagnostics":{"truncated":truncated,"candidateAttempts":attempts,"flightAttempts":attempts-ground_probes,"feedbackAttempts":ground_probes,"groundAttempts":ground_attempts,"walkingPhases":walking_phases,"groundDegree":ground_degree,"groundProbes":ground_probes,"repairRegions":repair_spans.len(),"repairTruncated":repair_truncated,"groundRouteExpanded":route_expanded,"groundProbeFeedback":ground_feedback}}),
+            json!({"route":{"status":if arena.is_empty()||targets.is_empty(){"unmapped"}else{"no-verified-route"},"search":search},"connections":connections,"diagnostics":{"truncated":truncated,"candidateAttempts":attempts,"flightAttempts":attempts-ground_probes,"feedbackAttempts":ground_probes,"groundAttempts":ground_attempts,"discovery":discovery,"walkingPhases":walking_phases,"groundDegree":ground_degree,"groundProbes":ground_probes,"repairRegions":repair_spans.len(),"repairTruncated":repair_truncated,"groundRouteExpanded":route_expanded,"groundProbeFeedback":ground_feedback}}),
         );
     };
     let chosen = &arena[winner];
@@ -2029,7 +2281,7 @@ fn solve_world(
     }
 
     Ok(
-        json!({"route":route,"connections":connections,"diagnostics":{"truncated":truncated,"candidateAttempts":attempts,"flightAttempts":attempts-ground_probes,"feedbackAttempts":ground_probes,"groundAttempts":ground_attempts,"walkingPhases":walking_phases,"groundDegree":ground_degree,"groundProbes":ground_probes,"repairRegions":repair_spans.len(),"repairTruncated":repair_truncated,"groundRouteExpanded":route_expanded,"groundProbeFeedback":ground_feedback},"arrival":starts[chosen.origin],"groundedTarget":points.last(),"continuation":continuation}),
+        json!({"route":route,"connections":connections,"diagnostics":{"truncated":truncated,"candidateAttempts":attempts,"flightAttempts":attempts-ground_probes,"feedbackAttempts":ground_probes,"groundAttempts":ground_attempts,"discovery":discovery,"walkingPhases":walking_phases,"groundDegree":ground_degree,"groundProbes":ground_probes,"repairRegions":repair_spans.len(),"repairTruncated":repair_truncated,"groundRouteExpanded":route_expanded,"groundProbeFeedback":ground_feedback},"arrival":starts[chosen.origin],"groundedTarget":points.last(),"continuation":continuation}),
     )
 }
 fn ground_failure(
@@ -2703,13 +2955,14 @@ fn rank_action_targets(
     world: &crate::world::World,
     multiplier: f64,
     components: &[Option<usize>],
+    eligible: &[bool],
 ) -> Result<Vec<usize>, String> {
     let origin = graph.points[from];
     let mut essential = Vec::new();
     let mut samples = Vec::new();
     let mut deferred = Vec::new();
-    for (id, &point) in graph.points.iter().take(components.len()).enumerate() {
-        if distance(origin, point) <= EPS {
+    for (id, &point) in graph.points.iter().enumerate() {
+        if !eligible[id] || distance(origin, point) <= EPS {
             continue;
         }
         let reachable =

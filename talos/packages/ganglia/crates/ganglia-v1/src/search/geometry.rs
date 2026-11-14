@@ -2,6 +2,10 @@
 use super::Point;
 
 pub(super) const EPS: f64 = 1e-8;
+#[cfg(test)]
+thread_local! {
+    pub(super) static PATH_PROOFS: std::cell::RefCell<Vec<(Point,Point)>> = const { std::cell::RefCell::new(Vec::new()) };
+}
 pub(super) fn add(a: Point, b: Point) -> Point {
     std::array::from_fn(|i| a[i] + b[i])
 }
@@ -65,6 +69,8 @@ impl<'a> Geometry<'a> {
         self.world.standing_foot(p).ok().flatten()
     }
     pub fn path(&self, a: Point, b: Point) -> Option<Vec<Point>> {
+        #[cfg(test)]
+        PATH_PROOFS.with(|proofs| proofs.borrow_mut().push((a, b)));
         self.world
             .ground_path(a, b)
             .ok()

@@ -800,7 +800,15 @@ fn descending_targets_keep_early_slots_among_many_same_floor_components() {
     }
     let deep = graph.node([4., 0., 1.]);
     let components = (0..graph.points.len()).map(Some).collect::<Vec<_>>();
-    let ranked = rank_action_targets(&graph, 0, &world, 1., &components).unwrap();
+    let ranked = rank_action_targets(
+        &graph,
+        0,
+        &world,
+        1.,
+        &components,
+        &vec![true; graph.points.len()],
+    )
+    .unwrap();
     assert!(ranked.iter().position(|&id| id == deep).unwrap() < 3);
 }
 
@@ -1415,4 +1423,188 @@ fn feedback_and_flights_share_one_total_physical_attempt_budget() {
     );
     assert!(d["groundProbes"].as_u64().unwrap() <= 16);
     assert!(d["candidateAttempts"].as_u64().unwrap() <= 128);
+}
+
+#[test]
+fn pending_ground_proofs_finish_local_device_chain_before_far_unavailable_pairs() {
+    let floor =
+        json!({"id":"approach","vertices":[[-4.,0.,-3.],[4.,0.,-3.],[4.,0.,3.],[-4.,0.,3.]]});
+    let mut entry = connection("entry", 0.5, 10., 0.01);
+    entry["requiredGait"] = json!("sprint");
+    let mut snapshot = scene(
+        vec![
+            floor,
+            surface("middle", 10.),
+            surface("goal", 20.),
+            surface("dead-end", 50.),
+            surface("far", 300.),
+            surface("far-end", 400.),
+        ],
+        vec![
+            entry,
+            connection("finish", 10., 20., 0.01),
+            connection("unreachable", 300., 400., 0.1),
+        ],
+    );
+    let positions = snapshot["collision"]["positions"].as_array_mut().unwrap();
+    let base = positions.len() / 3;
+    positions.extend(
+        [0., 0., -1., 0., 4., -1., 0., 4., 1., 0., 0., 1.]
+            .into_iter()
+            .map(|x| json!(x)),
+    );
+    snapshot["collision"]["indices"]
+        .as_array_mut()
+        .unwrap()
+        .extend(
+            [base, base + 1, base + 2, base, base + 2, base + 3]
+                .into_iter()
+                .map(|x| json!(x)),
+        );
+    snapshot["movement"]["locomotion"] = json!({"speed":2.,"sprintSpeed":5.,"sprintAcceleration":10.,
+        "stamina":{"capacity":10.,"initial":10.,"activationCost":1.,"sprintDrain":2.,
+            "recoveryRate":1.,"recoveryDelay":1.,"reserve":1.}});
+    let mut tired = start("tired", -0.5, 0., "available");
+    tired["continuation"] = json!({"resource":carried_resource(1.,false)});
+    let mut ready = start("ready", -0.5, 0.1, "available");
+    let mut carried = carried_resource(8., true);
+    carried["velocity"] = json!(5.);
+    ready["continuation"] = json!({"resource":carried});
+    let query = json!({"starts":[tired,ready],"goal":[20.,0.,0.]});
+    geometry::PATH_PROOFS.with(|proofs| proofs.borrow_mut().clear());
+    let result = solve_snapshot(&snapshot, &query, &json!({"maxCandidates":0})).unwrap();
+    complete(&result);
+    assert_eq!(result["route"]["start"], "ready");
+    let phases = array(&result["diagnostics"]["walkingPhases"]);
+    assert_eq!(phases.len(), 2);
+    assert_eq!(phases[1]["kind"], "detours");
+    assert_eq!(phases[1]["groundJobs"]["proved"], 1);
+    assert!(phases[1]["groundJobs"]["pending"].as_u64().unwrap() > 0);
+    geometry::PATH_PROOFS.with(|proofs| {
+        let proofs = proofs.borrow();
+        assert_eq!(
+            proofs.len(),
+            1,
+            "local proof must advance the queue before far unavailable targets: {proofs:?}"
+        );
+        assert!((proofs[0].0[0] + 0.5).abs() < 1e-6 && (proofs[0].1[0] - 0.5).abs() < 1e-6);
+    });
+    // Replaying the selected whole-route decisions must retain the carried
+    // arrival's exact stamina/gait clocks across the deferred geometry edge.
+    let opts = options(json!({}));
+    let mut state =
+        locomotion::read_state(&query["starts"][1]["continuation"]["resource"], &opts).unwrap();
+    let mut duration = 0.;
+    for block in array(&result["route"]["schedule"]) {
+        for raw in array(&block["segments"]) {
+            let segment: Segment = serde_json::from_value(raw.clone()).unwrap();
+            let (next, time, _) = locomotion::advance(
+                &segment,
+                &opts,
+                state,
+                block["allowSprint"].as_bool().unwrap(),
+                block["allowDash"].as_bool().unwrap(),
+            )
+            .unwrap();
+            state = next;
+            duration += time;
+        }
+    }
+    assert_eq!(
+        serde_json::to_value(state).unwrap(),
+        result["continuation"]["resource"]
+    );
+    assert!((duration + 0.1 - result["route"]["cost"].as_f64().unwrap()).abs() < 1e-9);
+    for authored in array(&snapshot["connections"]).iter().take(2) {
+        let selected = array(&result["route"]["segments"])
+            .iter()
+            .find(|s| s["connection"] == authored["id"])
+            .unwrap();
+        assert_eq!(selected["points"], authored["points"]);
+        assert_eq!(selected["times"], authored["times"]);
+    }
+    // A short proof may reveal only a dead end. Keep the farther selected
+    // endpoint queued because its device is necessary for goal connectivity.
+    let mut farther = snapshot.clone();
+    farther["connections"][0]["points"][0][0] = json!(3.);
+    farther["connections"]
+        .as_array_mut()
+        .unwrap()
+        .push(connection("near-dead-end", 0.5, 50., 0.01));
+    geometry::PATH_PROOFS.with(|proofs| proofs.borrow_mut().clear());
+    let result = solve_snapshot(&farther, &query, &json!({"maxCandidates":0})).unwrap();
+    complete(&result);
+    assert!(
+        array(&result["route"]["segments"])
+            .iter()
+            .any(|s| s["connection"] == "entry" && s["points"][0][0] == 3.)
+    );
+    geometry::PATH_PROOFS.with(|proofs| {
+        let proofs = proofs.borrow();
+        assert!(
+            (proofs[0].1[0] - 0.5).abs() < 1e-6,
+            "near proof is ranked first"
+        );
+        assert!(
+            proofs.iter().any(|(_, to)| (to[0] - 3.).abs() < 1e-6),
+            "the farther necessary target must not be pruned"
+        );
+        assert!(
+            proofs
+                .iter()
+                .all(|(from, to)| from[0] < 300. && to[0] < 300.)
+        );
+    });
+}
+
+#[test]
+fn generated_interior_landing_becomes_a_source_for_the_next_flight() {
+    let rectangle = |id: &str, x0: f64, x1: f64, y: f64, z: f64| {
+        json!({"id":id,
+        "vertices":[[x0,y,-z],[x1,y,-z],[x1,y,z],[x0,y,z]]})
+    };
+    // Fixed center/perimeter proposals on the broad middle polygon are outside
+    // reach. Its reachable interior is a landing, then a launch site across its
+    // far edge to the separate grounded goal. Walking cannot cross the gap.
+    let mut snapshot = scene(
+        vec![
+            rectangle("upper", -3., 3., 20., 3.),
+            rectangle("middle", -40., 12., 8., 40.),
+            rectangle("goal", 15., 17., 0., 1.),
+        ],
+        vec![],
+    );
+    snapshot["movement"]["model"]["maxJumpHeight"] = json!(1.);
+    snapshot["movement"]["model"]["maxHorizontalSpeed"] = json!(5.);
+    snapshot["movement"]["runAirSpeed"] = json!(5.);
+    let query = json!({"starts":[{"id":"upper","position":[0.,20.,0.],"cost":0.,"state":"available"}],
+        "goal":[16.,0.,0.]});
+    let result = solve_snapshot(
+        &snapshot,
+        &query,
+        &json!({"maxCandidates":4000,"maxLinks":1,"sampleSpacing":100.}),
+    )
+    .unwrap();
+    complete(&result);
+    let flights = array(&result["route"]["segments"])
+        .iter()
+        .filter(|s| s["mode"] == "jump" || s["mode"] == "drop")
+        .collect::<Vec<_>>();
+    assert!(flights.len() >= 2);
+    let landing = point(array(&flights[0]["points"]).last().unwrap()).unwrap();
+    assert!(
+        landing[0] > 3.
+            && landing[0] < 12.
+            && (landing[1] - 8.01).abs() < 1e-5
+            && landing[2].abs() < 40.
+    );
+    assert_eq!(flights[1]["points"][0], json!(landing));
+    assert!(flights.iter().all(|s| s["flight"].is_object()));
+    assert!(result["diagnostics"]["candidateAttempts"].as_u64().unwrap() <= 4000);
+    let work = &result["diagnostics"]["discovery"];
+    let original = work["originalSources"].as_u64().unwrap();
+    assert!(work["processedSources"].as_u64().unwrap() > original);
+    assert!(work["interiorLandings"].as_u64().unwrap() > 0);
+    assert!(work["interiorLandings"].as_u64().unwrap() <= original);
+    assert!(work["queuedSources"].as_u64().unwrap() <= original * 2);
 }

@@ -12,5 +12,5 @@
   "singleAttributePerLine": true,
   "sortImports": true,
   "sortPackageJson": true,
-  "ignorePatterns": [".local/**", "dist/**", "docs/**", "**/*.md"]
+  "ignorePatterns": [".local/**", "**/target/**", "dist/**", "docs/**", "**/*.md"]
 }

@@ -25,19 +25,31 @@ to flights. Neither a failed chord nor an exhausted NAV proposal excludes ground
 detours. Complete retained NAV paths may be physically certified despite an
 exhausted coalescing allowance, provided every leg and exact join passes.
 
-The captured upper-floor case remains unresolved. The latest bounded probe finds
-an 85-point NAV proposal and exposes 23 raw support failures plus one clearance
-failure. Search reaches 130 nodes and completes 8,000 shared attempts, then hits
-the 45-second diagnostic limit during resource/ground expansion. These results
-establish useful local feedback, not a complete route or a performance gain.
+The captured upper-floor first window remains a finite discovery miss. Its
+85-point NAV proposal exposes 23 raw support failures and one clearance failure.
+Lazy geometry jobs compete with resource labels through admissible lower bounds;
+expensive full detours are proved only when selected. Supported generated interior
+landings can become later flight sources and targets, within the existing total
+attempt and graph-growth limits. World retains dense repair state and batched
+adjacency/proof lookups without changing the directed graph or exact proofs.
 Stage 2 searches directly proved walks and existing actions first, then restarts
 resource labels with ordinary ground detours if necessary. Both passes share the
 original expansion budget. An early completion is approximate when detours remain
-unexplored and is marked truncated. The upper-floor direct pass finishes in
-1.57 seconds without completion; detour fallback still hits the diagnostic limit.
-Broader replay remains gated on a physically accepted representative case.
+unexplored and is marked truncated. The captured first window now finishes all
+285 fallback jobs in 27.47 seconds without a route. Engine can respond with
+expansion and subdivision rather than exhausting service time in that window.
 
-The assembled checkpoint passes 133 Rust unit tests, two authored-action tests,
+The complete upper-floor Scene query finishes in 37.474 seconds through eight
+window loads, with `complete`, `partial=false`, modeled cost 4.525145 seconds and
+length 34.651996 metres. Independent physical replay passes with no issues.
+Evidence is `.local/research/rust-solver-rewrite/parent-upper-scene/`. Expanded IO
+requests returning the same facts reuse identical bounded failures only inside
+the current query. Revision, coverage, continuation, joint poses, catalog or
+stage changes require new work. Stage 1 is omitted when no known actions or boost
+pickups distinguish it from stage 0. Subsequent queries always search afresh.
+Six-request acceptance remains to be established.
+
+The assembled checkpoint passes 136 Rust unit tests, two authored-action tests,
 22 native integration fixtures and the retained 440 TypeScript tests. Release
 N-API build, feature-enabled all-target Clippy, TypeScript checking, lint and
 format checks pass. This validates the new contracts and focused fixtures; it

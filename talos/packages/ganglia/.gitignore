@@ -1,4 +1,5 @@
 node_modules/
 .local/
 prototype/rust-kernel/target/
+crates/*/target/
 .DS_Store

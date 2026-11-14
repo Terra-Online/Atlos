@@ -138,6 +138,49 @@ fn fail_all(_: &World, _: &Value, _: &Value) -> Result<Value, String> {
         json!({"route":{"status":"no-verified-route"},"reason":"blocked","diagnostics":{"truncated":false}}),
     )
 }
+static PHYSICAL_FAILURE_CALLS: AtomicUsize = AtomicUsize::new(0);
+fn counted_failure(world: &World, query: &Value, config: &Value) -> Result<Value, String> {
+    PHYSICAL_FAILURE_CALLS.fetch_add(1, Ordering::SeqCst);
+    fail_all(world, query, config)
+}
+#[test]
+fn expanded_requests_do_not_repeat_identical_bounded_physical_searches() {
+    PHYSICAL_FAILURE_CALLS.store(0, Ordering::SeqCst);
+    let mut engine =
+        Engine::with_search(json!({"maxAttempts":1}), input(), counted_failure).unwrap();
+    let step = engine.start(query()).unwrap();
+    assert_eq!(
+        finish(&mut engine, step)["route"]["status"],
+        "no-verified-route"
+    );
+    // Tail and forward have different arrivals. Each needs walking and full
+    // discovery once; expanded IO returning the same facts adds no new search.
+    assert_eq!(PHYSICAL_FAILURE_CALLS.load(Ordering::SeqCst), 4);
+    let step = engine.start(query()).unwrap();
+    finish(&mut engine, step);
+    assert_eq!(PHYSICAL_FAILURE_CALLS.load(Ordering::SeqCst), 8);
+
+    PHYSICAL_FAILURE_CALLS.store(0, Ordering::SeqCst);
+    let mut step = engine.start(query()).unwrap();
+    for revision in 0..20 {
+        if step["type"] == "complete" {
+            break;
+        }
+        step = engine
+            .resume(response(
+                &step,
+                &format!("revision-{revision}"),
+                json!({"kind":"complete"}),
+            ))
+            .unwrap();
+    }
+    assert_eq!(step["type"], "complete");
+    assert_eq!(
+        PHYSICAL_FAILURE_CALLS.load(Ordering::SeqCst),
+        8,
+        "changed physical facts must repeat the full bounded attempts"
+    );
+}
 #[test]
 fn terminal_partial_survives_failed_prefix_and_cancellation_invalidates_effect() {
     let mut e = Engine::with_search(json!({}), input(), fail_all).unwrap();

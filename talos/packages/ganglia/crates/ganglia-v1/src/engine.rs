@@ -90,6 +90,10 @@ struct Query {
     incumbent: Option<Value>,
     boost_facts: BTreeMap<String, Value>,
     following_facts: BTreeMap<String, Value>,
+    // Expanded load requests can resolve to the same immutable physical window.
+    // Reuse only identical bounded failures within this query; a new revision,
+    // continuation, pose, catalog or stage still gets an independent search.
+    failed_searches: BTreeMap<String, Value>,
     excluded_arrivals: HashSet<String>,
     excluded_edges: HashSet<String>,
     attempt: usize,
@@ -290,6 +294,7 @@ impl Engine {
             incumbent: None,
             boost_facts,
             following_facts: BTreeMap::new(),
+            failed_searches: BTreeMap::new(),
             excluded_arrivals: HashSet::new(),
             excluded_edges: HashSet::new(),
             attempt: 0,
@@ -1055,7 +1060,23 @@ impl Engine {
         let key = self.cache.front().unwrap().key.clone();
         let mut config = self.search_config(w.stage, Some(&key));
         config["fixedPlacements"] = json!(fixed);
-        let mut result = (self.solve)(&world, &local, &config)?;
+        let search_key = serde_json::to_string(&json!([key, local, config, q.following_facts,]))
+            .map_err(|e| e.to_string())?;
+        let mut failed_search = None;
+        let mut result = if let Some(failed) = q.failed_searches.get(&search_key) {
+            failed.clone()
+        } else {
+            let result = (self.solve)(&world, &local, &config)?;
+            if !complete(&result["route"]) {
+                failed_search = Some((
+                    search_key,
+                    json!({"route":{"status":"no-verified-route"},
+                        "reason":result["reason"],
+                        "diagnostics":{"truncated":truncated(&result),"reusedWindowFailure":true}}),
+                ));
+            }
+            result
+        };
         if complete(&result["route"]) && w.stage < 2 {
             // Feasibility does not make walking or a known device the fastest
             // route. Compare a bounded full-action alternative in the same
@@ -1121,6 +1142,9 @@ impl Engine {
             }
         }
         let q = self.query.as_mut().unwrap();
+        if let Some((key, result)) = failed_search {
+            q.failed_searches.insert(key, result);
+        }
         let w = q.window.as_mut().unwrap();
         q.truncated |= truncated(&result);
         let route = &result["route"];
@@ -1200,7 +1224,20 @@ impl Engine {
         }
         w.failures.insert(signature);
         if w.stage < 2 {
-            w.stage += 1;
+            // Without actions or pickups, stage 1 repeats exactly the walking
+            // graph already exhausted by stage 0. Proceed to flight discovery.
+            let has_actions = !world.known_actions().is_empty()
+                || !world.boosts.is_empty()
+                || self
+                    .catalog
+                    .banks
+                    .get(&key)
+                    .is_some_and(|bank| !bank.is_empty());
+            w.stage = if w.stage == 0 && !has_actions {
+                2
+            } else {
+                w.stage + 1
+            };
             return Ok(());
         }
         if w.expansion == 0 {
