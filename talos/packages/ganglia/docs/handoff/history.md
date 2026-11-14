@@ -19,6 +19,13 @@ abort test preserves the nonempty frozen catalog and independently certifies the
 next route. Service timing includes cancellation settling; the cancellation
 interval is also exposed separately.
 
+Two-axis review found and corrected native restoration phase ordering, result
+journal errors leaving requests unresolved, an absent parent restoration deadline,
+and stale warmup documentation. All 18 worker tests pass after those fixes,
+including journal failure and unresponsive restoration; all 24 N-API fixtures pass.
+Final typecheck and lint pass. The CLI failure probe preserves an interrupted
+summary and its event journal. No new solver algorithm change is part of this fix.
+
 ## Direct walking during catalog lookup, 2026-11-14
 
 The frozen `38a5cf23` configured run completes the lower-floor warmup in 70.427

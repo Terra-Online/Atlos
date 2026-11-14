@@ -337,8 +337,9 @@ search and refinement remain in query time; current V1 also performs some scene
 preparation lazily there. Ready does not certify an eagerly built immutable index.
 
 Warmup requests are part of the benchmark configuration and exclude scored
-queries. Missing training, unfrozen catalogs and unsuccessful warmup prevent V1
-scoring. No optional CLI flag disables preparation. All measured
+queries. Missing training or unfrozen catalogs prevent V1 scoring. Warmup query
+failures remain reported outcomes and do not block scoring once cancellation has
+settled. No optional CLI flag disables preparation. All measured
 rounds count toward throughput. With `--rounds 2` or more, outcomes and truncation
 are compared against the first measured round. One round does not establish
 repeatability.

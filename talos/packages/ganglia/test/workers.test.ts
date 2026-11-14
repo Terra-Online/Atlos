@@ -18,7 +18,10 @@ const prepare = (
   concurrency = count,
   dataRoot = '',
   timeoutMs?: number,
-  extra: Pick<Parameters<typeof prepareWorkerSolver>[0], 'preparation' | 'onRegion'> = {},
+  extra: Pick<
+    Parameters<typeof prepareWorkerSolver>[0],
+    'preparation' | 'onRegion' | 'onResult'
+  > = {},
 ) =>
   prepareWorkerSolver({
     count,
@@ -331,6 +334,32 @@ test('an unresponsive trained worker is restored before accepting the next query
     assert.equal(prepared.recoveryCount, 1);
     assert.equal(prepared.catalogStats().phase, 'frozen');
     assert.equal(prepared.catalogStats().added, 1);
+  } finally {
+    await prepared.solver.close();
+  }
+});
+
+test('a failed result journal rejects the request and closes the worker pool', async () => {
+  const error = new Error('journal unavailable');
+  const prepared = await prepare(1, 1, '', undefined, {
+    onResult() {
+      throw error;
+    },
+  });
+  await assert.rejects(prepared.solver.solveBatch([query('first'), query('queued')]), error);
+  await prepared.solver.close();
+});
+
+test('unresponsive restoration rejects the run instead of waiting forever', async () => {
+  const prepared = await prepare(1, 1, 'blocked-restoration', 100);
+  try {
+    await prepared.setCatalogPhase('training');
+    await prepared.train([query('training', 1)]);
+    await prepared.setCatalogPhase('frozen');
+    await assert.rejects(
+      prepared.solver.solveBatch([query('blocked', 300, 4), query('next', 1)]),
+      /restoration exceeded/,
+    );
   } finally {
     await prepared.solver.close();
   }

@@ -268,8 +268,16 @@ export async function prepareWorkerSolver(options: {
         ...(timedOut ? { observedWallMs } : {}),
       },
     };
-    options.onResult?.(task.message.query, value);
     return value;
+  };
+  const publish = (task: Task, result: WorkerResult) => {
+    try {
+      options.onResult?.(task.message.query, result);
+      task.resolve(result);
+    } catch (error) {
+      task.reject(error);
+      fail(error instanceof Error ? error : new Error(String(error)));
+    }
   };
   const interrupted = (reason: string): RouteResult => ({
     route: { status: 'no-verified-route' },
@@ -284,7 +292,7 @@ export async function prepareWorkerSolver(options: {
     clean(task);
     kill(slot);
     if (error !== undefined) task.reject(error);
-    else task.resolve(measured(interrupted(reason), task, reason === 'timeout'));
+    else publish(task, measured(interrupted(reason), task, reason === 'timeout'));
     dispatch();
   };
   // Keep the slot occupied until the interrupted computation has actually exited.
@@ -317,6 +325,17 @@ export async function prepareWorkerSolver(options: {
       slot.retired = false;
       slot.ready = false;
       let ready = false;
+      // Recovery includes training and must not hang outside the query watchdog.
+      const restorationTimer = trainingQueries.length
+        ? setTimeout(() => {
+            const error = new Error('Worker training restoration exceeded its deadline');
+            reject(error);
+            fail(error);
+          }, timeoutMs + cancellationGraceMs)
+        : undefined;
+      const clearRestoration = () => clearTimeout(restorationTimer);
+      worker.once('exit', clearRestoration);
+
       slot.exited = new Promise<void>((exited) =>
         worker.once('exit', () => {
           slot.rssBytes = 0;
@@ -342,6 +361,7 @@ export async function prepareWorkerSolver(options: {
             slot.inputLoadMs = message.inputLoadMs;
             slot.preparationMs = message.preparationMs;
             slot.readyMemory = message.memory;
+            clearRestoration();
             slot.ready = ready = true;
             resolve();
             return;
@@ -395,7 +415,7 @@ export async function prepareWorkerSolver(options: {
             }
             const { reason, error } = task.interruption;
             if (error !== undefined) task.reject(error);
-            else task.resolve(measured(interrupted(reason), task, reason === 'timeout'));
+            else publish(task, measured(interrupted(reason), task, reason === 'timeout'));
           } else if (message.type === 'error') task.reject(new Error(message.error));
           else {
             slot.catalog = message.catalog;
@@ -403,7 +423,7 @@ export async function prepareWorkerSolver(options: {
             mergeTimings(timings, message.timings);
             const result = measured(message.result, task);
             owners.set(result, slot.index);
-            task.resolve(result);
+            publish(task, result);
           }
           dispatch();
         } catch (error) {
@@ -534,7 +554,7 @@ export async function prepareWorkerSolver(options: {
           if (index !== -1) queued.splice(index, 1);
           clean(task);
           task.started = performance.now();
-          resolve(measured(interrupted('aborted'), task));
+          publish(task, measured(interrupted('aborted'), task));
           drained();
         }
       };

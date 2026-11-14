@@ -53,7 +53,6 @@ process.once('message', async (message: WorkerRequest) => {
           .digest('hex'),
       }
     : undefined;
-  rustSolver?.setCatalogPhase(catalogPhase);
   const catalogStats = () => {
     const base = actionCatalogStats();
     if (!rustSolver) return base;
@@ -72,9 +71,9 @@ process.once('message', async (message: WorkerRequest) => {
     else setActionCatalogPhase('training');
     for (const query of setup.trainingQueries)
       await solver.solve(query, { signal: AbortSignal.timeout(setup.timeoutMs ?? 300_000) });
-    if (rustSolver) rustSolver.setCatalogPhase(catalogPhase);
-    else setActionCatalogPhase(catalogPhase);
   }
+  if (rustSolver) rustSolver.setCatalogPhase(catalogPhase);
+  else setActionCatalogPhase(catalogPhase);
   const preparationMs = scene.timings.preparationMs + performance.now() - preparationStarted;
   let active: { id: number; controller: AbortController } | undefined;
   process.on('message', async (message: WorkerRequest) => {

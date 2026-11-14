@@ -16,6 +16,12 @@ process.once('message', async (message: WorkerRequest) => {
   let trained = setup.trainingQueries?.length ?? 0;
   const catalog = () => ({ ...actionCatalogStats(), added: trained });
   setActionCatalogPhase(setup.catalogPhase ?? 'disabled');
+  if (setup.dataRoot === 'blocked-restoration' && setup.trainingQueries?.length) {
+    const until = performance.now() + 500;
+    while (performance.now() < until) {
+      /* simulate unresponsive setup */
+    }
+  }
   if (setup.dataRoot === 'slow-start') await new Promise((resolve) => setTimeout(resolve, 80));
   if (setup.dataRoot === 'startup-failure') throw new Error('fixture startup failure');
   const metadata = {
