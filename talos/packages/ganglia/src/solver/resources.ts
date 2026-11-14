@@ -3,6 +3,7 @@ import type { InteractionGoal } from '#@/src/movement.ts';
 import type { GroundArrival, GroundOptions, Route } from '#@/src/route.ts';
 import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
 import type { GangliaV1Config as SolverConfig } from '#@/src/solver/ganglia-v1.ts';
+import type { PhysicalInput } from '#@/src/solver/physical.ts';
 /** Serialized work selected by Ganglia's orchestration. Resource adapters pass it
  * through unchanged and use the plan only for resource loading and scheduling. */
 export type PhysicalWork = { readonly version: 1; readonly step: 0 | 1 | 2 };
@@ -74,8 +75,25 @@ export interface SceneResources<Source, Job extends WindowJob> extends WindowRes
   WindowRequest & { source: Source },
   Job
 > {
+  /** Raw normalized facts for solvers that own physical preparation themselves.
+   * The revision covers every input fact; sparse coverage includes empty built
+   * tiles, while omitted tiles remain unknown. This operation performs IO and
+   * normalization only, without building navigation or solving a route. */
+  physical?(job: Job, request: WindowRequest & { source: Source }): Promise<PhysicalSnapshot>;
   terminals?(query: RouteQuery): Promise<readonly SceneTerminal[]>;
   /** Wait for resource work to change, without requiring another client request. */
   wait(signal?: AbortSignal): Promise<void>;
   close?(): Promise<void>;
+}
+
+export interface PhysicalSnapshot {
+  input: PhysicalInput;
+  revision: string;
+  coverage:
+    | 'complete'
+    | {
+        bounds: { min: [number, number]; max: [number, number] };
+        tiles: { x: number; z: number }[];
+        tileSpan: number;
+      };
 }

@@ -151,7 +151,24 @@ impl Ord for Queue {
 /// Physical proofs and canonical paths come from World; all labels are query-local.
 pub fn solve(world: &crate::world::World, query: &Value, config: &Value) -> Result<Value, String> {
     let mut best = solve_world(world, query, config)?;
-    if best["route"]["status"] != "complete" && world.snapshot()["kind"] == "physical" {
+    // Refinement repairs absent navigation coverage. A failed connection between
+    // supported endpoints calls for action/window discovery, not rebuilding the
+    // same raw geometry on every orchestration stage.
+    let mut missing_support = false;
+    if best["route"]["status"] != "complete"
+        && world.snapshot()["kind"] == "physical"
+        && config["physicalWork"]["step"].as_u64().unwrap_or(2) >= 2
+        && budget(config, "maxCandidates", 8_000)? > 0
+    {
+        for start in array(&query["starts"]) {
+            missing_support |= world.project(point(&start["position"])?, None)?.is_empty();
+        }
+        missing_support |= world.project(point(&query["goal"])?, None)?.is_empty();
+        for waypoint in array(&query["waypoints"]) {
+            missing_support |= world.project(point(waypoint)?, None)?.is_empty();
+        }
+    }
+    if missing_support {
         let mut points = vec![point(&query["goal"])?];
         for s in array(&query["starts"]) {
             points.push(point(&s["position"])?);
@@ -337,9 +354,11 @@ fn solve_world(
     query: &Value,
     config: &Value,
 ) -> Result<Value, String> {
+    let started = std::time::Instant::now();
     let m = &world.movement;
-    let snapshot = json!({"movement":{"speed":m.speed,"maxVertical":m.max_vertical,"profile":m.profile,"model":m.model,"locomotion":world.locomotion,"runAirSpeed":m.run_air_speed,"maxSlope":m.max_slope,"maxDrop":m.max_drop,"maxHorizontalDistance":m.max_horizontal_distance,"activeBoost":m.active_boost},"boosts":world.boosts,"portals":world.portals});
+    let snapshot = json!({"movement":{"speed":m.speed,"maxVertical":m.max_vertical,"profile":m.profile,"model":m.model,"locomotion":world.locomotion,"runAirSpeed":m.run_air_speed,"maxSlope":m.max_slope,"maxDrop":m.max_drop,"maxHorizontalDistance":m.max_horizontal_distance,"activeBoost":m.active_boost},"boosts":world.boosts});
     let geometry = geometry::Geometry::new(world)?;
+    let stage = config["physicalWork"]["step"].as_u64().unwrap_or(2);
     let movement = &snapshot["movement"];
     let speed = number(movement, "speed", 1.)?;
     if speed <= 0. {
@@ -370,7 +389,7 @@ fn solve_world(
         }
     }
     let mut boosts = Vec::new();
-    for b in array(&snapshot["boosts"]) {
+    for b in array(&snapshot["boosts"]).iter().filter(|_| stage >= 1) {
         validate_interaction(&b["interaction"])?;
         let usage: BoostUse = serde_json::from_value(b.clone()).map_err(|e| e.to_string())?;
         if usage.duration <= 0. || usage.multiplier <= 1. {
@@ -445,24 +464,81 @@ fn solve_world(
     if spacing <= 0. {
         return Err("invalid sample spacing".into());
     }
-    let max_candidates = budget(config, "maxCandidates", 256)?;
+    let max_candidates = if stage >= 2 {
+        budget(config, "maxCandidates", 256)?
+    } else {
+        0
+    };
+    let max_links = budget(config, "maxLinks", 64)?.max(1);
+    // Work and retained geometry are different budgets. Dense detail meshes
+    // must not turn a bounded trajectory search into an all-pairs mesh graph.
+    let sample_budget = max_candidates.min(max_links.saturating_mul(2));
     let mut truncated = false;
     let mut samples = 0;
     let anchors = graph.points.clone();
-    let mut surfaces = world.surfaces.iter().collect::<Vec<_>>();
-    // Discovery is finite; prioritize supports near the actual query and devices.
-    // Ground tracing still sees the complete World regardless of this budget.
-    let proximity = |s: &crate::model::Surface| {
-        s.vertices
-            .iter()
-            .flat_map(|&p| anchors.iter().map(move |&q| distance(p, q)))
-            .fold(f64::INFINITY, f64::min)
+    let center = |s: &crate::model::Surface| {
+        std::array::from_fn(|axis| {
+            s.vertices.iter().map(|p| p[axis]).sum::<f64>() / s.vertices.len() as f64
+        })
     };
-    surfaces.sort_by(|a, b| proximity(a).total_cmp(&proximity(b)));
-    if surfaces.len() > max_candidates {
-        truncated = true;
-        surfaces.truncate(max_candidates);
+    let proximity = |p: Point| {
+        let near = anchors
+            .iter()
+            .map(|&q| distance(p, q))
+            .fold(f64::INFINITY, f64::min);
+        let mut corridor = f64::INFINITY;
+        for arrival in starts.iter().filter(|a| a["state"] == "available") {
+            if let Ok(mut from) = point(&arrival["position"]) {
+                for to in waypoints.iter().copied().chain(std::iter::once(goal)) {
+                    let delta = geometry::sub(to, from);
+                    let length = geometry::dot(delta, delta);
+                    let t = if length > 0. {
+                        (geometry::dot(geometry::sub(p, from), delta) / length).clamp(0., 1.)
+                    } else {
+                        0.
+                    };
+                    corridor = corridor.min(distance(p, lerp(from, to, t)));
+                    from = to;
+                }
+            }
+        }
+        corridor + near * 0.05
+    };
+    // Retain spatially diverse support interfaces instead of filling the graph
+    // with adjacent detail triangles around an endpoint. Connectivity is part of
+    // each key, so nearby disconnected narrow supports keep representatives.
+    let mut regions = std::collections::BTreeMap::new();
+    let sampling = if sample_budget > 0 {
+        world.surfaces.as_slice()
+    } else {
+        &[]
+    };
+    for surface in sampling {
+        let p = center(surface);
+        let key = (
+            (p[0] / 4.).floor() as i64,
+            (p[1] / 3.).floor() as i64,
+            (p[2] / 4.).floor() as i64,
+            world.support_component(&surface.id).unwrap_or(usize::MAX),
+        );
+        let score = proximity(p);
+        let candidate = (score, surface);
+        let entry = regions.entry(key).or_insert(candidate);
+        if score < entry.0 {
+            *entry = candidate;
+        }
     }
+    let mut selected = regions.into_values().collect::<Vec<_>>();
+    selected.sort_by(|a, b| a.0.total_cmp(&b.0).then_with(|| a.1.id.cmp(&b.1.id)));
+    let face_budget = sample_budget.div_ceil(4);
+    if selected.len() > face_budget {
+        truncated |= stage >= 2;
+        selected.truncate(face_budget);
+    }
+    let surfaces = selected
+        .into_iter()
+        .map(|(_, surface)| surface)
+        .collect::<Vec<_>>();
     let centers = surfaces
         .iter()
         .map(|s| {
@@ -480,7 +556,17 @@ fn solve_world(
         .unwrap_or(0.);
     let reach = (airtime * world.movement.model.max_horizontal_speed * 0.65)
         .max(world.movement.profile.radius * 2.);
-    for direction in [[-1., 0.], [1., 0.], [0., -1.], [0., 1.]] {
+    let direction = anchors
+        .first()
+        .map(|a| [goal[0] - a[0], goal[2] - a[2]])
+        .unwrap_or([1., 0.]);
+    let length = direction[0].hypot(direction[1]);
+    let direction = if length > EPS {
+        direction.map(|x| x / length)
+    } else {
+        [1., 0.]
+    };
+    for direction in [direction, direction.map(|x| -x)] {
         for center in &centers {
             candidates.push([
                 center[0] + direction[0] * reach,
@@ -489,16 +575,24 @@ fn solve_world(
             ]);
         }
     }
-    for i in 0..surfaces.iter().map(|s| s.vertices.len()).max().unwrap_or(0) {
-        for s in &surfaces {
-            if let Some(&p) = s.vertices.get(i) {
+    let vertices = surfaces
+        .iter()
+        .map(|s| {
+            let mut points = s.vertices.clone();
+            points.sort_by(|&a, &b| proximity(a).total_cmp(&proximity(b)));
+            points
+        })
+        .collect::<Vec<_>>();
+    for i in 0..vertices.iter().map(Vec::len).max().unwrap_or(0) {
+        for s in &vertices {
+            if let Some(&p) = s.get(i) {
                 candidates.push(p);
             }
         }
     }
     // The perimeter stage is lazy and independently bounded by the same budget.
     'samples: for p in candidates {
-        if samples >= max_candidates {
+        if samples >= sample_budget {
             truncated = true;
             break 'samples;
         }
@@ -516,7 +610,7 @@ fn solve_world(
             let b = s.vertices[(i + 1) % s.vertices.len()];
             let count = (distance(a, b) / spacing).ceil().max(1.) as usize;
             for k in 1..count {
-                if samples >= max_candidates {
+                if samples >= sample_budget {
                     truncated = true;
                     break 'perimeters;
                 }
@@ -530,26 +624,24 @@ fn solve_world(
             }
         }
     }
-    for p in array(&snapshot["portals"]) {
-        for key in ["points", "entry", "exit"] {
-            let points = array(&p[key]);
-            if points.len() == 2 {
-                let a = point(&points[0])?;
-                let a = world.standing_foot(a)?.unwrap_or(a);
-                let b = point(&points[1])?;
-                let b = world.standing_foot(b)?.unwrap_or(b);
-                graph.node(a);
-                graph.node(b);
-                graph.node(lerp(a, b, 0.5));
-            }
-        }
-    }
-    let known_actions = world
+    // World ground paths already traverse the full portal graph. Portal vertices
+    // are not extra search actions and do not enter this bounded action graph.
+    let mut known_actions = world
         .known_actions()
         .iter()
         .map(serde_json::to_value)
         .collect::<Result<Vec<_>, _>>()
         .map_err(|e| e.to_string())?;
+    if stage == 0 {
+        known_actions.clear();
+    }
+    if stage >= 1 {
+        for connection in array(&config["catalogConnections"]) {
+            if !known_actions.iter().any(|c| c["id"] == connection["id"]) {
+                known_actions.push(connection.clone());
+            }
+        }
+    }
     let mut known = Vec::new();
     let mut connection_ids = std::collections::HashSet::new();
     for c in &known_actions {
@@ -597,40 +689,11 @@ fn solve_world(
         known.push(c.clone());
     }
     let count = graph.points.len();
-    for a in 0..count {
-        for b in 0..count {
-            if a == b {
-                continue;
-            }
-            let p = graph.points[a];
-            let q = graph.points[b];
-            if let Some(points) = geometry.path(p, q) {
-                // Canonical paths must meet the graph endpoints before scheduling.
-                // A projection to a different floor cannot silently join an action.
-                if points.first().is_none_or(|p0| distance(*p0, p) > 1e-5)
-                    || points.last().is_none_or(|p0| distance(*p0, q) > 1e-5)
-                {
-                    continue;
-                }
-                let times = walk_times(&points, speed);
-                graph.edge(
-                    a,
-                    b,
-                    Segment {
-                        mode: "walk".into(),
-                        points,
-                        times,
-                        ..Default::default()
-                    },
-                    false,
-                    None,
-                );
-            }
-        }
-    }
-    let max_attempts = budget(config, "maxAttempts", 100_000)?;
+    profile("nodes", &started, count);
+    let max_attempts = max_candidates;
+    profile("graph", &started, count);
     let mut attempts = 0;
-    if movement["model"].is_object() {
+    if stage >= 2 && movement["model"].is_object() {
         'actions: for a in 0..count {
             if geometry.project(graph.points[a], 0.02).is_none() {
                 continue;
@@ -718,6 +781,11 @@ fn solve_world(
                             &geometry,
                             &mut attempts,
                             source_end,
+                            if interaction["airborne"] == true {
+                                Some((goal, interaction))
+                            } else {
+                                None
+                            },
                         )? {
                             let terminal = terminal
                                 || (interaction["airborne"] == true
@@ -751,6 +819,7 @@ fn solve_world(
         }
     }
     let max_labels = budget(&movement["locomotion"]["search"], "maxLabels", 256)?.max(2);
+    profile("actions", &started, attempts);
     let max_expanded = budget(&movement["locomotion"]["search"], "maxExpanded", 100_000)?;
     let mut arena = Vec::<Label>::new();
     let mut rows = vec![Vec::<usize>::new(); graph.points.len()];
@@ -786,6 +855,7 @@ fn solve_world(
     }
     let mut expanded = 0;
     let mut winner = None;
+    let mut walked = vec![false; graph.points.len()];
     while let Some(item) = queue.pop() {
         if !arena[item.label].active {
             continue;
@@ -834,6 +904,38 @@ fn solve_world(
                         &mut queue,
                         max_labels,
                         &mut truncated,
+                    );
+                }
+            }
+        }
+        if !walked[label.node] {
+            walked[label.node] = true;
+            let p = graph.points[label.node];
+            // Ground successors are materialized only from reached action nodes.
+            // Resource labels reuse the same physical path proof without sharing
+            // their entry energy, gait or cooldown state.
+            for b in 0..graph.points.len() {
+                if b == label.node {
+                    continue;
+                }
+                let q = graph.points[b];
+                if let Some(points) = geometry.path(p, q) {
+                    if points.first().is_none_or(|a| distance(*a, p) > 1e-5)
+                        || points.last().is_none_or(|b| distance(*b, q) > 1e-5)
+                    {
+                        continue;
+                    }
+                    graph.edge(
+                        label.node,
+                        b,
+                        Segment {
+                            mode: "walk".into(),
+                            times: walk_times(&points, speed),
+                            points,
+                            ..Default::default()
+                        },
+                        false,
+                        None,
                     );
                 }
             }
@@ -930,6 +1032,7 @@ fn solve_world(
     let search = json!({"truncated":truncated,"expanded":expanded,"maxLabels":max_labels,"maxExpanded":max_expanded});
     let mut connections = known;
     connections.extend(graph.generated);
+    profile("resources", &started, expanded);
     let Some(winner) = winner else {
         return Ok(
             json!({"route":{"status":if arena.is_empty()||targets.is_empty(){"unmapped"}else{"no-verified-route"},"search":search},"connections":connections,"diagnostics":{"truncated":truncated,"candidateAttempts":attempts}}),
@@ -985,6 +1088,14 @@ fn solve_world(
         json!({"route":route,"connections":connections,"diagnostics":{"truncated":truncated,"candidateAttempts":attempts},"arrival":starts[chosen.origin],"groundedTarget":points.last()}),
     )
 }
+fn profile(phase: &str, started: &std::time::Instant, count: usize) {
+    if std::env::var_os("GANGLIA_PROFILE").is_some() {
+        eprintln!(
+            "{}",
+            json!({"native":"search","phase":phase,"elapsedMs":started.elapsed().as_secs_f64()*1000.,"count":count})
+        );
+    }
+}
 fn budget(v: &Value, key: &str, default: usize) -> Result<usize, String> {
     if v[key].is_null() {
         Ok(default)
@@ -1012,9 +1123,9 @@ fn insert(
             && locomotion::continuation(a.state, b.state)
     };
     let dominates = |a: &Label, b: &Label| {
-        a.cost <= b.cost + EPS
-            && a.state.energy >= b.state.energy - EPS
-            && a.state.delay <= b.state.delay + EPS
+        // Automatic sprint restart makes extra energy non-monotone. Only an
+        // identical resource continuation can replace a more costly prefix.
+        a.cost <= b.cost + EPS && a.state.energy == b.state.energy && a.state.delay == b.state.delay
     };
     if row.iter().any(|&i| {
         arena[i].active && comparable(&arena[i], &candidate) && dominates(&arena[i], &candidate)
@@ -1195,10 +1306,25 @@ fn segment_hit(s: &Segment, target: Point, v: &Value) -> Option<(Point, f64)> {
     None
 }
 fn trim(mut s: Segment, target: Point, v: &Value) -> Option<Segment> {
-    let (p, t) = segment_hit(&s, target, v)?;
+    let (_, t) = segment_hit(&s, target, v)?;
     if t <= EPS {
         return None;
     }
+    let t = (t + 1e-10).min(*s.times.last()?);
+    let i = s
+        .times
+        .partition_point(|&x| x < t)
+        .clamp(1, s.times.len() - 1);
+    let span = s.times[i] - s.times[i - 1];
+    let p = lerp(
+        s.points[i - 1],
+        s.points[i],
+        if span > 0. {
+            (t - s.times[i - 1]) / span
+        } else {
+            1.
+        },
+    );
     let count = s.times.partition_point(|&x| x < t);
     s.times.truncate(count);
     s.points.truncate(count);
@@ -1400,6 +1526,7 @@ fn flight(
     g: &geometry::Geometry,
     attempts: &mut usize,
     limit: usize,
+    collection: Option<(Point, &Value)>,
 ) -> Result<Option<Segment>, String> {
     if a[1] - b[1] > g.world.movement.max_drop {
         return Ok(None);
@@ -1428,6 +1555,10 @@ fn flight(
     }
     let model: crate::model::JumpModel =
         serde_json::from_value(model).map_err(|e| e.to_string())?;
+    let interaction: Option<crate::model::Interaction> = collection
+        .map(|(_, value)| serde_json::from_value(value.clone()))
+        .transpose()
+        .map_err(|e| e.to_string())?;
     for raw in controls {
         if *attempts >= limit {
             break;
@@ -1435,7 +1566,14 @@ fn flight(
         *attempts += 1;
         let control: crate::world::FlightControl =
             serde_json::from_value(raw).map_err(|e| e.to_string())?;
-        let Some(connection) = g.world.flight_with_control(a, b, &model, &control)? else {
+        let connection =
+            if let (Some((target, _)), Some(interaction)) = (collection, interaction.as_ref()) {
+                g.world
+                    .flight_to_goal(a, b, &model, &control, target, interaction)?
+            } else {
+                g.world.flight_with_control(a, b, &model, &control)?
+            };
+        let Some(connection) = connection else {
             continue;
         };
         let value = serde_json::to_value(connection).map_err(|e| e.to_string())?;

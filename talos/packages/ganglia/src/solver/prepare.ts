@@ -8,7 +8,12 @@ export async function prepareRouteSolver<Source, Job extends WindowJob>(
 ): Promise<PreparedRouteSolver<SolverConfig>> {
   switch (config.algorithm) {
     case 'ganglia-v1':
+    case 'ganglia-v1-ts':
       return prepareGangliaV1(config, input);
+    case 'ganglia-v1-rust': {
+      const { prepareGangliaV1Rust } = await import('#@/src/solver/ganglia-v1-rust.ts');
+      return prepareGangliaV1Rust(config, input);
+    }
     default:
       throw new Error('Unsupported solver algorithm');
   }

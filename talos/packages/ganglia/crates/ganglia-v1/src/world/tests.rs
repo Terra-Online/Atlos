@@ -137,6 +137,53 @@ fn interaction_sphere_only_clips_height_when_requested() {
             .is_empty()
     );
 }
+
+#[test]
+fn airborne_collection_stops_before_later_collision() {
+    let mut geometry = floor(-4., 4., -3., 3., 0.);
+    merge(
+        &mut geometry,
+        CollisionGeometry {
+            positions: vec![0., 0., -3., 0., 4., -3., 0., 4., 3., 0., 0., 3.],
+            indices: vec![0, 1, 2, 0, 2, 3],
+        },
+    );
+    let world = World::new(snapshot(geometry)).unwrap();
+    let start = [-2., 0.01, 0.];
+    let target = [0., 1.9, 0.];
+    let control = FlightControl::default();
+    assert!(
+        world
+            .flight_with_control(start, target, &world.movement.model, &control)
+            .unwrap()
+            .is_none()
+    );
+    let goal = Interaction {
+        airborne: true,
+        radius: 0.5,
+        ..Default::default()
+    };
+    let prefix = world
+        .flight_to_goal(
+            start,
+            target,
+            &world.movement.model,
+            &control,
+            target,
+            &goal,
+        )
+        .unwrap()
+        .unwrap();
+    assert_eq!(prefix.terminal, Some(true));
+    assert!(prefix.points.last().unwrap()[0] < -world.movement.profile.radius);
+    assert!(
+        prefix
+            .points
+            .windows(2)
+            .all(|p| world.clear(p[0], p[1], 0.).unwrap())
+    );
+    assert_eq!(prefix.extra["flight"]["end"], json!(target));
+}
 #[test]
 fn tiny_support_crack_is_not_walkable() {
     let mut c = floor(-3., 0., -2., 2., 0.);

@@ -34,7 +34,8 @@ export function snapshotGangliaV1Config(config: GangliaV1Config): GangliaV1Confi
     margin: config.margin,
     maxTargetError: config.maxTargetError,
   };
-  if (fixed.algorithm !== 'ganglia-v1') throw new Error('Unsupported solver algorithm');
+  if (fixed.algorithm !== 'ganglia-v1' && fixed.algorithm !== 'ganglia-v1-ts')
+    throw new Error('Unsupported solver algorithm');
   for (const value of [fixed.maxCandidates, fixed.maxShortcutCandidates])
     if (!Number.isSafeInteger(value) || value < 0)
       throw new Error('Invalid ganglia-v1 search budget');

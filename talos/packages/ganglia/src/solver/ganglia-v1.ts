@@ -7,7 +7,7 @@
  * belong to the implementation; this config does not describe an arbitrary pipeline.
  */
 export interface GangliaV1Config {
-  readonly algorithm: 'ganglia-v1';
+  readonly algorithm: 'ganglia-v1' | 'ganglia-v1-ts' | 'ganglia-v1-rust';
   /** Candidate work per local search, renewed for other windows/arrivals/retries.
    * This is not a whole-query work limit. V1 caps optional discovery at 640 when
    * walking or known devices already provide a complete route. */

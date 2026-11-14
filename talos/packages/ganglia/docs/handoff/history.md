@@ -28,6 +28,45 @@ longer route and independently checks every returned capsule chord. Cargo uses
 TypeScript physical verifier was run for this geometry integration checkpoint.
 This is partial implementation evidence, with no speedup or complete-rewrite claim.
 
+## Native engine and host integration, 2026-11-14
+
+Integrated native search `edfebc68` as `3f424c6b` and engine `d3768eea` as
+`a554e7a0`. The independent common TypeScript verifier `48e6e791` is included as
+`f3f58f07`; verifier source remains independent of the native and retained V1
+solvers. The N-API host fulfills async effects and exposes the existing prepared
+solver seam. Scene normalization now exposes raw input separately from its lazy
+TypeScript solve closure. Native scene tests throw if TS solve or ground
+preparation is called. Benchmark aliases use the same scene worker, workload,
+policy and independent post-batch verifier. Native source, Cargo bindings and
+loaded binary identity are recorded. Existing quality gates govern speedups.
+
+Integration corrected stage policy consumers, catalog action reuse, work versus
+sample budgets, redundant portal graph materialization, endpoint-region sampling,
+lazy walking successors, collision-valid airborne prefixes, and completed-arrival
+comparison. A ground mesh repair now requires missing endpoint coverage during
+full action work, instead of rebuilding raw ground after every failed stage.
+Ground search validates candidate chords lazily and caches only immutable proofs.
+Exact resource continuations protect against unsafe stamina dominance when
+sprint restart and recovery delay make extra energy non-monotone.
+
+Validation at this checkpoint: 48 assembled Rust tests passed; six N-API fixtures
+passed common physical replay for multihop flight, ordered waypoints/arrivals,
+raw scene IO, empty supplied ground generation, airborne collection before later
+collision, and whole-route stamina/dash replay. All 438 retained TypeScript tests
+passed. These results establish focused integration behavior, not map quality.
+
+Real-map diagnostics bind the local resource-relocation workload, map02 data,
+maintained extractor patch, one worker/lane and no catalog training. Offset 10,
+`new-goal-near-lower-floor-ground-jump-6-1`, timed out at the 300,000 ms SLO in
+`/tmp/ganglia-rust-single-v2.json` and `-v3.json`. A walking-only diagnostic with
+zero action/placement budgets returned no verified route after 248,441 ms.
+The native stack sample places most initial time in coarse transfer projection;
+a later sample finds resource transitions and frontier management. One full
+physical search generated about 7,457 attempts in 2.14 seconds and expanded
+18,240 resource labels by 34.76 seconds. These are diagnostic phase observations,
+not an accepted latency or speedup result. Prototype removal and full native
+acceptance remain pending real-route completion and independent verification.
+
 ## Atlos base integration, 2026-11-14
 
 Merged `feat/3d-preview` at `162ca793` into the editable workspace integration.

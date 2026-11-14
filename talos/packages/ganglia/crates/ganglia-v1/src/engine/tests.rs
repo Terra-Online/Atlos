@@ -13,6 +13,37 @@ fn input() -> Value {
 fn query() -> Value {
     json!({"starts":[{"id":"a","position":[0.,0.,0.],"cost":4.,"state":"available"}],"goal":[10.,0.,0.]})
 }
+
+fn detoured(world: &World, q: &Value, c: &Value) -> Result<Value, String> {
+    let mut result = success(world, q, c)?;
+    if q["starts"][0]["position"][0].as_f64() == Some(0.) {
+        let a = point(&q["starts"][0]["position"])?;
+        let b = point(&q["goal"])?;
+        let points = vec![a, [a[0], a[1], 10.], [b[0], b[1], 10.], b];
+        let mut times = vec![0.];
+        for p in points.windows(2) {
+            times.push(times.last().unwrap() + distance(p[0], p[1]));
+        }
+        result["route"]["points"] = json!(points);
+        result["route"]["segments"] = json!([{"mode":"walk","points":points,"times":times}]);
+        result["route"]["length"] = json!(times.last().unwrap());
+        result["route"]["cost"] =
+            json!(times.last().unwrap() + number(&q["starts"][0], "cost", 0.));
+    }
+    Ok(result)
+}
+
+#[test]
+fn scene_compares_complete_arrival_costs_after_physical_detours() {
+    let mut e = Engine::with_search(json!({}), input(), detoured).unwrap();
+    let mut q = query();
+    q["starts"] = json!([{"id":"a","position":[0.,0.,0.],"cost":0.,"state":"available"},
+        {"id":"b","position":[-10.,0.,0.],"cost":1.,"state":"available"}]);
+    let step = e.start(q).unwrap();
+    let result = finish(&mut e, step);
+    assert_eq!(result["route"]["start"], "b", "{result}");
+    assert_eq!(result["route"]["cost"], 21.);
+}
 fn success(_: &World, q: &Value, _: &Value) -> Result<Value, String> {
     let a = point(&q["starts"][0]["position"])?;
     let b = point(&q["goal"])?;

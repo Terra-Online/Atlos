@@ -27,4 +27,5 @@ export type {
   WindowRequest,
   WindowJob,
   Corridor,
+  PhysicalSnapshot,
 } from '#@/src/solver/resources.ts';

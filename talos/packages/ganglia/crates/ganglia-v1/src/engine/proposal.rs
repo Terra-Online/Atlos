@@ -12,6 +12,8 @@ pub(super) struct Navigation {
     edges: Vec<Vec<Edge>>,
     ids: HashMap<String, usize>,
     max_vertical: f64,
+    components: Vec<usize>,
+    members: Vec<Vec<usize>>,
 }
 #[derive(Clone)]
 pub(super) struct Edge {
@@ -58,6 +60,8 @@ impl Navigation {
         self.centers.clear();
         self.edges.clear();
         self.ids.clear();
+        self.components.clear();
+        self.members.clear();
     }
     pub fn new(data: &Value) -> Result<Self, String> {
         if data.is_null() {
@@ -67,6 +71,8 @@ impl Navigation {
                 edges: vec![],
                 ids: HashMap::new(),
                 max_vertical: 3.,
+                components: vec![],
+                members: vec![],
             });
         }
         let options = &data["options"];
@@ -99,49 +105,6 @@ impl Navigation {
             .map(|(i, f)| (f.id.clone(), i))
             .collect::<HashMap<_, _>>();
         let mut edges = vec![vec![]; centers.len()];
-        let mut pairs = BTreeMap::<(usize, usize), (f64, Point, Point)>::new();
-        let domain: Interaction =
-            serde_json::from_value(json!({"radius":16_f64.hypot(50.),"maxVertical":50.}))
-                .map_err(|e| e.to_string())?;
-        // Project boundary vertices through World's spatial index. These are
-        // unresolved proposals, not executable walking edges across nearby faces.
-        for (i, face) in world.surfaces.iter().enumerate() {
-            for &vertex in &face.vertices {
-                for hit in world.project_with_tolerance(vertex, 50., Some(&domain))? {
-                    let Some(&j) = ids.get(&hit.surface) else {
-                        continue;
-                    };
-                    if i == j || horizontal(vertex, hit.position) > 16. {
-                        continue;
-                    }
-                    let (a, b, from, to) = if i < j {
-                        (i, j, vertex, hit.position)
-                    } else {
-                        (j, i, hit.position, vertex)
-                    };
-                    let score = distance(from, to);
-                    if pairs.get(&(a, b)).map(|p| score < p.0).unwrap_or(true) {
-                        pairs.insert((a, b), (score, from, to));
-                    }
-                }
-            }
-        }
-        for ((i, j), (_, a, b)) in pairs {
-            for (from, to, path) in [
-                (i, j, vec![centers[i], a, b, centers[j]]),
-                (j, i, vec![centers[j], b, a, centers[i]]),
-            ] {
-                edges[from].push(Edge::new(
-                    format!(
-                        "transfer:{}:{}",
-                        world.surfaces[from].id, world.surfaces[to].id
-                    ),
-                    to,
-                    path,
-                    true,
-                ));
-            }
-        }
         for portal in &world.portals {
             let from = ids[&portal.from];
             let to = ids[&portal.to];
@@ -167,12 +130,34 @@ impl Navigation {
                     .then_with(|| a.key.cmp(&b.key))
             });
         }
+        let mut components: Vec<usize> = (0..centers.len()).collect();
+        fn root(parents: &mut [usize], mut at: usize) -> usize {
+            while at != parents[at] {
+                parents[at] = parents[parents[at]];
+                at = parents[at];
+            }
+            at
+        }
+        for (i, list) in edges.iter().enumerate() {
+            for edge in list {
+                let a = root(&mut components, i);
+                let b = root(&mut components, edge.to);
+                components[a] = b;
+            }
+        }
+        let mut members = vec![vec![]; centers.len()];
+        for i in 0..centers.len() {
+            components[i] = root(&mut components, i);
+            members[components[i]].push(i);
+        }
         Ok(Self {
             world: Some(world),
             centers,
             edges,
             ids,
             max_vertical: vertical,
+            components,
+            members,
         })
     }
 
@@ -211,6 +196,8 @@ impl Navigation {
         let mut origins = vec![None; n + 1];
         let mut heap = BinaryHeap::new();
         let mut serial = 0;
+        let mut expanded_components = HashSet::new();
+        let mut transfers: HashMap<usize, Vec<Edge>> = HashMap::new();
         for (origin, a) in arrivals
             .iter()
             .enumerate()
@@ -252,7 +239,17 @@ impl Navigation {
             if node == end {
                 break;
             }
-            for edge in self.edges[node].iter().chain(endpoints.get(&node)) {
+            let component = self.components[node];
+            if expanded_components.insert(component) {
+                for (from, edge) in self.transfers(component, arrivals, goal)? {
+                    transfers.entry(from).or_default().push(edge);
+                }
+            }
+            for edge in self.edges[node]
+                .iter()
+                .chain(transfers.get(&node).into_iter().flatten())
+                .chain(endpoints.get(&node))
+            {
                 if excluded.contains(&edge.key) {
                     continue;
                 }
@@ -320,6 +317,63 @@ impl Navigation {
             protected,
             edges: path,
         }))
+    }
+
+    fn transfers(
+        &self,
+        component: usize,
+        arrivals: &[Value],
+        goal: Point,
+    ) -> Result<Vec<(usize, Edge)>, String> {
+        let world = self.world.as_ref().unwrap();
+        let mut sources = self.members[component].clone();
+        sources.sort_by(|&a, &b| {
+            distance(self.centers[a], goal).total_cmp(&distance(self.centers[b], goal))
+        });
+        let mut selected = sources.iter().take(12).copied().collect::<Vec<_>>();
+        for arrival in arrivals.iter().filter(|a| a["state"] == "available") {
+            let start = point(&arrival["position"])?;
+            sources.sort_by(|&a, &b| {
+                distance(self.centers[a], start).total_cmp(&distance(self.centers[b], start))
+            });
+            selected.extend(sources.iter().take(4).copied());
+        }
+        selected.sort_unstable();
+        selected.dedup();
+        let domain: Interaction =
+            serde_json::from_value(json!({"radius":16_f64.hypot(50.),"maxVertical":50.}))
+                .map_err(|e| e.to_string())?;
+        let mut candidates: BTreeMap<(usize, usize), Edge> = BTreeMap::new();
+        // Unknown transfers are query-directed finite proposals. Materialize
+        // only reached component interfaces, never every nearby mesh-face pair
+        // at scene preparation. Geometry and motion validation stay physical.
+        for from in selected {
+            for &vertex in &world.surfaces[from].vertices {
+                for hit in world.project_with_tolerance(vertex, 50., Some(&domain))? {
+                    let to = self.ids[&hit.surface];
+                    if from == to || horizontal(vertex, hit.position) > 16. {
+                        continue;
+                    }
+                    let edge = Edge::new(
+                        format!("transfer:{}:{}", world.surfaces[from].id, hit.surface),
+                        to,
+                        vec![self.centers[from], vertex, hit.position, self.centers[to]],
+                        true,
+                    );
+                    let key = (from, self.components[to]);
+                    if candidates
+                        .get(&key)
+                        .is_none_or(|old| edge.rank() < old.rank())
+                    {
+                        candidates.insert(key, edge);
+                    }
+                }
+            }
+        }
+        Ok(candidates
+            .into_iter()
+            .map(|((from, _), edge)| (from, edge))
+            .collect())
     }
 }
 impl Edge {

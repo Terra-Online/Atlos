@@ -71,6 +71,8 @@ pub struct World {
     owners: Vec<usize>,
     surface_ids: BTreeMap<String, usize>,
     portal_owners: Vec<Vec<usize>>,
+    components: Vec<usize>,
+    ground_graph: std::sync::OnceLock<ground::Graph>,
 }
 pub fn distance(a: Vec3, b: Vec3) -> f64 {
     hypot(sub(a, b))
@@ -142,6 +144,7 @@ impl World {
         };
         validate_movement(&movement)?;
         let mut surfaces: Vec<Surface> = decode(&ground["surfaces"], "surfaces")?;
+        let generated = physical && surfaces.is_empty();
         let walls: Vec<Wall> = if physical {
             optional::<Vec<Wall>>(&input["roundedWalls"], "walls")?
                 .or(optional::<Vec<Wall>>(&options["walls"], "walls")?)
@@ -222,7 +225,14 @@ impl World {
             portals
                 .extend(optional::<Vec<Portal>>(&input["portals"], "portals")?.unwrap_or_default());
         }
-        portals.extend(ground::portals(&surfaces, &movement));
+        let mut stitching = movement.clone();
+        if !generated {
+            // Supplied meshes authorize height-changing seams explicitly.
+            // Geometric stitching must not invent their reverse direction.
+            stitching.step_up = 0.;
+            stitching.step_down = 0.;
+        }
+        portals.extend(ground::portals(&surfaces, &stitching));
         let mut seen = HashSet::new();
         portals.retain(|p| seen.insert(serde_json::to_string(p).unwrap_or_default()));
         for p in &portals {
@@ -236,6 +246,22 @@ impl World {
         let mut portal_owners = vec![vec![]; surfaces.len()];
         for (i, portal) in portals.iter().enumerate() {
             portal_owners[surface_ids[&portal.from]].push(i);
+        }
+        let mut components: Vec<usize> = (0..surfaces.len()).collect();
+        fn root(parents: &mut [usize], mut i: usize) -> usize {
+            while parents[i] != i {
+                parents[i] = parents[parents[i]];
+                i = parents[i];
+            }
+            i
+        }
+        for portal in &portals {
+            let from = root(&mut components, surface_ids[&portal.from]);
+            let to = root(&mut components, surface_ids[&portal.to]);
+            components[from] = to;
+        }
+        for i in 0..components.len() {
+            components[i] = root(&mut components, i);
         }
         let connections: Vec<Connection> = optional(&input["connections"], "connections")?
             .or(optional(&options["connections"], "connections")?)
@@ -307,6 +333,8 @@ impl World {
             owners,
             surface_ids,
             portal_owners,
+            components,
+            ground_graph: std::sync::OnceLock::new(),
         };
         world.prepare_devices()?;
         Ok(world)
@@ -388,6 +416,9 @@ impl World {
     }
     pub fn surface(&self, id: &str) -> Option<&Surface> {
         self.surface_ids.get(id).map(|&i| &self.surfaces[i])
+    }
+    pub fn support_component(&self, id: &str) -> Option<usize> {
+        self.surface_ids.get(id).map(|&i| self.components[i])
     }
     pub fn sweep_capsule(
         &self,
@@ -484,8 +515,20 @@ impl World {
     /// Rebuild an immutable finer support mesh from the same bound raw triangles.
     /// No world or caller-owned query state is mutated.
     pub fn refine(&self, bounds: Bounds) -> Result<Self, String> {
+        if self
+            .surfaces
+            .iter()
+            .any(|surface| surface.portals.is_some())
+        {
+            // A raw rebuild cannot recover author-supplied edge masks. Retain
+            // those constraints instead of turning a rejected walk into passage.
+            return Self::new(self.snapshot.clone());
+        }
         let mut v = self.snapshot.clone();
         v["input"]["ground"]["surfaces"] = serde_json::json!([]);
+        // Regenerated faces have new ownership. Imported seam references belong
+        // to the replaced mesh; rebuild their directed geometry from raw facts.
+        v["input"]["ground"]["options"]["portals"] = serde_json::json!([]);
         v["input"]["ground"]["build"]["bounds"] =
             serde_json::to_value(bounds).map_err(|e| e.to_string())?;
         Self::new(v)

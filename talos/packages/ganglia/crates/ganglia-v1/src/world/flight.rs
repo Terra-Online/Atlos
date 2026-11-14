@@ -1,3 +1,4 @@
+use super::collision::mix;
 use super::*;
 use serde::{Deserialize, Serialize};
 
@@ -237,12 +238,33 @@ impl World {
         model: &JumpModel,
         control: &FlightControl,
     ) -> Result<Option<Connection>, String> {
+        self.controlled_flight(start, end, model, control, None)
+    }
+    pub fn flight_to_goal(
+        &self,
+        start: Vec3,
+        end: Vec3,
+        model: &JumpModel,
+        control: &FlightControl,
+        target: Vec3,
+        interaction: &Interaction,
+    ) -> Result<Option<Connection>, String> {
+        self.controlled_flight(start, end, model, control, Some((target, interaction)))
+    }
+    fn controlled_flight(
+        &self,
+        start: Vec3,
+        end: Vec3,
+        model: &JumpModel,
+        control: &FlightControl,
+        collection: Option<(Vec3, &Interaction)>,
+    ) -> Result<Option<Connection>, String> {
         if !finite(start) || !finite(end) {
             return Err("Invalid flight endpoints".into());
         }
         if control.exit.is_some() || control.speed_fraction.is_some() || control.terminal.is_some()
         {
-            return self.run_off(start, end, model, control);
+            return self.controlled_run_off(start, end, model, control, collection);
         }
         let Some(phases) = phases(start[1], end[1], model, control.mode)? else {
             return Ok(None);
@@ -359,12 +381,13 @@ impl World {
                 ]
             }
         };
-        if !self.clear(start, start, 0.)? || !self.clear(end, end, 0.)? {
+        if !self.clear(start, start, 0.)? || (collection.is_none() && !self.clear(end, end, 0.)?) {
             return Ok(None);
         }
         let mut points = vec![start];
         let mut times = vec![0.];
         let mut elapsed = 0.;
+        let mut collected = false;
         for (i, phase) in phases.iter().enumerate() {
             let count = (phase.time / 0.025).ceil() as usize;
             for step in 1..=count {
@@ -383,13 +406,21 @@ impl World {
                     &horizontal_at,
                     &mut points,
                     &mut times,
+                    collection,
+                    &mut collected,
                 )? {
                     return Ok(None);
                 }
             }
             elapsed += phase.time;
+            if collected {
+                break;
+            }
         }
         let mut c = Connection::new("flight".into(), control.mode, points, times);
+        if collected {
+            c.terminal = Some(true);
+        }
         c.endpoint_tolerance = Some(self.movement.profile.radius);
         let mut witness_model = serde_json::to_value(model).map_err(|e| e.to_string())?;
         if let Some(obj) = witness_model.as_object_mut() {
@@ -410,6 +441,16 @@ impl World {
         end: Vec3,
         model: &JumpModel,
         control: &FlightControl,
+    ) -> Result<Option<Connection>, String> {
+        self.controlled_run_off(start, end, model, control, None)
+    }
+    fn controlled_run_off(
+        &self,
+        start: Vec3,
+        end: Vec3,
+        model: &JumpModel,
+        control: &FlightControl,
+        collection: Option<(Vec3, &Interaction)>,
     ) -> Result<Option<Connection>, String> {
         let exit = control.exit.unwrap_or([end[0], end[2]]);
         let dx = exit[0] - start[0];
@@ -504,11 +545,15 @@ impl World {
         let mut times;
         let mut arc;
         if control.exit.is_none() {
-            let Some(a) = self.flight_with_control(launch, end, model, &plain)? else {
+            let Some(a) = self.controlled_flight(launch, end, model, &plain, collection)? else {
                 return Ok(None);
             };
             arc = a;
-            let duration = arc.duration();
+            let duration: f64 = phases(launch[1], end[1], model, Mode::Drop)?
+                .unwrap()
+                .iter()
+                .map(|p| p.time)
+                .sum();
             let whole = (end[0] - start[0]).hypot(end[2] - start[2]);
             let air_speed = (whole - distances.last().unwrap()) / duration;
             if air_speed <= 0. || air_speed > model.max_horizontal_speed {
@@ -565,6 +610,7 @@ impl World {
             let mut air_points = vec![launch];
             let mut air_times = vec![0.];
             let mut elapsed = 0.;
+            let mut collected = false;
             for (i, phase) in phases.iter().enumerate() {
                 let count = (phase.time / 0.025).ceil() as usize;
                 for step in 1..=count {
@@ -580,19 +626,28 @@ impl World {
                         &at,
                         &mut air_points,
                         &mut air_times,
+                        collection,
+                        &mut collected,
                     )? {
                         return Ok(None);
                     }
                 }
                 elapsed += phase.time;
+                if collected {
+                    break;
+                }
             }
             arc = Connection::new("run-off-air".into(), Mode::Drop, air_points, air_times);
+            if collected {
+                arc.terminal = Some(true);
+            }
             times = distances.iter().map(|d| d / speed).collect::<Vec<_>>();
         }
         let offset = *times.last().unwrap();
         points.extend(arc.points.drain(1..));
         times.extend(arc.times.drain(1..).map(|t| t + offset));
         let mut c = Connection::new("run-off".into(), Mode::Drop, points, times);
+        c.terminal = arc.terminal;
         let mut m = serde_json::to_value(model).unwrap();
         m.as_object_mut().unwrap().retain(|_, v| !v.is_null());
         m["profile"] = serde_json::to_value(self.movement.profile).unwrap();
@@ -614,10 +669,15 @@ fn advance(
     horizontal_at: &impl Fn(f64) -> [f64; 2],
     points: &mut Vec<Vec3>,
     times: &mut Vec<f64>,
+    collection: Option<(Vec3, &Interaction)>,
+    collected: &mut bool,
 ) -> Result<bool, String> {
-    let t = elapsed + high;
+    if *collected {
+        return Ok(true);
+    }
+    let mut t = elapsed + high;
     let xz = horizontal_at(t);
-    let point = if last {
+    let mut point = if last {
         end
     } else {
         [
@@ -626,6 +686,19 @@ fn advance(
             xz[1],
         ]
     };
+    let previous = *points.last().unwrap();
+    let hit = collection.and_then(|(target, interaction)| {
+        interaction_fraction(previous, point, target, interaction)
+    });
+    if let Some(fraction) = hit {
+        // Keep the serialized terminal point inside the interaction volume.
+        // A root rounded a few ulps outside a sphere cannot survive stationary
+        // endpoint verification after crossing the JSON seam.
+        let fraction = (fraction + 1e-10).min(1.);
+        point = mix(previous, point, fraction);
+        let prior = *times.last().unwrap();
+        t = prior + fraction * (t - prior);
+    }
     let inflation = phase.a.hypot(horizontal_acceleration) * (high - low).powi(2) / 8.;
     if !w.clear(*points.last().unwrap(), point, inflation)? {
         if high - low <= 0.025 / 16. {
@@ -644,6 +717,8 @@ fn advance(
             horizontal_at,
             points,
             times,
+            collection,
+            collected,
         )? && advance(
             w,
             phase,
@@ -656,11 +731,75 @@ fn advance(
             horizontal_at,
             points,
             times,
+            collection,
+            collected,
         )?);
     }
     points.push(point);
     times.push(t);
+    if hit.is_some() {
+        *collected = true;
+    }
     Ok(true)
+}
+
+pub(super) fn interaction_fraction(
+    a: Vec3,
+    b: Vec3,
+    target: Vec3,
+    interaction: &Interaction,
+) -> Option<f64> {
+    let d = sub(b, a);
+    let p = sub(a, target);
+    let dot = |a: Vec3, b: Vec3| a.iter().zip(b).map(|(a, b)| a * b).sum::<f64>();
+    let aa = dot(d, d);
+    let bb = 2. * dot(p, d);
+    let cc = dot(p, p) - interaction.radius * interaction.radius;
+    let mut lo: f64 = 0.;
+    let mut hi: f64 = 1.;
+    if aa < 1e-16 {
+        if cc > 1e-16 {
+            return None;
+        }
+    } else {
+        let determinant = bb * bb - 4. * aa * cc;
+        if determinant < 0. {
+            return None;
+        }
+        lo = lo.max((-bb - determinant.sqrt()) / (2. * aa));
+        hi = hi.min((-bb + determinant.sqrt()) / (2. * aa));
+    }
+    let mut clip = |a: f64, b: f64| {
+        if b.abs() < 1e-14 {
+            return a <= 1e-8;
+        }
+        let t = -a / b;
+        if b > 0. {
+            hi = hi.min(t);
+        } else {
+            lo = lo.max(t);
+        }
+        lo <= hi + 1e-8
+    };
+    if let Some(height) = interaction.max_vertical
+        && (!clip(p[1] - height, d[1]) || !clip(-p[1] - height, -d[1]))
+    {
+        return None;
+    }
+    if let (Some(facing), Some(angle)) = (interaction.facing, interaction.half_angle) {
+        let length = facing[0].hypot(facing[2]);
+        let forward = [facing[0] / length, 0., facing[2] / length];
+        let side = [-forward[2], 0., forward[0]];
+        for sign in [-1., 1.] {
+            let angle = angle.to_radians();
+            let normal =
+                std::array::from_fn(|i| sign * angle.cos() * side[i] - angle.sin() * forward[i]);
+            if !clip(dot(p, normal), dot(d, normal)) {
+                return None;
+            }
+        }
+    }
+    (lo <= hi + 1e-8 && hi >= 0. && lo <= 1.).then_some(lo.clamp(0., 1.))
 }
 
 fn append_support(

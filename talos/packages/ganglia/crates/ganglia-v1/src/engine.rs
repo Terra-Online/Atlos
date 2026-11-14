@@ -75,6 +75,7 @@ struct Query {
     awaiting_terminals: bool,
     pending: Option<u64>,
     partial: Option<Value>,
+    incumbent: Option<Value>,
     excluded_arrivals: HashSet<String>,
     excluded_edges: HashSet<String>,
     attempt: usize,
@@ -233,6 +234,7 @@ impl Engine {
             awaiting_terminals: airborne,
             pending: None,
             partial: None,
+            incumbent: None,
             excluded_arrivals: HashSet::new(),
             excluded_edges: HashSet::new(),
             attempt: 0,
@@ -629,8 +631,10 @@ impl Engine {
                                     + number(arrival, "cost", 0.)
                             );
                             result["route"]["arrivalCost"] = arrival["cost"].clone();
-                            self.query = None;
-                            return Ok(json!({"type":"complete","result":result}));
+                            if let Some(done) = self.accept_complete(result) {
+                                return Ok(done);
+                            }
+                            continue;
                         }
                         if q.tail {
                             q.partial = Some(result);
@@ -645,8 +649,10 @@ impl Engine {
                                 .unwrap()
                                 .extend(boxes.clone());
                         }
-                        self.query = None;
-                        return Ok(json!({"type":"complete","result":result}));
+                        if let Some(done) = self.accept_complete(result) {
+                            return Ok(done);
+                        }
+                        continue;
                     }
                     None => {
                         self.fail_candidate("resource-schedule")?;
@@ -781,7 +787,24 @@ impl Engine {
         }
         let key = self.cache.front().unwrap().key.clone();
         let config = self.search_config(w.stage, Some(&key));
-        let result = (self.solve)(&world, &local, &config)?;
+        let mut result = (self.solve)(&world, &local, &config)?;
+        if complete(&result["route"]) && w.stage < 2 {
+            // Feasibility does not make walking or a known device the fastest
+            // route. Compare a bounded full-action alternative in the same
+            // immutable world before accepting this window.
+            let mut improvement = self.search_config(2, Some(&key));
+            improvement["maxCandidates"] =
+                json!(number(&self.config, "maxCandidates", 0.).min(640.) as u64);
+            let candidate = (self.solve)(&world, &local, &improvement)?;
+            let incomplete = truncated(&result) || truncated(&candidate);
+            if complete(&candidate["route"])
+                && number(&candidate["route"], "cost", f64::INFINITY)
+                    < number(&result["route"], "cost", f64::INFINITY)
+            {
+                result = candidate;
+            }
+            result["diagnostics"]["truncated"] = json!(incomplete);
+        }
         let q = self.query.as_mut().unwrap();
         let w = q.window.as_mut().unwrap();
         q.truncated |= truncated(&result);
@@ -875,12 +898,50 @@ impl Engine {
         Ok(())
     }
 
+    fn accept_complete(&mut self, result: Value) -> Option<Value> {
+        let q = self.query.as_mut().unwrap();
+        if q.incumbent.as_ref().is_none_or(|best| {
+            number(&result["route"], "cost", f64::INFINITY)
+                < number(&best["route"], "cost", f64::INFINITY)
+        }) {
+            q.incumbent = Some(result);
+        }
+        let arrival = q.proposal.as_ref().unwrap().arrival["id"]
+            .as_str()
+            .unwrap_or("")
+            .to_string();
+        q.excluded_arrivals.insert(arrival);
+        q.proposal = None;
+        q.window = None;
+        let cost = number(
+            &q.incumbent.as_ref().unwrap()["route"],
+            "cost",
+            f64::INFINITY,
+        );
+        // Arrival overhead alone is an admissible lower bound even for devices
+        // with zero traversal time. Proposal penalties never prune alternatives.
+        let remaining = q.original["starts"].as_array().unwrap().iter().any(|a| {
+            a["state"] == "available"
+                && !q.excluded_arrivals.contains(a["id"].as_str().unwrap_or(""))
+                && number(a, "cost", 0.) < cost
+        });
+        if remaining && q.attempt < number(&self.config, "maxAttempts", 6.) as usize {
+            return None;
+        }
+        let limited = remaining;
+        Some(self.finish("candidate-budget", limited))
+    }
+
     fn finish(&mut self, reason: &str, limited: bool) -> Value {
         let q = self.query.take().unwrap();
+        let completed = q.incumbent.is_some();
         let mut result = q
-            .partial
+            .incumbent
+            .or(q.partial)
             .unwrap_or_else(|| json!({"route":{"status":"no-verified-route"},"connections":[]}));
-        result["reason"] = json!(reason);
+        if !completed {
+            result["reason"] = json!(reason);
+        }
         result["diagnostics"] =
             json!({"truncated":q.truncated||limited,"candidateAttempts":q.attempt});
         json!({"type":"complete","result":result})

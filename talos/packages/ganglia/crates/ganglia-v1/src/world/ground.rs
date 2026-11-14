@@ -479,7 +479,18 @@ pub(super) fn direct(w: &World, a: Vec3, b: Vec3) -> Result<Option<Vec<Vec3>>, S
         }) else {
             return Ok(None);
         };
-        let mut p = hit.position;
+        let mut p = if let Some(ground) = w.ground_at(
+            hit.position,
+            w.movement.max_vertical,
+            w.movement.max_vertical,
+            w.movement.profile.radius,
+        )? {
+            ground.position
+        } else if w.collision.faces.is_empty() {
+            hit.position
+        } else {
+            return Ok(None);
+        };
         p[1] += 0.01;
         if let Some(&previous) = out.last() {
             let delta = p[1] - previous[1];
@@ -616,6 +627,38 @@ fn detour_points(w: &World, a: Vec3, b: Vec3) -> Result<Vec<Projection>, String>
     }
     Ok(out)
 }
+#[derive(Clone, Debug)]
+pub(super) struct Graph {
+    points: Vec<Vec3>,
+    owners: Vec<usize>,
+    by_surface: Vec<Vec<usize>>,
+    proofs: std::sync::Arc<std::sync::Mutex<Proofs>>,
+}
+type Proofs = BTreeMap<(usize, usize), Option<Vec<Vec3>>>;
+impl Graph {
+    fn new(w: &World) -> Self {
+        let mut points = vec![];
+        let mut owners = vec![];
+        let mut by_surface = vec![vec![]; w.surfaces.len()];
+        for portal in &w.portals {
+            for (point, owner) in [
+                (portal.points[0], w.surface_ids[&portal.from]),
+                (portal.points[1], w.surface_ids[&portal.to]),
+            ] {
+                by_surface[owner].push(points.len());
+                points.push(point);
+                owners.push(owner);
+            }
+        }
+        Self {
+            points,
+            owners,
+            by_surface,
+            proofs: Default::default(),
+        }
+    }
+}
+
 pub(super) fn path(w: &World, a: Vec3, b: Vec3) -> Result<Option<GroundPath>, String> {
     let make = |points: Vec<Vec3>| {
         let length = path_length(&points);
@@ -625,97 +668,188 @@ pub(super) fn path(w: &World, a: Vec3, b: Vec3) -> Result<Option<GroundPath>, St
             points,
         }
     };
-    if let Some(p) = direct(w, a, b)? {
-        return Ok(Some(make(p)));
-    }
     let starts = w.project(a, None)?;
     let goals = w.project(b, None)?;
     if starts.is_empty() || goals.is_empty() {
         return Ok(None);
     }
-    let mut points = vec![a, b];
-    let mut owners: Vec<String> = vec![starts[0].surface.clone(), goals[0].surface.clone()];
-    let mut edges: BTreeMap<usize, Vec<usize>> = BTreeMap::new();
-    for p in &w.portals {
-        let i = points.len();
-        points.extend(p.points);
-        owners.extend([p.from.clone(), p.to.clone()]);
-        edges.entry(i).or_default().push(i + 1);
+    let from = w.surface_ids[&starts[0].surface];
+    let to = w.surface_ids[&goals[0].surface];
+    // Connectivity only rejects disconnected support; it never certifies a
+    // route, substitutes for directed passage, or skips collision validation.
+    if w.components[from] != w.components[to] {
+        return Ok(None);
     }
-    let mut visibility = vec![0, 1];
-    for candidate in detour_points(w, a, b)? {
-        visibility.push(points.len());
-        points.push(candidate.position);
-        owners.push(candidate.surface);
+    if let Some(points) = direct(w, a, b)? {
+        return Ok(Some(make(points)));
     }
-    let mut by_surface: BTreeMap<&str, Vec<usize>> = BTreeMap::new();
-    for (i, s) in owners.iter().enumerate() {
-        by_surface.entry(s.as_str()).or_default().push(i);
+    let graph = w.ground_graph.get_or_init(|| Graph::new(w));
+    if let Some(points) = search_ground(w, graph, a, b, from, to, &[])? {
+        return Ok(Some(make(points)));
     }
-    for ids in by_surface.values() {
-        for &i in ids {
-            for &j in ids {
-                if i != j {
-                    edges.entry(i).or_default().push(j);
-                }
-            }
+    let proposals = detour_points(w, a, b)?;
+    Ok(search_ground(w, graph, a, b, from, to, &proposals)?.map(make))
+}
+
+#[allow(clippy::too_many_arguments)]
+fn search_ground(
+    w: &World,
+    graph: &Graph,
+    a: Vec3,
+    b: Vec3,
+    from: usize,
+    to: usize,
+    detours: &[Projection],
+) -> Result<Option<Vec<Vec3>>, String> {
+    use std::collections::HashMap;
+    let base = graph.points.len();
+    let mut local = vec![a, b];
+    let mut local_owners = vec![from, to];
+    for p in detours {
+        local.push(p.position);
+        local_owners.push(w.surface_ids[&p.surface]);
+    }
+    let point = |i: usize| {
+        if i < base {
+            graph.points[i]
+        } else {
+            local[i - base]
         }
-    }
-    for &i in &visibility {
-        for &j in &visibility {
-            if i != j {
-                edges.entry(i).or_default().push(j);
-            }
+    };
+    let owner = |i: usize| {
+        if i < base {
+            graph.owners[i]
+        } else {
+            local_owners[i - base]
         }
+    };
+    let heuristic = |i: usize| {
+        let p = point(i);
+        (p[0] - b[0]).hypot(p[2] - b[2])
+    };
+    let mut locals: HashMap<usize, Vec<usize>> = HashMap::new();
+    for (i, &surface) in local_owners.iter().enumerate() {
+        locals.entry(surface).or_default().push(base + i);
     }
-    for successors in edges.values_mut() {
-        successors.sort_unstable();
-        successors.dedup();
-    }
-    let mut costs = vec![f64::INFINITY; points.len()];
-    let mut prev: Vec<Option<(usize, Vec<Vec3>)>> = vec![None; points.len()];
-    let mut queue = BinaryHeap::new();
-    costs[0] = 0.;
-    queue.push(Label(0., 0));
-    while let Some(Label(cost, i)) = queue.pop() {
-        if cost > costs[i] {
-            continue;
-        }
-        if i == 1 {
-            let mut chunks = vec![];
-            let mut at = 1;
-            while at != 0 {
-                let Some((p, path)) = prev[at].clone() else {
-                    return Ok(None);
-                };
-                chunks.push(path);
-                at = p;
-            }
-            chunks.reverse();
-            let mut result = vec![];
-            for chunk in chunks {
-                for p in chunk {
-                    if result.last() != Some(&p) {
-                        result.push(p)
-                    }
-                }
-            }
-            return Ok(Some(make(result)));
-        }
-        for &j in edges.get(&i).into_iter().flatten() {
-            let optimistic = cost + distance(points[i], points[j]);
-            if optimistic >= costs[j] {
+    let mut proofs: HashMap<(usize, usize), Option<Vec<Vec3>>> = HashMap::new();
+    // Optimistic topology chooses a path before expensive support/capsule replay.
+    // Failed chords reject that witness only; an exhausted repair budget leaves
+    // this finite ground proposal unresolved, not physically impossible.
+    'repair: for _ in 0..512 {
+        let mut costs = HashMap::new();
+        let mut previous: HashMap<usize, usize> = HashMap::new();
+        let mut pending = BinaryHeap::new();
+        costs.insert(base, 0.);
+        pending.push(Label(heuristic(base), base));
+        let mut reached = false;
+        while let Some(Label(priority, i)) = pending.pop() {
+            let cost = costs[&i];
+            if priority > cost + heuristic(i) + 1e-9 {
                 continue;
             }
-            if let Some(path) = direct(w, points[i], points[j])? {
-                let next = cost + path_length(&path);
-                if next < costs[j] {
-                    costs[j] = next;
-                    prev[j] = Some((i, path));
-                    queue.push(Label(next, j));
+            if i == base + 1 {
+                reached = true;
+                break;
+            }
+            let mut successors = graph.by_surface[owner(i)].clone();
+            successors.extend(locals.get(&owner(i)).into_iter().flatten().copied());
+            if i < base && i % 2 == 0 {
+                successors.push(i + 1);
+            }
+            if i >= base && !detours.is_empty() {
+                successors.extend(base..base + local.len());
+            }
+            successors.sort_unstable();
+            successors.dedup();
+            for j in successors {
+                if i == j {
+                    continue;
+                }
+                let key = (i, j);
+                if !proofs.contains_key(&key)
+                    && i < base
+                    && j < base
+                    && let Some(proof) = graph
+                        .proofs
+                        .lock()
+                        .map_err(|_| "Ground proof cache poisoned")?
+                        .get(&key)
+                        .cloned()
+                {
+                    proofs.insert(key, proof);
+                }
+                let length = match proofs.get(&key) {
+                    Some(None) => continue,
+                    Some(Some(path)) => path_length(path),
+                    None => (point(i)[0] - point(j)[0]).hypot(point(i)[2] - point(j)[2]),
+                };
+                let next = cost + length;
+                if next < *costs.get(&j).unwrap_or(&f64::INFINITY) {
+                    costs.insert(j, next);
+                    previous.insert(j, i);
+                    pending.push(Label(next + heuristic(j), j));
                 }
             }
         }
+        if !reached {
+            return Ok(None);
+        }
+        let mut nodes = vec![base + 1];
+        while *nodes.last().unwrap() != base {
+            nodes.push(
+                *previous
+                    .get(nodes.last().unwrap())
+                    .ok_or("Broken ground frontier")?,
+            );
+        }
+        nodes.reverse();
+        let mut points = vec![];
+        for pair in nodes.windows(2) {
+            let key = (pair[0], pair[1]);
+            if let std::collections::hash_map::Entry::Vacant(entry) = proofs.entry(key) {
+                let path = direct(w, point(pair[0]), point(pair[1]))?;
+                if pair[0] < base && pair[1] < base {
+                    let mut cache = graph
+                        .proofs
+                        .lock()
+                        .map_err(|_| "Ground proof cache poisoned")?;
+                    if cache.len() < 65_536 {
+                        cache.insert(key, path.clone());
+                    }
+                }
+                entry.insert(path);
+            }
+            let Some(path) = proofs[&key].as_ref() else {
+                continue 'repair;
+            };
+            for &p in path {
+                if points.last() != Some(&p) {
+                    points.push(p);
+                }
+            }
+        }
+        // Collapse tessellation turns only after tracing the replacement chords.
+        let mut simplified = vec![points[0]];
+        let mut at = 0;
+        while at + 1 < points.len() {
+            let mut end = points.len() - 1;
+            let mut trace = None;
+            while end > at + 1 {
+                if let Some(path) = direct(w, points[at], points[end])? {
+                    trace = Some(path);
+                    break;
+                }
+                end = (at + end) / 2;
+            }
+            if let Some(path) = trace {
+                simplified.extend(path.into_iter().skip(1));
+            } else {
+                end = at + 1;
+                simplified.push(points[end]);
+            }
+            at = end;
+        }
+        return Ok(Some(simplified));
     }
     Ok(None)
 }

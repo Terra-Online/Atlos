@@ -2,26 +2,43 @@
 
 ## Rust rewrite integration, 2026-11-14
 
-`crates/ganglia-v1` is an in-progress independent Rust implementation. The retained
-TypeScript solver remains available. The Rust rewrite is not yet accepted as a
-complete replacement: search/engine integration, native seam tests, independent
-physical replay and matched-workload benchmark acceptance remain outstanding.
+`crates/ganglia-v1` owns independent native world, search and engine modules.
+The retained TypeScript implementation is selectable as `ganglia-v1-ts` (the
+`ganglia-v1` default remains compatible); `ganglia-v1-rust` uses the same
+`PreparedRouteSolver` interface. The native host serializes normalized facts and
+fulfills asynchronous terminal/window load effects. It does not invoke
+`SceneResources.solve` or the TypeScript ground builder. Build the feature-gated
+N-API library with `pnpm rust:build`; `GANGLIA_V1_RUST_LIBRARY` selects an explicit
+artifact. The crate also builds as an ordinary Rust library without N-API.
 
-The Rust world owns normalized facts, collision indexing and continuous capsule
-sweeps, sparse coverage checks, ground generation/projection/refinement, directed
-portal tracing, flight controls, devices and movable support placement. Ground
-generation uses slope-admissible source triangles with runtime support/clearance
-validation rather than Recast output parity. Portal masks and split collinear
-intervals constrain walking. Finite obstacle visibility proposals recover detours
-inside broad faces, with every chosen chord physically checked. Following placement
-uses conservative clearance and supported horizontal roofs; its placement search
-belongs to native search. Geometry results do not certify global route quality.
+World owns raw facts, BVH capsule sweeps, sparse coverage, support projection,
+triangle ground generation/refinement, directed portal traces, flight controls,
+rope/launch/boost/moving actions and following placement. Ground generation uses
+slope-admissible source triangles and runtime support/clearance rather than
+Recast parity. Selected ground chords are validated lazily and immutable geometry
+proofs are bounded. Portal masks and split collinear intervals constrain walking.
+Flight witnesses preserve the complete controls for independent replay, including
+collection before a later collision. Following placement uses conservative body
+clearance and supported horizontal roofs.
 
-The world implementation starts from `f1208fb083bb09ebc2731fa6cb6072670b787bcb`
-(integrated as `a1aeac74`). Integration fixes cover portal-mask enforcement,
-directed walking traces, split portals, broad-face obstacle detours and interaction
-height clipping. Sixteen Rust world tests and Clippy with warnings denied pass for
-this source. No native route, whole-map or performance acceptance is implied.
+Search owns bounded action discovery, multihop routes, available arrivals,
+ordered waypoints, interactions, terminal actions, following placement alternatives
+and continuous stamina/sprint/dash/boost state. It emits whole-route `schedule`
+and `placements`. Engine owns coarse corridor proposals, arrival alternatives,
+target-side partial approaches, window stages/expansion/subdivision, composition,
+cancellation and catalog lifecycle. Prepared worlds use a four-entry LRU keyed by
+complete revision and coverage identities. No completed-query result or persistent
+query failure cache exists. Catalog banks bind the same identities and freeze
+before measured service. Sampled discovery and finite labels can truncate search.
+
+This integration is not accepted as a complete replacement. Six native fixtures
+pass the shared independent physical evaluator, and the retained 438-test suite
+passes. The real map02 lower-floor query at workload offset 10 still times out at
+300 seconds. Profiling isolates broad coarse transfer projections and resource
+label expansion; optimization and route-quality acceptance remain open. No valid
+speedup is established, and the old prototype is retained until the replacement
+works. Whole-map completion, route cost and real-map physical replay are required
+before deleting it or claiming completion.
 
 ## Workspace migration checkpoint, 2026-11-14
 

@@ -21,7 +21,27 @@ fn connection(id: &str, a: f64, b: f64, duration: f64) -> Value {
     json!({"id":id,"mode":"rope","points":[[a,0.01,0.],[b,0.01,0.]],"times":[0.,duration],"state":"open","endpointTolerance":0.02})
 }
 fn policy() -> Value {
-    json!({"sampleSpacing":100.,"maxCandidates":64,"maxAttempts":2000})
+    json!({"sampleSpacing":100.,"maxCandidates":2000,"maxLinks":32})
+}
+
+#[test]
+fn staged_work_consumes_snapshot_bound_catalog_actions() {
+    let world = scene(vec![surface("a", 0.), surface("b", 10.)], vec![]);
+    let query = json!({"starts":[start("a",0.,0.,"available")],"goal":[10.,0.,0.]});
+    let mut config = json!({"maxCandidates":0,"physicalWork":{"version":1,"step":0},
+        "catalogFrozen":true,"catalogRevision":1,"catalogConnections":[connection("catalog/rope",0.,10.,2.)]});
+    assert_ne!(
+        solve_snapshot(&world, &query, &config).unwrap()["route"]["status"],
+        "complete"
+    );
+    config["physicalWork"]["step"] = json!(1);
+    let result = solve_snapshot(&world, &query, &config).unwrap();
+    complete(&result);
+    assert!(
+        array(&result["route"]["segments"])
+            .iter()
+            .any(|s| s["connection"] == "catalog/rope")
+    );
 }
 fn complete(result: &Value) {
     assert_eq!(
@@ -275,7 +295,8 @@ fn following_support_placement_opens_an_otherwise_unreachable_platform() {
     ];
     world["devices"] = json!({"followingSupports":[{"id":"box","spawn":[0.,0.,0.],"bodies":[body],"geometryKind":"convex","maxDistance":4.5,"initialState":0.,"assumption":"movable"}]});
     let q = json!({"starts":[start("a",-1.,0.,"available")],"goal":[4.,0.8,0.]});
-    let p = json!({"sampleSpacing":0.5,"maxCandidates":20,"maxAttempts":4000,"maxShortcutCandidates":16});
+    let p =
+        json!({"sampleSpacing":0.5,"maxCandidates":4000,"maxLinks":10,"maxShortcutCandidates":16});
     let result = solve_snapshot(&world, &q, &p).unwrap();
     complete(&result);
     assert_eq!(result["route"]["placements"][0]["device"], "box");

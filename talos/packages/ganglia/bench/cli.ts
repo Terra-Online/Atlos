@@ -56,7 +56,9 @@ if (values.help) {
       worstCostRatio: Number(values['max-worst-cost-ratio']),
     };
     qualityGate([], undefined, limits);
-    const sourceSha256 = await sourceHash(root, ['src', 'bench']);
+    const sourceDirectories = ['src', 'bench', 'crates/ganglia-v1/src'];
+    const sourceFiles = ['crates/ganglia-v1/Cargo.toml', 'crates/ganglia-v1/Cargo.lock'];
+    const sourceSha256 = await sourceHash(root, sourceDirectories, sourceFiles);
     const revision = execFileSync('git', ['rev-parse', 'HEAD'], {
       encoding: 'utf8',
       cwd: root,
@@ -112,9 +114,15 @@ if (values.help) {
     }
     if (new Set(selected.map((item) => item.id)).size !== selected.length)
       throw new Error('Duplicate workload query id');
-    const config: SolverSettings = values.config
+    const policy: SolverSettings = values.config
       ? JSON.parse(await readFile(values.config, 'utf8'))
       : { ...adapter.defaults };
+    const config = {
+      ...policy,
+      ...(values.adapter === 'ganglia-v1-ts' || values.adapter === 'ganglia-v1-rust'
+        ? { algorithm: values.adapter }
+        : {}),
+    };
     const workers = Number(values.workers);
     if (!Number.isSafeInteger(workers) || workers < 1) throw new Error('Invalid worker count');
     const concurrency =
@@ -219,7 +227,7 @@ if (values.help) {
           .some((stats, index) => stats.added !== catalogTraining.perWorker[index].stats.added)
       )
         throw new Error('Frozen catalog changed during holdout');
-      if ((await sourceHash(root, ['src', 'bench'])) !== sourceSha256)
+      if ((await sourceHash(root, sourceDirectories, sourceFiles)) !== sourceSha256)
         throw new Error('Benchmark source changed during measurement; discard this run');
       const comparison = reference ? compareQuality(report.batch.results, reference) : undefined;
       const gate = qualityGate(report.batch.results, comparison, limits);

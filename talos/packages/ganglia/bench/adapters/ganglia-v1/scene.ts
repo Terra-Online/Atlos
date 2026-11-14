@@ -23,6 +23,7 @@ import {
 } from '#@/bench/scene-data.ts';
 import { createTimings } from '#@/bench/timings.ts';
 import { createPhysicalVerifier } from '#@/src/evaluation/physical.ts';
+import { physicalTileSpan } from '#@/src/model/coverage.ts';
 import { createPhysicalWorld } from '#@/src/model/world.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 
@@ -41,7 +42,7 @@ export type GameAdapter = {
     resources: PhysicalFiles,
     request: WindowRequest,
     context: { cache: unknown },
-  ): Promise<{ solve(options: { work: PhysicalWork }): Promise<Report> }>;
+  ): Promise<{ input?: PhysicalInput; solve(options: { work: PhysicalWork }): Promise<Report> }>;
 };
 
 export async function loadScene(
@@ -184,11 +185,8 @@ export function prepareSceneResources(
         );
         if (!region || [...physicalInputs.values()].some((entry) => entry.region === region))
           continue;
-        // The exporter normalizes through its preparation seam. A no-search sink
-        // captures those immutable facts even after a timed-out worker was replaced.
-        // It never invokes the V1 implementation or accepts a solver verdict.
-        const captured = new Error('Normalized verifier input captured');
-        let input: PhysicalInput | undefined;
+        // Normalization exposes raw facts independently of the chosen solver,
+        // including after a timed-out worker was replaced.
         const normalized = await preparePhysicalRoute(
           region.files,
           {
@@ -207,20 +205,10 @@ export function prepareSceneResources(
                 if (!dataset.inputs.has(path)) throw new Error('Verifier input was not preloaded');
                 return dataset.inputs.get(path);
               },
-              preparation: {
-                solve: async (value: PhysicalInput) => {
-                  input = value;
-                  throw captured;
-                },
-              },
             },
           },
         );
-        try {
-          await normalized.solve({ work: { version: 1, step: 0 } });
-        } catch (error) {
-          if (error !== captured) throw error;
-        }
+        const input = normalized.input;
         if (!input) throw new Error('Exporter did not provide normalized verifier input');
         physicalInputs.set(region.binding, { input, region });
       }
@@ -298,6 +286,39 @@ export function prepareSceneResources(
       }
   };
   const resources: SceneResources<Source, Job> = {
+    physical: async (job, request) => {
+      try {
+        const started = performance.now();
+        const normalized = await preparePhysicalRoute(job.region.files, request, {
+          cache: {
+            begin: async () => job.region.binding,
+            read: async (_slot: string, path: string) => {
+              if (!dataset.inputs.has(path))
+                throw new Error(`Physical input was not preloaded: ${path}`);
+              return dataset.inputs.get(path);
+            },
+          },
+        });
+        if (!normalized.input)
+          throw new Error('Game adapter does not expose normalized physical facts');
+        physicalInputs.set(JSON.stringify([job.region.binding, request.walls]), {
+          input: normalized.input,
+          region: job.region,
+        });
+        timings.normalizationMs += performance.now() - started;
+        return {
+          input: normalized.input,
+          revision: JSON.stringify([job.region.binding, gameAdapterSha256, request.walls]),
+          coverage: {
+            bounds: job.region.ground.build.bounds,
+            tiles: job.region.ground.tiles,
+            tileSpan: physicalTileSpan,
+          },
+        };
+      } catch (error) {
+        return failInput(error);
+      }
+    },
     query: async (scene, source, start, target, options) => {
       try {
         if (
