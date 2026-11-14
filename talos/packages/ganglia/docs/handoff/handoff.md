@@ -1,5 +1,43 @@
 # Route solver handoff
 
+## Preserve broad coverage while refining, 2026-11-15
+
+World now caches immutable exposed boundary intervals after directed portal
+subtraction. Per-query bounds clip those cached intervals independently. The
+existing sloped-clipping regression additionally checks that a wider second query
+recovers geometry omitted by the first narrow window. Other support/flight rules
+are unchanged. This reuses TS's prepared-geometry ownership; no isolated cache
+speedup is claimed.
+
+The complete competitive/fine replacement trial is rejected. It physically passed
+50/50 with no timeouts or recoveries, but measured 820.069060 ms/query and lost a
+useful connection at ground-jump-22-1: cost ratio 1.332071667. Paired geometric
+mean was 0.931616735. The original 1.01/1.05 gates still fail. Its raw evidence is
+`.local/research/native-shared-competitive-50/report.json` and adjacent events;
+source digest `338d4a0785ab70211935c3302f22229837274c2960a0312955eaa084f5656472`,
+native digest `8e301a810d0b5d66beb8f6111d3e9bb85452d1c1f391dcdd49d7d8ded6817605`.
+It fixed the known case 15 gap but displaced another useful broad candidate.
+Smaller allocation/fine/fine-cache probes remain diagnostic only, under
+`.local/research/native-shared-{allocation,fine,fine-cache,competitive}-result.json`.
+
+Search sampling and its budget split are restored to `e3d265e`. Only the independent
+boundary cache remains from these trials. The latest complete retained-search
+measurement is still the 766.565510 ms/query checkpoint with its case 15 cost
+failure; the added cache has no new complete-population performance measurement.
+All 149 Rust unit and two authored integration tests, feature-enabled Clippy,
+release N-API build and 26 common physical/lifecycle fixtures pass. The extended
+cache-window regression also passes. Source and verifier TS remain unchanged.
+
+A direct World diagnostic proves the TS case 15 takeoff is reachable from both
+implementations' initial feet: a 10.448013 m ground path, followed by the already
+accepted flight. Evidence is `/tmp/ganglia-native-case15-approach.log`. The gap is
+proposal coverage, rather than an unavailable physical path. Next preserve the
+original broad pool and supplement it with fine competitive launch witnesses,
+sharing the remaining physical-attempt budget instead of replacing the broad
+pool. Avoid repeating replacement-only finer cells or budget redistribution.
+Cache face metadata and bound neighbor work before adding more enumeration.
+The full-population quality and 2x objective remain active; no remote push.
+
 ## TS-style bounded action refinement checkpoint, 2026-11-15
 
 The native improvement pass now shares its existing 640 physical-attempt budget

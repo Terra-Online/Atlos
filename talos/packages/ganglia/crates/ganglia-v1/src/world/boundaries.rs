@@ -43,18 +43,10 @@ fn clip_segment(a: Vec3, b: Vec3, bounds: &Bounds) -> Option<[Vec3; 2]> {
     (distance(points[0], points[1]) > MIN_LENGTH).then_some(points)
 }
 
-pub(super) fn query(world: &World, bounds: Bounds) -> Result<Vec<Boundary>, String> {
-    if (0..2).any(|i| {
-        !bounds.min[i].is_finite() || !bounds.max[i].is_finite() || bounds.min[i] > bounds.max[i]
-    }) {
-        return Err("Invalid support boundary bounds".into());
-    }
-    // The support index selects owning polygons; fans contribute no artificial
-    // boundary edges. Sorted owners preserve source order across BVH traversal.
-    let owners = world.surface_candidates(&bounds);
+fn prepare(world: &World) -> Vec<Vec<Boundary>> {
     let mut result = vec![];
-    for owner in owners {
-        let surface = &world.surfaces[owner];
+    for (owner, surface) in world.surfaces.iter().enumerate() {
+        let mut boundaries = Vec::new();
         let vertices = &surface.vertices;
         let origin = vertices[0];
         let signed_area: f64 = vertices
@@ -66,6 +58,7 @@ pub(super) fn query(world: &World, bounds: Bounds) -> Result<Vec<Boundary>, Stri
             })
             .sum();
         if signed_area == 0. {
+            result.push(boundaries);
             continue;
         }
         for (i, &a) in vertices.iter().enumerate() {
@@ -73,7 +66,7 @@ pub(super) fn query(world: &World, bounds: Bounds) -> Result<Vec<Boundary>, Stri
             let dx = b[0] - a[0];
             let dz = b[2] - a[2];
             let length = dx.hypot(dz);
-            if length <= MIN_LENGTH || clip_segment(a, b, &bounds).is_none() {
+            if length <= MIN_LENGTH {
                 continue;
             }
             let winding = signed_area.signum();
@@ -91,8 +84,9 @@ pub(super) fn query(world: &World, bounds: Bounds) -> Result<Vec<Boundary>, Stri
             covered.sort_by(|a, b| a.0.total_cmp(&b.0).then_with(|| a.1.total_cmp(&b.1)));
             let mut end: f64 = 0.;
             let mut emit = |low, high| {
-                if let Some(points) = clip_segment(mix(a, b, low), mix(a, b, high), &bounds) {
-                    result.push(Boundary {
+                let points = [mix(a, b, low), mix(a, b, high)];
+                if distance(points[0], points[1]) > MIN_LENGTH {
+                    boundaries.push(Boundary {
                         surface: surface.id.clone(),
                         points,
                         inward,
@@ -107,6 +101,30 @@ pub(super) fn query(world: &World, bounds: Bounds) -> Result<Vec<Boundary>, Stri
             }
             if end < 1. {
                 emit(end, 1.);
+            }
+        }
+        result.push(boundaries);
+    }
+    result
+}
+
+pub(super) fn query(world: &World, bounds: Bounds) -> Result<Vec<Boundary>, String> {
+    if (0..2).any(|i| {
+        !bounds.min[i].is_finite() || !bounds.max[i].is_finite() || bounds.min[i] > bounds.max[i]
+    }) {
+        return Err("Invalid support boundary bounds".into());
+    }
+    // Portal subtraction belongs to immutable world preparation. Query bounds
+    // only clip those exposed intervals, preserving directed aperture ownership.
+    let geometry = world.boundary_geometry.get_or_init(|| prepare(world));
+    let mut result = Vec::new();
+    for owner in world.surface_candidates(&bounds) {
+        for boundary in &geometry[owner] {
+            if let Some(points) = clip_segment(boundary.points[0], boundary.points[1], &bounds) {
+                result.push(Boundary {
+                    points,
+                    ..boundary.clone()
+                });
             }
         }
     }
@@ -382,6 +400,20 @@ mod tests {
                 assert!((point[1] - point[0]).abs() < 1e-10);
                 assert!((0.5..=1.5).contains(&point[0]));
             }
+            // A cached geometry query must not retain the first window's clip.
+            let wider = world
+                .support_boundaries(Bounds {
+                    min: [-0.1, -0.1],
+                    max: [2.1, 0.1],
+                })
+                .unwrap();
+            let bottom = wider
+                .iter()
+                .find(|edge| edge.inward == [0., 0., 1.])
+                .unwrap();
+            let mut xs = bottom.points.map(|p| p[0]);
+            xs.sort_by(f64::total_cmp);
+            assert_eq!(xs, [0., 2.]);
         }
     }
 

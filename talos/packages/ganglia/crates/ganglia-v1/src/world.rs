@@ -138,6 +138,7 @@ pub struct World {
     authored_navigation: HashSet<usize>,
     ground_graph: std::sync::OnceLock<ground::Graph>,
     discovery_graph: std::sync::OnceLock<discovery::Graph>,
+    boundary_geometry: std::sync::OnceLock<Vec<Vec<Boundary>>>,
     ground_cache: std::sync::Arc<std::sync::Mutex<ground_cache::Cache<Option<GroundPath>>>>,
     direct_cache: std::sync::Arc<std::sync::Mutex<ground_cache::Cache<GroundProbe>>>,
 }
@@ -468,6 +469,7 @@ impl World {
             authored_navigation,
             ground_graph: std::sync::OnceLock::new(),
             discovery_graph: std::sync::OnceLock::new(),
+            boundary_geometry: std::sync::OnceLock::new(),
             ground_cache: Default::default(),
             direct_cache: Default::default(),
         };
