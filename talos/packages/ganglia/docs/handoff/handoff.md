@@ -1,5 +1,33 @@
 # Route solver handoff
 
+## TS shortcut strategy migration diagnostics, 2026-11-15
+
+Read TS `route-shortcuts.ts` and `search/shortcuts.ts` before retrying smaller
+native improvement budgets. An experimental native incumbent sampler ranked
+forward walking-sample pairs by possible time savings and proved up to 128 flight
+candidates. With 128 broad attempts it still exceeded cost gates on lower-floor
+starts 17/18/19/21; retaining 640 broad attempts did not resolve 17/18/19 and added
+query work. Both implementations of this experiment were removed. Evidence is
+`.local/research/native-incumbent-result.json` and
+`native-incumbent-combined-result.json`. All six diagnostic routes passed physical
+replay, which does not establish the required quality or speed improvement.
+
+A separate TS-derived pullback trial added 1/2/3 m boundary launch offsets within
+the existing node/attempt quotas. It worsened several diagnostic latencies and
+retained the cost regressions; removed. Evidence is
+`.local/research/native-pullback-result.json`. The trial passed 149 unit tests,
+two authored integration tests, 26 common N-API fixtures and Clippy. Those results
+validate that trial only, not a new accepted optimization. Production solver source
+is restored to `947366c`; no new complete-population measurement is needed for
+restoring identical source.
+
+The changed premise for further work is TS's full ranking strategy: prepared
+forward approach and reverse departure distance fields, existing-action overlays,
+spatially diverse launch enumeration and candidate lower bounds. Native per-source
+nearest-target quotas do not reproduce that strategy. Migrate the ranking before
+retrying smaller budgets or additional body-scale offsets. The full-population
+2x objective and original modeled-cost gates remain unmet; no push is authorized.
+
 ## Sparse scheduling full-population checkpoint, 2026-11-15
 
 Commit `947366c` completes and independently physically verifies all 50 normal
