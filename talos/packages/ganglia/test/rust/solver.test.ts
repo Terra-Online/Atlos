@@ -310,3 +310,51 @@ test('Rust releases a suspended query after aborted IO and closes resources once
   }
   assert.equal(closes, 1);
 });
+
+test('Rust resends snapshots after a failed search evicts a resident world', async () => {
+  let revision = 0;
+  const solver = await prepareRouteSolver(config, {
+    kind: 'scene',
+    scene: {
+      scene: 'fixture',
+      source: 'fixture-source',
+      walls: [],
+      navigation: {
+        surfaces,
+        options: { speed: 7, maxVertical: 0.5, profile: movement.profile },
+      },
+    },
+    locomotion: physical.locomotion,
+    resources: {
+      query: async () => ({ status: 'ready' as const }),
+      physical: async () => ({
+        input: physical,
+        revision: `resident/${revision}`,
+        coverage: 'complete' as const,
+      }),
+      wait: async () => {},
+      solve: async () => {
+        throw new Error('TypeScript solving must not run');
+      },
+      ground: async () => {
+        throw new Error('TypeScript ground preparation must not run');
+      },
+      key: () => `resident/${revision}`,
+      route: () => ({}),
+    },
+  });
+  const query: RouteQuery = { starts: [start([2, 0, 0])], goal: [16, 0, 0] };
+  try {
+    for (revision = 0; revision < 4; revision++) {
+      assert.equal((await solver.solve(query)).route.status, 'complete');
+    }
+    // The fifth world enters the native LRU before final-goal projection rejects an invalid interaction.
+    await assert.rejects(solver.solve({ ...query, interaction: { radius: -1 } }), /interaction/i);
+    revision = 0;
+    const recovered = await solver.solve(query);
+    assert.equal(recovered.route.status, 'complete');
+    certify(query, recovered.route);
+  } finally {
+    await solver.close();
+  }
+});

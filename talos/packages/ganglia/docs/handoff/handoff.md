@@ -63,6 +63,16 @@ completion, route cost and physical replay remain required before deleting the
 prototype or claiming completion. Diagnostic reference routes are never inputs
 to the production native solver.
 
+The subsequent one-training/six-holdout/two-round replay at `a0796a09` fails the
+physical gate. All six return native complete traces, but five fail common replay
+with `Unsupported or obstructed walk` in both rounds. Only the lower-floor query
+above is physically accepted. Training hits its 300-second watchdog; measured
+requests have no timeouts. Results and truncation are stable across rounds. No
+aggregate speedup is accepted. Follow-up work addresses support behavior at
+scheduled walking cuts, default following bodies and placement eligibility,
+final goal geometry, catalog endpoint admission and resource/placement state
+across windows.
+
 ## Workspace migration checkpoint, 2026-11-14
 
 Ganglia source and all tracked documentation were imported from standalone

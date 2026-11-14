@@ -182,6 +182,9 @@ export async function prepareGangliaV1Rust<Source, Job extends WindowJob>(
         options?.onEvent?.({ type: 'candidate', result: step.result, optimizing: false });
         return step.result;
       } catch (error) {
+        // Resume can prepare and evict a native world before search throws.
+        // Re-send full facts after failure instead of trusting a stale mirror.
+        resident.clear();
         // Release a suspended query after cancellation or failed host IO so the
         // next submission starts with fresh query state.
         engine.cancel();

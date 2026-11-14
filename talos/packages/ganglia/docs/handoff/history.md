@@ -2,6 +2,27 @@
 
 ## Native boundary discovery and supported walking, 2026-11-14
 
+The subsequent broader replay at committed `a0796a09` retains that source digest
+and binary. `/tmp/ganglia-native-supported-train1.json` records one training
+request, six holdouts at offset 10, two rounds and one worker/lane. The older
+`serial-train1.json` reference is correctly rejected before dispatch because its
+game-adapter digest differs. The replay then runs without a comparison reference.
+Catalog training hits its 300-second watchdog; readiness is 302.728 seconds. The
+measured rounds take 121.344 and 113.875 seconds, 235.219 seconds total. None of
+the twelve measured attempts time out. All six native traces claim completion,
+but five fail common physical replay with `Unsupported or obstructed walk` in
+both rounds. Only lower-floor-6 passes. Outcomes and truncation match across
+rounds. End-to-end time is 546.851 seconds. No aggregate speedup is accepted.
+
+The fastest failing upper-floor-12 trace is captured in
+`/tmp/ganglia-native-upper-result.json`, with exact raw snapshot under
+`/tmp/ganglia-native-upper-windows/`. Its diagnostic finds ten failing walking
+segments. An interpolated scheduling cut needs an 0.089 mm standing correction;
+other short spans have valid common endpoints but fail common `walkTrace`.
+These failures require geometry/scheduling fixes, without relaxing independent
+verification. The following paragraphs retain the earlier one-request success
+with its narrower measurement scope.
+
 The changed premise after `a9388c7` is that native World accepts the independent
 TS descent witness and nearby natural takeoffs, while sampled graph coverage
 misses the useful landing interior. Diagnostic flight replay agrees to numerical
