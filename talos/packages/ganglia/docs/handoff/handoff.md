@@ -30,6 +30,15 @@ wrong warmup counts or invalid warmup cannot enter V1 scoring. A training timeou
 stops before scoring because worker replacement loses the catalog. Retained TS
 baseline reports are reused; fresh TS and stress runs are excluded by the user.
 
+The latest configured full-population attempt at `8db5fd94` processes all ten
+training requests and freezes 6,509 connections, but fails warmup before scoring.
+Its terminal status and log are in
+`.local/research/rust-configured-full50-8db5fd94/`. No benchmark remains active and
+no scored performance result exists. Failed warmup now emits each request's ID,
+route status, reason and partial state before rejecting readiness. The required
+startup lifecycle is implemented; successful native service readiness remains an
+algorithm acceptance gap.
+
 ## Rust rewrite integration, 2026-11-14
 
 Native placement revalidation retains each piece's original local query and
@@ -77,13 +86,11 @@ requests returning the same facts reuse identical bounded failures only inside
 the current query. Revision, coverage, continuation, joint poses, catalog or
 stage changes require new work. Stage 1 is omitted when no known actions or boost
 pickups distinguish it from stage 0. Subsequent queries always search afresh.
-The frozen `102e323c` six-request run now completes all requests with independent
-physical replay valid and no timeouts. Mean serial service time is 81.387 seconds;
-the slowest request takes 289.856 seconds. It uses one round, no training/warmup
-and no reference, so repeatability and paired cost/speedup remain unmeasured.
-These are local regressions; the complete local and long-distance workloads
-specified in `AGENTS.md` still require acceptance. Its adapter/data binding
-predates the noclip v106 update.
+The frozen `102e323c` small regression run completes its requests with independent
+physical replay valid and no timeouts. It omits training/warmup and predates the
+noclip v106 update, so it supplies no current service-performance result. Routine
+acceptance uses the configured full local population specified in `AGENTS.md`;
+long-distance stress is opt-in.
 
 Following-fact growth revalidates selected prefixes and retained partial/incumbent
 proofs. Every known default body remains present in later sparse Worlds even when

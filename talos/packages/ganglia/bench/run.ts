@@ -127,8 +127,21 @@ export async function runBenchmark(
       ),
     };
     intervals.warmup.endedMs = performance.now();
-    if (solver.config.preparation && warmup.quality.completed !== warmupCases.length)
+    if (solver.config.preparation && warmup.quality.completed !== warmupCases.length) {
+      console.error(
+        JSON.stringify({
+          phase: 'service-not-ready',
+          warmup,
+          results: warm.map((result, index) => ({
+            id: warmupCases[index].id,
+            status: result.route.status,
+            reason: result.reason,
+            partial: result.partial,
+          })),
+        }),
+      );
       throw new Error('Configured service warmup failed physical/completion validation');
+    }
     await onPhase?.('batch');
     intervals.queries.startedMs = performance.now();
     const samples: {

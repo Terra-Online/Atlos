@@ -1,5 +1,29 @@
 # Route solver history and validation evidence
 
+## Configured readiness failure diagnostics, 2026-11-14
+
+The `8db5fd94` full-population attempt processes all ten training requests,
+freezes 6,509 connections and fails the required warmup gate before any scored
+request. It exits with code 1 after 375.930 seconds. Its log/status remain in
+`.local/research/rust-configured-full50-8db5fd94/`; no accepted performance report
+exists and no benchmark remains active. Bounded catalog retrieval alone does not
+establish successful service readiness. Warmup rejection now logs per-request
+status, reason and partial state alongside aggregate validation, so a subsequent
+diagnostic can identify the failing preparation requests.
+
+The configuration defect was lifecycle ownership: optional benchmark CLI flags
+controlled training independently of algorithm configuration, and missing flags
+silently admitted an unprepared solver. Required V1 preparation, dataset-bound
+request profiles and scoring-entry readiness checks now cover that path. Native
+training collects connections without requiring complete training routes;
+training success and service readiness remain separate checks.
+
+The finalized benchmark diagnostic passes formatting, lint, typechecking and the
+446-test package suite. The existing startup tests exercise all three V1 aliases,
+missing training, invalid policies, unfrozen catalogs and failed warmup. An
+uncommitted goal-directed resource-queue experiment was removed: its proposed
+regression also passed the original ordering and supplied no acceptance evidence.
+
 ## Bounded frozen-catalog retrieval, 2026-11-14
 
 The configured `11837497` run processes all ten training requests and freezes
