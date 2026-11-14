@@ -1,5 +1,348 @@
 # Route solver history and validation evidence
 
+## Bounded native ground feedback and replay hardening, 2026-11-14
+
+Placement changes can remove a previously used takeoff or intersect a curved
+flight between submitted samples. Earlier pieces now replay native flight/run-off
+witnesses under the selected poses and their original local query. A collected
+prefix does not require its unused future to remain safe. Future terminal assets
+also require proof under merged poses, using retained coverage or one bounded
+normal window load for replay only. Focused removed-roof and collection-prefix
+regressions distinguish this from the prior chord-only check.
+
+An unrelated uncovered nav face could abort an otherwise covered query during
+optional sampling. The synthetic case completes in 0.5 seconds with discovery
+disabled and throws a coverage error with discovery enabled on the old code.
+World now categorizes only its three unavailable-space errors; Search drops those
+optional witnesses with truncation while retaining invalid-input failures.
+Physical standing no longer carries a hidden tighter nav tolerance. A radius-0.1,
+nav-offset-0.4, maxVertical-0.5 case protects the separation.
+
+Fast run-off omitted the sprint requirement. Native World now emits authoritative
+computed peak horizontal speed for every flight family, and replay rejects forged
+supplied values. Search applies the common gait threshold to drops as well as
+jumps. Unchanged common replay accepts the sprint-approach/run-off fixture at
+1.2622251366249724 seconds and rejects it after removing the sprint approach.
+Evidence is `/tmp/ganglia-fast-drop-common-replay.json`.
+
+The upper-floor direct corridor proof returns Navigation in 0.277 ms, so direct
+raw-gap feedback alone cannot expose its interior failures. A single bounded
+directed NAV proposal was added. Horizontal and then 3D Euclidean ranking both
+exhaust the 4096 work allowance without a path. Weighted `g + 2*h` ranking finds an
+85-point proposal; directed visibility coalescing shares that allowance and can
+exhaust it before reaching later turns. This is an optimistic proposal only.
+
+The original seven remaining physical prefix units prove seven legs but reach no
+failure. Feedback now reserves at most `min(maxCandidates / 8, maxLinks * 4)`
+units from the same total candidate pool. The approved World-only probe with 255
+remaining units proves all 84 legs individually: 60 supported, 23 raw-support
+failures and one clearance failure. It takes 4.783 seconds including 4.666 seconds
+preparing World and 114 ms feedback. Exact spans are in
+`/tmp/ganglia-nav-weighted-255-result.json`. This is not a joined physical route.
+
+The subsequent single frozen Search diagnostic still times out after 45.02
+seconds. It has 24 repair regions, 130 nodes and exactly 8000 attempts, comprising
+85 feedback proofs and 7915 flights. Action discovery finishes 1.350 seconds after
+Search starts. No result exists for physical replay. Summary, source bindings and
+raw log are `/tmp/ganglia-search-shared-budget-core-summary.json`,
+`/tmp/ganglia-search-shared-budget-source-binding.json` and the adjacent `.log`.
+No budget increase or second run follows from this evidence. Eager full ground
+detours during resource expansion are the next structural issue, rather than
+another candidate-placement adjustment.
+
+Coalescing exhaustion alone previously suppressed a fully physically proved
+retained proposal. A focused finite-work regression now permits `supported` with
+`truncated=true` only when every retained leg and exact canonical join passes.
+Missing paths, failed legs and incomplete physical proofs remain uncertified.
+
+Stage 2 now tries directly proved canonical walks and existing action edges before
+full ground detours. If that graph cannot complete, it restarts arrival resource
+labels against the expanded graph; dominance from the first pass cannot suppress
+new paths. Expansions remain cumulative and static action blocks are reused.
+Stages 0/1 retain full walking behavior. Obstacle and expansion-limit regressions
+protect the mandatory fallback. A direct-pass result with unexamined detours is
+explicitly approximate and truncated.
+
+The single frozen two-phase upper-core run also times out at 45.03 seconds. The
+direct pass finishes at 1.568 seconds of Search time with 8320 resource expansions,
+99 direct ground proofs and 80 rejected targets left for detour exploration.
+Fallback starts but does not finish. The result distinguishes graph-connectivity
+failure from the eager detour cost; neither phase yields a route for replay.
+Artifacts are `/tmp/ganglia-search-two-phase-core-summary.json`, the adjacent log
+and `/tmp/ganglia-search-two-phase-source-binding.json`. Subsequent inspection
+must identify the missing graph connection before another sampler change.
+
+Assembled validation after these changes passes 133 Rust unit tests, two authored
+action tests, all 22 N-API fixtures and all 440 retained TypeScript tests. The
+new durable fast-drop fixture solves naturally, passes common replay and rejects
+the unchanged flight after its sprint approach is removed. The four scene
+continuation fixtures also pass with parent sparse-placement verifier commit
+`0a8254c8`, integrated locally as `85d2f9b1`. Release N-API build, all-target Clippy
+with N-API enabled and warnings denied, TypeScript checking, lint, Rustfmt and
+focused formatting checks pass. The package-manager wrapper rejects the installed
+pnpm version; checks run through the package's existing local binaries instead.
+
+## Native physical contracts and scene continuation, 2026-11-14
+
+The broad failure at `a0796a09` exposes two walking defects. Native radius-aware
+standing support can bridge a raw crack that directed imported navigation also
+spans. Physical walking now additionally unions eligible raw centerline support
+intervals. A durable N-API regression with a 0.1 m raw gap and continuous nav is
+red before this fix and green afterward; common endpoints stand, while common
+walking rejects the gap. Separately, resource cuts can interpolate feet below
+the standing clearance range. A continuous lower clearance sweep and a common
+supporting-face upper bound now certify retained chords; failing chords refine
+before scheduling. The captured source chord passes 514 arbitrary common subcut
+checks. Supplied valid endpoints and authored actions remain unchanged.
+
+World hardening materializes default following bodies, validates supported box
+placements jointly, replaces selected default poses and retains raw static facts.
+Source exclusions remain separate from generated walls. Physical moving support
+uses eligible source winding before hit reduction. Fixed-pad direct height uses
+canonical landing feet. Three durable common replay fixtures cover default box
+collision/roof support, moving support under higher imported nav and a pad whose
+height is determined by aim clearance. Earlier device fixtures remain intact.
+
+Search now replays authority-bound generated catalog witnesses before using
+generated nav tolerance. Authored IDs keep their endpoint contract. Per-arrival
+continuation carries stamina, gait, delay, dash and boost state, including sparse
+boost facts and expired pickup identity. Engine supplies this state from the
+selected recomposed prefix, retains following facts across sparse windows,
+deduplicates placements and checks earlier pieces under new placements. Final
+goals use original query geometry; terminal approaches retain bounded alternatives
+and useful partials before coarse prefix planning. Host cache recovery is committed
+as `3824b16`; its regression fails with a native cache miss on the old host and
+passes after clearing residency on errors.
+
+Consolidated validation passes 106 Rust unit tests, two authored-action tests,
+eighteen N-API fixtures plus the three new device regressions, release N-API build,
+all-target Clippy with warnings denied, TypeScript checking, lint, formatting and
+diff checks. The former following-search fixture supplied `geometryKind:convex`,
+an unsupported `movable` assumption and noncanonical corner order. Common
+placement rejects those facts; it now supplies a canonical box and supported
+assumption while retaining the reachability and placement assertions.
+
+The post-fix upper-floor diagnostic does not complete after five local stages and
+is stopped. A one-second stack sample, `/tmp/ganglia-upper-contract.sample`, puts
+740 of 741 main-stack samples under Search geometry paths, mostly LazySP ground
+repair. Its log is `/tmp/ganglia-native-upper-contract-debug.log`; the original
+invalid trace is retained as `/tmp/ganglia-native-upper-before-contract-result.json`.
+No runtime or speedup claim follows. Direct physical-failure feedback and bounded
+raw-boundary discovery are subsequent work. Earlier-flight support and adaptive
+witness replay after a later placement also remain under review.
+
+## Native boundary discovery and supported walking, 2026-11-14
+
+The subsequent broader replay at committed `a0796a09` retains that source digest
+and binary. `/tmp/ganglia-native-supported-train1.json` records one training
+request, six holdouts at offset 10, two rounds and one worker/lane. The older
+`serial-train1.json` reference is correctly rejected before dispatch because its
+game-adapter digest differs. The replay then runs without a comparison reference.
+Catalog training hits its 300-second watchdog; readiness is 302.728 seconds. The
+measured rounds take 121.344 and 113.875 seconds, 235.219 seconds total. None of
+the twelve measured attempts time out. All six native traces claim completion,
+but five fail common physical replay with `Unsupported or obstructed walk` in
+both rounds. Only lower-floor-6 passes. Outcomes and truncation match across
+rounds. End-to-end time is 546.851 seconds. No aggregate speedup is accepted.
+
+The fastest failing upper-floor-12 trace is captured in
+`/tmp/ganglia-native-upper-result.json`, with exact raw snapshot under
+`/tmp/ganglia-native-upper-windows/`. Its diagnostic finds ten failing walking
+segments. An interpolated scheduling cut needs an 0.089 mm standing correction;
+other short spans have valid common endpoints but fail common `walkTrace`.
+These failures require geometry/scheduling fixes, without relaxing independent
+verification. The following paragraphs retain the earlier one-request success
+with its narrower measurement scope.
+
+The changed premise after `a9388c7` is that native World accepts the independent
+TS descent witness and nearby natural takeoffs, while sampled graph coverage
+misses the useful landing interior. Diagnostic flight replay agrees to numerical
+precision; these reference coordinates never enter production sampling. Search
+now ranks the horizontal corridor, interleaves height strata and samples exposed
+support intervals after subtracting outgoing portal apertures. Boundary sampling
+alone admits a 36.13 m descent but does not complete the captured window. Bounded
+source-relative continuous landing proposals through World polygon projection
+complete it, sharing the existing 8,000-attempt budget. A synthetic lower platform
+with obstructed center/radials and distant perimeter reproduces the previous
+failure and protects the interior landing behavior.
+
+The first complete native trace fails unchanged common physical replay because
+four walking chords omit capsule-support height bends. Merely validating their
+endpoints is insufficient. World now subdivides actual 3D spans to 90% of
+`max(0.025, radius / 4)`, queries raw support for inserted feet and sweeps every
+resulting span. Canonicalization can increase length, so bounded refinement
+rechecks the resulting spans. Exhaustion rejects the proposal. Length and cost
+include these bends before scheduling. A slope-to-floor regression and a local
+60-triangle fixture cover the failure. The four original spans and the complete
+rescheduled route pass unchanged common replay.
+
+Full-scene matched evidence is `/tmp/ganglia-native-supported-comparison.json`,
+with retained TS reference `/tmp/ganglia-ts-native-comparison.json`. The workload
+is resource-relocation offset 10, limit 1, map02, one worker/lane, one round, no
+training or warmup. Native completes in 16,839.317 ms, batch 16,839.434 ms and
+end-to-end 22,966.766 ms. TS service is 67,143.217 ms, batch 67,143.351 ms and
+end-to-end 73,353.018 ms. Batch speedup is 3.987269x and end-to-end speedup is
+3.193877x. Physical replay passes without issues; cost ratio is 0.943722, native
+cost 7.251676835146807 versus 7.68412422083312. Both routes complete, native uses
+two jumps, and native diagnostics mark truncation. One round leaves repeatability
+unmeasured. This is one-request acceptance, not whole-map or complete-rewrite
+acceptance.
+
+The measured source is `a9388c7` plus this checkpoint's dirty changes, digest
+`30db13378d63d5077795c89b9247032b1dc80f28b1d625de1308632cde6c1461`.
+Loaded native binary SHA-256 is
+`ac3ed500f5d31b9f90352f9e7249127949a32f85b34379e32f0213f22d354a69`.
+The report binds dataset and game-adapter hashes; common verification runs after
+the timed batch. Captured core result and verdict are
+`/tmp/ganglia-native-supported-window-result.json` and its `.evaluation.json`.
+
+Consolidated validation passes 92 Rust unit tests, two authored-action integration
+tests, twelve N-API fixtures, all-target Clippy with warnings denied, release N-API
+build, Rust formatting, TypeScript checking, lint, matched-source formatting and
+diff checks. The new scene-partial fixture checks native terminal publication,
+approach-only certification and cancellation before prefix IO. No shared verifier
+source changed. The retained TypeScript suite's prior 438-pass result remains
+bound to its earlier checkpoint; it was not rerun for these native-only changes.
+
+## Rust world integration, 2026-11-14
+
+The native rewrite begins at Atlos `d35e4997`, retaining the TypeScript solver and
+the prototype until full native replacement acceptance. World/model/scaffold work
+was committed as `f1208fb083bb09ebc2731fa6cb6072670b787bcb`, integrated as `a1aeac74`.
+It owns raw facts, spatial/collision/support calculations, flight controls, device
+actions and moving/following support operations without a prototype dependency.
+
+Integration found missing portal-mask enforcement and a ground fast path that
+accepted support unions without checking directed passages. Optional masks now
+retain the difference between absent and explicitly empty masks. Ground tracing
+propagates through the actual directed portal intervals. Split collinear edges
+join only over positive shared intervals. Obstacle visibility proposals address a
+thin-wall detour within broad ground faces, and every resulting chord receives
+support and capsule checks. Interaction spheres use their radius for height unless
+the query supplies an independent vertical limit. Facing validation follows the
+common model's paired forward vector and angle in `(0, 90]` degrees.
+
+Validation: `cargo test --offline` passes 16 tests; `cargo clippy --offline
+--all-targets -- -D warnings` passes; `git diff --check` passes. The regression
+cases protect masked/reverse passage rejection, split-edge connectivity,
+interaction height semantics and obstacle detours. The previous thin-wall test
+expected no route despite open supported space around the wall; it now requires a
+longer route and independently checks every returned capsule chord. Cargo uses
+`/tmp/ganglia-v1-target` in this worktree. No map dataset, benchmark or independent
+TypeScript physical verifier was run for this geometry integration checkpoint.
+This is partial implementation evidence, with no speedup or complete-rewrite claim.
+
+## Native engine and host integration, 2026-11-14
+
+Integrated native search `edfebc68` as `3f424c6b` and engine `d3768eea` as
+`a554e7a0`. The independent common TypeScript verifier `48e6e791` is included as
+`f3f58f07`; verifier source remains independent of the native and retained V1
+solvers. The N-API host fulfills async effects and exposes the existing prepared
+solver seam. Scene normalization now exposes raw input separately from its lazy
+TypeScript solve closure. Native scene tests throw if TS solve or ground
+preparation is called. Benchmark aliases use the same scene worker, workload,
+policy and independent post-batch verifier. Native source, Cargo bindings and
+loaded binary identity are recorded. Existing quality gates govern speedups.
+
+Integration corrected stage policy consumers, catalog action reuse, work versus
+sample budgets, redundant portal graph materialization, endpoint-region sampling,
+lazy walking successors, collision-valid airborne prefixes, and completed-arrival
+comparison. A ground mesh repair now requires missing endpoint coverage during
+full action work, instead of rebuilding raw ground after every failed stage.
+Ground search validates candidate chords lazily and caches only immutable proofs.
+Exact resource continuations protect against unsafe stamina dominance when
+sprint restart and recovery delay make extra energy non-monotone.
+
+Validation at this checkpoint: 48 assembled Rust tests passed; six N-API fixtures
+passed common physical replay for multihop flight, ordered waypoints/arrivals,
+raw scene IO, empty supplied ground generation, airborne collection before later
+collision, and whole-route stamina/dash replay. All 438 retained TypeScript tests
+passed. These results establish focused integration behavior, not map quality.
+
+Real-map diagnostics bind the local resource-relocation workload, map02 data,
+maintained extractor patch, one worker/lane and no catalog training. Offset 10,
+`new-goal-near-lower-floor-ground-jump-6-1`, timed out at the 300,000 ms SLO in
+`/tmp/ganglia-rust-single-v2.json` and `-v3.json`. A walking-only diagnostic with
+zero action/placement budgets returned no verified route after 248,441 ms.
+The native stack sample places most initial time in coarse transfer projection;
+a later sample finds resource transitions and frontier management. One full
+physical search generated about 7,457 attempts in 2.14 seconds and expanded
+18,240 resource labels by 34.76 seconds. These are diagnostic phase observations,
+not an accepted latency or speedup result. Prototype removal and full native
+acceptance remain pending real-route completion and independent verification.
+
+## Native route contract hardening and bounded planning, 2026-11-14
+
+The native host integration checkpoint is `16503fce`. Independent physical replay
+then exposed fixed-launch witnesses retaining character steering fields and
+fixed moving rides retaining expired character boosts. Launch witnesses now bind
+only pad authority; fixed device trajectories keep their authored geometry and
+clocks. Character boost lifetime still advances through them. Scene composition
+replays supplied controls from one continuous resource state, retains them as a
+feasible incumbent, and checks expiry before selecting the winner. Pickup clocks
+come from the retimed trace's first trigger intersection. Every motion consumes
+elapsed lifetime, walks split at expiry, and receipts reflect the completed trace.
+A later alternative error preserves an already completed route. Canonical feet
+no longer force a duplicate whole-query tail solve, while explicit ground ranges
+retain their forward projection pass.
+
+Support hardening preserves 5–10 mm physical feet and authoritative surface-only
+mesh feet without changing authored actions. Physical snapshots retain raw static
+support authority. Refinement preserves authored portal direction and masks.
+Known actions enforce declared support IDs, including matching non-nearest
+projections. Ordered waypoint tests use the original query height and continuous
+XZ cylinders of radius 1e-6 with the configured vertical tolerance. Generated
+action identities bind motion, witness and entry conditions, rather than local
+node order, and are deduplicated against the admitted catalog.
+
+Performance changes retain exact energy/recovery-delay continuation dominance.
+Edge spans compile once, ordinary label transitions omit playback/JSON allocation,
+and only the winning chain is replayed. Two resource-rich differential cases
+preserve full result JSON, including clocks, geometry, cost and truncation.
+Coarse transfer proposals use bounded spatial representatives. Stage 2 walking
+proposes every essential anchor plus at most eight sampled neighbors; stages 0
+and 1 retain their full anchor graphs. Omitted sample choices mark truncation.
+Ground repair validates all selected chords, repairs increased validated costs,
+uses generation-tagged dense arrays and shares cached traces with numeric lengths.
+Loaded body coverage filters proposals before proof; every retained chord still
+needs support, directed passage and capsule validation.
+
+Ground diagnostics do not prove a real-map speedup. A synthetic blocked-chord
+case changed 239 repairs/95.65 ms to four repairs/11.00 ms at identical length and
+point count. A matched supported map pair preserved length 60.16626729712284 and
+636 points but increased 233.82 ms to 731.55 ms before the final shared-trace
+representation change. An unavailable pair now returns conservative None after
+finite repair instead of throwing on an unloaded detour seed. This motivated
+reducing the number of sampled ground proposals, rather than claiming a faster
+individual path search.
+
+The matched one-query TS baseline uses map02, resource-relocation workload offset
+10, one worker/lane, one round and no catalog training. It passes independent
+physical replay at cost 7.68412422083312, query time 67,143.217 ms and end-to-end
+73,353.018 ms (`/tmp/ganglia-ts-native-comparison.json`). Native diagnostic reports
+v4 and v5 still time out at 300,000 ms; comparison correctly withholds speedup.
+V5 performed 66 local action searches before the watchdog. A captured first window
+contains 202,311 surfaces, 514,520 derived portals and 4,167,671 collision triangles.
+After ranked actions, the isolated native core takes about 3,033 ms and generates
+1,845 actions but remains unavailable, with no descent larger than 1.28 m.
+
+A bounded sample of 600 corridor face centers found 596 supported clear feet;
+568 (95.3%) had nav offsets above 2 cm, all within the 0.5 m contract. Median was
+7.94 cm and maximum 19.17 cm. Generated source/landing admission now uses the
+contract tolerance and validates original physical feet. Candidate ordering
+excludes zero displacement, applies necessary free-flight reach bounds, and
+retains run-off/collection exceptions. A separate valid TS diagnostic flight
+falls 42.59 m; Rust World accepts its default control and four nearby takeoffs,
+with trajectory agreement around 3.2e-13 m. That diagnostic reference is never
+used by production solving. Boundary and height-stratified proposal coverage
+remain open work, so this checkpoint makes no complete-rewrite claim.
+
+Validation of this hardened checkpoint: 79 Rust unit tests plus two authored-action
+end-to-end tests pass; eleven N-API fixtures pass, including common physical replay
+and abort/close lifecycle; Clippy with warnings denied, N-API release build,
+TypeScript checking, lint, formatting and diff checks pass. The retained 438-test
+suite passed during host integration and its implementation is unchanged here.
+
 ## Atlos base integration, 2026-11-14
 
 Merged `feat/3d-preview` at `162ca793` into the editable workspace integration.

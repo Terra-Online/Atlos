@@ -12,15 +12,19 @@ export interface BenchmarkAdapter {
   catalogTraining?: boolean;
 }
 export async function loadAdapter(path?: string): Promise<BenchmarkAdapter> {
-  const url = path
-    ? pathToFileURL(resolve(path))
-    : new URL('./adapters/ganglia-v1/index.ts', import.meta.url);
+  const builtin = path === 'ganglia-v1-ts' || path === 'ganglia-v1-rust' ? path : undefined;
+  const url = builtin
+    ? new URL(`./adapters/${builtin}/index.ts`, import.meta.url)
+    : path
+      ? pathToFileURL(resolve(path))
+      : new URL('./adapters/ganglia-v1/index.ts', import.meta.url);
   const { adapter } = (await import(url.href)) as { adapter: BenchmarkAdapter };
   if (!adapter || !(adapter.entry instanceof URL) || !adapter.defaults?.algorithm)
     throw new Error('Invalid benchmark adapter');
   return adapter;
 }
 export interface SceneMetadata {
+  native?: { path: string; sha256: string };
   scene: string;
   source: unknown;
   hashes: Record<string, string>;
@@ -32,13 +36,17 @@ export interface SceneMetadata {
   execution: { mode: string; workers: number; lanes: number; memory?: unknown };
 }
 export const sceneIdentity = (
-  metadata: Pick<SceneMetadata, 'hashes' | 'gameAdapterSha256' | 'kernelSha256' | 'rules'>,
+  metadata: Pick<
+    SceneMetadata,
+    'hashes' | 'gameAdapterSha256' | 'kernelSha256' | 'rules' | 'native'
+  >,
 ) =>
   JSON.stringify([
     metadata.hashes,
     metadata.gameAdapterSha256,
     metadata.kernelSha256,
     metadata.rules,
+    metadata.native?.sha256,
   ]);
 
 /** Optional catalog-training extension, carried as data across IPC. */

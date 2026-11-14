@@ -1,5 +1,137 @@
 # Route solver handoff
 
+## Rust rewrite integration, 2026-11-14
+
+Native placement revalidation retains each piece's original local query and
+replays its adaptive flight witness under the final joint poses. Collection
+prefixes stop at the original interaction rather than requiring a safe unused
+landing. Future terminal assets receive the same pose check; a bounded ordinary
+window load supplies missing terminal coverage without running Search or changing
+the witness. Failure retains the independently valid original-scene partial.
+
+World separates physical standing from navigation admission. Search owns nav
+tolerance and preserves supplied physical feet. Optional unavailable-space
+witnesses are skipped with truncation through an exact coverage-error category;
+invalid geometry and controls still fail. Computed native flight peak speed is
+emitted and replay-checked, including run-off approaches. Both jump and drop gait
+classification use this authority, so a fast drop requires an active sprint.
+
+Bounded ground feedback exposes typed local direct-proof failures and one
+optimistic directed NAV proposal. Weighted 3D proposal ranking and authorized
+coalescing share a finite work allowance. Local physical failures can allocate raw
+support-boundary samples from the existing sample budget. Feedback and flight
+proofs share the existing candidate-attempt pool; unused feedback reserve returns
+to flights. Neither a failed chord nor an exhausted NAV proposal excludes ground
+detours. Complete retained NAV paths may be physically certified despite an
+exhausted coalescing allowance, provided every leg and exact join passes.
+
+The captured upper-floor case remains unresolved. The latest bounded probe finds
+an 85-point NAV proposal and exposes 23 raw support failures plus one clearance
+failure. Search reaches 130 nodes and completes 8,000 shared attempts, then hits
+the 45-second diagnostic limit during resource/ground expansion. These results
+establish useful local feedback, not a complete route or a performance gain.
+Stage 2 searches directly proved walks and existing actions first, then restarts
+resource labels with ordinary ground detours if necessary. Both passes share the
+original expansion budget. An early completion is approximate when detours remain
+unexplored and is marked truncated. The upper-floor direct pass finishes in
+1.57 seconds without completion; detour fallback still hits the diagnostic limit.
+Broader replay remains gated on a physically accepted representative case.
+
+The assembled checkpoint passes 133 Rust unit tests, two authored-action tests,
+22 native integration fixtures and the retained 440 TypeScript tests. Release
+N-API build, feature-enabled all-target Clippy, TypeScript checking, lint and
+format checks pass. This validates the new contracts and focused fixtures; it
+does not establish whole-map acceptance.
+
+`crates/ganglia-v1` owns independent native world, search and engine modules.
+The retained TypeScript implementation is selectable as `ganglia-v1-ts` (the
+`ganglia-v1` default remains compatible); `ganglia-v1-rust` uses the same
+`PreparedRouteSolver` interface. The native host serializes normalized facts and
+fulfills asynchronous terminal/window load effects. It does not invoke
+`SceneResources.solve` or the TypeScript ground builder. Build the feature-gated
+N-API library with `pnpm rust:build`; `GANGLIA_V1_RUST_LIBRARY` selects an explicit
+artifact. The crate also builds as an ordinary Rust library without N-API.
+
+World owns raw facts, BVH capsule sweeps, sparse coverage, support projection,
+triangle ground generation/refinement, directed portal traces, flight controls,
+rope/launch/boost/moving actions and following placement. Ground generation uses
+slope-admissible source triangles and runtime support/clearance rather than
+Recast parity. Selected ground chords are validated lazily and immutable geometry
+proofs are bounded. Portal masks and split collinear intervals constrain walking.
+Flight witnesses preserve the complete controls for independent replay, including
+collection before a later collision. Following placement uses conservative body
+clearance and supported horizontal roofs.
+
+Search owns bounded action discovery, multihop routes, available arrivals,
+ordered waypoints, interactions, terminal actions, following placement alternatives
+and continuous stamina/sprint/dash/boost state. It emits whole-route `schedule`
+and `placements`. Engine owns coarse corridor proposals, arrival alternatives,
+target-side partial approaches, window stages/expansion/subdivision, composition,
+cancellation and catalog lifecycle. Prepared worlds use a four-entry LRU keyed by
+complete revision and coverage identities. No completed-query result or persistent
+query failure cache exists. Catalog banks bind the same identities and freeze
+before measured service. Sampled discovery and finite labels can truncate search.
+
+The hardened integration passes 106 Rust unit tests, two authored-action end-to-end
+tests and twenty-one N-API fixtures. The fixtures use the independent common physical
+evaluator for raw ground, multihop flights, launches, moving rides, following
+placement, airborne collection and whole-route resources, including boost expiry
+across several scene windows. The retained 438-test TypeScript suite also passes.
+Authored surface endpoints and support IDs are preserved, and waypoints retain
+their original height contract. Generated actions use content-derived identities
+so catalog training does not replace unrelated actions at the same local index.
+
+World exposes geometric support boundaries after outgoing portal apertures are
+subtracted, and closest points on a specified support polygon. Search samples
+boundaries and height strata separately from mesh interiors. Bounded continuous
+landing proposals use these geometric operations, then require standing support
+and full native flight proofs. They share the existing action-attempt budget.
+Canonical walking refines actual three-dimensional spans against raw capsule
+support before resource scheduling, retaining and charging support-height bends.
+Supplied valid endpoints remain unchanged.
+
+Matched map02 query `new-goal-near-lower-floor-ground-jump-6-1` now completes through
+the full native scene host and passes unchanged independent physical replay. Its
+modeled cost is 7.251677 seconds versus 7.684124 for retained TS. With one worker,
+one lane, no training or warmup and one measured round, native batch time is
+16.839 seconds versus 67.143 seconds, a 3.987x speedup; end-to-end speedup is
+3.194x. Both routes are complete and the unchanged cost gate passes. Search is
+truncated, and one round does not measure repeatability or broader reachability.
+The preceding native watchdog failures remain historical failed experiments.
+
+This integration is not accepted as a complete replacement. Broader whole-map
+completion, route cost and physical replay remain required before deleting the
+prototype or claiming completion. Diagnostic reference routes are never inputs
+to the production native solver.
+
+The subsequent one-training/six-holdout/two-round replay at `a0796a09` fails the
+physical gate. All six return native complete traces, but five fail common replay
+with `Unsupported or obstructed walk` in both rounds. Only the lower-floor query
+above is physically accepted. Training hits its 300-second watchdog; measured
+requests have no timeouts. Results and truncation are stable across rounds. No
+aggregate speedup is accepted. The resulting hardening adds raw centerline
+support in addition to directed nav proofs and certifies walking clearance across
+arbitrary resource cuts. Following bodies exist at their default spawn; joint
+placements replace those bodies and obey supported box/exclusion contracts.
+Moving support selection excludes ineligible static navigation before reduction.
+Direct fixed launches derive height from canonical landing feet.
+
+Scene continuation carries exact resource clocks and active boost facts from the
+selected recomposed prefix. Following facts and placements survive sparse windows;
+identical poses deduplicate and conflicting poses reject. Final completion checks
+the original goal geometry, and bounded terminal alternatives retain their target
+partials before coarse planning. Generated catalog admission binds native content
+identity and physical authority, then replays the witness before granting generated
+nav tolerance. Authored tolerances stay strict. Failed resumes clear the host's
+snapshot residency mirror.
+
+Broader route acceptance remains open: with stricter raw support, the formerly
+fast upper-floor diagnostic spends most sampled time repairing ground proposals
+and has no complete candidate before it is stopped. Discovery at raw support
+interfaces inside imported nav and eager walking-detour work remain material.
+Earlier-flight and future-terminal pose revalidation now use complete native
+witness replay; broader route acceptance still requires assembled validation.
+
 ## Workspace migration checkpoint, 2026-11-14
 
 Ganglia source and all tracked documentation were imported from standalone

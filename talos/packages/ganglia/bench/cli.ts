@@ -42,7 +42,7 @@ const { values } = parseArgs({
 });
 if (values.help) {
   console.log(
-    'Usage: pnpm benchmark:full [--adapter <module-path>] [--json | --markdown] [--data-root <path>] [--scene <name; default map02>] [--extractor <path>] [--workload <json-file | map02-long-range | map02-long-detours | map02-stress>] [--offset <index>] [--catalog-train <count; opt-in approximate static-action algorithm>] [--limit <count>] [--concurrency <scene-lanes>] [--workers <prepared solver processes; default 1>] [--rounds <measured batches; default 1>] [--config <json-file>] [--reference <benchmark-json>] [--max-mean-cost-ratio <ratio; default 1.01>] [--max-worst-cost-ratio <ratio; default 1.05>]. Every query has a hard 300-second SLO; timeouts count as failures. Reference comparisons reject lost solutions or excess modeled route cost; stability is checked across measured rounds. --warmup-workload <json-file> supplies disjoint runtime warmup queries; omitted means no runtime warmup.',
+    'Usage: pnpm benchmark:full [--adapter ganglia-v1-ts|ganglia-v1-rust|<module-path>] [--json | --markdown] [--data-root <path>] [--scene <name; default map02>] [--extractor <path>] [--workload <json-file | map02-long-range | map02-long-detours | map02-stress>] [--offset <index>] [--catalog-train <count; opt-in approximate static-action algorithm>] [--limit <count>] [--concurrency <scene-lanes>] [--workers <prepared solver processes; default 1>] [--rounds <measured batches; default 1>] [--config <json-file>] [--reference <benchmark-json>] [--max-mean-cost-ratio <ratio; default 1.01>] [--max-worst-cost-ratio <ratio; default 1.05>]. Every query has a hard 300-second SLO; timeouts count as failures. Reference comparisons reject lost solutions or excess modeled route cost; stability is checked across measured rounds. --warmup-workload <json-file> supplies disjoint runtime warmup queries; omitted means no runtime warmup.',
   );
   console.log('GANGLIA_BENCHMARK_HEAP_MB sets the Node heap cap in MiB (default 6144).');
 } else {
@@ -56,7 +56,9 @@ if (values.help) {
       worstCostRatio: Number(values['max-worst-cost-ratio']),
     };
     qualityGate([], undefined, limits);
-    const sourceSha256 = await sourceHash(root, ['src', 'bench']);
+    const sourceDirectories = ['src', 'bench', 'crates/ganglia-v1/src'];
+    const sourceFiles = ['crates/ganglia-v1/Cargo.toml', 'crates/ganglia-v1/Cargo.lock'];
+    const sourceSha256 = await sourceHash(root, sourceDirectories, sourceFiles);
     const revision = execFileSync('git', ['rev-parse', 'HEAD'], {
       encoding: 'utf8',
       cwd: root,
@@ -112,9 +114,15 @@ if (values.help) {
     }
     if (new Set(selected.map((item) => item.id)).size !== selected.length)
       throw new Error('Duplicate workload query id');
-    const config: SolverSettings = values.config
+    const policy: SolverSettings = values.config
       ? JSON.parse(await readFile(values.config, 'utf8'))
       : { ...adapter.defaults };
+    const config = {
+      ...policy,
+      ...(values.adapter === 'ganglia-v1-ts' || values.adapter === 'ganglia-v1-rust'
+        ? { algorithm: values.adapter }
+        : {}),
+    };
     const workers = Number(values.workers);
     if (!Number.isSafeInteger(workers) || workers < 1) throw new Error('Invalid worker count');
     const concurrency =
@@ -219,7 +227,7 @@ if (values.help) {
           .some((stats, index) => stats.added !== catalogTraining.perWorker[index].stats.added)
       )
         throw new Error('Frozen catalog changed during holdout');
-      if ((await sourceHash(root, ['src', 'bench'])) !== sourceSha256)
+      if ((await sourceHash(root, sourceDirectories, sourceFiles)) !== sourceSha256)
         throw new Error('Benchmark source changed during measurement; discard this run');
       const comparison = reference ? compareQuality(report.batch.results, reference) : undefined;
       const gate = qualityGate(report.batch.results, comparison, limits);

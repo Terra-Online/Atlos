@@ -199,7 +199,7 @@ diff --git a/packages/extractor/src/game/physical-input.ts b/packages/extractor/
 new file mode 100644
 --- /dev/null
 +++ b/packages/extractor/src/game/physical-input.ts
-@@ -0,0 +1,370 @@
+@@ -0,0 +1,373 @@
 +import { gangliaV1Defaults } from '@opendfieldmap/ganglia/solver';
 +import { readFile } from 'node:fs/promises';
 +import { isDeepStrictEqual } from 'node:util';
@@ -506,8 +506,10 @@ new file mode 100644
 +		locomotion: movement.sustainedSprint,
 +		devices: physicalDevices,
 +	};
-+	const preparation = context?.cache.preparation ?? createPhysicalPreparation();
++	let preparation = context?.cache.preparation;
 +	return {
++		// Normalized raw facts for native solvers and independent evaluation.
++		input,
 +		async solve(
 +			options: {
 +				work?: PhysicalWork;
@@ -521,6 +523,7 @@ new file mode 100644
 +			} = {},
 +		) {
 +			let final: PhysicalReport | undefined;
++			const active = preparation ??= createPhysicalPreparation();
 +			const report = (
 +				result: import('@opendfieldmap/ganglia/solver').RouteResult,
 +				optimizing: boolean,
@@ -542,7 +545,7 @@ new file mode 100644
 +				optimizing,
 +			});
 +			try {
-+				await preparation.solve(
++				await active.solve(
 +					input,
 +					{
 +						starts: [request.arrival],
@@ -565,7 +568,7 @@ new file mode 100644
 +				if (!final) throw new Error('Physical solver produced no result');
 +				return final;
 +			} finally {
-+				if (!context) preparation.clear();
++				if (!context) active.clear();
 +			}
 +		},
 +	};

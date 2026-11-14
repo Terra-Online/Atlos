@@ -1,9 +1,14 @@
+import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+
 import { prepareRouteSolver } from '@opendfieldmap/ganglia';
 
 import { loadScene } from '#@/bench/adapters/ganglia-v1/scene.ts';
 import { exportPhysicalRegion } from '#@/bench/prepare-region.ts';
 import { resetTimings } from '#@/bench/timings.ts';
 import { workerMemory, type WorkerRequest, type WorkerReply } from '#@/bench/workers.ts';
+import type { RustPreparedSolver } from '#@/src/solver/ganglia-v1-rust.ts';
+import { rustLibraryPath } from '#@/src/solver/ganglia-v1-rust.ts';
 import { actionCatalogStats, setActionCatalogPhase } from '#@/src/v1/route/action-catalog.ts';
 
 if (!process.send) throw new Error('Scene entry requires a child process IPC channel');
@@ -11,7 +16,9 @@ const send = (message: WorkerReply) => process.send!(message);
 process.once('message', async (message: WorkerRequest) => {
   if (message.type !== 'setup') throw new Error('Scene worker requires setup');
   const setup = message.setup;
-  setActionCatalogPhase(setup.catalogPhase ?? 'disabled');
+  const native = setup.config.algorithm === 'ganglia-v1-rust';
+  let catalogPhase = setup.catalogPhase ?? 'disabled';
+  if (!native) setActionCatalogPhase(catalogPhase);
   const scene = await loadScene(
     setup.dataRoot,
     setup.extractor,
@@ -37,6 +44,27 @@ process.once('message', async (message: WorkerRequest) => {
     setup.config as import('#@/src/solver/ganglia-v1.ts').GangliaV1Config,
     scene.input,
   );
+  const rustSolver = native ? (solver as RustPreparedSolver) : undefined;
+  const nativeBinary = native
+    ? {
+        path: rustLibraryPath(),
+        sha256: createHash('sha256')
+          .update(await readFile(rustLibraryPath()))
+          .digest('hex'),
+      }
+    : undefined;
+  rustSolver?.setCatalogPhase(catalogPhase);
+  const catalogStats = () => {
+    const base = actionCatalogStats();
+    if (!rustSolver) return base;
+    const stats = rustSolver.catalogStats();
+    return {
+      ...base,
+      phase: catalogPhase,
+      scopes: Number(stats.banks),
+      added: Number(stats.actions),
+    };
+  };
   const preparationMs = scene.timings.preparationMs + performance.now() - preparationStarted;
   process.on('message', async (message: WorkerRequest) => {
     if (message.type === 'close') {
@@ -54,13 +82,16 @@ process.once('message', async (message: WorkerRequest) => {
       return;
     }
     if (message.type === 'catalog-phase' || message.type === 'benchmark-phase') {
-      if (message.type === 'catalog-phase') setActionCatalogPhase(message.phase);
-      else if (process.env.GANGLIA_PROFILE)
+      if (message.type === 'catalog-phase') {
+        catalogPhase = message.phase;
+        if (rustSolver) rustSolver.setCatalogPhase(message.phase);
+        else setActionCatalogPhase(message.phase);
+      } else if (process.env.GANGLIA_PROFILE)
         console.error(JSON.stringify({ phase: message.phase, worker: setup.index }));
       send({
         type: 'control',
         id: message.id,
-        catalog: actionCatalogStats(),
+        catalog: catalogStats(),
         ...(message.type === 'catalog-phase' && message.phase === 'frozen'
           ? { memory: workerMemory() }
           : {}),
@@ -81,7 +112,7 @@ process.once('message', async (message: WorkerRequest) => {
         result,
         timings: scene.timings,
         memory: workerMemory(),
-        catalog: actionCatalogStats(),
+        catalog: catalogStats(),
         ...(setup.preparation ? { metadata: scene.metadata } : {}),
       });
     } catch (error) {
@@ -91,10 +122,10 @@ process.once('message', async (message: WorkerRequest) => {
   send({
     type: 'ready',
     config: solver.config,
-    metadata: scene.metadata,
+    metadata: { ...scene.metadata, ...(nativeBinary ? { native: nativeBinary } : {}) },
     inputLoadMs: scene.inputLoadMs,
     preparationMs,
     memory: workerMemory(),
-    catalog: actionCatalogStats(),
+    catalog: catalogStats(),
   });
 });
