@@ -2,12 +2,12 @@
 //! This module owns its implementation and has no prototype or N-API dependency.
 use crate::model::*;
 type Point = Vec3;
-pub(super) type Triangle = [Vec3; 3];
+pub(crate) type Triangle = [Vec3; 3];
 type Bounds3 = [f64; 6];
 type Bounds = Bounds3;
 // Rust's f64::min/max discard NaN; JavaScript's Math.min/max propagate it.
 // Degenerate or overflowing geometry must therefore reach the same query error.
-pub(super) fn minimum(values: &[f64]) -> f64 {
+pub(crate) fn minimum(values: &[f64]) -> f64 {
     values.iter().copied().fold(f64::INFINITY, |a, b| {
         if a.is_nan() || b.is_nan() {
             f64::NAN
@@ -17,7 +17,7 @@ pub(super) fn minimum(values: &[f64]) -> f64 {
     })
 }
 
-pub(super) fn maximum(values: &[f64]) -> f64 {
+pub(crate) fn maximum(values: &[f64]) -> f64 {
     values.iter().copied().fold(f64::NEG_INFINITY, |a, b| {
         if a.is_nan() || b.is_nan() {
             f64::NAN
@@ -27,15 +27,15 @@ pub(super) fn maximum(values: &[f64]) -> f64 {
     })
 }
 
-pub(super) fn sub(a: Point, b: Point) -> Point {
+pub(crate) fn sub(a: Point, b: Point) -> Point {
     [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
 }
 
-pub(super) fn dot(a: Point, b: Point) -> f64 {
+pub(crate) fn dot(a: Point, b: Point) -> f64 {
     a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
 }
 
-pub(super) fn cross(a: Point, b: Point) -> Point {
+pub(crate) fn cross(a: Point, b: Point) -> Point {
     [
         a[1] * b[2] - a[2] * b[1],
         a[2] * b[0] - a[0] * b[2],
@@ -43,7 +43,7 @@ pub(super) fn cross(a: Point, b: Point) -> Point {
     ]
 }
 
-pub(super) fn mix(a: Point, b: Point, t: f64) -> Point {
+pub(crate) fn mix(a: Point, b: Point, t: f64) -> Point {
     [
         a[0] + (b[0] - a[0]) * t,
         a[1] + (b[1] - a[1]) * t,
@@ -51,14 +51,14 @@ pub(super) fn mix(a: Point, b: Point, t: f64) -> Point {
     ]
 }
 
-pub(super) fn squared(a: Point, b: Point) -> f64 {
+pub(crate) fn squared(a: Point, b: Point) -> f64 {
     let x = a[0] - b[0];
     let y = a[1] - b[1];
     let z = a[2] - b[2];
     x * x + y * y + z * z
 }
 
-pub(super) fn point_segment(p: Point, a: Point, b: Point) -> f64 {
+pub(crate) fn point_segment(p: Point, a: Point, b: Point) -> f64 {
     let d = sub(b, a);
     let length = dot(d, d);
     let t = if length != 0.0 && !length.is_nan() {
@@ -69,7 +69,7 @@ pub(super) fn point_segment(p: Point, a: Point, b: Point) -> f64 {
     squared(p, mix(a, b, t))
 }
 
-pub(super) fn segment_segment(a: Point, b: Point, c: Point, d: Point) -> f64 {
+pub(crate) fn segment_segment(a: Point, b: Point, c: Point, d: Point) -> f64 {
     let mut best = minimum(&[
         point_segment(a, c, d),
         point_segment(b, c, d),
@@ -91,7 +91,7 @@ pub(super) fn segment_segment(a: Point, b: Point, c: Point, d: Point) -> f64 {
     best
 }
 
-pub(super) fn inside(p: Point, triangle: Triangle, n: Point) -> bool {
+pub(crate) fn inside(p: Point, triangle: Triangle, n: Point) -> bool {
     for i in 0..3 {
         let a = triangle[i];
         let side = dot(cross(sub(triangle[(i + 1) % 3], a), sub(p, a)), n);
@@ -102,7 +102,7 @@ pub(super) fn inside(p: Point, triangle: Triangle, n: Point) -> bool {
     true
 }
 
-pub(super) fn point_triangle(p: Point, triangle: Triangle, n: Point) -> f64 {
+pub(crate) fn point_triangle(p: Point, triangle: Triangle, n: Point) -> f64 {
     let area = dot(n, n);
     if area > 0.0 {
         let distance = dot(sub(p, triangle[0]), n) / area;
@@ -122,7 +122,7 @@ pub(super) fn point_triangle(p: Point, triangle: Triangle, n: Point) -> f64 {
     ])
 }
 
-pub(super) fn segment_triangle(a: Point, b: Point, triangle: Triangle) -> f64 {
+pub(crate) fn segment_triangle(a: Point, b: Point, triangle: Triangle) -> f64 {
     let n = cross(sub(triangle[1], triangle[0]), sub(triangle[2], triangle[0]));
     let da = dot(sub(a, triangle[0]), n);
     let db = dot(sub(b, triangle[0]), n);
@@ -141,7 +141,7 @@ pub(super) fn segment_triangle(a: Point, b: Point, triangle: Triangle) -> f64 {
     ])
 }
 
-pub(super) fn triangle_triangle(a: Triangle, b: Triangle) -> f64 {
+pub(crate) fn triangle_triangle(a: Triangle, b: Triangle) -> f64 {
     minimum(&[
         segment_triangle(a[0], a[1], b),
         segment_triangle(a[1], a[2], b),
@@ -152,13 +152,13 @@ pub(super) fn triangle_triangle(a: Triangle, b: Triangle) -> f64 {
     ])
 }
 
-pub(super) fn overlaps(a: Bounds, b: Bounds) -> bool {
+pub(crate) fn overlaps(a: Bounds, b: Bounds) -> bool {
     a[0] <= b[3] && a[3] >= b[0] && a[1] <= b[4] && a[4] >= b[1] && a[2] <= b[5] && a[5] >= b[2]
 }
 
 // Preserve V8 Math.hypot's scaled, compensated three-component sum, including
 // its tie rounding: the selected support normal participates in later geometry.
-pub(super) fn hypot(n: Point) -> f64 {
+pub(crate) fn hypot(n: Point) -> f64 {
     let [x, y, z] = n.map(f64::abs);
     if x.is_infinite() || y.is_infinite() || z.is_infinite() {
         return f64::INFINITY;
@@ -174,7 +174,7 @@ pub(super) fn hypot(n: Point) -> f64 {
     (a + b + c).sqrt() * m
 }
 
-pub(super) fn sphere_support(position: Point, face: Triangle, normal: Point, radius: f64) -> f64 {
+pub(crate) fn sphere_support(position: Point, face: Triangle, normal: Point, radius: f64) -> f64 {
     let plane_height = face[0][1]
         - (normal[0] * (position[0] - face[0][0]) + normal[2] * (position[2] - face[0][2]))
             / normal[1];
@@ -236,7 +236,7 @@ struct Node {
     faces: Vec<usize>,
 }
 #[derive(Clone, Debug)]
-pub(super) struct Index {
+pub(crate) struct Index {
     pub faces: Vec<Triangle>,
     nodes: Vec<Node>,
     pub scope: Option<crate::model::Bounds>,
@@ -516,4 +516,8 @@ impl Index {
         }
         Ok(best)
     }
+}
+
+pub(crate) fn distance(a: Vec3, b: Vec3) -> f64 {
+    squared(a, b).sqrt()
 }

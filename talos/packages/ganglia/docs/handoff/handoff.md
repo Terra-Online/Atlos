@@ -1,5 +1,62 @@
 # Route solver handoff
 
+## Incremental Rust navigation module, 2026-11-15
+
+Rust development resumes beside the retained TS implementation. This rewrite and
+its related records remain local until the user explicitly says ready; do not
+push these commits. Long-range stress is excluded from this work. Ordinary map02
+requests and independent physical replay remain the functional reference; output
+coordinates, tie order and route choices need not align byte-for-byte with TS.
+
+The first replacement establishes these crate-private modules:
+
+- `navigation` owns typed prepared mesh proposals, endpoint projection, lazy
+  transfer materialization and query search. Its interface accepts typed arrivals
+  and returns a proposed corridor; physical feasibility remains a separate proof.
+- `navigation/topology` stores directed adjacency in CSR and computes strongly
+  connected components with iterative linear-time traversals. One-way portals
+  cannot imply mutual reachability or hide a required return transfer.
+- `mesh` owns shared polygon projection and portal stitching. It consumes geometry
+  and step limits without requiring a physical World or synthetic movement model.
+- `geometry` owns triangle/BVH and capsule primitives, shared by mesh and World.
+
+The native Engine calls the typed navigation interface, converting its current
+protocol representation at that seam. Prepared navigation no longer constructs a
+physical World, retains a duplicate JSON snapshot, or creates unused collision,
+resource and movement state. Static edges occupy one contiguous arena; temporary
+query edges occupy another. Predecessors contain edge IDs, so successful label
+relaxation does not clone strings or path vectors. Only selected output edges are
+materialized. TS source, external Solver seam, verifier and solver budgets remain
+unchanged. Native `search`, resource scheduling and most Engine protocol state
+still use the existing implementation and are subsequent replacement work.
+
+The directed-connectivity correction has one new behavior-level regression:
+a known downhill portal remains usable and the reverse journey still proposes
+an unresolved uphill crossing. Existing Rust and N-API tests cover the retained
+physical/action/resource and cancellation contracts. No byte-level route assertions
+or implementation-mirroring test suite was added.
+
+Validation: 150 Rust tests and 25 N-API integration fixtures pass, along with
+release native build, Rustfmt and feature-enabled all-target Clippy with warnings
+denied. Only the directional-navigation regression is new. TS implementation and
+its tests are unchanged; its full test suite was not rerun for this Rust-only slice.
+
+A frozen native functional diagnostic used the regular map02 dataset, ten catalog
+training requests, catalog freeze and both configured warmups, on the same worker.
+Lower-floor warmup and the lower-floor query pass independent physical replay.
+Upper-floor warmup and the upper-floor query still reach the 60-second cooperative
+deadline. The navigation change does not resolve the upper-floor bottleneck;
+this is not a full-population acceptance or a speedup measurement. No stress input
+was loaded. The worker remained usable after warmup cancellation.
+
+The explicitly selected artifact is `.local/cache/ganglia-v1/navigation-stage.node`;
+the default native artifact was not overwritten. Diagnostic source/results are
+`.local/research/native-navigation-probe.ts` and `native-navigation-result.json`.
+The current TS and verifier checkpoints remain available for comparison. Next
+work should replace the local action/geometry search and its prepared state with
+typed Rust modules, preserving training and shared physical verification rather
+than increasing query budgets or changing the verifier to accommodate this port.
+
 ## Requested stress diagnostic at 60 seconds, 2026-11-14
 
 Commit `2c99b6c2` attempted the 14-request `map02-stress` workload with the current

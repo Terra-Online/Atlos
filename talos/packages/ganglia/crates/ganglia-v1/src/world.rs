@@ -3,7 +3,7 @@
 //! A projection is only a support proposal: walking and flight methods additionally
 //! validate the full swept body against collision, walls and declared coverage.
 mod boundaries;
-mod collision;
+use crate::geometry as collision;
 mod devices;
 mod flight;
 mod following;
@@ -43,12 +43,7 @@ pub fn is_coverage_error(error: &str) -> bool {
             | "Collision query exceeds indexed XZ bounds"
     )
 }
-#[derive(Clone, Debug)]
-pub struct Projection {
-    pub surface: String,
-    pub position: Vec3,
-    pub distance: f64,
-}
+pub use crate::mesh::Projection;
 /// An uncovered source edge interval, clipped to an XZ query rectangle.
 /// Search chooses insets and validates physical support and motion separately.
 #[derive(Clone, Debug)]
@@ -250,7 +245,7 @@ impl World {
                 if len == 0. || n[1] / len < movement.max_slope.to_radians().cos() {
                     continue;
                 }
-                let vertices = ground::clip_to_bounds(t.to_vec(), support_bounds.as_ref());
+                let vertices = crate::mesh::clip_to_bounds(t.to_vec(), support_bounds.as_ref());
                 if vertices.len() >= 3 {
                     surfaces.push(Surface {
                         id: format!("ground/{id}"),
@@ -398,7 +393,11 @@ impl World {
             stitching.step_up = 0.;
             stitching.step_down = 0.;
         }
-        portals.extend(ground::portals(&surfaces, &stitching));
+        portals.extend(crate::mesh::portals(
+            &surfaces,
+            stitching.step_up,
+            stitching.step_down,
+        ));
         let mut seen = HashSet::new();
         portals.retain(|p| seen.insert(serde_json::to_string(p).unwrap_or_default()));
         for p in &portals {
@@ -558,7 +557,7 @@ impl World {
             return Err("Invalid surface projection point".into());
         }
         let surface = self.surface(surface_id).ok_or("Unknown support surface")?;
-        Ok(ground::closest_on_surface(surface, p))
+        Ok(crate::mesh::closest_on_surface(surface, p))
     }
     /// Bounded canonical direct proof; no LazySP or ground-detour search.
     pub fn probe_ground(&self, a: Vec3, b: Vec3) -> Result<GroundProbe, String> {
@@ -683,7 +682,14 @@ impl World {
         tolerance: f64,
         interaction: Option<&Interaction>,
     ) -> Result<Vec<Projection>, String> {
-        ground::project(self, p, tolerance, interaction)
+        crate::mesh::project(
+            &self.support,
+            &self.owners,
+            &self.surfaces,
+            p,
+            tolerance,
+            interaction,
+        )
     }
     /// Preserve feet already 5–10 mm above physical support, or on an authorized
     /// surface mesh with no raw support. Other seeds receive 1 cm clearance.
