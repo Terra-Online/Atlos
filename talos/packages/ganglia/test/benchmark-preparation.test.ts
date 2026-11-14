@@ -82,7 +82,7 @@ test('missing, disabled or unsatisfied V1 preparation cannot silently change the
     );
 });
 
-test('V1 scores only after frozen training and successful configured warmup', async () => {
+test('V1 records unsuccessful warmup and measures after the configured preparation', async () => {
   for (const validWarmup of [false, true]) {
     const batches: number[][] = [];
     let closed = false;
@@ -94,7 +94,9 @@ test('V1 scores only after frozen training and successful configured warmup', as
         },
         async solveBatch(queries) {
           batches.push(queries.map((query) => query.goal[0]));
-          return queries.map((query) => result(validWarmup ? query : request(999).query));
+          return queries.map((query) =>
+            result(validWarmup || batches.length > 1 ? query : request(999).query),
+          );
         },
         async close() {
           closed = true;
@@ -109,14 +111,10 @@ test('V1 scores only after frozen training and successful configured warmup', as
       undefined,
       catalog,
     );
-    if (validWarmup) {
-      const report = await run;
-      assert.equal(report.batch.quality.completed, 1);
-      assert.deepEqual(batches, [[1, 2], [100]]);
-    } else {
-      await assert.rejects(run, /warmup failed/);
-      assert.deepEqual(batches, [[1, 2]]);
-    }
+    const report = await run;
+    assert.equal(report.warmup.quality.completed, validWarmup ? 2 : 0);
+    assert.equal(report.batch.quality.completed, 1);
+    assert.deepEqual(batches, [[1, 2], [100]]);
     assert.equal(closed, true);
   }
 });

@@ -33,6 +33,17 @@ It is not a completed map-scale acceptance or a measured speedup. Rust search ha
 not been ported to the new joint-discovery or circular-contact rules; the shared
 verifier remains the acceptance authority.
 
+## Benchmark request lifecycle
+
+The worker pool owns cooperative cancellation and prepared-state restoration.
+Timeout and caller abort send an ID-bound cancellation to the active solver; the
+slot cannot accept another query until the prior computation settles. Unresponsive
+workers are killed only after a cancellation grace period. Replacement workers
+replay the declared training sequence before advertising readiness; healthy slots
+continue working. Warmup quality is reported independently of scored quality.
+The CLI journals each completed request immediately and atomically saves the final
+report, including failed quality gates or an interrupted-run summary.
+
 ## Required V1 service preparation, 2026-11-14
 
 `GangliaV1Config.preparation` requires positive training and warmup request counts,
@@ -59,18 +70,33 @@ scored requests; warmup uses separate goals. This is a trained full population,
 not an unseen holdout. Optional CLI training/warmup switches have been removed.
 Old flat policy files inherit required preparation from algorithm defaults.
 Explicit missing/disabled policy, absent training records, unfrozen catalogs,
-wrong warmup counts or invalid warmup cannot enter V1 scoring. A training timeout
-stops before scoring because worker replacement loses the catalog. Retained TS
+wrong warmup counts cannot enter V1 scoring. Warmup failures are recorded and
+measurement continues after the worker is reusable. Training timeout still stops
+incomplete preparation. Retained TS
 baseline reports are reused; fresh TS and stress runs are excluded by the user.
 
-The latest configured full-population attempt at `8db5fd94` processes all ten
-training requests and freezes 6,509 connections, but fails warmup before scoring.
-Its terminal status and log are in
-`.local/research/rust-configured-full50-8db5fd94/`. No benchmark remains active and
-no scored performance result exists. Failed warmup now emits each request's ID,
-route status, reason and partial state before rejecting readiness. The required
-startup lifecycle is implemented; successful native service readiness remains an
-algorithm acceptance gap.
+The historical configured warmup diagnostic, before the lifecycle correction
+above, confirms that the lower-floor request exhausts
+the 300-second watchdog, restarts its worker and loses its trained catalog. The
+upper-floor request then completes with independent physical replay valid. Full
+warmup evaluations and timing are retained in
+`.local/research/rust-configured-full50-warmup-diagnostic/`. No scored performance
+result exists from that attempt. That version rejected readiness on failed
+warmup. Current workers retain or restore training, record warmup failures, and
+continue scoring once reusable; warmup quality remains visible separately.
+
+Resource labels and lazy ground jobs now share goal-directed queue priorities.
+The remaining horizontal distance is divided by the graph's maximum action or
+walking speed, including boost allowances. Actual accumulated cost still governs
+dominance and retained label caps. All resource/geometry proofs and budgets remain
+unchanged. This addresses cheap-prefix expansion in trained action graphs;
+full-population acceptance remains required.
+
+Known-action lookup now checks direct supported walks and existing actions
+without eagerly solving all catalog endpoint detours. Full discovery still
+restores ordinary detour proofs after its direct pass. This prevents optional
+catalog reuse from delaying fresh discovery indefinitely; omitted lookup detours
+mark the local result truncated. Stage-zero walking retains full ground paths.
 
 ## Rust rewrite integration, 2026-11-14
 

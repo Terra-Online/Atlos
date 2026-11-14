@@ -18,7 +18,10 @@ const prepare = (
   concurrency = count,
   dataRoot = '',
   timeoutMs?: number,
-  extra: Pick<Parameters<typeof prepareWorkerSolver>[0], 'preparation' | 'onRegion'> = {},
+  extra: Pick<
+    Parameters<typeof prepareWorkerSolver>[0],
+    'preparation' | 'onRegion' | 'onResult'
+  > = {},
 ) =>
   prepareWorkerSolver({
     count,
@@ -27,6 +30,7 @@ const prepare = (
     extractor: '',
     entry: new URL('./fixtures/scene-worker.ts', import.meta.url),
     timeoutMs,
+    cancellationGraceMs: 20,
     ...extra,
   });
 
@@ -167,24 +171,21 @@ test('blocked synchronous queries hit the service deadline and queued queries us
   }
 });
 
-test('timeout recovery waits for active peers before reloading or dispatching queued work', async () => {
+test('timeout recovery leaves healthy peers running while restoring the failed slot', async () => {
   const prepared = await prepare(2, 2, '', 100);
   const { solver } = prepared;
-  let peerFinished = false;
   try {
     const blocked = solver.solve(query('blocked', 250, 4));
     await new Promise((resolve) => setTimeout(resolve, 35));
-    const peer = solver.solve(query('peer', 80)).then((result) => {
-      peerFinished = true;
-      return result;
-    });
-    const queued = solver.solve(query('queued', 1), { onEvent: () => assert.ok(peerFinished) });
+    const peer = solver.solve(query('peer', 80));
+    const queued = solver.solve(query('queued', 1));
     const results = await Promise.all([blocked, peer, queued]);
     assert.deepEqual(
       results.map((result) => result.route.status),
       ['no-verified-route', 'complete', 'complete'],
     );
     assert.equal(results[0].reason, 'timeout');
+    await prepared.solver.solveBatch([]);
     assert.ok(prepared.recoverySetupMs > 0);
     // The killed old process would have replied by now if it could contaminate
     // the slot; the replacement remains usable with its independent task IDs.
@@ -252,6 +253,7 @@ test('preparation accepts append-only region growth, reports it, and reloads it 
     const [timeout] = await prepared.solver.solveBatch([query('blocked', 150, 4)]);
     assert.equal(timeout.reason, 'timeout');
     assert.equal(prepared.recoveryCount, 1, 'Batch return waits until replacement is ready');
+    await prepared.solver.solveBatch([]);
     assert.ok(prepared.recoverySetupMs > 0);
     assert.equal(prepared.metadata.hashes.region, 'new-region');
     assert.equal((await prepared.solver.solve(query('next', 1))).route.status, 'complete');
@@ -293,5 +295,72 @@ test('worker snapshots must match, and an explicit lower concurrency limits acti
     assert.deepEqual(order, ['start-one', 'end-one', 'start-two', 'end-two']);
   } finally {
     await solver.close();
+  }
+});
+
+test('cooperative timeout preserves the trained worker for subsequent queries', async () => {
+  const prepared = await prepare(1, 1, '', 40);
+  try {
+    await prepared.setCatalogPhase('training');
+    const [[trained]] = await prepared.train([query('training', 1)]);
+    await prepared.setCatalogPhase('frozen');
+    const [expired, next] = await prepared.solver.solveBatch([
+      query('slow', 200),
+      query('next', 1),
+    ]);
+    assert.equal(expired.reason, 'timeout');
+    assert.equal(next.route.status, 'complete');
+    assert.equal(next.reason, trained.reason);
+    assert.equal(prepared.recoveryCount, 0);
+    assert.equal(prepared.catalogStats().phase, 'frozen');
+    assert.equal(prepared.catalogStats().added, 1);
+  } finally {
+    await prepared.solver.close();
+  }
+});
+
+test('an unresponsive trained worker is restored before accepting the next query', async () => {
+  const prepared = await prepare(1, 1, '', 40);
+  try {
+    await prepared.setCatalogPhase('training');
+    await prepared.train([query('training', 1)]);
+    await prepared.setCatalogPhase('frozen');
+    const [expired, next] = await prepared.solver.solveBatch([
+      query('blocked', 200, 4),
+      query('next', 1),
+    ]);
+    assert.equal(expired.reason, 'timeout');
+    assert.equal(next.route.status, 'complete');
+    assert.equal(prepared.recoveryCount, 1);
+    assert.equal(prepared.catalogStats().phase, 'frozen');
+    assert.equal(prepared.catalogStats().added, 1);
+  } finally {
+    await prepared.solver.close();
+  }
+});
+
+test('a failed result journal rejects the request and closes the worker pool', async () => {
+  const error = new Error('journal unavailable');
+  const prepared = await prepare(1, 1, '', undefined, {
+    onResult() {
+      throw error;
+    },
+  });
+  await assert.rejects(prepared.solver.solveBatch([query('first'), query('queued')]), error);
+  await prepared.solver.close();
+});
+
+test('unresponsive restoration rejects the run instead of waiting forever', async () => {
+  const prepared = await prepare(1, 1, 'blocked-restoration', 100);
+  try {
+    await prepared.setCatalogPhase('training');
+    await prepared.train([query('training', 1)]);
+    await prepared.setCatalogPhase('frozen');
+    await assert.rejects(
+      prepared.solver.solveBatch([query('blocked', 300, 4), query('next', 1)]),
+      /restoration exceeded/,
+    );
+  } finally {
+    await prepared.solver.close();
   }
 });

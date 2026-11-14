@@ -42,6 +42,9 @@ const summarize = (result: RouteResult, evaluation = evaluateRoute(result.route)
     truncated: result.diagnostics.truncated,
     timedOut: result.reason === 'timeout' || (wallMs !== undefined && wallMs > QUERY_SLO_MS),
     ...(wallMs === undefined ? {} : { wallMs }),
+    ...('cancellationMs' in result.diagnostics
+      ? { cancellationMs: result.diagnostics.cancellationMs }
+      : {}),
     queueMs:
       'queueMs' in result.diagnostics && typeof result.diagnostics.queueMs === 'number'
         ? result.diagnostics.queueMs
@@ -113,35 +116,22 @@ export async function runBenchmark(
       if (warm.length !== warmupCases.length)
         throw new Error('Warmup returned a different number of results');
     }
+    const warmupResults = await Promise.all(
+      warm.map(async (result, i) => ({
+        id: warmupCases[i].id,
+        ...summarize(result, await evaluate(warmupCases[i].query, result)),
+      })),
+    );
     const warmup = {
       ids: warmupCases.map((item) => item.id),
       wallMs: performance.now() - warmupStarted,
       recoverySetupMs: recoverySetup() - recoveryBefore,
-      quality: summarizeQuality(
-        await Promise.all(
-          warm.map(async (result, i) => ({
-            id: warmupCases[i].id,
-            ...summarize(result, await evaluate(warmupCases[i].query, result)),
-          })),
-        ),
-      ),
+      quality: summarizeQuality(warmupResults),
+      results: warmupResults,
     };
     intervals.warmup.endedMs = performance.now();
-    if (solver.config.preparation && warmup.quality.completed !== warmupCases.length) {
-      console.error(
-        JSON.stringify({
-          phase: 'service-not-ready',
-          warmup,
-          results: warm.map((result, index) => ({
-            id: warmupCases[index].id,
-            status: result.route.status,
-            reason: result.reason,
-            partial: result.partial,
-          })),
-        }),
-      );
-      throw new Error('Configured service warmup failed physical/completion validation');
-    }
+    // Warmup exercises the prepared solver. Failed queries remain outcomes,
+    // while the worker module guarantees request cleanup before this returns.
     await onPhase?.('batch');
     intervals.queries.startedMs = performance.now();
     const samples: {

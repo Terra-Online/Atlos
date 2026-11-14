@@ -63,6 +63,36 @@ fn catalog_library_retrieval_uses_link_allowance_and_reports_omitted_proposals()
             .any(|s| s["connection"] == "catalog/useful")
     );
 }
+
+#[test]
+fn resource_queue_reaches_goal_before_spending_its_budget_on_a_cheap_remote_prefix() {
+    let mut world = scene(
+        vec![
+            surface("start", 0.),
+            surface("goal", 10.),
+            surface("remote", -100.),
+        ],
+        vec![
+            connection("remote-prefix", 0., -100., 1.),
+            connection("goal", 0., 10., 2.),
+        ],
+    );
+    world["movement"]["locomotion"] = json!({"speed":2.,"sprintSpeed":2.,"sprintAcceleration":1.,
+        "search":{"maxLabels":256,"maxExpanded":1}});
+    let query = json!({"starts":[start("player",0.,0.,"available")],"goal":[10.,0.,0.]});
+    let result = solve_snapshot(
+        &world,
+        &query,
+        &json!({"maxCandidates":0,"physicalWork":{"step":1}}),
+    )
+    .unwrap();
+    complete(&result);
+    assert!(
+        array(&result["route"]["segments"])
+            .iter()
+            .any(|s| s["connection"] == "goal")
+    );
+}
 fn complete(result: &Value) {
     assert_eq!(
         result["route"]["status"], "complete",
@@ -433,26 +463,59 @@ fn frontier_keeps_distinct_energy_and_recovery_delay_and_does_not_retain_capped_
         &mut arena,
         &mut rows,
         &mut heap,
+        &[0.],
         4,
         &mut truncated,
     );
     let mut less = base.clone();
     less.state.energy -= 1.;
-    insert(less, &mut arena, &mut rows, &mut heap, 4, &mut truncated);
+    insert(
+        less,
+        &mut arena,
+        &mut rows,
+        &mut heap,
+        &[0.],
+        4,
+        &mut truncated,
+    );
     let mut delayed = base.clone();
     delayed.state.delay = 1.;
-    insert(delayed, &mut arena, &mut rows, &mut heap, 4, &mut truncated);
+    insert(
+        delayed,
+        &mut arena,
+        &mut rows,
+        &mut heap,
+        &[0.],
+        4,
+        &mut truncated,
+    );
     assert_eq!(rows[0].len(), 3);
     let mut unique = base.clone();
     unique.state.delay = 2.;
-    insert(unique, &mut arena, &mut rows, &mut heap, 4, &mut truncated);
+    insert(
+        unique,
+        &mut arena,
+        &mut rows,
+        &mut heap,
+        &[0.],
+        4,
+        &mut truncated,
+    );
     assert_eq!(arena.len(), 4);
     for i in 1..100 {
         let mut worse = base.clone();
         worse.cost += i as f64;
         worse.state.energy = 0.;
         worse.state.delay = i as f64 + 2.;
-        insert(worse, &mut arena, &mut rows, &mut heap, 4, &mut truncated);
+        insert(
+            worse,
+            &mut arena,
+            &mut rows,
+            &mut heap,
+            &[0.],
+            4,
+            &mut truncated,
+        );
     }
     assert!(truncated);
     assert_eq!(rows[0].len(), 4);
@@ -656,7 +719,17 @@ fn bounded_sample_walking_keeps_proven_obstacle_detours_between_query_anchors() 
                 .map(|x| json!(x)),
         );
     let query = json!({"starts":[start("a",-2.,0.,"available")],"goal":[2.,0.,0.]});
-    for stage in [0, 1, 2] {
+    // Catalog lookup does not eagerly prove an obstacle detour. Full search
+    // must still recover it after its direct pass misses, even without samples.
+    let lookup = solve_snapshot(
+        &snapshot,
+        &query,
+        &json!({"physicalWork":{"step":1},"maxCandidates":0}),
+    )
+    .unwrap();
+    assert_eq!(lookup["route"]["status"], "no-verified-route");
+    assert_eq!(lookup["diagnostics"]["truncated"], true);
+    for stage in [0, 2] {
         let result = solve_snapshot(
             &snapshot,
             &query,

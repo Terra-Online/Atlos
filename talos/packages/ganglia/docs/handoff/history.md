@@ -1,5 +1,26 @@
 # Route solver history and validation evidence
 
+## Merge request lifecycle updates, 2026-11-14
+
+Merged four upstream commits through `8eed53ee` into `chan/algo-progression`.
+They add goal-directed native queueing, deferred catalog detours, cooperative
+cancellation/restoration and durable benchmark outcome reporting. The conflicts
+were only concurrent handoff/history insertions; both histories are retained.
+The current warmup policy records failures separately and continues scoring once
+the worker is reusable. Earlier readiness-rejection measurements keep their
+historical scope.
+
+Validation: format, lint, typecheck and World typechecks pass. Rust passes 143
+unit tests and two authored-action tests; the release native build and all 24
+N-API integration tests pass. The TS suite passes 462/463 tests: the trained-worker
+restoration fixture exceeds its deadline both in the initial parallel run and a
+serial rerun. An isolated archive of the unmodified upstream tip reproduces the
+same failure. No assertion or timeout was relaxed. This is a recorded upstream
+failure on the local environment, not a green full-suite acceptance. Logs are
+`/tmp/atlos-sync-ts-serial.log` and `/tmp/atlos-sync-upstream-restore.log`.
+No performance benchmark was run. Concurrent unstaged noclip integration changes
+are outside this merge and are preserved separately.
+
 ## Prototype integration with configured service startup, 2026-11-14
 
 Merged the latest five commits from `misakavan/3d-preview`, through its configured
@@ -127,6 +148,77 @@ World moving-bounds/route-inspection tests. These are not test results for the
 new branch baseline. The regenerated input audit
 resolves 707 source references across 121 files. These checks verify the input
 definitions and existing annotation behavior, not the new real-scene routes.
+
+## Benchmark lifecycle correction
+
+Review identified unused native cancellation, immediate worker killing, frozen
+empty replacement catalogs, all-success warmup gating and end-only reporting.
+The cooperative-timeout regression fails the original worker pool because the
+next query executes in a different process. It now retains the worker and training.
+Native cancellation also preserves a nonempty frozen catalog in the real N-API
+fixture. Forced replacement replays training before readiness; healthy peers keep
+serving. The warmup regression previously threw on an invalid route and now
+records that failure while scoring the unchanged workload. Every request is
+written to a JSONL journal before the next dispatch, so incomplete runs preserve
+their observed outcomes. The `8ee68d40` benchmark was canceled after 208.492 seconds
+to implement this lifecycle correction; it has no scored performance result.
+
+Package formatting, lint, typecheck and 448 TS tests pass. The focused real N-API
+abort test preserves the nonempty frozen catalog and independently certifies the
+next route. Service timing includes cancellation settling; the cancellation
+interval is also exposed separately.
+
+Two-axis review found and corrected native restoration phase ordering, result
+journal errors leaving requests unresolved, an absent parent restoration deadline,
+and stale warmup documentation. All 18 worker tests pass after those fixes,
+including journal failure and unresponsive restoration; all 24 N-API fixtures pass.
+Final typecheck and lint pass. The CLI failure probe preserves an interrupted
+summary and its event journal. No new solver algorithm change is part of this fix.
+
+## Direct walking during catalog lookup, 2026-11-14
+
+The frozen `38a5cf23` configured run completes the lower-floor warmup in 70.427
+seconds, modeled cost 7.756732 and independent physical replay valid. The
+upper-floor request then times out at 300 seconds; the run ends after 407.858
+seconds before scoring. Evidence remains in
+`.local/research/rust-configured-full50-38a5cf23/`. Goal-directed queue ordering
+alone does not establish trained service readiness. A one-second read-only sample
+at `/tmp/ganglia-trained-goal-queue.sample.txt` is dominated by ground proofs.
+
+Known-action lookup previously called full ground-path repair eagerly for every
+selected catalog endpoint pair, before new action discovery. It now checks direct
+supported walking only. Full stage-two search retains direct walking followed by
+ordinary detours, with the same expansion and candidate budgets. Stage zero also
+retains complete ground-path repair. Lookup omissions mark truncation; they do
+not exclude full-search detours. The existing obstacle regression now explicitly
+checks a direct lookup miss and the full search's unchanged valid detour.
+
+All 143 Rust unit tests, two authored-action tests and 24 common-physical N-API
+fixtures pass. Release N-API build, feature-enabled all-target Clippy and Rustfmt
+pass. TypeScript source is unchanged from the preceding 446-test package check.
+
+## Trained warmup timeout and goal-directed queue, 2026-11-14
+
+The unchanged algorithm at `08b7d7a0`, with full warmup evaluation logging, repeats
+the configured failure in 376.153 seconds. The lower-floor request times out at
+300 seconds and worker recovery costs 1.428 seconds, losing its catalog. The
+upper-floor request then completes in 38.238 seconds, modeled cost 4.525145 and
+physical replay valid with no issues. Its report/log are retained in
+`.local/research/rust-configured-full50-warmup-diagnostic/`. No scored requests
+run. The earlier generic warmup failure concealed this distinction.
+
+Goal-directed resource queue ordering is retried with a corrected bounded test:
+an expansion allowance of one distinguishes a direct goal from a cheaper remote
+prefix; the previous allowance of two admitted both orders. The original queue
+fails this fixture with no verified route; goal-directed ordering completes it.
+Queue priority adds remaining horizontal distance divided by the maximum action
+or walking speed, with boost allowances. Lazy ground jobs use the same remaining
+estimate. Dominance, label caps and replay use actual costs. No sampling, candidate
+budget, physical acceptance rule or verifier gate changes.
+
+All 143 Rust unit tests, two authored-action tests, 24 common-physical N-API
+fixtures and 446 TS tests pass. Release N-API build, feature-enabled all-target
+Clippy with warnings denied, Rustfmt and package formatting/lint/typecheck pass.
 
 ## Configured readiness failure diagnostics, 2026-11-14
 

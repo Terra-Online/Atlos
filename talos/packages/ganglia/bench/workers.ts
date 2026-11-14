@@ -30,6 +30,7 @@ export type WorkerResult = RouteResult & {
     solveWallMs: number;
     timedOut: boolean;
     observedWallMs?: number;
+    cancellationMs?: number;
     queueMs: number;
     responseMs: number;
   };
@@ -43,12 +44,15 @@ export interface WorkerSetup {
   index: number;
   preparation?: { config: string; devices?: string };
   catalogPhase?: CatalogStats['phase'];
+  trainingQueries?: readonly RouteQuery[];
+  timeoutMs?: number;
 }
 export type WorkerRequest =
   | { type: 'setup'; setup: WorkerSetup }
   | { type: 'solve'; id: number; query: RouteQuery; events: boolean }
   | { type: 'verify'; id: number; query: RouteQuery; route: RouteResult['route'] }
   | (Control & { id: number })
+  | { type: 'cancel'; id: number }
   | { type: 'close' };
 export type WorkerReply =
   | {
@@ -85,6 +89,7 @@ type Task = {
   enqueued: number;
   workerIndex?: number;
   timer?: ReturnType<typeof setTimeout>;
+  interruption?: { reason: string; error?: unknown; startedMs: number };
 };
 type Slot = {
   index: number;
@@ -103,8 +108,9 @@ type Slot = {
   preparedMemory?: Memory;
 };
 
-/** The parent owns query deadlines. A separate process can be killed even when
- * synchronous JS or native search cannot yield to an AbortSignal. */
+/** Own request deadlines, cancellation and prepared-state restoration. The slot
+ * remains busy until cancellation settles; an unresponsive process is replaced
+ * and retrained before it receives another request. Healthy slots keep serving. */
 export async function prepareWorkerSolver(options: {
   count: number;
   config: SolverSettings;
@@ -113,10 +119,15 @@ export async function prepareWorkerSolver(options: {
   scene?: string;
   entry?: URL;
   timeoutMs?: number;
+  cancellationGraceMs?: number;
   preparation?: WorkerSetup['preparation'];
   onRegion?: (files: RegionFiles) => void;
+  onResult?: (query: RouteQuery, result: WorkerResult) => void;
 }) {
   const timeoutMs = options.timeoutMs ?? QUERY_SLO_MS;
+  const cancellationGraceMs = options.cancellationGraceMs ?? 1000;
+  if (!Number.isSafeInteger(cancellationGraceMs) || cancellationGraceMs <= 0)
+    throw new Error('Invalid cancellation grace period');
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0 || timeoutMs > QUERY_SLO_MS)
     throw new Error('Invalid query timeout');
   if (!Number.isSafeInteger(options.count) || options.count < 1)
@@ -145,8 +156,7 @@ export async function prepareWorkerSolver(options: {
   let processRssSampledPeakBytes = process.memoryUsage().rss;
   let serial = 0,
     nextSlot = 0;
-  let closed = false,
-    paused = false;
+  let closed = false;
   let failure: Error | undefined;
   let recovering: Promise<void> | undefined;
   let closing: Promise<void> | undefined;
@@ -163,13 +173,14 @@ export async function prepareWorkerSolver(options: {
   >();
   const controls = new Map<number, { resolve: () => void; reject: (error: Error) => void }>();
   let catalogPhase: CatalogStats['phase'] = 'disabled';
+  const trainingQueries: RouteQuery[] = [];
   const activeCount = () => slots.filter((slot) => slot.active).length;
   const drained = () => {
-    if (!paused && !recovering) {
+    if (!recovering) {
       for (const resolve of restored) resolve();
       restored.clear();
     }
-    if (!queued.length && !activeCount() && !paused && !recovering) notifyDrained?.();
+    if (!queued.length && !activeCount() && !recovering) notifyDrained?.();
   };
   const kill = (slot: Slot) => {
     if (slot.retired) return;
@@ -198,7 +209,6 @@ export async function prepareWorkerSolver(options: {
   };
   const fail = (error: Error) => {
     failure ??= error;
-    paused = false;
     for (const control of controls.values()) control.reject(failure);
     controls.clear();
     for (const pending of verifications.values()) {
@@ -244,17 +254,30 @@ export async function prepareWorkerSolver(options: {
   };
   const measured = (result: RouteResult, task: Task, timedOut = false): WorkerResult => {
     const observedWallMs = performance.now() - task.started!;
-    return {
+    const value: WorkerResult = {
       ...result,
       diagnostics: {
         ...result.diagnostics,
-        solveWallMs: timedOut ? timeoutMs : observedWallMs,
+        solveWallMs: observedWallMs,
+        ...(task.interruption
+          ? { cancellationMs: performance.now() - task.interruption.startedMs }
+          : {}),
         queueMs: task.started! - task.enqueued,
         responseMs: performance.now() - task.enqueued,
         timedOut,
         ...(timedOut ? { observedWallMs } : {}),
       },
     };
+    return value;
+  };
+  const publish = (task: Task, result: WorkerResult) => {
+    try {
+      options.onResult?.(task.message.query, result);
+      task.resolve(result);
+    } catch (error) {
+      task.reject(error);
+      fail(error instanceof Error ? error : new Error(String(error)));
+    }
   };
   const interrupted = (reason: string): RouteResult => ({
     route: { status: 'no-verified-route' },
@@ -266,12 +289,26 @@ export async function prepareWorkerSolver(options: {
     const task = slot.active;
     if (!task) return;
     slot.active = undefined;
-    paused = true;
     clean(task);
     kill(slot);
     if (error !== undefined) task.reject(error);
-    else task.resolve(measured(interrupted(reason), task, reason === 'timeout'));
+    else publish(task, measured(interrupted(reason), task, reason === 'timeout'));
     dispatch();
+  };
+  // Keep the slot occupied until the interrupted computation has actually exited.
+  // A late reply cannot become a successful result or overlap the next request.
+  const interrupt = (slot: Slot, reason: string, error?: unknown) => {
+    const task = slot.active;
+    if (!task || task.interruption) return;
+    task.interruption = { reason, error, startedMs: performance.now() };
+    clearTimeout(task.timer);
+    task.timer = setTimeout(() => retire(slot, reason, error), cancellationGraceMs);
+    slot.worker!.send(
+      { type: 'cancel', id: task.message.id } satisfies WorkerRequest,
+      (failure) => {
+        if (failure && slot.active === task) retire(slot, reason, error);
+      },
+    );
   };
   const start = (slot: Slot) =>
     new Promise<void>((resolve, reject) => {
@@ -288,6 +325,17 @@ export async function prepareWorkerSolver(options: {
       slot.retired = false;
       slot.ready = false;
       let ready = false;
+      // Recovery includes training and must not hang outside the query watchdog.
+      const restorationTimer = trainingQueries.length
+        ? setTimeout(() => {
+            const error = new Error('Worker training restoration exceeded its deadline');
+            reject(error);
+            fail(error);
+          }, timeoutMs + cancellationGraceMs)
+        : undefined;
+      const clearRestoration = () => clearTimeout(restorationTimer);
+      worker.once('exit', clearRestoration);
+
       slot.exited = new Promise<void>((exited) =>
         worker.once('exit', () => {
           slot.rssBytes = 0;
@@ -313,6 +361,7 @@ export async function prepareWorkerSolver(options: {
             slot.inputLoadMs = message.inputLoadMs;
             slot.preparationMs = message.preparationMs;
             slot.readyMemory = message.memory;
+            clearRestoration();
             slot.ready = ready = true;
             resolve();
             return;
@@ -345,29 +394,36 @@ export async function prepareWorkerSolver(options: {
           const task = slot.active;
           if (!task || task.message.id !== message.id)
             throw new Error('Unexpected scene worker response');
-          if (performance.now() - task.started! >= timeoutMs) {
-            retire(slot, 'timeout');
-            return;
-          }
+          if (!task.interruption && performance.now() - task.started! >= timeoutMs)
+            interrupt(slot, 'timeout');
           if (message.type === 'event') {
+            if (task.interruption) return;
             try {
               task.options.onEvent?.(message.event);
             } catch (error) {
-              retire(slot, 'aborted', error);
+              interrupt(slot, 'aborted', error);
             }
             return;
           }
           if (message.type === 'result' && message.metadata) metadata(message.metadata);
           slot.active = undefined;
           clean(task);
-          if (message.type === 'error') task.reject(new Error(message.error));
+          if (task.interruption) {
+            if (message.type === 'result') {
+              slot.catalog = message.catalog;
+              sample(slot, message.memory);
+            }
+            const { reason, error } = task.interruption;
+            if (error !== undefined) task.reject(error);
+            else publish(task, measured(interrupted(reason), task, reason === 'timeout'));
+          } else if (message.type === 'error') task.reject(new Error(message.error));
           else {
             slot.catalog = message.catalog;
             sample(slot, message.memory);
             mergeTimings(timings, message.timings);
             const result = measured(message.result, task);
             owners.set(result, slot.index);
-            task.resolve(result);
+            publish(task, result);
           }
           dispatch();
         } catch (error) {
@@ -408,6 +464,8 @@ export async function prepareWorkerSolver(options: {
             index: slot.index,
             preparation: options.preparation,
             catalogPhase,
+            trainingQueries,
+            timeoutMs,
           },
         } satisfies WorkerRequest,
         (error) => {
@@ -419,7 +477,7 @@ export async function prepareWorkerSolver(options: {
       );
     });
   const recover = () => {
-    if (recovering || activeCount() || failure) return;
+    if (recovering || failure || !slots.some((slot) => slot.retired)) return;
     const started = performance.now();
     recovering = (async () => {
       const dead = slots.filter((slot) => slot.retired);
@@ -432,7 +490,6 @@ export async function prepareWorkerSolver(options: {
       .finally(() => {
         recoverySetupMs += performance.now() - started;
         recovering = undefined;
-        paused = false;
         dispatch();
       });
   };
@@ -441,10 +498,7 @@ export async function prepareWorkerSolver(options: {
       drained();
       return;
     }
-    if (paused) {
-      recover();
-      return;
-    }
+    recover();
     let active = activeCount();
     for (
       let checked = 0;
@@ -461,7 +515,7 @@ export async function prepareWorkerSolver(options: {
       const [task] = queued.splice(index, 1);
       slot.active = task;
       task.started = performance.now();
-      task.timer = setTimeout(() => retire(slot, 'timeout'), timeoutMs);
+      task.timer = setTimeout(() => interrupt(slot, 'timeout'), timeoutMs);
       active++;
       const worker = slot.worker!;
       worker.send(task.message, (error) => {
@@ -494,13 +548,13 @@ export async function prepareWorkerSolver(options: {
       };
       const abort = () => {
         const slot = slots.find((slot) => slot.active === task);
-        if (slot) retire(slot, 'aborted');
+        if (slot) interrupt(slot, 'aborted');
         else {
           const index = queued.indexOf(task);
           if (index !== -1) queued.splice(index, 1);
           clean(task);
           task.started = performance.now();
-          resolve(measured(interrupted('aborted'), task));
+          publish(task, measured(interrupted('aborted'), task));
           drained();
         }
       };
@@ -520,7 +574,7 @@ export async function prepareWorkerSolver(options: {
       const results = await Promise.all(queries.map((query) => submit(query, batchOptions)));
       // A batch boundary also closes its recovery interval, so a caller can
       // subtract setup time without moving it into the next batch's timing.
-      while (paused || recovering) await new Promise<void>((resolve) => restored.add(resolve));
+      while (recovering) await new Promise<void>((resolve) => restored.add(resolve));
       if (failure) throw failure;
       return results;
     },
@@ -529,7 +583,7 @@ export async function prepareWorkerSolver(options: {
         closed = true;
         const priorFailure = failure;
         closing = (async () => {
-          if (queued.length || activeCount() || paused || recovering)
+          if (queued.length || activeCount() || recovering)
             await new Promise<void>((resolve) => {
               notifyDrained = resolve;
             });
@@ -548,7 +602,7 @@ export async function prepareWorkerSolver(options: {
   const control = async (message: Control) => {
     if (failure) throw failure;
     if (closed) throw new Error('Scene worker solver is closed');
-    if (activeCount() || queued.length || paused || recovering)
+    if (activeCount() || queued.length || recovering)
       throw new Error('Set phases between query batches');
     await Promise.all(
       slots.map(
@@ -595,13 +649,15 @@ export async function prepareWorkerSolver(options: {
       for (const query of queries) {
         const batch = await Promise.all(slots.map((slot) => submit(query, {}, slot.index)));
         batch.forEach((result, index) => results[index].push(result));
+        if (batch.every((result) => result.reason !== 'timeout')) trainingQueries.push(query);
       }
-      while (paused || recovering) await new Promise<void>((resolve) => restored.add(resolve));
+      while (recovering) await new Promise<void>((resolve) => restored.add(resolve));
       if (failure) throw failure;
       return results;
     },
     async setCatalogPhase(phase: CatalogStats['phase']) {
       catalogPhase = phase;
+      if (phase === 'disabled') trainingQueries.length = 0;
       await control({ type: 'catalog-phase', phase });
     },
     setBenchmarkPhase: (phase: 'prewarm' | 'batch') => control({ type: 'benchmark-phase', phase }),

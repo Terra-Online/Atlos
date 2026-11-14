@@ -1,7 +1,9 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { appendFileSync, mkdirSync, mkdtempSync, renameSync, writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, isDeepStrictEqual } from 'node:util';
 
@@ -21,6 +23,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const { values } = parseArgs({
   options: {
     json: { type: 'boolean' },
+    output: { type: 'string' },
     markdown: { type: 'boolean' },
     help: { type: 'boolean' },
     adapter: { type: 'string' },
@@ -45,6 +48,22 @@ if (values.help) {
   );
   console.log('GANGLIA_BENCHMARK_HEAP_MB sets the Node heap cap in MiB (default 6144).');
 } else {
+  const outputPath = values.output
+    ? resolve(values.output)
+    : join(mkdtempSync(join(tmpdir(), 'ganglia-benchmark-')), 'report.json');
+  mkdirSync(dirname(outputPath), { recursive: true });
+  const eventsPath = `${outputPath}.events.jsonl`;
+  // A new invocation owns a new journal. Never append to evidence from another run.
+  writeFileSync(eventsPath, '', { flag: 'wx' });
+  const record = (event: unknown) => appendFileSync(eventsPath, `${JSON.stringify(event)}\n`);
+  const save = (report: unknown) => {
+    writeFileSync(`${outputPath}.tmp`, JSON.stringify(report, null, 2));
+    renameSync(`${outputPath}.tmp`, outputPath);
+  };
+  let phase = 'setup';
+  let completed = 0;
+  console.error(JSON.stringify({ phase: 'artifacts', report: outputPath, events: eventsPath }));
+  record({ phase, state: 'started', at: new Date().toISOString(), argv: process.argv.slice(2) });
   try {
     const adapter = await loadAdapter(values.adapter);
     if (values.json && values.markdown) throw new Error('Choose --json or --markdown');
@@ -132,6 +151,18 @@ if (values.help) {
       dataRoot,
       extractor: values.extractor,
       scene: values.scene,
+      onResult(query, result) {
+        record({ phase, query, result });
+        console.error(
+          JSON.stringify({
+            phase,
+            completed: ++completed,
+            status: result.route.status,
+            reason: result.reason,
+            wallMs: result.diagnostics.solveWallMs,
+          }),
+        );
+      },
     });
     const { solver, inputLoadMs, timings, metadata } = prepared;
     const workerReadyMs = performance.now();
@@ -144,6 +175,8 @@ if (values.help) {
       if (trainingCount) {
         if (!adapter.catalogTraining) throw new Error('Adapter does not support catalog training');
         console.error(JSON.stringify({ phase: 'catalog-training', queries: training.length }));
+        phase = 'catalog-training';
+        completed = 0;
         await prepared.setCatalogPhase('training');
         const trainingStarted = performance.now();
         const results: Awaited<ReturnType<typeof prepared.train>> = Array.from(
@@ -197,7 +230,9 @@ if (values.help) {
         solver,
         selected,
         metadata.rules,
-        async (phase) => {
+        async (nextPhase) => {
+          phase = nextPhase;
+          completed = 0;
           console.error(
             JSON.stringify({
               phase,
@@ -205,7 +240,7 @@ if (values.help) {
               rounds,
             }),
           );
-          await prepared.setBenchmarkPhase(phase);
+          await prepared.setBenchmarkPhase(nextPhase);
           if (phase === 'batch') {
             readyMs = performance.now();
             setupMs = readyMs - started;
@@ -221,7 +256,6 @@ if (values.help) {
       const endToEndMs = performance.now();
       if (
         catalogTraining &&
-        !prepared.recoverySetupMs &&
         prepared
           .catalogStatsAll()
           .some((stats, index) => stats.added !== catalogTraining.perWorker[index].stats.added)
@@ -321,6 +355,8 @@ if (values.help) {
           : {}),
       };
       const validated = { ...output, qualityGate: gate };
+      save(validated);
+      record({ phase: 'finished', qualityGate: gate });
       if (values.json) console.log(JSON.stringify(validated, null, 2));
       else if (values.markdown) console.log(benchmarkMarkdown(validated));
       else {
@@ -371,6 +407,14 @@ if (values.help) {
       await solver.close();
     }
   } catch (error) {
+    const failure = {
+      state: 'interrupted',
+      phase,
+      error: error instanceof Error ? error.message : String(error),
+      events: eventsPath,
+    };
+    record(failure);
+    save(failure);
     console.error(error);
     process.exitCode = 1;
   }
