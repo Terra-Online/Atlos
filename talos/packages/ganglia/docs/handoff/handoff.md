@@ -1,5 +1,32 @@
 # Route solver handoff
 
+## Current-source TS full-population run, 2026-11-14
+
+Clean commit `c316ac5210d32e00581f090442c4829b8365132c` completed the requested
+single measured round with one worker/lane on all fifty map02 requests. Preparation
+trained ten requests (79.844 s, 272 catalog actions), froze the catalog and ran two
+warmups (5.191 s; one physically accepted). Service readiness was 86.190 s.
+
+All fifty searches returned complete traces, but independent physical execution
+accepted only six. Thirty-three failed supported walking and eleven failed takeoff
+support. The completion/physical quality gate failed. This is current generation,
+not replay of a historical journal, so the remaining problem is present in current
+search output. No timeout, process replacement or recovery occurred; the run did
+not exercise a real-data cancellation event.
+
+Mean serial time across all attempts was 1518.433 ms, median 1165.540 ms, P95
+4775.438 ms and maximum 6730.783 ms. Batch wall time was 75.940 s; end-to-end,
+including preparation, validation and shutdown, was 162.983 s. One round provides
+no repeatability measurement. No new speedup is accepted because quality failed.
+
+The report and adjacent event journal are under
+`.local/research/ts-current-soft-c316ac52/`. Source SHA-256 is
+`1bf367cb463f246d629584a56661a5bc596c4c417b01a941e2e7c9066e5447fe`;
+report SHA-256 is `8550684b114f3df8ffa648429eeb1bf0bee462a74c99b488193edd3d35e66c11`.
+The run used Node v26.13.0 with a 6144 MiB heap and no native solver. Configured
+training budgets were 32,000 candidates/256 links; serving retained 8,000/64.
+Source stayed frozen throughout measurement and passed the CLI's final digest check.
+
 ## Configurable verification and bounded walk execution, 2026-11-14
 
 `createPhysicalVerifier(snapshots, options)` accepts a partial `VerificationPolicy`;
