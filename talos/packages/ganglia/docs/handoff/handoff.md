@@ -18,14 +18,19 @@ Update this file in the same commit as changes to current behavior, ownership,
 contracts or remaining gaps. Record attempted approaches, outcomes, exact input
 and code bindings, checks and unrun acceptance in `history.md`. Keep raw game
 inputs and profiles in ignored `.local/`; a Git push does not transfer them.
-The 266-case mechanism suite is selected and source-audited, not yet physically
+The user-authorized shared 266-case mechanism definitions now live in
+[`bench/scenes/mechanisms/`](../../bench/scenes/mechanisms/README.md). They preserve
+queries, scenario setup, assertions and portable source references; raw assets
+remain local. The manifest requires runner adaptation and is not a plain
+`--workload` query array. It is selected and source-audited, not yet physically
 accepted. It supplements the required TS/Rust local and stress workloads in
 `AGENTS.md`; unsupported per-case setup must not be silently ignored.
 
 The first algorithm milestone is the agreed circular-waterwheel model and
 single-pose conveyor stepping semantics. Multi-box discovery follows; performance
-claims require fixed-input paired validation. The initial draft changes handoff
-records only and contains no new solver implementation or measured speedup.
+claims require fixed-input paired validation. The draft currently shares handoff
+records and acceptance case definitions, with no new solver implementation or
+measured speedup.
 
 ## Rust rewrite integration, 2026-11-14
 

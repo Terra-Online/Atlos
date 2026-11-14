@@ -1,5 +1,22 @@
 # Route solver history and validation evidence
 
+## Share mechanism acceptance definitions, 2026-11-14
+
+The user authorized publishing the 266 selected case definitions so the Rust
+implementation can adapt and reuse them. `bench/scenes/mechanisms/` contains the
+manifest, case/coverage indexes and multi-box index. Local absolute paths are
+replaced by explicit `exports/` and `retained/` resource namespaces; raw geometry,
+profiles and private configuration are not included. Sixteen original physical
+window definitions retain their bounds and export options.
+
+The transfer check preserves all 266 IDs, queries, per-case setup and assertions
+after resource-path normalization. Coverage entries resolve to existing cases;
+the CSV indexes retain the same population. These are packaging checks, not route
+or performance results. Runner integration remains pending: the existing custom
+workload loader accepts a plain query array and does not apply this manifest's
+scene-specific preparation or scenario overrides. Unsupported setup must be
+reported explicitly, and mechanism exercise remains distinct from feasibility.
+
 ## Circular waterwheel and conveyor acceptance correction, 2026-11-14
 
 The user reconfirmed the earlier waterwheel decision: model a traversable circular
