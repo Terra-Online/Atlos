@@ -4,7 +4,10 @@ import test from 'node:test';
 import type { Portal, Surface, Vec3, Wall } from '#@/src/geometry.ts';
 import { blockedByWalls } from '#@/src/model/walls.ts';
 import type { GroundArrival, GroundOptions } from '#@/src/route.ts';
+import { surfaceGraph } from '#@/src/v1/geo/surfaces.ts';
+import { groundComponents } from '#@/src/v1/reach/connectivity.ts';
 import { type CandidateEdge, createCandidatePlanner } from '#@/src/v1/search/candidate-planner.ts';
+import { createTransferQuery } from '#@/src/v1/search/candidate-transfers.ts';
 import { expectStatus } from '#@/test/assertions.ts';
 const square = (id: string, x: number, z: number): Surface => ({
   id,
@@ -14,6 +17,57 @@ const square = (id: string, x: number, z: number): Surface => ({
     [x + 2, 0, z + 2],
     [x, 0, z + 2],
   ],
+});
+
+test('completed component expansions retain eager proposal identity and encounter ordering', () => {
+  // The second a face repeats vertices after b's occurrences. Those later
+  // occurrences still own encounter ranks even when geometry is deduplicated.
+  const surfaces = [
+    square('a', 0, 0),
+    square('b', 4, 0),
+    square('a2', 0, 2),
+    square('c', 4, 4),
+    square('d', 8, 4),
+  ];
+  const topology = groundComponents(surfaceGraph(surfaces, { speed: 5 }));
+  const componentOf = (surface: string) => topology.components[topology.ids.get(surface)!];
+  const query = createTransferQuery(surfaces, topology, 6, 3);
+  const components = [...new Set(surfaces.map((s) => componentOf(s.id)))];
+  const eager = new Map(components.map((component) => [component, query(component)]));
+  assert.equal(components.length, 4);
+  for (const component of components) {
+    for (const proposal of eager.get(component)!) {
+      const other =
+        componentOf(proposal.from) === component
+          ? componentOf(proposal.to)
+          : componentOf(proposal.from);
+      assert.deepEqual(
+        eager.get(other)!.find((p) => p.key === proposal.key),
+        proposal,
+      );
+    }
+  }
+  for (const order of [
+    components,
+    [...components].reverse(),
+    [...components.slice(1), components[0]],
+  ]) {
+    const expanded = new Set<number>(),
+      materialized = new Set<string>(),
+      expected = [],
+      actual = [];
+    for (const component of order) {
+      expanded.add(component);
+      const pending = eager.get(component)!.filter((p) => !materialized.has(p.key));
+      const selected = query(component, expanded);
+      assert.deepEqual(selected, pending);
+      expected.push(...pending);
+      actual.push(...selected);
+      for (const p of pending) materialized.add(p.key);
+      assert.deepEqual(query(component), eager.get(component));
+    }
+    assert.deepEqual(actual, expected);
+  }
 });
 test('candidate rejection preserves alternative spatial entrances and never reports execution', () => {
   const data: {

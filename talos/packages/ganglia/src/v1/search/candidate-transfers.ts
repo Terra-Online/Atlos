@@ -34,6 +34,8 @@ const compare = (a: readonly number[], b: readonly number[]) =>
 /** Index vertices once, then materialize transfers only for expanded components.
  * A bucket still chooses the same shortest proposal as the eager input-order pass.
  * Both sides of an encounter are indexed because its later vertex owns the bucket.
+ * The returned query may omit other components whose complete pair proposals the
+ * caller already materialized; omitting that set retains full enumeration.
  */
 export function createTypeScriptTransferQuery(
   surfaces: Surface[],
@@ -80,7 +82,7 @@ export function createTypeScriptTransferQuery(
   }
   for (const cell of cells.values())
     for (const group of cell.groups.values()) delete group.positions;
-  return (component: number): Proposal[] => {
+  return (component: number, excluded?: ReadonlySet<number>): Proposal[] => {
     const proposals = new Map<string, Proposal>();
     const consider = (later: Vertex, earlier: Vertex) => {
       if (
@@ -141,7 +143,7 @@ export function createTypeScriptTransferQuery(
           const cell = cells.get(cellKey(vertex.x + dx, vertex.z + dz));
           if (!cell) continue;
           for (const [otherComponent, group] of cell.groups) {
-            if (otherComponent === component) continue;
+            if (otherComponent === component || excluded?.has(otherComponent)) continue;
             for (const other of group.retained) consider(vertex, other);
             if (vertex.retained) for (const other of group.sources) consider(other, vertex);
           }
