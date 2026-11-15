@@ -37,6 +37,7 @@ import type { PhysicalInput } from '#@/src/solver/physical.ts';
 import type { prepareRouteSolver } from '#@/src/solver/prepare.ts';
 import type { snapshotGangliaV1Config } from '#@/src/v1/prepare.ts';
 import type { preparePhysicalSolver } from '#@/src/v1/solver/physical/prepared.ts';
+import type { PhysicalContext } from '#@/src/v1/solver/physical/solve.ts';
 
 if (!process.send) throw new Error('Mechanism worker requires IPC');
 const send = (message: WorkerReply) => process.send!(message);
@@ -76,6 +77,15 @@ process.once('message', async (message: WorkerRequest) => {
   };
   let physicalDiagnostics: unknown;
   let lastProgress: unknown;
+  const reportProgress: NonNullable<PhysicalContext['progress']> = (detail) => {
+    const phase = detail.phase;
+    if (typeof phase !== 'string') return;
+    lastProgress = detail;
+    progress(
+      { type: 'progress', phase: 'validate' },
+      phase === 'source-admission' ? JSON.stringify(detail) : phase,
+    );
+  };
   const resolveStarts = async (
     catalog: unknown,
     snapshot: Parameters<typeof resolveMechanismQuery>[2],
@@ -241,6 +251,7 @@ process.once('message', async (message: WorkerRequest) => {
         input,
         policy.snapshotGangliaV1Config(setup.config as GangliaV1Config),
         {
+          progress: reportProgress,
           observe(_result, _optimizing, diagnostics) {
             physicalDiagnostics = structuredClone(diagnostics);
           },
@@ -281,13 +292,7 @@ process.once('message', async (message: WorkerRequest) => {
           onResult: (report) => {
             physicalDiagnostics = report.diagnostics;
           },
-          onProgress: (detail) => {
-            lastProgress = detail;
-            progress(
-              { type: 'progress', phase: 'validate' },
-              detail.phase === 'source-admission' ? JSON.stringify(detail) : detail.phase,
-            );
-          },
+          onProgress: reportProgress,
           transformInput: (raw) => {
             const audit = facilityAudit(raw, catalog);
             facilityAudits.push(audit);

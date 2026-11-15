@@ -430,17 +430,17 @@ test('a verified whole-guide target approach completes once and pays the selecte
     assert.equal(result.partial, false);
     assert.equal(result.diagnostics.truncated, true);
     assert.equal(result.diagnostics.candidateAttempts, 1);
-    assert.deepEqual(calls, ['target-approach']);
+    assert.deepEqual(calls, ['open']);
     assert.ok(events.some((event) => event.type === 'candidate' && !event.result.partial));
     await solver.solve({ starts: [arrival], goal: [20, 0, 0] });
-    assert.deepEqual(calls, ['target-approach', 'target-approach']);
+    assert.deepEqual(calls, ['open', 'open']);
     const constrainedArrival = { ...arrival, groundRange: [0, 0] as [number, number] };
     const constrained = await solver.solve({
       starts: [constrainedArrival],
       goal: [20, 0, 0],
     });
     assert.equal(constrained.route.status, 'complete');
-    assert.deepEqual(calls, ['target-approach', 'target-approach', 'target-approach', 'open']);
+    assert.deepEqual(calls, ['open', 'open', 'target-approach', 'open']);
   } finally {
     await solver.close();
   }
@@ -587,7 +587,12 @@ test('exhausting the retry budget retains partial evidence and reports truncatio
     { kind: 'scene', scene, resources, locomotion },
   );
   try {
-    const result = await solver.solve({ starts, goal: [20, 0, 0] });
+    // Explicit source heights require the original arrival's own projection proof.
+    const constrainedStarts = starts.map((arrival) => ({
+      ...arrival,
+      groundRange: [0, 0] as [number, number],
+    }));
+    const result = await solver.solve({ starts: constrainedStarts, goal: [20, 0, 0] });
     assert.equal(result.partial, true);
     assert.equal(result.route.status, 'complete');
     assert.equal(result.diagnostics.truncated, true);
@@ -687,7 +692,9 @@ test('local discovery truncation survives retained partial output and arrival ex
   resources.route = (job) => ({ route: job.route, diagnostics: { truncated: true } });
   const solver = await prepareRouteSolver(config, { kind: 'scene', scene, resources, locomotion });
   try {
-    const result = await solver.solve({ starts: [starts[0]], goal: [20, 0, 0] });
+    // Explicit source heights keep the synthetic tail separate from root admission.
+    const arrival = { ...starts[0], groundRange: [0, 0] as [number, number] };
+    const result = await solver.solve({ starts: [arrival], goal: [20, 0, 0] });
     assert.equal(result.partial, true);
     assert.equal(result.diagnostics.truncated, true);
   } finally {

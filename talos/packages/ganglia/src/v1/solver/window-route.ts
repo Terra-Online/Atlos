@@ -230,12 +230,14 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
           builder,
           {
             ...request,
-            arrival: {
-              id: 'target-approach',
-              position: candidates[first],
-              cost: 0,
-              state: 'available',
-            },
+            arrival: tailCoversStart
+              ? request.arrival
+              : {
+                  id: 'target-approach',
+                  position: candidates[first],
+                  cost: 0,
+                  state: 'available',
+                },
           },
           candidates.slice(first + 1),
           settings,

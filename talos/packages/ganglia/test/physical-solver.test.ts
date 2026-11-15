@@ -1016,6 +1016,84 @@ test('direct provider rides preserve resources, annotations and exact arrival ga
     );
   windowCache.clear();
 
+  const tailCalls: { arrival: Window['arrival']; step: number }[] = [];
+  const tailPhases: unknown[] = [];
+  const tailResources: typeof windowResources = {
+    ...windowResources,
+    ground: async () => staticMapped.ground,
+    async solve(job, local, _start, work): Promise<Job> {
+      tailCalls.push({ arrival: local.arrival, step: work.step });
+      const solver = await preparePhysicalSolver(
+        staticMapped,
+        { ...gangliaV1Defaults, maxCandidates: 0, maxShortcutCandidates: 0 },
+        {
+          effort: work.step === 0 ? 'walking' : work.step === 1 ? 'devices' : 'all',
+          progress: (event) => tailPhases.push(event.phase),
+        },
+      );
+      try {
+        return {
+          ...job,
+          result: await solver.solve({
+            starts: [local.arrival],
+            goal: local.target,
+            interaction: local.interaction,
+          }),
+        };
+      } finally {
+        await solver.close();
+      }
+    },
+  };
+  const tailRequest = {
+    scene: 'fixture',
+    source: {},
+    ...request,
+    arrival: {
+      ...request.arrival,
+      id: 'lift',
+      position: [5, 5.01, 5] as [number, number, number],
+      cost: 3,
+    },
+  };
+  const tailSettings = {
+    tileSpan: 38.4,
+    gridSpan: 32,
+    maxTiles: 16,
+    margin: 8,
+    locomotion: physical.locomotion,
+  };
+  const rootTail = createWindowRoute(
+    tailResources,
+    tailRequest,
+    [tailRequest.arrival.position, request.target],
+    tailSettings,
+  );
+  let tailResult = await rootTail.advanceTail();
+  for (let i = 0; i < 5 && tailResult.status === 'pending'; i++)
+    tailResult = await rootTail.advanceTail();
+  assert.ok(tailResult.status === 'partial');
+  assert.equal(tailResult.coversStart, true);
+  assert.equal(tailResult.route.start, 'lift');
+  assert.equal(tailResult.route.arrivalCost, 3);
+  assert.equal(tailResult.route.cost, 3 + result.route.cost);
+  assert.deepEqual(tailResult.route.points, [tailRequest.arrival.position, [5, 7.01, 5]]);
+  assert.ok(tailPhases.includes('moving-direct'));
+  assert.ok(tailCalls.every(({ arrival }) => arrival.id === 'lift' && arrival.cost === 3));
+  tailCalls.length = 0;
+  const syntheticTail = createWindowRoute(
+    tailResources,
+    tailRequest,
+    [[4, 5, 5], request.target],
+    tailSettings,
+  );
+  const syntheticResult = await syntheticTail.advanceTail();
+  assert.equal(syntheticResult.status, 'incomplete');
+  assert.deepEqual(
+    tailCalls.map(({ arrival, step }) => ({ id: arrival.id, cost: arrival.cost, step })),
+    [{ id: 'target-approach', cost: 0, step: 0 }],
+  );
+
   const compactRequest = {
     scene: 'fixture',
     source: {},
