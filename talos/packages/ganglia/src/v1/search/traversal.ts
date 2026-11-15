@@ -6,7 +6,7 @@ import type { InteractionGoal, JumpModel } from '#@/src/movement.ts';
 import type { GroundConnection } from '#@/src/route.ts';
 import { type SharedPortal, surfacePortals, directedPortals } from '#@/src/v1/geo/surfaces.ts';
 import { discoveryEvidence } from '#@/src/v1/motion/evidence.ts';
-import { jumpConnection, jumpDuration } from '#@/src/v1/motion/jumps.ts';
+import { jumpConnection, jumpDuration, jumpTravel } from '#@/src/v1/motion/jumps.ts';
 import { landingCandidates } from '#@/src/v1/motion/landings.ts';
 import type { GroundPlanner } from '#@/src/v1/route/ground.ts';
 import { movementGeometry } from '#@/src/v1/route/movement-geometry.ts';
@@ -511,6 +511,13 @@ export function findJumpConnections(
   const { regions, boundaries, queryRegions } = geometry.regions;
   diagnostics.boundaryEdges = boundaries.length;
   const endpointTolerance = Math.min(maxVertical, profile.radius);
+  // A sprint jump can launch above the sustained air cap. Candidate bounds
+  // retain that impulse and its existing decay before exact motion validation.
+  const initialSpeed = Math.max(
+    model.maxHorizontalSpeed,
+    model.maxJumpHeight > 0 ? (model.startHorizontalSpeed ?? 0) : 0,
+  );
+  const travelAt = (duration: number) => jumpTravel(initialSpeed, duration, model);
   const transfers = new Map<string, Transfer>(),
     groundIncoming = new Map<string, Set<Transfer>>();
   const transfer = (a: Region, b: Region, ground: boolean, reach: number): Transfer => {
@@ -585,10 +592,7 @@ export function findJumpConnections(
         ...model,
         mode: model.maxJumpHeight > 0 ? 'jump' : 'drop',
       });
-      const reach =
-        duration === null
-          ? 0
-          : Math.min(maxHorizontalDistance, duration * model.maxHorizontalSpeed);
+      const reach = duration === null ? 0 : Math.min(maxHorizontalDistance, travelAt(duration));
       if (duration !== null && horizontalGap(a, b) <= reach)
         entries.push(transfer(a, b, false, reach));
     }
@@ -800,7 +804,7 @@ export function findJumpConnections(
         { ...model, mode: model.maxJumpHeight > 0 ? 'jump' : 'drop' },
       );
       if (duration === null) continue;
-      const reach = Math.min(maxHorizontalDistance, duration * model.maxHorizontalSpeed);
+      const reach = Math.min(maxHorizontalDistance, travelAt(duration));
       const bounds = {
         min: [start[0] - reach, start[1] - maxDrop - 2 * endpointTolerance, start[2] - reach],
         max: [
@@ -906,7 +910,7 @@ export function findJumpConnections(
         ...model,
         mode: model.maxJumpHeight > 0 ? 'jump' : 'drop',
       });
-      if (duration === null || span > duration * model.maxHorizontalSpeed) {
+      if (duration === null || span > travelAt(duration)) {
         diagnostics.rejected.range++;
         continue;
       }
@@ -923,7 +927,7 @@ export function findJumpConnections(
         start,
         end,
         boundary,
-        uncertain: nominal === null || span > nominal * model.maxHorizontalSpeed,
+        uncertain: nominal === null || span > travelAt(nominal),
         score:
           (nominal ?? duration) +
           (distance(from, start) + distance(end, to)) / Math.max(1, model.maxHorizontalSpeed),
@@ -979,10 +983,7 @@ export function findJumpConnections(
         ...model,
         mode: model.maxJumpHeight > 0 ? 'jump' : 'drop',
       });
-      if (
-        duration === null ||
-        horizontal(start.position, end.position) > duration * model.maxHorizontalSpeed
-      ) {
+      if (duration === null || horizontal(start.position, end.position) > travelAt(duration)) {
         diagnostics.rejected.range++;
         continue;
       }
@@ -1034,6 +1035,7 @@ export function findJumpConnections(
     return null;
   };
   const validated = new Set<string>();
+  let goalFirst = false;
   while (
     connections.length < maxLinks &&
     diagnostics.regionSearches < (workLimits?.regionSearches ?? maxCandidates)
@@ -1042,7 +1044,11 @@ export function findJumpConnections(
     const chain = findChain();
     if (!chain) break;
     let complete = true;
-    for (const entry of chain) {
+    // Deferral can select a different optimistic chain. Share the direction
+    // across chains once motion validation starts. Earlier unsupported contacts
+    // keep source-first admission; later zero-arc failures must also rotate so
+    // one side cannot consume every remaining region search.
+    for (const entry of goalFirst ? [...chain].reverse() : chain) {
       if (entry.ground || validated.has(entry.key)) continue;
       const connection = validate(entry);
       diagnostics.pairBatches++;
@@ -1052,6 +1058,7 @@ export function findJumpConnections(
           diagnostics.validatedPairs++;
         }
         complete = false;
+        if (diagnostics.attempted > 0) goalFirst = !goalFirst;
         break;
       }
       diagnostics.validatedPairs++;

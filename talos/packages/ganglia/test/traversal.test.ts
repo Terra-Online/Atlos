@@ -601,6 +601,80 @@ test('corrected standing feet use the closest eligible navigation support', () =
   assert.ok(Math.abs(result.position[1] - 0.005) < 1e-12);
 });
 
+test('deferred validation covers alternative chain goal sides without flipping on unsupported contacts', () => {
+  const surfaces = [
+    floor('source', 0, 4, 0, -4, 4),
+    floor('middle-a', 6, 10, 0, -4, -0.5),
+    floor('middle-b', 6, 10, 0, 0.5, 4),
+    floor('unsupported', 6, 10, 0, -0.1, 0.1),
+    floor('goal', 12, 16, 0, -4, 4),
+  ];
+  const base = createCollisionWorld(geometry(surfaces.filter((s) => s.id !== 'unsupported')));
+  let firstMotion: Vec3 | undefined;
+  const world: CollisionWorld = {
+    groundAt: (...args) => base.groundAt(...args),
+    sweepCapsule(start, end, body) {
+      if (!firstMotion && start.some((value, axis) => value !== end[axis])) firstMotion = start;
+      return base.sweepCapsule(start, end, body);
+    },
+  };
+  const result = findJumpConnections(
+    surfaces,
+    world,
+    {
+      ...options,
+      from: [2, 0, 0],
+      to: [14, 0, 0],
+      walls: [{ min: [4.5, -1, -20], max: [5.5, 20, 20], state: 'active' }],
+      maxHorizontalDistance: 4,
+      sampleSpacing: 1,
+    },
+    { arcAttempts: 64 },
+  );
+  assert.ok(
+    result.connections.some(
+      (c) => ['middle-a', 'middle-b'].includes(c.fromSurface) && c.toSurface === 'goal',
+    ),
+  );
+  assert.equal(
+    result.connections.some((c) => c.fromSurface === 'source'),
+    false,
+  );
+  assert.equal(result.diagnostics.targetReached, false);
+  assert.ok(result.diagnostics.attempted <= 64);
+  assert.ok(result.diagnostics.rejected.support > 0);
+  assert.ok(firstMotion && firstMotion[0] < 6);
+});
+
+test('unsupported goal-side chains leave source validation work after the first arc batch', () => {
+  const surfaces = [
+    floor('source', 0, 4, 0, -6, 6),
+    floor('middle-a', 6, 10, 0, -6, -2.1),
+    floor('middle-b', 6, 10, 0, -1.95, 1.95),
+    floor('middle-c', 6, 10, 0, 2.1, 6),
+    floor('goal', 12, 16, 0, -6, 6),
+  ];
+  const result = findJumpConnections(
+    surfaces,
+    createCollisionWorld(geometry(surfaces.filter((s) => s.id !== 'goal'))),
+    {
+      ...options,
+      from: [2, 0, 0],
+      to: [14, 0, 0],
+      walls: [{ min: [4.5, -1, -20], max: [5.5, 20, 20], state: 'active' }],
+      maxHorizontalDistance: 4,
+      sampleSpacing: 1,
+    },
+    { arcAttempts: 128, regionSearches: 4 },
+  );
+  assert.ok(result.diagnostics.rejected.support > 0);
+  assert.ok(result.diagnostics.attempted > 32);
+  assert.ok(result.diagnostics.attempted <= 128);
+  assert.ok(result.diagnostics.regionSearches <= 4);
+  assert.equal(result.diagnostics.targetReached, false);
+  assert.deepEqual(result.connections, []);
+});
+
 test('shared traversal preparation does not retain an earlier query action overlay', () => {
   const surfaces: Surface[] = [floor('a', 0, 4, 0), floor('b', 20, 24, 0)];
   const world = createCollisionWorld(geometry(surfaces));
@@ -651,4 +725,102 @@ test('takeoff feet use finite ramp edge support instead of an infinite slope pla
   });
   assert.ok(result.position);
   assert.ok(Math.abs(result.position[1] - 0.00474984355438179) < 1e-9);
+});
+
+test('traversal covers decaying overspeed jumps with a legal supported sprint approach', () => {
+  const profile = { radius: 0.35, height: 1.66 };
+  const surfaces = [floor('source', -2, 2, 0.005), floor('landing', 7.3, 10, 0.005)];
+  const world = createCollisionWorld(
+    geometry([floor('source-body', -2.4, 2.4, 0), floor('landing-body', 6.9, 10.4, 0)]),
+  );
+  const model = {
+    gravity: 40,
+    fallingGravity: 38,
+    maxJumpHeight: 2.1,
+    maxFallingSpeed: 80,
+    apexTime: 0.1,
+    maxHorizontalSpeed: 6.5,
+    startHorizontalSpeed: 9,
+    airOverspeedDeceleration: 5,
+  };
+  const start: Vec3 = [2, 0.005, 0],
+    end: Vec3 = [7.3, 0.005, 0];
+  const arc = jumpConnection(start, end, {
+    ...model,
+    profile,
+    walls: [],
+    mode: 'jump',
+    sweep: (...args) => world.sweepCapsule(...args),
+  });
+  assert.ok(arc, 'the unchanged physical constructor accepts this overspeed flight');
+  assert.ok(arc.times.at(-1)! * model.maxHorizontalSpeed < end[0] - start[0]);
+  const arrival = {
+    id: 'player',
+    position: [-1, 0.005, 0] as Vec3,
+    state: 'available' as const,
+    cost: 0,
+  };
+  const locomotion = {
+    speed: 5,
+    sprintSpeed: 7,
+    sprintAcceleration: 60,
+    stamina: {
+      capacity: 1,
+      initial: 1,
+      activationCost: 1,
+      recoveryRate: 0,
+      recoveryDelay: 0,
+      reserve: 0,
+    },
+  };
+  const ground = { profile, walls: [], speed: 5, maxVertical: 0.01, locomotion };
+  const accepted = planGroundRoute(surfaces, [arrival], [9, 0.005, 0], {
+    ...ground,
+    connections: [{ id: 'constructed', ...arc, state: 'open', requiredGait: 'sprint' }],
+  });
+  assert.ok(accepted.status === 'complete');
+  const jump = accepted.segments.findIndex((segment) => segment.mode === 'jump');
+  assert.ok(
+    jump > 0 &&
+      accepted.segments
+        .slice(0, jump)
+        .some((segment) => segment.gait === 'sprint' && segment.times.at(-1)! > 0),
+  );
+  assert.equal(accepted.locomotion!.initial - accepted.locomotion!.final, 1);
+  const selected: DiscoveryOptions = {
+    ...options,
+    profile,
+    model,
+    from: arrival.position,
+    to: [9, 0.005, 0],
+    maxVertical: 0.01,
+    maxDrop: 1,
+    maxHorizontalDistance: 10,
+  };
+  const discovered = findJumpConnections(surfaces, world, selected);
+  assert.ok(
+    discovered.connections.some(
+      (connection) => connection.fromSurface === 'source' && connection.toSurface === 'landing',
+    ),
+    JSON.stringify(discovered.diagnostics),
+  );
+  assert.equal(discovered.diagnostics.targetReached, true);
+  assert.deepEqual(
+    findJumpConnections(surfaces, world, { ...selected, maxHorizontalDistance: 5.2 }).connections,
+    [],
+  );
+  assert.deepEqual(
+    findJumpConnections(surfaces, world, {
+      ...selected,
+      model: { ...model, startHorizontalSpeed: model.maxHorizontalSpeed },
+    }).connections,
+    [],
+  );
+  assert.deepEqual(
+    findJumpConnections(surfaces, world, {
+      ...selected,
+      walls: [{ min: [4, -1, -3], max: [5, 5, 3], state: 'active' }],
+    }).connections,
+    [],
+  );
 });
