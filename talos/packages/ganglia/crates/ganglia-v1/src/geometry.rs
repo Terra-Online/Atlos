@@ -70,25 +70,39 @@ pub(crate) fn point_segment(p: Point, a: Point, b: Point) -> f64 {
 }
 
 pub(crate) fn segment_segment(a: Point, b: Point, c: Point, d: Point) -> f64 {
-    let mut best = minimum(&[
-        point_segment(a, c, d),
-        point_segment(b, c, d),
-        point_segment(c, a, b),
-        point_segment(d, a, b),
-    ]);
     let u = sub(b, a);
     let v = sub(d, c);
-    let w = sub(c, a);
-    let n = cross(u, v);
-    let denom = dot(n, n);
-    if denom > 0.0 {
-        let s = dot(cross(w, v), n) / denom;
-        let t = dot(cross(w, u), n) / denom;
-        if (0.0..=1.0).contains(&s) && (0.0..=1.0).contains(&t) {
-            best = minimum(&[best, squared(mix(a, b, s), mix(c, d, t))]);
+    let w = sub(a, c);
+    let uu = dot(u, u);
+    let vv = dot(v, v);
+    let uw = dot(u, w);
+    let vw = dot(v, w);
+    let uv = dot(u, v);
+    let (s, t) = if uu == 0. && vv == 0. {
+        (0., 0.)
+    } else if uu == 0. {
+        (0., (vw / vv).clamp(0., 1.))
+    } else if vv == 0. {
+        ((-uw / uu).clamp(0., 1.), 0.)
+    } else {
+        let normal = cross(u, v);
+        let denominator = dot(normal, normal);
+        let mut s = if denominator > 0. {
+            (dot(cross(sub(c, a), v), normal) / denominator).clamp(0., 1.)
+        } else {
+            0.
+        };
+        let mut t = (uv * s + vw) / vv;
+        if t < 0. {
+            t = 0.;
+            s = (-uw / uu).clamp(0., 1.);
+        } else if t > 1. {
+            t = 1.;
+            s = ((uv - uw) / uu).clamp(0., 1.);
         }
-    }
-    best
+        (s, t)
+    };
+    squared(mix(a, b, s), mix(c, d, t))
 }
 
 pub(crate) fn inside(p: Point, triangle: Triangle, n: Point) -> bool {
@@ -371,6 +385,12 @@ impl Index {
         self.normals[triangle]
     }
     pub fn candidates(&self, b: Bounds3) -> Vec<usize> {
+        let mut result = self.unordered_candidates(b);
+        result.sort_unstable();
+        result
+    }
+    // Predicate queries need every candidate, but do not need triangle-ID order.
+    pub fn unordered_candidates(&self, b: Bounds3) -> Vec<usize> {
         let mut result = vec![];
         let mut stack = if self.nodes.is_empty() {
             vec![]
@@ -393,7 +413,6 @@ impl Index {
                 );
             }
         }
-        result.sort_unstable();
         result
     }
     pub fn require_scope(&self, b: Bounds3) -> Result<(), String> {
@@ -447,8 +466,35 @@ impl Index {
             start[1].max(end[1]) + p.height + inflation,
             start[2].max(end[2]) + r,
         ];
-        for id in self.candidates(query) {
+        let coordinate_scale = start
+            .iter()
+            .chain(end.iter())
+            .map(|v| v.abs())
+            .fold(p.height + r + 1., f64::max);
+        for id in self.unordered_candidates(query) {
             let face = self.faces[id];
+            // A separating plane also separates the finite triangle. Most
+            // walking candidates are supporting floors below the capsule;
+            // exclude them before the much costlier edge-distance tests.
+            let normal = self.normal(id);
+            let first = dot(sub(a, face[0]), normal);
+            let last = dot(sub(c, face[0]), normal);
+            let vertical = (p.height - 2. * p.radius) * normal[1];
+            let near = first.min(last) + vertical.min(0.);
+            let far = first.max(last) + vertical.max(0.);
+            let scale = face
+                .iter()
+                .flatten()
+                .map(|v| v.abs())
+                .fold(coordinate_scale, f64::max);
+            let separation = r + 64. * f64::EPSILON * scale;
+            if first.is_finite()
+                && last.is_finite()
+                && vertical.is_finite()
+                && (near > separation || far < -separation)
+            {
+                continue;
+            }
             let distance =
                 triangle_triangle([a, b, d], face).min(triangle_triangle([a, d, c], face));
             if !distance.is_finite() {
@@ -537,4 +583,117 @@ impl Index {
 
 pub(crate) fn distance(a: Vec3, b: Vec3) -> f64 {
     squared(a, b).sqrt()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn segment_projection_agrees_with_endpoint_and_interior_minima() {
+        fn reference(a: Point, b: Point, c: Point, d: Point) -> f64 {
+            let mut best = point_segment(a, c, d)
+                .min(point_segment(b, c, d))
+                .min(point_segment(c, a, b))
+                .min(point_segment(d, a, b));
+            let u = sub(b, a);
+            let v = sub(d, c);
+            let w = sub(c, a);
+            let n = cross(u, v);
+            let denominator = dot(n, n);
+            if denominator > 0. {
+                let s = dot(cross(w, v), n) / denominator;
+                let t = dot(cross(w, u), n) / denominator;
+                if (0. ..=1.).contains(&s) && (0. ..=1.).contains(&t) {
+                    best = best.min(squared(mix(a, b, s), mix(c, d, t)));
+                }
+            }
+            best
+        }
+        let mut seed = 97u64;
+        let mut random = || {
+            seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
+            (seed >> 32) as f64 / u32::MAX as f64 * 20. - 10.
+        };
+        for case in 0..400 {
+            let a = [random(), random(), random()];
+            let b = if case % 11 == 0 {
+                a
+            } else {
+                [random(), random(), random()]
+            };
+            let c = [random(), random(), random()];
+            let d = match case % 13 {
+                0 => c,
+                1 => std::array::from_fn(|i| c[i] + b[i] - a[i]),
+                2 => std::array::from_fn(|i| c[i] + b[i] - a[i] + if i == 1 { 1e-10 } else { 0. }),
+                _ => [random(), random(), random()],
+            };
+            let expected = reference(a, b, c, d);
+            let actual = segment_segment(a, b, c, d);
+            assert!(
+                (actual - expected).abs() <= 1e-9 * (1. + expected),
+                "case {case}: {actual} vs {expected}"
+            );
+        }
+    }
+
+    #[test]
+    fn capsule_plane_rejection_preserves_unculled_contacts() {
+        let profile = Profile {
+            radius: 0.35,
+            height: 1.8,
+        };
+        let mut seed = 73u64;
+        let mut random = || {
+            seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
+            (seed >> 32) as f64 / u32::MAX as f64 * 4. - 2.
+        };
+        for case in 0..160 {
+            let origin = if case % 7 == 0 { 1e9 } else { 0. };
+            let face = if case < 8 {
+                let mut floor = [[-3., 0., -3.], [3., 0., -3.], [0., 0., 3.]];
+                if case % 2 == 1 {
+                    floor.reverse();
+                }
+                floor
+            } else {
+                std::array::from_fn(|_| [random(), random(), random()])
+            }
+            .map(|p| p.map(|v| v + origin));
+            let start = if case < 8 {
+                [origin, origin + [-1e-8, 0., 1e-8, 0.005][case / 2], origin]
+            } else {
+                [random(), random(), random()].map(|v| v + origin)
+            };
+            let end = if case < 8 {
+                [start[0] + 0.5, start[1], start[2]]
+            } else {
+                [random(), random(), random()].map(|v| v + origin)
+            };
+            let a = [start[0], start[1] + profile.radius, start[2]];
+            let b = [
+                start[0],
+                start[1] + profile.height - profile.radius,
+                start[2],
+            ];
+            let c = [end[0], end[1] + profile.radius, end[2]];
+            let d = [end[0], end[1] + profile.height - profile.radius, end[2]];
+            // The unculled narrow phase is the oracle for the new broad phase.
+            let expected =
+                triangle_triangle([a, b, d], face).min(triangle_triangle([a, d, c], face));
+            let actual = Index::from_faces(vec![face], None)
+                .unwrap()
+                .sweep(start, end, profile, 0.)
+                .unwrap();
+            assert_eq!(
+                actual.is_some(),
+                expected <= profile.radius * profile.radius,
+                "case {case}"
+            );
+            if let Some(hit) = actual {
+                assert_eq!(hit.distance, expected.sqrt());
+            }
+        }
+    }
 }

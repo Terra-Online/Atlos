@@ -1,5 +1,82 @@
 # Route solver handoff
 
+## Full-population native latency objective achieved, 2026-11-15
+
+The ordinary map02 population now meets the requested 2x mean serial latency
+objective. The retained TS implementation remains available. No remote push has
+occurred; publishing the Rust work still requires the user's ready signal.
+
+| Measurement | Result |
+| --- | ---: |
+| Scored requests / rounds / workers / lanes | 50 / 1 / 1 / 1 |
+| Catalog training / frozen warmup | 10 / 2 |
+| Complete, independently physically valid routes | 50 / 50 |
+| Mean serial service time | 592.597189 ms/query |
+| Median / nearest-rank P95 / maximum service time | 436.209688 / 1270.544416 / 1390.189500 ms |
+| Retained TS mean over the same 50 requests | 1589.409605 ms/query |
+| Per-attempt mean latency ratio, TS/native | 2.682107905x |
+| Paired modeled-cost geometric mean / worst ratio | 0.946529343 / 1.033627466 |
+| Readiness / training / total end-to-end | 36.572813 / 30.079314 / 77.771487 s |
+| Timeouts / worker recoveries / frozen catalog resets | 0 / 0 / 0 |
+
+The unchanged 1.01 geometric-mean and 1.05 worst-cost gates pass over the 46
+retained TS routes that pass the current physical audit. Native additionally
+completes the other four requests validly. The latency ratio uses all fifty
+attempts in both reports; automatic completed-route batch/end-to-end speedups
+remain unavailable because the valid completion set changed. This is one measured
+round, with training overlapping ten scored requests; it is not a new unseen
+holdout or a repeatability claim. Current sampled total process RSS peaks at
+6.919 GiB, including a 6.793 GiB worker peak. Memory remains a separate opportunity.
+
+The accepted source reuses TS-style prepared geometry, startup action discovery,
+directed candidate fields and indexed resource states. The final native-specific
+work is confined to `geometry.rs` and `search.rs`: conservative capsule-plane
+separation before exact distance tests, closest-segment projection, unsorted
+predicate candidates, linear capped-frontier selection, and preweighted queue
+potentials. Weight 2 applies only to generated-action improvement of an existing
+complete route; initial feasibility and zero-candidate resource continuation keep
+weight 1.5. Unweighted lower bounds still prune, and the engine retains its complete
+incumbent unless the candidate improves its modeled cost. Budgets and verifier
+rules are unchanged.
+
+A global weight-2 draft failed the existing cross-window boost-clock fixture and
+was rejected before a full benchmark. The restricted policy passes that fixture.
+Complete intermediate runs physically and qualitatively passed at 1077.410812 ms
+(plane separation), 910.326498 ms (linear frontier cap), and 901.260618 ms (segment
+projection/predicate ordering). Their directories are `native-plane-separated-50`,
+`native-linear-cap-50`, and `native-projected-distance-50` under `.local/research/`.
+The TS 1e-7 metric-compaction trial passed at 905.601007 ms but had no material
+benefit and was removed (`native-metric-compact-50`). No broad sampler replacement,
+proof relaxation, larger budget, stress run or new TS measurement was adopted.
+
+Accepted raw evidence is `.local/research/native-incumbent-weight-50/report.json`
+and its adjacent event journal. Report SHA-256 is
+`1451319527f9945af56b120c6b633a2514917799a95e5e32dc8ceb3e6f74b761`;
+source SHA-256 is
+`c5f5b3cad199ad2c570da6f2e80b3a9590bf1cccc0dbcf4aeefdcf80b3006d63`;
+native SHA-256 is
+`2ea9f78c3346734b5abd15ecd8128d068b0a091b2da015e6ab09ab2d2915b4b2`.
+The current source and binary were independently rehashed after the run and match.
+All fifty query objects and the game-adapter digest match the retained TS reference.
+Validation passes 152 Rust unit tests, two authored integration tests, 26 common
+N-API physical/lifecycle fixtures, feature-enabled Clippy, Rust formatting and diff
+checks. The two added geometry tests compare plane rejection to the unculled narrow
+phase and segment projection to endpoint/interior minima, including degeneracy,
+near-parallel lines, tangency, reversed normals and large coordinates.
+
+Reproduce from `talos/packages/ganglia` with the verified Node 26 binary on PATH:
+
+```sh
+GANGLIA_V1_RUST_LIBRARY="$PWD/../../../.local/cache/ganglia-v1/incumbent-weight-final.node" \
+node --max-old-space-size=6144 bench/cli.ts \
+  --adapter ganglia-v1-rust --workload map02 --workers 1 --concurrency 1 \
+  --reference ../../../.local/research/ts-reference-v3/report.json \
+  --output /tmp/ganglia-native-report.json --json
+```
+
+The named native artifact is local. Build current release source with an explicit
+`GANGLIA_V1_RUST_LIBRARY` destination and `pnpm rust:build` when recreating it.
+
 ## Prepared fine actions and indexed resource frontier, 2026-11-15
 
 Fine boundary launch/continuous landing discovery now runs during configured

@@ -531,7 +531,6 @@ struct Label {
     dashes: usize,
     active: bool,
 }
-const SEARCH_WEIGHT: f64 = 1.5;
 
 #[derive(Clone, Copy)]
 struct Queue {
@@ -2295,6 +2294,18 @@ fn solve_world(
             .max(1e-6)
             * largest_multiplier,
     )?;
+    // Once a complete route exists, bias bounded improvement work toward the
+    // goal more strongly. Initial feasibility and carried resource-state search
+    // retain their ordinary order. Pruning still uses unweighted lower bounds.
+    let weight = if improving && max_candidates > 0 {
+        2.
+    } else {
+        1.5
+    };
+    let priorities = estimates
+        .iter()
+        .map(|cost| cost * weight)
+        .collect::<Vec<_>>();
     let mut walking_phases = Vec::new();
     let mut unexplored_detours = 0usize;
     // Known-action lookup starts with direct walks. Connected catalog chains
@@ -2332,7 +2343,7 @@ fn solve_world(
                 &mut arena,
                 &mut rows,
                 &mut queue,
-                &estimates,
+                &priorities,
                 max_labels,
                 &mut truncated,
             );
@@ -2441,7 +2452,7 @@ fn solve_world(
                             &mut arena,
                             &mut rows,
                             &mut queue,
-                            &estimates,
+                            &priorities,
                             max_labels,
                             &mut truncated,
                         );
@@ -2499,7 +2510,7 @@ fn solve_world(
                             &mut arena,
                             &mut rows,
                             &mut queue,
-                            &estimates,
+                            &priorities,
                             max_labels,
                             &mut truncated,
                         );
@@ -2545,7 +2556,7 @@ fn solve_world(
                             let travel = (distance(p, q) - 2e-5).max(0.) / maximum_walk_speed;
                             ground_jobs.push(GroundJob {
                                 source_cost,
-                                priority: source_cost + SEARCH_WEIGHT * (travel + estimates[b]),
+                                priority: source_cost + weight * (travel + estimates[b]),
                                 lower_bound: source_cost + travel + estimates[b],
                                 from: label.node,
                                 to: b,
@@ -2594,7 +2605,7 @@ fn solve_world(
                         &mut arena,
                         &mut rows,
                         &mut queue,
-                        &estimates,
+                        &priorities,
                         max_labels,
                         &mut truncated,
                     );
@@ -2818,7 +2829,7 @@ fn insert(
     arena: &mut Vec<Label>,
     rows: &mut [Frontier],
     queue: &mut BinaryHeap<Queue>,
-    estimates: &[f64],
+    priorities: &[f64],
     max: usize,
     truncated: &mut bool,
 ) {
@@ -2868,14 +2879,20 @@ fn insert(
     row.push(index);
     if row.len() > max {
         *truncated = true;
-        row.sort_by(|&a, &b| arena[a].cost.total_cmp(&arena[b].cost));
         let half = max / 2;
-        row[half..].sort_by(|&a, &b| {
+        // Only membership matters: retain half by cost, then fill the rest
+        // by energy. Linear selection avoids sorting the whole capped row for
+        // every candidate. Arena order resolves otherwise equal priorities.
+        row.select_nth_unstable_by(half, |&a, &b| {
+            arena[a].cost.total_cmp(&arena[b].cost).then(a.cmp(&b))
+        });
+        row[half..].select_nth_unstable_by(max - half, |&a, &b| {
             arena[b]
                 .state
                 .energy
                 .total_cmp(&arena[a].state.energy)
                 .then(arena[a].cost.total_cmp(&arena[b].cost))
+                .then(a.cmp(&b))
         });
         for &i in &row[max..] {
             arena[i].active = false;
@@ -2885,7 +2902,7 @@ fn insert(
     if arena[index].active {
         bucket.push(index);
         queue.push(Queue {
-            cost: arena[index].cost + SEARCH_WEIGHT * estimates[arena[index].node],
+            cost: arena[index].cost + priorities[arena[index].node],
             label: index,
         });
     } else {
