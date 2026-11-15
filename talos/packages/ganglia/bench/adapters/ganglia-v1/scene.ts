@@ -13,6 +13,7 @@ import {
 } from '@opendfieldmap/ganglia/solver';
 import { createPhysicalPreparation, type PhysicalWork } from '@opendfieldmap/ganglia/solver/host';
 
+import { sourceSupportWorld, type SourceSnapshot } from '#@/bench/mechanism-query.ts';
 import {
   loadSceneData,
   type SceneData,
@@ -24,8 +25,12 @@ import {
 import { createTimings } from '#@/bench/timings.ts';
 import { createPhysicalVerifier } from '#@/src/evaluation/physical.ts';
 import { verificationDefaults } from '#@/src/evaluation/policy.ts';
+import type { Vec3 } from '#@/src/geometry.ts';
 import { physicalTileSpan } from '#@/src/model/coverage.ts';
 import { createPhysicalWorld } from '#@/src/model/world.ts';
+import type { InteractionGoal } from '#@/src/movement.ts';
+import type { GroundArrival } from '#@/src/route.ts';
+import type { RouteQuery } from '#@/src/solver/contract.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 
 type Report = {
@@ -45,7 +50,11 @@ export type GameAdapter = {
     context: { cache: unknown },
   ): Promise<{
     input?: PhysicalInput;
-    solve(options: { work: PhysicalWork; signal?: AbortSignal }): Promise<Report>;
+    solve(options: {
+      work: PhysicalWork;
+      signal?: AbortSignal;
+      onProgress?: (progress: { phase: string; completed?: number; total?: number }) => void;
+    }): Promise<Report>;
   }>;
 };
 
@@ -53,6 +62,7 @@ export interface SceneHooks {
   kernelRoot?: string;
   transformInput?: (input: PhysicalInput) => PhysicalInput;
   createPreparation?: typeof createPhysicalPreparation;
+  onProgress?: (progress: { phase: string; completed?: number; total?: number }) => void;
 }
 
 export async function loadScene(
@@ -120,6 +130,7 @@ export async function loadScene(
     timings: prepared.timings,
     verifyInputs: prepared.verifyInputs,
     verify: prepared.verify,
+    prepareSourceSnapshot: prepared.prepareSourceSnapshot,
     metadata: {
       scene: dataset.navigation.scene,
       source: dataset.navigation.source,
@@ -359,7 +370,11 @@ export function prepareSceneResources(
         const prepared = await preparePhysicalRoute(job.region.files, request, { cache });
         timings.normalizationMs += performance.now() - started;
         started = performance.now();
-        const result = await prepared.solve({ work, signal: options?.signal });
+        const result = await prepared.solve({
+          work,
+          signal: options?.signal,
+          onProgress: hooks.onProgress,
+        });
         timings.localSolveMs += performance.now() - started;
         observe(result);
         return { status: 'ready', region: job.region, result };
@@ -396,6 +411,64 @@ export function prepareSceneResources(
   return {
     resources,
     verify,
+    async prepareSourceSnapshot(
+      query: RouteQuery,
+      start: GroundArrival,
+      volume: { position: Vec3; interaction: InteractionGoal },
+    ): Promise<SourceSnapshot | null> {
+      const region = dataset.regions.find((candidate) => {
+        const radius = volume.interaction.radius + candidate.ground.options.profile.radius;
+        const low = [volume.position[0] - radius, volume.position[2] - radius];
+        const high = [volume.position[0] + radius, volume.position[2] + radius];
+        const bounds = candidate.ground.build.bounds;
+        if (low.some((v, i) => v < bounds.min[i]) || high.some((v, i) => v > bounds.max[i]))
+          return false;
+        for (
+          let x = Math.floor(low[0] / physicalTileSpan);
+          x <= Math.floor(high[0] / physicalTileSpan);
+          x++
+        )
+          for (
+            let z = Math.floor(low[1] / physicalTileSpan);
+            z <= Math.floor(high[1] / physicalTileSpan);
+            z++
+          )
+            if (!candidate.tiles.has(`${x},${z}`)) return false;
+        return true;
+      });
+      if (!region) return null;
+      const normalize = resources.physical;
+      if (!normalize) throw new Error('Source physical normalization is unavailable');
+      const snapshot = await normalize(
+        { status: 'ready', region },
+        {
+          scene: dataset.navigation.scene,
+          source: dataset.navigation.source,
+          arrival: start,
+          target: query.goal,
+          interaction: query.interaction,
+          walls: [],
+          waypoints: query.waypoints,
+        },
+      );
+      const world = sourceSupportWorld(
+        snapshot.input,
+        {
+          bounds: region.ground.build.bounds,
+          tiles: region.ground.tiles,
+          tileSpan: physicalTileSpan,
+        },
+        volume,
+      );
+      return {
+        input: snapshot.input,
+        world,
+        revision: snapshot.revision,
+        source: dataset.navigation.source,
+        files: region.files,
+        reuse: 'source-only bounded collision index',
+      };
+    },
     timings,
     verifyInputs() {
       // A scene solver may preserve a validated tail after a provider error.

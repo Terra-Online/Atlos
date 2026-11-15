@@ -32,6 +32,8 @@ The circular and joint-box TS prototypes do not turn these unrun cases into pass
 - `development-controls.json`: two source-ground waterwheel entry/exit controls
   retained after successful bounded physical replay. These are development
   regressions, separate from the 266-case population and not unseen holdouts.
+- `negative-controls.json`: original unavailable-origin, capped-coverage and
+  occupied-contact fixtures retained outside the positive population.
 
 Main IDs use `001-{token}` through `266-{token}`, with the seven-character token
 from the existing `encodePointIdToken` codec in
@@ -51,6 +53,18 @@ and geometry-probe IDs so renaming does not erase the original portal/layer test
 
 Preserve these IDs when adapting runners. Record changed query, setup, source or
 scoring rules as a new workload revision, retaining the old comparison control.
+
+Revision 7 replaces slots 228 and 229 with source-selected collectible targets.
+The fixed-seed selection is recorded in each case and does not use solver results.
+Teleport and campfire anchors serve as origins only. Cases 234 and 240 keep their
+original goals and origins but permit normal source-window expansion. The four
+original definitions remain in `negative-controls.json`; these input changes do
+not establish same-input algorithm gains.
+
+Revision 8 keeps case 185's conveyor entity but replaces contacts intersecting a
+static overhead beam. The fixed-seed replacement uses two legal positions on one
+source cap, 1.20717 m apart, and retains the static mesh and original player body.
+The occupied original remains a separate input diagnostic.
 
 ## Adaptation contract
 
@@ -92,12 +106,14 @@ the following contracts; full-population acceptance remains pending:
    and waiting are explicitly excluded. Static terminal-pose collision does not
    satisfy circular-domain coverage.
 
-Before performance comparison, independently replay complete routes with the
-original physical inputs, goal events and whole-route resource accounting. Report
-feasibility and mechanism exercise separately, retain timeouts and partial results,
-and report each scene/mechanism group as well as the full population. A local
-source-reference audit is not physical acceptance. Historical observations in
-`previousObservation` are not expected answers or current verifier results.
+For this 266-case flow, completion means a complete end-to-end timed route returned
+by the solver, excluding partial target approaches. Physical checks constructing
+actions remain active. The worker does not invoke independent whole-route replay;
+route cost and solver time come from the solver. Input preparation and dispatch
+time remain separate fields. Report mechanism exercise separately and retain
+timeouts, partial results and changed-input provenance. Historical observations in
+`previousObservation` are not expected answers. The separate service benchmark
+retains its own preparation, timing and independent-evaluation contracts.
 
 This suite supplements the configured full-population performance policy in
 `AGENTS.md`; reuse retained TS controls, with stress treated as opt-in.

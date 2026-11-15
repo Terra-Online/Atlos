@@ -500,3 +500,21 @@ test('nearby activity range cannot authorize relocating an original body outside
     result.diagnostics.outcomes.some((o) => o.reason === 'original-body-outside-collision-scope'),
   );
 });
+
+test('a complete layout may clear a corridor without stepping on the relocated box', async () => {
+  const box = support();
+  box.bodies = [cuboid(0, 0, 0).map((p): Vec3 => [p[0], p[1] ? 4 : 0, p[2]])];
+  const result = await solve({
+    boxes: [box],
+    surfaces: [floor('corridor', -8, 18, 0, -0.9, 0.9), floor('parking', -2, 2, 0, 3, 6)],
+    target: [12, 0, 0],
+    options: { ...jump, maxLinks: 32, maxCandidates: 2048 },
+  });
+  assert.equal(result.route.status, 'complete', JSON.stringify(result.diagnostics));
+  assert.equal(result.supportBoxes.length, 0);
+  if (result.route.status === 'complete') {
+    assert.equal(result.route.placements?.length, 1);
+    assert.notDeepEqual(result.route.placements![0].position, box.spawn);
+    assert.ok(result.route.segments.every((segment) => segment.mode === 'walk'));
+  }
+});

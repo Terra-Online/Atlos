@@ -17,7 +17,6 @@ import {
 import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { sourceHash } from '#@/bench/source.ts';
 import { prepareWorkerSolver, type WorkerResult } from '#@/bench/workers.ts';
-import { verificationDefaults } from '#@/src/evaluation/policy.ts';
 import { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -43,7 +42,7 @@ const { values } = parseArgs({
 });
 if (values.help) {
   console.log(
-    'Usage: node bench/mechanism-run.ts --mode physical-diagnostic --exports <source-root> --retained <retained-profile-root> --output <new-report.json> [--suite <manifest>] [--ids id,id] [--rounds 2] [--kernel <frozen-package-root> --kernel-revision <revision>] [--extractor <matching-extractor-root>] [--device-exports <explicitly-rebound-root>] [--scene-data-root <root-with-per-case-directories>] [--prepare-config <private-export-config>] [--config <solver-policy.json>] [--audit]. Each scene case uses <scene-data-root>/<caseId>; load/export/solve/verification follows the cooperative query deadline; a running stage completes before cancellation is observed. Worker bootstrap and queueing are outside the deadline, and no worker is killed or replaced. This diagnostic does not fulfill service training/warmup or publish service speedups.',
+    'Usage: node bench/mechanism-run.ts --mode physical-diagnostic --exports <source-root> --retained <retained-profile-root> --output <new-report.json> [--suite <manifest>] [--ids id,id] [--rounds 2] [--kernel <frozen-package-root> --kernel-revision <revision>] [--extractor <matching-extractor-root>] [--device-exports <explicitly-rebound-root>] [--scene-data-root <root-with-per-case-directories>] [--prepare-config <private-export-config>] [--config <solver-policy.json>] [--audit]. Each scene case uses <scene-data-root>/<caseId>; input preparation and solver execution follow the cooperative query deadline; a running stage completes before cancellation is observed. Worker bootstrap and queueing are outside the deadline, and no worker is killed or replaced. This diagnostic does not fulfill service training/warmup or publish service speedups.',
   );
   console.log(
     'GANGLIA_BENCHMARK_QUERY_SLO_MS sets the cooperative deadline in milliseconds (default 300000).',
@@ -97,7 +96,7 @@ if (values.help) {
     servicePreparation: 'not performed; not a service-performance report',
     sourceRevision: values['kernel-revision'] ?? workspaceRevision,
     kernelSourceSha256: await sourceHash(resolve(values.kernel), ['src'], ['package.json']),
-    verification: { version: 3, policy: verificationDefaults },
+    acceptance: 'solver complete route, excluding partial approaches',
     kernel: resolve(values.kernel),
     extractor: resolve(values.extractor),
     source: suite.source,
@@ -107,7 +106,7 @@ if (values.help) {
     rounds,
     deadlineMs: QUERY_SLO_MS,
     cancellation: 'cooperative-checkpoints',
-    deadlineScope: 'dispatch-through-independent-verification',
+    deadlineScope: 'dispatch-through-solver',
     invalid: false,
     failure: undefined as string | undefined,
     results,
@@ -228,16 +227,18 @@ if (values.help) {
             round,
             cache: round ? 'same-preparation' : 'application-cold',
             expectation: expectation(item),
-            status: classify(item, result, detail?.evaluation),
+            status: classify(item, result),
             elapsedSinceCaseStartMs: performance.now() - started,
             workerStartupMs: prepared.timings.workerStartupMs,
             resultFile,
-            solveWallMs: result.diagnostics.solveWallMs,
+            solverMs: detail?.solverMs,
+            preparationMs: detail?.preparationMs,
+            dispatchWallMs: result.diagnostics.solveWallMs,
             timedOut: result.diagnostics.timedOut,
             cancellationMs: result.diagnostics.cancellationMs,
             responseMs: result.diagnostics.responseMs,
-            cost: detail?.evaluation?.costSeconds,
-            evaluation: detail?.evaluation,
+            cost: result.route.status === 'complete' ? result.route.cost : undefined,
+            partial: result.partial,
             exercise: detail?.exercise,
             truncated: result.diagnostics.truncated,
           };

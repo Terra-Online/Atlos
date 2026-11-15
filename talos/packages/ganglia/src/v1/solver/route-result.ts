@@ -1,8 +1,132 @@
 import type { LocomotionOptions } from '#@/src/movement.ts';
-import type { Route } from '#@/src/route.ts';
+import type { Route, GroundArrival } from '#@/src/route.ts';
 import { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
 
 type Complete = Extract<Route, { status: 'complete' }>;
+const sameWitness = (a: unknown, b: unknown) => {
+  if (a === b) return true;
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return false;
+  }
+};
+
+/** Admit an already built authored entrance at the root query's original XZ.
+ * A navigation-height join is not physical travel when the query permits this
+ * standing projection. Never apply this to local-window continuation origins.
+ */
+export function admitAuthoredStart(
+  route: Complete,
+  arrival: GroundArrival,
+  maxVertical: number,
+  locomotion: LocomotionOptions,
+  evidence: unknown[],
+): Complete {
+  if (
+    evidence.length !== 1 ||
+    arrival.state !== 'available' ||
+    'groundRange' in arrival ||
+    route.start !== arrival.id ||
+    route.arrivalCost !== arrival.cost ||
+    !Number.isFinite(maxVertical) ||
+    maxVertical < 0 ||
+    route.boosts?.length ||
+    (locomotion.stamina && locomotion.stamina.initial !== locomotion.stamina.capacity) ||
+    route.segments.some(
+      (segment) => segment.boost || segment.boostExpiry !== undefined || segment.requiredGait,
+    )
+  )
+    return route;
+  const firstAction = route.segments.findIndex((segment) => segment.mode !== 'walk');
+  if (firstAction < 1) return route;
+  const prefix = route.segments.slice(0, firstAction),
+    action = route.segments[firstAction];
+  const admitted = (p: typeof arrival.position) =>
+    Math.hypot(p[0] - arrival.position[0], p[2] - arrival.position[2]) <= 1e-6 &&
+    Math.abs(p[1] - arrival.position[1]) <= maxVertical + 1e-6;
+  if (
+    !admitted(route.points[0]) ||
+    !admitted(action.points[0]) ||
+    Math.abs(action.points[0][1] - arrival.position[1]) > 0.01 + 1e-6 ||
+    !['launch', 'rope'].includes(action.mode) ||
+    !action.connection ||
+    action.traversal ||
+    (action.gait !== undefined && action.gait !== 'run') ||
+    (action.mode === 'launch' &&
+      (!action.flight ||
+        action.flight.kind !== 'flight' ||
+        !sameWitness(action.flight.start, action.points[0]) ||
+        !sameWitness(action.flight.end, action.points.at(-1)))) ||
+    prefix.some(
+      (segment) =>
+        segment.connection ||
+        segment.flight ||
+        segment.traversal ||
+        (segment.gait !== undefined && segment.gait !== 'run') ||
+        !segment.points.every(admitted),
+    ) ||
+    (route.goalHit && route.goalHit.segment < firstAction)
+  )
+    return route;
+  const source = evidence[0];
+  if (
+    !source ||
+    typeof source !== 'object' ||
+    !('connections' in source) ||
+    !Array.isArray(source.connections)
+  )
+    return route;
+  const built = source.connections.some(
+    (connection: unknown) =>
+      connection &&
+      typeof connection === 'object' &&
+      'id' in connection &&
+      connection.id === action.connection &&
+      'state' in connection &&
+      connection.state === 'open' &&
+      'mode' in connection &&
+      connection.mode === action.mode &&
+      !('requiredGait' in connection && connection.requiredGait !== undefined) &&
+      !('requiredBoost' in connection && connection.requiredBoost !== undefined) &&
+      !('terminal' in connection && connection.terminal !== undefined) &&
+      !('traversal' in connection && connection.traversal !== undefined) &&
+      'points' in connection &&
+      sameWitness(connection.points, action.points) &&
+      'times' in connection &&
+      sameWitness(connection.times, action.times) &&
+      sameWitness('flight' in connection ? connection.flight : undefined, action.flight),
+  );
+  if (!built) return route;
+  const segments = route.segments.slice(firstAction);
+  const points = [segments[0].points[0], ...segments.flatMap((segment) => segment.points.slice(1))];
+  const length = segments.reduce(
+    (sum, segment) =>
+      sum +
+      segment.points
+        .slice(1)
+        .reduce(
+          (part, p, i) => part + Math.hypot(...p.map((v, axis) => v - segment.points[i][axis])),
+          0,
+        ),
+    0,
+  );
+  const candidate = retimeGroundRoute(
+    {
+      ...route,
+      points,
+      segments,
+      length,
+      schedule: undefined,
+      cost: route.arrivalCost + segments.reduce((sum, segment) => sum + segment.times.at(-1)!, 0),
+      ...(route.goalHit
+        ? { goalHit: { ...route.goalHit, segment: route.goalHit.segment - firstAction } }
+        : {}),
+    },
+    locomotion,
+  );
+  return candidate.status === 'complete' && candidate.cost <= route.cost ? candidate : route;
+}
 
 /** Recompute one continuous resource schedule; independently feasible pieces may
  * exhaust stamina or a timed boost when connected. Arrival overhead is paid once. */

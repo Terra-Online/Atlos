@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 
-import type { Evaluation } from '#@/src/evaluation/route.ts';
+import type { StartResolution } from '#@/bench/mechanism-query.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
 import type { LocomotionOptions } from '#@/src/index.ts';
 import { joinedGeometry, roofContains, shifted } from '#@/src/model/placement.ts';
@@ -56,6 +56,7 @@ export interface MechanismSuite {
       profile: unknown;
       locomotion: LocomotionOptions;
       traversalGenerator?: string;
+      interactives?: string;
     }
   >;
 }
@@ -223,18 +224,15 @@ export function expectation(c: MechanismCase): 'complete' | 'reject' | 'constrai
     return 'reject';
   return c.group === 'boundary-and-rejection' ? 'constraint' : 'complete';
 }
-export function classify(c: MechanismCase, result: RouteResult, evaluation?: Evaluation) {
+export function classify(c: MechanismCase, result: RouteResult) {
+  if (result.route.status === 'complete' && !result.partial)
+    return expectation(c) === 'reject' ? 'unexpected-complete' : 'complete';
   if (result.reason === 'timeout') return 'timeout';
   if (result.partial) return 'incomplete';
-  if (result.route.status === 'complete')
-    return evaluation?.valid
-      ? expectation(c) === 'reject'
-        ? 'unexpected-complete'
-        : 'valid-complete'
-      : 'invalid-route';
   if (result.reason?.startsWith('input-unavailable:')) return 'input-unavailable';
   if (result.reason?.startsWith('unsupported-setup:')) return 'unsupported-setup';
   if (result.reason?.startsWith('input-invalid:')) return 'input-invalid';
+  if (result.reason?.startsWith('input-unresolved:')) return 'input-unresolved';
   if (result.reason?.startsWith('execution-error:')) return 'error';
   return expectation(c) === 'reject'
     ? 'correct-rejection'
@@ -378,7 +376,9 @@ export function exercised(c: MechanismCase, result: RouteResult, input?: Physica
     });
 }
 export type PhysicalOutcome = {
-  evaluation?: Evaluation;
+  originalQuery?: RouteQuery;
+  resolvedQuery?: RouteQuery;
+  startResolution?: StartResolution;
   exercise: ReturnType<typeof exercised>;
   inputBindings?: unknown;
   physicalDiagnostics?: unknown;
@@ -386,7 +386,7 @@ export type PhysicalOutcome = {
   missingCoverage?: boolean;
   normalizationMs?: number;
   preparationMs?: number;
-  verificationMs?: number;
+  solverMs?: number;
   effectiveStart?: number[];
   mode: 'physical-diagnostic';
 };

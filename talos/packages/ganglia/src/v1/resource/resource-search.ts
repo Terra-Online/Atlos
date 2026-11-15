@@ -1,5 +1,6 @@
 import type { Vec3 } from '#@/src/geometry.ts';
-import type { Segment, LocomotionOptions } from '#@/src/movement.ts';
+import { scheduleBlock } from '#@/src/model/locomotion.ts';
+import type { LocomotionOptions } from '#@/src/movement.ts';
 import type { Route } from '#@/src/route.ts';
 import { routeSegment } from '#@/src/v1/motion/motion.ts';
 import { type LocomotionState, createLocomotion } from '#@/src/v1/resource/locomotion.ts';
@@ -12,7 +13,6 @@ interface Label {
   arrival: Arrival;
   state: LocomotionState;
   previous: Label | null;
-  segments: Segment[];
   transition: { edge: Edge; allowSprint: boolean; allowDash: boolean } | null;
   key?: string;
 }
@@ -93,7 +93,6 @@ export function searchResources(
         arrival: start,
         state: locomotion.initial(),
         previous: null,
-        segments: [],
         transition: null,
       },
       best,
@@ -110,7 +109,7 @@ export function searchResources(
     }
     search.expanded++;
     for (const edge of edges.get(current.node) ?? []) {
-      for (const next of locomotion.advance(routeSegment(edge), current.state)) {
+      for (const next of locomotion.advance(routeSegment(edge), current.state, false)) {
         best = retain(
           {
             node: edge.to,
@@ -118,7 +117,6 @@ export function searchResources(
             state: next.state,
             arrival: current.arrival,
             previous: current,
-            segments: next.segments,
             transition: { edge, ...next.control },
           },
           best,
@@ -131,7 +129,19 @@ export function searchResources(
   const path: Label[] = [];
   for (let label = selected; label.previous; label = label.previous) path.push(label);
   path.reverse();
-  const segments = path.flatMap((label) => label.segments),
+  // Labels retain controls and immutable graph edges. Playback geometry belongs
+  // only to the selected chain, keeping dead-end labels small.
+  const segments = path.flatMap(({ previous, transition }) => {
+      const scheduled = scheduleBlock(
+        [routeSegment(transition!.edge)],
+        options,
+        previous!.state,
+        transition!.allowSprint,
+        transition!.allowDash,
+      );
+      if (!scheduled) throw new Error('Selected resource transition became infeasible');
+      return scheduled.segments;
+    }),
     points: Vec3[] = [[...nodes.get(selected.arrival.node)!]];
   for (const segment of segments)
     for (const point of segment.points.slice(1)) {

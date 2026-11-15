@@ -1,0 +1,304 @@
+{
+  "schema": 1,
+  "source": {
+    "buildGuid": "2954fa80-23c1-1579-2b22-4ecfd6d70418",
+    "contentHash": "23821a7611be5c0478dc4695d96fd74a"
+  },
+  "scope": "Original unavailable-origin, capped-coverage and occupied-contact definitions retained outside the positive266 population; no completion credit",
+  "cases": [
+    {
+      "id": "228-0TGAI0K",
+      "group": "boundary-and-rejection",
+      "scene": "map01",
+      "level": "map01_lv003",
+      "target": {
+        "kind": "interactive",
+        "id": "300001631",
+        "template": "int_switch_fixable"
+      },
+      "query": {
+        "starts": [
+          {
+            "id": "TpForMap_ent_300001865",
+            "position": [231.4186248779297, 66.715576171875, -574.677734375],
+            "cost": 0,
+            "state": "locked"
+          }
+        ],
+        "goal": [160.16000366210938, 45.21099930107594, -744.780029296875],
+        "interaction": {
+          "radius": 1.7000000476837158
+        }
+      },
+      "tags": ["locked-arrival"],
+      "evidence": [
+        {
+          "file": "exports/map01-interaction-points.json",
+          "collection": "points",
+          "id": "300001631"
+        },
+        {
+          "file": "exports/travel-points.json",
+          "collection": "points",
+          "id": "TpForMap_ent_300001865"
+        }
+      ],
+      "setup": {},
+      "assertions": ["no-complete-route-from-unavailable-arrival"],
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-228",
+      "pointToken": "0TGAI0K",
+      "tokenSourceId": "300001631",
+      "tokenRole": "interactive"
+    },
+    {
+      "id": "229-0sUEnMF",
+      "group": "boundary-and-rejection",
+      "scene": "map02",
+      "level": "map02_lv010",
+      "target": {
+        "kind": "interactive",
+        "id": "37900000002",
+        "template": "int_campfire_v2"
+      },
+      "query": {
+        "starts": [
+          {
+            "id": "TpForMap_ent_37900000002",
+            "position": [371.4010009765625, 237.1409454345703, 1138.069091796875],
+            "cost": 0,
+            "state": "unknown"
+          }
+        ],
+        "goal": [370.77099609375, 237.15999755859374, 1146.530029296875],
+        "interaction": {
+          "radius": 3
+        }
+      },
+      "tags": ["unknown-arrival"],
+      "evidence": [
+        {
+          "file": "exports/map02-interaction-points.json",
+          "collection": "points",
+          "id": "37900000002"
+        },
+        {
+          "file": "exports/travel-points.json",
+          "collection": "points",
+          "id": "TpForMap_ent_37900000002"
+        }
+      ],
+      "setup": {},
+      "assertions": ["no-complete-route-from-unavailable-arrival"],
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-229",
+      "pointToken": "0sUEnMF",
+      "tokenSourceId": "37900000002",
+      "tokenRole": "interactive"
+    },
+    {
+      "id": "234-0sbwizy",
+      "group": "boundary-and-rejection",
+      "scene": "map01",
+      "level": "map01_lv001",
+      "target": {
+        "kind": "interactive",
+        "id": "2100020621",
+        "template": "int_collection_common"
+      },
+      "query": {
+        "starts": [
+          {
+            "id": "TpForMap_ent_2100000031",
+            "position": [-384.9183654785156, 107.49890899658203, -399.27105712890625],
+            "cost": 0,
+            "state": "available"
+          }
+        ],
+        "goal": [-298.875, 108.46100006103515, -280.4419860839844],
+        "interaction": {
+          "radius": 2
+        }
+      },
+      "tags": ["coverage-boundary"],
+      "evidence": [
+        {
+          "file": "exports/map01-interaction-points.json",
+          "collection": "points",
+          "id": "2100020621"
+        },
+        {
+          "file": "exports/travel-points.json",
+          "collection": "points",
+          "id": "TpForMap_ent_2100000031"
+        }
+      ],
+      "setup": {
+        "physical": {
+          "mode": "frozen-window",
+          "region": "map01_lv001",
+          "allowExpansion": false,
+          "ground": "retained/inputs/regions/map01_lv001/ground.json",
+          "collision": "retained/inputs/regions/map01_lv001/collision.json"
+        }
+      },
+      "assertions": [
+        "uncovered-target-cannot-be-complete",
+        "report-coverage-gap-separately-from-blocked"
+      ],
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-234",
+      "pointToken": "0sbwizy",
+      "tokenSourceId": "2100020621",
+      "tokenRole": "interactive"
+    },
+    {
+      "id": "240-0tT9xH3",
+      "group": "boundary-and-rejection",
+      "scene": "map02",
+      "level": "map02_lv001",
+      "target": {
+        "kind": "interactive",
+        "id": "10100020582",
+        "template": "int_rope_port_bottom"
+      },
+      "query": {
+        "starts": [
+          {
+            "id": "TpForMap_ent_10100020319",
+            "position": [-961.115478515625, 228.5845184326172, -1896.7080078125],
+            "cost": 0,
+            "state": "available"
+          }
+        ],
+        "goal": [-884.3809814453125, 191.19100645780563, -1749.5880126953125],
+        "interaction": {
+          "radius": 2.700000047683716
+        }
+      },
+      "tags": ["coverage-boundary"],
+      "evidence": [
+        {
+          "file": "exports/map02-interaction-points.json",
+          "collection": "points",
+          "id": "10100020582"
+        },
+        {
+          "file": "exports/travel-points.json",
+          "collection": "points",
+          "id": "TpForMap_ent_10100020319"
+        }
+      ],
+      "setup": {
+        "physical": {
+          "mode": "frozen-window",
+          "region": "map02_lv001",
+          "allowExpansion": false,
+          "ground": "retained/inputs/regions/map02_lv001/ground.json",
+          "collision": "retained/inputs/regions/map02_lv001/collision.json"
+        }
+      },
+      "assertions": [
+        "uncovered-target-cannot-be-complete",
+        "report-coverage-gap-separately-from-blocked"
+      ],
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-240",
+      "pointToken": "0tT9xH3",
+      "tokenSourceId": "10100020582",
+      "tokenRole": "interactive"
+    },
+    {
+      "id": "185-1cH9Nck",
+      "group": "moving-support",
+      "scene": "map01",
+      "level": "map01_lv007",
+      "target": {
+        "kind": "support-contact",
+        "id": "conveyor/2800000049/76574/8"
+      },
+      "query": {
+        "starts": [
+          {
+            "id": "conveyor/2800000049/76574/8",
+            "position": [-93.71797180175781, 184.00199913978577, 722.4133579423114],
+            "cost": 0,
+            "state": "available"
+          }
+        ],
+        "goal": [-93.71797180175781, 184.00199913978577, 721.6424899409135],
+        "interaction": {
+          "radius": 0.2,
+          "maxVertical": 0.2
+        }
+      },
+      "tags": ["moving-support", "conveyor", "swept-roof-support"],
+      "evidence": [
+        {
+          "file": "exports/map01-traversal-devices.json",
+          "collection": "movingSupports",
+          "index": 68,
+          "id": "conveyor/2800000049/76574/8",
+          "surfaceIndex": 54,
+          "capSurfaceIndex": 51,
+          "fromPose": 27,
+          "toPose": 28
+        }
+      ],
+      "setup": {
+        "requiredSupport": "conveyor/2800000049/76574/8",
+        "assumption": "phase-free-swept-support"
+      },
+      "assertions": [
+        "exercise:contact-support",
+        "no-invented-speed-or-phase",
+        "exercise:single-conveyor-pose",
+        "one-pose-supports-entire-contact-run",
+        "display-only-final-used-box-pose",
+        "no-swept-envelope-or-catalogue-endpoint-boxes",
+        "exercise:swept-roof-support",
+        "contact-refers-to-source-swept-face",
+        "no-invented-conveyor-speed"
+      ],
+      "status": "selected-unrun",
+      "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
+      "expectedContactPose": {
+        "device": "conveyor/2800000049/76574/8",
+        "fromPose": 27,
+        "toPose": 28,
+        "fraction": 0.5,
+        "roof": [
+          [-94.17078182831278, 184.00199913978577, 722.9915089433598],
+          [-93.26516177520284, 184.00199913978577, 722.9915089433598],
+          [-93.26516177520284, 184.00199913978577, 721.064338939865],
+          [-94.17078182831278, 184.00199913978577, 721.064338939865]
+        ],
+        "bounds": {
+          "min": [-94.17078182831278, 181.5019986629486, 721.064338939865],
+          "max": [-93.26516177520284, 184.00199913978577, 722.9915089433598]
+        },
+        "requirement": "One feasible fixed box pose must support the complete borrowed contact run and be the only displayed pose for that use."
+      },
+      "supportModel": {
+        "kind": "swept-roof-support",
+        "maxHorizontalSpan": 6.76202392578125,
+        "phase": "excluded",
+        "waiting": "excluded",
+        "timedRideAvailable": true
+      },
+      "legacyCaseId": "v250-185",
+      "pointToken": "1cH9Nck",
+      "tokenSourceId": "2800000049",
+      "tokenRole": "conveyor-group-contact",
+      "knownIssue": {
+        "kind": "occupied-origin-and-target",
+        "sourceActor": "815373095",
+        "component": 9,
+        "shapeIndex": 1112,
+        "collisionDistance": 0.217327,
+        "capsuleRadius": 0.3499999940395355,
+        "requiredCorrection": "Choose a legal source contact; do not remove the static mesh or shrink the body."
+      }
+    }
+  ]
+}

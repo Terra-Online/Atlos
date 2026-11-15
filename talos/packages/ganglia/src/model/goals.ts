@@ -500,6 +500,25 @@ export function trimGoalFlight<T extends { points: Vec3[]; times: number[] }>(
   if (!arc) return null;
   const hit = findGoalHit(arc.points, target, interaction);
   if (!hit) return null;
+  if (!findGoalHit([hit.position, hit.position], target, interaction)) {
+    const a = arc.points[hit.index - 1],
+      b = arc.points[hit.index];
+    let inside = false;
+    // Interpolation of an entry root can round outside the unchanged predicate.
+    // Advance by bounded floating-point increments on this same chord, accepting
+    // only a point the original predicate proves inside the interaction volume.
+    for (let steps = 1; steps <= 4096; steps *= 2) {
+      const fraction = Math.min(1, hit.fraction + steps * Number.EPSILON);
+      if (fraction <= hit.fraction) break;
+      const position: Vec3 = a.map((v, i) => v + fraction * (b[i] - v)) as Vec3;
+      if (!findGoalHit([position, position], target, interaction)) continue;
+      hit.fraction = fraction;
+      hit.position = position;
+      inside = true;
+      break;
+    }
+    if (!inside) return null;
+  }
   const time =
     arc.times[hit.index - 1] + hit.fraction * (arc.times[hit.index] - arc.times[hit.index - 1]);
   if (time <= 0) return null;

@@ -1,6 +1,8 @@
 import type { Surface, Vec3, Wall } from '#@/src/geometry.ts';
 import { createCollisionWorld } from '#@/src/model/collision.ts';
+import { physicalTileSpan } from '#@/src/model/coverage.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
+import { createPhysicalWorld } from '#@/src/model/world.ts';
 import type { SpeedBoost, InteractionGoal } from '#@/src/movement.ts';
 import type { GroundArrival, GroundConnection, GroundOptions, Route } from '#@/src/route.ts';
 import type { GangliaV1Config as SolverConfig } from '#@/src/solver/ganglia-v1.ts';
@@ -13,15 +15,25 @@ import { registerCatalogSurfaces } from '#@/src/v1/route/action-catalog.ts';
 import { pruneGroundDetours } from '#@/src/v1/route/ground-detours.ts';
 import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { planJumpRoute, type InitialGroundProof } from '#@/src/v1/route/jump-planner.ts';
-import { refineGoalGround } from '#@/src/v1/solver/ground-refinement.ts';
+import {
+  checkedGroundPlanner,
+  narrowGoalSupports,
+  proveGroundRoute,
+  refineGoalGround,
+} from '#@/src/v1/solver/ground-refinement.ts';
 import { createDeviceConnections as deviceConnections } from '#@/src/v1/solver/physical/devices.ts';
 import { planFollowingRoute } from '#@/src/v1/solver/physical/following-route.ts';
+import { prepareMovingDirect } from '#@/src/v1/solver/physical/moving-direct.ts';
 import { movingGround } from '#@/src/v1/solver/physical/moving-ground.ts';
 import {
   type SupportBox,
   createMovingRouteAnnotator,
 } from '#@/src/v1/solver/physical/moving-route.ts';
 import type { CacheScope, CacheStats } from '#@/src/v1/solver/physical/preparation.ts';
+type Devices = ReturnType<typeof deviceConnections> & {
+  direct?: ReturnType<typeof prepareMovingDirect>;
+};
+
 export type PhysicalQuery = {
   arrival: GroundArrival & { groundRange?: [number, number] };
   target: Vec3;
@@ -126,6 +138,9 @@ export const solvePhysicalRoute = async (
     timingMs: timing,
     truncated: false,
   };
+  let directCandidate: PhysicalResult | undefined;
+  let incumbent: PhysicalResult | undefined;
+  let hasCompleteCandidate = false;
   let collisionQueryStats: (() => unknown) | undefined;
   let annotateMovingRoute: ReturnType<typeof createMovingRouteAnnotator> | undefined;
   const emit = async (
@@ -139,13 +154,19 @@ export const solvePhysicalRoute = async (
     },
     optimizing = false,
   ) => {
+    if (
+      directCandidate &&
+      incumbent?.route?.status === 'complete' &&
+      (result.route?.status !== 'complete' || result.route.cost >= incumbent.route.cost)
+    )
+      result = incumbent;
     if (collisionQueryStats) {
       diagnostics.collisionQueries = collisionQueryStats();
     }
     const annotationStart = performance.now();
     const supportBoxes = [
       ...(result.supportBoxes ?? []),
-      ...(result.route && annotateMovingRoute
+      ...(result !== directCandidate && result !== incumbent && result.route && annotateMovingRoute
         ? annotateMovingRoute(result.route, result.connections ?? [])
         : []),
     ];
@@ -154,11 +175,10 @@ export const solvePhysicalRoute = async (
     }
     timing.total = performance.now() - started;
     if (context.cache?.stats) diagnostics.prepareCache = context.cache.stats();
-    await context.emit(
-      { ...result, ...(supportBoxes.length ? { supportBoxes } : {}) },
-      optimizing,
-      diagnostics,
-    );
+    const candidate = { ...result, ...(supportBoxes.length ? { supportBoxes } : {}) };
+    if (candidate.route?.status === 'complete') hasCompleteCandidate = true;
+    if (directCandidate && candidate.route?.status === 'complete') incumbent = candidate;
+    await context.emit(candidate, optimizing, diagnostics);
   };
   // Authored landings may settle down by the player's step distance. A factory
   // centre is a volume seed instead: its source bounds explicitly constrain the
@@ -416,7 +436,7 @@ export const solvePhysicalRoute = async (
     progress({ phase: 'device-links' });
     const deviceStart = performance.now();
     const deviceKey = JSON.stringify([groundKey, deviceInput]);
-    const preparedDevices = await memo('devices', deviceKey, () =>
+    const preparedDevices = await memo<Devices>('devices', deviceKey, () =>
       deviceConnections(deviceInput, {
         surfaces: ground.surfaces,
         world,
@@ -428,6 +448,36 @@ export const solvePhysicalRoute = async (
     );
     prepareReuse.devices = preparedDevices.reused;
     const devices = preparedDevices.value;
+    if (movingArrival && context.effort !== 'walking') {
+      await context.checkpoint?.();
+      progress({ phase: 'moving-direct' });
+      const directStart = performance.now();
+      prepareReuse.direct = Boolean(devices.direct);
+      const direct = (devices.direct ??= prepareMovingDirect(
+        { ...input, collision: geometry },
+        preparedCollision.value,
+        options.walls,
+        groundPlanner.project,
+      ));
+      timing.directPreparation = performance.now() - directStart;
+      const searchStart = performance.now(),
+        candidate = direct.plan(request, movingSources);
+      timing.directSearch = performance.now() - searchStart;
+      diagnostics.directMoving = direct.diagnostics;
+      if (candidate.route.status === 'complete') {
+        const annotationStart = performance.now();
+        const supportBoxes = direct.annotate(candidate.route, candidate.connections);
+        timing.directAnnotations = performance.now() - annotationStart;
+        directCandidate = {
+          status: 'candidate',
+          route: candidate.route,
+          connections: candidate.connections,
+          supportBoxes,
+          groundedTarget: candidate.route.points.at(-1),
+        };
+        await emit(directCandidate, true);
+      }
+    }
     boosts = devices.boosts;
     options.connections = [...(options.connections ?? []), ...devices.connections];
     diagnostics.devices = devices;
@@ -847,6 +897,100 @@ export const solvePhysicalRoute = async (
           following.route.status === 'complete' ? following.route.points.at(-1) : undefined,
       });
     } else {
+      if (
+        !hasCompleteCandidate &&
+        ground.build?.bounds &&
+        ground.build.cellSize &&
+        ground.build.cellHeight
+      ) {
+        await context.checkpoint?.();
+        const fallbackStart = performance.now();
+        progress({ phase: 'narrow-supports' });
+        const physical = createPhysicalWorld(
+          { ...input, collision: geometry, roundedWalls: options.walls },
+          ground.tiles
+            ? { bounds: ground.build.bounds, tiles: ground.tiles, tileSpan: physicalTileSpan }
+            : 'complete',
+          preparedCollision.value,
+        );
+        const added = narrowGoalSupports(geometry, surfaces, {
+          build: {
+            ...ground.build,
+            cellSize: ground.build.cellSize,
+            cellHeight: ground.build.cellHeight,
+            profile,
+            maxSlope,
+            stepUp: config.stepUp,
+            stepDown: config.stepDown,
+          },
+          goal,
+          interaction: request.interaction,
+          model,
+          project: groundPlanner!.project,
+          physical,
+          maxCandidates: Math.min(256, limits.maxCandidates ?? 640),
+          queryTriangles: preparedCollision.value.world.trianglesInBounds,
+        });
+        const fallbackDiagnostics: Record<string, unknown> = {
+          charts: added.diagnostics,
+          extraPasses: 0,
+          perPassLimits: limits,
+          truncated: added.diagnostics.truncated,
+        };
+        diagnostics.narrowSupportFallback = fallbackDiagnostics;
+        if (added.surfaces.length) {
+          const combined = [...surfaces, ...added.surfaces];
+          const connections = [
+            ...new Map(
+              [...(options.connections ?? []), ...result.connections].map((c) => [c.id, c]),
+            ).values(),
+          ];
+          const fallbackOptions = { ...options, connections };
+          const planner = checkedGroundPlanner(combined, fallbackOptions, physical);
+          fallbackDiagnostics.extraPasses = 1;
+          // Missing source support changes the proposal geometry. Preserve the
+          // failed pass and its validated actions; this is one charged extra
+          // pass with the existing limits, rather than a larger search quota.
+          const fallback = planJumpRoute(combined, world, [arrival], goal, {
+            ...fallbackOptions,
+            boosts,
+            groundPlanner: planner,
+            interaction: request.interaction,
+            runAirSpeed,
+            maxSlope,
+            maxDrop,
+            maxHorizontalDistance,
+            ...limits,
+            maxShortcutCandidates: policy.maxShortcutCandidates,
+            waypoints: request.waypoints,
+            onProgress: progress,
+            model,
+          });
+          fallbackDiagnostics.discovery = fallback.diagnostics;
+          fallbackDiagnostics.truncated =
+            added.diagnostics.truncated || fallback.diagnostics.truncated;
+          const proved = proveGroundRoute(fallback.route, physical, fallbackOptions, {
+            position: request.target,
+            interaction: request.interaction,
+          });
+          fallbackDiagnostics.status = proved.status;
+          timing.narrowSupportFallback = performance.now() - fallbackStart;
+          diagnostics.truncated ||= Boolean(fallbackDiagnostics.truncated);
+          await context.checkpoint?.();
+          if (proved.status === 'complete') {
+            await emit({
+              status: 'candidate',
+              route: proved,
+              connections: fallback.connections,
+              groundedTarget: proved.points.at(-1),
+            });
+            return;
+          }
+        } else {
+          timing.narrowSupportFallback = performance.now() - fallbackStart;
+          diagnostics.truncated ||= added.diagnostics.truncated;
+        }
+      }
       await emit({ status: 'unavailable', reason: route.status, connections });
     }
   }

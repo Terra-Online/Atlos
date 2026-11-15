@@ -817,3 +817,72 @@ test('a vertical join cannot restart sprint after an exhausted approach', () => 
   };
   assert.equal(chooseTypeScriptSchedule([[approach], [vertical], [flight]], policy), null);
 });
+
+test('frontier transitions retain exact clocks and controls without playback geometry', () => {
+  const policy = {
+    speed: 2,
+    sprintSpeed: 4,
+    sprintAcceleration: 8,
+    dash: { speed: 6, duration: 0.3, cooldown: 0.8, cost: 1 },
+    stamina: {
+      capacity: 4,
+      initial: 4,
+      sprintDrain: 1,
+      activationCost: 0.5,
+      recoveryRate: 2,
+      recoveryDelay: 0.2,
+      reserve: 0,
+    },
+  };
+  const locomotion = createLocomotion(policy);
+  const initial = locomotion.initial();
+  const states = [
+    initial,
+    { ...initial, sprinting: true, hasActivated: true, energy: 0.001 },
+    { ...initial, sprinting: true, hasActivated: true, dashRemaining: 0.1, dashCooldown: 0.6 },
+  ];
+  const segments: Segment[] = [
+    walk([
+      [0, 0, 0],
+      [20, 0, 0],
+    ]),
+    walk([
+      [0, 0.1, 0],
+      [0, 0, 0],
+    ]),
+    {
+      mode: 'drop',
+      points: [
+        [0, 0, 0],
+        [2, -1, 0],
+      ],
+      times: [0, 1],
+      requiredGait: 'sprint',
+    },
+    {
+      mode: 'rope',
+      points: [
+        [0, 0, 0],
+        [0, 10, 0],
+      ],
+      times: [0, 2],
+    },
+    {
+      ...walk([
+        [0, 0, 0],
+        [20, 0, 0],
+      ]),
+      boost: { id: 'speed', multiplier: 1.5, duration: 3 },
+      boostExpiry: 0.7,
+    },
+  ];
+  for (const segment of segments)
+    for (const state of states) {
+      const playback = locomotion.advance(segment, state);
+      const frontier = locomotion.advance(segment, state, false);
+      assert.deepEqual(
+        frontier,
+        playback.map((choice) => ({ ...choice, segments: [] })),
+      );
+    }
+});

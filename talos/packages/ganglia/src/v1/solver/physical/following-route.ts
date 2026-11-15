@@ -400,8 +400,8 @@ export const planFollowingRoute = async (
       }
       const delta = vector((axis) => position[axis] - support.spawn[axis]);
       const candidateBodies = support.bodies.map((body) => body.map((p) => shifted(p, delta)));
-      if (definitions.length > 1) {
-        // Remove individually impossible poses before forming products. Do not
+      {
+        // Remove individually impossible poses before spending a route trial. Do not
         // test against other boxes here: their final poses may change jointly.
         const bounds = supportBounds(candidateBodies);
         const initial = distance(position, support.spawn) < 1e-5;
@@ -416,6 +416,8 @@ export const planFollowingRoute = async (
         if (!insideScope(bounds, world.bounds ?? undefined))
           reason = 'placement-outside-collision-scope';
         else if (!initial && sourceCollision) reason = 'source-collision-ownership-unresolved';
+        else if (jump.walls.some((wall) => wall.state !== 'inactive' && overlaps(bounds, wall)))
+          reason = 'placement-intersects-exclusion';
         else if (
           candidateBodies.some(
             (body) =>
@@ -524,6 +526,10 @@ export const planFollowingRoute = async (
       }
     }
   }
+  // A roof depends on its local collision neighbourhood, not on distant box poses.
+  // Keep exact local geometry in the key so neighbouring moved bodies still force
+  // a fresh bake; the cache belongs only to this immutable terrain/build query.
+  const roofCache = new Map<string, Surface[]>();
   // Reserve trials for each layout size: single-box misses must not consume the
   // entire allowance before a joint configuration can be considered.
   const depth = Math.min(choices.length, maxPlacements);
@@ -647,17 +653,23 @@ export const planFollowingRoute = async (
             bounds.max[axis] = Math.min(bounds.max[axis], build.bounds.max[axis]);
           }
         if (bounds.min.some((v, axis) => v >= bounds.max[axis])) continue;
-        const staticTriangles = trianglesOf(terrain, world.trianglesInBounds?.(bounds));
         const localBodies = bodies.filter((body) =>
           overlaps(supportBounds([body]), {
             min: [bounds.min[0], -Infinity, bounds.min[1]],
             max: [bounds.max[0], Infinity, bounds.max[1]],
           }),
         );
-        const baked = await buildGroundSurfaces(
-          joinedGeometry(geometryOfTriangles(staticTriangles), localBodies),
-          { ...build, bounds },
-        );
+        const key = JSON.stringify([placed.support.id, placed.position, bounds, localBodies]);
+        let baked = roofCache.get(key);
+        if (!baked) {
+          const staticTriangles = trianglesOf(terrain, world.trianglesInBounds?.(bounds));
+          baked = await buildGroundSurfaces(
+            joinedGeometry(geometryOfTriangles(staticTriangles), localBodies),
+            { ...build, bounds },
+          );
+          if (roofCache.size >= 256) roofCache.delete(roofCache.keys().next().value!);
+          roofCache.set(key, baked);
+        }
         roofs.push(
           ...baked
             .filter((surface) =>
@@ -704,10 +716,6 @@ export const planFollowingRoute = async (
         );
         return points.some((p) => project(p, { maxVertical: build.cellHeight * 3 }).length);
       });
-      if (!used.length) {
-        outcome('', 'placed-box-route-unavailable');
-        continue;
-      }
       const route = jump.locomotion
         ? retimeGroundRoute(result.route, jump.locomotion)
         : result.route;

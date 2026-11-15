@@ -371,6 +371,27 @@ function findConnections(
   ) {
     throw new Error('Invalid shortcut baseline or ground speed');
   }
+  // Vertical timing depends only on these fixed options and the exact endpoint
+  // heights. Landing witnesses on one face commonly repeat that height pair.
+  // Keep just the latest pair; no search state or geometric witness is cached.
+  const vertical = {
+    jump: { ...model, mode: 'jump' as const },
+    drop: { ...model, mode: 'drop' as const },
+  };
+  const discoveryVertical = model.maxJumpHeight > 0 ? vertical.jump : vertical.drop;
+  const durationAt = () => {
+    let fromHeight = NaN,
+      toHeight = NaN,
+      duration: number | null = null;
+    return (from: number, to: number) => {
+      if (from !== fromHeight || to !== toHeight) {
+        fromHeight = from;
+        toHeight = to;
+        duration = jumpDuration(from, to, discoveryVertical);
+      }
+      return duration;
+    };
+  };
   const diagnostics: Diagnostics & { seedProjections: number } = {
     reason: frontier ? (reverse ? 'goal-frontier' : 'reachable-frontier') : 'searched',
     baselineCost: baseline?.cost ?? null,
@@ -943,8 +964,15 @@ function findConnections(
     ].filter(({ query }) => !query.empty);
   if (cursor) cursor.landingQueries = landingQueries;
   const rejectedPairs = cursor?.rejected ?? new Set<string>();
-  const pairKey = (start: Takeoff, end: Witness) =>
-    JSON.stringify([start.surface, start.position, start.exit, end.surface, end.position]);
+  const startKeys = new WeakMap<Takeoff, string>();
+  const pairKey = (start: Takeoff, end: Witness) => {
+    let prefix = startKeys.get(start);
+    if (prefix === undefined) {
+      prefix = JSON.stringify([start.surface, start.position, start.exit]).slice(0, -1);
+      startKeys.set(start, prefix);
+    }
+    return `${prefix},${JSON.stringify([end.surface, end.position]).slice(1)}`;
+  };
   const pairs = cursor?.pairs ?? new Map<string, Candidate[]>();
   const fullSources = new Set<string>();
   const dominated = frontier
@@ -1030,6 +1058,8 @@ function findConnections(
       }
     }
   }
+  const paddedDuration = durationAt(),
+    nominalDuration = durationAt();
   let queryIndex = 0,
     activeQueries = active.length;
   while (
@@ -1074,10 +1104,9 @@ function findConnections(
       const span = horizontal(start.position, end.position),
         drop = start.position[1] - end.position[1];
       if (span > maxHorizontalDistance || drop > maxDrop + 2 * endpointTolerance) continue;
-      const duration = jumpDuration(
+      const duration = paddedDuration(
         start.position[1] + endpointTolerance,
         end.position[1] - endpointTolerance,
-        { ...model, mode: model.maxJumpHeight > 0 ? 'jump' : 'drop' },
       );
       if (
         duration === null ||
@@ -1094,10 +1123,7 @@ function findConnections(
         ) >= durationLimit
       )
         continue;
-      const nominal = jumpDuration(start.position[1], end.position[1], {
-        ...model,
-        mode: model.maxJumpHeight > 0 ? 'jump' : 'drop',
-      });
+      const nominal = nominalDuration(start.position[1], end.position[1]);
       const remaining = departure.has(end.surface)
         ? departure.get(end.surface)! + distance(centers.get(end.surface)!, end.position)
         : distance(end.position, to);
@@ -1327,7 +1353,7 @@ function findConnections(
       const start = rawStart!,
         end = rawEnd!;
       if (mode === 'jump' && model.maxJumpHeight === 0) continue;
-      const duration = jumpDuration(start.position[1], end.position[1], { ...model, mode });
+      const duration = jumpDuration(start.position[1], end.position[1], vertical[mode]);
       if (
         duration === null ||
         horizontal(start.position, end.position) > duration * model.maxHorizontalSpeed ||

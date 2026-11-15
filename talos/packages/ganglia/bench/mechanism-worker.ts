@@ -7,6 +7,13 @@ import { isDeepStrictEqual } from 'node:util';
 
 import { loadScene, type GameAdapter } from '#@/bench/adapters/ganglia-v1/scene.ts';
 import {
+  resolveMechanismQuery,
+  sourceSupportWorld,
+  QueryInputError,
+  witnessLimit,
+  type StartResolution,
+} from '#@/bench/mechanism-query.ts';
+import {
   checkSetup,
   facilityAudit,
   type FacilityCatalog,
@@ -17,17 +24,12 @@ import {
   type MechanismResult,
 } from '#@/bench/mechanism-suite.ts';
 import { exportPhysicalRegion } from '#@/bench/prepare-region.ts';
+import { decodeSnapshot } from '#@/bench/scene-data.ts';
+import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { createTimings } from '#@/bench/timings.ts';
 import { workerMemory, type WorkerRequest, type WorkerReply } from '#@/bench/workers.ts';
-import { createPhysicalWorld, createPhysicalVerifier } from '#@/src/evaluation/index.ts';
-import type { Evaluation } from '#@/src/evaluation/route.ts';
 import { physicalTileSpan } from '#@/src/model/coverage.ts';
-import type {
-  PreparedRouteSolver,
-  RouteQuery,
-  RouteResult,
-  RouteEvent,
-} from '#@/src/solver/contract.ts';
+import type { PreparedRouteSolver, RouteResult, RouteEvent } from '#@/src/solver/contract.ts';
 import type { GangliaV1Config } from '#@/src/solver/ganglia-v1.ts';
 import type { createPhysicalPreparation } from '#@/src/solver/host.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
@@ -43,18 +45,26 @@ process.once('message', async (message: WorkerRequest) => {
     binding = JSON.parse(await readFile(setup.dataRoot, 'utf8')) as MechanismBinding;
   const item = binding.item;
   let solver: PreparedRouteSolver | undefined, input: PhysicalInput | undefined;
-  let verify:
-    | ((q: RouteQuery, r: RouteResult['route']) => Promise<Evaluation> | Evaluation)
-    | undefined;
+  let resolvedQuery = item.query;
+  let startResolution: StartResolution | undefined;
+  let closeInputs: (() => Promise<void>) | undefined;
   let missingCoverage = false,
     controller: AbortController | undefined;
   let inputBindings: unknown;
+  let readSceneTimings:
+    | (() => ReturnType<typeof createTimings> & { inputLoadMs: number })
+    | undefined;
   const facilityAudits: ReturnType<typeof facilityAudit>[] = [];
   let activeId: number | undefined,
+    activeStarted = 0,
     activeEvents = false,
     lastEventKey = '',
     lastEventAt = 0;
   const progress = (event: Extract<RouteEvent, { type: 'progress' }>, detail?: string) => {
+    if (controller && performance.now() - activeStarted >= QUERY_SLO_MS) {
+      controller.abort();
+      controller.signal.throwIfAborted();
+    }
     if (activeId === undefined || !activeEvents) return;
     const now = performance.now(),
       key = detail ?? event.phase;
@@ -65,6 +75,47 @@ process.once('message', async (message: WorkerRequest) => {
   };
   let physicalDiagnostics: unknown;
   let lastProgress: unknown;
+  const resolveStarts = async (
+    catalog: unknown,
+    snapshot: Parameters<typeof resolveMechanismQuery>[2],
+  ) => {
+    if (!item.setup.projectStartToPhysicalSupport) return;
+    progress({ type: 'progress', phase: 'prepare' }, 'source-start-resolution');
+    const facts = binding.suite.sources[item.scene];
+    const file = facts.interactives ? resourcePath(facts.interactives, binding.roots) : '';
+    try {
+      const prepared = await resolveMechanismQuery(
+        item,
+        {
+          file,
+          document: file ? JSON.parse(await readFile(file, 'utf8')) : undefined,
+          source: facts.source,
+          profile: facts.profile,
+          catalog,
+        },
+        snapshot,
+      );
+      resolvedQuery = prepared.query;
+      startResolution = prepared.receipt;
+    } catch (error) {
+      if (error instanceof QueryInputError) {
+        startResolution = error.receipt;
+        throw error;
+      }
+      const status =
+        error instanceof Error && 'code' in error && error.code === 'ENOENT'
+          ? 'input-unavailable'
+          : 'input-invalid';
+      startResolution = {
+        status,
+        sourceFile: file,
+        witnessLimit,
+        starts: [],
+        reason: String(error),
+      };
+      throw new QueryInputError(status, startResolution);
+    }
+  };
   const initialize = async () => {
     checkSetup(item);
     const adapterEntry = resolve(
@@ -98,9 +149,9 @@ process.once('message', async (message: WorkerRequest) => {
       const read = async (_slot: string, file: string) => {
         if (values.has(file)) return values.get(file);
         progress({ type: 'progress', phase: 'prepare' }, `read:${_slot}`);
-        const bytes = await readFile(file, 'utf8');
+        const bytes = await readFile(file);
         progress({ type: 'progress', phase: 'prepare' }, `parse:${_slot}`);
-        const raw = JSON.parse(bytes);
+        const raw = decodeSnapshot(file, bytes) as Record<string, unknown>;
         progress({ type: 'progress', phase: 'prepare' }, `loaded:${_slot}`);
         values.set(file, raw);
         const info = await stat(file);
@@ -152,16 +203,26 @@ process.once('message', async (message: WorkerRequest) => {
         !isDeepStrictEqual(input.ground.options.profile, binding.suite.sources[item.scene].profile)
       )
         throw new Error('Player profile differs from the selected source');
-      const ground = input.ground as typeof input.ground & { tiles?: { x: number; z: number }[] };
-      const bounds = ground.build?.bounds;
-      if (!bounds || !Array.isArray(ground.tiles))
-        throw new Error('Missing explicit physical coverage');
-      const world = createPhysicalWorld(input, {
-        bounds,
-        tiles: ground.tiles,
-        tileSpan: physicalTileSpan,
-      });
-      verify = createPhysicalVerifier(() => [world]);
+      if (item.setup.projectStartToPhysicalSupport) {
+        const ground = input.ground as typeof input.ground & { tiles?: { x: number; z: number }[] };
+        const bounds = ground.build?.bounds;
+        if (!bounds || !Array.isArray(ground.tiles))
+          throw new Error('Missing explicit physical coverage');
+
+        const fixed = input;
+        await resolveStarts(values.get(files.devices), async (_start, volume) => ({
+          input: fixed,
+          world: sourceSupportWorld(
+            fixed,
+            { bounds, tiles: ground.tiles!, tileSpan: physicalTileSpan },
+            volume,
+          ),
+          revision: JSON.stringify(bindings),
+          files,
+          source: binding.suite.sources[item.scene].source,
+          reuse: 'source-only bounded collision index',
+        }));
+      }
       inputBindings = {
         files,
         bindings,
@@ -216,6 +277,10 @@ process.once('message', async (message: WorkerRequest) => {
         {
           kernelRoot: binding.kernel,
           createPreparation: host.createPhysicalPreparation,
+          onProgress: (detail) => {
+            lastProgress = detail;
+            progress({ type: 'progress', phase: 'validate' }, detail.phase);
+          },
           transformInput: (raw) => {
             const audit = facilityAudit(raw, catalog);
             facilityAudits.push(audit);
@@ -231,6 +296,12 @@ process.once('message', async (message: WorkerRequest) => {
       );
       const resources = scene.input.resources,
         query = resources.query.bind(resources);
+      closeInputs = async () => {
+        await resources.close?.();
+      };
+      await resolveStarts(catalog, (start, volume) =>
+        scene.prepareSourceSnapshot(item.query, start, volume),
+      );
       resources.query = async (...args) => {
         const result = await query(...args);
         missingCoverage ||= !result;
@@ -240,10 +311,19 @@ process.once('message', async (message: WorkerRequest) => {
         ...scene.input,
         locomotion: item.setup.locomotion ?? scene.input.locomotion,
       });
-      verify = scene.verify;
+      readSceneTimings = () => ({
+        ...structuredClone(scene.timings),
+        inputLoadMs: scene.inputLoadMs,
+      });
       inputBindings = {
         dataRoot,
-        metadata: scene.metadata,
+        metadata: {
+          ...scene.metadata,
+          rules: { maxVertical: scene.metadata.rules.maxVertical },
+          get inputBytes() {
+            return scene.metadata.inputBytes;
+          },
+        },
         expansionEnabled: !!binding.prepareConfig,
         facilityAudits,
       };
@@ -256,6 +336,7 @@ process.once('message', async (message: WorkerRequest) => {
     }
     if (m.type === 'close') {
       await solver?.close();
+      if (!solver) await closeInputs?.();
       send({ type: 'closed' });
       process.disconnect();
       return;
@@ -269,11 +350,11 @@ process.once('message', async (message: WorkerRequest) => {
       return;
     }
     if (m.type === 'verify') {
-      if (!verify) {
-        send({ type: 'error', id: m.id, error: 'Missing physical verifier' });
-        return;
-      }
-      send({ type: 'verified', id: m.id, evaluation: await verify(m.query, m.route) });
+      send({
+        type: 'error',
+        id: m.id,
+        error: 'Mechanism diagnostics report solver output; route replay is unsupported',
+      });
       return;
     }
     if (m.type !== 'solve') return;
@@ -283,44 +364,51 @@ process.once('message', async (message: WorkerRequest) => {
     lastEventKey = '';
     lastEventAt = 0;
     const started = performance.now();
+    activeStarted = started;
     let preparationMs = 0;
     let result: RouteResult;
-    let evaluation: Evaluation | undefined,
-      verificationMs = 0;
+    let solverMs: number | undefined;
     try {
       if (!isDeepStrictEqual(m.query, item.query))
         throw new Error('Diagnostic query differs from its fixed case');
       if (!solver) {
-        await initialize();
-        preparationMs = performance.now() - started;
+        try {
+          await initialize();
+        } finally {
+          preparationMs = performance.now() - started;
+        }
       }
       controller.signal.throwIfAborted();
-      result = await solver!.solve(m.query, {
-        signal: controller.signal,
-        onEvent: (event) => {
-          if (event.type === 'progress') {
-            lastProgress = event;
-            progress(event);
-          }
-        },
-      });
-      controller.signal.throwIfAborted();
-      const t = performance.now();
-      evaluation = await verify!(m.query, result.route);
-      verificationMs = performance.now() - t;
+      const solving = performance.now();
+      try {
+        result = await solver!.solve(resolvedQuery, {
+          signal: controller.signal,
+          onEvent: (event) => {
+            if (event.type === 'progress') {
+              lastProgress = event;
+              progress(event);
+            }
+          },
+        });
+      } finally {
+        solverMs = performance.now() - solving;
+      }
       controller.signal.throwIfAborted();
       if (result.route.status !== 'complete' && missingCoverage)
         result = { ...result, reason: 'input-unavailable:requested physical coverage is absent' };
     } catch (error) {
       const text = error instanceof Error ? error.message : String(error);
-      const reason = text.startsWith('Unsupported ')
-        ? 'unsupported-setup:'
-        : (error instanceof Error && 'code' in error && error.code === 'ENOENT') ||
-            text.startsWith('Missing ')
-          ? 'input-unavailable:'
-          : !solver
-            ? 'input-invalid:'
-            : 'execution-error:';
+      const reason =
+        error instanceof QueryInputError
+          ? error.status + ':'
+          : text.startsWith('Unsupported ')
+            ? 'unsupported-setup:'
+            : (error instanceof Error && 'code' in error && error.code === 'ENOENT') ||
+                text.startsWith('Missing ')
+              ? 'input-unavailable:'
+              : !solver
+                ? 'input-invalid:'
+                : 'execution-error:';
       result = {
         route: { status: 'no-verified-route' },
         connections: [],
@@ -334,19 +422,19 @@ process.once('message', async (message: WorkerRequest) => {
         ...result.diagnostics,
         mechanism: {
           mode: 'physical-diagnostic',
-          evaluation,
-          exercise:
-            evaluation?.valid && !result.partial
-              ? exercised(item, result, input)
-              : item.assertions
-                  .filter((a) => a.startsWith('exercise:'))
-                  .map((assertion) => ({ assertion, status: 'unassessed' })),
-          inputBindings: inputBindings ?? { facilityAudits },
+          originalQuery: item.setup.projectStartToPhysicalSupport ? item.query : undefined,
+          resolvedQuery: item.setup.projectStartToPhysicalSupport ? resolvedQuery : undefined,
+          startResolution,
+          exercise: exercised(item, result, input),
+          inputBindings:
+            readSceneTimings && inputBindings && typeof inputBindings === 'object'
+              ? { ...inputBindings, sceneTimings: readSceneTimings() }
+              : (inputBindings ?? { facilityAudits }),
           physicalDiagnostics,
           lastProgress,
           missingCoverage,
           preparationMs,
-          verificationMs,
+          solverMs,
           effectiveStart: result.route.status === 'complete' ? result.route.points[0] : undefined,
         },
       },
@@ -362,7 +450,7 @@ process.once('message', async (message: WorkerRequest) => {
     activeId = undefined;
     activeEvents = false;
   });
-  // This diagnostic dispatch includes input loading and independent verification.
+  // Preparation stays inside the dispatch deadline; solver time is reported separately.
   // Cancellation waits for the current stage or exporter to finish; the parent
   // keeps the worker occupied and measures that tail rather than killing it.
   send({

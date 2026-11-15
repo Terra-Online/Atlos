@@ -662,3 +662,364 @@ test('moving admission preserves static fast paths and rejects unavailable or un
     assert.equal(moving, 0);
   }
 });
+
+test('direct provider rides preserve resources, annotations and exact arrival gates', async () => {
+  const [
+    { prepareMovingDirect },
+    { createPhysicalWorld, createPhysicalVerifier },
+    { createCollisionWorld },
+    { createGoalProjector },
+  ] = await Promise.all([
+    import('#@/src/v1/solver/physical/moving-direct.ts'),
+    import('#@/src/evaluation/index.ts'),
+    import('#@/src/model/collision.ts'),
+    import('#@/src/model/goals.ts'),
+  ]);
+  const physical = structuredClone(input);
+  physical.ground.build = {
+    bounds: { min: [0, 0], max: [10, 10] },
+    cellHeight: 0.05,
+    cellSize: 0.2,
+  };
+  const body = (height: number): [number, number, number][] =>
+    Array.from({ length: 8 }, (_, bits) => [
+      bits & 1 ? 8 : 2,
+      bits & 2 ? height : height - 0.5,
+      bits & 4 ? 8 : 2,
+    ]);
+  physical.devices = {
+    devices: [],
+    ropes: [],
+    movingSupports: [
+      {
+        id: 'lift',
+        family: 'platform',
+        level: 'fixture',
+        model: 'fixture',
+        assumption: 'phase-free-swept-support',
+        ...sweepSupports('lift', [[body(5)], [body(7)]], 1),
+      },
+    ],
+  };
+  physical.locomotion = {
+    ...physical.locomotion,
+    stamina: {
+      capacity: 8,
+      initial: 8,
+      activationCost: 1,
+      recoveryRate: 0,
+      recoveryDelay: 0,
+      reserve: 0,
+    },
+    dash: { speed: 3, duration: 0.3, cooldown: 0.8, cost: 1 },
+  };
+  const create = (scene: PhysicalInput, walls = scene.ground.options.walls) =>
+    prepareMovingDirect(
+      scene,
+      { geometry: scene.collision, world: createCollisionWorld(scene.collision) },
+      walls,
+      createGoalProjector(scene.ground.surfaces),
+    );
+  const request = {
+    arrival: {
+      id: 'player',
+      state: 'available' as const,
+      cost: 0,
+      position: [5, 5, 5] as [number, number, number],
+    },
+    target: [5, 7, 5] as [number, number, number],
+    interaction: { radius: 0.35, maxVertical: 0.2 },
+    walls: [],
+  };
+  const direct = create(physical),
+    result = direct.plan(request);
+  assert.ok(result.route.status === 'complete');
+  assert.equal(result.route.cost, 2);
+  assert.deepEqual(
+    result.route.segments.map((s) => s.mode),
+    ['rope'],
+  );
+  assert.equal(result.route.schedule?.length, 1);
+  assert.equal(result.route.locomotion?.dashes, 0);
+  assert.equal(
+    createPhysicalVerifier(() => [createPhysicalWorld(physical, 'complete')])(
+      { starts: [request.arrival], goal: request.target, interaction: request.interaction },
+      result.route,
+    ).valid,
+    true,
+  );
+  assert.ok(direct.annotate(result.route, result.connections).length >= 2);
+  const airborne = { ...request, interaction: { radius: 0.5, airborne: true } };
+  const airborneReplay = createPhysicalVerifier(() => [createPhysicalWorld(physical, 'complete')])(
+    { starts: [request.arrival], goal: request.target, interaction: airborne.interaction },
+    result.route,
+  );
+  assert.equal(airborneReplay.valid, false);
+  assert.match(
+    airborneReplay.issues.join(),
+    /Airborne collection must stop at the first goal event/,
+  );
+  assert.equal(direct.plan(airborne).route.status, 'unmapped');
+
+  const reverse = direct.plan({
+    ...request,
+    arrival: { ...request.arrival, position: [5, 7, 5] },
+    target: [5, 5, 5],
+  });
+  assert.ok(reverse.route.status === 'complete');
+  assert.equal(reverse.route.segments[0].connection, 'moving-ride/lift/0/reverse');
+  const nativeInput = structuredClone(physical);
+  const bound = {
+    ...result.connections[0],
+    id: 'bound-ride',
+    points: [
+      [5.2, 5.01, 5],
+      [5.2, 7.01, 5],
+    ] as [number, number, number][],
+    times: [0, 1],
+  };
+  nativeInput.ground.options.connections = [bound];
+  const competing = await preparePhysicalSolver(
+    nativeInput,
+    { ...gangliaV1Defaults, maxCandidates: 0, maxShortcutCandidates: 0 },
+    { effort: 'devices' },
+  );
+  const cheaper = await competing.solve({
+    starts: [request.arrival],
+    goal: request.target,
+    interaction: request.interaction,
+  });
+  assert.ok(cheaper.route.status === 'complete');
+  assert.ok(
+    cheaper.route.cost < result.route.cost,
+    'the native device stage may improve the first direct candidate',
+  );
+  assert.ok(cheaper.route.segments.some((segment) => segment.connection === bound.id));
+  await competing.close();
+  const staged = structuredClone(physical);
+  staged.devices!.movingSupports![0] = {
+    ...staged.devices!.movingSupports![0],
+    ...sweepSupports('lift', [[body(5)], [body(5.4)], [body(7)]], 1),
+  };
+  const stages = create(staged);
+  const first = stages.plan(request, new Set([0]));
+  assert.ok(first.route.status === 'complete');
+  assert.equal(first.route.cost, 2);
+  assert.equal(first.route.segments[0].connection, 'moving-ride/lift/0');
+  const tie = stages.plan(
+    { ...request, arrival: { ...request.arrival, position: [5, 5.21, 5] } },
+    new Set([0]),
+  );
+  assert.ok(tie.route.status === 'complete');
+  assert.equal(tie.route.segments[0].connection, 'moving-ride/lift/0');
+  assert.notEqual(stages.plan(request, new Set([1])).route.status, 'complete');
+  const cache = createPhysicalCache();
+  let collisionBuilds = 0,
+    movingBuilds = 0;
+  const observed: PhysicalCache = {
+    ...cache,
+    async memo(slot, key, create, scope) {
+      const prepared = await cache.memo(slot, key, create, scope);
+      if (!prepared.reused && slot === 'collision') collisionBuilds++;
+      if (!prepared.reused && slot === 'moving') movingBuilds++;
+      return prepared;
+    },
+  };
+  const reused: unknown[] = [];
+  const solver = await preparePhysicalSolver(
+    physical,
+    { ...gangliaV1Defaults, maxCandidates: 0 },
+    {
+      cache: observed,
+      effort: 'devices',
+      observe(_r, _o, d) {
+        reused.push((d as { prepareReuse: { direct?: boolean } }).prepareReuse.direct);
+      },
+    },
+  );
+  const query = {
+    starts: [request.arrival],
+    goal: request.target,
+    interaction: request.interaction,
+  };
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const candidate = await solver.solve(query);
+    assert.equal(candidate.route.status, 'complete');
+    assert.equal(candidate.route.status === 'complete' && candidate.route.cost, 2);
+  }
+  assert.equal(reused[0], false);
+  assert.equal(reused.at(-1), true);
+  assert.equal(collisionBuilds, 1);
+  assert.equal(movingBuilds, 1);
+  await solver.close();
+  cache.clear();
+  const walkingOnly = await preparePhysicalSolver(
+    physical,
+    { ...gangliaV1Defaults, maxCandidates: 0 },
+    { effort: 'walking' },
+  );
+  assert.notEqual((await walkingOnly.solve(query)).route.status, 'complete');
+  await walkingOnly.close();
+  const allPhases: unknown[] = [];
+  const all = await preparePhysicalSolver(
+    physical,
+    {
+      ...gangliaV1Defaults,
+      maxCandidates: 0,
+      maxShortcutCandidates: 0,
+    },
+    { progress: (event) => allPhases.push(event.phase) },
+  );
+  const improved = await all.solve(query);
+  assert.ok(improved.route.status === 'complete');
+  assert.equal(improved.route.cost, 2);
+  assert.ok(
+    !allPhases.includes('narrow-supports'),
+    'a direct incumbent bypasses missing-support fallback',
+  );
+  await all.close();
+  const { createWindowRoute } = await import('#@/src/v1/solver/window-route.ts');
+  type Job = { status: 'ready'; result?: import('#@/src/solver/contract.ts').RouteResult };
+  const windowCache = createPhysicalCache(),
+    hintCounts: number[] = [],
+    steps: number[] = [];
+  const window = createWindowRoute<import('#@/src/solver/resources.ts').WindowRequest, Job>(
+    {
+      query: async () => ({ status: 'ready' }),
+      key: () => 'moving-fixture',
+      ground: async () => physical.ground,
+      route: (job) => job.result ?? {},
+      async solve(job, local, _start, work, options) {
+        hintCounts.push(local.waypoints?.length ?? 0);
+        steps.push(work.step);
+        const solver = await preparePhysicalSolver(
+          physical,
+          { ...gangliaV1Defaults, maxCandidates: 0, maxShortcutCandidates: 0 },
+          {
+            cache: windowCache,
+            effort: work.step === 0 ? 'walking' : work.step === 1 ? 'devices' : 'all',
+          },
+        );
+        try {
+          return {
+            ...job,
+            result: await solver.solve(
+              {
+                starts: [local.arrival],
+                goal: local.target,
+                interaction: local.interaction,
+                waypoints: local.waypoints,
+              },
+              { signal: options?.signal },
+            ),
+          };
+        } finally {
+          await solver.close();
+        }
+      },
+    },
+    { scene: 'fixture', source: {}, ...request },
+    [request.arrival.position, [5, 6, 5], request.target],
+    { tileSpan: 38.4, gridSpan: 32, maxTiles: 16, margin: 8, locomotion: physical.locomotion },
+  );
+  let windowResult = await window.advance();
+  for (let i = 0; i < 10 && windowResult.status === 'pending'; i++)
+    windowResult = await window.advance();
+  assert.equal(windowResult.status, 'complete');
+  assert.ok(
+    hintCounts.every((count) => count > 0),
+    'window-generated discovery hints remain nonempty',
+  );
+  assert.ok(steps.includes(1), 'the devices stage reaches the direct provider graph');
+  if (windowResult.status === 'complete')
+    assert.deepEqual(
+      windowResult.route.segments.map((s) => s.mode),
+      ['rope'],
+    );
+  windowCache.clear();
+
+  assert.notEqual(
+    direct.plan({ ...request, arrival: { ...request.arrival, state: 'locked' } }).route.status,
+    'complete',
+  );
+  assert.notEqual(
+    direct.plan({ ...request, arrival: { ...request.arrival, position: [5.1, 5, 5] } }).route
+      .status,
+    'complete',
+  );
+  assert.notEqual(direct.plan({ ...request, target: [9, 7, 5] }).route.status, 'complete');
+  assert.notEqual(
+    create(physical, [{ min: [4, 5, 4], max: [6, 8, 6], state: 'active' }]).plan(request).route
+      .status,
+    'complete',
+  );
+  const blocked = structuredClone(physical);
+  blocked.devices!.followingSupports = [
+    {
+      id: 'box',
+      level: 'fixture',
+      model: 'fixture',
+      spawn: [5, 4.5, 5],
+      bodies: [body(8)],
+      geometryKind: 'box',
+      maxDistance: 5,
+      initialState: 0,
+      assumption: 'placement-within-activity-range',
+    },
+  ];
+  assert.notEqual(create(blocked).plan(request).route.status, 'complete');
+  const unknown = structuredClone(physical);
+  unknown.devices!.movingSupports![0].transfers.forEach((t) => (t.speed = null));
+  assert.notEqual(create(unknown).plan(request).route.status, 'complete');
+  const tilted = structuredClone(physical);
+  const deck = tilted.devices!.movingSupports![0];
+  deck.family = 'seesaw';
+  deck.surfaces = [
+    {
+      id: 'tilted-deck',
+      vertices: [
+        [2, 5, 2],
+        [2, 5, 8],
+        [8, 7, 8],
+        [8, 7, 2],
+      ],
+    },
+  ];
+  deck.surfacePoses = [[{ body: 0, fromPose: 0, toPose: 0 }]];
+  deck.transfers = [];
+  const slopeRequest = {
+    ...request,
+    arrival: { ...request.arrival, position: [3, 5 + 1 / 3, 4] as [number, number, number] },
+    target: [7, 5 + 5 / 3, 4] as [number, number, number],
+  };
+  const slope = create(tilted).plan(slopeRequest);
+  assert.ok(slope.route.status === 'complete');
+  assert.ok(slope.route.segments.every((segment) => segment.mode === 'walk'));
+  assert.equal(
+    createPhysicalVerifier(() => [createPhysicalWorld(tilted, 'complete')])(
+      {
+        starts: [slopeRequest.arrival],
+        goal: slopeRequest.target,
+        interaction: slopeRequest.interaction,
+      },
+      slope.route,
+    ).valid,
+    true,
+  );
+  assert.notEqual(
+    create(tilted, [{ min: [4, 4, 3], max: [6, 9, 5], state: 'active' }]).plan(slopeRequest).route
+      .status,
+    'complete',
+  );
+  deck.surfacePoses = [[{ body: 0, fromPose: 0, toPose: 1 }]];
+  assert.notEqual(create(tilted).plan(slopeRequest).route.status, 'complete');
+  const circular = structuredClone(physical);
+  circular.devices!.movingSupports![0].circular = {
+    center: [5, 6, 5],
+    axis: [0, 0, 1],
+    radius: 1,
+    halfWidth: 0.2,
+    sagitta: 0.01,
+  };
+  assert.notEqual(create(circular).plan(request).route.status, 'complete');
+});

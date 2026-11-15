@@ -1,5 +1,104 @@
 # Route solver history and validation evidence
 
+## Support and ordered-visit milestone, 2026-11-15
+
+The stable combined package pass now includes 535 tests plus formatting, lint and
+typecheck; revision 8 fixture/source-resolution checks pass 18 focused tests
+subsequently. Narrow-support/goal construction also passes 68 focused tests.
+Independent review closed endpoint, goal-event, placement, stationary-route and
+boost-retiming findings before this checkpoint. The 266 mechanism flow still
+uses solver returns and does not invoke independent whole-route replay.
+
+Ordered visits retain the original XZ and height bands. Hard-leg height bounds
+now reach local windows. If grounded decomposition fails, one full-query attempt
+keeps complete flights and filters candidate events/results through the shared
+ordered-span predicate. Existing grounded successes keep their original strategy.
+
+Raw source faces supply contact proposals only within unused slots of the 32
+source-witness quota. A raw point receives the existing 5 mm foot clearance before
+unchanged standing, walls, capsule, coverage, source-volume and floor checks.
+Navigation erosion alone no longer exhausts the source candidate set.
+
+The narrow-support fallback is a distinct extra geometry pass, not larger original
+search quotas. It runs only after previous failure and no complete candidate,
+retains validated actions and prepared collision, and exposes extra passes,
+per-pass limits, timing and truncation. Walking output spans must close under the
+physical support/body rules, preserve action joins and meet the original query.
+Boost-bearing corrections remain unsupported. A full-provider local 001 proof
+uses all vertical collision in a bounded XZ neighborhood: eight missing caps and
+three clear collection prefixes are admitted. An original-start synthetic route
+passes physical checks. The real original 001 query is running from frozen r2;
+local cap/prefix evidence is not original-start completion.
+
+A float boundary regression exposed a clipped point just outside radius 0.3 by
+roundoff. Construction now advances a bounded fraction along the same chord only
+when the unchanged goal predicate proves the emitted point inside. Time remains
+on that chord, and the matching final airborne event uses the clipped endpoint.
+No radius, physics or evaluator tolerance was enlarged.
+
+Frozen r1 source-start results complete 117,119,121,123,125,127,129,131,133,140,144,
+145. Source contacts 138,141,142,143 remain input-unresolved in r1. Other completed
+additions are 175--181,184,186,187,188. Rechecks 114,134,167 retain their best
+reported costs. Latest per-case evidence reaches 196/266, 23 above the stopped
+173, with no observed reachability/cost regression in that limited rechecked set.
+It is not a full current-source census or latency acceptance.
+
+185's old sampled feet and target intersect static actor 815373095/component 9,
+shape 1112: capsule distance 0.217327 m is below radius 0.35 m. This is not an
+alternative-pose or ride-speed defect. Revision 8 retains the conveyor entity and
+source physics, replacing the contacts by a seed-20261115 fixed-cap pair 1.20717 m
+apart after complete local collision/support/coverage checks. No solver outcome
+or route optimization selected the pair. Original 185 remains in
+negative-controls.json, and input changes cannot be counted as algorithm gains.
+
+The 28 historical main cost increases do not have matched collision inputs.
+A targeted, source-bound 046/050 construction diagnostic proves the old shared
+corridor hits current staticSupport 10100020553, int_move_bamboo, triangle 4822189,
+at both old and supported feet. Both rounded and conservative walls give the
+same obstruction. This rules out simply reusing that old corridor; it does not
+prove the current detour is optimal. Evidence is under diagnostics/old-corridors/.
+
+Optional World validation currently resolves a pre-existing alpha.77 package
+link and missing generated extractor module, so its application typecheck fails.
+The first World test invocation used the main include set and ran no tests.
+Neither is a passing integration check. No dependency, generated source, Rust
+artifact or unrelated application was changed to hide these environment gaps.
+
+Main-control identity was audited read-only: the original 113 alpha.77 package
+and player-route adapter bind to Ganglia 1a617c9 and Atlos 4f17e702. Standalone main
+e9939db differs only in two handoff documents. The ts-progression/control snapshot
+792472cd is alpha.88 with executeRoute and is not the same control. Future matched
+266 comparison must preserve current static facts, scenario setup, source-foot
+resolution and lifecycle; old public APIs, binary codec, ordered waypoints and
+unsupported mechanics require explicit compatibility accounting. No control was
+rerun during this audit.
+
+All raw reports, input revisions, snapshots and per-case provenance remain under
+.local/research/ts-266-20261115/. There is no full 266 acceptance, matched main
+superiority, per-point latency acceptance or authorized remote push.
+
+The source-only 228/229 sampling stratum is horizontal distance 20--180 m,
+absolute height difference 1--30 m, source-resolved collection/chest goals not
+already in the population, and an existing available progression origin in the
+original level. Seed 20261115 ranks target/origin pairs by SHA-256. Selected
+horizontal/vertical differences are 68.501/+17.047 m and 87.608/-19.024 m.
+
+Resource playback deferral matched complete routes on 64 private DAG queries,
+21,940 expansions. Shortcut model/duration/serialization reuse matched 36
+forward-frontier/resumption results including diagnostics. Neither changed
+candidate order or budgets, nor establishes real-map memory/performance acceptance.
+Following layouts cache exact local roof geometry and preserve corridor-clearing
+relocations without implied box exercise. An attempted full-window tail reuse
+failed three admission/partial-evidence tests and was withdrawn completely.
+
+The original 196 diagnostic timed out naturally at 497.488 s, with 197.207 s
+cancellation tail. Inspector capture lasted 23.412 s because synchronous work
+also delayed its stop RPC. findConnections accounted for about 80.6% self samples
+and GC about 17.0%, rather than following-layout baking. No worker was killed or
+replaced. Frozen r1 completed 154/161 as incomplete, then cooperatively interrupted
+165 under severe host swapping to return to one heavy query lane. That interruption
+is retained separately from algorithm failures.
+
 ## Human stop and revised solver-completion criterion, 2026-11-15
 
 The user ended this agent's work and requested handoff. Implementation and testing

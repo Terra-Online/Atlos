@@ -1,5 +1,118 @@
 # Route solver handoff
 
+## TS 266-case resumption, 2026-11-15
+
+This section supersedes the earlier stop snapshot. Work has resumed on
+`chan/algo-progression`, limited to TypeScript strategy and algorithms. Rust
+sources and binaries are unchanged. The target remains all 266 complete solver
+returns, preserving other cases and ultimately beating the historical Ganglia
+main model per point. This target has **not** been achieved or validated.
+
+### Current algorithms and scoring
+
+The previously uncommitted provider transfer graph, supported authored-origin
+admission and source-start setup are retained. The mechanism worker now reports
+solver completion, route cost, preparation and solver time without invoking
+independent whole-route replay. Partial approaches remain incomplete. Shared
+physical evaluation and the separate service benchmark retain their APIs and
+contracts. Source-start resolution uses a bounded collision/support view;
+ordinary scene verifier preparation is unchanged. Both input paths reuse the
+existing exact-numeric JSON/V8 codec, and physical progress is forwarded to the
+mechanism journal and its unchanged cooperative deadline.
+
+Moving-source search also tries walking on a fixed authored cap. Translating
+conveyors intersect the endpoints' feasible pose intervals, require matching cap
+vertices and pose bounds for every retained body, and check walking against the
+single selected cap plus static geometry and following bodies. Annotation retains
+that selected pose. These are stationary support walks, not invented rides; the
+normalized provider does not contain every raw collider vertex.
+
+Resource-search labels retain exact state, edge and controls while materializing
+playback only for the selected chain. Shortcut enumeration reuses fixed vertical
+models, immediately repeated height-pair timing and serialized takeoff prefixes.
+Candidate order and budgets are unchanged. Following layouts reuse roof bakes
+only for identical local geometry, reject impossible poses before spending a
+trial, and can retain a complete corridor-clearing relocation without roof use.
+Mechanism exercise remains a separate field.
+
+Ordered waypoint visits now forward their original height bound into local
+windows. If grounded goal legs fail, one full-query fallback retains complete
+actions and checks the unchanged ordered positional predicate before publication.
+The numerical span predicate is shared with evaluation, without invoking route
+replay during search. Already successful grounded-leg strategies remain unchanged.
+
+Missing source-cap proposals can fill unused source-resolution witness slots;
+the total remains 32 and actual standing/coverage/body/volume/floor checks decide
+admission. Production search also has one bounded missing-goal-support fallback
+only after all earlier strategies fail and no complete candidate was emitted.
+It reuses the prepared terrain and validated actions, charges an extra pass under
+the existing per-pass limits and query deadline, and proves the emitted walking
+spans and original query boundaries. Boost-bearing corrections are conservatively
+unsupported. This changes total failed-query work; it is not an unchanged whole-
+request budget or a speedup claim. Airborne clipping moves a rounded boundary
+point only along its original chord into the unchanged interaction predicate.
+
+### Positive workload and retained evidence
+
+Manifest revision 8 retains 266 targets. Slots 228 and 229 are new source-selected
+collectibles, `228-0pEgqMT` and `229-0LRIze7`; teleport/campfire anchors are origins
+only. Selection seed 20261115 and source-only strata are recorded in the cases,
+before observing solver results. Cases 234 and 240 retain their queries but allow
+ordinary source-window expansion. The four original negative fixtures remain in
+`bench/scenes/mechanisms/negative-controls.json`, outside completion credit.
+Revision 8 also repairs 185 on the same conveyor: its old contacts collide with
+a static overhead mesh. A source-only seed selects a legal one-cap pair 1.20717 m
+apart; the original occupied query remains outside the positive population.
+These input changes are not same-input algorithm gains. Cases 093--099 explicitly
+bind the existing census binary collision repair with unchanged numeric facts.
+
+Evidence is under `.local/research/ts-266-20261115/`. `freeze-and-run.mjs` copies
+source and the private extractor, rebinds its package links and retains source
+input provenance. Snapshot `r1` is independent of later live-source edits. Node
+26.13.0, a 6144 MiB heap, one round and the 300 s cooperative deadline are used;
+there is no service training/warmup, worker replacement or hard-kill timer.
+`aggregate.mjs`, `progress.json` and `points-000-266-solver.html` retain per-case
+history and flag observed reachability/cost regressions. Their latest-per-case
+summary is not a complete current-source census or comparable latency result.
+
+The first combined stable check passed formatting, lint, typecheck and all
+**526 tests** (`/tmp/ganglia-ts266-round1-check.log`); the subsequent stable
+combined pass includes **535 tests**, formatting, lint and typecheck
+(`/tmp/ganglia-ts266-round2-check.log`). Revision 8 fixture/source-resolution
+checks pass all 18 focused tests afterward. Independent scoped review
+found no required production-code findings. Real initial probes completed 175
+and 188. The frozen source-start batch finished: nine formerly unmapped rope descents and
+launch cases 140,144,145 complete. Provider cases 175--181,188 and conveyor
+184,186,187 also complete. Retained 114,134,167 costs do not increase. Latest mixed
+evidence is **196/266**, with 23 additions over the stopped 173; this is not
+full-population validation. Revised 185 and the other changed-input cases remain
+unrun. Snapshot r2 is testing the original 001 query; no completion is yet claimed. The 196
+profiled diagnostic timed out naturally after 497.488 s, with a 197.207 s
+cancellation tail; its hotspot was airborne frontier pairing rather than following
+layout baking. Profiling overhead and severe host swapping prohibit a speedup
+claim. A concurrent focus batch was cooperatively interrupted to return to one
+heavy query lane; its 165 interruption is not an algorithm failure. Four boost
+waypoint cases and retained airborne failures remain active investigations.
+
+The optional World app typecheck is blocked by its existing alpha.77 dependency
+link and missing generated extractor source; no World dependencies were changed.
+The initial World test command used the main Vitest include set and ran no tests;
+it is not validation. The package tests and frozen adapter use the actual workspace
+TS source. Historical 046/050 short corridors also intersect the current exported
+static bamboo collider; their older modeled costs are protection targets, not
+same-input quality controls.
+
+The original main control is alpha.77, bound to Ganglia `1a617c9` and Atlos
+`4f17e702`, retained under `.local/research/retained-profile-20261114/alpha77/`.
+The nearby `ts-progression-20261114/control` snapshot is alpha.88/`792472cd` and
+must not be relabeled as that main model. A future matched-input main comparison
+needs its original player-route adapter and explicit setup/codec/lifecycle binding;
+no new main baseline was run in this milestone.
+
+No full 266-case regression, strict per-point quality gate or latency acceptance
+has passed. Local milestone commits must not be confused with that acceptance;
+no remote push is authorized for this resumed work.
+
 ## Work stopped at the user's request, 2026-11-15 14:36 CST
 
 This is the handoff snapshot. The user ended this agent's solver work and asked

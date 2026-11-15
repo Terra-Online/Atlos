@@ -75,18 +75,31 @@ const restartsSprint = (segments: Segment[]) => {
 export function createLocomotion(options: LocomotionOptions) {
   return {
     initial: createLocomotionRules(options).initial,
-    advance(segment: Segment, state: LocomotionState) {
+    advance(segment: Segment, state: LocomotionState, materialize = true) {
       const walking = segment.mode === 'walk',
         horizontal = walking && horizontalWalk([segment]);
       const choices = walkChoices(walking, horizontal, state);
       return choices
         .flatMap((choice) =>
           (options.dash && choice && horizontal ? [true, false] : [false]).map((dashing) => {
-            const scheduled = scheduleBlock([segment], options, state, choice, dashing);
+            // Vertical joins inspect phases to reject a recovered sprint restart.
+            // Other frontier transitions only need exact clocks and resources.
+            const scheduled = scheduleBlock(
+              [segment],
+              options,
+              state,
+              choice,
+              dashing,
+              materialize || (walking && !horizontal && choice),
+            );
             if (scheduled && walking && !horizontal && restartsSprint(scheduled.segments))
               return null;
             return (
-              scheduled && { ...scheduled, control: { allowSprint: choice, allowDash: dashing } }
+              scheduled && {
+                ...scheduled,
+                segments: materialize ? scheduled.segments : [],
+                control: { allowSprint: choice, allowDash: dashing },
+              }
             );
           }),
         )

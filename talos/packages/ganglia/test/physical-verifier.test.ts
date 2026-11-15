@@ -1049,3 +1049,55 @@ test('retained phase-free contact still requires sphere support and complete bod
   slope.movement.maxSlope = 10;
   assert.equal(createPhysicalWorld(slope, 'complete').configured().standing(supported), null);
 });
+
+test('a prepared physical base must share the collision buffers and cover the source scope', async () => {
+  const { createCollisionWorld } = await import('#@/src/model/collision.ts');
+  const input = snapshot(),
+    base = createCollisionWorld(input.collision);
+  let calls = 0;
+  const world = {
+    ...base,
+    groundAt(...args: Parameters<typeof base.groundAt>) {
+      calls++;
+      return base.groundAt(...args);
+    },
+  };
+  assert.deepEqual(
+    createPhysicalWorld(input, 'complete', { geometry: input.collision, world })
+      .configured()
+      .standing([0, 0.005, 0]),
+    [0, 0.005, 0],
+  );
+  assert.ok(calls > 0, 'the caller-owned terrain index serves physical queries');
+  assert.throws(
+    () =>
+      createPhysicalWorld(input, 'complete', { geometry: structuredClone(input.collision), world }),
+    /Prepared collision/,
+  );
+  const clipped = createCollisionWorld(input.collision, { bounds: { min: [-1, -1], max: [1, 1] } });
+  const bounded = createPhysicalWorld(input, 'complete', {
+    geometry: input.collision,
+    world: clipped,
+  });
+  assert.equal(bounded.covered([0, 0.005, 0], [0, 0.005, 0]), true);
+  assert.equal(bounded.covered([0.95, 0.005, 0], [0.95, 0.005, 0]), false);
+  assert.equal(bounded.covered([2, 0.005, 0], [2, 0.005, 0]), false);
+  assert.equal(createPhysicalWorld(input, 'complete').covered([2, 0.005, 0], [2, 0.005, 0]), true);
+  assert.throws(
+    () =>
+      bounded
+        .configured()
+        .world.groundAt([2, 0.005, 0], { maxUp: 0.1, maxDown: 0.1, maxSlope: 45 }),
+    /Incomplete support coverage/,
+  );
+
+  assert.throws(
+    () =>
+      createPhysicalWorld(
+        input,
+        { bounds: { min: [-2, -2], max: [2, 2] }, tiles: [], tileSpan: 1 },
+        { geometry: input.collision, world: clipped },
+      ),
+    /Prepared collision/,
+  );
+});

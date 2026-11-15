@@ -805,12 +805,6 @@
       "currentExercise": "unrun"
     },
     {
-      "mechanism": "locked-arrival",
-      "selectedCases": ["228-0TGAI0K"],
-      "selectionEvidence": "source/input selection",
-      "currentExercise": "unrun"
-    },
-    {
       "mechanism": "long-range",
       "selectedCases": ["224-0aZUrpW", "225-07VoQbO", "226-03kSVkZ", "227-0RxibO2"],
       "selectionEvidence": "source/input selection",
@@ -1211,12 +1205,6 @@
       "currentExercise": "unrun"
     },
     {
-      "mechanism": "unknown-arrival",
-      "selectedCases": ["229-0sUEnMF"],
-      "selectionEvidence": "source/input selection",
-      "currentExercise": "unrun"
-    },
-    {
       "mechanism": "unresolved-launch",
       "selectedCases": ["230-1cSvWln", "231-030cHQk"],
       "selectionEvidence": "source/input selection",
@@ -1333,7 +1321,9 @@
         "237-03q9Bxy",
         "241-1cxnGbR",
         "242-0Dbczof",
-        "243-07Y4dXk"
+        "243-07Y4dXk",
+        "228-0pEgqMT",
+        "229-0LRIze7"
       ],
       "selectionEvidence": "Source interactions replacing six unrun geometry targets; original geometry remains separately probed",
       "currentExercise": "unrun"

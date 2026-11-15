@@ -104,10 +104,9 @@
   },
   "acceptance": {
     "feasibility": [
-      "independent capsule collision/support replay against original source geometry",
-      "explicit first valid goal event in original interaction volume including airborne/facing constraints",
-      "continuous position/time/control and whole-route stamina/dash/boost accounting",
-      "no partial, coverage-limited or timed-out result classified complete"
+      "solver returns a complete end-to-end timed action route, excluding partial target approaches",
+      "retain physical checks constructing ground, launch, drop, jump and device actions",
+      "solver-reported route cost and solverMs exclude extra independent whole-route replay"
     ],
     "exercise": "Report a separate exercised/not-exercised result for each exercise assertion. A valid alternative does not establish mechanism coverage.",
     "comparison": "Preserve each independently valid old success on matched inputs, setup, budgets and lifecycle: reachability, modeled route time and comparable end-to-end solve time must not regress per point. Route time permits numerical roundoff only. Use three interleaved timing groups, five for suspected regression, with same-version noise controls. Failure-to-success within the common SLO is progress and becomes a new guard. Preserve unconfirmed historical best results as explicit protection targets.",
@@ -120,7 +119,9 @@
   "amendments": [
     "Original conveyor cases v250-184 through v250-187 now use contacts within one source-derived fixed box pose. This replaces long sweep-face contact queries under the corrected stepping-box contract. Other query definitions are unchanged.",
     "Revision 5: all 266 main IDs use real entity tokens. Six unrun non-entity navigation queries are preserved verbatim as separate geometry probes and replaced with source interaction targets. Cases 236 and 242 are explicitly new navigation cases at 50.153m and 185.241m horizontal distance, not equivalent nearby replacements. Historical result IDs remain unchanged; legacy-id-map.csv records the mapping.",
-    "Revision 6: the user supersedes the historical 5% route-cost tolerance with strict per-point quality and comparable latency acceptance. Query/setup definitions are unchanged; results remain in separately bound reports."
+    "Revision 6: the user supersedes the historical 5% route-cost tolerance with strict per-point quality and comparable latency acceptance. Query/setup definitions are unchanged; results remain in separately bound reports.",
+    "Revision 7 (2026-11-15): replace locked/unknown-origin negative slots 228/229 with source-selected collectible targets, chosen before solver output; teleport/campfire anchors remain origins only. Cases 234/240 retain their goals and origins but permit ordinary source-window expansion. Preserve all four prior negative definitions in negative-controls.json; changed inputs cannot be credited as same-input algorithm gains. Cases 093--099 bind the retained exact-numeric V8 collision encoding from the completed census input repair; physical bounds and source facts are unchanged.",
+    "Revision 8 (2026-11-15): case185 keeps its conveyor entity/token but replaces source-sampled contacts intersecting an exported static overhead beam with a fixed-seed legal same-facility contact pair1.207170m apart. Full source-footprint collision/support checks retain the beam, all following bodies and original physics. The occupied original definition remains in negative-controls.json; this is an input repair, not an algorithm gain."
   ],
   "supportPolicy": {
     "vertical": "Source pose caps plus validated bidirectional ride connections, without a fictitious shaft wall.",
@@ -6437,7 +6438,7 @@
           "mode": "frozen-window",
           "region": "map02_lv008",
           "ground": "retained/inputs/regions/map02_lv008/ground.json",
-          "collision": "retained/inputs/regions/map02_lv008/collision.json"
+          "collision": "retained/inputs/regions/map02_lv008/collision.bin"
         }
       },
       "assertions": ["explicit-goal-hit-at-original-interaction"],
@@ -6497,7 +6498,7 @@
           "mode": "frozen-window",
           "region": "map02_lv008",
           "ground": "retained/inputs/regions/map02_lv008/ground.json",
-          "collision": "retained/inputs/regions/map02_lv008/collision.json"
+          "collision": "retained/inputs/regions/map02_lv008/collision.bin"
         }
       },
       "assertions": ["explicit-goal-hit-at-original-interaction"],
@@ -6564,7 +6565,7 @@
           "mode": "frozen-window",
           "region": "map02_lv008",
           "ground": "retained/inputs/regions/map02_lv008/ground.json",
-          "collision": "retained/inputs/regions/map02_lv008/collision.json"
+          "collision": "retained/inputs/regions/map02_lv008/collision.bin"
         }
       },
       "assertions": ["explicit-goal-hit-at-original-interaction"],
@@ -6632,7 +6633,7 @@
           "mode": "frozen-window",
           "region": "map02_lv008",
           "ground": "retained/inputs/regions/map02_lv008/ground.json",
-          "collision": "retained/inputs/regions/map02_lv008/collision.json"
+          "collision": "retained/inputs/regions/map02_lv008/collision.bin"
         }
       },
       "assertions": ["explicit-goal-hit-at-original-interaction"],
@@ -6699,7 +6700,7 @@
           "mode": "frozen-window",
           "region": "map02_lv008",
           "ground": "retained/inputs/regions/map02_lv008/ground.json",
-          "collision": "retained/inputs/regions/map02_lv008/collision.json"
+          "collision": "retained/inputs/regions/map02_lv008/collision.bin"
         }
       },
       "assertions": ["explicit-goal-hit-at-original-interaction"],
@@ -6766,7 +6767,7 @@
           "mode": "frozen-window",
           "region": "map02_lv008",
           "ground": "retained/inputs/regions/map02_lv008/ground.json",
-          "collision": "retained/inputs/regions/map02_lv008/collision.json"
+          "collision": "retained/inputs/regions/map02_lv008/collision.bin"
         }
       },
       "assertions": ["explicit-goal-hit-at-original-interaction"],
@@ -6836,7 +6837,7 @@
           "mode": "frozen-window",
           "region": "map02_lv008",
           "ground": "retained/inputs/regions/map02_lv008/ground.json",
-          "collision": "retained/inputs/regions/map02_lv008/collision.json"
+          "collision": "retained/inputs/regions/map02_lv008/collision.bin"
         }
       },
       "assertions": ["explicit-goal-hit-at-original-interaction"],
@@ -11581,12 +11582,12 @@
         "starts": [
           {
             "id": "conveyor/2800000049/76574/8",
-            "position": [-93.71797180175781, 184.00199913978577, 722.4133579423114],
+            "position": [-93.11374302018986, 184.00199913978577, 714.8584438533383],
             "cost": 0,
             "state": "available"
           }
         ],
-        "goal": [-93.71797180175781, 184.00199913978577, 721.6424899409135],
+        "goal": [-93.11374302018986, 184.00199913978577, 716.0656138687539],
         "interaction": {
           "radius": 0.2,
           "maxVertical": 0.2
@@ -11599,10 +11600,10 @@
           "collection": "movingSupports",
           "index": 68,
           "id": "conveyor/2800000049/76574/8",
-          "surfaceIndex": 54,
-          "capSurfaceIndex": 51,
-          "fromPose": 27,
-          "toPose": 28
+          "surfaceIndex": 43,
+          "capSurfaceIndex": 43,
+          "fromPose": 22,
+          "toPose": 22
         }
       ],
       "setup": {
@@ -11624,18 +11625,18 @@
       "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
       "expectedContactPose": {
         "device": "conveyor/2800000049/76574/8",
-        "fromPose": 27,
-        "toPose": 28,
-        "fraction": 0.5,
+        "fromPose": 22,
+        "toPose": 22,
+        "fraction": 0,
         "roof": [
-          [-94.17078182831278, 184.00199913978577, 722.9915089433598],
-          [-93.26516177520284, 184.00199913978577, 722.9915089433598],
-          [-93.26516177520284, 184.00199913978577, 721.064338939865],
-          [-94.17078182831278, 184.00199913978577, 721.064338939865]
+          [-93.56655304674483, 184.00199913978577, 716.4256138627934],
+          [-92.66093299363489, 184.00199913978577, 716.4256138627934],
+          [-92.66093299363489, 184.00199913978577, 714.4984438592986],
+          [-93.56655304674483, 184.00199913978577, 714.4984438592986]
         ],
         "bounds": {
-          "min": [-94.17078182831278, 181.5019986629486, 721.064338939865],
-          "max": [-93.26516177520284, 184.00199913978577, 722.9915089433598]
+          "min": [-93.56655304674483, 181.5019986629486, 714.4984438592986],
+          "max": [-92.66093299363489, 184.00199913978577, 716.4256138627934]
         },
         "requirement": "One feasible fixed box pose must support the complete borrowed contact run and be the only displayed pose for that use."
       },
@@ -11649,7 +11650,18 @@
       "legacyCaseId": "v250-185",
       "pointToken": "1cH9Nck",
       "tokenSourceId": "2800000049",
-      "tokenRole": "conveyor-group-contact"
+      "tokenRole": "conveyor-group-contact",
+      "inputRevision": {
+        "revision": 8,
+        "classification": "source-contact input repair, not same-input algorithm gain",
+        "originalControl": "negative-controls.json#185-1cH9Nck",
+        "seed": 20261115,
+        "selectionRank": "00f2eade94881b24b17269291a64997c5d8843666dc456f17067d2e93d936e2d",
+        "sourcePose": 22,
+        "sourceSurface": 43,
+        "minimumSeparation": 0.75,
+        "selectionPolicy": "Rank source fixed-cap inset centerline pairs by SHA-256; choose the first full-coverage, capsule-clear, continuously supported pair before any solver query."
+      }
     },
     {
       "id": "186-07fbs4f",
@@ -14345,94 +14357,122 @@
       "tokenRole": "interactive"
     },
     {
-      "id": "228-0TGAI0K",
+      "id": "228-0pEgqMT",
       "group": "boundary-and-rejection",
       "scene": "map01",
       "level": "map01_lv003",
       "target": {
         "kind": "interactive",
-        "id": "300001631",
-        "template": "int_switch_fixable"
+        "id": "300002532",
+        "template": "int_collection_common"
       },
       "query": {
         "starts": [
           {
-            "id": "TpForMap_ent_300001865",
-            "position": [231.4186248779297, 66.715576171875, -574.677734375],
+            "id": "TpForMap_ent_300001874",
+            "position": [346.8579406738281, 27.261001586914062, -684.4609375],
             "cost": 0,
-            "state": "locked"
+            "state": "available"
           }
         ],
-        "goal": [160.16000366210938, 45.21099930107594, -744.780029296875],
+        "goal": [291.7149963378906, 44.30800018310547, -725.1010131835938],
         "interaction": {
-          "radius": 1.7000000476837158
+          "radius": 2
         }
       },
-      "tags": ["locked-arrival"],
+      "tags": ["real-navigation", "uphill"],
       "evidence": [
         {
           "file": "exports/map01-interaction-points.json",
           "collection": "points",
-          "id": "300001631"
+          "id": "300002532"
         },
         {
           "file": "exports/travel-points.json",
           "collection": "points",
-          "id": "TpForMap_ent_300001865"
+          "id": "TpForMap_ent_300001874"
         }
       ],
       "setup": {},
-      "assertions": ["no-complete-route-from-unavailable-arrival"],
+      "assertions": [
+        "explicit-goal-hit-at-original-interaction",
+        "no-target-side-fragment-as-complete",
+        "cross-window-continuity"
+      ],
       "status": "selected-unrun",
       "legacyCaseId": "v250-228",
-      "pointToken": "0TGAI0K",
-      "tokenSourceId": "300001631",
-      "tokenRole": "interactive"
+      "pointToken": "0pEgqMT",
+      "tokenSourceId": "300002532",
+      "tokenRole": "interactive",
+      "selection": {
+        "seed": 20261115,
+        "method": "lowest SHA-256 of seed:slot:target:origin within source-only stratum",
+        "candidateCount": 48,
+        "horizontalDistance": 68.50080336466522,
+        "verticalDifference": 17.046998596191408,
+        "hash": "04591f327205df21c097f447f7530e05c756a15377ad49784043f1b1a5d1b8d7",
+        "replaces": "228-0TGAI0K",
+        "originAvailability": "terminal/completed progression, using an existing available origin from this level"
+      }
     },
     {
-      "id": "229-0sUEnMF",
+      "id": "229-0LRIze7",
       "group": "boundary-and-rejection",
       "scene": "map02",
       "level": "map02_lv010",
       "target": {
         "kind": "interactive",
-        "id": "37900000002",
-        "template": "int_campfire_v2"
+        "id": "37900090220",
+        "template": "int_collection_common"
       },
       "query": {
         "starts": [
           {
-            "id": "TpForMap_ent_37900000002",
-            "position": [371.4010009765625, 237.1409454345703, 1138.069091796875],
+            "id": "TpForMap_ent_37900000014",
+            "position": [1127.08642578125, 340.09185791015625, 1438.0076904296875],
             "cost": 0,
-            "state": "unknown"
+            "state": "available"
           }
         ],
-        "goal": [370.77099609375, 237.15999755859374, 1146.530029296875],
+        "goal": [1040.0419921875, 321.0679870605469, 1447.9300537109375],
         "interaction": {
-          "radius": 3
+          "radius": 2
         }
       },
-      "tags": ["unknown-arrival"],
+      "tags": ["real-navigation", "downhill"],
       "evidence": [
         {
           "file": "exports/map02-interaction-points.json",
           "collection": "points",
-          "id": "37900000002"
+          "id": "37900090220"
         },
         {
           "file": "exports/travel-points.json",
           "collection": "points",
-          "id": "TpForMap_ent_37900000002"
+          "id": "TpForMap_ent_37900000014"
         }
       ],
       "setup": {},
-      "assertions": ["no-complete-route-from-unavailable-arrival"],
+      "assertions": [
+        "explicit-goal-hit-at-original-interaction",
+        "no-target-side-fragment-as-complete",
+        "cross-window-continuity"
+      ],
       "status": "selected-unrun",
       "legacyCaseId": "v250-229",
-      "pointToken": "0sUEnMF",
-      "tokenSourceId": "37900000002",
-      "tokenRole": "interactive"
+      "pointToken": "0LRIze7",
+      "tokenSourceId": "37900090220",
+      "tokenRole": "interactive",
+      "selection": {
+        "seed": 20261115,
+        "method": "lowest SHA-256 of seed:slot:target:origin within source-only stratum",
+        "candidateCount": 132,
+        "horizontalDistance": 87.60814295909857,
+        "verticalDifference": -19.023870849609352,
+        "hash": "0132998a63df45f1cff637c215e5554f4750feffd1fd81adc7ef35826b23f6c0",
+        "replaces": "229-0sUEnMF",
+        "originAvailability": "terminal/completed progression, using an existing available origin from this level"
+      }
     },
     {
       "id": "230-1cSvWln",
@@ -14682,24 +14722,22 @@
           "id": "TpForMap_ent_2100000031"
         }
       ],
-      "setup": {
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map01_lv001",
-          "allowExpansion": false,
-          "ground": "retained/inputs/regions/map01_lv001/ground.json",
-          "collision": "retained/inputs/regions/map01_lv001/collision.json"
-        }
-      },
+      "setup": {},
       "assertions": [
-        "uncovered-target-cannot-be-complete",
-        "report-coverage-gap-separately-from-blocked"
+        "explicit-goal-hit-at-original-interaction",
+        "expand-missing-source-windows",
+        "no-target-side-fragment-as-complete"
       ],
       "status": "selected-unrun",
       "legacyCaseId": "v250-234",
       "pointToken": "0sbwizy",
       "tokenSourceId": "2100020621",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "inputRevision": {
+        "previousMode": "frozen-window",
+        "expansion": "on-demand source export permitted",
+        "originalControl": "negative-controls.json#234-0sbwizy"
+      }
     },
     {
       "id": "235-073LQ6d",
@@ -15011,24 +15049,22 @@
           "id": "TpForMap_ent_10100020319"
         }
       ],
-      "setup": {
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map02_lv001",
-          "allowExpansion": false,
-          "ground": "retained/inputs/regions/map02_lv001/ground.json",
-          "collision": "retained/inputs/regions/map02_lv001/collision.json"
-        }
-      },
+      "setup": {},
       "assertions": [
-        "uncovered-target-cannot-be-complete",
-        "report-coverage-gap-separately-from-blocked"
+        "explicit-goal-hit-at-original-interaction",
+        "expand-missing-source-windows",
+        "no-target-side-fragment-as-complete"
       ],
       "status": "selected-unrun",
       "legacyCaseId": "v250-240",
       "pointToken": "0tT9xH3",
       "tokenSourceId": "10100020582",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "inputRevision": {
+        "previousMode": "frozen-window",
+        "expansion": "on-demand source export permitted",
+        "originalControl": "negative-controls.json#240-0tT9xH3"
+      }
     },
     {
       "id": "241-1cxnGbR",
@@ -17246,5 +17282,6 @@
     "codec": "talos/src/services/routing/pointToken.ts#encodePointIdToken",
     "source": "Numeric target entity ID; conveyor contacts use their real source group actor ID.",
     "geometryProbeCount": 6
-  }
+  },
+  "revision": 8
 }

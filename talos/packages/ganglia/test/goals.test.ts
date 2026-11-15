@@ -6,6 +6,8 @@ import {
   type GoalProjectionOptions,
   createGoalProjector,
   projectGoal,
+  findGoalHit,
+  trimGoalFlight,
 } from '#@/src/model/goals.ts';
 
 const ground = (id: string, x0: number, x1: number, z0 = 0, z1 = 2, y = 0): Surface => ({
@@ -422,5 +424,51 @@ test('closest projection keeps its cache separate, preserves snapshots and valid
   assert.throws(
     () => project.closest(target, { interaction: { radius: 2, facing: [0, 0, 1] } }),
     /facing cone/,
+  );
+});
+
+test('clipped flight endpoints satisfy the unchanged goal predicate after entry-root roundoff', () => {
+  const arc = {
+    points: [
+      [0.9990845216963866, 1.5605555555555557, 0.02615652296038424],
+      [0.9991358588476205, 1.6315432098765433, 0.024689747210845874],
+    ] as Vec3[],
+    times: [0, 0.025],
+  };
+  const target: Vec3 = [1, 1.9, 0],
+    interaction = { radius: 0.3 };
+  const entry = findGoalHit(arc.points, target, interaction)!;
+  assert.equal(findGoalHit([entry.position, entry.position], target, interaction), null);
+  const clipped = trimGoalFlight(arc, target, interaction)!;
+  const endpoint = clipped.points.at(-1)!;
+  assert.ok(findGoalHit([endpoint, endpoint], target, interaction));
+  assert.ok(clipped.times.at(-1)! >= entry.fraction * 0.025);
+  assert.ok(clipped.times.at(-1)! - entry.fraction * 0.025 < 1e-12);
+  assert.equal(
+    trimGoalFlight(
+      {
+        points: [
+          [-1, 0.300000000001, 0],
+          [1, 0.300000000001, 0],
+        ],
+        times: [0, 1],
+      },
+      [0, 0, 0],
+      interaction,
+    ),
+    null,
+  );
+  assert.ok(
+    trimGoalFlight(
+      {
+        points: [
+          [-1, 0.3, 0],
+          [1, 0.3, 0],
+        ],
+        times: [0, 1],
+      },
+      [0, 0, 0],
+      interaction,
+    ),
   );
 });

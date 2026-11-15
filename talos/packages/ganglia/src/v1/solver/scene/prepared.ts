@@ -1,4 +1,5 @@
 import type { Vec3, Wall } from '#@/src/geometry.ts';
+import { visitedWaypoints } from '#@/src/model/waypoints.ts';
 import type { LocomotionOptions } from '#@/src/movement.ts';
 import type { GroundArrival, Route } from '#@/src/route.ts';
 import { checkpoint } from '#@/src/solver/checkpoint.ts';
@@ -17,7 +18,7 @@ import type {
 } from '#@/src/solver/resources.ts';
 import { validateWaypoints } from '#@/src/v1/route/jump-planner.ts';
 import { createCandidatePlanner } from '#@/src/v1/search/candidate-planner.ts';
-import { composeRoutes } from '#@/src/v1/solver/route-result.ts';
+import { composeRoutes, admitAuthoredStart } from '#@/src/v1/solver/route-result.ts';
 import { createWindowGroundCache, createWindowRoute } from '#@/src/v1/solver/window-route.ts';
 
 type Complete = Extract<Route, { status: 'complete' }>;
@@ -70,6 +71,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
     query: RouteQuery,
     options: SolveOptions,
     maxTargetError?: number,
+    rootOrigin = false,
   ): Promise<RouteResult> => {
     validateWaypoints(query.waypoints);
     const excludedEdges: (number | string)[] = [],
@@ -137,11 +139,20 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
           {
             ...config,
             locomotion,
+            maxTargetError,
             transfers: proposal.path?.filter((edge) => edge.unresolved).map((edge) => edge.points),
           },
           groundCache,
         );
         const publish = (route: Complete, evidence: unknown[], isPartial: boolean): RouteResult => {
+          if (rootOrigin && !isPartial)
+            route = admitAuthoredStart(
+              route,
+              arrival,
+              navigation.options.maxVertical,
+              locomotion,
+              evidence,
+            );
           const result: RouteResult = {
             route,
             connections: [],
@@ -231,10 +242,11 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
   };
   const run = async (query: RouteQuery, options: SolveOptions): Promise<RouteResult> => {
     validateWaypoints(query.waypoints);
-    if (!query.waypoints?.length) return runLeg(query, options);
+    if (!query.waypoints?.length) return runLeg(query, options, undefined, true);
 
-    // Public waypoints are ordered destinations. Local window waypoints remain
-    // optional discovery hints, so each required visit owns a separate goal leg.
+    // Grounded legs cheaply satisfy ordinary visits. A failed leg may instead
+    // lie inside an action, so one full-query fallback retains complete flights
+    // and checks only the ordered positional contract before publication.
     const targets = [...query.waypoints, query.goal];
     const pieces: Complete[] = [];
     const connections: RouteResult['connections'] = [];
@@ -272,6 +284,47 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         },
       };
     };
+    const throughWaypoints = (result: RouteResult) => {
+      const route = result.route;
+      if (route.status !== 'complete' || result.partial) return false;
+      const points = route.segments.length
+        ? [
+            route.segments[0].points[0],
+            ...route.segments.flatMap((segment) => segment.points.slice(1)),
+          ]
+        : route.points;
+      return (
+        visitedWaypoints(points, query.waypoints!, navigation.options.maxVertical) ===
+        query.waypoints!.length
+      );
+    };
+    const fallback = async (failed: RouteResult): Promise<RouteResult> => {
+      if (options.signal?.aborted) return failed;
+      const aggregate = (result: RouteResult): RouteResult => ({
+        ...result,
+        diagnostics: {
+          ...result.diagnostics,
+          truncated: failed.diagnostics.truncated || result.diagnostics.truncated,
+          candidateAttempts:
+            (failed.diagnostics.candidateAttempts ?? 0) +
+            (result.diagnostics.candidateAttempts ?? 0),
+        },
+      });
+      const result = await runLeg(query, {
+        ...options,
+        onEvent(event) {
+          if (event.type !== 'candidate') return options.onEvent?.(event);
+          if (throughWaypoints(event.result))
+            options.onEvent?.({ ...event, result: aggregate(event.result) });
+        },
+      });
+      return throughWaypoints(result)
+        ? aggregate(result)
+        : {
+            ...failed,
+            diagnostics: aggregate(result).diagnostics,
+          };
+    };
     for (const [index, goal] of targets.entries()) {
       if (options.signal?.aborted)
         return {
@@ -297,16 +350,19 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         },
         final ? undefined : navigation.options.maxVertical,
       );
-      if (final) return join(result);
+      if (final) {
+        const joined = join(result);
+        return joined.route.status === 'complete' && !joined.partial ? joined : fallback(joined);
+      }
       truncated ||= result.diagnostics.truncated;
       attempts += result.diagnostics.candidateAttempts ?? 0;
       if (result.route.status !== 'complete' || result.partial)
-        return {
+        return fallback({
           route: { status: 'no-verified-route' },
           connections: [...connections, ...result.connections],
           reason: result.reason ?? 'waypoint-unreachable',
           diagnostics: diagnostics(),
-        };
+        });
       pieces.push(result.route);
       arrival ??= result.arrival;
       connections.push(...result.connections);

@@ -17,8 +17,6 @@ import {
 } from '#@/bench/mechanism-suite.ts';
 import { prepareWorkerSolver } from '#@/bench/workers.ts';
 import { readWorkload } from '#@/bench/workload.ts';
-import { verificationDefaults } from '#@/src/evaluation/policy.ts';
-import type { Evaluation } from '#@/src/evaluation/route.ts';
 import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
 import { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
 import type { PhysicalInput, FollowingSupport } from '#@/src/solver/physical.ts';
@@ -95,7 +93,25 @@ test('shared manifest remains a complete population and cannot be mistaken for p
   const file = new URL('../bench/scenes/mechanisms/suite.json', import.meta.url);
   const suite = await readMechanismSuite(fileURLToPath(file));
   assert.equal(suite.cases.length, 266);
-  assert.equal(suite.cases.filter((c) => expectation(c) === 'reject').length, 4);
+  assert.equal(suite.cases.filter((c) => expectation(c) === 'reject').length, 0);
+  assert.ok(suite.cases.every((c) => c.query.starts.some((start) => start.state === 'available')));
+  const raw = JSON.parse(await readFile(file, 'utf8'));
+  assert.ok(
+    raw.cases.every(
+      (c: { target: { template?: string } }) => !/teleport|campfire/.test(c.target.template ?? ''),
+    ),
+  );
+  for (const number of ['234-', '240-'])
+    assert.equal(suite.cases.find((c) => c.id.startsWith(number))!.setup.physical, undefined);
+  const controls = JSON.parse(
+    await readFile(
+      new URL('../bench/scenes/mechanisms/negative-controls.json', import.meta.url),
+      'utf8',
+    ),
+  );
+  assert.equal(controls.cases.length, 5);
+  assert.ok(controls.cases.slice(0, 4).every((c: MechanismCase) => expectation(c) === 'reject'));
+  assert.equal(controls.cases[4].knownIssue.kind, 'occupied-origin-and-target');
   await assert.rejects(readWorkload(fileURLToPath(file)), /Scenario manifests/);
   assert.equal(
     JSON.parse(await readFile(file, 'utf8')).cases[0].query.goal[0],
@@ -103,7 +119,7 @@ test('shared manifest remains a complete population and cannot be mistaken for p
   );
 });
 
-test('diagnostic audit records the configured cooperative deadline and verifier policy without solving', async () => {
+test('diagnostic audit records its cooperative deadline and solver output scoring without solving', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'ganglia-mechanism-audit-'));
   const output = join(directory, 'report.json');
   const suite = await readMechanismSuite(
@@ -131,8 +147,9 @@ test('diagnostic audit records the configured cooperative deadline and verifier 
     const report = JSON.parse(await readFile(output, 'utf8'));
     assert.equal(report.deadlineMs, 60000);
     assert.equal(report.cancellation, 'cooperative-checkpoints');
-    assert.equal(report.deadlineScope, 'dispatch-through-independent-verification');
-    assert.deepEqual(report.verification, { version: 3, policy: verificationDefaults });
+    assert.equal(report.deadlineScope, 'dispatch-through-solver');
+    assert.equal(report.acceptance, 'solver complete route, excluding partial approaches');
+    assert.equal('verification' in report, false);
     assert.equal(report.results[0].status, 'input-unavailable');
     assert.equal(report.invalid, false);
   } finally {
@@ -210,8 +227,11 @@ test('explicit rejections never turn missing assets, timeouts or partial traces 
       segments: [],
     },
   } as RouteResult;
-  assert.equal(classify(c, invalid, { valid: false } as Evaluation), 'invalid-route');
-  assert.equal(classify(c, invalid, { valid: true } as Evaluation), 'unexpected-complete');
+  assert.equal(classify(c, invalid), 'unexpected-complete');
+  c.assertions = [];
+  assert.equal(classify(c, invalid), 'complete');
+  assert.equal(classify(c, { ...invalid, partial: true }), 'incomplete');
+  assert.equal(classify(c, { ...invalid, reason: 'timeout' }), 'complete');
 });
 test('mechanism witnesses are separate from valid alternative routes', () => {
   const c = item();
