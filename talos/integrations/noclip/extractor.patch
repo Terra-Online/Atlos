@@ -12135,16 +12135,3 @@ index 00000000..4ca43fc5
 +	process.exit(0);
 +});
 +send({ type: 'ready', version: 1 });
-diff --git a/packages/extractor/src/commands/oem-views.ts b/packages/extractor/src/commands/oem-views.ts
---- a/packages/extractor/src/commands/oem-views.ts
-+++ b/packages/extractor/src/commands/oem-views.ts
-@@ -162,6 +162,9 @@
- 		};
- 		const source: PackageSource = {
- 			label: scene,
-+			readRanges(path, ranges, signal) {
-+				return Promise.all(ranges.map(range => source.readRange(path, range, signal)));
-+			},
- 			async readFile(path) {
- 				return Uint8Array.from(await readFile(join(root, entry.path, path)));
- 			},

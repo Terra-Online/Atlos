@@ -1,6 +1,6 @@
 # Route solver history and validation evidence
 
-## Delivery synchronization through 7b386443, 2026-11-15
+## Delivery synchronization through a6ea2a3d, 2026-11-15
 
 The user authorized pushing the current strategies/progress to PR#100 and merging
 misakavan/3d-preview, then explicitly requested no comment and paused point work.
@@ -11,7 +11,10 @@ new full-current-source result or a matched historical-main comparison.
 
 Fetched upstream through7b386443 contributes24 commits:12 Rust implementation
 commits, seven diagnostic-record commits, one v119 integration and four mechanism
-service benchmark commits. Rust source/tests equal the incoming tip without local edits.
+service benchmark commits. PR#100 then merged352c62b9 upstream as a6ea2a3d during
+delivery. Its new native-completion counters and Rust-only circular capability
+rejection are retained in the service entry; progress artifacts remain explicit
+frozen snapshots. Rust source/tests equal the incoming tip without local edits.
 The TS algorithm tree equals61d83990. The merge retains revision11 case definitions,
 seven original negative controls, TS circular/free-launch support, native early
 candidate capture and diagnostic provenance. Earlier source-bound results are
@@ -4965,3 +4968,34 @@ The current TS and verifier checkpoints remain available for comparison. Next
 work should replace the local action/geometry search and its prepared state with
 typed Rust modules, preserving training and shared physical verification rather
 than increasing query budgets or changing the verifier to accommodate this port.
+
+
+## Upstream merge of PR 100 at a6ea2a3d, 2026-11-15
+
+The following upstream snapshot describes its merge of352c62b9. The additional
+TS strategies and revision11 progress above remain the current local delivery
+state; its service evidence is independently source-bound.
+
+## Cirisus Node solver merge, 2026-11-15
+
+Merged `352c62b9397a9e738a041c4dce9426bdc7933509` from `chan/algo-progression`.
+The integrated `src/v1` is identical to that source. The v119 archive, renderer,
+transport fixes, Rust path, trained benchmark host and prior canonical evidence
+are retained. Imported historical progress pages are omitted; current-source
+measurements will have their own reports. The selected 266-case revision-10
+definition is unchanged.
+
+The incoming contract treats waypoints as coarse discovery hints. Its Node search
+retains concrete action construction and source contact checks while independent
+physical replay is separate from search. Benchmark replay stays enabled after
+timing, reporting native complete outcomes and physical validity independently.
+Circular-surface and exact phase-free contacts extend the common physical model.
+
+`algorithm-supports.patch` applies after the v119 patches. Redundant v114
+`oem-views.readRanges` and motion-material test compatibility hunks are omitted.
+Preparation identity is `49b578cdba8a04e8b9e6deded4de761148ab9c8ee4e18e14e4d813a75a7e3003`.
+Validation passes package formatting/lint/typecheck and 531 TS tests, 26 retained
+N-API fixtures, 14 focused exporter tests, World main/worker and extractor
+typechecks, and noclip preparation integrity. Native Rust source is unchanged.
+Fresh input preparation and the full Node population measurement are pending;
+the source branch's reported mixed-revision 211/266 campaign is historical evidence.

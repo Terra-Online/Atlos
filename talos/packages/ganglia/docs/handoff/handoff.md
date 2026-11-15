@@ -134,7 +134,7 @@ local milestones include cb834502,7b1575f7,ef9f4445,a59f9dd3,5a2449ed,7486fc10.
 The validated source milestones also include f5e7f5a1 (gait bounds),6852aaa6
 (envelope work),04dc6f8c (airborne publication) and688f5fc5 (fallback accounting).
 The progress/input checkpoint is61d83990. The delivery merge incorporates all24
-upstream commits through 7b386443 while preserving the TS strategies above.
+upstream commits through 7b386443 and the subsequent PR#100 merge a6ea2a3d while preserving the TS strategies above.
 
 ### Upstream synchronization and entrypoints
 
@@ -2574,3 +2574,29 @@ The current TS and verifier checkpoints remain available for comparison. Next
 work should replace the local action/geometry search and its prepared state with
 typed Rust modules, preserving training and shared physical verification rather
 than increasing query budgets or changing the verifier to accommodate this port.
+
+
+## Upstream merge of PR 100 at a6ea2a3d, 2026-11-15
+
+The following upstream snapshot describes its merge of352c62b9. The additional
+TS strategies and revision11 progress above remain the current local delivery
+state; its service evidence is independently source-bound.
+
+## Cirisus Node solver integration, 2026-11-15
+
+`chan/algo-progression` at `352c62b9` is merged. `src/v1` matches that branch:
+provider-backed contact admission, narrow supports, moving-device routes, joint
+following-box search, free launch and retained concrete action composition are
+included. Search uses its action-construction checks; independent physical replay
+runs separately after benchmark timing. `waypoints` are coarse discovery hints,
+as specified by acceptance revision 10, rather than mandatory itinerary stops.
+The retained Rust implementation and its native artifact are unchanged.
+
+Noclip stays at v119. `algorithm-supports.patch` adds circular collider ownership
+and bit-indexed following-box facts; the routing adapter exports explicit
+`freeLaunch`. Integration identity is `49b578cdba8a04e8b9e6deded4de761148ab9c8ee4e18e14e4d813a75a7e3003`.
+The Node coverage run will use freshly bound inputs under
+`.local/data/mechanisms-266-cirisus-v119/`; prior Rust inputs remain intact.
+The trained benchmark lifecycle and cooperative cancellation remain in place.
+Reports now count native completion separately from independent physical validity.
+Full Node measurements are pending.
