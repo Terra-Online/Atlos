@@ -12,6 +12,7 @@ import {
   type JumpOptions,
   jumpConnection,
   jumpDuration,
+  jumpTravel,
   runOffConnection,
   createMotionVariants,
 } from '#@/src/v1/motion/jumps.ts';
@@ -27,6 +28,7 @@ import {
 } from '#@/src/v1/reach/distance-field.ts';
 import { createMotionBounds } from '#@/src/v1/reach/motion-bounds.ts';
 import { createJumpEnvelope, createJumpPredecessor } from '#@/src/v1/reach/reachability.ts';
+import { groundPreparation } from '#@/src/v1/route/ground.ts';
 import { movementGeometry } from '#@/src/v1/route/movement-geometry.ts';
 import type { Edge } from '#@/src/v1/route/routes.ts';
 import { type GroundStraightener, createGroundStraightener } from '#@/src/v1/route/straighten.ts';
@@ -307,6 +309,8 @@ function findConnections(
   reverse = false,
 ): { connections: GroundConnection[]; diagnostics: Diagnostics } {
   validateDiscovery(world, options);
+  const preparation = groundPreparation(options.groundPlanner);
+  const preparedPeak = preparation?.surfaces === surfaces ? preparation.peakSpeed : undefined;
   const { evidence, signature, portalBinding } = discoveryEvidence(world, surfaces, options);
   if (cache) {
     const binding = cache.binding;
@@ -325,6 +329,9 @@ function findConnections(
       options.to,
       options.interaction,
       options.speed,
+      preparedPeak,
+      options.locomotion?.sprintSpeed,
+      options.locomotion?.dash?.speed,
       options.costBound,
       options.boundGoal,
     ]);
@@ -535,7 +542,15 @@ function findConnections(
   const cellOf = (position: Vec3) =>
     position.map((value) => Math.floor(value / diversity)).join('/');
   const durationLimit = frontier ? Infinity : baseline!.cost - baseline!.arrivalCost;
-  let travelSpeed = Math.max(speed, model.maxHorizontalSpeed);
+  // Cost pruning must retain every configured gait; the route scheduler
+  // still proves the actual speed, resource use and elapsed time.
+  let travelSpeed = Math.max(
+    speed,
+    model.maxHorizontalSpeed,
+    preparedPeak ?? speed,
+    options.locomotion?.sprintSpeed ?? speed,
+    options.locomotion?.dash?.speed ?? 0,
+  );
   for (const connection of existing)
     for (let index = 1; index < connection.points.length; index++) {
       const elapsed = connection.times[index] - connection.times[index - 1];
@@ -559,11 +574,18 @@ function findConnections(
     model.startHorizontalSpeed ?? 0,
     options.locomotion?.dash?.speed ?? 0,
   );
-  const airSpeed = Math.max(
-    model.maxHorizontalSpeed,
-    model.startHorizontalSpeed ?? 0,
-    Number.EPSILON,
-  );
+  const launchSpeed = Math.max(model.maxHorizontalSpeed, model.startHorizontalSpeed ?? 0);
+  const airSpeed = Math.max(launchSpeed, Number.EPSILON);
+  // Candidate unions include the existing forward-input jump impulse. Drops
+  // and steered controls retain their sustained-speed construction limits.
+  const travelAt = (duration: number, control?: MotionControl) =>
+    model.maxJumpHeight > 0 &&
+    (!control ||
+      (control.mode === 'jump' &&
+        control.horizontalSplit === undefined &&
+        control.horizontalWaypoint === undefined))
+      ? jumpTravel(launchSpeed, duration, model)
+      : duration * model.maxHorizontalSpeed;
   const withinCostBound = (start: Vec3, end: Vec3, airTime: number) =>
     !Number.isFinite(costLimit) ||
     (Math.max(0, horizontal(from, start) - profile.radius) +
@@ -1110,7 +1132,7 @@ function findConnections(
       );
       if (
         duration === null ||
-        span > duration * model.maxHorizontalSpeed ||
+        span > travelAt(duration) ||
         !withinCostBound(
           start.position,
           end.position,
@@ -1119,7 +1141,10 @@ function findConnections(
         lowerBound(
           start.position,
           end.position,
-          span / Math.max(Number.EPSILON, model.maxHorizontalSpeed),
+          span /
+            (model.maxJumpHeight > 0
+              ? airSpeed
+              : Math.max(Number.EPSILON, model.maxHorizontalSpeed)),
         ) >= durationLimit
       )
         continue;
@@ -1131,7 +1156,7 @@ function findConnections(
       const key = `${start.cell}:${cellOf(end.position)}`;
       const group = pairs.get(key) ?? [];
       cursor?.pairSeen.add(identity!);
-      const uncertain = nominal === null || span > nominal * model.maxHorizontalSpeed;
+      const uncertain = nominal === null || span > travelAt(nominal);
       const compare = (entry: Candidate) =>
         Number(uncertain) - Number(entry.uncertain) || score - entry.score || 0;
       // Retain fine pullbacks for railings without letting one dense triangle
@@ -1356,7 +1381,7 @@ function findConnections(
       const duration = jumpDuration(start.position[1], end.position[1], vertical[mode]);
       if (
         duration === null ||
-        horizontal(start.position, end.position) > duration * model.maxHorizontalSpeed ||
+        horizontal(start.position, end.position) > travelAt(duration, variant) ||
         lowerBound(start.position, end.position, duration) >= durationLimit
       )
         continue;

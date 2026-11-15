@@ -4,7 +4,9 @@ import { test } from 'node:test';
 import { createCollisionWorld } from '#@/src/collision.ts';
 import type { Surface, Vec3 } from '#@/src/geometry.ts';
 import type { GroundArrival, GroundConnection } from '#@/src/route.ts';
-import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
+import { jumpConnection } from '#@/src/v1/motion/jumps.ts';
+import { createGroundPlanner, groundPreparation, planGroundRoute } from '#@/src/v1/route/ground.ts';
+import { findRouteShortcuts } from '#@/src/v1/route/route-shortcuts.ts';
 import type { route } from '#@/src/v1/route/routes.ts';
 import {
   type ShortcutCache,
@@ -464,4 +466,317 @@ test('a frontier batch retains different reachable relay regions within its link
       'complete',
     );
   }
+});
+
+test('shortcut validation and incumbent pruning retain a paid overspeed improvement', () => {
+  const body = { radius: 0.35, height: 1.66 };
+  const surfaces = [floor('source', -2, 2, 0.005, -2, 2), floor('landing', 7.15, 10, 0.005, -2, 2)];
+  const world = createCollisionWorld(
+    geometry([
+      floor('source-body', -2.4, 2.4, 0, -2.4, 2.4),
+      floor('landing-body', 6.75, 10.4, 0, -2.4, 2.4),
+    ]),
+  );
+  const model = {
+    gravity: 40,
+    fallingGravity: 38,
+    maxJumpHeight: 2.1,
+    maxFallingSpeed: 80,
+    apexTime: 0.1,
+    maxHorizontalSpeed: 6.5,
+    startHorizontalSpeed: 9,
+    airOverspeedDeceleration: 5,
+  };
+  const start: Vec3 = [2, 0.005, 0],
+    end: Vec3 = [7.15, 0.005, 0];
+  const arc = jumpConnection(start, end, {
+    ...model,
+    profile: body,
+    walls: [],
+    mode: 'jump',
+    sweep: (...args) => world.sweepCapsule(...args),
+  });
+  assert.ok(arc);
+  assert.ok(arc.times.at(-1)! * model.maxHorizontalSpeed < end[0] - start[0]);
+  const arrival = {
+    id: 'player',
+    position: [-1, 0.005, 0] as Vec3,
+    state: 'available' as const,
+    cost: 0,
+  };
+  const locomotion = {
+    speed: 5,
+    sprintSpeed: 7,
+    sprintAcceleration: 60,
+    stamina: {
+      capacity: 1,
+      initial: 1,
+      activationCost: 1,
+      recoveryRate: 0,
+      recoveryDelay: 0,
+      reserve: 0,
+    },
+  };
+  const ground = { profile: body, walls: [], speed: 5, maxVertical: 0.5, locomotion };
+  const proof = planGroundRoute(surfaces, [arrival], end, {
+    ...ground,
+    connections: [{ id: 'physical', ...arc, state: 'open', requiredGait: 'sprint' }],
+  });
+  assert.ok(proof.status === 'complete');
+  assert.ok(proof.segments.some((segment) => segment.mode === 'walk' && segment.gait === 'sprint'));
+  assert.equal(proof.locomotion!.initial - proof.locomotion!.final, 1);
+  const settings: ShortcutOptions = {
+    ...options,
+    ...ground,
+    model,
+    from: arrival.position,
+    to: end,
+    maxDrop: 1,
+    maxHorizontalDistance: 10,
+  };
+  const frontier = findJumpFrontier(surfaces, world, settings);
+  assert.ok(frontier.diagnostics.candidatePairs > 0);
+  assert.ok(
+    frontier.connections.some((connection) => connection.mode === 'jump'),
+    JSON.stringify(frontier.diagnostics),
+  );
+  const rope: GroundConnection = {
+    id: 'incumbent',
+    mode: 'rope',
+    state: 'open',
+    points: [start, end],
+    times: [0, 0.78],
+  };
+  const baseline = planGroundRoute(surfaces, [arrival], end, { ...ground, connections: [rope] });
+  assert.ok(baseline.status === 'complete');
+  assert.ok(proof.cost < baseline.cost);
+  assert.ok(
+    3 / locomotion.sprintSpeed + (end[0] - start[0]) / model.maxHorizontalSpeed > baseline.cost,
+  );
+  assert.equal(
+    planGroundRoute(surfaces, [arrival], end, {
+      ...ground,
+      locomotion: { ...locomotion, stamina: { ...locomotion.stamina, initial: 0 } },
+      connections: [{ id: 'physical', ...arc, state: 'open', requiredGait: 'sprint' }],
+    }).status,
+    'no-verified-route',
+  );
+  const shortcutCache: ShortcutCache = {};
+  const improved = findJumpShortcuts(
+    surfaces,
+    world,
+    {
+      ...settings,
+      connections: [rope],
+      baseline,
+    },
+    shortcutCache,
+  );
+  assert.ok(
+    improved.connections.some((connection) => connection.mode === 'jump'),
+    JSON.stringify(improved.diagnostics),
+  );
+  const nativeImproved = planGroundRoute(surfaces, [arrival], end, {
+    ...ground,
+    connections: [
+      ...improved.connections.map((connection) => ({
+        ...connection,
+        requiredGait: 'sprint' as const,
+      })),
+      rope,
+    ],
+  });
+  assert.ok(nativeImproved.status === 'complete' && nativeImproved.cost < baseline.cost);
+  const routeGoal: Vec3 = [8.15, 0.005, 0];
+  const routeBaseline = planGroundRoute(surfaces, [arrival], routeGoal, {
+    ...ground,
+    connections: [rope],
+  });
+  assert.ok(routeBaseline.status === 'complete');
+  const routeImproved = findRouteShortcuts(
+    surfaces,
+    world,
+    { ...settings, to: routeGoal, connections: [rope], baseline: routeBaseline },
+    shortcutCache,
+  );
+  assert.ok(
+    routeImproved.connections.some((connection) => connection.mode === 'jump'),
+    JSON.stringify(routeImproved.diagnostics),
+  );
+  const cached: ShortcutCache = {};
+  const lowPeak = {
+    ...settings,
+    costBound: 1,
+    locomotion: { ...locomotion, dash: { speed: 6, duration: 0.3, cooldown: 0.8, cost: 1 } },
+  };
+  assert.deepEqual(findJumpFrontier(surfaces, world, lowPeak, cached).connections, []);
+  const highPeak = {
+    ...lowPeak,
+    locomotion: { ...lowPeak.locomotion, dash: { ...lowPeak.locomotion.dash, speed: 10 } },
+  };
+  const fresh = findJumpFrontier(surfaces, world, highPeak, {});
+  assert.ok(fresh.connections.length > 0);
+  const reused = findJumpFrontier(surfaces, world, highPeak, cached);
+  assert.equal(reused.diagnostics.cursor!.resumed, false);
+  // Standing evidence is physical and remains reusable across gait changes.
+  assert.deepEqual(reused.connections, fresh.connections);
+  assert.deepEqual(reused.diagnostics.limits, fresh.diagnostics.limits);
+  assert.equal(reused.diagnostics.candidatePairs, fresh.diagnostics.candidatePairs);
+  const noImpulse = findJumpFrontier(
+    surfaces,
+    world,
+    { ...highPeak, model: { ...model, startHorizontalSpeed: model.maxHorizontalSpeed } },
+    cached,
+  );
+  assert.equal(noImpulse.diagnostics.cursor!.resumed, false);
+  assert.deepEqual(noImpulse.connections, []);
+  const restored = findJumpFrontier(surfaces, world, highPeak, cached);
+  assert.equal(restored.diagnostics.cursor!.resumed, false);
+  assert.deepEqual(restored.connections, fresh.connections);
+  assert.deepEqual(
+    findJumpFrontier(surfaces, world, { ...settings, maxHorizontalDistance: 5.1 }).connections,
+    [],
+  );
+  assert.deepEqual(
+    findJumpFrontier(surfaces, world, {
+      ...settings,
+      walls: [{ min: [4, -1, -3], max: [5, 5, 3], state: 'active' }],
+    }).connections,
+    [],
+  );
+});
+
+test('provided ground planners retain gait-aware shortcut bounds without repeated locomotion options', () => {
+  const body = { radius: 0.35, height: 1.66 };
+  const surfaces = [floor('source', -2, 2, 0.005, -2, 2), floor('landing', 7.15, 10, 0.005, -2, 2)];
+  const world = createCollisionWorld(
+    geometry([
+      floor('source-body', -2.4, 2.4, 0, -2.4, 2.4),
+      floor('landing-body', 6.75, 10.4, 0, -2.4, 2.4),
+    ]),
+  );
+  const model = {
+    gravity: 40,
+    fallingGravity: 38,
+    maxJumpHeight: 2.1,
+    maxFallingSpeed: 80,
+    apexTime: 0.1,
+    maxHorizontalSpeed: 6.5,
+    startHorizontalSpeed: 9,
+    airOverspeedDeceleration: 5,
+  };
+  const start: Vec3 = [2, 0.005, 0],
+    end: Vec3 = [7.15, 0.005, 0];
+  const arrival = {
+    id: 'player',
+    position: [-1, 0.005, 0] as Vec3,
+    state: 'available' as const,
+    cost: 0,
+  };
+  const locomotion = {
+    speed: 5,
+    sprintSpeed: 7,
+    sprintAcceleration: 60,
+    stamina: {
+      capacity: 1,
+      initial: 1,
+      activationCost: 1,
+      recoveryRate: 0,
+      recoveryDelay: 0,
+      reserve: 0,
+    },
+  };
+  const rope: GroundConnection = {
+    id: 'incumbent',
+    mode: 'rope',
+    state: 'open',
+    points: [start, end],
+    times: [0, 0.78],
+  };
+  const ground = { profile: body, walls: [], speed: 5, maxVertical: 0.5, locomotion };
+  const planner = createGroundPlanner(surfaces, { ...ground, connections: [rope] });
+  const baseline = planner.plan([arrival], end);
+  assert.ok(baseline.status === 'complete');
+  const arc = jumpConnection(start, end, {
+    ...model,
+    profile: body,
+    walls: [],
+    mode: 'jump',
+    sweep: (...args) => world.sweepCapsule(...args),
+  });
+  assert.ok(arc);
+  const proof = planner.plan([arrival], end, {
+    connections: [{ id: 'physical', ...arc, state: 'open', requiredGait: 'sprint' }],
+  });
+  assert.ok(proof.status === 'complete' && proof.cost < baseline.cost);
+  assert.equal(proof.locomotion!.initial - proof.locomotion!.final, 1);
+  const settings: ShortcutOptions = {
+    ...options,
+    profile: body,
+    speed: 5,
+    model,
+    from: arrival.position,
+    to: end,
+    maxDrop: 1,
+    maxHorizontalDistance: 10,
+    groundPlanner: planner,
+    connections: [rope],
+  };
+  assert.equal(settings.locomotion, undefined);
+  const improved = findJumpShortcuts(surfaces, world, { ...settings, baseline });
+  assert.ok(
+    improved.connections.some((connection) => connection.mode === 'jump'),
+    JSON.stringify(improved.diagnostics),
+  );
+  const scheduled = planner.plan([arrival], end, {
+    connections: [
+      rope,
+      ...improved.connections.map((connection) => ({
+        ...connection,
+        requiredGait: 'sprint' as const,
+      })),
+    ],
+  });
+  assert.ok(scheduled.status === 'complete' && scheduled.cost < baseline.cost);
+
+  const low = createGroundPlanner(surfaces, {
+    ...ground,
+    locomotion: { ...locomotion, dash: { speed: 6, duration: 0.3, cooldown: 0.8, cost: 1 } },
+  });
+  const high = createGroundPlanner(surfaces, {
+    ...ground,
+    locomotion: { ...locomotion, dash: { speed: 10, duration: 0.3, cooldown: 0.8, cost: 1 } },
+  });
+  const cache: ShortcutCache = {};
+  const frontier = { ...settings, connections: [], costBound: 1, groundPlanner: low };
+  assert.deepEqual(findJumpFrontier(surfaces, world, frontier, cache).connections, []);
+  assert.equal(cache.geometry!.lengthScale, groundPreparation(low)!.searchSpeed);
+  const fresh = findJumpFrontier(surfaces, world, { ...frontier, groundPlanner: high }, {});
+  assert.ok(fresh.connections.length > 0);
+  const reused = findJumpFrontier(surfaces, world, { ...frontier, groundPlanner: high }, cache);
+  assert.equal(reused.diagnostics.cursor!.resumed, false);
+  assert.deepEqual(reused.connections, fresh.connections);
+  assert.deepEqual(reused.diagnostics.limits, fresh.diagnostics.limits);
+  const geometryBefore = cache.geometry;
+  const fasterSprint = createGroundPlanner(surfaces, {
+    ...ground,
+    locomotion: {
+      ...locomotion,
+      sprintSpeed: 8,
+      dash: { speed: 10, duration: 0.3, cooldown: 0.8, cost: 1 },
+    },
+  });
+  const changed = findJumpFrontier(
+    surfaces,
+    world,
+    { ...frontier, groundPlanner: fasterSprint },
+    cache,
+  );
+  assert.notEqual(cache.geometry, geometryBefore);
+  assert.equal(cache.geometry!.lengthScale, 8);
+  assert.equal(changed.diagnostics.cursor!.resumed, false);
+  assert.deepEqual(
+    changed.connections,
+    findJumpFrontier(surfaces, world, { ...frontier, groundPlanner: fasterSprint }, {}).connections,
+  );
 });

@@ -46,6 +46,7 @@ interface Preparation {
   routeBase: ReturnType<typeof prepareRoutePlanner>;
   constraintsSignature: string;
   searchSpeed: number;
+  peakSpeed: number;
   importedPortals?: GroundOptions['portals'];
 }
 interface Projection {
@@ -87,6 +88,12 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
   // Compare action times at the fastest permitted ground gait. The existing
   // resource scheduler verifies the complete selected motion sequence afterwards.
   const searchSpeed = options.locomotion?.sprintSpeed ?? speed;
+  const peakSpeed = Math.max(
+    speed,
+    options.locomotion?.speed ?? speed,
+    options.locomotion?.sprintSpeed ?? speed,
+    options.locomotion?.dash?.speed ?? 0,
+  );
   const portals = surfacePortals(surfaces);
   const base = surfaceGraph(surfaces, { speed: searchSpeed, portals: options.portals }, portals);
   const routeBase = prepareRoutePlanner(base, { walls, profile });
@@ -417,6 +424,7 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
     routeBase,
     constraintsSignature,
     searchSpeed,
+    peakSpeed,
     importedPortals: options.portals,
   });
   return planner;

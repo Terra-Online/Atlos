@@ -10,6 +10,7 @@ import {
   type JumpOptions,
   jumpConnection,
   jumpDuration,
+  jumpTravel,
   runOffConnection,
   createMotionVariants,
 } from '#@/src/v1/motion/jumps.ts';
@@ -180,12 +181,19 @@ export function findRouteShortcuts(
       const span = Math.hypot(end.point[0] - start.point[0], end.point[2] - start.point[2]);
       const durations = (
         model.maxJumpHeight > 0 ? (['drop', 'jump'] as const) : (['drop'] as const)
-      )
-        .map((mode) => jumpDuration(start.point[1], end.point[1], { ...model, mode }))
-        .filter(
-          (duration): duration is number =>
-            duration !== null && duration > 0 && span <= duration * model.maxHorizontalSpeed,
-        );
+      ).flatMap((mode) => {
+        const duration = jumpDuration(start.point[1], end.point[1], { ...model, mode });
+        if (duration === null || duration <= 0) return [];
+        const reach =
+          mode === 'jump'
+            ? jumpTravel(
+                Math.max(model.maxHorizontalSpeed, model.startHorizontalSpeed ?? 0),
+                duration,
+                model,
+              )
+            : duration * model.maxHorizontalSpeed;
+        return span <= reach ? [duration] : [];
+      });
       if (!durations.length) continue;
       const saving = end.time - start.time - Math.min(...durations);
       if (saving > 1e-7) candidates.push({ start, end, saving });
