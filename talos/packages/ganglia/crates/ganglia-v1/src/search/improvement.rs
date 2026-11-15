@@ -18,7 +18,7 @@ pub(super) fn discover(
         return Ok(0);
     }
     let original = graph.points.len();
-    let mut used = batch(
+    let used = batch(
         graph,
         world,
         origins,
@@ -34,7 +34,26 @@ pub(super) fn discover(
         authority,
         truncated,
     )?;
-    let remaining = budget - used;
+    Ok(used)
+}
+
+// Catalog preparation learns the same fine witnesses once before freezing. It
+// retains physical actions, so fresh requests still perform their own resource
+// search and cannot inherit a training query answer.
+#[allow(clippy::too_many_arguments)]
+pub(super) fn prepare(
+    graph: &mut Graph,
+    world: &crate::world::World,
+    origins: &[Point],
+    goal: Point,
+    budget: usize,
+    max_links: usize,
+    speed: f64,
+    authority: &str,
+    truncated: &mut bool,
+) -> Result<usize, String> {
+    let mut used = 0;
+    let remaining = budget;
     if remaining >= 2 {
         let points = fine_departures(
             graph,

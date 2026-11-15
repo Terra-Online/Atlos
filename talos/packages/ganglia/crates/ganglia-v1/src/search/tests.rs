@@ -455,7 +455,7 @@ fn frontier_keeps_distinct_energy_and_recovery_delay_and_does_not_retain_capped_
         active: true,
     };
     let mut arena = vec![];
-    let mut rows = vec![vec![]];
+    let mut rows = vec![Frontier::default()];
     let mut heap = BinaryHeap::new();
     let mut truncated = false;
     insert(
@@ -489,7 +489,7 @@ fn frontier_keeps_distinct_energy_and_recovery_delay_and_does_not_retain_capped_
         4,
         &mut truncated,
     );
-    assert_eq!(rows[0].len(), 3);
+    assert_eq!(rows[0].labels.len(), 3);
     let mut unique = base.clone();
     unique.state.delay = 2.;
     insert(
@@ -502,7 +502,7 @@ fn frontier_keeps_distinct_energy_and_recovery_delay_and_does_not_retain_capped_
         &mut truncated,
     );
     assert_eq!(arena.len(), 4);
-    for i in 1..100 {
+    for i in (1..100).cycle().take(198) {
         let mut worse = base.clone();
         worse.cost += i as f64;
         worse.state.energy = 0.;
@@ -518,7 +518,7 @@ fn frontier_keeps_distinct_energy_and_recovery_delay_and_does_not_retain_capped_
         );
     }
     assert!(truncated);
-    assert_eq!(rows[0].len(), 4);
+    assert_eq!(rows[0].labels.len(), 4);
     assert_eq!(arena.len(), 4);
     assert_eq!(heap.len(), 4);
 }

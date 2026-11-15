@@ -1943,10 +1943,15 @@ fn solve_world(
     };
     let original_sources = action_sources.len();
     let complete_attempt_budget = max_attempts;
+    let preparation_reserve = if config["catalogTraining"] == true {
+        max_attempts.min(max_links.saturating_mul(8))
+    } else {
+        0
+    };
     let max_attempts = if improving {
         attempts + max_attempts.saturating_sub(attempts).div_ceil(2)
     } else {
-        max_attempts
+        max_attempts.saturating_sub(preparation_reserve)
     };
     let mut target_eligible = vec![true; count];
     let mut interior_landings = std::collections::HashSet::new();
@@ -2140,6 +2145,19 @@ fn solve_world(
             &mut truncated,
         )?;
     }
+    if config["catalogTraining"] == true {
+        attempts += improvement::prepare(
+            &mut graph,
+            world,
+            &origins,
+            goal,
+            preparation_reserve.min(max_attempts.saturating_sub(attempts)),
+            max_links,
+            options.speed.max(options.sprint_speed),
+            &authority,
+            &mut truncated,
+        )?;
+    }
     let discovery = json!({"originalSources":original_sources,"processedSources":source_cursor,
         "queuedSources":action_sources.len(),"pendingSources":action_sources.len()-source_cursor,
         "interiorLandings":interior_landings.len(),"maxInteriorLandings":original_sources});
@@ -2191,7 +2209,7 @@ fn solve_world(
     profile("actions", &started, attempts);
     let max_expanded = budget(&movement["locomotion"]["search"], "maxExpanded", 100_000)?;
     let mut arena = Vec::<Label>::new();
-    let mut rows = vec![Vec::<usize>::new(); graph.points.len()];
+    let mut rows = vec![Frontier::default(); graph.points.len()];
     let mut queue = BinaryHeap::new();
     let mut initial_labels = Vec::new();
     for (node, origin, cost, entry) in seeds {
@@ -2777,16 +2795,43 @@ fn budget(v: &Value, key: &str, default: usize) -> Result<usize, String> {
             .ok_or_else(|| format!("invalid {key} budget"))
     }
 }
+// TS resource search indexes its frontier by continuation state. Use the
+// existing energy/delay equivalence cells to narrow comparisons, then retain
+// the full continuation check inside each bucket. No dominance rule changes.
+#[derive(Clone, Default)]
+struct Frontier {
+    labels: Vec<usize>,
+    buckets: std::collections::HashMap<(i64, i64), Vec<usize>>,
+}
+impl Frontier {
+    fn iter(&self) -> std::slice::Iter<'_, usize> {
+        self.labels.iter()
+    }
+    fn clear(&mut self) {
+        self.labels.clear();
+        self.buckets.clear();
+    }
+}
+
 fn insert(
     candidate: Label,
     arena: &mut Vec<Label>,
-    rows: &mut [Vec<usize>],
+    rows: &mut [Frontier],
     queue: &mut BinaryHeap<Queue>,
     estimates: &[f64],
     max: usize,
     truncated: &mut bool,
 ) {
-    let row = &mut rows[candidate.node];
+    let frontier = &mut rows[candidate.node];
+    let row = &mut frontier.labels;
+    let bucket = frontier
+        .buckets
+        .entry((
+            (candidate.state.energy / 0.25).floor() as i64,
+            (candidate.state.delay / 0.05).floor() as i64,
+        ))
+        .or_default();
+    bucket.retain(|&i| arena[i].active);
     let comparable = |a: &Label, b: &Label| {
         a.stage == b.stage
             && a.boost == b.boost
@@ -2804,13 +2849,13 @@ fn insert(
     };
     let approximate =
         |a: &Label, b: &Label| a.state.energy != b.state.energy || a.state.delay != b.state.delay;
-    if let Some(&i) = row.iter().find(|&&i| {
+    if let Some(&i) = bucket.iter().find(|&&i| {
         arena[i].active && comparable(&arena[i], &candidate) && dominates(&arena[i], &candidate)
     }) {
         *truncated |= approximate(&arena[i], &candidate);
         return;
     }
-    for &i in row.iter() {
+    for &i in bucket.iter() {
         if arena[i].active && comparable(&candidate, &arena[i]) && dominates(&candidate, &arena[i])
         {
             *truncated |= approximate(&candidate, &arena[i]);
@@ -2838,6 +2883,7 @@ fn insert(
         row.truncate(max);
     }
     if arena[index].active {
+        bucket.push(index);
         queue.push(Queue {
             cost: arena[index].cost + SEARCH_WEIGHT * estimates[arena[index].node],
             label: index,

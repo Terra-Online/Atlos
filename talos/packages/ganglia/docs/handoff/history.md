@@ -1,5 +1,47 @@
 # Route solver history and validation evidence
 
+## Prepared fine actions and indexed resource frontier, 2026-11-15
+
+Fine boundary launch/continuous landing discovery now runs during configured
+catalog preparation. It reserves up to `catalogLinks * 8` physical attempts from
+the existing catalog candidate budget; neither training nor query budgets grow.
+The frozen catalog retains proved actions rather than query answers. Runtime
+keeps broad discovery and performs fresh whole-route resource scheduling.
+
+Resource frontiers now index the existing energy/recovery-delay cells, following
+TS's state-indexed resource search. Full continuation comparisons, quantization,
+label caps and selection order remain unchanged. Rejected capped candidates enter
+no index: an extended repeated-candidate regression caught an invalid recycled
+arena ID in the first draft, before acceptance. The associated interrupted run
+`native-indexed-frontier-50/report.json` is invalid and carries no performance claim.
+
+The complete `native-indexed-frontier-final-50/report.json` under `.local/research/`
+trains ten, freezes, warms two and scores fifty once on one worker/lane. All 50
+physically pass, with no timeouts or recoveries. Mean serial service time is
+1268.697836 ms/query. The unchanged cost gates pass over 46 valid retained TS
+routes: geometric mean 0.932941408 and worst 1.015420947. Preparation reaches
+readiness at 64.015427 s, including 57.279614 s catalog training; total end-to-end
+is 139.879857 s. The 794.705 ms/query objective remains unmet. Source digest is
+`b397e554c72cdf366955e0d3e99eccdb802be490c21c88fddd84377a0a89df20`;
+native digest is
+`03328e5dddd5acef8f006b976a8e789a79b3458401aeb29d89e8603e010014f4`.
+All 150 Rust unit tests, two authored integration tests, feature-enabled Clippy,
+Rust formatting and 26 common N-API physical/lifecycle fixtures pass. TS source
+and verifier are unchanged. No TS baseline rerun or remote push occurred.
+
+Training-only fine migration independently passed 50/50 and the cost gates at
+1444.030975 ms/query (`native-prepared-fine-50/report.json`). An incumbent-only
+replacement sampler was rejected: 50/50 physical but 1037.934899 ms/query, geometric
+mean 1.012038282 and worst 1.614110871. Its changed premise was prepared fine
+catalog actions plus TS-style incumbent samples; that still lost useful broad
+coverage (`native-incumbent-guided-50/report.json`). Broad discovery is retained.
+A flat-chord interval-proof trial passed all validation and quality, but offered
+no full-population benefit: 1462.312784 ms/query, identical costs to preparation-only
+(`native-planar-chord-50/report.json`). It was removed. Its broader first draft
+failed existing nonlinear-support bend tests and was narrowed before measurement;
+none of those physical checks were relaxed. Further work should profile the
+remaining selected geometry/resource costs before changing discovery policy.
+
 ## Supplemental TS refinement and proof scheduling, 2026-11-15
 
 Search preserves the broad departure pool and supplements it with body-scale
