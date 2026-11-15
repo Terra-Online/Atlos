@@ -19,6 +19,17 @@ Solver completion and independent physical validity are separate report counts.
 The author's 222/266 mixed-revision campaign is retained in the published progress
 files; it is not a fresh service benchmark result.
 
+The full-population Node service launch at `9e1a7906` terminated on a real V8 heap
+OOM during measured case `017-15jQmmq`, with the original 6144 MiB heap. Sixteen
+measurements returned: ten solver-complete routes (one physically valid, nine
+replay failures) and six timeouts. Case 017 crashed without a result; 249 cases
+were never dispatched. Group error rows for 018--022 are operational fallout,
+not measured query failures. No population latency, success rate or speedup is
+accepted. Evidence is `.local/research/mechanisms-266-node-cirisus-latest/`,
+including the unchanged report, event journal, worker log and validation summary.
+Source stayed frozen; no worker was killed or replaced. All processes have exited.
+Further upstream synchronization is manual at the user's request.
+
 ## Cirisus Node solver integration, 2026-11-15
 
 `chan/algo-progression` at `352c62b9` is merged. `src/v1` matches that branch:

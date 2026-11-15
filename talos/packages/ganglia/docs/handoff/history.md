@@ -1,5 +1,39 @@
 # Route solver history and validation evidence
 
+## Node population launch: operational failure, 2026-11-16
+
+The revision-11 service run at `9e1a79067783bd816e4deb4f33778db949d801b8`
+used Node v26.13.0, 6144 MiB heap, one scenario worker/lane, configured training
+capped at each scenario's size, freeze, two warmups and one measured round with
+a 60-second cooperative deadline. Candidate input revision is
+`a81d74f68cddd9d14ebc363474e8ec17d0e500776e59113cbe454017f5be9ce2`;
+suite SHA-256 is `bc9491ade01cff662e10d03053965238290d3b78dfeb2ffc78e71335827166ff`.
+Source SHA-256 `f78103277a00fa9a7904b2730b5c9f28556e857ce8dbfe2b93d8341ac5731c73`
+stayed unchanged throughout the run.
+
+The third scenario completed seven training requests (including five timeouts),
+froze and completed both warmups. Its first measured request timed out; the next,
+017, exhausted the V8 heap and exited SIGABRT. The fatal log says `Allocation
+failed - JavaScript heap out of memory`; the last major collection retained about
+6032 MiB. No process was killed or replaced. Three scenario preparations were
+recorded; their catalog-added counts are all zero despite executed training.
+
+Sixteen measured requests returned before the crash: ten complete native routes,
+of which one passed physical replay, and six timeouts. The nine replay failures
+are seven unsupported walk endpoints, one missed interaction goal and one
+unsupported/obstructed walk. Case 017 has no result; 018--022 inherited group-level
+execution errors without dispatch; 023--266 remain unattempted. Thus 249 cases
+were not dispatched, and the six operational rows do not count as six scored
+attempts. No full-population timing, success rate or speedup is claimed. This
+service result differs from the author's mixed-revision direct diagnostic census.
+
+Evidence is `.local/research/mechanisms-266-node-cirisus-latest/report.json`,
+its event journal/artifacts, `worker.log` and `validation-summary.json`. Raw report
+SHA-256 is `39c10ac3b6ec0bd49d14346bd2a1fab1b11b3aedd8af0f315e6bc5b7d3ca5c99`.
+Package checks and 552 tests passed before dispatch; no source changes or tests
+were made during the frozen run. The user has stopped continuous tracking of the
+Cirisus branch; further synchronization requires a new explicit request.
+
 ## Latest Node strategy synchronization, 2026-11-16
 
 Integrated `463b737aff952b87b3a113b779ad1fcedfed3943`, including the source
