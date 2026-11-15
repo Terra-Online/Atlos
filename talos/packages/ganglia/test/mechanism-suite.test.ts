@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -110,10 +111,92 @@ test('shared manifest remains a complete population and cannot be mistaken for p
       'utf8',
     ),
   );
-  assert.equal(controls.cases.length, 6);
+  assert.equal(controls.cases.length, 7);
   assert.ok(controls.cases.slice(0, 4).every((c: MechanismCase) => expectation(c) === 'reject'));
   assert.equal(controls.cases[4].knownIssue.kind, 'occupied-origin-and-target');
   assert.equal(controls.cases[5].knownIssue.kind, 'occupied-device-center');
+  assert.equal(raw.revision, 11);
+  const repaired = raw.cases.find((entry: MechanismCase) => entry.id === '250-0HTXfPs');
+  const original = controls.cases[6];
+  assert.equal(original.id, repaired.id);
+  assert.deepEqual(original.query, {
+    starts: [
+      {
+        id: 'player',
+        position: [-753.6831389540318, 236.56261122226294, -1386.8426979152664],
+        cost: 0,
+        state: 'available',
+      },
+    ],
+    goal: [-753.5995646927754, 236.77915376497816, -1386.749716245405],
+    interaction: { radius: 0.2, maxVertical: 0.2 },
+  });
+  assert.equal(original.knownIssue.kind, 'occupied-steep-source-contact');
+  assert.equal(original.knownIssue.allProjectedSupportsBodyBlocked, true);
+  assert.equal(original.knownIssue.sourceTriangle, 628);
+  assert.ok(original.knownIssue.sourceSlopeDegrees > original.knownIssue.maxSlopeDegrees);
+  assert.equal(original.knownIssue.bridgeAvailability, 'unknown');
+  assert.deepEqual(repaired.target, original.target);
+  assert.equal(repaired.target.id, '10100030203');
+  assert.equal(repaired.pointToken, original.pointToken);
+  assert.equal(repaired.tokenSourceId, '10100030203');
+  assert.deepEqual(repaired.assertions, original.assertions);
+  assert.deepEqual(repaired.setup, original.setup);
+  assert.deepEqual(repaired.query.interaction, original.query.interaction);
+  assert.deepEqual(repaired.query.starts[0], {
+    ...original.query.starts[0],
+    position: [-750.8124754961185, 242.92857397079467, -1390.6126245598507],
+  });
+  assert.deepEqual(
+    repaired.query.goal,
+    [-754.9692209716405, 242.92857397079467, -1386.651332564841],
+  );
+  const revision = repaired.inputRevision;
+  assert.equal(revision.revision, 11);
+  assert.equal(revision.originalControl, 'negative-controls.json#250-0HTXfPs');
+  assert.equal(
+    revision.classification,
+    'source-contact input repair, not same-input algorithm gain',
+  );
+  assert.equal(revision.seed, 20261115);
+  assert.equal(revision.sourceActor, repaired.target.id);
+  assert.equal(revision.sourceTriangle, 10);
+  assert.equal(revision.targetTriangle, 189);
+  assert.equal(revision.minimumSeparation, 3);
+  assert.equal(revision.legalCandidates, 8);
+  assert.equal(revision.pose, original.knownIssue.exportedPose);
+  assert.deepEqual(revision.sourceProfile, { ...raw.sources.map02.profile, maxSlope: 46 });
+  assert.equal(revision.source.file, 'exports/map02-traversal-devices.json');
+  assert.match(revision.source.sha256, /^[0-9a-f]{64}$/);
+  assert.match(revision.source.geometrySha256, /^[0-9a-f]{64}$/);
+  for (const [triangle, rank] of [
+    [revision.sourceTriangle, revision.sourceRank],
+    [revision.targetTriangle, revision.targetRank],
+  ])
+    assert.equal(
+      rank,
+      createHash('sha256')
+        .update(`${revision.seed}/${revision.sourceActor}/${triangle}/centroid`)
+        .digest('hex'),
+    );
+  const separation = Math.hypot(
+    ...repaired.query.goal.map((v: number, i: number) => v - repaired.query.starts[0].position[i]),
+  );
+  assert.equal(revision.separation, separation);
+  assert.ok(separation >= revision.minimumSeparation);
+  const csv = await readFile(
+    new URL('../bench/scenes/mechanisms/cases.csv', import.meta.url),
+    'utf8',
+  );
+  const row = csv
+    .split('\n')
+    .find((line) => line.startsWith(repaired.id + ','))!
+    .split(',');
+  assert.deepEqual(row.slice(10, 16).map(Number), [
+    ...repaired.query.starts[0].position,
+    ...repaired.query.goal,
+  ]);
+  assert.equal(Number(row[16]), separation);
   await assert.rejects(readWorkload(fileURLToPath(file)), /Scenario manifests/);
   assert.equal(
     JSON.parse(await readFile(file, 'utf8')).cases[0].query.goal[0],

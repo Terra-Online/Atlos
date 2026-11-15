@@ -1,5 +1,118 @@
 # Route solver history and validation evidence
 
+## Parallel continuation and native publication, 2026-11-15
+
+The user requested more CPU utilization and concurrent point work. Three disjoint
+functional query lanes now run frozen sources independently; each per-run worker
+remains serial. New batches use the original 6144MiB heap and memory-free admission,
+with unchanged 300s cooperative deadline, physics and search limits. Parallel wall
+metrics are not serial service-performance comparisons. The initial 4096MiB
+operational cap proved too small for260/089/099 and was restored; those OOMs remain
+invalid runs, not feasibility failures. Old-source089/110 also OOMed at6144MiB.
+
+Parallel R19/R20 added original081 (cost26.579756634, solver192.780s) and104
+(cost13.833281744, solver64.659s). R21 added196 (cost13.610778057, solver179.547s);
+box stepping exercise remains separately unexercised. 197's earlier record does
+include two final box placements while its route has no stepping contact; the
+previous wording 'without box placement' was inaccurate. Guard204 in R17 actually
+uses a box and improves modeled cost10.279661375 to10.030017277, with no extra replay.
+
+R17 reuses existing jumpTravel at five transfer range/nominal gates. A native paid
+sprint jump5.3m with aircap6.5/start9/decay5 was previously rejected before any arc
+attempt; the corrected discovery reaches the target without changing speed or
+body checks. Revised250 is an actual same-query R16 timeout→R17 complete example
+(cost0.775650974, solver28.532232s). Its original invalid input remains a control.
+R18/R19 similarly correct shortcut reach/cost pruning and cache binding, including
+inherited ground-planner gaits. Fresh/reused candidates and routes match controls;
+standing evidence hit counts may legitimately differ. R17/R19 pass544/546 tests.
+
+093's old R19 query returned naturally after1327.228s solver/1027.804s cancellation
+tail. A bounded18.376s actual CPU sample found58.15%self in createJumpEnvelope's
+bounds predicate, not an IPC deadlock. R20's exact predicate fast path passes
+650172 old-oracle comparisons over forward/reverse, tangencies, large/nonfinite/
+subnormal cases. Synthetic hypot work drops8192→13; microbench timings are not a
+full-map speedup. Its complete package check passes547 tests.
+
+R21 retains nonterminal actions within the same immutable airborne call, bounds
+all newly discovered pool members by existing maxLinks, preserves authored actions
+and complete-prefix incumbents, and releases failed-prefix connection ownership.
+A complete route publishes synchronously only after joint resource timing and
+original goalHit. Boost-local queries are stripped of that root callback. Main and
+narrow searches share safe immediate Promise rejection handling/final drain; a
+synchronous search error retains precedence. Native fixtures show the event before
+later approach optimization and an unchanged final route. Observer errors propagate.
+The final R21 package check passes550 tests plus format/lint/typecheck.
+
+R22 accounts narrow fallback in the existing refinement cache reservation and
+releases local superseded planners before constructing the combined graph. Its
+key includes the actual supports/actions/model/query and parent surfaces; cache
+hits use the cached surfaces with their matching planner. Raw inputs, actions,
+physical checks, graph allowance and discovery budget are unchanged. Native narrow
+and cache replacement/reuse controls pass; the stable full check passes550 tests.
+Real OOM-case improvement remains to be established by independent new runs.
+
+## Bridge contact input correction, revision 11, 2026-11-15
+
+250's original source and goal lie directly on static actor10100030203 triangle628,
+whose 60-degree slope exceeds the unchanged46-degree profile limit. The original
+same-XZ arrival band235.912611198..237.062611222 has no proved legal foot: its two
+support heights and existing foot-clearance samples remain body-blocked by the
+same actor, with at least0.047 m capsule-distance deficit. This is not merely an
+overstrict exact-source-height test or missing navigation. Bridge pose state0/away
+does not prove open/closed status, and no alternate state was invented.
+
+Using the previously authorized invalid-input correction policy, seed20261115
+orders the actor's legal-slope triangle centroids by SHA-256 before physical
+standing checks. Eight legal feet remain. The first source and first later target
+at least3 m away select triangles10/189,5.741982865 m apart. Their native standing
+is proved; no solver outcome selected them and no route is claimed yet. Workload
+revision11 keeps266 positive cases, the same250 ID/token/actor, source cost/state,
+profile, mesh, pose, interaction and mechanism assertions. Only its query/CSV row
+changes. The complete original query, invalid-contact facts, seed and source hashes
+remain in the seventh negative control and per-case inputRevision. It is an input
+repair, not a same-input algorithm gain. Eleven focused mechanism tests, typecheck,
+lint and format pass; a real new250 query remains queued separately.
+
+## Exact component-pair reuse and current queue, 2026-11-15
+
+Original 088 completed in R12. Its native complete artifact was captured at
+15.830553 s solver / 17.254577 s observed elapsed, with cost25.854362564 s. The
+terminal optimization returned cost25.722600604 s at52.282530 s solver time. The
+HTML first showed terminal217/native218, then terminal218/native218. R14's explicit
+guard preserves cost25.722600603906358. This demonstrates distinct availability
+and optimization times, not a population speedup or comparable latency threshold.
+R14 156/163 still timed out at309.730/304.198 s without complete artifacts. Mixed
+progress is218/266,63 observed in the resumed campaign,48 remaining.
+
+Candidate navigation now skips transfer pairs whose other component was already
+fully expanded. Expanding A enumerates A.sources×B.retained and B.sources×A.retained;
+expanding B repeats the same ordered encounters. Key, shortest length, rank and
+first encounter depend only on immutable positions/ordinals, so the planner can
+omit those already bidirectionally materialized edges. The bare one-argument
+transfer query retains complete enumeration. No physical model, input or budget
+changes. Eager controls include duplicate vertices and three expansion orders;
+five private multi-component/history/exclusion queries preserve full proposals,
+paths and edge indices while pair work falls480→240. This is an exact-work result,
+not a full-map performance claim. Ten focused candidate tests pass.
+
+Legacy frozen-window queries now connect the existing PhysicalContext.progress
+hook to the same raw-stage journal handler as scene queries. 037's preceding
+timeout had only aggregated search0/269 after20.179 s, with no discriminating
+physical stage. It returned naturally at325.365 s; no inspector was activated and
+the next worker was untouched. New journaling adds no solve, replay or gate, and
+terminal timeout semantics remain unchanged. The complete stable R15 package
+passes543 tests, typecheck, lint and format; its frozen snapshot also retains tests.
+
+The source-authored coarse027 investigation used a changed, measured premise for
+one further diagnostic: its first million pairs had taken only110 ms, unlike the
+earlier306122-face fine-mesh probe. With a predeclared50M pair cap and unchanged
+other diagnostic limits/640MiB heap,7114 polygons/1484 original portals produced a
+proposal in114 ms preparation +408 ms planning, using3,717,975 pair checks across55
+components. No limit was hit. This is proposal-only evidence: its last unresolved
+endpoint access still spans44.95 m horizontally/down10.28 m, so it supplies no
+proved physical route or stronger multi-hop guide. No new optional coarse model
+contract or physical-input replacement was introduced.
+
 ## Interior translating-board contacts and continued evidence, 2026-11-15
 
 R10 completed original 197 at 24.751004651 s modeled route cost / 203.500674 s solver

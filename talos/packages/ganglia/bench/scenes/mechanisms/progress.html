@@ -47,21 +47,27 @@
     <a href="suite.json">266 点定义</a
     >。原始运行证据保存在本地，路径仅供对应留存记录；此页面不会自动更新。
   </p>
-  <h1>217/266 完整路线产物可用</h1>
+  <h1>222/266 完整路线产物可用</h1>
   <p>
     更新：2026/11/15
-    19:38:36（UTC+8）。这是逐点最新证据汇总，包含未重跑的保留记录，并非同一版本完整验证。本轮已观察
-    55 点，其中 47 点完整。新增完整：44；已观察的可达性回退 0、成本回退
+    22:54:23（UTC+8）。这是逐点最新证据汇总，包含未重跑的保留记录，并非同一版本完整验证。本轮已观察
+    91 点，其中 53 点完整。新增完整：49；已观察的可达性回退 0、成本回退
     0。时间单位为秒；未知求解时间留空。原始Ganglia记录只有历史113点。
   </p>
   <p>
-    228、229已改抽采集目标；234、240允许补齐源窗口；185修正了与固定横梁相交的接触点，143改用同一源设备体积内的合法站立起点。原问题样例另行保留。这些输入修正单列记录；粗路径点已恢复为可选引导，不再作为精确停靠验收。
+    本轮并发上限 3 路独立 worker，新增批次堆上限 6
+    GiB；已经启动的批次沿用记录的配置。并发耗时仅供功能诊断，不能作为串行服务性能比较。资源错误 5
+    项单列保留，不判不可达。
+  </p>
+  <p>
+    228、229已改抽采集目标；234、240允许补齐源窗口；185修正了与固定横梁相交的接触点，143改用同一源设备体积内的合法站立起点。原问题样例另行保留。250
+    按固定种子换成同一桥上可站立的真实接触点，原不可站立斜面样例另行保留。这些输入修正单列记录；粗路径点已恢复为可选引导，不再作为精确停靠验收。
   </p>
   <p>
     完整产物可供路线展示与终局优化分别记录：终局 t/f、路线时间、求解时间沿用已有结果；产物 t/f
     与最佳路线时间保留历史完整结果，并接纳具有原始查询、场景源和 setup
-    一致证据的新原生完整候选。首次候选时间只在新捕获证据存在时显示；旧超时不补判成功。终局完成 217
-    点，新捕获首次候选 13 点。批次无效/中断或捕获错误 5 份报告，候选证据校验问题 0
+    一致证据的新原生完整候选。首次候选时间只在新捕获证据存在时显示；旧超时不补判成功。终局完成 222
+    点，新捕获首次候选 19 点。批次无效/中断或捕获错误 10 份报告，候选证据校验问题 0
     项；这些记录不构成同版全量通过或延迟达标。
   </p>
   <details>
@@ -76,9 +82,39 @@
       &quot;captureErrors&quot;: []
     },
     {
+      &quot;report&quot;: &quot;.local/research/ts-266-20261115/diagnostics/r19-parallel-a2/report.json&quot;,
+      &quot;invalid&quot;: true,
+      &quot;interrupted&quot;: false,
+      &quot;captureErrors&quot;: []
+    },
+    {
+      &quot;report&quot;: &quot;.local/research/ts-266-20261115/diagnostics/r19-parallel-b3/report.json&quot;,
+      &quot;invalid&quot;: true,
+      &quot;interrupted&quot;: false,
+      &quot;captureErrors&quot;: []
+    },
+    {
+      &quot;report&quot;: &quot;.local/research/ts-266-20261115/diagnostics/r19-parallel-c1/report.json&quot;,
+      &quot;invalid&quot;: true,
+      &quot;interrupted&quot;: false,
+      &quot;captureErrors&quot;: []
+    },
+    {
+      &quot;report&quot;: &quot;.local/research/ts-266-20261115/diagnostics/r19-parallel-c2/report.json&quot;,
+      &quot;invalid&quot;: true,
+      &quot;interrupted&quot;: false,
+      &quot;captureErrors&quot;: []
+    },
+    {
       &quot;report&quot;: &quot;.local/research/ts-266-20261115/diagnostics/r2-waypoints/report.json&quot;,
       &quot;invalid&quot;: false,
       &quot;interrupted&quot;: true,
+      &quot;captureErrors&quot;: []
+    },
+    {
+      &quot;report&quot;: &quot;.local/research/ts-266-20261115/diagnostics/r20-parallel-c4-resource-restored/report.json&quot;,
+      &quot;invalid&quot;: true,
+      &quot;interrupted&quot;: false,
       &quot;captureErrors&quot;: []
     },
     {
@@ -176,11 +212,11 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="352c62b9397a9e738a041c4dce9426bdc7933509-snapshot-r10">004-0ahvvCZ</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r21">004-0ahvvCZ</td>
         <td>map01_lv001</td>
         <td>f</td>
         <td></td>
-        <td>87.648</td>
+        <td>217.882</td>
         <td>f</td>
         <td title="">f</td>
         <td></td>
@@ -287,11 +323,11 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="cb8345021a496ec521ebab3f8459bf019b09a9dd-snapshot-r12">011-0Udo2PV</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r21">011-0Udo2PV</td>
         <td>map01_lv002</td>
         <td>f</td>
         <td></td>
-        <td>140.514</td>
+        <td>288.671</td>
         <td>f</td>
         <td title="">f</td>
         <td></td>
@@ -551,17 +587,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">027-056MV71</td>
+        <td title="cb8345021a496ec521ebab3f8459bf019b09a9dd-snapshot-r12">027-056MV71</td>
         <td>map01_lv005</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>300.090</td>
         <td>f</td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">028-0XbBKqE</td>
@@ -717,17 +753,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">037-0snEngh</td>
+        <td title="cb8345021a496ec521ebab3f8459bf019b09a9dd-snapshot-r12">037-0snEngh</td>
         <td>map01_lv007</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>324.314</td>
         <td>f</td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">038-0FKNT4J</td>
@@ -764,17 +800,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">040-11gGRAC</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r19">040-11gGRAC</td>
         <td>map01_lv007</td>
         <td>f</td>
         <td></td>
-        <td>124.778</td>
+        <td>370.964</td>
         <td>f</td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">041-120uaBj</td>
@@ -828,17 +864,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">044-0mJtPOG</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r21">044-0mJtPOG</td>
         <td>map02_lv001</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>425.658</td>
         <td>f</td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">045-0MQgcvj</td>
@@ -1181,17 +1217,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">065-0B4uame</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r19">065-0B4uame</td>
         <td>map02_lv004</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>750.086</td>
         <td>f</td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">066-0gyCGhy</td>
@@ -1448,18 +1484,22 @@
         <td title="首次候选从用例启动到观察到产物的时间"></td>
         <td title="">retained-complete</td>
       </tr>
-      <tr class="">
-        <td title="daab983c">081-0hgydMj</td>
+      <tr class="gain">
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r19">081-0hgydMj</td>
         <td>map02_lv006</td>
-        <td>f</td>
-        <td></td>
-        <td></td>
         <td>t</td>
-        <td title="">f</td>
-        <td></td>
-        <td title="首次候选求解时间；不等于终局时间"></td>
-        <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td>26.580</td>
+        <td>192.780</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r19-parallel-b2/report.json.results/081-0hgydMj-0.json"
+        >
+          t
+        </td>
+        <td>26.580</td>
+        <td title="首次候选求解时间；不等于终局时间">192.625</td>
+        <td title="首次候选从用例启动到观察到产物的时间">194.669</td>
+        <td title="">complete</td>
       </tr>
       <tr class="">
         <td title="daab983c">082-0kWQSL9</td>
@@ -1563,18 +1603,22 @@
         <td title="首次候选从用例启动到观察到产物的时间"></td>
         <td title="">retained-complete</td>
       </tr>
-      <tr class="">
-        <td title="daab983c">088-0ZEYOee</td>
+      <tr class="gain">
+        <td title="7b1575f7d033247fbd58c5521a1212dcae17fb9f-snapshot-r14">088-0ZEYOee</td>
         <td>map02_lv007</td>
+        <td>t</td>
+        <td>25.723</td>
+        <td>54.541</td>
         <td>f</td>
-        <td></td>
-        <td></td>
-        <td>f</td>
-        <td title="">f</td>
-        <td></td>
-        <td title="首次候选求解时间；不等于终局时间"></td>
-        <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r12-static-following/report.json.results/088-0ZEYOee-0.json"
+        >
+          t
+        </td>
+        <td>25.723</td>
+        <td title="首次候选求解时间；不等于终局时间">15.978</td>
+        <td title="首次候选从用例启动到观察到产物的时间">17.389</td>
+        <td title="">complete</td>
       </tr>
       <tr class="">
         <td title="daab983c">089-12sV7lh</td>
@@ -1587,7 +1631,7 @@
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="Scene worker exited unexpectedly (SIGABRT)">error（批次无效）</td>
       </tr>
       <tr class="">
         <td title="daab983c">090-13CZ5Sc</td>
@@ -1624,17 +1668,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">092-0byagyz</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r19">092-0byagyz</td>
         <td>map02_lv007</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>315.478</td>
         <td>f</td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">093-08fw2Xg</td>
@@ -1647,7 +1691,7 @@
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout（批次无效）</td>
       </tr>
       <tr class="">
         <td title="daab983c">094-14JKTkX</td>
@@ -1745,20 +1789,20 @@
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="Scene worker exited unexpectedly (SIGABRT)">error（批次无效）</td>
       </tr>
       <tr class="">
-        <td title="daab983c">100-0jdi5Fc</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r20">100-0jdi5Fc</td>
         <td>map02_lv009</td>
         <td>f</td>
         <td></td>
-        <td>98.490</td>
+        <td>92.869</td>
         <td>f</td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="unmapped">incomplete</td>
       </tr>
       <tr class="">
         <td title="daab983c">101-0HPyJMM</td>
@@ -1811,18 +1855,22 @@
         <td title="首次候选从用例启动到观察到产物的时间"></td>
         <td title="">retained-complete</td>
       </tr>
-      <tr class="">
-        <td title="daab983c">104-0sPkq7L</td>
+      <tr class="gain">
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r20">104-0sPkq7L</td>
         <td>map02_lv009</td>
-        <td>f</td>
-        <td></td>
-        <td></td>
         <td>t</td>
-        <td title="">f</td>
-        <td></td>
-        <td title="首次候选求解时间；不等于终局时间"></td>
-        <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td>13.833</td>
+        <td>64.659</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r20-parallel-a3/report.json.results/104-0sPkq7L-0.json"
+        >
+          t
+        </td>
+        <td>13.833</td>
+        <td title="首次候选求解时间；不等于终局时间">64.650</td>
+        <td title="首次候选从用例启动到观察到产物的时间">65.964</td>
+        <td title="">complete</td>
       </tr>
       <tr class="">
         <td title="daab983c">105-0NXdLWr</td>
@@ -1869,7 +1917,7 @@
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout（批次无效）</td>
       </tr>
       <tr class="">
         <td title="daab983c">108-0Uj2hLx</td>
@@ -1916,20 +1964,20 @@
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="Scene worker exited unexpectedly (SIGABRT)">error（批次无效）</td>
       </tr>
       <tr class="">
-        <td title="daab983c">111-0ZCRHJM</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r19">111-0ZCRHJM</td>
         <td>map02_lv010</td>
         <td>f</td>
         <td></td>
-        <td>294.868</td>
+        <td>371.508</td>
         <td>f</td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">112-0xIqUFU</td>
@@ -2646,11 +2694,11 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r6">154-1ctEzjf</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r20">154-1ctEzjf</td>
         <td>map01_lv007</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>296.562</td>
         <td></td>
         <td title="">f</td>
         <td></td>
@@ -2676,17 +2724,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">156-0wPCdoe</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r20">156-0wPCdoe</td>
         <td>map02_lv006</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>300.910</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">157-0gcAdR9</td>
@@ -2791,17 +2839,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">163-0AvUSn4</td>
+        <td title="7b1575f7d033247fbd58c5521a1212dcae17fb9f-snapshot-r14">163-0AvUSn4</td>
         <td>map02_lv006</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>293.831</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">164-17jhKR2</td>
@@ -3343,18 +3391,22 @@
         <td title="首次候选从用例启动到观察到产物的时间"></td>
         <td title="">retained-complete</td>
       </tr>
-      <tr class="">
-        <td title="352c62b9397a9e738a041c4dce9426bdc7933509-snapshot-r10">196-0s4x24L</td>
+      <tr class="gain">
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r21">196-0s4x24L</td>
         <td>map01_lv001</td>
-        <td>f</td>
+        <td>t</td>
+        <td>13.611</td>
+        <td>179.547</td>
         <td></td>
-        <td>302.161</td>
-        <td></td>
-        <td title="">f</td>
-        <td></td>
-        <td title="首次候选求解时间；不等于终局时间"></td>
-        <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="timeout">timeout</td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r21-parallel-b5/report.json.results/196-0s4x24L-0.json"
+        >
+          t
+        </td>
+        <td>13.611</td>
+        <td title="首次候选求解时间；不等于终局时间">179.542</td>
+        <td title="首次候选从用例启动到观察到产物的时间">182.856</td>
+        <td title="">complete</td>
       </tr>
       <tr class="gain">
         <td title="352c62b9397a9e738a041c4dce9426bdc7933509-snapshot-r10">197-0AmLGv5</td>
@@ -3374,56 +3426,56 @@
         <td title="">complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">198-0yyZ8SK</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r21">198-0yyZ8SK</td>
         <td>map01_lv003</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>318.374</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
-        <td title="daab983c">199-0aY6nQ5</td>
+        <td title="cb8345021a496ec521ebab3f8459bf019b09a9dd-snapshot-r12">199-0aY6nQ5</td>
         <td>map02_lv007</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>292.000</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
-        <td title="daab983c">200-0z4bAv3</td>
+        <td title="ef9f4445e4631d1653936981eb42db4abd4310ac-snapshot-r15">200-0z4bAv3</td>
         <td>map01_lv006</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>307.914</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
-        <td title="daab983c">201-0OZJcfx</td>
+        <td title="ef9f4445e4631d1653936981eb42db4abd4310ac-snapshot-r15">201-0OZJcfx</td>
         <td>map01_lv001</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>297.555</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">202-0HFwdHR</td>
@@ -3443,34 +3495,34 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">203-08oJZYk</td>
+        <td title="ef9f4445e4631d1653936981eb42db4abd4310ac-snapshot-r15">203-08oJZYk</td>
         <td>map01_lv003</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>302.620</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
-        <td title="daab983c">204-19rt1HH</td>
+        <td title="5a2449ed9ce129e1c787eae9a7d9188ee6044fe7-snapshot-r17">204-19rt1HH</td>
         <td>map02_lv007</td>
         <td>t</td>
-        <td>10.280</td>
-        <td></td>
+        <td>10.030</td>
+        <td>135.651</td>
         <td></td>
         <td
-          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/204-19rt1HH/report.json.results/204-19rt1HH-0.json"
+          title=".local/research/ts-266-20261115/diagnostics/r17-guard-resources/report.json.results/204-19rt1HH-0.json"
         >
           t
         </td>
-        <td>10.280</td>
-        <td title="首次候选求解时间；不等于终局时间"></td>
-        <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">retained-complete</td>
+        <td>10.030</td>
+        <td title="首次候选求解时间；不等于终局时间">135.649</td>
+        <td title="首次候选从用例启动到观察到产物的时间">144.470</td>
+        <td title="">complete</td>
       </tr>
       <tr class="">
         <td title="daab983c">205-06MbNfb</td>
@@ -3490,17 +3542,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">206-0Bkr6wP</td>
+        <td title="ef9f4445e4631d1653936981eb42db4abd4310ac-snapshot-r15">206-0Bkr6wP</td>
         <td>map02_lv002</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>292.261</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">207-0oi4pkE</td>
@@ -3639,17 +3691,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">215-0NWOiBC</td>
+        <td title="ef9f4445e4631d1653936981eb42db4abd4310ac-snapshot-r16">215-0NWOiBC</td>
         <td>map02_lv002</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>292.095</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">216-0SK2QRR</td>
@@ -3720,17 +3772,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">220-0S2QOjf</td>
+        <td title="ef9f4445e4631d1653936981eb42db4abd4310ac-snapshot-r16">220-0S2QOjf</td>
         <td>map01_lv001</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>296.961</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">221-07e939z</td>
@@ -3784,63 +3836,63 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">224-0aZUrpW</td>
+        <td title="5a2449ed9ce129e1c787eae9a7d9188ee6044fe7-snapshot-r17">224-0aZUrpW</td>
         <td>map01_lv001</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>296.489</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
-        <td title="daab983c">225-07VoQbO</td>
+        <td title="5a2449ed9ce129e1c787eae9a7d9188ee6044fe7-snapshot-r17">225-07VoQbO</td>
         <td>map02_lv001</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>23.182</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="no-global-candidate">incomplete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">226-03kSVkZ</td>
+        <td title="5a2449ed9ce129e1c787eae9a7d9188ee6044fe7-snapshot-r17">226-03kSVkZ</td>
         <td>map01_lv002</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>8.243</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="no-global-candidate">incomplete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">227-0RxibO2</td>
+        <td title="5a2449ed9ce129e1c787eae9a7d9188ee6044fe7-snapshot-r17">227-0RxibO2</td>
         <td>map02_lv002</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>320.513</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
-        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r7">228-0pEgqMT</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r19">228-0pEgqMT</td>
         <td>map01_lv003</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>298.169</td>
         <td></td>
         <td title="">f</td>
         <td></td>
@@ -4019,17 +4071,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">239-0hp34zJ</td>
+        <td title="5a2449ed9ce129e1c787eae9a7d9188ee6044fe7-snapshot-r18">239-0hp34zJ</td>
         <td>map02_lv003</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>292.938</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="gain">
         <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r7">240-0tT9xH3</td>
@@ -4066,17 +4118,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">242-0Dbczof</td>
+        <td title="5a2449ed9ce129e1c787eae9a7d9188ee6044fe7-snapshot-r18">242-0Dbczof</td>
         <td>map02_lv009</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>298.585</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">243-07Y4dXk</td>
@@ -4096,17 +4148,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">244-08n80Ny</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r19">244-08n80Ny</td>
         <td>map01_lv005</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>298.156</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">245-0s0ynRr</td>
@@ -4193,18 +4245,22 @@
         <td title="首次候选从用例启动到观察到产物的时间"></td>
         <td title="">retained-complete</td>
       </tr>
-      <tr class="">
-        <td title="daab983c">250-0HTXfPs</td>
+      <tr class="gain">
+        <td title="5a2449ed9ce129e1c787eae9a7d9188ee6044fe7-snapshot-r17">250-0HTXfPs</td>
         <td>map02_lv001</td>
-        <td>f</td>
+        <td>t</td>
+        <td>0.776</td>
+        <td>28.532</td>
         <td></td>
-        <td></td>
-        <td></td>
-        <td title="">f</td>
-        <td></td>
-        <td title="首次候选求解时间；不等于终局时间"></td>
-        <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r17-250-range/report.json.results/250-0HTXfPs-0.json"
+        >
+          t
+        </td>
+        <td>0.776</td>
+        <td title="首次候选求解时间；不等于终局时间">28.531</td>
+        <td title="首次候选从用例启动到观察到产物的时间">39.509</td>
+        <td title="">complete</td>
       </tr>
       <tr class="">
         <td title="daab983c">251-0ekRne8</td>
@@ -4224,30 +4280,30 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">252-0AKLjci</td>
+        <td title="5a2449ed9ce129e1c787eae9a7d9188ee6044fe7-snapshot-r18">252-0AKLjci</td>
         <td>map02_lv002</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>291.422</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
-        <td title="daab983c">253-0b7WQJc</td>
+        <td title="5a2449ed9ce129e1c787eae9a7d9188ee6044fe7-snapshot-r18">253-0b7WQJc</td>
         <td>map01_lv003</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>329.775</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">254-0UUbKsh</td>
@@ -4284,17 +4340,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">256-0YYvlTn</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r19">256-0YYvlTn</td>
         <td>map02_lv002</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>293.501</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">257-0ihnk8x</td>
@@ -4314,17 +4370,17 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="daab983c">258-191vMgJ</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r19">258-191vMgJ</td>
         <td>map01_lv001</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>304.217</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">259-1asm7dr</td>
@@ -4337,33 +4393,33 @@
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="execution-error:Collision query exceeds indexed XZ bounds">error（批次无效）</td>
       </tr>
       <tr class="">
-        <td title="daab983c">260-06gyJ7F</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r20">260-06gyJ7F</td>
         <td>map01_lv003</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>380.546</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
-        <td title="daab983c">261-02u3Zc9</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r19">261-02u3Zc9</td>
         <td>map01_lv001</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>296.951</td>
         <td></td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="">unrun-current</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">262-0VmDkfU</td>

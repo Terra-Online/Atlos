@@ -1,177 +1,134 @@
 # Route solver handoff
 
-## Current visualization-route contract, 2026-11-15
+## Current visualization-route contract and parallel work, 2026-11-15
 
-This section supersedes the earlier certificate-oriented checkpoints. The user
-requires a complete source-to-goal route with concrete timed actions that can be
-drawn in the 3D map. All 266 remain targets, with existing completions/costs
-protected. TypeScript strategies only; no Rust changes are authorized. The user
-authorized pushing the 266-case definitions/progress and commenting on PR #100.
-The all-266 and historical-main-superiority objectives remain **unachieved**.
+The active objective is completing all 266 cases with TypeScript strategies and
+concrete timed routes drawable in the 3D map, protecting existing completions and
+modeled costs. Rust and generated `.cache/noclip` source are outside this task.
+All-266 completion and matched historical-main superiority remain **unachieved**.
 
-### Acceptance and implementation
+### Completion and implementation contracts
 
-Completion is a complete, nonpartial native route for the actual source and goal.
-Keep source availability/identity/cost, finite segment coordinates/times,
-continuous action joins, original goal volumes and the modeled resource schedule.
-Existing action-construction checks remain. Independent physical replay is an
-optional diagnostic, never a default completion or repeated subplan gate.
+A complete, nonpartial native source-to-goal route is usable. Preserve available
+origin identity/cost, original goal volumes, finite continuous actions and the
+modeled resource schedule. Keep the physical checks constructing actions.
+Independent whole-route physical replay is optional diagnostic work, not a default
+completion gate. `RouteQuery.waypoints` remain optional coarse discovery hints.
+The removed mandatory-stop graph, full-walking reconstruction/grid repair layer,
+strict native-height correction and blanket boost rejection must not return.
 
-Three Astra-medium audits confirmed that the added full-walking proof rejected
-ordinary approximate navigation heights and repeated validation at publication.
-These wrappers, the grid repair/budget/cache layer and blanket boost rejection
-were removed from default search. Narrow-support proposals still use source
-geometry; the resulting routes use the existing native navigation/action planner.
-Source-contact admission is local and provider-backed, with cheap source binding;
-it does not reconstruct, retime or sweep the whole returned route.
+Resource search defers playback to the selected chain. Shortcut caches retain
+fixed-model/exact-height/serialization reuse. Provider direct routes compete with
+native incumbents; callable preparation caches are excluded from report data.
+Free launch requires explicit source `freeLaunch` facts, authored height and known
+run-air speed. Maintained noclip TS patches export that flag; missing facts do not
+grant free steering. No live-game execution certificate is claimed.
 
-`RouteQuery.waypoints` are optional coarse discovery hints. The owning jump planner
-and integration callers explicitly use that contract. Mandatory grounded legs,
-exact waypoint visits, the required-visit graph and evaluator hint-visit gates
-were removed. No human itinerary was requested. A future mandatory-stop feature
-would need separate explicit intent, not reinterpretation of this existing field.
+Original endpoint windows precede oversized coarse detours only for source-owned
+known moving transfers/ropes. Misses resume the coarse strategy. Noncovering target
+approaches stay partial and walking-only. A tail already proven to cover the root
+retains the original arrival identity/cost. Translating supports can board a proved
+interior pose within the original source band, preserving static collision, speed,
+remaining ride time and actual board/leave display boxes.
 
-Resource labels still defer playback to the selected chain. Shortcut enumeration
-retains the fixed-model, exact-height and serialization optimizations. Provider
-moving routes and same-pose walking retain complete candidates while comparing
-native costs. A direct winner now populates the known incumbent, avoiding
-unnecessary following-placement recovery. Diagnostics expose the actual physical
-request/source/effort. Callable prepared caches are excluded from diagnostic data.
+Transfer and shortcut range tests now retain the model's existing sprint impulse
+and overspeed decay through canonical `jumpTravel`. Actual velocity, wall/body,
+gait, stamina and configured search limits are unchanged. Optimistic cost bounds
+include configured sprint/dash peaks, including a provided ground planner's
+internal peak. Gait-dependent cursor bindings restart when those bounds change;
+independent standing evidence remains reusable. Bounded region validation starts
+from the source and subsequently shares failed work with the goal side.
 
-Free launch is explicit: `DeviceFacts.freeLaunch` is derived from source
-`free_jump=true`, known electric policy and locked height limit. Absence does not
-mean free steering. The model uses authored height, known run-air speed, authored
-reference aim plus eight bounded headings, and existing landing/trajectory checks.
-Fixed-launch behavior remains unchanged. This is a planning model, not live-game
-physics certification. Maintained TS adapter patches and the private experiment
-clone expose the flag; generated `.cache/noclip` was not edited.
+The spatial envelope predicate has a measured numerical fast path with the same
+accepted boxes: original epsilon/height limits/table lookup remain, exceptional
+magnitudes and tangencies fall back to `hypot`. Full-source parity covers 650,172
+cases. Expanded candidate components skip already fully materialized pair work;
+proposal order, paths and edge indices match controls.
 
-### Evidence, point work and open issues
+Airborne entry searches share a query-local nonterminal action pool bounded by
+existing `maxLinks`, with original authored actions preserved. Prefix cache versions
+follow the pool and retain valid complete incumbents; failed prefixes do not retain
+unused action arrays. A fully retimed original-goal route emits a candidate before
+further departure optimization. Boost-local queries cannot publish as root results.
+Both main and narrow searches use the same immediate-rejection/drain emission
+handler. Terminal errors and cooperative timeouts remain separate from candidates.
 
-The latest tracked source-bound per-case snapshot is **217/266** with 55 cases observed in the
-resumed campaign. This includes retained older completions and multiple frozen
-revisions, not a complete current-source census. R6 added 148,161,165,218; R7 added
-141 with two launch segments, route cost 4.088485514 s and solver time 10.197 s.
-Original 001 completed in R5, route cost 30.794364748 s, solver time 93.797 s.
-R7 then completed revised collectible 229 (14.850936688 s route, 31.622 s solver)
-and source-expansion case 234 (23.974124613 s route, 34.592 s solver).
-Subsequent R7 240 completed at 53.860977580 s route / 105.213 s solver. R8 166
-completed at 3.359996796 s route / 34.629 s solver, bringing live mixed evidence to
-213/266. R9 then completed 116 (3.435801215 s route / 5.644 s solver) and 173
-(8.039365348 s route / 13.307 s solver). Its 166 guard keeps cost 3.359996796 s.
-The earlier 211-completion snapshot remains frozen at commit 352c62b9.
-R10 also completed original 197 (24.751004651 s route / 203.501 s solver), using
-an alternative without box placement. R11 completed original 182 at 1.976915860 s
-route / 64.948 s solver. Mechanism exercise remains separate from route completion.
-No observed cost/reachability regression is currently flagged in the tested set;
-this does not validate all retained points or comparable latency.
+Narrow-support fallback now reserves its combined planner through the existing
+refinement cache allowance, dropping superseded local planner owners before build.
+Raw geometry, validated actions, collision caches and search budgets are unchanged.
+The existing 524,288 surface-reference policy accounts for that replacement.
 
-R11's combined package check passed formatting, lint, typecheck and **541 tests**
-(`/tmp/ganglia-ts266-r11-check.log`), including the translating interior boarding
-regression. The subsequent R13/R14 bundle passes **542 tests** plus the same checks
-(`/tmp/ganglia-ts266-r14-check.log`), but remains an uncommitted strategy experiment.
-R9/R10 passed 539/540 tests respectively. Adapter normalization passes three focused
-tests. No all-population claim follows from package checks.
+### Current evidence and validation
 
-166's R7 journal shows a synthetic `target-approach` source, rather than actor
-2100010064's actual source. Optional non-covering tails now yield after walking
-instead of consuming the deadline in device/placement searches, allowing the
-original-source pipeline to run. Root-covering tails keep their existing stages.
-R8 166 now binds this change to a complete native moving-support rope route. Its
-source, original target and modeled cost remain protected by the live aggregate.
+Latest per-case evidence is **222/266 complete native artifacts**,
+222 terminal completions and 44 unfinished at 2026-11-15T14:52:28.801Z.
+The resumed campaign has 91 compatible observed cases. These records mix
+retained results and frozen revisions; they are not a current-source full census.
+No reachability/cost regression is flagged in the rechecked subset, not all cases.
 
-R9 gives an available, source-owned known moving transfer or rope one actual
-source-to-goal window when both endpoints fit the existing tile limit but the
-coarse guide does not. Raw provider facts only select this opportunity; the
-existing native solver still constructs and admits actions. A missed walking/device
-attempt resumes the original coarse guide without an all-actions local retry.
-Resource method bindings, original source/range/goal and ordinary budgets remain.
-Real 173 facts meet this gate; its R8 search instead targeted remote intermediate
-anchors and timed out after 309.236 s. A local original-input 116 diagnostic already
-joins walk-to-rope with its first existing rope pair, so adding pairs was rejected.
-R9 real 116/166/173 all completed. The native 116 walk-to-rope route and 173 moving
-transfer use the original goals, source setup and authored device models. Only
-116/173 add completion credit; the 166 guard does not add another point.
+Recent original-input completions include 116,166,173,182,197,088,081,104 and196.
+197 records two final box placements but no stepping contact on a box; its complete
+route must not be described as having no placements. Mechanism exercise is separate
+from completion. 250 completed only after the explicit input correction below.
+Its revised query timed out in R16, then R17 returned dash/walk plus jump at
+0.775650974 s modeled cost / 28.532232 s solver time. Guards retain 088's
+25.722600604 s cost and improve actual box-use 204 from10.279661375 to10.030017277 s.
 
-Source-owned translating supports can now board an interior authored pose within
-the original arrival height band, then ride the remaining displacement at original
-speed. Selected-cap standing/contact, unchanged static collision and a full ride
-capsule sweep remain action-construction checks. This resolves 182's initial cap
-below the fixed floor without changing its query, activity facts or tolerances;
-board/leave display boxes retain the actual selected poses.
+The stable R22 package passes **550 tests**, format, lint and typecheck
+(`/tmp/ganglia-ts266-r22-check.log`). R17/R19/R20 passed544/546/547 tests; the
+550-test R21 check includes action-pool, early native publication and observer
+error propagation. No check substitutes for actual source-bound case results.
+World app typecheck remains affected by its pre-existing alpha.77 dependency and
+missing generated-source setup; no dependency/cache changes hide that limitation.
 
-R10's per-chain alternation had no observable discovery change on 004/011/012.
-R12's cross-chain variant changed 011 coverage but exhausted region proposals with
-too much target-side work and still failed. The uncommitted R14 experiment preserves
-initial source admission, then alternates after failures once motion attempts begin,
-including later zero-arc closures. It has no proven real-point gain yet. R13 also
-preserves the original arrival's identity/cost for tails already proven to cover the
-root; noncovering tails remain synthetic, partial and walking-only.
+### Concurrent functional lanes
 
-Parent timeout results retain final worker diagnostic data but still return no
-complete route and the original timeout/cancellation timings. This avoids losing
-failure context at the deadline.
+The user's latest instruction supersedes the earlier single-heavy-lane campaign
+policy: run up to **three independent query lanes** on disjoint cases. Each report
+still uses one worker and one round; aggregate concurrent timings are functional
+diagnostics, not serial service-performance evidence. New batches retain the
+original6144MiB heap, admit at memory free>=25%, and keep the300s cooperative query
+deadline. Never kill or replace an active worker on its deadline. Real crashes
+invalidate that run and remain operational failures, not proof of unreachable goals.
 
-R7 173 also exposed an IPC error: device diagnostics retained the callable direct
-planner. The data projection now excludes that cache. Original failures and the
-invalid run remain visible; completed independent cold artifacts such as 141 are
-retained as functional observations, without claiming the whole run passed.
+The first parallel batches used4096MiB and OOMed on260/089/099; the original heap
+was restored. Some old-source089/110 runs also OOMed at6144MiB. Their invalid runs
+remain retained; resource-restored or memory-lifecycle reruns have independent
+receipts. 093's old profiled run took1327.228s solver, with1027.804s cancellation
+tail; an18.376s CPU sample found58.15%self in the envelope predicate. No inspector
+was attached to user Chrome/workerd or port9229. Those timings are not speedups.
 
-Point work runs in one heavy serial lane while implementation/audits proceed on
-live source; frozen snapshots are independent. A current long case may exceed the
-300 s cooperative deadline until a checkpoint; never kill/replace a worker on that
-deadline. 009's last run took 524.015 s without a candidate. Inspector port 9229
-belonged to unrelated workerd and was not touched. Future private launches use
-`--inspect-port=127.0.0.1:0` without activating inspection unless needed.
-
-First complete native candidates are captured once before the parent's deadline
-filter, with full actions/query/source identity and separate first-complete times.
-Terminal timeout/error and cancellation measurements remain unchanged. No existing
-timeout is retroactively promoted without an actual artifact. The HTML distinguishes
-available complete native artifacts from final outcomes and operational issues.
-
-Evidence root: `.local/research/ts-266-20261115/`. `freeze-and-run.mjs` copies source
-and the private extractor, rebinding package links. `aggregate.mjs` guards all won
-points and best native costs using actual query/setup bindings. `watch-progress.mjs`
-updates both current and previously requested HTML paths after each result; the
-page refreshes every ten seconds. `html-updates.jsonl` records updates.
+Evidence and immutable source snapshots live under `.local/research/ts-266-20261115/`.
+`parallel-plan.json` assigns disjoint work; each launch records source/input/heap
+bindings and global concurrency. `watch-progress.mjs` is independently supervised
+and atomically refreshes both live HTML paths after a candidate/result; it recovers
+after a root interruption. Complete native artifacts, terminal status, first/final
+times and operational failures remain distinct. Existing timeouts are never
+promoted without a real complete artifact. Published JSON/HTML are frozen snapshots.
 
 ### Workload and control provenance
 
-Revision 7 reselected collectible goals 228/229 with a fixed source-only seed,
-keeping teleport/campfire anchors as origins, and permits source expansion for
-234/240. Revision 8 repairs occupied conveyor contacts 185 on the same facility.
-Revision 9 changes 143's occupied source center to proven standing feet inside the
-same authored volume, retaining device and destination. The six original negative
-or occupied definitions remain outside the positive 266. Input repairs are not
-same-input algorithm gains. Cases 093--099 retain the exact-numeric binary input
-repair from the prior census.
+The positive population remains266 under revision11. 228/229 were source-only
+collectible reselections; anchors are origins. 234/240 permit ordinary expansion.
+185/143 repair occupied contacts while preserving their original negative controls.
+Revision10 restores coarse-hint semantics without coordinate/resource changes.
+Revision11 preserves actor/token/profile/mesh/pose/interaction for250 but selects
+fixed-seed legal contacts5.742m apart after the original60-degree source fails the
+unchanged46-degree profile throughout its allowed source band. Its full original
+query is the seventh negative control. State0/away does not establish open/closed.
+Input corrections are never same-input algorithm gains; all other265 definitions
+were checked unchanged for revision11. Cases093--099 retain exact-numeric binary
+collision binding from the earlier input repair.
 
-Revision 10 explicitly restores coarse-hint semantics. Old stop expectations for
-216--219 remain in acceptance revision metadata and are not claimed as passed.
-No coordinates or resource rules changed for that policy correction.
-
-Historical main is alpha.77, Ganglia 1a617c9/Atlos 4f17e702, retained under
-`.local/research/retained-profile-20261114/alpha77/`. The nearby 792472cd control is
-alpha.88 with execution gating and must not be relabeled main. Old 046/050 short
-corridors intersect current restored static bamboo collider 10100020553; old costs
-are not matched-input controls. No new main baseline was run. World app typecheck
-also remains blocked by its pre-existing alpha.77 dependency/generated-source setup;
-no unrelated dependency changes were made.
-
-Milestone d812e38f precedes the current simplification, passive capture, free-launch
-and starvation/IPC repairs. The publication checkpoint also includes the revision-10
-definitions and a portable frozen snapshot at
-`bench/scenes/mechanisms/progress.{json,html}`. Those artifacts contain all 266 IDs,
-217 complete native artifacts, 49 remaining cases and no absolute machine paths.
-They preserve incomplete/timeout outcomes and invalid-run flags; raw game geometry,
-private configuration and detailed run artifacts remain local. Point solving and
-the live local HTML continue independently of this GitHub snapshot.
-
-Local milestones cb834502 (endpoint-first routes and 215 snapshot) and 7b1575f7
-(cancelled-worker diagnostics) follow publication at 352c62b9. Current R12/R14
-experiments are separate from those validated committed behaviors. The single heavy
-lane continues original cases while source-bound frozen snapshots remain independent.
+Historical main is alpha.77, Ganglia1a617c9/Atlos4f17e702, retained under
+`.local/research/retained-profile-20261114/alpha77/`. The792472cd control is alpha.88
+and cannot be relabeled main. Old046/050 corridors hit current restored bamboo
+collider10100020553, so old costs are not matched-input controls. No new main run
+was authorized or performed. Publication at352c62b9 went to PR#100; later coherent
+local milestones include cb834502,7b1575f7,ef9f4445,a59f9dd3,5a2449ed,7486fc10.
+The validated source milestones also include f5e7f5a1 (gait bounds),6852aaa6
+(envelope work),04dc6f8c (airborne publication) and688f5fc5 (fallback accounting).
+The current progress/input checkpoint is local; no later remote push is implied.
 
 ## Work stopped at the user's request, 2026-11-15 14:36 CST
 

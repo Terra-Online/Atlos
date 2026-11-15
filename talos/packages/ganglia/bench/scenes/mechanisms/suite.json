@@ -125,7 +125,8 @@
     "Revision 7 (2026-11-15): replace locked/unknown-origin negative slots 228/229 with source-selected collectible targets, chosen before solver output; teleport/campfire anchors remain origins only. Cases 234/240 retain their goals and origins but permit ordinary source-window expansion. Preserve all four prior negative definitions in negative-controls.json; changed inputs cannot be credited as same-input algorithm gains. Cases 093--099 bind the retained exact-numeric V8 collision encoding from the completed census input repair; physical bounds and source facts are unchanged.",
     "Revision 8 (2026-11-15): case185 keeps its conveyor entity/token but replaces source-sampled contacts intersecting an exported static overhead beam with a fixed-seed legal same-facility contact pair1.207170m apart. Full source-footprint collision/support checks retain the beam, all following bodies and original physics. The occupied original definition remains in negative-controls.json; this is an input repair, not an algorithm gain.",
     "Revision 9 (2026-11-15): case143 keeps its device and destination but starts at a source-proved standing contact inside the original interaction volume. Original source center lies inside exported mesh855517292/component9/shape147; legal cap feet lie0.5305895m above that center. Original occupied definition remains in negative-controls.json. This is a source-seed input repair; no global height/contact/collision rule is changed.",
-    "Revision 10 (2026-11-15): restore existing waypoints as optional coarse discovery hints per the owning planner and integration callers. Remove invented mandatory-leg/exact-visit completion gates for the requested3D action-route visualization. Coordinates, source/goal and resource rules are unchanged. Prior ordered-stop fixture expectations216--219 are retained in per-case acceptanceRevision metadata and are not claimed to have passed."
+    "Revision 10 (2026-11-15): restore existing waypoints as optional coarse discovery hints per the owning planner and integration callers. Remove invented mandatory-leg/exact-visit completion gates for the requested3D action-route visualization. Coordinates, source/goal and resource rules are unchanged. Prior ordered-stop fixture expectations216--219 are retained in per-case acceptanceRevision metadata and are not claimed to have passed.",
+    "Revision 11 (2026-11-15): case250 keeps bridge actor10100030203 and token0HTXfPs but replaces an occupied 60-degree source contact with two source-only fixed-seed legal contacts, selected at least3m apart before any solver query. The original source remains unsupported throughout its existing same-XZ height band, and its complete definition is retained in negative-controls.json. The original mesh, exported pose, player profile and interaction size are unchanged. This is an input correction, not a same-input algorithm gain; no open/closed bridge state is inferred."
   ],
   "supportPolicy": {
     "vertical": "Source pose caps plus validated bidirectional ride connections, without a fictitious shaft wall.",
@@ -15708,12 +15709,12 @@
         "starts": [
           {
             "id": "player",
-            "position": [-753.6831389540318, 236.56261122226294, -1386.8426979152664],
+            "position": [-750.8124754961185, 242.92857397079467, -1390.6126245598507],
             "cost": 0,
             "state": "available"
           }
         ],
-        "goal": [-753.5995646927754, 236.77915376497816, -1386.749716245405],
+        "goal": [-754.9692209716405, 242.92857397079467, -1386.651332564841],
         "interaction": {
           "radius": 0.2,
           "maxVertical": 0.2
@@ -15726,7 +15727,8 @@
           "collection": "staticSupports",
           "index": 177,
           "id": "10100030203",
-          "triangleIndex": 628
+          "triangleIndex": 189,
+          "sourceTriangleIndex": 10
         }
       ],
       "setup": {},
@@ -15735,7 +15737,36 @@
       "legacyCaseId": "v250-250",
       "pointToken": "0HTXfPs",
       "tokenSourceId": "10100030203",
-      "tokenRole": "support-contact"
+      "tokenRole": "support-contact",
+      "inputRevision": {
+        "revision": 11,
+        "classification": "source-contact input repair, not same-input algorithm gain",
+        "originalControl": "negative-controls.json#250-0HTXfPs",
+        "seed": 20261115,
+        "sourceActor": "10100030203",
+        "source": {
+          "file": "exports/map02-traversal-devices.json",
+          "collection": "staticSupports",
+          "index": 177,
+          "sha256": "6a1013c4a4f47c0d71c47d3e48ef6acc13afc187f8665edfaa036e91dded0bfd",
+          "geometrySha256": "3d4880ab2fc5d2bf86aa80650fb62d655525e4c7e5f0b16ee2c3a0d74f47dc0d"
+        },
+        "pose": "int_bridge_wuling_90_postmodel:state 0 away",
+        "sourceProfile": {
+          "radius": 0.3499999940395355,
+          "height": 1.659999966621399,
+          "maxSlope": 46
+        },
+        "selectionPolicy": "Enumerate source mesh triangle centroids within the original slope limit, adding the existing 0.005 m foot clearance. Rank by SHA256(seed/actor/triangle/centroid) before native standing, unchanged capsule, wall and coverage checks. Select the first legal source and the first legal target in the same ranking at least 3 m from that source. Neither destination reachability nor solver answers rank candidates.",
+        "legalCandidates": 8,
+        "minimumSeparation": 3,
+        "separation": 5.741982864655857,
+        "sourceTriangle": 10,
+        "targetTriangle": 189,
+        "sourceRank": "163e8bd4a51e5db766c518c488132a05346c5772ffa65ed1b4b4c9491ea892f6",
+        "targetRank": "2d2da7cbfbf07163539d8c91fa89c61296e6e9da7322e1b4d92c2db7217e845b",
+        "constraint": "Same bridge actor, exported mesh and pose, player profile, source identity/cost/state and interaction volume size; no claim that state 0 away is an open or closed bridge."
+      }
     },
     {
       "id": "251-0ekRne8",
@@ -17429,5 +17460,5 @@
     "source": "Numeric target entity ID; conveyor contacts use their real source group actor ID.",
     "geometryProbeCount": 6
   },
-  "revision": 10
+  "revision": 11
 }

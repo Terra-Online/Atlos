@@ -35,7 +35,7 @@ mechanism selection or implementation alone does not establish completion.
   retained after successful bounded physical replay. These are development
   regressions, separate from the 266-case population and not unseen holdouts.
 - `negative-controls.json`: original unavailable-origin, capped-coverage and
-  occupied-contact fixtures retained outside the positive population.
+  occupied-contact fixtures: seven controls retained outside the positive population.
 - `progress.json` / `progress.html`: published results for all 266 IDs, including
   terminal outcomes, available complete native artifacts, first-candidate times,
   source bindings and remaining cases. This mixes retained and newer frozen runs.
@@ -82,6 +82,16 @@ They preserve input order as hints, without requiring the final trace to visit o
 stop at every coordinate. Prior stop expectations for cases 216--219 remain in
 their acceptance revision metadata; they are not claimed as passed. Completion
 requires an end-to-end action route for the original source and destination.
+
+Revision 11 corrects case 250's contacts on the same retained bridge actor and
+exported pose. The original source intersects the bridge mesh throughout its
+allowed same-XZ projection band; its sampled triangle also exceeds the existing
+slope limit. The original query remains a negative control. Seed 20261115 ranks
+source triangle centroids before native standing checks; the first legal source
+and first legal target at least 3 m away are 5.74198 m apart. Player profile,
+interaction size, identity and mechanism assertions remain unchanged. This is an
+input correction, with no solver completion or same-input algorithm gain claimed.
+The exported `state 0 away` label does not establish an open or closed bridge.
 
 ## Adaptation contract
 

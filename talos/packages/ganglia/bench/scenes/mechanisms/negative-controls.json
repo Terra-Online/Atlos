@@ -358,6 +358,66 @@
         "sourceCapHeight": 240.8385869337948,
         "requiredCorrection": "Use a proven standing source foot inside the authored volume; do not remove the mesh or widen global height/body rules."
       }
+    },
+    {
+      "id": "250-0HTXfPs",
+      "group": "navigation-context",
+      "scene": "map02",
+      "level": "map02_lv001",
+      "target": {
+        "kind": "support-contact",
+        "id": "10100030203"
+      },
+      "query": {
+        "starts": [
+          {
+            "id": "player",
+            "position": [-753.6831389540318, 236.56261122226294, -1386.8426979152664],
+            "cost": 0,
+            "state": "available"
+          }
+        ],
+        "goal": [-753.5995646927754, 236.77915376497816, -1386.749716245405],
+        "interaction": {
+          "radius": 0.2,
+          "maxVertical": 0.2
+        }
+      },
+      "tags": ["static-bridge", "support"],
+      "evidence": [
+        {
+          "file": "exports/map02-traversal-devices.json",
+          "collection": "staticSupports",
+          "index": 177,
+          "id": "10100030203",
+          "triangleIndex": 628
+        }
+      ],
+      "setup": {},
+      "assertions": ["exercise:static-bridge-support", "no-closed-or-missing-owner-geometry"],
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-250",
+      "pointToken": "0HTXfPs",
+      "tokenSourceId": "10100030203",
+      "tokenRole": "support-contact",
+      "knownIssue": {
+        "kind": "occupied-steep-source-contact",
+        "sourceActor": "10100030203",
+        "sourceTriangle": 628,
+        "sourceSlopeDegrees": 59.99998110619726,
+        "maxSlopeDegrees": 46,
+        "capsuleRadius": 0.3499999940395355,
+        "capsuleHeight": 1.659999966621399,
+        "obstructionTriangle": 3014864,
+        "capsuleDistance": 0.174451017226186,
+        "allowedSourceBand": [235.91261119842108, 237.06261122226294],
+        "projectedSupportHeights": [236.80908920927897, 236.78399630270331],
+        "allProjectedSupportsBodyBlocked": true,
+        "exportedPose": "int_bridge_wuling_90_postmodel:state 0 away",
+        "placementState": 0,
+        "bridgeAvailability": "unknown",
+        "requiredCorrection": "Select source-only legal contacts on the same retained bridge mesh and pose; retain the occupied original definition, source band, slope and collision constraints without inventing an open pose."
+      }
     }
   ]
 }
