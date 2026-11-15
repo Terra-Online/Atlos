@@ -127,7 +127,7 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
       const support = projectSupport(goal, tolerance);
       targets = support ? [{ ...support, support: support.position, position: goal }] : [];
     }
-    if (!targets.length) {
+    if (!targets.length && (!query.interaction || query.interaction.airborne)) {
       visibility.clear();
       failedVisibility.clear();
       endpointKeys.clear();
@@ -281,6 +281,12 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
         ...(requiredGait === undefined ? {} : { requiredGait }),
         ...(connection.traversal === undefined ? {} : { traversal: connection.traversal }),
       });
+    }
+    if (!targetIds.length) {
+      visibility.clear();
+      failedVisibility.clear();
+      endpointKeys.clear();
+      return { status: 'unmapped' };
     }
     // Transfer proofs belong only to the live endpoints. Growing action overlays
     // need no pair scan; removed or moved endpoints discard both directions.

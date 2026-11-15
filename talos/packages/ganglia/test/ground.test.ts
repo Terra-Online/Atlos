@@ -611,6 +611,30 @@ test('an ordinary interaction can finish at a complete supported device exit', a
   assert.ok(
     Math.abs(evaluation.costSeconds! - (rope.times.at(-1)! + 0.005 / locomotion.speed)) < 1e-9,
   );
+  const narrowGoal = rope.points.at(-1)!,
+    narrowInteraction = { radius: 0.01 };
+  const narrow = planner.plan(starts, narrowGoal, { interaction: narrowInteraction });
+  assert.ok(narrow.status === 'complete');
+  assert.deepEqual(narrow.segments.at(-1)!.points, rope.points);
+  assert.deepEqual(narrow.segments.at(-1)!.times, rope.times);
+  const narrowEvaluation = createPhysicalVerifier(() => [world])(
+    { starts, goal: narrowGoal, interaction: narrowInteraction },
+    narrow,
+  );
+  assert.equal(narrowEvaluation.valid, true, JSON.stringify(narrowEvaluation));
+  assert.equal(
+    planner.plan(starts, narrowGoal, {
+      interaction: { ...narrowInteraction, airborne: true },
+    }).status,
+    'unmapped',
+  );
+  assert.equal(
+    planner.plan(starts, narrowGoal, {
+      interaction: narrowInteraction,
+      connections: [{ ...rope, state: 'closed' }],
+    }).status,
+    'unmapped',
+  );
   for (const query of [
     {},
     { interaction: { radius: 0.1 } },

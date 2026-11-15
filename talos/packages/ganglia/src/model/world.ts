@@ -349,6 +349,22 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
         )
           return ground;
       }
+      if (input.devices?.movingSupports?.length) {
+        // Phase-free poses are alternative contacts. Preserve supported feet
+        // before a wider query can select a different pose above them.
+        const contact = supports.groundAt(p, {
+          maxUp: 1e-6,
+          maxDown: 0.01 + 1e-6,
+          maxSlope: input.movement.maxSlope,
+          radius: profile.radius,
+        });
+        if (
+          contact &&
+          p[1] - contact.position[1] >= -1e-6 &&
+          p[1] - contact.position[1] <= 0.01 + 1e-6
+        )
+          return contact;
+      }
       return world.groundAt(p, {
         maxUp: tolerance,
         maxDown: tolerance,

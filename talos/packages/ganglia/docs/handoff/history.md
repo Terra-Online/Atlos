@@ -1,5 +1,59 @@
 # Route solver history and validation evidence
 
+## Existing pose contacts and bounded detour closure, 2026-11-15
+
+After e6921d79, the shared world uses its existing source-support sphere index to
+retain an already legal foot contact before broad vertical projection. A three-roof
+fixture is RED before this correction and GREEN after it. Full moving-ride replay,
+static overhead, walls, following boxes, true sloped-sphere lift, maximum slope and
+existing circular-support checks protect the boundary. The ordinary narrow-exit
+goal fixture also proves a valid complete rope route when its 0.01 m interaction
+sphere excludes the navigation plane. Neither fix changes policy tolerances.
+
+Single-world independent replays preserve the exact saved query and route of 174,
+193 and 195. All nonwalking endpoints now retain exact standing contact. All three
+still fail submitted walking geometry; 195 has a rebuilt-walk deviation of 0.039316 m
+against the unchanged 0.025 m rule. These failures are preserved, not counted as
+successes. A separate unchanged 167 control passes at exactly 5.009499694824218 s.
+Replays are not search timing measurements. Evidence is in `pose-contact-replay/`.
+
+The terrain experiment copies the package into an isolated private kernel and
+leaves production source unchanged. A coarse floor crossing an actual raw box
+fails physical replay; a local cellSize/3 replacement and checked graph find a
+more expensive valid detour, 2.171906 s versus the invalid coarse 2 s. Raw walls,
+profile, step and slope rules are unchanged. Native cylindrical baking alone is
+not treated as a capsule-motion proof.
+
+151 experiment v1 automatically finds three failed-span clusters and three local
+replacement windows within the original waypoint legs. All three local searches
+succeed but the joined/retimed candidate fails whole-route replay. One diagnostic
+replay isolates the cause: a long accepted walkTrace emits two feet 0.102371 m
+apart; replaying that subspan adds a new midpoint, projects it down 27.677 mm and
+collides with a real triangle. It fails executeWalking, before second verification;
+retiming and splice anchors did not create the endpoints.
+
+Changed premise for v2: an edge proof must also survive replay of its actual output
+spans. The same three windows, bounds and hard-leg anchors are retained. At most
+four windows are allowed, with one search per selected window; an unsafe coarse
+cost is never an upper bound. 5,243 added closure checks reject 17 transitions,
+retaining the other neighbours. All three replacements and the full original query
+then pass independent verification, including the ordered waypoint. Executed cost
+is 19.626782 s, length 140.144475 m and maximum walk projection 0.318451 m under the
+unchanged 0.35 m bound. Offline repair total is 20.424 s, including world 9.289 s,
+local work 1.448/2.238/3.581 s and whole-route verification 2.270 s. No comparable
+speedup is claimed; this is not yet ordinary-query integration or a scored gain.
+
+Both experiment patches, RED/GREEN fixtures, v1 failure, exact diagnostic witness,
+v2 whole-route result and work counters remain in
+`.local/research/ts-point-fixes-20261115/terrain-experiment/`. The two-attempt
+experiment budget is complete. Further integration must reuse existing physical
+preparation and prove unchanged-success quality/time; do not repeat v1 without the
+closure premise. No experimental patch has been applied to production.
+
+Final production validation after the four-file contact/narrow-exit change passes
+formatting, lint, typecheck and 511 TS tests; log `/tmp/ganglia-pose-contact-check.log`.
+The TS shared-model and algorithm changes have no Rust source or native rebuild.
+
 ## TS representative-point contracts and first new completions, 2026-11-15
 
 The working source is parent 1544916f plus the point-fixes patches retained in

@@ -1,5 +1,40 @@
 # Route solver handoff
 
+## Existing pose contact and terrain-detour experiment, 2026-11-15
+
+The shared physical world preserves a legitimate sphere contact at the submitted
+feet before a broad support query can select a higher alternative moving pose.
+It reuses the existing support index, radius, slope and 0--1 cm contact allowance.
+Static geometry, walls, following bodies and capsule collision remain mandatory;
+no verifier tolerance or trajectory is changed. Narrow ordinary interactions may
+also finish at a supported complete action exit when no navigation-height goal
+witness exists. Airborne and closed-action exclusions are unchanged.
+
+Replaying unchanged 174, 193 and 195 candidates removes every unsupported-takeoff
+failure, but all three still fail walking geometry. They are not new completions.
+167's saved valid route remains valid at the identical executed cost
+5.009499694824218 s. The complete package check passes 511 TS tests, formatting,
+lint and typecheck. Ordinary search does not acquire a whole-route execution gate.
+
+The isolated terrain strategy now produces an independently valid complete 151
+candidate with the original query and ordered waypoint. Three bounded local
+rebuilds use complete local raw geometry and unchanged player/bake constraints.
+Graph transitions require their emitted adjacent feet to survive the existing
+walkTrace replay too; 5,243 such checks reject 17 non-closed transitions and let
+search choose other, more expensive edges. Executed cost is 19.626782 s and the
+single offline repair takes 20.424 s, including 9.289 s of raw-world preparation.
+This is a saved-candidate repair, not a new ordinary-query success or speedup.
+
+The first experiment's locally accepted path failed whole-route walking replay:
+a long walkTrace sampled endpoints that created a new failing midpoint when
+replayed as a short span. That changed premise justifies the second experiment;
+both patches, complete outcomes and the failed witness are preserved under
+`terrain-experiment/`. Production integration remains open. It must reuse the
+prepared collision/world owner with generation, coverage, movement and layout
+identity, charge preparation, and expose bounded local walking proof without
+calling the independent full-route evaluator. Following placements and moving
+pose alternatives must remain scoped to the same immutable facts.
+
 ## Representative-point strategy repairs, 2026-11-15
 
 The TS prototype admits an arrival on a provider moving contact face only after
@@ -15,7 +50,8 @@ already active gait can continue. Shared resource rules and verifier tolerances
 are unchanged. A fully executed, supported open action endpoint may directly
 satisfy an ordinary interaction, including its facing and height constraints.
 This avoids an unnecessary walk back to navigation height without truncating the
-authored action. The no-navigation-target-witness boundary remains open.
+authored action. An action exit can also supply the only target witness when a
+narrow interaction excludes its navigation-height projection.
 
 Public scene waypoints are ordered hard destinations. Their legs retain the
 original height tolerance, suppress prefix completion events, and compose one
@@ -38,9 +74,9 @@ are preserved. 151 now visits its ordered waypoint; two actual static-triangle
 collisions still reject its walk. Raw coverage and wall checks confirm that
 re-exporting those windows is not the remedy. A bounded terrain-detour strategy
 is isolated under the point-fixes research directory and is not production code.
-174 and 193 return complete candidates but fail takeoff support. In 174, alternate
-phase-free poses incorrectly lift already supported feet; a separate shared-model
-correction is under investigation. 183 reaches the request deadline; its original
+At e6921d79, 174 and 193 complete but fail takeoff support because alternate
+phase-free poses lift already supported feet. The contact correction above removes
+that rejection; walking geometry still fails. 183 reaches the request deadline; its original
 journal and authorized cleanup receipt are retained. No unresolved point is removed.
 
 Artifacts are in `.local/research/ts-point-fixes-20261115/` and
