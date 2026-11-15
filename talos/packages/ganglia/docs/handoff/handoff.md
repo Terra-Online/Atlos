@@ -133,8 +133,8 @@ was authorized or performed. Publication at352c62b9 went to PR#100; later cohere
 local milestones include cb834502,7b1575f7,ef9f4445,a59f9dd3,5a2449ed,7486fc10.
 The validated source milestones also include f5e7f5a1 (gait bounds),6852aaa6
 (envelope work),04dc6f8c (airborne publication) and688f5fc5 (fallback accounting).
-The progress/input checkpoint is61d83990. The delivery merge incorporates all23
-upstream commits through e777af66 while preserving the TS strategies above.
+The progress/input checkpoint is61d83990. The delivery merge incorporates all24
+upstream commits through 7b386443 while preserving the TS strategies above.
 
 ### Upstream synchronization and entrypoints
 
@@ -1865,7 +1865,7 @@ warning. No additional corpus replay was run for this packaging-only upgrade.
 The earlier final-source corpus limitation and performance conclusions still apply.
 
 
-## Upstream native development through e777af66, 2026-11-15
+## Upstream native development through 7b386443, 2026-11-15
 
 The following source-bound upstream record is retained for native implementation
 history. Its service benchmark and verification contracts do not redefine the
@@ -1885,10 +1885,23 @@ Local candidate inputs are regenerated under `.local/data/mechanisms-266-v119/`.
 They use the selected 1.66 m source capsule rather than the prior 50-case data's
 1.80 m single-character capsule. Historical retained geometry is unavailable;
 new source geometry and air walls have an explicit candidate binding. The four
-circular-waterwheel cases remain unsupported in this branch. The initial full
-population run finished. Eight resource-policy cases are being remeasured after
-correcting Scene's resource clock to match the policy used by windows and replay.
-The initial raw report is in `.local/research/mechanisms-266/native-coverage/`.
+circular-waterwheel cases remain unsupported in this branch. Population coverage
+finished with one scored round, two independent scenario workers and a 60-second
+cooperative query deadline. Combined results are **103 physically valid complete,
+125 timeout, 26 request errors, five incomplete, three physically invalid and four
+unsupported**. Every selected ID is accounted for. Eight resource-policy cases use
+replacement measurements after Scene's clock was corrected to match windows and
+replay; all three resource-replay discrepancies disappeared.
+
+Reports and per-case provenance are in
+`.local/research/mechanisms-266/combined-coverage.json`, assembled from the frozen
+`native-coverage/` and `native-resource-policy/` reports. The 26 request errors are
+16 physical-coverage exceptions, eight string-length exceptions and two invalid
+support-boundary exceptions. Physical replay rejects cases `079-0aFW9d3`,
+`137-0n74y9P` and `182-0Ij2NNi` for first collection, authored launch landing and
+moving-support ride respectively. These remain open alongside completion gaps.
+Five multi-box cases find valid alternative routes with zero placements; none
+earns the joint-box exercise assertions. The benchmark preserves this distinction.
 
 Rich device exports exposed NaN values in inapplicable speed, overhead and height
 fields. Rust now reads their JSON null representation as unavailable, preserving

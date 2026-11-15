@@ -1,6 +1,6 @@
 # Route solver history and validation evidence
 
-## Delivery synchronization through e777af66, 2026-11-15
+## Delivery synchronization through 7b386443, 2026-11-15
 
 The user authorized pushing the current strategies/progress to PR#100 and merging
 misakavan/3d-preview, then explicitly requested no comment and paused point work.
@@ -9,9 +9,9 @@ there were no active mechanism processes at the delivery check. The frozen progr
 remains222/266 complete native routes and44 unfinished across revisions, not a
 new full-current-source result or a matched historical-main comparison.
 
-Fetched upstream e777af66 contributes23 commits:12 Rust implementation commits,
-six diagnostic-record commits, one v119 integration and four mechanism service
-benchmark commits. Rust source/tests equal the incoming tip without local edits.
+Fetched upstream through7b386443 contributes24 commits:12 Rust implementation
+commits, seven diagnostic-record commits, one v119 integration and four mechanism
+service benchmark commits. Rust source/tests equal the incoming tip without local edits.
 The TS algorithm tree equals61d83990. The merge retains revision11 case definitions,
 seven original negative controls, TS circular/free-launch support, native early
 candidate capture and diagnostic provenance. Earlier source-bound results are
@@ -4178,7 +4178,7 @@ typecheck and all 440 tests pass. Independent correctness and Standards reviews
 found no remaining scoped findings. No solver benchmark was rerun for this fix.
 
 
-## Upstream native development through e777af66, 2026-11-15
+## Upstream native development through 7b386443, 2026-11-15
 
 The following source-bound upstream record is retained for native implementation
 history. Its service benchmark and verification contracts do not redefine the
@@ -4237,6 +4237,46 @@ kept the default whole-route resource clock. The Scene clock now receives the
 same policy. All eight resource-policy cases require replacement measurements;
 their first-run outcomes are not solver acceptance evidence. Raw results remain
 under `.local/research/mechanisms-266/native-coverage/`.
+
+Replacement measurements at `e777af66` complete all eight resource-policy cases:
+three physically valid complete and five timeout. Cases `208-1craOtr`,
+`213-16YPmLU` and `214-0nuILJY` now pass independent replay, resolving all three
+configuration-induced resource discrepancies. The native artifact is unchanged
+(`822efac5ca903620028954d459ea94c04663e156878263502727970e77ef6a36`).
+Both runs report unchanged source, no interruption and no process failure. The
+initial source digest is `8e557891fd219f028399b1a146ff9a38f15c922947d06df26cf14f2dc33cb63e`;
+the corrected resource run is `b8de3104a479bc206dd74aac1f5234a65a00f4239b43c2887aecaf0d3cc61ac5`.
+The policy correction passes package formatting, lint, typecheck and all 464 TS
+tests; it changes benchmark wiring, not Rust search or physical verification.
+
+The combined population substitutes those eight outcomes and retains every other
+initial outcome. `.local/research/mechanisms-266/combined-coverage.json` records
+each row's source report and both report hashes. All 266 IDs are accounted for:
+103 physically valid complete, 125 timeout, 26 request errors, five incomplete,
+three physically invalid and four unsupported circular-waterwheel cases.
+
+| Group | Cases | Physically valid complete | All exercise assertions passed |
+| --- | ---: | ---: | ---: |
+| Retained regressions | 113 | 41 | n/a |
+| Rope/drop | 20 | 10 | 5 |
+| Launch | 16 | 10 | 8 |
+| Boost | 16 | 0 | 0 |
+| Moving support | 30 | 22 | 0 |
+| Following box | 12 | 2 | 0 |
+| Resources/composition | 20 | 3 | n/a |
+| Boundary/rejection | 12 | 4 | n/a |
+| Navigation context | 11 | 6 | 0 |
+| Multi-box | 12 | 5 | 0 |
+| Circular waterwheel | 4 | 0 | 0 |
+
+All five complete multi-box routes contain zero placements. The remaining physical
+failures concern first airborne collection (`079-0aFW9d3`), authored launch aim
+support (`137-0n74y9P`) and moving-support ride (`182-0Ij2NNi`). Request exceptions
+are 16 `Motion exceeds declared physical coverage`, eight `Invalid string length`
+and two `Invalid support boundary bounds`. The service runner exercises the current
+Scene seam; the selecting branch used untrained diagnostics and a direct physical
+solver for frozen cases. This run establishes current-input coverage under the
+recorded preparation and deadline, with contended timings from two scenario workers.
 
 ## Noclip v106 to v119 migration, 2026-11-15
 
