@@ -14,8 +14,10 @@ Local candidate inputs are regenerated under `.local/data/mechanisms-266-v119/`.
 They use the selected 1.66 m source capsule rather than the prior 50-case data's
 1.80 m single-character capsule. Historical retained geometry is unavailable;
 new source geometry and air walls have an explicit candidate binding. The four
-circular-waterwheel cases remain unsupported in this branch. Full-suite results
-are pending; no mechanism-population speedup or complete acceptance is claimed.
+circular-waterwheel cases remain unsupported in this branch. The initial full
+population run finished. Eight resource-policy cases are being remeasured after
+correcting Scene's resource clock to match the policy used by windows and replay.
+The initial raw report is in `.local/research/mechanisms-266/native-coverage/`.
 
 Rich device exports exposed NaN values in inapplicable speed, overhead and height
 fields. Rust now reads their JSON null representation as unavailable, preserving

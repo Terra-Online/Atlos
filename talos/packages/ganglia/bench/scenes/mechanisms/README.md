@@ -42,6 +42,12 @@ are present. Its overlap with scoring is explicit. Warmup makes separate zero-le
 queries at source positions. Preparation outcomes and readiness costs are recorded;
 failed warmup does not erase the catalog or prevent subsequent requests.
 
+Cases run through the current `PreparedRouteSolver` Scene seam. Frozen cases keep
+their specified physical window and disable expansion. The selecting branch ran
+untrained diagnostics and directly called its physical solver for those cases;
+the imported workload is shared while the service lifecycle follows this branch.
+Scenario locomotion configures both the Scene resource clock and physical windows.
+
 Route completion, independent whole-route physical validity and mechanism exercise
 are separate results. An alternative valid route can complete a case without using
 its intended mechanism. Multi-box credit requires actual support use of all counted

@@ -101,6 +101,9 @@ export async function loadMechanismScene(
       return input;
     },
   );
+  // Scene owns the whole-route resource clock. Physical windows and replay
+  // receive this same policy through transformInput above.
+  scene.input.locomotion = first.setup.locomotion ?? scene.input.locomotion;
   if (first.setup.physical) {
     const region = suite.physicalRegions.find((r) => r.id === first.setup.physical!.region)!;
     const resources = scene.input.resources;

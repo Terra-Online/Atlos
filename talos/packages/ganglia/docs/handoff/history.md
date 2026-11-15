@@ -44,6 +44,16 @@ so the coverage runner records them per case and retains the same process;
 process/IPC failures still stop the run. This stopped report is retained under
 `native-full-windowed/`. Neither stopped dispatch establishes population coverage.
 
+The first population run at `7281d145` finished all 262 dispatchable cases plus
+four unsupported circular-waterwheel cases, with source unchanged and no process
+crashes. It recorded 100 complete, 125 timeout, 26 request errors, six physically
+invalid and five incomplete outcomes. Its three resource-replay failures exposed
+a benchmark omission: scenario locomotion reached windows and replay, but Scene
+kept the default whole-route resource clock. The Scene clock now receives the
+same policy. All eight resource-policy cases require replacement measurements;
+their first-run outcomes are not solver acceptance evidence. Raw results remain
+under `.local/research/mechanisms-266/native-coverage/`.
+
 ## Noclip v106 to v119 migration, 2026-11-15
 
 Upstream advanced 35 commits from `ff48e1a715039b76b60bd30f6ad0c8a0cc978f04`
