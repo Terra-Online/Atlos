@@ -31,6 +31,7 @@ export interface SceneBinding {
 export async function loadMechanismScene(
   setup: WorkerSetup,
   onRegion: (files: { ground: string; collision: string }) => void,
+  checkpoint: () => void,
 ) {
   const binding = JSON.parse(await readFile(setup.dataRoot, 'utf8')) as SceneBinding;
   const suite = await readMechanismSuite(binding.suite);
@@ -78,6 +79,7 @@ export async function loadMechanismScene(
         }
       : undefined,
     {
+      onProgress: checkpoint,
       transformInput: (raw) => {
         if (first.setup.physical) {
           const region = suite.physicalRegions.find((r) => r.id === first.setup.physical!.region);

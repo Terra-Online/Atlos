@@ -2,7 +2,7 @@ import { loadScene } from '#@/bench/adapters/ganglia-v1/scene.ts';
 import { serveWorker } from '#@/bench/adapters/ganglia-v1/worker-host.ts';
 import { exportPhysicalRegion } from '#@/bench/prepare-region.ts';
 
-serveWorker((setup, onRegion) =>
+serveWorker((setup, onRegion, checkpoint) =>
   loadScene(
     setup.dataRoot,
     setup.extractor,
@@ -22,5 +22,6 @@ serveWorker((setup, onRegion) =>
           return files;
         }
       : undefined,
+    { onProgress: checkpoint },
   ),
 );

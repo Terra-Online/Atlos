@@ -164,6 +164,27 @@ test('a soft deadline waits for the current stage and retains the trained worker
   }
 });
 
+test('phase checkpoints cancel microtask-heavy work without IPC delivery or worker replacement', async () => {
+  const prepared = await prepare(1, 1, '', 250);
+  try {
+    await prepared.setCatalogPhase('training');
+    const [[trained]] = await prepared.train([query('training', 1)]);
+    await prepared.setCatalogPhase('frozen');
+    const [expired, next] = await prepared.solver.solveBatch([
+      query('microtask-stages', 2000, 9),
+      query('next', 1),
+    ]);
+    assert.equal(expired.reason, 'timeout');
+    assert.ok((expired as WorkerResult).diagnostics.solveWallMs < 1200);
+    assert.equal(next.route.status, 'complete');
+    assert.equal(next.reason, trained.reason);
+    assert.equal(prepared.catalogStats().added, 1);
+    assert.equal(prepared.catalogStats().phase, 'frozen');
+  } finally {
+    await prepared.solver.close();
+  }
+});
+
 test('a cancelling query leaves a healthy peer available', async () => {
   const { solver } = await prepare(2);
   const controller = new AbortController();

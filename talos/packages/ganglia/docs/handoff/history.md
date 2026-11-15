@@ -33,6 +33,26 @@ service benchmark is unchanged. The stopped report at
 `.local/research/mechanisms-266-node-cirisus/report.json` records interruption,
 unchanged source and zero measured attempts. Node algorithm source remains exact.
 
+### Local phase-boundary cancellation, 2026-11-16
+
+Fresh Node inputs bind candidate revision
+`e94c42081fd937f4da3a4a9f2e6df19a42d1270756122703718a49b21ecb73d5`.
+The scenario-capped run at `3c6c6dfb` was cooperatively interrupted during the
+second scenario's first training request after extended cancellation delay.
+Its eight measured attempts include seven solver-complete, physically invalid
+routes (unsupported walk endpoints) and one timeout. Evidence is retained at
+`.local/research/mechanisms-266-node-cirisus-scenario/report.json`; source stayed
+unchanged. This interrupted run supplies no population score.
+
+Continuous microtasks can delay IPC cancellation despite existing physical
+progress boundaries. The host now passes the same request deadline into the
+worker and checks it locally through scene progress hooks and solver events.
+No worker is killed or replaced, and no search budget or algorithm changes.
+A synthetic microtask-stage regression takes the full two seconds without
+deadline transport and exits at the soft deadline with transport restored; the
+next request retains its trained worker and frozen catalog. The opaque-stage
+regression continues to require natural stage completion before reuse.
+
 ## Mechanism benchmark integration and input repair, 2026-11-15
 
 The shared revision-10 suite is imported unchanged from `352c62b9`, including 266

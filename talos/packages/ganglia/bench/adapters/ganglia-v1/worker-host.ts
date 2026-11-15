@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { prepareRouteSolver } from '@opendfieldmap/ganglia';
 
 import type { loadScene } from '#@/bench/adapters/ganglia-v1/scene.ts';
+import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { resetTimings } from '#@/bench/timings.ts';
 import {
   workerMemory,
@@ -22,10 +23,25 @@ type WorkerScene = Awaited<ReturnType<typeof loadScene>> & {
   ) => import('#@/src/solver/contract.ts').RouteResult;
 };
 
+/** A microtask-heavy solver can delay IPC cancellation. Check the same request
+ * budget locally at phase boundaries, then use its ordinary AbortSignal path. */
+export function requestControl(timeoutMs: number) {
+  const controller = new AbortController();
+  const deadline = performance.now() + timeoutMs;
+  return {
+    controller,
+    checkpoint() {
+      if (performance.now() >= deadline) controller.abort();
+      controller.signal.throwIfAborted();
+    },
+  };
+}
+
 export function serveWorker(
   load: (
     setup: WorkerSetup,
     onRegion: (files: { ground: string; collision: string }) => void,
+    checkpoint: () => void,
   ) => Promise<WorkerScene>,
 ) {
   if (!process.send) throw new Error('Scene entry requires a child process IPC channel');
@@ -36,7 +52,9 @@ export function serveWorker(
     const native = setup.config.algorithm === 'ganglia-v1-rust';
     let catalogPhase = setup.catalogPhase ?? 'disabled';
     if (!native) setActionCatalogPhase(catalogPhase);
-    const scene = await load(setup, (files) => send({ type: 'region', files }));
+    let active: ({ id: number } & ReturnType<typeof requestControl>) | undefined;
+    const checkpoint = () => active?.checkpoint();
+    const scene = await load(setup, (files) => send({ type: 'region', files }), checkpoint);
     const preparationStarted = performance.now();
     const solver = await prepareRouteSolver(
       setup.config as import('#@/src/solver/ganglia-v1.ts').GangliaV1Config,
@@ -65,7 +83,6 @@ export function serveWorker(
     if (rustSolver) rustSolver.setCatalogPhase(catalogPhase);
     else setActionCatalogPhase(catalogPhase);
     const preparationMs = scene.timings.preparationMs + performance.now() - preparationStarted;
-    let active: { id: number; controller: AbortController } | undefined;
     process.on('message', async (message: WorkerRequest) => {
       if (message.type === 'cancel') {
         if (active?.id === message.id) active.controller.abort();
@@ -104,13 +121,17 @@ export function serveWorker(
       }
       if (message.type !== 'solve') throw new Error('Unexpected scene worker setup');
       const { id, query, events } = message;
-      const controller = new AbortController();
-      active = { id, controller };
+      const control = requestControl(message.timeoutMs ?? QUERY_SLO_MS);
+      const { controller } = control;
+      active = { id, ...control };
       resetTimings(scene.timings);
       try {
         let result = await solver.solve(query, {
           signal: controller.signal,
-          onEvent: events ? (event) => send({ type: 'event', id, event }) : undefined,
+          onEvent(event) {
+            checkpoint();
+            if (events) send({ type: 'event', id, event });
+          },
         });
         result = scene.inspectResult?.(query, result) ?? result;
         scene.verifyInputs();

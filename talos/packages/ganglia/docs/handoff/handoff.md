@@ -19,7 +19,16 @@ The trained benchmark lifecycle and cooperative cancellation remain in place.
 Each mechanism scenario config caps training at its manifest case count, avoiding
 repeated requests to fill the default ten slots. Effective configs are recorded.
 Reports now count native completion separately from independent physical validity.
-Full Node measurements are pending.
+Full Node measurements are pending. The first eight measured attempts yielded
+seven solver-complete routes, all rejected by independent replay for unsupported
+walk endpoints, and one timeout. A later training request stalled cancellation
+delivery; the run was cooperatively interrupted with unchanged source.
+
+The benchmark host now transmits each request's soft deadline and checks it at
+existing scene/physical progress boundaries as well as receiving IPC cancellation.
+This keeps microtask-heavy phases cancellable when they delay IPC delivery. A
+single uninterrupted phase still drains naturally; workers and their catalogs
+remain intact. Node algorithm source is unchanged.
 
 ## Shared 266-case mechanism workload, 2026-11-15
 

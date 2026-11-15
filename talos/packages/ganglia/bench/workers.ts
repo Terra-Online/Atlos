@@ -49,7 +49,7 @@ export interface WorkerSetup {
 }
 export type WorkerRequest =
   | { type: 'setup'; setup: WorkerSetup }
-  | { type: 'solve'; id: number; query: RouteQuery; events: boolean }
+  | { type: 'solve'; id: number; query: RouteQuery; events: boolean; timeoutMs?: number }
   | { type: 'verify'; id: number; query: RouteQuery; route: RouteResult['route'] }
   | (Control & { id: number })
   | { type: 'cancel'; id: number }
@@ -492,6 +492,7 @@ export async function prepareWorkerSolver(options: {
           id: ++serial,
           query,
           events: Boolean(solveOptions.onEvent || options.onEvent),
+          timeoutMs,
         },
         options: solveOptions,
         enqueued: performance.now(),
