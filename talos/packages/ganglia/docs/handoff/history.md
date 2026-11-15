@@ -29,6 +29,14 @@ round and one scenario worker; independent scenario groups can run concurrently
 for coverage checks, without interpreting their contended timings as speedups.
 The source and native artifact remain frozen during a scored run.
 
+The first population dispatch stopped before measurement because Scene resource
+selection required the entire proposed corridor halo inside each fixed window.
+Frozen cases now offer their specified window to corridor requests, retaining
+the snapshot's exact bounds and tiles for search and replay. This matches the
+suite's fixed-window domain without claiming coverage of the proposed halo.
+The stopped report remains at `.local/research/mechanisms-266/native-full/report.json`;
+it has zero measured attempts and is not a population result.
+
 ## Noclip v106 to v119 migration, 2026-11-15
 
 Upstream advanced 35 commits from `ff48e1a715039b76b60bd30f6ad0c8a0cc978f04`

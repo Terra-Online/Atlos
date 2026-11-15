@@ -101,6 +101,26 @@ export async function loadMechanismScene(
       return input;
     },
   );
+  if (first.setup.physical) {
+    const region = suite.physicalRegions.find((r) => r.id === first.setup.physical!.region)!;
+    const resources = scene.input.resources;
+    const query = resources.query;
+    // A frozen case offers its selected window, even when the coarse planner
+    // proposes a larger corridor. Physical snapshots keep their actual bounds
+    // and tiles, so neither search nor verification can treat the halo as loaded.
+    resources.query = (scene, source, start, target, options) =>
+      query(scene, source, start, target, {
+        ...options,
+        corridor: {
+          ...options.corridor,
+          bounds: {
+            min: [region.bounds[0], region.bounds[1]],
+            max: [region.bounds[2], region.bounds[3]],
+          },
+          tiles: [],
+        },
+      });
+  }
   scene.input.scene.walls = scene.input.scene.navigation.options.walls ?? [];
   const resolved: Record<string, RouteQuery> = {};
   const resolutions: Record<string, unknown> = {};
