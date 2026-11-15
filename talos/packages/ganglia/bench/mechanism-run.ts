@@ -71,6 +71,8 @@ if (values.help) {
   writeFileSync(events, '', { flag: 'wx' });
   const record = (value: unknown) => appendFileSync(events, JSON.stringify(value) + '\n');
   const results: unknown[] = [];
+  const firstCompleteCandidates: unknown[] = [];
+  const firstCompleteCaptureErrors: unknown[] = [];
   const attempted = new Set<string>();
   const resultsDirectory = output + '.results';
   mkdirSync(resultsDirectory, { recursive: true });
@@ -110,6 +112,8 @@ if (values.help) {
     invalid: false,
     failure: undefined as string | undefined,
     results,
+    firstCompleteCandidates,
+    firstCompleteCaptureErrors,
     interrupted: false,
     unattemptedIds: selected.map((c) => c.id),
   };
@@ -186,6 +190,8 @@ if (values.help) {
         continue;
       }
       const started = performance.now();
+      let activeRound = 0;
+      let firstComplete: object | undefined;
       let prepared: Awaited<ReturnType<typeof prepareWorkerSolver>> | undefined;
       try {
         prepared = await prepareWorkerSolver({
@@ -197,6 +203,48 @@ if (values.help) {
           entry: new URL('./mechanism-worker.ts', import.meta.url),
           timeoutMs: QUERY_SLO_MS,
           onEvent(_query, event, memory, detail) {
+            if (event.type === 'candidate') {
+              if (firstComplete || event.result.partial || event.result.route.status !== 'complete')
+                return;
+              try {
+                const observedSinceCaseStartMs = performance.now() - started;
+                const outcome = (event.result as MechanismResult).diagnostics.mechanism;
+                const artifactPath = join(
+                  resultsDirectory,
+                  `${item.id}-${activeRound}-first-complete.json`,
+                );
+                writeFileSync(
+                  artifactPath,
+                  JSON.stringify({
+                    id: item.id,
+                    scene: item.scene,
+                    source: suite.sources[item.scene].source,
+                    round: activeRound,
+                    query: item.query,
+                    result: event.result,
+                  }),
+                );
+                firstComplete = {
+                  id: item.id,
+                  round: activeRound,
+                  firstCompleteSolverMs: outcome.firstCompleteSolverMs,
+                  firstCompleteDispatchMs: outcome.firstCompleteDispatchMs,
+                  observedSinceCaseStartMs,
+                  artifactPath,
+                };
+                firstCompleteCandidates.push(firstComplete);
+                record({ phase: 'first-complete', ...firstComplete });
+                save();
+              } catch (error) {
+                // Optional evidence capture must not cancel the running solve.
+                firstCompleteCaptureErrors.push({
+                  id: item.id,
+                  round: activeRound,
+                  reason: String(error),
+                });
+              }
+              return;
+            }
             record({
               phase: 'progress',
               id: item.id,
@@ -211,6 +259,8 @@ if (values.help) {
           },
         });
         for (let round = 0; round < rounds && !aborted; round++) {
+          activeRound = round;
+          firstComplete = undefined;
           const result = (await prepared.solver.solve(item.query, {
             signal: controller.signal,
           })) as MechanismResult & WorkerResult;
@@ -231,6 +281,7 @@ if (values.help) {
             elapsedSinceCaseStartMs: performance.now() - started,
             workerStartupMs: prepared.timings.workerStartupMs,
             resultFile,
+            firstComplete,
             solverMs: detail?.solverMs,
             preparationMs: detail?.preparationMs,
             dispatchWallMs: result.diagnostics.solveWallMs,

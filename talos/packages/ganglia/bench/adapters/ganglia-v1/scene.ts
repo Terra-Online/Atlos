@@ -62,6 +62,7 @@ export interface SceneHooks {
   kernelRoot?: string;
   transformInput?: (input: PhysicalInput) => PhysicalInput;
   createPreparation?: typeof createPhysicalPreparation;
+  onResult?: (report: Report) => void;
   onProgress?: (progress: { phase: string; completed?: number; total?: number }) => void;
 }
 
@@ -289,6 +290,7 @@ export function prepareSceneResources(
   };
   const timings = createTimings(performance.now() - preparationStarted);
   const observe = (report: Report) => {
+    hooks.onResult?.(report);
     timings.physical.calls++;
     const diagnostics = report.diagnostics;
     if (!diagnostics || typeof diagnostics !== 'object') return;

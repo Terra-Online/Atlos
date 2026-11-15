@@ -11737,7 +11737,7 @@ new file mode 100644
 index 00000000..5764aae7
 --- /dev/null
 +++ b/packages/extractor/src/game/traversal-links.test.ts
-@@ -0,0 +1,261 @@
+@@ -0,0 +1,264 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
@@ -11746,7 +11746,7 @@ index 00000000..5764aae7
 +import { createCollisionWorld } from '@opendfieldmap/ganglia/collision';
 +
 +import { traversalDevice } from './traversal-devices.ts';
-+import { deviceConnections } from './traversal-links.ts';
++import { deviceConnections, normalizeDevices } from './traversal-links.ts';
 +
 +const source = { buildGuid: 'build', contentHash: 'hash' };
 +const profile = { radius: 0.2, height: 1.6 };
@@ -11934,6 +11934,9 @@ index 00000000..5764aae7
 +	const bounded = setup(surfaces, [], { min: [-3, -3], max: [11, 3] });
 +	assert.equal(deviceConnections(input, bounded).connections.length, 0);
 +	entry.placement.properties.push(parameter('free_jump', true));
++	const free = normalizeDevices(input, options).devices[0];
++	assert.equal(free.fixedLaunch, false);
++	assert.equal(free.freeLaunch, true);
 +	assert.equal(deviceConnections(input, options).connections.length, 0);
 +	assert.throws(
 +		() => deviceConnections({ ...input, source: { ...source, contentHash: 'other' } }, options),

@@ -7,7 +7,7 @@ import type { Vec3 } from '#@/src/geometry.ts';
 import type { LocomotionOptions } from '#@/src/index.ts';
 import { joinedGeometry, roofContains, shifted } from '#@/src/model/placement.ts';
 import { projectPoint } from '#@/src/model/support.ts';
-import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
+import type { RouteQuery, RouteResult, RouteEvent } from '#@/src/solver/contract.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 
 export interface MechanismCase {
@@ -387,6 +387,8 @@ export type PhysicalOutcome = {
   normalizationMs?: number;
   preparationMs?: number;
   solverMs?: number;
+  firstCompleteSolverMs?: number;
+  firstCompleteDispatchMs?: number;
   effectiveStart?: number[];
   mode: 'physical-diagnostic';
 };
@@ -481,5 +483,23 @@ export function facilityAudit(input: PhysicalInput, catalog: FacilityCatalog) {
           ]
         : []),
     ],
+  };
+}
+
+/** Observe availability once, without changing the terminal solver outcome. */
+export function captureFirstComplete(
+  receive: (event: Extract<RouteEvent, { type: 'candidate' }>) => void,
+) {
+  let captured = false;
+  return (event: RouteEvent) => {
+    if (
+      captured ||
+      event.type !== 'candidate' ||
+      event.result.partial ||
+      event.result.route.status !== 'complete'
+    )
+      return;
+    captured = true;
+    receive(event);
   };
 }

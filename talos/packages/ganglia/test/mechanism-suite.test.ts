@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   classify,
+  captureFirstComplete,
   expectation,
   resourcePath,
   scenarioInput,
@@ -109,9 +110,10 @@ test('shared manifest remains a complete population and cannot be mistaken for p
       'utf8',
     ),
   );
-  assert.equal(controls.cases.length, 5);
+  assert.equal(controls.cases.length, 6);
   assert.ok(controls.cases.slice(0, 4).every((c: MechanismCase) => expectation(c) === 'reject'));
   assert.equal(controls.cases[4].knownIssue.kind, 'occupied-origin-and-target');
+  assert.equal(controls.cases[5].knownIssue.kind, 'occupied-device-center');
   await assert.rejects(readWorkload(fileURLToPath(file)), /Scenario manifests/);
   assert.equal(
     JSON.parse(await readFile(file, 'utf8')).cases[0].query.goal[0],
@@ -345,4 +347,36 @@ test('one displayed conveyor box cannot certify a walk across its whole swept pa
       [10, 2.01, 0],
     ];
   assert.equal(exercised(c, result, source)[0].status, 'not-exercised');
+});
+
+test('first complete candidate survives later cancellation without changing timeout status', async () => {
+  const captured: RouteResult[] = [];
+  const capture = captureFirstComplete((event) => captured.push(structuredClone(event.result)));
+  const prepared = await prepareWorkerSolver({
+    count: 1,
+    config: gangliaV1Defaults,
+    dataRoot: 'first-complete-test',
+    extractor: '',
+    timeoutMs: 100,
+    entry: new URL('./fixtures/scene-worker.ts', import.meta.url),
+    onEvent(_query, event) {
+      capture(event);
+    },
+  });
+  try {
+    const result = await prepared.solver.solve({
+      starts: [{ id: 'player', state: 'available', position: [0, 0, 0], cost: 0 }],
+      goal: [1000, 0, 0],
+    });
+    assert.equal(classify(item(), result), 'timeout');
+    assert.equal(result.route.status, 'no-verified-route');
+    assert.equal(captured.length, 1);
+    assert.equal(captured[0].partial, false);
+    assert.equal(captured[0].route.status, 'complete');
+    if (captured[0].route.status === 'complete')
+      assert.deepEqual(captured[0].route.segments[0].times, [0, 1]);
+    assert.ok('cancellationMs' in result.diagnostics);
+  } finally {
+    await prepared.solver.close();
+  }
 });

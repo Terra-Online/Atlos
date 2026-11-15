@@ -299,6 +299,65 @@
         "capsuleRadius": 0.3499999940395355,
         "requiredCorrection": "Choose a legal source contact; do not remove the static mesh or shrink the body."
       }
+    },
+    {
+      "id": "143-09xDr1Q",
+      "group": "launch",
+      "scene": "map02",
+      "level": "map02_lv006",
+      "target": {
+        "kind": "interactive",
+        "id": "25000130007",
+        "template": "int_narrative_scene_empty"
+      },
+      "query": {
+        "starts": [
+          {
+            "id": "25000060302",
+            "position": [397.92999267578125, 240.31299743652343, -1873.050048828125],
+            "cost": 0,
+            "state": "available"
+          }
+        ],
+        "goal": [409.2799987792969, 236.1659942626953, -1875.5],
+        "interaction": {
+          "radius": 2.5
+        }
+      },
+      "tags": ["launch", "landing"],
+      "evidence": [
+        {
+          "file": "exports/map02-interaction-points.json",
+          "collection": "points",
+          "id": "25000130007"
+        },
+        {
+          "file": "exports/map02-interaction-points.json",
+          "collection": "points",
+          "id": "25000060302"
+        }
+      ],
+      "setup": {
+        "projectStartToPhysicalSupport": true,
+        "requiredDevice": "25000060302"
+      },
+      "assertions": ["exercise:launch", "resolve-authored-launch-aim", "no-unsupported-landing"],
+      "status": "selected-unrun",
+      "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
+      "legacyCaseId": "v250-143",
+      "pointToken": "09xDr1Q",
+      "tokenSourceId": "25000130007",
+      "tokenRole": "interactive",
+      "knownIssue": {
+        "kind": "occupied-device-center",
+        "sourceActor": "855517292",
+        "component": 9,
+        "shapeIndex": 147,
+        "capsuleDistance": 0.121827,
+        "capsuleRadius": 0.3499999940395355,
+        "sourceCapHeight": 240.8385869337948,
+        "requiredCorrection": "Use a proven standing source foot inside the authored volume; do not remove the mesh or widen global height/body rules."
+      }
     }
   ]
 }

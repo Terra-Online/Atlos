@@ -240,6 +240,10 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
         );
       }
       const result = await tail.advance(options);
+      // A synthetic target approach is optional evidence. Its action discovery
+      // must not starve the original source's device and movement stages.
+      if (!tailCoversStart && result.status === 'pending' && result.window.stage !== 'walking')
+        return { status: 'incomplete' as const, reason: 'target-approach-walking-miss' };
       return result.status === 'complete'
         ? {
             status: 'partial' as const,

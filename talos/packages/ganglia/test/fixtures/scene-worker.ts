@@ -86,6 +86,29 @@ process.once('message', async (message: WorkerRequest) => {
         memory: workerMemory(),
         detail: 'fixture-search',
       });
+    if (setup.dataRoot === 'first-complete-test' && events) {
+      const result: RouteResult = {
+        route: {
+          status: 'complete',
+          start: query.starts[0].id,
+          arrivalCost: 0,
+          cost: 1,
+          length: 1,
+          points: [query.starts[0].position, query.goal],
+          segments: [
+            { mode: 'walk', points: [query.starts[0].position, query.goal], times: [0, 1] },
+          ],
+        },
+        connections: [],
+        diagnostics: { truncated: false },
+      };
+      for (const partial of [true, false, false])
+        send({
+          type: 'event',
+          id,
+          event: { type: 'candidate', result: { ...result, partial }, optimizing: true },
+        });
+    }
     if (query.goal[1] >= 3) {
       const end = performance.now() + query.goal[0];
       while (performance.now() < end) {}

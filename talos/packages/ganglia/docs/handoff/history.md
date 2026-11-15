@@ -1,5 +1,101 @@
 # Route solver history and validation evidence
 
+## Visualization scope correction and authored actions, 2026-11-15
+
+The user clarified that the goal is drawing a complete route with concrete timed
+actions in the 3D map. Three Astra-medium audits independently identified default
+whole-route physical reconstruction, duplicate publication sweeps, strict native
+height correction and blanket boost rejection as excess acceptance machinery.
+The mandatory waypoint interpretation also contradicted the owning planner's
+explicit coarse-discovery contract and integration tests. The user then required
+point work to continue concurrently and preferred Sol-high agents for implementation
+and execution. This supersedes earlier certificate/mandatory-stop requirements.
+
+Default whole-walking proof, cached repair budgets, grid A*, repeated final sweeps
+and mandatory-visit graph/leg splitting were removed. Source admission and actual
+action construction remain; native geometry and boost/resource clocks are not
+rewritten by a second physical model. Optional physical evaluation APIs remain.
+Old proof/stop prototypes and test drafts are archived in ignored experiment data.
+Existing tests were changed for the explicit scope/contract correction, not merely
+to hide failed physical execution. Source, goal, action, timing and binding checks
+remain meaningful and targeted.
+
+Measured evidence motivating the correction: R2 001 was incomplete at 121.505 s
+solver time; R3 001 was incomplete at 101.519 s with 39 complete native ground
+subplans, all rejected by whole-walk reconstruction. A native interior knot at
+Y105.970765 had physical support near Y105.802122. These are not equivalent
+representations for certification, but native navigation is the existing drawing
+model. After simplification, original 001 completed at modeled cost 30.794364748 s
+and 93.797 s solver time. The interrupted multi-case R5 run is not a full-run pass;
+its earlier completed independent cold artifact remains a usable observation.
+
+R6 completed 148 (4.775536070 s route,161.164928 s solver),161 (92.898319516 s,
+203.653368 s),165 (36.572736287 s,79.445816 s),218 (28.686074811 s,12.117211 s).
+These retain original target/source definitions; hints no longer impose unrequested
+stops. Latest mixed evidence reached 208. R6 004 was incomplete and 116/154 timed
+out; those failures remain retained. First complete artifacts were observed for
+all four completions, separately from terminal timings.
+
+141's normalized facts prove an unsupported action class rather than a contact
+problem: resolved/unitScale true, fixedLaunch false, height12, reference aim
+[-1342.3438720703125,268.4930114746094,-1368.6810302734375], free_jump true.
+The parser now exports explicit optional freeLaunch under symmetric known source
+policy; unknown fixed=false configurations do not gain a guessed free model.
+Free proposals use authored height, known run-air-speed limit and bounded reference
+plus eight headings. Fixed-launch output remains equal in its regression. R7 141
+completed with two launch connections, modeled cost4.088485514 s and solver10.197 s,
+advancing latest mixed evidence to 209/266. This does not establish hardware/game
+execution or a full-population quality/latency result.
+
+Sol-high implementation also retains direct moving winners as the known incumbent
+so recovery does not disregard an existing complete route; cheaper native results
+still compete. Exact provider source identity enables direct probing despite a
+coarse static projection. Source-admission diagnostics reach the journal. Real166
+showed target-approach at [-89.99828,132.949707,-87.09653], not original provider
+source2100010064/Y134.770811. Optional synthetic tail work is now limited to its
+walking attempt before the original pipeline proceeds; real validation is pending.
+The test retains original/root-covering behavior and does not add attempt budgets.
+
+R7 173 then failed IPC serialization because diagnostics.devices referenced the
+prepared direct cache's annotate closure. Diagnostics now project only data
+(connections,boosts,outcomes,snapshot,motionValidation). Structured-clone regression
+covers every emitted report across fresh/reused preparations. Invalid operational
+runs remain visible; no dropped candidate or missing result is inferred successful.
+
+The full stable R8 package check passed 538 tests, typecheck, lint and format after
+free/direct, tail-strategy and IPC integration. Maintained/private adapter
+normalization passed three focused tests; five free-action tests include timed
+end-to-end completion and fixed-output preservation. Later complete-population
+validation remains unrun. Native profiler samples without symbols did not establish a hotspot; the
+occupied unrelated inspector port was left untouched. Future private commands
+record an inactive ephemeral inspector port for targeted diagnostics only.
+
+The local page watcher writes both requested HTML paths on each finished case or
+first native candidate. Progress keeps actual terminal outcome, available artifact,
+first/terminal timing, query/setup/source identity, protected prior costs and run
+issues distinct. The 300 s cooperative deadline and cancellation tail are not
+redefined by first-complete capture. Point 009's current long-stage timeout took
+524.015 s without a complete artifact. No worker was killed on that deadline.
+
+Workload revisions7--9 are explicit input repairs/reselections; revision10 changes
+acceptance interpretation only. Historical ordered-stop assertions216--219 remain
+in per-case metadata, not passing assertions. Original six invalid/refusal controls
+remain outside the positive266. No Rust or unrelated generated cache/dependency
+was edited. No new main control, deployment, 266-completion claim or matched
+per-point superiority is recorded.
+
+The user then authorized publishing the 266 definitions and current progress to
+the existing PR #100 for misakavan. The frozen snapshot records 211 complete native
+artifacts and 55 remaining cases at 2026-11-15T10:59:16.284Z, with 52 resumed cases
+observed and no reachability/cost regression flags in that tested subset. Revised
+229 completed with cost 14.850936688 s / solver 31.622 s; expansion-enabled 234
+completed with cost 23.974124613 s / solver 34.592 s. These follow input revisions
+and are not presented as same-input algorithm gains. Published JSON/HTML retain
+all 266 rows, actual outcomes, source hashes and relative local-evidence references;
+raw assets/configuration are excluded. A Sol-high read-only review found no
+blocking correctness issue in the current solver/bench diff. The live serial point
+lane and ignored HTML continue while the GitHub snapshot stays frozen.
+
 ## Support and ordered-visit milestone, 2026-11-15
 
 The stable combined package pass now includes 535 tests plus formatting, lint and

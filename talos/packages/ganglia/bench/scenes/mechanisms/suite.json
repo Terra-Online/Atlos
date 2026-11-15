@@ -111,7 +111,9 @@
     "exercise": "Report a separate exercised/not-exercised result for each exercise assertion. A valid alternative does not establish mechanism coverage.",
     "comparison": "Preserve each independently valid old success on matched inputs, setup, budgets and lifecycle: reachability, modeled route time and comparable end-to-end solve time must not regress per point. Route time permits numerical roundoff only. Use three interleaved timing groups, five for suspected regression, with same-version noise controls. Failure-to-success within the common SLO is progress and becomes a new guard. Preserve unconfirmed historical best results as explicit protection targets.",
     "deadlineSeconds": 300,
-    "cleanup": "Close owned browser pages and terminate owned profiler/worker processes after every profile batch. Do not stop unrelated development services."
+    "cleanup": "Close owned browser pages and terminate owned profiler/worker processes after every profile batch. Do not stop unrelated development services.",
+    "waypoints": "Optional coarse discovery hints, including internally generated cells and device-center witnesses. They are not mandatory visits or grounded stops. Endpoint, complete actions, resource continuity and original source/goal ownership remain required.",
+    "physicalCertification": "Optional explicit diagnostic; not a default completion gate or repeated solver-subplan proof."
   },
   "excludedScope": [
     "Moving-platform phase synchronization and waiting are explicitly excluded by the user; they are not acceptance gaps."
@@ -121,7 +123,9 @@
     "Revision 5: all 266 main IDs use real entity tokens. Six unrun non-entity navigation queries are preserved verbatim as separate geometry probes and replaced with source interaction targets. Cases 236 and 242 are explicitly new navigation cases at 50.153m and 185.241m horizontal distance, not equivalent nearby replacements. Historical result IDs remain unchanged; legacy-id-map.csv records the mapping.",
     "Revision 6: the user supersedes the historical 5% route-cost tolerance with strict per-point quality and comparable latency acceptance. Query/setup definitions are unchanged; results remain in separately bound reports.",
     "Revision 7 (2026-11-15): replace locked/unknown-origin negative slots 228/229 with source-selected collectible targets, chosen before solver output; teleport/campfire anchors remain origins only. Cases 234/240 retain their goals and origins but permit ordinary source-window expansion. Preserve all four prior negative definitions in negative-controls.json; changed inputs cannot be credited as same-input algorithm gains. Cases 093--099 bind the retained exact-numeric V8 collision encoding from the completed census input repair; physical bounds and source facts are unchanged.",
-    "Revision 8 (2026-11-15): case185 keeps its conveyor entity/token but replaces source-sampled contacts intersecting an exported static overhead beam with a fixed-seed legal same-facility contact pair1.207170m apart. Full source-footprint collision/support checks retain the beam, all following bodies and original physics. The occupied original definition remains in negative-controls.json; this is an input repair, not an algorithm gain."
+    "Revision 8 (2026-11-15): case185 keeps its conveyor entity/token but replaces source-sampled contacts intersecting an exported static overhead beam with a fixed-seed legal same-facility contact pair1.207170m apart. Full source-footprint collision/support checks retain the beam, all following bodies and original physics. The occupied original definition remains in negative-controls.json; this is an input repair, not an algorithm gain.",
+    "Revision 9 (2026-11-15): case143 keeps its device and destination but starts at a source-proved standing contact inside the original interaction volume. Original source center lies inside exported mesh855517292/component9/shape147; legal cap feet lie0.5305895m above that center. Original occupied definition remains in negative-controls.json. This is a source-seed input repair; no global height/contact/collision rule is changed.",
+    "Revision 10 (2026-11-15): restore existing waypoints as optional coarse discovery hints per the owning planner and integration callers. Remove invented mandatory-leg/exact-visit completion gates for the requested3D action-route visualization. Coordinates, source/goal and resource rules are unchanged. Prior ordered-stop fixture expectations216--219 are retained in per-case acceptanceRevision metadata and are not claimed to have passed."
   ],
   "supportPolicy": {
     "vertical": "Source pose caps plus validated bidirectional ride connections, without a fictitious shaft wall.",
@@ -9197,7 +9201,7 @@
         "starts": [
           {
             "id": "25000060302",
-            "position": [397.92999267578125, 240.31299743652343, -1873.050048828125],
+            "position": [397.9299926241735, 240.84358693379477, -1873.0500488815123],
             "cost": 0,
             "state": "available"
           }
@@ -9230,7 +9234,17 @@
       "legacyCaseId": "v250-143",
       "pointToken": "09xDr1Q",
       "tokenSourceId": "25000130007",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "inputRevision": {
+        "revision": 9,
+        "classification": "source-center input repair, not same-input algorithm gain",
+        "originalControl": "negative-controls.json#143-09xDr1Q",
+        "seed": 20261115,
+        "sourceDevice": "25000060302",
+        "selectionPolicy": "Source-only upward faces within existing player slope; nearest projected source-volume support plus face-centroid/edge-midpoint samples; physical standing and unchanged source volume/capsule/wall/coverage/following checks; choose nearest legal actual feet to original start, SHA256(seed,device,face,feet) breaks ties. Destination and solver answers never rank proposals.",
+        "legalCandidates": 45,
+        "constraint": "Same authored source interaction volume, device and destination; original source-center sample intersects its mesh; existing global height bands and body rules unchanged."
+      }
     },
     {
       "id": "144-0db14Cv",
@@ -9581,7 +9595,13 @@
       "legacyCaseId": "v250-150",
       "pointToken": "18H6taZ",
       "tokenSourceId": "2100030938",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "151-0VghZMJ",
@@ -9638,7 +9658,13 @@
       "legacyCaseId": "v250-151",
       "pointToken": "0VghZMJ",
       "tokenSourceId": "23400083334",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "152-042dpSC",
@@ -9695,7 +9721,13 @@
       "legacyCaseId": "v250-152",
       "pointToken": "042dpSC",
       "tokenSourceId": "3400160023",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "153-0FoShyd",
@@ -9752,7 +9784,13 @@
       "legacyCaseId": "v250-153",
       "pointToken": "0FoShyd",
       "tokenSourceId": "22800040378",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "154-1ctEzjf",
@@ -9809,7 +9847,13 @@
       "legacyCaseId": "v250-154",
       "pointToken": "1ctEzjf",
       "tokenSourceId": "2800223010",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "155-0Kaoviv",
@@ -9866,7 +9910,13 @@
       "legacyCaseId": "v250-155",
       "pointToken": "0Kaoviv",
       "tokenSourceId": "23400270012",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "156-0wPCdoe",
@@ -9923,7 +9973,13 @@
       "legacyCaseId": "v250-156",
       "pointToken": "0wPCdoe",
       "tokenSourceId": "25000070339",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "157-0gcAdR9",
@@ -9980,7 +10036,13 @@
       "legacyCaseId": "v250-157",
       "pointToken": "0gcAdR9",
       "tokenSourceId": "10200160072",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "158-0cuZiEF",
@@ -10037,7 +10099,13 @@
       "legacyCaseId": "v250-158",
       "pointToken": "0cuZiEF",
       "tokenSourceId": "37900010246",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "159-0PqRUqq",
@@ -10094,7 +10162,13 @@
       "legacyCaseId": "v250-159",
       "pointToken": "0PqRUqq",
       "tokenSourceId": "3400080191",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "160-0uFK88M",
@@ -10151,7 +10225,13 @@
       "legacyCaseId": "v250-160",
       "pointToken": "0uFK88M",
       "tokenSourceId": "22800580297",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "161-04xmYx7",
@@ -10209,7 +10289,13 @@
       "legacyCaseId": "v250-161",
       "pointToken": "04xmYx7",
       "tokenSourceId": "2800001202",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "162-0DeDqep",
@@ -10266,7 +10352,13 @@
       "legacyCaseId": "v250-162",
       "pointToken": "0DeDqep",
       "tokenSourceId": "23400083178",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "163-0AvUSn4",
@@ -10326,7 +10418,13 @@
       "legacyCaseId": "v250-163",
       "pointToken": "0AvUSn4",
       "tokenSourceId": "25000070271",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "164-17jhKR2",
@@ -10383,7 +10481,13 @@
       "legacyCaseId": "v250-164",
       "pointToken": "17jhKR2",
       "tokenSourceId": "10200030369",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "165-19jRrUJ",
@@ -10440,7 +10544,13 @@
       "legacyCaseId": "v250-165",
       "pointToken": "19jRrUJ",
       "tokenSourceId": "37900090398",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "166-0U24Zlh",
@@ -13637,7 +13747,7 @@
           [-245.77499389648438, 114.33000335693359, -555.8280029296875]
         ]
       },
-      "tags": ["ordered-waypoints"],
+      "tags": ["coarse-waypoint-guides"],
       "evidence": [
         {
           "file": "exports/map01-interaction-points.json",
@@ -13662,14 +13772,23 @@
       ],
       "setup": {},
       "assertions": [
-        "waypoints-in-given-order",
-        "resource-and-boost-state-continue-across-waypoints"
+        "waypoints-preserve-input-order-as-discovery-hints",
+        "whole-route-resource-and-selected-boost-state"
       ],
       "status": "selected-unrun",
       "legacyCaseId": "v250-216",
       "pointToken": "0SK2QRR",
       "tokenSourceId": "2100021088",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [
+          "waypoints-in-given-order",
+          "resource-and-boost-state-continue-across-waypoints"
+        ],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "217-0rv1UwY",
@@ -13699,7 +13818,7 @@
           [-798.7890014648438, 225.25899658203124, -1181.3089599609375]
         ]
       },
-      "tags": ["ordered-waypoints"],
+      "tags": ["coarse-waypoint-guides"],
       "evidence": [
         {
           "file": "exports/map02-interaction-points.json",
@@ -13724,14 +13843,23 @@
       ],
       "setup": {},
       "assertions": [
-        "waypoints-in-given-order",
-        "resource-and-boost-state-continue-across-waypoints"
+        "waypoints-preserve-input-order-as-discovery-hints",
+        "whole-route-resource-and-selected-boost-state"
       ],
       "status": "selected-unrun",
       "legacyCaseId": "v250-217",
       "pointToken": "0rv1UwY",
       "tokenSourceId": "10100010013",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [
+          "waypoints-in-given-order",
+          "resource-and-boost-state-continue-across-waypoints"
+        ],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "218-1awU1hb",
@@ -13764,7 +13892,7 @@
           [-702.7836354970932, 129.0277726896107, 47.25995069742203]
         ]
       },
-      "tags": ["ordered-waypoints"],
+      "tags": ["coarse-waypoint-guides"],
       "evidence": [
         {
           "file": "exports/map01-interaction-points.json",
@@ -13789,14 +13917,23 @@
       ],
       "setup": {},
       "assertions": [
-        "waypoints-in-given-order",
-        "resource-and-boost-state-continue-across-waypoints"
+        "waypoints-preserve-input-order-as-discovery-hints",
+        "whole-route-resource-and-selected-boost-state"
       ],
       "status": "selected-unrun",
       "legacyCaseId": "v250-218",
       "pointToken": "1awU1hb",
       "tokenSourceId": "200001194",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [
+          "waypoints-in-given-order",
+          "resource-and-boost-state-continue-across-waypoints"
+        ],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "219-0OTESmy",
@@ -13829,7 +13966,7 @@
           [-1185.8089599609375, 286.589013671875, -320.6499938964844]
         ]
       },
-      "tags": ["ordered-waypoints"],
+      "tags": ["coarse-waypoint-guides"],
       "evidence": [
         {
           "file": "exports/map02-interaction-points.json",
@@ -13854,14 +13991,23 @@
       ],
       "setup": {},
       "assertions": [
-        "waypoints-in-given-order",
-        "resource-and-boost-state-continue-across-waypoints"
+        "waypoints-preserve-input-order-as-discovery-hints",
+        "whole-route-resource-and-selected-boost-state"
       ],
       "status": "selected-unrun",
       "legacyCaseId": "v250-219",
       "pointToken": "0OTESmy",
       "tokenSourceId": "22800040223",
-      "tokenRole": "interactive"
+      "tokenRole": "interactive",
+      "acceptanceRevision": {
+        "revision": 10,
+        "waypoints": "optional-coarse-discovery-hints",
+        "priorStopExpectations": [
+          "waypoints-in-given-order",
+          "resource-and-boost-state-continue-across-waypoints"
+        ],
+        "reason": "Established planner/caller contract and current route-visualization requirement; no mandatory itinerary was requested."
+      }
     },
     {
       "id": "220-0S2QOjf",
@@ -17283,5 +17429,5 @@
     "source": "Numeric target entity ID; conveyor contacts use their real source group actor ID.",
     "geometryProbeCount": 6
   },
-  "revision": 8
+  "revision": 10
 }

@@ -340,13 +340,34 @@ export async function resolveMechanismQuery(
         id: `source-raw/${ids[index]}`,
         vertices,
       }));
-      const rawWitnesses = createGoalProjector(surfaces)(volume.position, {
-        maxVertical: vertical,
-        interaction: volume.interaction,
-      }).filter(
-        (witness) =>
-          witness.position[1] >= entry.floor[0] - 1e-6 &&
-          witness.position[1] <= entry.floor[1] + 1e-6,
+      const minimumUp = Math.cos((selected.input.movement.maxSlope * Math.PI) / 180);
+      const supports: typeof surfaces = [],
+        probes: typeof surfaces = [];
+      for (const surface of surfaces) {
+        const [a, b, c] = surface.vertices;
+        const ab = b.map((v, i) => v - a[i]),
+          ac = c.map((v, i) => v - a[i]);
+        const normal = [
+          ab[1] * ac[2] - ab[2] * ac[1],
+          ab[2] * ac[0] - ab[0] * ac[2],
+          ab[0] * ac[1] - ab[1] * ac[0],
+        ];
+        (normal[1] > 0 && normal[1] / Math.hypot(...normal) >= minimumUp ? supports : probes).push(
+          surface,
+        );
+      }
+      // Spend the same finite quota on possible support first. Other faces can
+      // still propose legal feet on a neighbouring cap, so retain them as
+      // secondary probes rather than treating their orientation as a rejection.
+      const rawWitnesses = [supports, probes].flatMap((faces) =>
+        createGoalProjector(faces)(volume.position, {
+          maxVertical: vertical,
+          interaction: volume.interaction,
+        }).filter(
+          (witness) =>
+            witness.position[1] >= entry.floor[0] - 1e-6 &&
+            witness.position[1] <= entry.floor[1] + 1e-6,
+        ),
       );
       entry.rawWitnessCount = rawWitnesses.length;
       entry.rawCandidates = rawWitnesses

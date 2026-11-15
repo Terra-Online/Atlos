@@ -13,12 +13,13 @@ interface Options {
   walls: Wall[];
   model: { gravity: number; fallingGravity: number; maxFallingSpeed: number; apexTime: number };
   maxSlope: number;
+  runAirSpeed?: number;
 }
 const vector = (v: unknown): v is Vec3 =>
   Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
 const distance = (a: Vec3, b: Vec3) => Math.hypot(...a.map((v, i) => v - b[i]));
-// the fixed pad aims at an airborne position. preserve its horizontal velocity
-// while descending to physical support, then validate the complete swept arc.
+// A reference aim may be airborne. Preserve its proposed horizontal velocity
+// while descending to support, then validate the complete swept arc.
 const launchLanding = (
   starts: Vec3[],
   aim: Vec3,
@@ -27,6 +28,7 @@ const launchLanding = (
   options: Options,
   support: (seed: Vec3) => Vec3 | null,
   inside: (seed: Vec3) => boolean,
+  freeSpeed?: number,
 ) => {
   const { world, surfaces, profile, walls } = options;
   let minimum = Infinity;
@@ -36,13 +38,14 @@ const launchLanding = (
     }
   }
   for (const start of starts) {
-    // A launch must clear its aim by the adapter-supplied minimum height.
+    // Fixed pads clear their aim; free steering retains the authored pad height.
     const model = {
       gravity: options.model.gravity,
       fallingGravity: options.model.fallingGravity,
       maxFallingSpeed: options.model.maxFallingSpeed,
       apexTime: options.model.apexTime,
-      maxJumpHeight: Math.max(height, aim[1] + aimClearance - start[1]),
+      maxJumpHeight:
+        freeSpeed === undefined ? Math.max(height, aim[1] + aimClearance - start[1]) : height,
       mode: 'jump' as const,
     };
     const aimTime = jumpDuration(start[1], aim[1], model);
@@ -53,6 +56,7 @@ const launchLanding = (
     const vx = (aim[0] - start[0]) / aimTime;
     const vz = (aim[2] - start[2]) / aimTime;
     const speed = Math.hypot(vx, vz);
+    if (freeSpeed !== undefined && speed > freeSpeed + 1e-7) continue;
     const speedTolerance = Math.max(1, speed) * 1e-7;
     const end: Vec3 = [start[0] + vx * endTime, minimum, start[2] + vz * endTime];
     // this unverified curve only proposes landings. only the final call uses
@@ -61,7 +65,7 @@ const launchLanding = (
       ...model,
       profile,
       walls: [],
-      maxHorizontalSpeed: speed + speedTolerance,
+      maxHorizontalSpeed: freeSpeed ?? speed + speedTolerance,
       sweep: () => null,
     });
     if (!proposal) {
@@ -121,7 +125,7 @@ const launchLanding = (
         ...model,
         profile,
         walls,
-        maxHorizontalSpeed: speed + speedTolerance,
+        maxHorizontalSpeed: freeSpeed ?? speed + speedTolerance,
         sweep: (a, b, body) => world.sweepCapsule(a, b, body),
       });
       if (arc) {
@@ -332,6 +336,53 @@ export const createDeviceConnections = (input: DeviceFacts, options: Options) =>
             endpointTolerance: profile.radius,
           });
           reason = 'accepted';
+        }
+      }
+    } else if (
+      p.freeLaunch === true &&
+      p.resolved &&
+      d.unitScale &&
+      options.runAirSpeed !== undefined
+    ) {
+      const speed = options.runAirSpeed;
+      const height = p.height;
+      if (Number.isFinite(speed) && speed > 0 && Number.isFinite(height) && height > 0) {
+        reason = 'launch-motion-blocked';
+        const entries = nearby(d);
+        if (!entries.length) reason = 'entry-support-or-clearance-unresolved';
+        for (const start of entries) {
+          const duration = jumpDuration(start[1], start[1], {
+            ...options.model,
+            maxJumpHeight: height,
+            mode: 'jump',
+          });
+          if (!duration) continue;
+          // Free launch uses the pad's vertical height and character air speed.
+          // The authored aim is a proposal, not a required destination. Sampling
+          // additional headings is query independent so prepared device caches
+          // can safely retain these model-based actions across requests.
+          const aims: Vec3[] = vector(p.aim) ? [p.aim] : [];
+          const angle = vector(p.aim) ? Math.atan2(p.aim[2] - start[2], p.aim[0] - start[0]) : 0;
+          for (let i = 0; i < 8; i++) {
+            const heading = angle + (i * Math.PI) / 4;
+            aims.push([
+              start[0] + Math.cos(heading) * speed * duration,
+              start[1],
+              start[2] + Math.sin(heading) * speed * duration,
+            ]);
+          }
+          for (const aim of aims) {
+            const arc = launchLanding([start], aim, height, 0, options, support, inside, speed);
+            if (!arc) continue;
+            connections.push({
+              ...arc,
+              id: `launch/${d.id}/${connections.length}`,
+              mode: 'launch',
+              state: 'open',
+              endpointTolerance: profile.radius,
+            });
+            reason = 'accepted';
+          }
         }
       }
     }

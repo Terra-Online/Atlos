@@ -15,6 +15,7 @@ import {
 } from '#@/bench/mechanism-query.ts';
 import {
   checkSetup,
+  captureFirstComplete,
   facilityAudit,
   type FacilityCatalog,
   resourcePath,
@@ -277,9 +278,15 @@ process.once('message', async (message: WorkerRequest) => {
         {
           kernelRoot: binding.kernel,
           createPreparation: host.createPhysicalPreparation,
+          onResult: (report) => {
+            physicalDiagnostics = report.diagnostics;
+          },
           onProgress: (detail) => {
             lastProgress = detail;
-            progress({ type: 'progress', phase: 'validate' }, detail.phase);
+            progress(
+              { type: 'progress', phase: 'validate' },
+              detail.phase === 'source-admission' ? JSON.stringify(detail) : detail.phase,
+            );
           },
           transformInput: (raw) => {
             const audit = facilityAudit(raw, catalog);
@@ -358,6 +365,8 @@ process.once('message', async (message: WorkerRequest) => {
       return;
     }
     if (m.type !== 'solve') return;
+    physicalDiagnostics = undefined;
+    lastProgress = undefined;
     controller = new AbortController();
     activeId = m.id;
     activeEvents = m.events;
@@ -368,6 +377,30 @@ process.once('message', async (message: WorkerRequest) => {
     let preparationMs = 0;
     let result: RouteResult;
     let solverMs: number | undefined;
+    const describe = (result: RouteResult, solverMs?: number): MechanismResult => ({
+      ...result,
+      diagnostics: {
+        ...result.diagnostics,
+        mechanism: {
+          mode: 'physical-diagnostic',
+          originalQuery: item.setup.projectStartToPhysicalSupport ? item.query : undefined,
+          resolvedQuery: item.setup.projectStartToPhysicalSupport ? resolvedQuery : undefined,
+          startResolution,
+          exercise: exercised(item, result, input),
+          inputBindings:
+            readSceneTimings && inputBindings && typeof inputBindings === 'object'
+              ? { ...inputBindings, sceneTimings: readSceneTimings() }
+              : (inputBindings ?? { facilityAudits }),
+          physicalDiagnostics,
+          lastProgress,
+          missingCoverage,
+          preparationMs,
+          solverMs,
+          effectiveStart: result.route.status === 'complete' ? result.route.points[0] : undefined,
+        },
+      },
+    });
+
     try {
       if (!isDeepStrictEqual(m.query, item.query))
         throw new Error('Diagnostic query differs from its fixed case');
@@ -380,10 +413,24 @@ process.once('message', async (message: WorkerRequest) => {
       }
       controller.signal.throwIfAborted();
       const solving = performance.now();
+      const candidate = captureFirstComplete((event) => {
+        const now = performance.now();
+        if (!activeEvents || controller!.signal.aborted || now - started >= QUERY_SLO_MS) return;
+        const result = describe(event.result, now - solving);
+        result.diagnostics.mechanism = {
+          ...result.diagnostics.mechanism,
+          originalQuery: item.query,
+          resolvedQuery,
+          firstCompleteSolverMs: now - solving,
+          firstCompleteDispatchMs: now - started,
+        };
+        send({ type: 'event', id: m.id, event: { ...event, result }, detail: 'first-complete' });
+      });
       try {
         result = await solver!.solve(resolvedQuery, {
           signal: controller.signal,
           onEvent: (event) => {
+            candidate(event);
             if (event.type === 'progress') {
               lastProgress = event;
               progress(event);
@@ -416,29 +463,7 @@ process.once('message', async (message: WorkerRequest) => {
         reason: controller.signal.aborted ? 'aborted' : reason + text,
       };
     }
-    const complete: MechanismResult = {
-      ...result,
-      diagnostics: {
-        ...result.diagnostics,
-        mechanism: {
-          mode: 'physical-diagnostic',
-          originalQuery: item.setup.projectStartToPhysicalSupport ? item.query : undefined,
-          resolvedQuery: item.setup.projectStartToPhysicalSupport ? resolvedQuery : undefined,
-          startResolution,
-          exercise: exercised(item, result, input),
-          inputBindings:
-            readSceneTimings && inputBindings && typeof inputBindings === 'object'
-              ? { ...inputBindings, sceneTimings: readSceneTimings() }
-              : (inputBindings ?? { facilityAudits }),
-          physicalDiagnostics,
-          lastProgress,
-          missingCoverage,
-          preparationMs,
-          solverMs,
-          effectiveStart: result.route.status === 'complete' ? result.route.points[0] : undefined,
-        },
-      },
-    };
+    const complete = describe(result, solverMs);
     send({
       type: 'result',
       id: m.id,

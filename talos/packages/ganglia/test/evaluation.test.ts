@@ -55,33 +55,17 @@ test('query verification rejects disconnected paths, locked arrivals and missed 
     false,
   );
 });
-test('waypoints are checked on spans and must occur in query order', () => {
+test('coarse discovery hints do not change endpoint verification', () => {
+  const hints: RouteQuery = {
+    ...query,
+    waypoints: [
+      [8, 20, 6],
+      [3, 0, 0],
+    ],
+  };
+  assert.equal(verifyRoute(hints, route(), { maxVertical: 0.5 }).valid, true);
   assert.equal(
-    verifyRoute(
-      {
-        ...query,
-        waypoints: [
-          [3, 0, 0],
-          [8, 0, 0],
-        ],
-      },
-      route(),
-      { maxVertical: 0.5 },
-    ).valid,
-    true,
-  );
-  assert.equal(
-    verifyRoute(
-      {
-        ...query,
-        waypoints: [
-          [8, 0, 0],
-          [3, 0, 0],
-        ],
-      },
-      route(),
-      { maxVertical: 0.5 },
-    ).valid,
+    verifyRoute({ ...hints, goal: [20, 0, 0] }, route(), { maxVertical: 0.5 }).valid,
     false,
   );
 });
@@ -125,85 +109,6 @@ test('shared locomotion executes chosen controls and carries stamina across bloc
   const continuation = rules.advance(block, sprint.state, { allowSprint: true, allowDash: false })!;
   assert.ok(continuation.state.energy < sprint.state.energy);
   assert.ok(continuation.state.energy > sprint.state.energy - 4);
-});
-
-test('ordered waypoints on a vertical rope span use its vertical interval', () => {
-  const candidate: Extract<Route, { status: 'complete' }> = {
-    status: 'complete',
-    start: 'start',
-    arrivalCost: 0,
-    cost: 1,
-    length: 10,
-    points: [
-      [0, 0, 0],
-      [0, 10, 0],
-    ],
-    segments: [
-      {
-        mode: 'rope',
-        points: [
-          [0, 0, 0],
-          [0, 10, 0],
-        ],
-        times: [0, 1],
-      },
-    ],
-  };
-  const request: RouteQuery = {
-    starts: [{ id: 'start', position: [0, 0, 0], cost: 0, state: 'available' }],
-    goal: [0, 10, 0],
-    waypoints: [
-      [0, 5, 0],
-      [0, 10, 0],
-    ],
-  };
-  assert.equal(verifyRoute(request, candidate, { maxVertical: 0.5 }).valid, true);
-  assert.equal(
-    verifyRoute(
-      {
-        ...request,
-        waypoints: [
-          [0, 10, 0],
-          [0, 9.2, 0],
-        ],
-      },
-      candidate,
-      { maxVertical: 0.5 },
-    ).valid,
-    true,
-  );
-  assert.equal(
-    verifyRoute(
-      {
-        ...request,
-        waypoints: [
-          [0, 8, 0],
-          [0, 2, 0],
-        ],
-      },
-      candidate,
-      { maxVertical: 0.5 },
-    ).valid,
-    false,
-  );
-});
-
-test('a zero-length route can satisfy a waypoint at its available start', () => {
-  const candidate: Extract<Route, { status: 'complete' }> = {
-    status: 'complete',
-    start: 'start',
-    arrivalCost: 2,
-    cost: 2,
-    length: 0,
-    points: [[0, 0, 0]],
-    segments: [],
-  };
-  assert.equal(
-    verifyRoute({ ...query, goal: [0, 0, 0], waypoints: [[0, 0, 0]] }, candidate, {
-      maxVertical: 0.5,
-    }).valid,
-    true,
-  );
 });
 
 test('verification accepts configurable goal and report rounding but returns recomputed costs', () => {

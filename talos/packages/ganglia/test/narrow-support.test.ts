@@ -1,14 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
+import { findGoalHit } from '#@/src/model/goals.ts';
 import { createPhysicalWorld } from '#@/src/model/world.ts';
-import type { Route } from '#@/src/route.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
-import {
-  narrowGoalSupports,
-  proveGroundRoute,
-  checkedGroundPlanner,
-} from '#@/src/v1/solver/ground-refinement.ts';
+import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
+import { narrowGoalSupports } from '#@/src/v1/solver/ground-refinement.ts';
 const scene: PhysicalInput = {
   ground: {
     surfaces: [],
@@ -54,37 +51,14 @@ const options = (input: PhysicalInput) => ({
   maxCandidates: 8,
   physical: createPhysicalWorld(input, 'complete'),
 });
-const route: Route = {
-  status: 'complete',
-  start: 'start',
-  arrivalCost: 0,
-  cost: 2,
-  length: 2,
-  points: [
-    [-1, 0.01, 0],
-    [1, 0.01, 0],
-  ],
-  segments: [
-    {
-      mode: 'walk',
-      points: [
-        [-1, 0.01, 0],
-        [1, 0.01, 0],
-      ],
-      times: [0, 2],
-    },
-  ],
-};
-test('missing narrow source charts require physical support and proved output walking spans', () => {
+test('missing narrow source charts require physical support and use native walking', () => {
   const opts = options(scene),
     charts = narrowGoalSupports(scene.collision, [], opts);
   assert.equal(charts.surfaces.length, 2);
-  assert.equal(proveGroundRoute(route, opts.physical, scene.ground.options).status, 'complete');
-  const planner = checkedGroundPlanner(
-    charts.surfaces,
-    { ...scene.ground.options, locomotion: scene.locomotion },
-    opts.physical,
-  );
+  const planner = createGroundPlanner(charts.surfaces, {
+    ...scene.ground.options,
+    locomotion: scene.locomotion,
+  });
   assert.equal(
     planner.plan(
       [{ id: 'start', state: 'available', cost: 0, position: [-1, 0.01, 0] }],
@@ -100,7 +74,13 @@ test('missing narrow source charts require physical support and proved output wa
     { interaction: { radius: 0.1 } },
   );
   assert.equal(stationary.status, 'complete');
-  if (stationary.status === 'complete') assert.deepEqual(stationary.points.at(-1), [0, 0.01, 0]);
+  if (stationary.status === 'complete') {
+    // The native chart retains its own height; the unchanged interaction volume
+    // determines collection rather than a reconstructed collider-foot offset.
+    assert.deepEqual(stationary.points.at(-1), [0, 0, 0]);
+    const end = stationary.points.at(-1)!;
+    assert.ok(findGoalHit([end, end], [0, 0.01, 0], { radius: 0.1 }));
+  }
 });
 test('interior overhangs and walls reject a narrow cap even when both walk endpoints remain clear', () => {
   for (const kind of ['wall', 'overhang']) {
@@ -131,39 +111,7 @@ test('interior overhangs and walls reject a narrow cap even when both walk endpo
     assert.ok(physical.standing([-1, 0.01, 0]));
     assert.ok(physical.standing([1, 0.01, 0]));
     assert.equal(narrowGoalSupports(input.collision, [], opts).surfaces.length, 0);
-    assert.equal(
-      proveGroundRoute(route, opts.physical, input.ground.options).status,
-      'no-verified-route',
-    );
   }
-});
-
-test('physical walk proof preserves the selected source and rederives goal events', () => {
-  const physical = createPhysicalWorld(scene, 'complete');
-  const elevated = structuredClone(route);
-  if (elevated.status !== 'complete') return;
-  elevated.points[0][1] = 0.1;
-  elevated.segments[0].points[0][1] = 0.1;
-  assert.equal(
-    proveGroundRoute(elevated, physical, scene.ground.options).status,
-    'no-verified-route',
-  );
-  assert.equal(
-    proveGroundRoute(route, physical, scene.ground.options, {
-      position: [1, 0.1, 0],
-      interaction: { radius: 0.01 },
-    }).status,
-    'no-verified-route',
-  );
-  const stale = structuredClone(route);
-  if (stale.status !== 'complete') return;
-  stale.goalHit = { segment: 0, position: [1, 0.01, 0], time: 0 };
-  const corrected = proveGroundRoute(stale, physical, scene.ground.options, {
-    position: [1, 0.01, 0],
-    interaction: { radius: 0.3 },
-  });
-  assert.ok(corrected.status === 'complete');
-  assert.ok(Math.abs(corrected.goalHit!.time - 1.7) < 1e-6);
 });
 
 test('ordinary solver recovers a narrow takeoff from the original arrival only after its first strategies fail', async () => {
@@ -223,20 +171,4 @@ test('ordinary solver recovers a narrow takeoff from the original arrival only a
     result.route,
   );
   assert.equal(evaluation.valid, true, JSON.stringify(evaluation));
-});
-
-test('narrow walking correction refuses stale boost pickup and expiry clocks', () => {
-  const physical = createPhysicalWorld(scene, 'complete');
-  for (const kind of ['pickup', 'segment', 'expiry']) {
-    const candidate: Route = structuredClone(route);
-    if (candidate.status !== 'complete') return;
-    const boost = { id: 'boost', multiplier: 2, duration: 1 };
-    if (kind === 'pickup') candidate.boosts = [{ ...boost, position: [0, 0.01, 0], elapsed: 1 }];
-    if (kind === 'segment') candidate.segments[0].boost = boost;
-    if (kind === 'expiry') candidate.segments[0].boostExpiry = 0.5;
-    assert.equal(
-      proveGroundRoute(candidate, physical, scene.ground.options).status,
-      'no-verified-route',
-    );
-  }
 });

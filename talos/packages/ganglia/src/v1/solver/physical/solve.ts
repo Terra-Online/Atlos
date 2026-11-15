@@ -15,12 +15,7 @@ import { registerCatalogSurfaces } from '#@/src/v1/route/action-catalog.ts';
 import { pruneGroundDetours } from '#@/src/v1/route/ground-detours.ts';
 import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { planJumpRoute, type InitialGroundProof } from '#@/src/v1/route/jump-planner.ts';
-import {
-  checkedGroundPlanner,
-  narrowGoalSupports,
-  proveGroundRoute,
-  refineGoalGround,
-} from '#@/src/v1/solver/ground-refinement.ts';
+import { narrowGoalSupports, refineGoalGround } from '#@/src/v1/solver/ground-refinement.ts';
 import { createDeviceConnections as deviceConnections } from '#@/src/v1/solver/physical/devices.ts';
 import { planFollowingRoute } from '#@/src/v1/solver/physical/following-route.ts';
 import { prepareMovingDirect } from '#@/src/v1/solver/physical/moving-direct.ts';
@@ -30,6 +25,10 @@ import {
   createMovingRouteAnnotator,
 } from '#@/src/v1/solver/physical/moving-route.ts';
 import type { CacheScope, CacheStats } from '#@/src/v1/solver/physical/preparation.ts';
+import {
+  sourceContact as admitSourceContact,
+  proveSourceContact,
+} from '#@/src/v1/solver/physical/source-contact.ts';
 type Devices = ReturnType<typeof deviceConnections> & {
   direct?: ReturnType<typeof prepareMovingDirect>;
 };
@@ -100,12 +99,16 @@ export const solvePhysicalRoute = async (
   context: PhysicalContext,
   policy: SolverConfig,
 ): Promise<void> => {
-  const { ground, collision, movement: config, devices: deviceInput } = input;
+  const { collision, movement: config, devices: deviceInput } = input;
+  let ground = input.ground;
   const started = performance.now();
   const progress = context.progress ?? (() => {});
   const generation = context.generation ?? '';
   context.cache?.begin?.(generation);
-  let groundKey = JSON.stringify([generation, request.walls]);
+  let sourceKey: unknown;
+  const groundView = (walls: Wall[]) =>
+    JSON.stringify(sourceKey ? [generation, walls, sourceKey] : [generation, walls]);
+  let groundKey = groundView(request.walls);
   const memo = async <T>(
     slot: Parameters<PhysicalCache['memo']>[0],
     key: string,
@@ -141,6 +144,35 @@ export const solvePhysicalRoute = async (
   let directCandidate: PhysicalResult | undefined;
   let incumbent: PhysicalResult | undefined;
   let hasCompleteCandidate = false;
+  let contact: Extract<ReturnType<typeof admitSourceContact>, { status: 'accepted' }> | undefined;
+  const plannerFor = (surfaces: Surface[], settings: GroundOptions) =>
+    createGroundPlanner(
+      surfaces,
+      contact && context.effort === 'walking' ? { ...settings, connections: [] } : settings,
+    );
+  const prepareTerrain = async (extent: { min: [number, number]; max: [number, number] }) => {
+    const model = config.model;
+    const curveInflationMargin =
+      (Math.hypot(
+        Math.max(model.gravity, model.fallingGravity),
+        Math.max(model.airAcceleration, model.airDeceleration),
+      ) *
+        0.1 ** 2) /
+        8 +
+      0.01;
+    const padding = profile.radius + curveInflationMargin;
+    const bounds = {
+      min: extent.min.map((v) => v - padding) as [number, number],
+      max: extent.max.map((v) => v + padding) as [number, number],
+    };
+    const prepared = await memo('collision', JSON.stringify([generation, bounds]), () => {
+      const geometry = { positions: collision.positions, indices: collision.indices };
+      return { geometry, world: createCollisionWorld(geometry, { bounds }) };
+    });
+    return { ...prepared, scope: { bounds, padding, curveInflationMargin } };
+  };
+  let earlyCollision: Awaited<ReturnType<typeof prepareTerrain>> | undefined;
+  let sourceCollisionMs = 0;
   let collisionQueryStats: (() => unknown) | undefined;
   let annotateMovingRoute: ReturnType<typeof createMovingRouteAnnotator> | undefined;
   const emit = async (
@@ -154,6 +186,17 @@ export const solvePhysicalRoute = async (
     },
     optimizing = false,
   ) => {
+    if (contact && result.route?.status === 'complete') {
+      const proved = proveSourceContact(result.route, contact);
+      result =
+        proved.status === 'complete'
+          ? { ...result, route: proved, groundedTarget: proved.points.at(-1) }
+          : {
+              status: 'unavailable',
+              reason: 'source-contact-unproved',
+              connections: result.connections,
+            };
+    }
     if (
       directCandidate &&
       incumbent?.route?.status === 'complete' &&
@@ -228,6 +271,12 @@ export const solvePhysicalRoute = async (
   );
   let supportedStart = projectArrival(ground.surfaces);
   const movingSources = new Set<number>();
+  const directSources = new Set<number>();
+  for (const [index, support] of (deviceInput?.movingSupports ?? []).entries()) {
+    // Provider identity retains the original source even when a coarse static
+    // face also projects beneath it. Direct planning still checks its contacts.
+    if (support.id === request.arrival.id) directSources.add(index);
+  }
   if (!supportedStart && movingTarget) {
     // Source contact faces only defer admission. Swept pose bounds do not prove
     // support; the existing clearance-baked moving preparation must confirm it.
@@ -236,6 +285,7 @@ export const solvePhysicalRoute = async (
       const start = projectArrival(support.surfaces);
       if (!start) continue;
       movingSources.add(index);
+      directSources.add(index);
       if (
         !supportedStart ||
         Math.abs(start.position[1] - request.arrival.position[1]) <
@@ -245,6 +295,51 @@ export const solvePhysicalRoute = async (
     }
   }
   const movingArrival = movingSources.size > 0;
+  progress({
+    phase: 'source-admission',
+    arrival: request.arrival,
+    target: request.target,
+    effort: context.effort ?? 'all',
+    grounded: supportedStart?.position,
+    movingSources: [...movingSources],
+    directSources: [...directSources],
+  });
+  if (
+    !supportedStart &&
+    request.arrival.state === 'available' &&
+    ground.build?.bounds &&
+    ground.tiles
+  ) {
+    await context.checkpoint?.();
+    const contactStart = performance.now();
+    progress({ phase: 'source-contact' });
+    const collisionStart = performance.now();
+    earlyCollision = await prepareTerrain(ground.build.bounds);
+    sourceCollisionMs = performance.now() - collisionStart;
+    timing.collision = sourceCollisionMs;
+    diagnostics.collisionScope = earlyCollision.scope;
+    prepareReuse.collision = earlyCollision.reused;
+    const walls = input.roundedWalls ? [...input.roundedWalls, ...request.walls] : options.walls;
+    const admitted = admitSourceContact(input, request.arrival, range, earlyCollision.value, walls);
+    diagnostics.sourceContact =
+      admitted.status === 'accepted'
+        ? {
+            status: admitted.status,
+            kind: admitted.kind,
+            triangle: admitted.triangle,
+            position: admitted.arrival.position,
+          }
+        : admitted;
+    timing.sourceContact = performance.now() - contactStart;
+    if (admitted.status === 'accepted') {
+      contact = admitted;
+      options.walls = walls;
+      ground = { ...ground, surfaces: [...ground.surfaces, contact.surface] };
+      supportedStart = { surface: contact.surface.id, position: contact.arrival.position };
+      sourceKey = [request.arrival, contact.surface, context.effort ?? 'all'];
+      groundKey = groundView(request.walls);
+    }
+  }
   if (!supportedStart || request.arrival.state !== 'available') {
     await emit({
       status: 'unavailable',
@@ -269,7 +364,7 @@ export const solvePhysicalRoute = async (
   {
     const preparedGround = await memo('ground', groundKey, (reserve) => {
       reserve?.(ground.surfaces.length);
-      return createGroundPlanner(ground.surfaces, { ...options });
+      return plannerFor(ground.surfaces, { ...options });
     });
     prepareReuse.ground = preparedGround.reused;
     groundPlanner = preparedGround.value;
@@ -297,11 +392,11 @@ export const solvePhysicalRoute = async (
       // Unrelated refinements must not reorder a completed graph's bounded
       // shortcut discovery and displace previously covered action chains.
       options.walls = rounded;
-      groundKey = JSON.stringify([generation, rounded]);
+      groundKey = groundView(rounded);
       groundPlanner = undefined;
       const prepared = await memo('ground', groundKey, (reserve) => {
         reserve?.(ground.surfaces.length);
-        return createGroundPlanner(ground.surfaces, { ...options });
+        return plannerFor(ground.surfaces, { ...options });
       });
       groundPlanner = prepared.value;
       prepareReuse.roundGround = prepared.reused;
@@ -388,29 +483,14 @@ export const solvePhysicalRoute = async (
   diagnostics.model = { ...model, runAirSpeed };
   await context.checkpoint?.();
   progress({ phase: 'collision-index', triangles: collision.indices.length / 3 });
-  // The complete body and curved-arc chord inflation must remain in the indexed world.
-  const curveInflationMargin =
-    (Math.hypot(
-      Math.max(model.gravity, model.fallingGravity),
-      Math.max(model.airAcceleration, model.airDeceleration),
-    ) *
-      0.1 ** 2) /
-      8 +
-    0.01;
-  const padding = profile.radius + curveInflationMargin;
-  const bounds = {
-    min: [minXZ[0] - padding, minXZ[1] - padding] as [number, number],
-    max: [maxXZ[0] + padding, maxXZ[1] + padding] as [number, number],
-  };
-  diagnostics.collisionScope = { bounds, padding, curveInflationMargin };
   const indexStart = performance.now();
-  const preparedCollision = await memo('collision', JSON.stringify([generation, bounds]), () => {
-    const geometry = { positions: collision.positions, indices: collision.indices };
-    return { geometry, world: createCollisionWorld(geometry, { bounds }) };
-  });
+  const preparedCollision =
+    earlyCollision ??
+    (await prepareTerrain({ min: minXZ as [number, number], max: maxXZ as [number, number] }));
+  diagnostics.collisionScope = preparedCollision.scope;
   prepareReuse.collision = preparedCollision.reused;
   const { geometry } = preparedCollision.value;
-  let { world } = preparedCollision.value;
+  let world = contact?.world ?? preparedCollision.value.world;
   let surfaces = ground.surfaces;
   const initialQueryStats = world.queryCacheStats;
   if (context && initialQueryStats) {
@@ -427,7 +507,7 @@ export const solvePhysicalRoute = async (
     };
   }
 
-  timing.collision = performance.now() - indexStart;
+  timing.collision = sourceCollisionMs + performance.now() - indexStart;
   let knownRoute = walking;
   let boosts: SpeedBoost[] = [];
   let knownConnections = options.connections ?? [];
@@ -442,13 +522,14 @@ export const solvePhysicalRoute = async (
         world,
         model,
         maxSlope,
+        runAirSpeed,
         profile,
         walls: options.walls,
       }),
     );
     prepareReuse.devices = preparedDevices.reused;
     const devices = preparedDevices.value;
-    if (movingArrival && context.effort !== 'walking') {
+    if (directSources.size && context.effort !== 'walking') {
       await context.checkpoint?.();
       progress({ phase: 'moving-direct' });
       const directStart = performance.now();
@@ -461,7 +542,7 @@ export const solvePhysicalRoute = async (
       ));
       timing.directPreparation = performance.now() - directStart;
       const searchStart = performance.now(),
-        candidate = direct.plan(request, movingSources);
+        candidate = direct.plan(request, directSources);
       timing.directSearch = performance.now() - searchStart;
       diagnostics.directMoving = direct.diagnostics;
       if (candidate.route.status === 'complete') {
@@ -475,12 +556,24 @@ export const solvePhysicalRoute = async (
           supportBoxes,
           groundedTarget: candidate.route.points.at(-1),
         };
+        if (knownRoute.status !== 'complete' || candidate.route.cost < knownRoute.cost) {
+          knownRoute = candidate.route;
+          knownConnections = candidate.connections;
+        }
         await emit(directCandidate, true);
       }
     }
     boosts = devices.boosts;
     options.connections = [...(options.connections ?? []), ...devices.connections];
-    diagnostics.devices = devices;
+    // The preparation also owns callable direct-search caches. Reports cross
+    // worker boundaries and retain only the device facts and outcomes.
+    diagnostics.devices = {
+      connections: devices.connections,
+      boosts: devices.boosts,
+      outcomes: devices.outcomes,
+      snapshot: devices.snapshot,
+      motionValidation: devices.motionValidation,
+    };
     if (
       walking.status !== 'complete' &&
       deviceInput.movingSupports?.length &&
@@ -524,6 +617,7 @@ export const solvePhysicalRoute = async (
               world: added.world,
               model,
               maxSlope,
+              runAirSpeed,
               profile,
               walls: options.walls,
             })
@@ -538,7 +632,7 @@ export const solvePhysicalRoute = async (
           deviceOutcomes: augmented.outcomes,
           surfaces: combined,
           planner: added.surfaces.length
-            ? createGroundPlanner(combined, {
+            ? plannerFor(combined, {
                 ...options,
                 portals,
                 connections: [],
@@ -791,7 +885,7 @@ export const solvePhysicalRoute = async (
             refined,
             surfaces: combined,
             portals: options.portals,
-            planner: createGroundPlanner(combined, { ...options, connections: [] }),
+            planner: plannerFor(combined, { ...options, connections: [] }),
           };
         }
         reserve?.(surfaces.length);
@@ -946,7 +1040,7 @@ export const solvePhysicalRoute = async (
             ).values(),
           ];
           const fallbackOptions = { ...options, connections };
-          const planner = checkedGroundPlanner(combined, fallbackOptions, physical);
+          const planner = createGroundPlanner(combined, fallbackOptions);
           fallbackDiagnostics.extraPasses = 1;
           // Missing source support changes the proposal geometry. Preserve the
           // failed pass and its validated actions; this is one charged extra
@@ -969,20 +1063,17 @@ export const solvePhysicalRoute = async (
           fallbackDiagnostics.discovery = fallback.diagnostics;
           fallbackDiagnostics.truncated =
             added.diagnostics.truncated || fallback.diagnostics.truncated;
-          const proved = proveGroundRoute(fallback.route, physical, fallbackOptions, {
-            position: request.target,
-            interaction: request.interaction,
-          });
-          fallbackDiagnostics.status = proved.status;
+          const candidate = fallback.route;
+          fallbackDiagnostics.status = candidate.status;
           timing.narrowSupportFallback = performance.now() - fallbackStart;
           diagnostics.truncated ||= Boolean(fallbackDiagnostics.truncated);
           await context.checkpoint?.();
-          if (proved.status === 'complete') {
+          if (candidate.status === 'complete') {
             await emit({
               status: 'candidate',
-              route: proved,
+              route: candidate,
               connections: fallback.connections,
-              groundedTarget: proved.points.at(-1),
+              groundedTarget: candidate.points.at(-1),
             });
             return;
           }

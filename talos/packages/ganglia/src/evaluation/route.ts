@@ -2,7 +2,6 @@ import { verificationPolicy, within, type VerificationPolicy } from '#@/src/eval
 import type { Vec3 } from '#@/src/geometry.ts';
 import { findGoalHit } from '#@/src/model/goals.ts';
 import { validateMotion } from '#@/src/model/motion.ts';
-import { visitedWaypoints } from '#@/src/model/waypoints.ts';
 import type { Route } from '#@/src/route.ts';
 import type { RouteQuery } from '#@/src/solver/contract.ts';
 
@@ -127,15 +126,6 @@ export function verifyRoute(
       issues.push('Route endpoint misses the interaction goal');
   } else if (!nearProjection(query.goal, endpoint, policy.goalTolerance + 1e-6))
     issues.push('Route endpoint misses the goal');
-  // Waypoints must occur in order along the submitted trace. Check each line
-  // span, since a solver may use a different sampling density around a waypoint.
-  const points = route.segments.length
-    ? [route.segments[0].points[0], ...route.segments.flatMap((segment) => segment.points.slice(1))]
-    : [...route.points];
-  if (points.length === 1) points.push(points[0]);
-  const visited = visitedWaypoints(points, query.waypoints ?? [], options.maxVertical);
-  for (let index = visited; index < (query.waypoints?.length ?? 0); index++)
-    issues.push('Route misses an ordered waypoint');
   return {
     ...evaluation,
     valid: !issues.length,

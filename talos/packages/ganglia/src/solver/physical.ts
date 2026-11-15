@@ -54,6 +54,8 @@ export interface DeviceFacts {
     overhead: number;
     duration: unknown;
     fixedLaunch: boolean;
+    /** Explicit source free-jump mode; absence does not imply free steering. */
+    freeLaunch?: boolean;
     aim: unknown;
     height: number;
     aimClearance: number;

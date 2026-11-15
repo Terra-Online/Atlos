@@ -879,9 +879,9 @@
       "currentExercise": "unrun"
     },
     {
-      "mechanism": "ordered-waypoints",
+      "mechanism": "coarse-waypoint-guides",
       "selectedCases": ["216-0SK2QRR", "217-0rv1UwY", "218-1awU1hb", "219-0OTESmy"],
-      "selectionEvidence": "source/input selection",
+      "selectionEvidence": "Source-ordered coarse discovery hints; visiting every hint is not a completion condition.",
       "currentExercise": "unrun"
     },
     {

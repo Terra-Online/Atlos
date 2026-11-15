@@ -796,6 +796,78 @@ test('direct provider rides preserve resources, annotations and exact arrival ga
   );
   assert.ok(cheaper.route.segments.some((segment) => segment.connection === bound.id));
   await competing.close();
+  // A complete direct candidate remains usable when the native planner cannot
+  // connect the same supports; following placement is a reachability fallback.
+  const nativeMiss = structuredClone(physical);
+  nativeMiss.devices!.followingSupports = [
+    {
+      id: 'box',
+      level: 'fixture',
+      model: 'box',
+      spawn: [1, 0, 1],
+      bodies: [body(1)],
+      geometryKind: 'box',
+      initialState: 0,
+      maxDistance: 10,
+      assumption: 'placement-within-activity-range',
+    },
+  ];
+  const missedCache = createPhysicalCache();
+  const nativePhases: unknown[] = [];
+  const missed = await preparePhysicalSolver(
+    nativeMiss,
+    { ...gangliaV1Defaults, maxCandidates: 0 },
+    {
+      effort: 'devices',
+      progress: (event) => nativePhases.push(event.phase),
+      cache: {
+        ...missedCache,
+        async memo(slot, key, create, scope) {
+          const prepared = await missedCache.memo(slot, key, create, scope);
+          if (slot === 'moving') {
+            const value = prepared.value as { planner: GroundPlanner };
+            value.planner.plan = () => ({ status: 'unmapped' });
+          }
+          return prepared;
+        },
+      },
+    },
+  );
+  const retainedDirect = await missed.solve({
+    starts: [request.arrival],
+    goal: request.target,
+    interaction: request.interaction,
+  });
+  assert.ok(retainedDirect.route.status === 'complete');
+  assert.equal(retainedDirect.route.cost, 2);
+  assert.ok(!nativePhases.includes('following-supports'));
+  await missed.close();
+  missedCache.clear();
+
+  const staticMapped = structuredClone(physical);
+  staticMapped.ground.surfaces.push({
+    id: 'coarse-source',
+    vertices: physical.devices!.movingSupports![0].surfaces[0].vertices,
+  });
+  const mappedPhases: Record<string, unknown>[] = [];
+  const mapped = await preparePhysicalSolver(
+    staticMapped,
+    { ...gangliaV1Defaults, maxCandidates: 0 },
+    { effort: 'devices', progress: (event) => mappedPhases.push(event) },
+  );
+  const owned = await mapped.solve({
+    starts: [{ ...request.arrival, id: 'lift' }],
+    goal: request.target,
+    interaction: request.interaction,
+  });
+  assert.ok(owned.route.status === 'complete');
+  assert.equal(owned.route.start, 'lift');
+  assert.ok(mappedPhases.some((event) => event.phase === 'moving-direct'));
+  assert.deepEqual(
+    mappedPhases.find((event) => event.phase === 'source-admission')?.directSources,
+    [0],
+  );
+  await mapped.close();
   const staged = structuredClone(physical);
   staged.devices!.movingSupports![0] = {
     ...staged.devices!.movingSupports![0],
@@ -826,14 +898,17 @@ test('direct provider rides preserve resources, annotations and exact arrival ga
     },
   };
   const reused: unknown[] = [];
+  let cloneableFinalReports = 0;
   const solver = await preparePhysicalSolver(
     physical,
     { ...gangliaV1Defaults, maxCandidates: 0 },
     {
       cache: observed,
       effort: 'devices',
-      observe(_r, _o, d) {
-        reused.push((d as { prepareReuse: { direct?: boolean } }).prepareReuse.direct);
+      observe(_r, optimizing, d) {
+        const snapshot = structuredClone(d);
+        reused.push((snapshot as { prepareReuse: { direct?: boolean } }).prepareReuse.direct);
+        if (!optimizing) cloneableFinalReports++;
       },
     },
   );
@@ -847,6 +922,7 @@ test('direct provider rides preserve resources, annotations and exact arrival ga
     assert.equal(candidate.route.status, 'complete');
     assert.equal(candidate.route.status === 'complete' && candidate.route.cost, 2);
   }
+  assert.ok(cloneableFinalReports >= 2);
   assert.equal(reused[0], false);
   assert.equal(reused.at(-1), true);
   assert.equal(collisionBuilds, 1);

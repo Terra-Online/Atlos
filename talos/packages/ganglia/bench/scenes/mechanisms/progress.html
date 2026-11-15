@@ -1,0 +1,4431 @@
+<!doctype html>
+<html lang="zh">
+  <meta charset="utf-8" />
+  <title>266点TS求解进度</title>
+  <style>
+    body {
+      font: 14px system-ui;
+      margin: 28px;
+      color: #ddd;
+      background: #17191d;
+    }
+    p {
+      max-width: 1000px;
+      line-height: 1.6;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      max-width: 1100px;
+    }
+    td,
+    th {
+      padding: 7px 12px;
+      border-bottom: 1px solid #363a43;
+      text-align: right;
+    }
+    td:first-child,
+    th:first-child,
+    td:nth-child(2),
+    th:nth-child(2) {
+      text-align: left;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: #262a32;
+    }
+    .gain {
+      color: #87ddba;
+    }
+    .regression {
+      color: #ffa4a4;
+    }
+  </style>
+  <p>
+    GitHub 冻结快照：<a href="progress.json">逐点 JSON</a> ·
+    <a href="suite.json">266 点定义</a
+    >。原始运行证据保存在本地，路径仅供对应留存记录；此页面不会自动更新。
+  </p>
+  <h1>211/266 完整路线产物可用</h1>
+  <p>
+    更新：2026/11/15
+    18:59:16（UTC+8）。这是逐点最新证据汇总，包含未重跑的保留记录，并非同一版本完整验证。本轮已观察
+    52 点，其中 41 点完整。新增完整：38；已观察的可达性回退 0、成本回退
+    0。时间单位为秒；未知求解时间留空。原始Ganglia记录只有历史113点。
+  </p>
+  <p>
+    228、229已改抽采集目标；234、240允许补齐源窗口；185修正了与固定横梁相交的接触点，143改用同一源设备体积内的合法站立起点。原问题样例另行保留。这些输入修正单列记录；粗路径点已恢复为可选引导，不再作为精确停靠验收。
+  </p>
+  <p>
+    完整产物可供路线展示与终局优化分别记录：终局 t/f、路线时间、求解时间沿用已有结果；产物 t/f
+    与最佳路线时间保留历史完整结果，并接纳具有原始查询、场景源和 setup
+    一致证据的新原生完整候选。首次候选时间只在新捕获证据存在时显示；旧超时不补判成功。终局完成 211
+    点，新捕获首次候选 7 点。批次无效/中断或捕获错误 5 份报告，候选证据校验问题 0
+    项；这些记录不构成同版全量通过或延迟达标。
+  </p>
+  <details>
+    <summary>运行与证据问题</summary>
+    <pre>
+{
+  &quot;runIssues&quot;: [
+    {
+      &quot;report&quot;: &quot;.local/research/ts-266-20261115/diagnostics/r1-focus/report.json&quot;,
+      &quot;invalid&quot;: false,
+      &quot;interrupted&quot;: true,
+      &quot;captureErrors&quot;: []
+    },
+    {
+      &quot;report&quot;: &quot;.local/research/ts-266-20261115/diagnostics/r2-waypoints/report.json&quot;,
+      &quot;invalid&quot;: false,
+      &quot;interrupted&quot;: true,
+      &quot;captureErrors&quot;: []
+    },
+    {
+      &quot;report&quot;: &quot;.local/research/ts-266-20261115/diagnostics/r3-moving-timeouts/report.json&quot;,
+      &quot;invalid&quot;: false,
+      &quot;interrupted&quot;: true,
+      &quot;captureErrors&quot;: []
+    },
+    {
+      &quot;report&quot;: &quot;.local/research/ts-266-20261115/diagnostics/r5-display-focus/report.json&quot;,
+      &quot;invalid&quot;: true,
+      &quot;interrupted&quot;: true,
+      &quot;captureErrors&quot;: []
+    },
+    {
+      &quot;report&quot;: &quot;.local/research/ts-266-20261115/diagnostics/r7-capabilities/report.json&quot;,
+      &quot;invalid&quot;: true,
+      &quot;interrupted&quot;: false,
+      &quot;captureErrors&quot;: []
+    }
+  ],
+  &quot;candidateIssues&quot;: []
+}</pre>
+  </details>
+  <table>
+    <thead>
+      <tr>
+        <th>点ID</th>
+        <th>关卡</th>
+        <th>终局t/f</th>
+        <th>终局路线时间</th>
+        <th>终局求解时间</th>
+        <th>Ganglia main t/f</th>
+        <th>产物t/f</th>
+        <th>最佳路线时间</th>
+        <th>首次候选求解</th>
+        <th>首次候选可用</th>
+        <th>最新终局状态</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>000</td>
+        <td colspan="10"></td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r5">001-05f0PbU</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>30.794</td>
+        <td>93.797</td>
+        <td>f</td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r5-display-focus/report.json.results/001-05f0PbU-0.json"
+        >
+          t
+        </td>
+        <td>30.794</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete（批次无效）</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">002-0muxg0t</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>5.541</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/cases/002-0muxg0t/report.json.results/002-0muxg0t-0.json"
+        >
+          t
+        </td>
+        <td>5.541</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">003-10q4qLT</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>4.769</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/cases/003-10q4qLT/report.json.results/003-10q4qLT-0.json"
+        >
+          t
+        </td>
+        <td>4.769</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r6">004-0ahvvCZ</td>
+        <td>map01_lv001</td>
+        <td>f</td>
+        <td></td>
+        <td>106.423</td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="no-verified-route">incomplete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">005-0yYlwvq</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>7.805</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/cases/005-0yYlwvq/report.json.results/005-0yYlwvq-0.json"
+        >
+          t
+        </td>
+        <td>7.805</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">006-0Q1NHiI</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>32.309</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/cases/006-0Q1NHiI/report.json.results/006-0Q1NHiI-0.json"
+        >
+          t
+        </td>
+        <td>32.309</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">007-0QhaueM</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>5.487</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/cases/007-0QhaueM/report.json.results/007-0QhaueM-0.json"
+        >
+          t
+        </td>
+        <td>5.487</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="1544916f-working-point-fixes-507">008-0v0nIeg</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>10.984</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-point-fixes-20261115/focused/008-0v0nIeg/report.json.results/008-0v0nIeg-0.json"
+        >
+          t
+        </td>
+        <td>10.984</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r7">009-0OP5G5m</td>
+        <td>map01_lv002</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="timeout">timeout</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">010-1aIYhis</td>
+        <td>map01_lv002</td>
+        <td>t</td>
+        <td>25.698</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/cases/010-1aIYhis/report.json.results/010-1aIYhis-0.json"
+        >
+          t
+        </td>
+        <td>25.698</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r7">011-0Udo2PV</td>
+        <td>map01_lv002</td>
+        <td>f</td>
+        <td></td>
+        <td>111.427</td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="no-verified-route">incomplete</td>
+      </tr>
+      <tr class="">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r7">012-0sGWStg</td>
+        <td>map01_lv002</td>
+        <td>f</td>
+        <td></td>
+        <td>116.099</td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="no-verified-route">incomplete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">013-15Nz7D1</td>
+        <td>map01_lv002</td>
+        <td>t</td>
+        <td>5.667</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/cases/013-15Nz7D1/report.json.results/013-15Nz7D1-0.json"
+        >
+          t
+        </td>
+        <td>5.667</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">014-16Cu3eG</td>
+        <td>map01_lv002</td>
+        <td>t</td>
+        <td>22.292</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/cases/014-16Cu3eG/report.json.results/014-16Cu3eG-0.json"
+        >
+          t
+        </td>
+        <td>22.292</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">015-0NR2aFF</td>
+        <td>map01_lv002</td>
+        <td>t</td>
+        <td>21.151</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/cases/015-0NR2aFF/report.json.results/015-0NR2aFF-0.json"
+        >
+          t
+        </td>
+        <td>21.151</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">016-0203i50</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>68.412</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/cases/016-0203i50/report.json.results/016-0203i50-0.json"
+        >
+          t
+        </td>
+        <td>68.412</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">017-15jQmmq</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>66.378</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/cases/017-15jQmmq/report.json.results/017-15jQmmq-0.json"
+        >
+          t
+        </td>
+        <td>66.378</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">018-0RUWRj5</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>4.044</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/cases/018-0RUWRj5/report.json.results/018-0RUWRj5-0.json"
+        >
+          t
+        </td>
+        <td>4.044</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">019-0GTMRBs</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>25.102</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/cases/019-0GTMRBs/report.json.results/019-0GTMRBs-0.json"
+        >
+          t
+        </td>
+        <td>25.102</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">020-0TNtyx0</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>5.887</td>
+        <td></td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/cases/020-0TNtyx0/report.json.results/020-0TNtyx0-0.json"
+        >
+          t
+        </td>
+        <td>5.887</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">021-0zxbxDM</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>29.330</td>
+        <td>133.745</td>
+        <td>f</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/021-0zxbxDM-0.json"
+        >
+          t
+        </td>
+        <td>29.330</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">022-0NoVJZ1</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>3.279</td>
+        <td>41.993</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/022-0NoVJZ1-0.json"
+        >
+          t
+        </td>
+        <td>3.279</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">023-180Cq68</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>30.269</td>
+        <td>103.272</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/023-180Cq68-0.json"
+        >
+          t
+        </td>
+        <td>30.269</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">024-0HEqAYx</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>13.719</td>
+        <td>55.945</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/024-0HEqAYx-0.json"
+        >
+          t
+        </td>
+        <td>13.719</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">025-0PCWarH</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>13.182</td>
+        <td>19.303</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/025-0PCWarH-0.json"
+        >
+          t
+        </td>
+        <td>13.182</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">026-0HNEhdR</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>16.494</td>
+        <td>47.810</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/026-0HNEhdR-0.json"
+        >
+          t
+        </td>
+        <td>16.494</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">027-056MV71</td>
+        <td>map01_lv005</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">028-0XbBKqE</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>12.457</td>
+        <td>34.202</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/028-0XbBKqE-0.json"
+        >
+          t
+        </td>
+        <td>12.457</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">029-022BbT3</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>3.287</td>
+        <td>64.066</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/029-022BbT3-0.json"
+        >
+          t
+        </td>
+        <td>3.287</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">030-0ObwKsX</td>
+        <td>map01_lv006</td>
+        <td>t</td>
+        <td>28.238</td>
+        <td>47.125</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/030-0ObwKsX-0.json"
+        >
+          t
+        </td>
+        <td>28.238</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">031-0oNgQWX</td>
+        <td>map01_lv006</td>
+        <td>t</td>
+        <td>18.920</td>
+        <td>104.434</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/031-0oNgQWX-0.json"
+        >
+          t
+        </td>
+        <td>18.920</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">032-0WXaFEP</td>
+        <td>map01_lv006</td>
+        <td>t</td>
+        <td>7.223</td>
+        <td>122.493</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/032-0WXaFEP-0.json"
+        >
+          t
+        </td>
+        <td>7.223</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">033-0EiBDC4</td>
+        <td>map01_lv006</td>
+        <td>t</td>
+        <td>17.818</td>
+        <td>212.806</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/033-0EiBDC4-0.json"
+        >
+          t
+        </td>
+        <td>17.818</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">034-038j5x5</td>
+        <td>map01_lv006</td>
+        <td>t</td>
+        <td>13.082</td>
+        <td>62.112</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/034-038j5x5-0.json"
+        >
+          t
+        </td>
+        <td>13.082</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">035-0rK93CE</td>
+        <td>map01_lv006</td>
+        <td>t</td>
+        <td>28.591</td>
+        <td>46.081</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/035-0rK93CE-0.json"
+        >
+          t
+        </td>
+        <td>28.591</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">036-0h5eHnl</td>
+        <td>map01_lv006</td>
+        <td>t</td>
+        <td>3.306</td>
+        <td>30.349</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/036-0h5eHnl-0.json"
+        >
+          t
+        </td>
+        <td>3.306</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">037-0snEngh</td>
+        <td>map01_lv007</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">038-0FKNT4J</td>
+        <td>map01_lv007</td>
+        <td>t</td>
+        <td>12.023</td>
+        <td>14.390</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/038-0FKNT4J-0.json"
+        >
+          t
+        </td>
+        <td>12.023</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">039-17iHdzb</td>
+        <td>map01_lv007</td>
+        <td>t</td>
+        <td>20.632</td>
+        <td>5.513</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/039-17iHdzb-0.json"
+        >
+          t
+        </td>
+        <td>20.632</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">040-11gGRAC</td>
+        <td>map01_lv007</td>
+        <td>f</td>
+        <td></td>
+        <td>124.778</td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">041-120uaBj</td>
+        <td>map01_lv007</td>
+        <td>t</td>
+        <td>19.835</td>
+        <td>31.448</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/041-120uaBj-0.json"
+        >
+          t
+        </td>
+        <td>19.835</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">042-17Ra2Ox</td>
+        <td>map01_lv007</td>
+        <td>t</td>
+        <td>15.857</td>
+        <td>10.492</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/042-17Ra2Ox-0.json"
+        >
+          t
+        </td>
+        <td>15.857</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">043-0yVVC6t</td>
+        <td>map01_lv007</td>
+        <td>t</td>
+        <td>3.224</td>
+        <td>9.389</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/043-0yVVC6t-0.json"
+        >
+          t
+        </td>
+        <td>3.224</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">044-0mJtPOG</td>
+        <td>map02_lv001</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">045-0MQgcvj</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>7.047</td>
+        <td>24.645</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/045-0MQgcvj-0.json"
+        >
+          t
+        </td>
+        <td>7.047</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">046-026UUmj</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>29.274</td>
+        <td>53.546</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/046-026UUmj-0.json"
+        >
+          t
+        </td>
+        <td>29.274</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">047-0PdYvB2</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>5.779</td>
+        <td>37.242</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/047-0PdYvB2-0.json"
+        >
+          t
+        </td>
+        <td>5.779</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">048-01m3rKW</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>7.156</td>
+        <td>19.939</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/048-01m3rKW-0.json"
+        >
+          t
+        </td>
+        <td>7.156</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">049-05h1MUO</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>15.387</td>
+        <td>11.570</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/049-05h1MUO-0.json"
+        >
+          t
+        </td>
+        <td>15.387</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">050-1aF81KK</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>32.054</td>
+        <td>82.375</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/050-1aF81KK-0.json"
+        >
+          t
+        </td>
+        <td>32.054</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">051-0jbR3nL</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>15.867</td>
+        <td>49.510</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/051-0jbR3nL-0.json"
+        >
+          t
+        </td>
+        <td>15.867</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">052-0FtSaDp</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>16.386</td>
+        <td>75.804</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/052-0FtSaDp-0.json"
+        >
+          t
+        </td>
+        <td>16.386</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">053-12i1jPL</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>11.050</td>
+        <td>115.707</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/053-12i1jPL-0.json"
+        >
+          t
+        </td>
+        <td>11.050</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">054-16qfshA</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>17.431</td>
+        <td>93.042</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/054-16qfshA-0.json"
+        >
+          t
+        </td>
+        <td>17.431</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">055-18WqlPs</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>9.128</td>
+        <td>174.756</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/055-18WqlPs-0.json"
+        >
+          t
+        </td>
+        <td>9.128</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">056-0s2MO3b</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>14.282</td>
+        <td>91.935</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/056-0s2MO3b-0.json"
+        >
+          t
+        </td>
+        <td>14.282</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">057-16ax8bd</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>3.324</td>
+        <td>50.381</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/057-16ax8bd-0.json"
+        >
+          t
+        </td>
+        <td>3.324</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">058-0G7BIJo</td>
+        <td>map02_lv003</td>
+        <td>t</td>
+        <td>50.599</td>
+        <td>268.237</td>
+        <td>f</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/058-0G7BIJo-0.json"
+        >
+          t
+        </td>
+        <td>50.599</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">059-0Qu9OVl</td>
+        <td>map02_lv003</td>
+        <td>t</td>
+        <td>17.443</td>
+        <td>26.221</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/059-0Qu9OVl-0.json"
+        >
+          t
+        </td>
+        <td>17.443</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">060-17E2T63</td>
+        <td>map02_lv003</td>
+        <td>t</td>
+        <td>11.431</td>
+        <td>29.316</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/060-17E2T63-0.json"
+        >
+          t
+        </td>
+        <td>11.431</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">061-12TfPk6</td>
+        <td>map02_lv003</td>
+        <td>t</td>
+        <td>5.993</td>
+        <td>38.123</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/061-12TfPk6-0.json"
+        >
+          t
+        </td>
+        <td>5.993</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">062-01vzLS4</td>
+        <td>map02_lv003</td>
+        <td>t</td>
+        <td>13.574</td>
+        <td>48.167</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/062-01vzLS4-0.json"
+        >
+          t
+        </td>
+        <td>13.574</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">063-0r3aVru</td>
+        <td>map02_lv003</td>
+        <td>t</td>
+        <td>13.985</td>
+        <td>25.602</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/063-0r3aVru-0.json"
+        >
+          t
+        </td>
+        <td>13.985</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">064-0NGhiIl</td>
+        <td>map02_lv003</td>
+        <td>t</td>
+        <td>12.105</td>
+        <td>48.464</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/064-0NGhiIl-0.json"
+        >
+          t
+        </td>
+        <td>12.105</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">065-0B4uame</td>
+        <td>map02_lv004</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">066-0gyCGhy</td>
+        <td>map02_lv004</td>
+        <td>t</td>
+        <td>26.234</td>
+        <td>14.139</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/066-0gyCGhy-0.json"
+        >
+          t
+        </td>
+        <td>26.234</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">067-0Sw4Rc4</td>
+        <td>map02_lv004</td>
+        <td>t</td>
+        <td>30.466</td>
+        <td>7.904</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/067-0Sw4Rc4-0.json"
+        >
+          t
+        </td>
+        <td>30.466</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">068-0prwiHe</td>
+        <td>map02_lv004</td>
+        <td>t</td>
+        <td>29.022</td>
+        <td>11.833</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/068-0prwiHe-0.json"
+        >
+          t
+        </td>
+        <td>29.022</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">069-0SRa7dh</td>
+        <td>map02_lv004</td>
+        <td>t</td>
+        <td>5.492</td>
+        <td>8.063</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/069-0SRa7dh-0.json"
+        >
+          t
+        </td>
+        <td>5.492</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">070-0dS8KDH</td>
+        <td>map02_lv004</td>
+        <td>t</td>
+        <td>13.419</td>
+        <td>6.427</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/070-0dS8KDH-0.json"
+        >
+          t
+        </td>
+        <td>13.419</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">071-0hIKrIw</td>
+        <td>map02_lv004</td>
+        <td>t</td>
+        <td>14.981</td>
+        <td>11.119</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/071-0hIKrIw-0.json"
+        >
+          t
+        </td>
+        <td>14.981</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">072-15dnaLm</td>
+        <td>map02_lv005</td>
+        <td>t</td>
+        <td>37.273</td>
+        <td>52.559</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/072-15dnaLm-0.json"
+        >
+          t
+        </td>
+        <td>37.273</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">073-02Vzxwf</td>
+        <td>map02_lv005</td>
+        <td>t</td>
+        <td>25.902</td>
+        <td>33.562</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/073-02Vzxwf-0.json"
+        >
+          t
+        </td>
+        <td>25.902</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">074-1adTUBl</td>
+        <td>map02_lv005</td>
+        <td>t</td>
+        <td>25.236</td>
+        <td>61.326</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/074-1adTUBl-0.json"
+        >
+          t
+        </td>
+        <td>25.236</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">075-0LZLMwj</td>
+        <td>map02_lv005</td>
+        <td>t</td>
+        <td>40.300</td>
+        <td>60.609</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/075-0LZLMwj-0.json"
+        >
+          t
+        </td>
+        <td>40.300</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">076-0w6rn9Z</td>
+        <td>map02_lv005</td>
+        <td>t</td>
+        <td>40.913</td>
+        <td>94.437</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/076-0w6rn9Z-0.json"
+        >
+          t
+        </td>
+        <td>40.913</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">077-11v6zbq</td>
+        <td>map02_lv005</td>
+        <td>t</td>
+        <td>20.519</td>
+        <td>44.351</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/077-11v6zbq-0.json"
+        >
+          t
+        </td>
+        <td>20.519</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">078-04A0cNk</td>
+        <td>map02_lv005</td>
+        <td>t</td>
+        <td>32.113</td>
+        <td>65.321</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/078-04A0cNk-0.json"
+        >
+          t
+        </td>
+        <td>32.113</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">079-0aFW9d3</td>
+        <td>map02_lv006</td>
+        <td>t</td>
+        <td>7.618</td>
+        <td>54.349</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/079-0aFW9d3-0.json"
+        >
+          t
+        </td>
+        <td>7.618</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">080-11ADd5I</td>
+        <td>map02_lv006</td>
+        <td>t</td>
+        <td>17.022</td>
+        <td>74.050</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/080-11ADd5I-0.json"
+        >
+          t
+        </td>
+        <td>17.022</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">081-0hgydMj</td>
+        <td>map02_lv006</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td>t</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">082-0kWQSL9</td>
+        <td>map02_lv006</td>
+        <td>t</td>
+        <td>13.102</td>
+        <td>252.083</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/082-0kWQSL9-0.json"
+        >
+          t
+        </td>
+        <td>13.102</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">083-06ZDued</td>
+        <td>map02_lv006</td>
+        <td>t</td>
+        <td>17.655</td>
+        <td>73.118</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/083-06ZDued-0.json"
+        >
+          t
+        </td>
+        <td>17.655</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">084-0yw4EAS</td>
+        <td>map02_lv006</td>
+        <td>t</td>
+        <td>24.884</td>
+        <td>97.840</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/084-0yw4EAS-0.json"
+        >
+          t
+        </td>
+        <td>24.884</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">085-037gze6</td>
+        <td>map02_lv006</td>
+        <td>t</td>
+        <td>7.794</td>
+        <td>74.534</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/085-037gze6-0.json"
+        >
+          t
+        </td>
+        <td>7.794</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">086-0DEFjDI</td>
+        <td>map02_lv007</td>
+        <td>t</td>
+        <td>5.817</td>
+        <td>41.713</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/086-0DEFjDI-0.json"
+        >
+          t
+        </td>
+        <td>5.817</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">087-0IXOMGu</td>
+        <td>map02_lv007</td>
+        <td>t</td>
+        <td>12.323</td>
+        <td>273.165</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/087-0IXOMGu-0.json"
+        >
+          t
+        </td>
+        <td>12.323</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">088-0ZEYOee</td>
+        <td>map02_lv007</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">089-12sV7lh</td>
+        <td>map02_lv007</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">090-13CZ5Sc</td>
+        <td>map02_lv007</td>
+        <td>t</td>
+        <td>11.821</td>
+        <td>58.154</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment2/results/090-13CZ5Sc-0.json"
+        >
+          t
+        </td>
+        <td>11.821</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">091-0nbbV7C</td>
+        <td>map02_lv007</td>
+        <td>t</td>
+        <td>18.854</td>
+        <td>35.939</td>
+        <td>f</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment2/results/091-0nbbV7C-0.json"
+        >
+          t
+        </td>
+        <td>18.854</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">092-0byagyz</td>
+        <td>map02_lv007</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">093-08fw2Xg</td>
+        <td>map02_lv008</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">094-14JKTkX</td>
+        <td>map02_lv008</td>
+        <td>t</td>
+        <td>25.501</td>
+        <td>119.421</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-repair/results/094-14JKTkX-0.json"
+        >
+          t
+        </td>
+        <td>25.501</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">095-0eKtrlq</td>
+        <td>map02_lv008</td>
+        <td>t</td>
+        <td>14.911</td>
+        <td>80.364</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-repair/results/095-0eKtrlq-0.json"
+        >
+          t
+        </td>
+        <td>14.911</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">096-0sdhDkY</td>
+        <td>map02_lv008</td>
+        <td>t</td>
+        <td>14.270</td>
+        <td>43.987</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-repair/results/096-0sdhDkY-0.json"
+        >
+          t
+        </td>
+        <td>14.270</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">097-0l2BG3e</td>
+        <td>map02_lv008</td>
+        <td>t</td>
+        <td>26.882</td>
+        <td>74.494</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-repair/results/097-0l2BG3e-0.json"
+        >
+          t
+        </td>
+        <td>26.882</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">098-0GmzhTb</td>
+        <td>map02_lv008</td>
+        <td>t</td>
+        <td>14.413</td>
+        <td>64.856</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-repair/results/098-0GmzhTb-0.json"
+        >
+          t
+        </td>
+        <td>14.413</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">099-0Q3hfns</td>
+        <td>map02_lv008</td>
+        <td>f</td>
+        <td></td>
+        <td>108.909</td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">100-0jdi5Fc</td>
+        <td>map02_lv009</td>
+        <td>f</td>
+        <td></td>
+        <td>98.490</td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">101-0HPyJMM</td>
+        <td>map02_lv009</td>
+        <td>t</td>
+        <td>10.193</td>
+        <td>81.840</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/101-0HPyJMM-0.json"
+        >
+          t
+        </td>
+        <td>10.193</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">102-1bdioBM</td>
+        <td>map02_lv009</td>
+        <td>t</td>
+        <td>2.582</td>
+        <td>62.103</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/102-1bdioBM-0.json"
+        >
+          t
+        </td>
+        <td>2.582</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">103-0skdX7F</td>
+        <td>map02_lv009</td>
+        <td>t</td>
+        <td>9.639</td>
+        <td>186.810</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/103-0skdX7F-0.json"
+        >
+          t
+        </td>
+        <td>9.639</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">104-0sPkq7L</td>
+        <td>map02_lv009</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td>t</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">105-0NXdLWr</td>
+        <td>map02_lv009</td>
+        <td>t</td>
+        <td>14.328</td>
+        <td>247.408</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched/results/105-0NXdLWr-0.json"
+        >
+          t
+        </td>
+        <td>14.328</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">106-0EZIgYG</td>
+        <td>map02_lv009</td>
+        <td>t</td>
+        <td>5.637</td>
+        <td>43.294</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment2/results/106-0EZIgYG-0.json"
+        >
+          t
+        </td>
+        <td>5.637</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">107-0i7oYsT</td>
+        <td>map02_lv010</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">108-0Uj2hLx</td>
+        <td>map02_lv010</td>
+        <td>t</td>
+        <td>15.463</td>
+        <td>51.490</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/results/108-0Uj2hLx-0.json"
+        >
+          t
+        </td>
+        <td>15.463</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">109-0pG4yrQ</td>
+        <td>map02_lv010</td>
+        <td>t</td>
+        <td>4.430</td>
+        <td>37.830</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/results/109-0pG4yrQ-0.json"
+        >
+          t
+        </td>
+        <td>4.430</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">110-05IiY48</td>
+        <td>map02_lv010</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">111-0ZCRHJM</td>
+        <td>map02_lv010</td>
+        <td>f</td>
+        <td></td>
+        <td>294.868</td>
+        <td>f</td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">112-0xIqUFU</td>
+        <td>map02_lv010</td>
+        <td>t</td>
+        <td>20.582</td>
+        <td>138.348</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/results/112-0xIqUFU-0.json"
+        >
+          t
+        </td>
+        <td>20.582</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">113-0H7FfhG</td>
+        <td>map02_lv010</td>
+        <td>t</td>
+        <td>3.809</td>
+        <td>32.488</td>
+        <td>t</td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/results/113-0H7FfhG-0.json"
+        >
+          t
+        </td>
+        <td>3.809</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">114-0HeqZ7W</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>2.356</td>
+        <td>24.042</td>
+        <td></td>
+        <td
+          title=".local/research/ts-point-fixes-20261115/pass5/114-0HeqZ7W/report.json.results/114-0HeqZ7W-0.json"
+        >
+          t
+        </td>
+        <td>2.356</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="df1d34f6-working-direct-and-source-input">115-18KS9uB</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>0.955</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-point-fixes-20261115/pass4/115-18KS9uB/report.json.results/115-18KS9uB-0.json"
+        >
+          t
+        </td>
+        <td>0.955</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r6">116-14wnGaQ</td>
+        <td>map02_lv001</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="timeout">timeout</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">117-0j2aVqt</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>1.200</td>
+        <td>51.443</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-source/report.json.results/117-0j2aVqt-0.json"
+        >
+          t
+        </td>
+        <td>1.200</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">118-06DbXCC</td>
+        <td>map01_lv002</td>
+        <td>t</td>
+        <td>13.852</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/118-06DbXCC/report.json.results/118-06DbXCC-0.json"
+        >
+          t
+        </td>
+        <td>13.852</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">119-0y9D7Zh</td>
+        <td>map01_lv002</td>
+        <td>t</td>
+        <td>0.819</td>
+        <td>11.133</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-source/report.json.results/119-0y9D7Zh-0.json"
+        >
+          t
+        </td>
+        <td>0.819</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">120-16KvS1Z</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>1.935</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/120-16KvS1Z/report.json.results/120-16KvS1Z-0.json"
+        >
+          t
+        </td>
+        <td>1.935</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">121-0lgj7hC</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>0.803</td>
+        <td>39.806</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-source/report.json.results/121-0lgj7hC-0.json"
+        >
+          t
+        </td>
+        <td>0.803</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">122-0dCSgoF</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>24.131</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/122-0dCSgoF/report.json.results/122-0dCSgoF-0.json"
+        >
+          t
+        </td>
+        <td>24.131</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">123-0Nu79u2</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>1.301</td>
+        <td>7.232</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-source/report.json.results/123-0Nu79u2-0.json"
+        >
+          t
+        </td>
+        <td>1.301</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">124-135bc02</td>
+        <td>map02_lv003</td>
+        <td>t</td>
+        <td>2.326</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/124-135bc02/report.json.results/124-135bc02-0.json"
+        >
+          t
+        </td>
+        <td>2.326</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">125-0hAYrfF</td>
+        <td>map02_lv003</td>
+        <td>t</td>
+        <td>0.913</td>
+        <td>24.610</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-source/report.json.results/125-0hAYrfF-0.json"
+        >
+          t
+        </td>
+        <td>0.913</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">126-0C7rByM</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>28.183</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/126-0C7rByM/report.json.results/126-0C7rByM-0.json"
+        >
+          t
+        </td>
+        <td>28.183</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">127-0DhzmZK</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>1.136</td>
+        <td>13.620</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-source/report.json.results/127-0DhzmZK-0.json"
+        >
+          t
+        </td>
+        <td>1.136</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">128-0NHCpNM</td>
+        <td>map02_lv004</td>
+        <td>t</td>
+        <td>2.829</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/128-0NHCpNM/report.json.results/128-0NHCpNM-0.json"
+        >
+          t
+        </td>
+        <td>2.829</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">129-02dpF3p</td>
+        <td>map02_lv004</td>
+        <td>t</td>
+        <td>1.162</td>
+        <td>76.211</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-source/report.json.results/129-02dpF3p-0.json"
+        >
+          t
+        </td>
+        <td>1.162</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">130-0VuYqRb</td>
+        <td>map01_lv006</td>
+        <td>t</td>
+        <td>2.229</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/130-0VuYqRb/report.json.results/130-0VuYqRb-0.json"
+        >
+          t
+        </td>
+        <td>2.229</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">131-0a0LG6O</td>
+        <td>map01_lv006</td>
+        <td>t</td>
+        <td>1.604</td>
+        <td>8.309</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-source/report.json.results/131-0a0LG6O-0.json"
+        >
+          t
+        </td>
+        <td>1.604</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">132-0ceqLEE</td>
+        <td>map02_lv005</td>
+        <td>t</td>
+        <td>2.165</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/132-0ceqLEE/report.json.results/132-0ceqLEE-0.json"
+        >
+          t
+        </td>
+        <td>2.165</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">133-0DKRW1j</td>
+        <td>map02_lv005</td>
+        <td>t</td>
+        <td>0.884</td>
+        <td>25.780</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-source/report.json.results/133-0DKRW1j-0.json"
+        >
+          t
+        </td>
+        <td>0.884</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">134-0oCIwR8</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>1.942</td>
+        <td>4.601</td>
+        <td></td>
+        <td
+          title=".local/research/ts-point-fixes-20261115/pass5/134-0oCIwR8/report.json.results/134-0oCIwR8-0.json"
+        >
+          t
+        </td>
+        <td>1.942</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">135-0iILRK6</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>1.653</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/135-0iILRK6/report.json.results/135-0iILRK6-0.json"
+        >
+          t
+        </td>
+        <td>1.653</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">136-09yIS3X</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>2.259</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/136-09yIS3X/report.json.results/136-09yIS3X-0.json"
+        >
+          t
+        </td>
+        <td>2.259</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">137-0n74y9P</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>2.667</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/137-0n74y9P/report.json.results/137-0n74y9P-0.json"
+        >
+          t
+        </td>
+        <td>2.667</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r3">138-0l3ZqLu</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>4.250</td>
+        <td>4.901</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r2-source185/report.json.results/138-0l3ZqLu-0.json"
+        >
+          t
+        </td>
+        <td>4.250</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">139-0jrAYMx</td>
+        <td>map02_lv003</td>
+        <td>t</td>
+        <td>2.561</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/139-0jrAYMx/report.json.results/139-0jrAYMx-0.json"
+        >
+          t
+        </td>
+        <td>2.561</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">140-08mrlXq</td>
+        <td>map01_lv006</td>
+        <td>t</td>
+        <td>0.879</td>
+        <td>23.109</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-source/report.json.results/140-08mrlXq-0.json"
+        >
+          t
+        </td>
+        <td>0.879</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r7">141-1aJENqk</td>
+        <td>map02_lv004</td>
+        <td>t</td>
+        <td>4.088</td>
+        <td>10.197</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r7-capabilities/report.json.results/141-1aJENqk-0.json"
+        >
+          t
+        </td>
+        <td>4.088</td>
+        <td title="首次候选求解时间；不等于终局时间">10.195</td>
+        <td title="首次候选从用例启动到观察到产物的时间">20.891</td>
+        <td title="">complete（批次无效）</td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r3">142-0tSC5oA</td>
+        <td>map01_lv007</td>
+        <td>t</td>
+        <td>1.131</td>
+        <td>3.383</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r2-source185/report.json.results/142-0tSC5oA-0.json"
+        >
+          t
+        </td>
+        <td>1.131</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38f-r3-input9">143-09xDr1Q</td>
+        <td>map02_lv006</td>
+        <td>t</td>
+        <td>1.778</td>
+        <td>39.947</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r3-source143-input9/report.json.results/143-09xDr1Q-0.json"
+        >
+          t
+        </td>
+        <td>1.778</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">144-0db14Cv</td>
+        <td>map02_lv007</td>
+        <td>t</td>
+        <td>0.710</td>
+        <td>2.553</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-source/report.json.results/144-0db14Cv-0.json"
+        >
+          t
+        </td>
+        <td>0.710</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">145-1azviWu</td>
+        <td>map02_lv009</td>
+        <td>t</td>
+        <td>1.889</td>
+        <td>19.946</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-source/report.json.results/145-1azviWu-0.json"
+        >
+          t
+        </td>
+        <td>1.889</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">146-0eIRJ3e</td>
+        <td>map02_lv010</td>
+        <td>t</td>
+        <td>1.653</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/146-0eIRJ3e/report.json.results/146-0eIRJ3e-0.json"
+        >
+          t
+        </td>
+        <td>1.653</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">147-19ReeBX</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>2.823</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/147-19ReeBX/report.json.results/147-19ReeBX-0.json"
+        >
+          t
+        </td>
+        <td>2.823</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r6">148-10g18tw</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>4.776</td>
+        <td>161.165</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r6-continuation/report.json.results/148-10g18tw-0.json"
+        >
+          t
+        </td>
+        <td>4.776</td>
+        <td title="首次候选求解时间；不等于终局时间">161.163</td>
+        <td title="首次候选从用例启动到观察到产物的时间">178.159</td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">149-0AH1wo4</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>10.557</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/149-0AH1wo4/report.json.results/149-0AH1wo4-0.json"
+        >
+          t
+        </td>
+        <td>10.557</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">150-18H6taZ</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>10.989</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/150-18H6taZ/report.json.results/150-18H6taZ-0.json"
+        >
+          t
+        </td>
+        <td>10.989</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="1544916f-working-point-fixes-507">151-0VghZMJ</td>
+        <td>map02_lv004</td>
+        <td>t</td>
+        <td>19.725</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-point-fixes-20261115/focused/151-0VghZMJ/report.json.results/151-0VghZMJ-0.json"
+        >
+          t
+        </td>
+        <td>19.725</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">152-042dpSC</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>34.968</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/152-042dpSC/report.json.results/152-042dpSC-0.json"
+        >
+          t
+        </td>
+        <td>34.968</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">153-0FoShyd</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>37.635</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/153-0FoShyd/report.json.results/153-0FoShyd-0.json"
+        >
+          t
+        </td>
+        <td>37.635</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r6">154-1ctEzjf</td>
+        <td>map01_lv007</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="timeout">timeout</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">155-0Kaoviv</td>
+        <td>map02_lv004</td>
+        <td>t</td>
+        <td>15.717</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/155-0Kaoviv/report.json.results/155-0Kaoviv-0.json"
+        >
+          t
+        </td>
+        <td>15.717</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">156-0wPCdoe</td>
+        <td>map02_lv006</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">157-0gcAdR9</td>
+        <td>map02_lv007</td>
+        <td>t</td>
+        <td>14.820</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/157-0gcAdR9/report.json.results/157-0gcAdR9-0.json"
+        >
+          t
+        </td>
+        <td>14.820</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">158-0cuZiEF</td>
+        <td>map02_lv010</td>
+        <td>t</td>
+        <td>23.229</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/158-0cuZiEF/report.json.results/158-0cuZiEF-0.json"
+        >
+          t
+        </td>
+        <td>23.229</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">159-0PqRUqq</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>39.855</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/159-0PqRUqq/report.json.results/159-0PqRUqq-0.json"
+        >
+          t
+        </td>
+        <td>39.855</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">160-0uFK88M</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>37.146</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/160-0uFK88M/report.json.results/160-0uFK88M-0.json"
+        >
+          t
+        </td>
+        <td>37.146</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r6">161-04xmYx7</td>
+        <td>map01_lv007</td>
+        <td>t</td>
+        <td>92.898</td>
+        <td>203.653</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r6-continuation/report.json.results/161-04xmYx7-0.json"
+        >
+          t
+        </td>
+        <td>92.898</td>
+        <td title="首次候选求解时间；不等于终局时间">203.647</td>
+        <td title="首次候选从用例启动到观察到产物的时间">207.594</td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">162-0DeDqep</td>
+        <td>map02_lv004</td>
+        <td>t</td>
+        <td>22.910</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/162-0DeDqep/report.json.results/162-0DeDqep-0.json"
+        >
+          t
+        </td>
+        <td>22.910</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">163-0AvUSn4</td>
+        <td>map02_lv006</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">164-17jhKR2</td>
+        <td>map02_lv007</td>
+        <td>t</td>
+        <td>13.256</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/164-17jhKR2/report.json.results/164-17jhKR2-0.json"
+        >
+          t
+        </td>
+        <td>13.256</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r6">165-19jRrUJ</td>
+        <td>map02_lv010</td>
+        <td>t</td>
+        <td>36.573</td>
+        <td>79.446</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r6-continuation/report.json.results/165-19jRrUJ-0.json"
+        >
+          t
+        </td>
+        <td>36.573</td>
+        <td title="首次候选求解时间；不等于终局时间">79.443</td>
+        <td title="首次候选从用例启动到观察到产物的时间">89.117</td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r3">166-0U24Zlh</td>
+        <td>map01_lv001</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="timeout">timeout（批次无效）</td>
+      </tr>
+      <tr class="">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">167-1bT3oSX</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>5.007</td>
+        <td>11.648</td>
+        <td></td>
+        <td
+          title=".local/research/ts-point-fixes-20261115/pass4/167-1bT3oSX/report.json.results/167-1bT3oSX-0.json"
+        >
+          t
+        </td>
+        <td>5.007</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="1544916f-working-point-fixes-509">168-0CC3VHS</td>
+        <td>map01_lv002</td>
+        <td>t</td>
+        <td>7.456</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-point-fixes-20261115/pass2/168-0CC3VHS/report.json.results/168-0CC3VHS-0.json"
+        >
+          t
+        </td>
+        <td>7.456</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">169-0dEjgH8</td>
+        <td>map02_lv004</td>
+        <td>t</td>
+        <td>8.649</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/169-0dEjgH8/report.json.results/169-0dEjgH8-0.json"
+        >
+          t
+        </td>
+        <td>8.649</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">170-10Fcphd</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>12.581</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/170-10Fcphd/report.json.results/170-10Fcphd-0.json"
+        >
+          t
+        </td>
+        <td>12.581</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">171-0g0saVP</td>
+        <td>map02_lv007</td>
+        <td>t</td>
+        <td>6.220</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/171-0g0saVP/report.json.results/171-0g0saVP-0.json"
+        >
+          t
+        </td>
+        <td>6.220</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="1544916f-working-point-fixes-509">172-0hxEbRu</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>2.359</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-point-fixes-20261115/pass2/172-0hxEbRu/report.json.results/172-0hxEbRu-0.json"
+        >
+          t
+        </td>
+        <td>2.359</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r3">173-13emvaD</td>
+        <td>map02_lv008</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="Scene worker exited unexpectedly (1)">error（批次无效）</td>
+      </tr>
+      <tr class="">
+        <td title="df1d34f6-working-direct-and-source-input">174-0tulIyD</td>
+        <td>map02_lv009</td>
+        <td>t</td>
+        <td>6.498</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-point-fixes-20261115/pass4/174-0tulIyD/report.json.results/174-0tulIyD-0.json"
+        >
+          t
+        </td>
+        <td>6.498</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a">175-0kNSRGk</td>
+        <td>map02_lv010</td>
+        <td>t</td>
+        <td>2.281</td>
+        <td>15.961</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/moving-fixed/report.json.results/175-0kNSRGk-0.json"
+        >
+          t
+        </td>
+        <td>2.281</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">176-0LtPFgt</td>
+        <td>map02_lv009</td>
+        <td>t</td>
+        <td>11.836</td>
+        <td>19.786</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-provider-endpoints/report.json.results/176-0LtPFgt-0.json"
+        >
+          t
+        </td>
+        <td>11.836</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">177-0CroVc6</td>
+        <td>map02_lv010</td>
+        <td>t</td>
+        <td>3.614</td>
+        <td>9.035</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-provider-endpoints/report.json.results/177-0CroVc6-0.json"
+        >
+          t
+        </td>
+        <td>3.614</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">178-16PP0Bz</td>
+        <td>map02_lv009</td>
+        <td>t</td>
+        <td>4.661</td>
+        <td>21.120</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-provider-endpoints/report.json.results/178-16PP0Bz-0.json"
+        >
+          t
+        </td>
+        <td>4.661</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">179-02XMvsf</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>1.635</td>
+        <td>9.139</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-provider-endpoints/report.json.results/179-02XMvsf-0.json"
+        >
+          t
+        </td>
+        <td>1.635</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">180-0Ih86Fu</td>
+        <td>map02_lv004</td>
+        <td>t</td>
+        <td>2.276</td>
+        <td>13.169</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-provider-endpoints/report.json.results/180-0Ih86Fu-0.json"
+        >
+          t
+        </td>
+        <td>2.276</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">181-0IcVvqu</td>
+        <td>map02_lv006</td>
+        <td>t</td>
+        <td>1.560</td>
+        <td>12.538</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-provider-endpoints/report.json.results/181-0IcVvqu-0.json"
+        >
+          t
+        </td>
+        <td>1.560</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r3">182-0Ij2NNi</td>
+        <td>map02_lv002</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="timeout">timeout</td>
+      </tr>
+      <tr class="">
+        <td title="1544916f-working-point-fixes-509">183-0Sy2QdA</td>
+        <td>map02_lv004</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="aborted">incomplete（取消）</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">184-0rcX2rX</td>
+        <td>map01_lv007</td>
+        <td>t</td>
+        <td>0.070</td>
+        <td>3.640</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-moving-guards/report.json.results/184-0rcX2rX-0.json"
+        >
+          t
+        </td>
+        <td>0.070</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r2">185-1cH9Nck</td>
+        <td>map01_lv007</td>
+        <td>t</td>
+        <td>0.121</td>
+        <td>3.836</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r2-source185/report.json.results/185-1cH9Nck-0.json"
+        >
+          t
+        </td>
+        <td>0.121</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">186-07fbs4f</td>
+        <td>map01_lv007</td>
+        <td>t</td>
+        <td>0.063</td>
+        <td>2.410</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-moving-guards/report.json.results/186-07fbs4f-0.json"
+        >
+          t
+        </td>
+        <td>0.063</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="c4a6491ec0556abecd774de4d24d0920d73f913a-snapshot-r1">187-0LaICPF</td>
+        <td>map01_lv007</td>
+        <td>t</td>
+        <td>0.077</td>
+        <td>6.490</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r1-moving-guards/report.json.results/187-0LaICPF-0.json"
+        >
+          t
+        </td>
+        <td>0.077</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r3">188-0AEnhG3</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>0.494</td>
+        <td>11.878</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/moving-fixed/report.json.results/188-0AEnhG3-0.json"
+        >
+          t
+        </td>
+        <td>0.494</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r3">189-11Pt43w</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>0.370</td>
+        <td>2.872</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r3-slopes/report.json.results/189-11Pt43w-0.json"
+        >
+          t
+        </td>
+        <td>0.370</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r3">190-0IS16cS</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>0.610</td>
+        <td>3.146</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r3-slopes/report.json.results/190-0IS16cS-0.json"
+        >
+          t
+        </td>
+        <td>0.610</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r3">191-0sa7UGN</td>
+        <td>map01_lv007</td>
+        <td>t</td>
+        <td>0.494</td>
+        <td>6.016</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r3-slopes/report.json.results/191-0sa7UGN-0.json"
+        >
+          t
+        </td>
+        <td>0.494</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="1544916f-working-point-fixes-509">192-0UOd852</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>2.009</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-point-fixes-20261115/pass2/192-0UOd852/report.json.results/192-0UOd852-0.json"
+        >
+          t
+        </td>
+        <td>2.009</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="df1d34f6-working-direct-and-source-input">193-09Oo1y7</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>3.100</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-point-fixes-20261115/pass4/193-09Oo1y7/report.json.results/193-09Oo1y7-0.json"
+        >
+          t
+        </td>
+        <td>3.100</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="1544916f-working-point-fixes-509">194-0rc62eo</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>2.013</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-point-fixes-20261115/pass2/194-0rc62eo/report.json.results/194-0rc62eo-0.json"
+        >
+          t
+        </td>
+        <td>2.013</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="df1d34f6-working-direct-and-source-input">195-0vacV03</td>
+        <td>map02_lv005</td>
+        <td>t</td>
+        <td>2.000</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-point-fixes-20261115/pass4/195-0vacV03/report.json.results/195-0vacV03-0.json"
+        >
+          t
+        </td>
+        <td>2.000</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="working-ts266-following196">196-0s4x24L</td>
+        <td>map01_lv001</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="timeout">timeout</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">197-0AmLGv5</td>
+        <td>map02_lv002</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">198-0yyZ8SK</td>
+        <td>map01_lv003</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">199-0aY6nQ5</td>
+        <td>map02_lv007</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">200-0z4bAv3</td>
+        <td>map01_lv006</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">201-0OZJcfx</td>
+        <td>map01_lv001</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">202-0HFwdHR</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>44.711</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/202-0HFwdHR/report.json.results/202-0HFwdHR-0.json"
+        >
+          t
+        </td>
+        <td>44.711</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">203-08oJZYk</td>
+        <td>map01_lv003</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">204-19rt1HH</td>
+        <td>map02_lv007</td>
+        <td>t</td>
+        <td>10.280</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/204-19rt1HH/report.json.results/204-19rt1HH-0.json"
+        >
+          t
+        </td>
+        <td>10.280</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">205-06MbNfb</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>13.655</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/205-06MbNfb/report.json.results/205-06MbNfb-0.json"
+        >
+          t
+        </td>
+        <td>13.655</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">206-0Bkr6wP</td>
+        <td>map02_lv002</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">207-0oi4pkE</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>10.986</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/207-0oi4pkE/report.json.results/207-0oi4pkE-0.json"
+        >
+          t
+        </td>
+        <td>10.986</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">208-1craOtr</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>6.581</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/208-1craOtr/report.json.results/208-1craOtr-0.json"
+        >
+          t
+        </td>
+        <td>6.581</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">209-0rH6ayf</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>24.764</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/209-0rH6ayf/report.json.results/209-0rH6ayf-0.json"
+        >
+          t
+        </td>
+        <td>24.764</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">210-0qyLBCB</td>
+        <td>map01_lv002</td>
+        <td>t</td>
+        <td>46.036</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/210-0qyLBCB/report.json.results/210-0qyLBCB-0.json"
+        >
+          t
+        </td>
+        <td>46.036</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">211-0KnP7KD</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>36.241</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/211-0KnP7KD/report.json.results/211-0KnP7KD-0.json"
+        >
+          t
+        </td>
+        <td>36.241</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">212-1bBsm8d</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>40.541</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/212-1bBsm8d/report.json.results/212-1bBsm8d-0.json"
+        >
+          t
+        </td>
+        <td>40.541</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">213-16YPmLU</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>8.234</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/213-16YPmLU/report.json.results/213-16YPmLU-0.json"
+        >
+          t
+        </td>
+        <td>8.234</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">214-0nuILJY</td>
+        <td>map01_lv002</td>
+        <td>t</td>
+        <td>4.240</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/214-0nuILJY/report.json.results/214-0nuILJY-0.json"
+        >
+          t
+        </td>
+        <td>4.240</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">215-0NWOiBC</td>
+        <td>map02_lv002</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">216-0SK2QRR</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>44.006</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/216-0SK2QRR/report.json.results/216-0SK2QRR-0.json"
+        >
+          t
+        </td>
+        <td>44.006</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">217-0rv1UwY</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>14.593</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/217-0rv1UwY/report.json.results/217-0rv1UwY-0.json"
+        >
+          t
+        </td>
+        <td>14.593</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r6">218-1awU1hb</td>
+        <td>map01_lv002</td>
+        <td>t</td>
+        <td>28.686</td>
+        <td>12.117</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r6-continuation/report.json.results/218-1awU1hb-0.json"
+        >
+          t
+        </td>
+        <td>28.686</td>
+        <td title="首次候选求解时间；不等于终局时间">12.116</td>
+        <td title="首次候选从用例启动到观察到产物的时间">15.538</td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">219-0OTESmy</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>14.200</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/219-0OTESmy/report.json.results/219-0OTESmy-0.json"
+        >
+          t
+        </td>
+        <td>14.200</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">220-0S2QOjf</td>
+        <td>map01_lv001</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">221-07e939z</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>53.097</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/221-07e939z/report.json.results/221-07e939z-0.json"
+        >
+          t
+        </td>
+        <td>53.097</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">222-0s94W8v</td>
+        <td>map01_lv002</td>
+        <td>t</td>
+        <td>22.362</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/222-0s94W8v/report.json.results/222-0s94W8v-0.json"
+        >
+          t
+        </td>
+        <td>22.362</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">223-0tzQ9RW</td>
+        <td>map02_lv002</td>
+        <td>t</td>
+        <td>59.158</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/223-0tzQ9RW/report.json.results/223-0tzQ9RW-0.json"
+        >
+          t
+        </td>
+        <td>59.158</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">224-0aZUrpW</td>
+        <td>map01_lv001</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">225-07VoQbO</td>
+        <td>map02_lv001</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">226-03kSVkZ</td>
+        <td>map01_lv002</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">227-0RxibO2</td>
+        <td>map02_lv002</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r7">228-0pEgqMT</td>
+        <td>map01_lv003</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="timeout">timeout</td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r7">229-0LRIze7</td>
+        <td>map02_lv010</td>
+        <td>t</td>
+        <td>14.851</td>
+        <td>31.622</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r7-input-and-retained/report.json.results/229-0LRIze7-0.json"
+        >
+          t
+        </td>
+        <td>14.851</td>
+        <td title="首次候选求解时间；不等于终局时间">31.621</td>
+        <td title="首次候选从用例启动到观察到产物的时间">40.363</td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">230-1cSvWln</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>7.926</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/230-1cSvWln/report.json.results/230-1cSvWln-0.json"
+        >
+          t
+        </td>
+        <td>7.926</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">231-030cHQk</td>
+        <td>map02_lv010</td>
+        <td>t</td>
+        <td>55.071</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/231-030cHQk/report.json.results/231-030cHQk-0.json"
+        >
+          t
+        </td>
+        <td>55.071</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">232-0NBKrKt</td>
+        <td>map01_lv002</td>
+        <td>t</td>
+        <td>20.152</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/232-0NBKrKt/report.json.results/232-0NBKrKt-0.json"
+        >
+          t
+        </td>
+        <td>20.152</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">233-0TCGoU8</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>29.948</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/233-0TCGoU8/report.json.results/233-0TCGoU8-0.json"
+        >
+          t
+        </td>
+        <td>29.948</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="gain">
+        <td title="d812e38fdd0ace9d9d625749f95c9600bb783c5e-snapshot-r7">234-0sbwizy</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>23.974</td>
+        <td>34.592</td>
+        <td></td>
+        <td
+          title=".local/research/ts-266-20261115/diagnostics/r7-input-and-retained/report.json.results/234-0sbwizy-0.json"
+        >
+          t
+        </td>
+        <td>23.974</td>
+        <td title="首次候选求解时间；不等于终局时间">34.591</td>
+        <td title="首次候选从用例启动到观察到产物的时间">38.563</td>
+        <td title="">complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">235-073LQ6d</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>1.578</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/235-073LQ6d/report.json.results/235-073LQ6d-0.json"
+        >
+          t
+        </td>
+        <td>1.578</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">236-0GSaSqG</td>
+        <td>map01_lv005</td>
+        <td>t</td>
+        <td>5.898</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/236-0GSaSqG/report.json.results/236-0GSaSqG-0.json"
+        >
+          t
+        </td>
+        <td>5.898</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">237-03q9Bxy</td>
+        <td>map01_lv006</td>
+        <td>t</td>
+        <td>48.753</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/coverage-repair-237/case-report.json.results/237-03q9Bxy-0.json"
+        >
+          t
+        </td>
+        <td>48.753</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">238-0Zq9MMX</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>4.410</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/238-0Zq9MMX/report.json.results/238-0Zq9MMX-0.json"
+        >
+          t
+        </td>
+        <td>4.410</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">239-0hp34zJ</td>
+        <td>map02_lv003</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">240-0tT9xH3</td>
+        <td>map02_lv001</td>
+        <td>f</td>
+        <td></td>
+        <td>0.167</td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">241-1cxnGbR</td>
+        <td>map02_lv003</td>
+        <td>t</td>
+        <td>1.196</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/241-1cxnGbR/report.json.results/241-1cxnGbR-0.json"
+        >
+          t
+        </td>
+        <td>1.196</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">242-0Dbczof</td>
+        <td>map02_lv009</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">243-07Y4dXk</td>
+        <td>map02_lv005</td>
+        <td>t</td>
+        <td>22.440</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/243-07Y4dXk/report.json.results/243-07Y4dXk-0.json"
+        >
+          t
+        </td>
+        <td>22.440</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">244-08n80Ny</td>
+        <td>map01_lv005</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">245-0s0ynRr</td>
+        <td>map02_lv009</td>
+        <td>t</td>
+        <td>34.663</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/245-0s0ynRr/report.json.results/245-0s0ynRr-0.json"
+        >
+          t
+        </td>
+        <td>34.663</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">246-0vtYecw</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>9.292</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/246-0vtYecw/report.json.results/246-0vtYecw-0.json"
+        >
+          t
+        </td>
+        <td>9.292</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">247-0pFlp1G</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>7.134</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/247-0pFlp1G/report.json.results/247-0pFlp1G-0.json"
+        >
+          t
+        </td>
+        <td>7.134</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">248-0SlUkPj</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>7.670</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/248-0SlUkPj/report.json.results/248-0SlUkPj-0.json"
+        >
+          t
+        </td>
+        <td>7.670</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">249-0ADyrpf</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>2.524</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/249-0ADyrpf/report.json.results/249-0ADyrpf-0.json"
+        >
+          t
+        </td>
+        <td>2.524</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">250-0HTXfPs</td>
+        <td>map02_lv001</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">251-0ekRne8</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>15.125</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/251-0ekRne8/report.json.results/251-0ekRne8-0.json"
+        >
+          t
+        </td>
+        <td>15.125</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">252-0AKLjci</td>
+        <td>map02_lv002</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">253-0b7WQJc</td>
+        <td>map01_lv003</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">254-0UUbKsh</td>
+        <td>map02_lv007</td>
+        <td>t</td>
+        <td>8.556</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/254-0UUbKsh/report.json.results/254-0UUbKsh-0.json"
+        >
+          t
+        </td>
+        <td>8.556</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">255-0zeEJwo</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>12.868</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/255-0zeEJwo/report.json.results/255-0zeEJwo-0.json"
+        >
+          t
+        </td>
+        <td>12.868</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">256-0YYvlTn</td>
+        <td>map02_lv002</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">257-0ihnk8x</td>
+        <td>map01_lv003</td>
+        <td>t</td>
+        <td>3.818</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/257-0ihnk8x/report.json.results/257-0ihnk8x-0.json"
+        >
+          t
+        </td>
+        <td>3.818</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">258-191vMgJ</td>
+        <td>map01_lv001</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">259-1asm7dr</td>
+        <td>map01_lv001</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">260-06gyJ7F</td>
+        <td>map01_lv003</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">261-02u3Zc9</td>
+        <td>map01_lv001</td>
+        <td>f</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td title="">f</td>
+        <td></td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">unrun-current</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">262-0VmDkfU</td>
+        <td>map01_lv001</td>
+        <td>t</td>
+        <td>12.800</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/262-0VmDkfU/report.json.results/262-0VmDkfU-0.json"
+        >
+          t
+        </td>
+        <td>12.800</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">263-00G72Mp</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>11.706</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/263-00G72Mp/report.json.results/263-00G72Mp-0.json"
+        >
+          t
+        </td>
+        <td>11.706</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">264-0nUxYU8</td>
+        <td>map02_lv001</td>
+        <td>t</td>
+        <td>21.239</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/264-0nUxYU8/report.json.results/264-0nUxYU8-0.json"
+        >
+          t
+        </td>
+        <td>21.239</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">265-08CAj73</td>
+        <td>map02_lv003</td>
+        <td>t</td>
+        <td>13.273</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/265-08CAj73/report.json.results/265-08CAj73-0.json"
+        >
+          t
+        </td>
+        <td>13.273</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+      <tr class="">
+        <td title="daab983c">266-0csZhw4</td>
+        <td>map02_lv003</td>
+        <td>t</td>
+        <td>26.937</td>
+        <td></td>
+        <td></td>
+        <td
+          title=".local/research/ts-progression-20261114/full266-daab983c/batched-segment3/scene-cases/266-0csZhw4/report.json.results/266-0csZhw4-0.json"
+        >
+          t
+        </td>
+        <td>26.937</td>
+        <td title="首次候选求解时间；不等于终局时间"></td>
+        <td title="首次候选从用例启动到观察到产物的时间"></td>
+        <td title="">retained-complete</td>
+      </tr>
+    </tbody>
+  </table>
+</html>

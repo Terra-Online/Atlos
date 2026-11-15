@@ -114,7 +114,16 @@ test('scene regions reject tile holes, bind each job independently and solve fre
         },
       };
     };
-    const { resources, verifyInputs } = prepareSceneResources(data, prepare, 1, 'adapter');
+    const observed: unknown[] = [];
+    const { resources, verifyInputs, timings } = prepareSceneResources(
+      data,
+      prepare,
+      1,
+      'adapter',
+      {
+        onResult: (report) => observed.push(report),
+      },
+    );
     // Neither queries nor adapter reads may fall back to the filesystem after setup.
     await rm(f.root, { recursive: true, force: true });
     const sparse = await resources.query(
@@ -137,6 +146,10 @@ test('scene regions reject tile holes, bind each job independently and solve fre
     assert.ok(first && repeated);
     assert.equal(preparations, 3);
     assert.equal(solves, 3);
+    assert.equal(observed.length, solves);
+    assert.equal(observed[0], first.result);
+    assert.equal(observed[2], repeated.result);
+    assert.equal(timings.physical.calls, solves);
     assert.notEqual(resources.route(first).reason, resources.route(repeated).reason);
     assert.equal(generations[0], generations[2]);
     assert.notEqual(generations[0], generations[1]);
@@ -383,16 +396,19 @@ test('a cancelled local solve does not poison the prepared scene input', async (
   try {
     await f.region('scene-testscene/regions/full');
     const data = await loadSceneData(f.root, 'testscene');
+    const diagnostics = { reason: 'native-unmapped' };
+    const observed: unknown[] = [];
     const prepared = prepareSceneResources(
       data,
       async () => ({
         async solve(options) {
           options.signal?.throwIfAborted();
-          return { status: 'unavailable' };
+          return { status: 'unavailable', diagnostics };
         },
       }),
       1,
       'adapter',
+      { onResult: (report) => observed.push(report.diagnostics) },
     );
     const job = await prepared.resources.query(
       'testscene',
@@ -415,10 +431,13 @@ test('a cancelled local solve does not poison the prepared scene input', async (
       /abort/i,
     );
     prepared.verifyInputs();
+    assert.equal(observed.length, 0);
     assert.equal(
       (await prepared.resources.solve(job, request, true, { version: 1, step: 0 }))?.status,
       'ready',
     );
+    assert.equal(observed.length, 1);
+    assert.equal(observed[0], diagnostics);
   } finally {
     await rm(f.root, { recursive: true, force: true });
   }

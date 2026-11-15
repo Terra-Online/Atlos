@@ -4,7 +4,8 @@ This is a shared, frozen **acceptance specification** consumed by
 `bench/mechanism-run.ts --mode physical-diagnostic`.
 The user authorized sharing these case definitions and source bindings. Raw game
 assets, collision/navigation snapshots, profiles and private configuration remain
-local. No solver implementation or successful full-suite replay is included.
+local. `progress.json` and `progress.html` publish a frozen per-case progress
+snapshot; they do not represent a successful same-source full-suite replay.
 
 The main collection contains 266 distinct real entity/contact target positions
 across map01/map02 and 16 authored levels. Six non-entity navigation queries are
@@ -16,7 +17,8 @@ the feature is necessary or that the target is reachable.
 
 `selectionCapabilityGap` preserves the pre-prototype selection context. Current
 implementation and probe results live in the canonical handoff/history records.
-The circular and joint-box TS prototypes do not turn these unrun cases into passes.
+The specification's selection status is separate from the latest per-case results;
+mechanism selection or implementation alone does not establish completion.
 
 ## Files
 
@@ -34,6 +36,10 @@ The circular and joint-box TS prototypes do not turn these unrun cases into pass
   regressions, separate from the 266-case population and not unseen holdouts.
 - `negative-controls.json`: original unavailable-origin, capped-coverage and
   occupied-contact fixtures retained outside the positive population.
+- `progress.json` / `progress.html`: published results for all 266 IDs, including
+  terminal outcomes, available complete native artifacts, first-candidate times,
+  source bindings and remaining cases. This mixes retained and newer frozen runs.
+  Relative `.local/` references identify local evidence that is not shipped here.
 
 Main IDs use `001-{token}` through `266-{token}`, with the seven-character token
 from the existing `encodePointIdToken` codec in
@@ -65,6 +71,17 @@ Revision 8 keeps case 185's conveyor entity but replaces contacts intersecting a
 static overhead beam. The fixed-seed replacement uses two legal positions on one
 source cap, 1.20717 m apart, and retains the static mesh and original player body.
 The occupied original remains a separate input diagnostic.
+
+Revision 9 corrects case 143's source center, which lies inside its exported mesh.
+Its device and destination stay unchanged; the new starting feet are physically
+supported inside the original source interaction volume. This input repair does
+not change the solver's global height or collision rules.
+
+Revision 10 restores `waypoints` to the established coarse-discovery contract.
+They preserve input order as hints, without requiring the final trace to visit or
+stop at every coordinate. Prior stop expectations for cases 216--219 remain in
+their acceptance revision metadata; they are not claimed as passed. Completion
+requires an end-to-end action route for the original source and destination.
 
 ## Adaptation contract
 

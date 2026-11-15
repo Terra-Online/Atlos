@@ -437,6 +437,78 @@ test('an eroded source contact can use raw support without relaxing floor or cap
   );
 });
 
+test('raw witness quota favors support caps while retaining valid neighbouring contact probes', async () => {
+  const { item, input, binding, volume } = fixture();
+  input.ground.surfaces = [];
+  const positions: number[] = [],
+    indices: number[] = [];
+  const triangle = (points: Vec3[]) => {
+    const first = positions.length / 3;
+    positions.push(...points.flat());
+    indices.push(first, first + 1, first + 2);
+  };
+  for (let i = 0; i < 40; i++) {
+    const x = 0.4 + i / 1000;
+    triangle([
+      [x, -0.2, -3],
+      [x + 0.0005, 0.3, 3],
+      [x + 0.0005, 0.3, -3],
+    ]);
+  }
+  triangle([
+    [1, 0, -3],
+    [1, 0, 3],
+    [1.1, 0, 3],
+  ]);
+  triangle([
+    [1, 0, -3],
+    [1.1, 0, 3],
+    [1.1, 0, -3],
+  ]);
+  input.collision = { positions, indices };
+  const snapshot = async () => ({
+    input,
+    world: sourceSupportWorld(
+      input,
+      {
+        bounds: { min: [-4, -4], max: [4, 4] },
+        tiles: [
+          { x: -1, z: -1 },
+          { x: -1, z: 0 },
+          { x: 0, z: -1 },
+          { x: 0, z: 0 },
+        ],
+        tileSpan: 32,
+      },
+      volume,
+    ),
+    revision: 'support-and-probes',
+    source,
+    files: {},
+    reuse: 'bounded-source',
+  });
+  const resolved = await resolveMechanismQuery(item, binding, snapshot);
+  assert.deepEqual(resolved.query.starts[0].position, [1, 0.005, 0]);
+  assert.equal(resolved.receipt.starts[0].rawWitnessCount, 42);
+  assert.equal(resolved.receipt.starts[0].rawCandidates?.length, 32);
+
+  // A downward face may propose an adjacent legal sphere contact. Its own
+  // orientation is not authority for support, and does not disqualify the feet.
+  input.collision = {
+    positions: [
+      1, 0.15, -3, 1, 0.15, 3, 2, 0.15, 3, 2, 0.15, -3, 0.9, 0.05, -3, 0.95, 0.05, -3, 0.95, 0.05,
+      3, 0.9, 0.05, 3,
+    ],
+    indices: [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7],
+  };
+  const adjacent = await resolveMechanismQuery(item, binding, snapshot);
+  const selected = adjacent.receipt.starts[0].selected!;
+  assert.ok(selected.witness && selected.feet);
+  assert.equal(selected.witness.position[1], 0.05);
+  assert.ok(selected.feet[0] < 1 && selected.feet[1] > selected.witness.position[1]);
+  assert.equal(selected.reason, undefined);
+});
+
 test('malformed source direction and absent build identities remain typed input-invalid failures', async () => {
   const { item, binding, placed, snapshot } = fixture();
   Object.assign(placed.navigationGoal.interaction, { facing: [0, 0, 0], halfAngle: 90 });
