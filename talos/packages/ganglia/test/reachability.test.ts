@@ -55,6 +55,35 @@ test('directed envelopes retain terminal falls, launch impulses, boosts and boun
   assert.equal(forward({ min: [-100, -70, -100], max: [100, 10, 100] }), true);
 });
 
+test('radial envelope tests preserve rounded tangencies and exceptional magnitudes', () => {
+  const envelope = createJumpEnvelope([0, 0, 0], {
+    model: { ...model, maxHorizontalSpeed: 100 },
+    maxDrop: 80,
+    maxHorizontalDistance: 5,
+  });
+  // Adjacent decisions at the outward-rounded radius need the scaled hypot
+  // result: independently rounded squared distances can cross that boundary.
+  for (const [point, expected] of [
+    [[3, 0, 4], true],
+    [[3.00000000000034, 0, 4.000000000000453], true],
+    [[3.000000000000342, 0, 4.000000000000456], false],
+    [[5.000000000000568, 0, 0], true],
+    [[5.000000000000569, 0, 0], false],
+    [[1e-160, 0, 1e-160], true],
+    [[Infinity, 0, 0], true],
+    [[NaN, 0, 0], true],
+  ] as const)
+    assert.equal(envelope(pointBox([...point])), expected);
+
+  const enormous = createJumpEnvelope([0, 0, 0], {
+    model: { ...model, maxHorizontalSpeed: 1e155 },
+    maxDrop: 80,
+    maxHorizontalDistance: 1e155,
+  });
+  assert.equal(enormous(pointBox([5e154, 0, 5e154])), true);
+  assert.equal(enormous(pointBox([1e155, 0, 1e155])), false);
+});
+
 test('forward and inverse node tests enclose all witnesses admitted by the existing optimistic prefilter', () => {
   for (const maxJumpHeight of [0, 2])
     for (const impulse of [false, true]) {

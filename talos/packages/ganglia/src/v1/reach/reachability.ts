@@ -190,25 +190,38 @@ export function createJumpEnvelope(
         Math.abs(maxZ),
       );
     if (!Number.isFinite(epsilon)) return true;
-    const dx = Math.max(minX - x, 0, x - maxX),
-      dz = Math.max(minZ - z, 0, z - maxZ);
-    const span = Math.hypot(dx, dz);
-    if (span > maxHorizontalDistance + epsilon) return false;
     if (
       reverse
         ? maxY < y - rise - epsilon || minY > y + fall + epsilon
         : maxY < y - fall - epsilon || minY > y + rise + epsilon
     )
       return false;
+    const dx = Math.max(minX - x, 0, x - maxX),
+      dz = Math.max(minZ - z, 0, z - maxZ);
+    const horizontal = maxHorizontalDistance + epsilon;
+    if (dx > horizontal || dz > horizontal) return false;
     // Flight time increases with source height and decreases with landing height.
     // Clip the optimistic pair to the declared drop allowance before taking the
     // longest possible flight, and use relative heights to retain local precision.
     const source = reverse ? Math.min(maxY, y + fall) : y;
     const landing = reverse ? y : Math.max(minY, y - fall);
     const drop = source - landing + 2 * endpointTolerance + epsilon;
-    if (!Number.isFinite(drop)) return true;
-    const reach = flight.reach(drop);
-    return !Number.isFinite(reach) || span <= reach + epsilon;
+    const reach = Number.isFinite(drop) ? flight.reach(drop) : Infinity;
+    const radius = Number.isFinite(reach) ? Math.min(horizontal, reach + epsilon) : horizontal;
+    if (dx > radius || dz > radius) return false;
+    const squared = dx * dx + dz * dz;
+    const radiusSquared = radius * radius;
+    // Use squared distance only away from roundoff boundaries and exceptional
+    // magnitudes; tangencies retain the original scaled hypot comparison.
+    if (
+      squared >= 2 ** -1022 &&
+      radiusSquared >= 2 ** -1022 &&
+      Number.isFinite(squared) &&
+      Number.isFinite(radiusSquared) &&
+      Math.abs(squared - radiusSquared) > 32 * Number.EPSILON * Math.max(squared, radiusSquared)
+    )
+      return squared < radiusSquared;
+    return Math.hypot(dx, dz) <= radius;
   };
 }
 /** Necessary predecessor and control intervals for an entire target region.
