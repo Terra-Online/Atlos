@@ -19,6 +19,11 @@ measuring. Report preparation and end-to-end cost alongside serial query latency
 Reuse retained TS baselines; run a new TS control only when the user requests it.
 Long-distance stress is an opt-in investigation, outside routine acceptance.
 
+For mechanism coverage, use `pnpm benchmark:mechanisms` and read its
+[input preparation and commands](bench/scenes/mechanisms/README.md). The 266-case
+suite is a scenario manifest with per-case rules and exercise assertions; preserve
+those through its dedicated runner when testing devices, resources or box layouts.
+
 From this directory, use Node 26 on PATH and verified local datasets. Build the
 release native artifact with `pnpm rust:build`, then run the configured benchmark:
 
@@ -40,7 +45,7 @@ scoring because catalogs retain physical connections rather than complete-query
 answers; report that overlap and call this the full population, not an unseen
 holdout. Warmup uses separate goals and excludes scored queries. Service startup
 must use the configured training, freeze and warmup order on the same prepared
-solver. Both benchmark entry points default to one measured round; use `--rounds`
+solver. `benchmark:full` defaults to one measured round; use `--rounds`
 only when repetition is explicitly desired. No two-round convention is implied.
 Timeouts request cooperative cancellation. Wait for the current solver stage to
 reach a checkpoint before reusing the same worker. Never kill or replace workers
