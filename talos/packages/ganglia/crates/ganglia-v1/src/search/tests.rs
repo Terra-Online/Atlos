@@ -805,7 +805,11 @@ fn bounded_sample_walking_keeps_all_device_endpoints_for_multiple_hops() {
     assert_eq!(phases.len(), 1);
     assert_eq!(phases[0]["kind"], "direct");
     assert_eq!(phases[0]["complete"], true);
-    assert!(phases[0]["unexploredDetours"].as_u64().unwrap() > 0);
+    // Pending direct proofs are also visible unresolved alternatives.
+    assert!(
+        phases[0]["unexploredDetours"].as_u64().unwrap() > 0
+            || phases[0]["groundJobs"]["pending"].as_u64().unwrap() > 0
+    );
     assert_eq!(result["route"]["search"]["truncated"], true);
     for authored in array(&snapshot["connections"]) {
         let segment = array(&result["route"]["segments"])

@@ -690,35 +690,39 @@ fn same_trace(actual: &[Value], canonical: &[Value]) -> Result<bool, String> {
         }
         Ok(result)
     }
-    fn corners(points: Vec<Point>) -> Vec<Point> {
-        let mut result: Vec<Point> = vec![];
+    fn parameterize(points: Vec<Point>) -> Vec<(f64, Point)> {
+        let mut result = Vec::with_capacity(points.len());
+        let mut length = 0.;
         for point in points {
-            if result
-                .last()
-                .is_some_and(|&last| distance(last, point) <= 1e-9)
-            {
-                continue;
+            if let Some(&(_, previous)) = result.last() {
+                length += distance(previous, point);
             }
-            while result.len() >= 2 {
-                let a = result[result.len() - 2];
-                let b = result[result.len() - 1];
-                let length = distance(a, point);
-                let along = if length > 0. {
-                    (0..3)
-                        .map(|i| (b[i] - a[i]) * (point[i] - a[i]))
-                        .sum::<f64>()
-                        / (length * length)
-                } else {
-                    -1.
-                };
-                if !(0. ..=1.).contains(&along) || distance(lerp(a, point, along), b) > 1e-7 {
-                    break;
-                }
-                result.pop();
-            }
-            result.push(point);
+            result.push((length, point));
         }
         result
+    }
+    fn follows(points: &[(f64, Point)], other: &[(f64, Point)]) -> bool {
+        let mut at = 0;
+        for &(length, point) in points {
+            while at + 1 < other.len() && other[at + 1].0 < length {
+                at += 1;
+            }
+            let projected = if at + 1 == other.len() {
+                other[at].1
+            } else {
+                let span = other[at + 1].0 - other[at].0;
+                let fraction = if span > 0. {
+                    ((length - other[at].0) / span).clamp(0., 1.)
+                } else {
+                    0.
+                };
+                lerp(other[at].1, other[at + 1].1, fraction)
+            };
+            if distance(point, projected) > 1e-6 {
+                return false;
+            }
+        }
+        true
     }
     let actual = runs(actual)?;
     let canonical = runs(canonical)?;
@@ -729,9 +733,16 @@ fn same_trace(actual: &[Value], canonical: &[Value]) -> Result<bool, String> {
         if identity != other {
             return Ok(false);
         }
-        let a = corners(a);
-        let b = corners(b);
-        if a.len() != b.len() || a.iter().zip(b).any(|(&p, q)| distance(p, q) > 1e-6) {
+        // Compare at the union of arc-length knots. Independent corner
+        // simplification is unstable when a gait cut subdivides a tiny bend.
+        // Between consecutive knots both curves are linear, so these checks
+        // cover the whole ordered trace without requiring identical sampling.
+        let a = parameterize(a);
+        let b = parameterize(b);
+        if (a.last().unwrap().0 - b.last().unwrap().0).abs() > 1e-6
+            || !follows(&a, &b)
+            || !follows(&b, &a)
+        {
             return Ok(false);
         }
     }

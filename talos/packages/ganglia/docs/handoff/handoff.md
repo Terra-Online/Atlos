@@ -1,5 +1,48 @@
 # Route solver handoff
 
+## Supplemental TS refinement and proof scheduling, 2026-11-15
+
+Search preserves the broad departure pool and supplements it with body-scale
+boundary insets, directed approach/departure ranking and continuous standing
+landings. Both phases share the existing physical-attempt budget. The fine phase
+retains its best proved actions and excludes walking-dominated flights, following
+TS shortcut discovery. Immutable face metadata avoids repeated vertex scans.
+Direct walking proofs currently share the lazy geometry queue with resource
+labels; queued work is repriced when a cheaper source arrives. All directional
+targets and live continuation states remain eligible.
+
+The complete `native-ground-dominated-50/report.json` under `.local/research/`
+trains ten requests, freezes, warms two and scores all fifty once. It physically
+passes 50/50 with no timeouts/recoveries and passes unchanged cost gates: paired
+geometric mean 0.917469599, worst 1.014946863 over the 46 valid retained TS routes.
+Mean serial time is 1449.995361 ms/query, so the 794.705 ms/query objective remains
+unmet. Source digest is
+`d1f39ab95883b7c7ce6bc1f3804bfb32833970ca455afa9c722feee208b2aa65`;
+native digest is
+`a00430b9bebf1bd668e5e1fd1464973b4eed2a841245444ac7944f00ad739adc`.
+Subsequent edits only restore the measured policy and format/test its diagnostics.
+The preceding weighted-lazy run also passed quality at 1451.209901 ms/query;
+walking-dominance filtering alone did not improve performance.
+
+The batch-direct-proof trial is rejected: 1805.719139 ms/query, 50/50 physically
+valid, paired geometric mean 0.907564138 and worst 0.996217709. Evidence is
+`native-batched-direct-50/report.json`. A profiled representative under
+`/tmp/ganglia-fine-profile-full.log` spent 1083.950418 ms on 617 direct proofs and
+expanded 15739 resource states. Fine query-time discovery has not met the speed
+objective. Next move reusable fine action discovery into configured catalog
+training before optimizing the remaining resource frontier.
+
+A separate schedule contract bug rejected an unchanged nearly collinear walk
+after a gait split. Ordered arc-length comparison now checks the union of knots
+instead of independently simplifying corners. The reproduced discrepancy was zero
+geometric displacement; physical tolerances and nonwalking witness identity are
+unchanged. The durable regression fails the old implementation and passes the
+new comparison; the corner-shortcut rejection remains covered. One interrupted
+trial retained 49 other results and continued on its existing worker; it is not a
+complete benchmark. Final focused validation passes 150 Rust unit tests, two authored integration
+tests, feature-enabled Clippy, formatting and 26 common N-API physical/lifecycle
+fixtures. No TS baseline rerun or remote push occurred.
+
 ## Preserve broad coverage while refining, 2026-11-15
 
 World now caches immutable exposed boundary intervals after directed portal

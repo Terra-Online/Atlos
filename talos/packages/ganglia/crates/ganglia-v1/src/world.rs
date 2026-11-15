@@ -6,7 +6,7 @@ mod boundaries;
 mod support;
 use crate::geometry as collision;
 mod devices;
-mod discovery;
+pub(crate) mod discovery;
 mod flight;
 mod following;
 mod ground;

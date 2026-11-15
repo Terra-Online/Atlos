@@ -3,35 +3,59 @@ use super::*;
 use std::collections::{BinaryHeap, HashMap};
 
 #[derive(Clone, Debug)]
+pub(crate) struct Face {
+    pub center: Vec3,
+    pub height: f64,
+    pub min: [f64; 2],
+    pub max: [f64; 2],
+}
+#[derive(Clone, Debug)]
 pub(super) struct Graph {
-    centers: Vec<Vec3>,
+    faces: Vec<Face>,
     forward: Vec<Vec<(usize, f64)>>,
     reverse: Vec<Vec<(usize, f64)>>,
 }
 impl Graph {
     fn new(world: &World) -> Self {
-        let centers = world
+        let faces = world
             .surfaces
             .iter()
-            .map(|s| {
-                std::array::from_fn(|axis| {
+            .map(|s| Face {
+                center: std::array::from_fn(|axis| {
                     s.vertices.iter().map(|p| p[axis]).sum::<f64>() / s.vertices.len() as f64
-                })
+                }),
+                height: s
+                    .vertices
+                    .iter()
+                    .map(|p| p[1])
+                    .fold(f64::INFINITY, f64::min),
+                min: [0, 2].map(|axis| {
+                    s.vertices
+                        .iter()
+                        .map(|p| p[axis])
+                        .fold(f64::INFINITY, f64::min)
+                }),
+                max: [0, 2].map(|axis| {
+                    s.vertices
+                        .iter()
+                        .map(|p| p[axis])
+                        .fold(f64::NEG_INFINITY, f64::max)
+                }),
             })
-            .collect::<Vec<Vec3>>();
-        let mut forward = vec![Vec::new(); centers.len()];
-        let mut reverse = vec![Vec::new(); centers.len()];
+            .collect::<Vec<_>>();
+        let mut forward = vec![Vec::new(); faces.len()];
+        let mut reverse = vec![Vec::new(); faces.len()];
         for portal in &world.portals {
             let a = world.surface_ids[&portal.from];
             let b = world.surface_ids[&portal.to];
-            let cost = distance(centers[a], portal.points[0])
+            let cost = distance(faces[a].center, portal.points[0])
                 + distance(portal.points[0], portal.points[1])
-                + distance(portal.points[1], centers[b]);
+                + distance(portal.points[1], faces[b].center);
             forward[a].push((b, cost));
             reverse[b].push((a, cost));
         }
         Self {
-            centers,
+            faces,
             forward,
             reverse,
         }
@@ -90,9 +114,13 @@ pub(crate) struct Fields<'a> {
     departure: Vec<f64>,
 }
 impl Fields<'_> {
+    pub(crate) fn face(&self, id: usize) -> &Face {
+        &self.graph.faces[id]
+    }
+
     pub(crate) fn surface_costs(&self, surface: &str, point: Vec3) -> (f64, f64) {
         let id = self.world.surface_ids[surface];
-        let offset = distance(point, self.graph.centers[id]);
+        let offset = distance(point, self.graph.faces[id].center);
         (self.approach[id] + offset, self.departure[id] + offset)
     }
 
@@ -101,7 +129,7 @@ impl Fields<'_> {
         let mut tail = f64::INFINITY;
         for projection in self.world.project(point, None)? {
             let id = self.world.surface_ids[&projection.surface];
-            let offset = distance(point, self.graph.centers[id]);
+            let offset = distance(point, self.graph.faces[id].center);
             head = head.min(self.approach[id] + offset);
             tail = tail.min(self.departure[id] + offset);
         }
@@ -121,7 +149,7 @@ impl World {
             for &point in points {
                 for projection in self.project(point, None)? {
                     let id = self.surface_ids[&projection.surface];
-                    roots.push((id, distance(point, graph.centers[id])));
+                    roots.push((id, distance(point, graph.faces[id].center)));
                 }
             }
             Ok(roots)
@@ -133,9 +161,9 @@ impl World {
                 for to in self.project(end, None)? {
                     let a = self.surface_ids[&from.surface];
                     let b = self.surface_ids[&to.surface];
-                    let cost = distance(graph.centers[a], start)
+                    let cost = distance(graph.faces[a].center, start)
                         + length
-                        + distance(end, graph.centers[b]);
+                        + distance(end, graph.faces[b].center);
                     forward.entry(a).or_default().push((b, cost));
                     reverse.entry(b).or_default().push((a, cost));
                 }

@@ -770,6 +770,7 @@ fn remaining_costs(
 #[derive(Clone, Copy)]
 struct GroundJob {
     priority: f64,
+    source_cost: f64,
     lower_bound: f64,
     from: usize,
     to: usize,
@@ -2318,9 +2319,10 @@ fn solve_world(
                 &mut truncated,
             );
         }
-        let mut walked = vec![false; graph.points.len()];
+        let mut walked_costs = vec![f64::INFINITY; graph.points.len()];
         let mut ground_jobs = BinaryHeap::<GroundJob>::new();
-        let mut queued_pairs = std::collections::HashSet::new();
+        let mut queued_pairs = std::collections::HashMap::new();
+        let mut rejected_pairs = std::collections::HashSet::new();
         let mut jobs_proved = 0usize;
         let mut jobs_rejected = 0usize;
         loop {
@@ -2329,9 +2331,8 @@ fn solve_world(
                 queue.pop();
             }
             let next_label_cost = queue.peek().map_or(f64::INFINITY, |item| item.cost);
-            // Weighted ordering spends bounded work toward the goal. Pruning
-            // still uses the unweighted admissible bound on each popped item;
-            // priority is not a proof that the remaining frontier is exhausted.
+            // Unknown walking proofs compete with resource labels using their
+            // optimistic travel cost. Prove only work that reaches the frontier.
             let cost_limit = config["costLimit"].as_f64().unwrap_or(f64::INFINITY);
             if queue.is_empty() && ground_jobs.is_empty() {
                 break;
@@ -2341,6 +2342,11 @@ fn solve_world(
                 .is_some_and(|job| job.priority <= next_label_cost)
             {
                 let job = ground_jobs.pop().unwrap();
+                let pair = (job.from, job.to);
+                if queued_pairs.get(&pair) != Some(&job.source_cost) {
+                    continue;
+                }
+                queued_pairs.remove(&pair);
                 if job.lower_bound >= cost_limit {
                     continue;
                 }
@@ -2359,7 +2365,18 @@ fn solve_world(
                         "expanded":expanded,"proved":jobs_proved,"rejected":jobs_rejected})
                     );
                 }
-                let path = geometry.path(p, q).filter(|points| {
+                let path = if direct_only {
+                    match optional_proof(world.probe_ground(p, q).map(Some), &mut truncated)? {
+                        Some(crate::world::GroundProbe::Supported(path)) => Some(path.points),
+                        Some(crate::world::GroundProbe::Rejected(_)) | None => {
+                            unexplored_detours += 1;
+                            None
+                        }
+                    }
+                } else {
+                    geometry.path(p, q)
+                }
+                .filter(|points| {
                     points.first().is_some_and(|a| distance(*a, p) <= 1e-5)
                         && points.last().is_some_and(|b| distance(*b, q) <= 1e-5)
                 });
@@ -2373,6 +2390,7 @@ fn solve_world(
                     );
                 }
                 let Some(points) = path else {
+                    rejected_pairs.insert(pair);
                     jobs_rejected += 1;
                     continue;
                 };
@@ -2470,8 +2488,8 @@ fn solve_world(
                     }
                 }
             }
-            if !prepared_only && !walked[label.node] {
-                walked[label.node] = true;
+            if !prepared_only && label.cost < walked_costs[label.node] {
+                walked_costs[label.node] = label.cost;
                 let p = graph.points[label.node];
                 // Ground successors are materialized only from reached action nodes.
                 // Resource labels reuse the same physical path proof without sharing
@@ -2489,20 +2507,27 @@ fn solve_world(
                     {
                         continue;
                     }
-                    if !direct_only && stage >= 1 && !supported_paths.contains_key(&(label.node, b))
-                    {
-                        if queued_pairs.insert((label.node, b)) {
-                            let source_cost = rows[label.node]
-                                .iter()
-                                .copied()
-                                .filter(|&i| arena[i].active)
-                                .map(|i| arena[i].cost)
-                                .fold(f64::INFINITY, f64::min);
-                            // Endpoint admission allows 1e-5 at either end;
-                            // subtract it so normalization cannot raise the bound.
+                    if stage >= 1 && !supported_paths.contains_key(&(label.node, b)) {
+                        let pair = (label.node, b);
+                        if rejected_pairs.contains(&pair) {
+                            continue;
+                        }
+                        let source_cost = rows[label.node]
+                            .iter()
+                            .copied()
+                            .filter(|&i| arena[i].active)
+                            .map(|i| arena[i].cost)
+                            .fold(f64::INFINITY, f64::min);
+                        let queued = queued_pairs.entry(pair).or_insert(f64::INFINITY);
+                        if source_cost < *queued {
+                            *queued = source_cost;
+                            // Geometry is shared across resource labels. A later
+                            // cheaper entry reprices pending proof work; completed
+                            // proofs still relax every active source state.
                             let travel = (distance(p, q) - 2e-5).max(0.) / maximum_walk_speed;
                             ground_jobs.push(GroundJob {
-                                priority: source_cost + travel + SEARCH_WEIGHT * estimates[b],
+                                source_cost,
+                                priority: source_cost + SEARCH_WEIGHT * (travel + estimates[b]),
                                 lower_bound: source_cost + travel + estimates[b],
                                 from: label.node,
                                 to: b,
@@ -2514,22 +2539,7 @@ fn solve_world(
                         Some(points.clone())
                     } else {
                         ground_attempts += 1;
-                        if direct_only {
-                            match optional_proof(
-                                world.probe_ground(p, q).map(Some),
-                                &mut truncated,
-                            )? {
-                                Some(crate::world::GroundProbe::Supported(path)) => {
-                                    Some(path.points)
-                                }
-                                Some(crate::world::GroundProbe::Rejected(_)) | None => {
-                                    unexplored_detours += 1;
-                                    None
-                                }
-                            }
-                        } else {
-                            geometry.path(p, q)
-                        }
+                        geometry.path(p, q)
                     };
                     if let Some(points) = path {
                         if points.first().is_none_or(|a| distance(*a, p) > 1e-5)
@@ -2585,7 +2595,7 @@ fn solve_world(
                 "result":walking_phases.last()})
             );
         }
-        truncated |= direct_only && unexplored_detours > 0;
+        truncated |= direct_only && (unexplored_detours > 0 || !ground_jobs.is_empty());
         if winner.is_some() {
             // A proved sparse/direct graph winner avoids detour proofs.
             // Unexplored alternatives may offer a cheaper route.

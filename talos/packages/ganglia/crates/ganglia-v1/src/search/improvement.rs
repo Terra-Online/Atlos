@@ -14,6 +14,216 @@ pub(super) fn discover(
     authority: &str,
     truncated: &mut bool,
 ) -> Result<usize, String> {
+    if budget == 0 {
+        return Ok(0);
+    }
+    let original = graph.points.len();
+    let mut used = batch(
+        graph,
+        world,
+        origins,
+        goal,
+        Batch {
+            sources: 0..original,
+            attempts: budget,
+            links: max_links,
+            candidates: max_links.saturating_mul(2),
+            refining: false,
+        },
+        speed,
+        authority,
+        truncated,
+    )?;
+    let remaining = budget - used;
+    if remaining >= 2 {
+        let points = fine_departures(
+            graph,
+            world,
+            origins,
+            goal,
+            speed,
+            max_links.saturating_mul(2),
+            truncated,
+        )?;
+        let first = graph.points.len();
+        for point in points {
+            graph.node(point);
+        }
+        let end = graph.points.len();
+        if first < end {
+            used += batch(
+                graph,
+                world,
+                origins,
+                goal,
+                Batch {
+                    sources: first..end,
+                    attempts: remaining,
+                    links: max_links.div_ceil(8),
+                    candidates: max_links.saturating_mul(2).min(remaining / 2),
+                    refining: true,
+                },
+                speed,
+                authority,
+                truncated,
+            )?;
+        }
+    }
+    Ok(used)
+}
+fn fields<'a>(
+    graph: &Graph,
+    world: &'a crate::world::World,
+    origins: &[Point],
+    goal: Point,
+    speed: f64,
+) -> Result<crate::world::discovery::Fields<'a>, String> {
+    let mut actions = Vec::new();
+    for (from, edges) in graph.edges.iter().enumerate() {
+        for edge in edges {
+            actions.push((
+                graph.points[from],
+                graph.points[edge.to],
+                edge.segment.times.last().copied().unwrap_or(0.) * speed,
+            ));
+        }
+    }
+    world.discovery_fields(origins, goal, &actions)
+}
+
+// TS local refinement keeps fine launch witnesses separate from the broad seed
+// pool. Rank nav proposals first; standing and swept-flight proofs still decide
+// admission. This phase only consumes attempts left by the retained broad queue.
+#[allow(clippy::too_many_arguments)]
+fn fine_departures(
+    graph: &Graph,
+    world: &crate::world::World,
+    origins: &[Point],
+    goal: Point,
+    speed: f64,
+    limit: usize,
+    truncated: &mut bool,
+) -> Result<Vec<Point>, String> {
+    let fields = fields(graph, world, origins, goal, speed)?;
+    let radius = world.movement.profile.radius;
+    let diameter = (radius * 2.).max(0.25);
+    let margin = world.movement.model.max_horizontal_speed.max(diameter);
+    let bounds = crate::model::Bounds {
+        min: [0, 2].map(|axis| {
+            origins
+                .iter()
+                .map(|p| p[axis])
+                .chain(std::iter::once(goal[axis]))
+                .fold(f64::INFINITY, f64::min)
+                - margin
+        }),
+        max: [0, 2].map(|axis| {
+            origins
+                .iter()
+                .map(|p| p[axis])
+                .chain(std::iter::once(goal[axis]))
+                .fold(f64::NEG_INFINITY, f64::max)
+                + margin
+        }),
+    };
+    let mut cells = std::collections::BTreeMap::new();
+    for boundary in world.support_boundaries(bounds)? {
+        crate::cancel::check()?;
+        let [a, b] = boundary.points;
+        if origins
+            .iter()
+            .map(|p| (p[1] - a[1]).abs().min((p[1] - b[1]).abs()))
+            .fold(f64::INFINITY, f64::min)
+            > world.movement.model.max_jump_height.max(3.)
+        {
+            continue;
+        }
+        let d = geometry::sub(b, a);
+        let squared = d[0] * d[0] + d[2] * d[2];
+        let count = (squared.sqrt() / diameter.max(0.5)).ceil().max(1.) as usize;
+        let mut fractions = (0..=count)
+            .map(|i| i as f64 / count as f64)
+            .collect::<Vec<_>>();
+        for p in origins.iter().chain(std::iter::once(&goal)) {
+            if squared > 0. {
+                fractions
+                    .push((((p[0] - a[0]) * d[0] + (p[2] - a[2]) * d[2]) / squared).clamp(0., 1.));
+            }
+        }
+        for fraction in fractions {
+            let p = crate::geometry::mix(a, b, fraction);
+            for inset in [
+                0.,
+                radius,
+                1.,
+                2.,
+                3.,
+                0.5,
+                1.5,
+                2.5,
+                radius * 0.5,
+                radius * 0.25,
+            ] {
+                let p = std::array::from_fn(|axis| p[axis] + boundary.inward[axis] * inset);
+                let (head, tail) = fields.surface_costs(&boundary.surface, p);
+                let score = head + tail;
+                if !score.is_finite() {
+                    continue;
+                }
+                let key = p.map(|v| (v / diameter).floor() as i64);
+                let entry = cells.entry(key).or_insert((score, p));
+                if score < entry.0 {
+                    *entry = (score, p);
+                }
+            }
+        }
+    }
+    let mut seeds = cells.into_values().collect::<Vec<_>>();
+    seeds.sort_by(|a, b| {
+        a.0.total_cmp(&b.0)
+            .then_with(|| a.1[0].total_cmp(&b.1[0]))
+            .then_with(|| a.1[2].total_cmp(&b.1[2]))
+    });
+    let points = seeds.into_iter().map(|(_, p)| p).collect::<Vec<_>>();
+    let mut result = Vec::new();
+    for id in spread((0..points.len()).collect(), &points, margin, diameter) {
+        if result.len() == limit {
+            *truncated = true;
+            break;
+        }
+        if let Some(p) = optional_proof(world.standing_foot(points[id]), truncated)? {
+            result.push(p);
+        }
+    }
+    Ok(result)
+}
+
+struct Batch {
+    sources: std::ops::Range<usize>,
+    attempts: usize,
+    links: usize,
+    candidates: usize,
+    refining: bool,
+}
+
+#[allow(clippy::too_many_arguments)]
+fn batch(
+    graph: &mut Graph,
+    world: &crate::world::World,
+    origins: &[Point],
+    goal: Point,
+    work: Batch,
+    speed: f64,
+    authority: &str,
+    truncated: &mut bool,
+) -> Result<usize, String> {
+    let Batch {
+        sources: source_ids,
+        attempts: budget,
+        links: max_links,
+        candidates: candidate_limit,
+        refining,
+    } = work;
     let began = std::time::Instant::now();
     let count = graph.points.len();
     let components = graph
@@ -27,24 +237,19 @@ pub(super) fn discover(
         })
         .collect::<Vec<_>>();
     let eligible = vec![true; count];
-    let mut actions = Vec::new();
-    for (from, edges) in graph.edges.iter().enumerate() {
-        for edge in edges {
-            actions.push((
-                graph.points[from],
-                graph.points[edge.to],
-                edge.segment.times.last().copied().unwrap_or(0.) * speed,
-            ));
-        }
-    }
-    let fields = world.discovery_fields(origins, goal, &actions)?;
+    let fields = fields(graph, world, origins, goal, speed)?;
     let costs = graph
         .points
         .iter()
         .map(|&p| fields.costs(p))
         .collect::<Result<Vec<_>, _>>()?;
     profile("improvement-fields", &began, costs.len());
-    let mut sources = (0..count).collect::<Vec<_>>();
+    let bound = if refining {
+        fields.costs(goal)?.0 / speed
+    } else {
+        f64::INFINITY
+    };
+    let mut sources = source_ids.collect::<Vec<_>>();
     sources.sort_by(|&a, &b| costs[a].0.total_cmp(&costs[b].0).then(a.cmp(&b)));
     let mut candidates = Vec::new();
     for from in sources {
@@ -57,13 +262,7 @@ pub(super) fn discover(
             .take(32)
             .map(|id| (graph.points[id], costs[id].1))
             .collect::<Vec<_>>();
-        landings.extend(continuous_landings(
-            world,
-            start,
-            goal,
-            max_links,
-            &|surface, p| fields.surface_costs(surface, p).1,
-        )?);
+        landings.extend(continuous_landings(world, start, goal, max_links, &fields)?);
         for (end, tail) in landings {
             for mode in [crate::model::Mode::Drop, crate::model::Mode::Jump] {
                 if !free_flight_reaches(world, start, end, mode, 1.)? {
@@ -73,7 +272,12 @@ pub(super) fn discover(
                     // Ranking is deliberately non-authoritative. The 3D tail
                     // distinguishes a nearby upper floor from a useful descent.
                     let score = head + duration + tail / speed;
-                    candidates.push((score, from, end, mode));
+                    // The broad pass already discovers intermediate regions.
+                    // This improvement queue spends its bounded control work on
+                    // proposals with known approach and departure reachability.
+                    if score < bound {
+                        candidates.push((score, from, end, mode));
+                    }
                 }
             }
         }
@@ -131,7 +335,7 @@ pub(super) fn discover(
             }
         }
     }
-    selected.truncate(max_links.saturating_mul(2).min(budget));
+    selected.truncate(candidate_limit.min(budget));
     let mut queue = Vec::new();
     for rank in 0..selected
         .iter()
@@ -149,11 +353,12 @@ pub(super) fn discover(
     let mut accepted = std::collections::HashSet::new();
     let mut attempts = 0;
     let before = graph.generated.len();
-    for (pair, (_, from, end, mode)) in queue {
+    let mut retained = Vec::new();
+    for (pair, (score, from, end, mode)) in queue {
         if accepted.contains(&pair) {
             continue;
         }
-        if attempts == budget || accepted.len() == max_links {
+        if attempts == budget || (!refining && accepted.len() == max_links) {
             *truncated = true;
             break;
         }
@@ -168,10 +373,32 @@ pub(super) fn discover(
                 serde_json::to_value(connection).map_err(|e| e.to_string())?,
             )
             .map_err(|e| e.to_string())?;
+            // TS shortcut refinement discards flights dominated by supported
+            // walking. Keep these out of the resource graph as well: each extra
+            // action otherwise creates labels and walking proofs downstream.
+            if refining
+                && let Some(crate::world::GroundProbe::Supported(path)) = optional_proof(
+                    world.probe_ground(graph.points[from], end).map(Some),
+                    truncated,
+                )?
+                && path.length / world.movement.speed <= segment.times.last().copied().unwrap_or(0.)
+            {
+                continue;
+            }
             classify_flight(&mut segment, world.movement.run_air_speed);
-            graph.generated(from, segment, false, None, authority)?;
+            if refining {
+                retained.push((score, from, segment));
+            } else {
+                graph.generated(from, segment, false, None, authority)?;
+            }
             accepted.insert(pair);
         }
+    }
+    // Local refinement keeps the best proved actions, rather than the first
+    // successes in spatial enumeration. Broad actions remain untouched.
+    retained.sort_by(|a, b| a.0.total_cmp(&b.0));
+    for (_, from, segment) in retained.into_iter().take(max_links) {
+        graph.generated(from, segment, false, None, authority)?;
     }
     if std::env::var_os("GANGLIA_PROFILE").is_some() {
         eprintln!(
@@ -191,39 +418,40 @@ fn spread_launches(
     size: f64,
     diameter: f64,
 ) -> Vec<usize> {
-    fn spread(ids: Vec<usize>, points: &[Point], size: f64, diameter: f64) -> Vec<usize> {
-        if ids.len() < 2 || size <= diameter {
-            return ids;
-        }
-        let mut groups = Vec::<Vec<usize>>::new();
-        let mut keys = std::collections::HashMap::new();
-        for id in ids {
-            let key = points[id].map(|v| (v / size).floor() as i64);
-            let group = *keys.entry(key).or_insert_with(|| {
-                groups.push(Vec::new());
-                groups.len() - 1
-            });
-            groups[group].push(id);
-        }
-        let groups = groups
-            .into_iter()
-            .map(|ids| spread(ids, points, size / 2., diameter))
-            .collect::<Vec<_>>();
-        let mut result = Vec::new();
-        for rank in 0..groups.iter().map(Vec::len).max().unwrap_or(0) {
-            for group in &groups {
-                if let Some(&id) = group.get(rank) {
-                    result.push(id);
-                }
-            }
-        }
-        result
-    }
     let points = launches
         .iter()
         .map(|launch| graph.points[pairs[launch[0]][0].1])
         .collect::<Vec<_>>();
     spread((0..launches.len()).collect(), &points, size, diameter)
+}
+
+fn spread(ids: Vec<usize>, points: &[Point], size: f64, diameter: f64) -> Vec<usize> {
+    if ids.len() < 2 || size <= diameter {
+        return ids;
+    }
+    let mut groups = Vec::<Vec<usize>>::new();
+    let mut keys = std::collections::HashMap::new();
+    for id in ids {
+        let key = points[id].map(|v| (v / size).floor() as i64);
+        let group = *keys.entry(key).or_insert_with(|| {
+            groups.push(Vec::new());
+            groups.len() - 1
+        });
+        groups[group].push(id);
+    }
+    let groups = groups
+        .into_iter()
+        .map(|ids| spread(ids, points, size / 2., diameter))
+        .collect::<Vec<_>>();
+    let mut result = Vec::new();
+    for rank in 0..groups.iter().map(Vec::len).max().unwrap_or(0) {
+        for group in &groups {
+            if let Some(&id) = group.get(rank) {
+                result.push(id);
+            }
+        }
+    }
+    result
 }
 
 // Continuous face witnesses follow the TS landing generator: nearest launch,
@@ -233,7 +461,7 @@ fn continuous_landings(
     start: Point,
     goal: Point,
     limit: usize,
-    tail: &impl Fn(&str, Point) -> f64,
+    fields: &crate::world::discovery::Fields<'_>,
 ) -> Result<Vec<(Point, f64)>, String> {
     let reach = free_flight_range(
         world,
@@ -249,12 +477,8 @@ fn continuous_landings(
         min: [start[0] - reach, start[2] - reach],
         max: [start[0] + reach, start[2] + reach],
     }) {
-        let surface = &world.surfaces[owner];
-        let height = surface
-            .vertices
-            .iter()
-            .map(|p| p[1])
-            .fold(f64::INFINITY, f64::min);
+        let face = fields.face(owner);
+        let height = face.height;
         if height > start[1] + world.movement.model.max_jump_height
             || start[1] - height > world.movement.max_drop
         {
@@ -264,20 +488,8 @@ fn continuous_landings(
         else {
             continue;
         };
-        let min = [0, 2].map(|axis| {
-            surface
-                .vertices
-                .iter()
-                .map(|p| p[axis])
-                .fold(f64::INFINITY, f64::min)
-        });
-        let max = [0, 2].map(|axis| {
-            surface
-                .vertices
-                .iter()
-                .map(|p| p[axis])
-                .fold(f64::NEG_INFINITY, f64::max)
-        });
+        let min = face.min;
+        let max = face.max;
         let gap = |p: Point| {
             (min[0] - p[0])
                 .max(p[0] - max[0])
@@ -297,14 +509,12 @@ fn continuous_landings(
     // as in TS's landing query. Mesh density cannot allocate millions of pairs.
     for (_, owner, reach) in surfaces.into_iter().take(limit) {
         let surface = &world.surfaces[owner];
-        let center = std::array::from_fn(|axis| {
-            surface.vertices.iter().map(|p| p[axis]).sum::<f64>() / surface.vertices.len() as f64
-        });
+        let center = fields.face(owner).center;
         for seed in [start, goal, center] {
             if let Some(p) = crate::mesh::closest_on_surface(surface, seed)
                 && horizontal(start, p) <= reach + EPS
             {
-                result.push((p, tail(&surface.id, p)));
+                result.push((p, fields.surface_costs(&surface.id, p).1));
             }
         }
         for (i, &a) in surface.vertices.iter().enumerate() {
@@ -347,7 +557,7 @@ fn continuous_landings(
                         (clearance / span).min(1.)
                     };
                     let p = crate::geometry::mix(p, center, inset);
-                    result.push((p, tail(&surface.id, p)));
+                    result.push((p, fields.surface_costs(&surface.id, p).1));
                 }
             }
         }

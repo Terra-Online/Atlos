@@ -650,6 +650,37 @@ fn provided_controls_preserve_trace_and_allow_improvement() {
     assert_eq!(improved["schedule"][0]["allowSprint"], true);
 }
 
+#[test]
+fn provided_walk_controls_accept_equivalent_nearly_collinear_splits() {
+    let a = [0., 0., 0.];
+    let b = [1., 1.2e-7, 0.];
+    let c = [2., 0., 0.];
+    let cut = lerp(b, c, 0.5);
+    let make = |points: Vec<Point>| {
+        let mut times = vec![0.];
+        for pair in points.windows(2) {
+            times.push(times.last().unwrap() + distance(pair[0], pair[1]));
+        }
+        json!({"mode":"walk","points":points,"times":times})
+    };
+    let mut piece = route(a, c);
+    piece["points"] = json!([a, b, cut, c]);
+    piece["segments"] = json!([make(vec![a, b, cut, c])]);
+    piece["schedule"] =
+        json!([{"segments":[make(vec![a,b,c])],"allowSprint":false,"allowDash":false}]);
+    let composed = schedule::compose(
+        &[piece],
+        &json!({"speed":1.,"sprintSpeed":2.,"sprintAcceleration":100.}),
+    )
+    .unwrap()
+    .unwrap();
+    assert_eq!(composed["points"][0], json!(a));
+    assert_eq!(
+        composed["points"].as_array().unwrap().last(),
+        Some(&json!(c))
+    );
+}
+
 fn error_on_later_arrival(w: &World, q: &Value, c: &Value) -> Result<Value, String> {
     if point(&q["starts"][0]["position"])?[0] > 20. {
         Err("later alternative failed".into())
