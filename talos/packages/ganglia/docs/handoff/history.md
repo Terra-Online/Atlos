@@ -24,6 +24,15 @@ typechecks, and noclip preparation integrity. Native Rust source is unchanged.
 Fresh input preparation and the full Node population measurement are pending;
 the source branch's reported mixed-revision 211/266 campaign is historical evidence.
 
+The initial trained Node launch was cooperatively stopped before scoring. Its
+first training request exceeded 60 seconds, exposing repeated requests used to
+fill ten training slots in small scenario groups. Scenario config now caps
+`trainingQueries` at its manifest case count and records that effective policy.
+Positive training, freeze and warmup remain mandatory; the ordinary 50-case
+service benchmark is unchanged. The stopped report at
+`.local/research/mechanisms-266-node-cirisus/report.json` records interruption,
+unchanged source and zero measured attempts. Node algorithm source remains exact.
+
 ## Mechanism benchmark integration and input repair, 2026-11-15
 
 The shared revision-10 suite is imported unchanged from `352c62b9`, including 266

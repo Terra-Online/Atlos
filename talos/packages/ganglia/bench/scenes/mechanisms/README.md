@@ -35,10 +35,11 @@ saved in the report's `.artifacts` directory.
 
 Each scenario group retains one prepared solver. `--scenario-workers` defaults to one;
 independent groups can run concurrently when memory permits. Timings from a parallel
-coverage run include resource contention and do not establish a serial speedup. The algorithm config requires ten
-catalog-training queries, catalog freeze and two warmup queries before scoring.
-Training selects evenly across that group's cases, repeating when fewer than ten
-are present. Its overlap with scoring is explicit. Warmup makes separate zero-leg
+coverage run include resource contention and do not establish a serial speedup.
+Each scenario config caps the default ten training queries at its case count,
+then requires catalog freeze and two warmup queries before scoring. The effective
+config is recorded for each preparation. Training selects evenly across the group.
+Its overlap with scoring is explicit. Warmup makes separate zero-leg
 queries at source positions. Preparation outcomes and readiness costs are recorded;
 failed warmup does not erase the catalog or prevent subsequent requests.
 

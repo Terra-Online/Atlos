@@ -16,6 +16,8 @@ and bit-indexed following-box facts; the routing adapter exports explicit
 The Node coverage run will use freshly bound inputs under
 `.local/data/mechanisms-266-cirisus-v119/`; prior Rust inputs remain intact.
 The trained benchmark lifecycle and cooperative cancellation remain in place.
+Each mechanism scenario config caps training at its manifest case count, avoiding
+repeated requests to fill the default ten slots. Effective configs are recorded.
 Reports now count native completion separately from independent physical validity.
 Full Node measurements are pending.
 

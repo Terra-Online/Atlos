@@ -134,6 +134,8 @@ if (values.help) {
     inputRevision: index.revision,
     inputIndexSha256: createHash('sha256').update(indexBytes).digest('hex'),
     policy: config,
+    scenarioPreparation:
+      'Each scenario caps trainingQueries at its manifest case count; each preparation records its effective config.',
     rounds: 1,
     scenarioWorkers,
     deadlineMs: QUERY_SLO_MS,
@@ -193,6 +195,13 @@ if (values.help) {
     const scenario = ++ordinal;
     let servicePhase = 'preparation';
     let items = supplied;
+    const scenarioConfig = {
+      ...config,
+      preparation: {
+        ...config.preparation,
+        trainingQueries: Math.min(config.preparation.trainingQueries, items.length),
+      },
+    };
     const first = items[0];
     const binding: SceneBinding = {
       suite: resolve(values.suite),
@@ -211,6 +220,7 @@ if (values.help) {
           group: item.group,
           status: 'input-bound-unrun',
           binding: file,
+          config: scenarioConfig,
         });
       save();
       return;
@@ -221,7 +231,7 @@ if (values.help) {
       const startup = performance.now();
       prepared = await prepareWorkerSolver({
         count: 1,
-        config,
+        config: scenarioConfig,
         dataRoot: file,
         extractor: resolve(values.extractor),
         scene: first.scene,
@@ -285,10 +295,14 @@ if (values.help) {
         return;
       }
       const queries = items.map((item) => metadata.mechanism.resolved[item.id]);
-      const training = Array.from({ length: config.preparation.trainingQueries }, (_, i) => ({
-        id: items[Math.floor((i * items.length) / config.preparation.trainingQueries)].id,
-        query: queries[Math.floor((i * items.length) / config.preparation.trainingQueries)],
-      }));
+      const training = Array.from(
+        { length: scenarioConfig.preparation.trainingQueries },
+        (_, i) => ({
+          id: items[Math.floor((i * items.length) / scenarioConfig.preparation.trainingQueries)].id,
+          query:
+            queries[Math.floor((i * items.length) / scenarioConfig.preparation.trainingQueries)],
+        }),
+      );
       const warmup = Array.from({ length: config.preparation.warmupQueries }, (_, i) => {
         const query = queries[i % queries.length];
         return {
@@ -314,12 +328,13 @@ if (values.help) {
       for (const item of warmup)
         warmed.push(await solve(item.query, { signal: controller.signal }));
       requirePreparedCatalog(
-        config,
+        scenarioConfig,
         { ids: training.map((c) => c.id), perWorker: stats.map((stats) => ({ stats })) },
         warmup,
       );
       const preparation = {
         ordinal: scenario,
+        config: scenarioConfig,
         ids: binding.ids,
         metadata,
         training: training.map((c) => c.id),
