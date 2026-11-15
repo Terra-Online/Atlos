@@ -1,5 +1,168 @@
 # Route solver handoff
 
+## Work stopped at the user's request, 2026-11-15 14:36 CST
+
+This is the handoff snapshot. The user ended this agent's solver work and asked
+for documentation only. No further solver, experiment, benchmark or algorithm
+changes were run after that instruction. Older sections below describe earlier
+states and scoring conventions; the requirements in this section supersede them.
+
+### Objective and scoring required by the user
+
+The objective is to solve **all 266 cases** through TS strategy and algorithm work.
+The current suite contains cases 001--266. There is no case 000; the requested HTML
+table includes an empty 000 placeholder only. Do not report 267 queries.
+
+The user explicitly rejected independent route replay as the completion criterion.
+A solver result is `t` when it returns a complete end-to-end route and is not a
+partial target approach. Failed extra replay does not change that solver status.
+The route contains timed movement/action segments, including applicable sprint,
+dash, jump, drop, launch and device motion. Keep physical checks used to construct
+those actions. Remove the extra whole-route replay from this 266-case test flow.
+
+The latest retained results contain **173 complete returns and 93 unfinished**,
+versus 163 complete returns in the frozen daab983c census. The ten added complete
+returns are 151, 167, 168, 172, 174, 192, 193, 194, 195 and 115. Case 115 uses an
+explicit implementation of its declared source-start resolution setup; it is an
+input-contract repair, not a same-input algorithm gain. This is a latest-per-case
+record across revisions, not a full run of the stopped working tree.
+
+The 93 unfinished records comprise 42 incomplete, 41 timeout, six errors and four
+cases previously designated as refusal fixtures. **All four remain unfinished
+under the user's latest requirement. They are not exclusions or completion
+credit.** The suite still gives 228, 229, 234 and 240 old refusal/coverage assertions;
+reconciling those setups with the all-266 objective remains undone. Do not silently
+weaken walls, source availability, coverage or physics to label them successful.
+
+### Code and delivery state
+
+Repository: `/Users/canvas/_Code/Item Repos/Atlos`, branch `chan/algo-progression`.
+The latest committed algorithm revision is **df1d34f6**, already pushed to
+`origin/chan/algo-progression`. The preceding e6921d79 is also pushed. The existing
+draft PR is https://github.com/Terra-Online/Atlos/pull/100 and targets
+`misakavan/3d-preview`. The last fetch found no upstream commit missing from this
+branch. No remote update was performed as part of stopping work.
+
+The working tree has substantial **uncommitted** code. Preserve and inspect it;
+it contains useful tested changes and an unfinished final policy change. The
+following files were modified or added before the stop:
+
+- `src/model/world.ts`: optional same-buffer prepared terrain base, honest bounded
+  query coverage and source-owned sphere contact. The original two-argument API
+  remains usable. It avoids rebuilding a second terrain BVH for the new strategy.
+- `src/v1/solver/physical/moving-direct.ts` (new), `physical/solve.ts`: action-only
+  graph using original provider transfer endpoints, existing clearance, known
+  speed and complete spans. Endpoint/edge construction checks source ownership,
+  sphere support, walls, fixed following bodies and capsule clearance. Admission
+  selects the nearest legal source height before cost search. Walking effort
+  does not execute rides; internal coarse discovery hints do not block this probe.
+- The latest uncommitted cleanup removed the post-route `proves()`/unproven gate.
+  Direct is provisional; devices/all continue their original stages and retain
+  the lowest-cost complete native/direct candidate. Native failure keeps an
+  existing complete candidate. This final cleanup has focused checks only.
+- `src/v1/solver/route-result.ts`, `scene/prepared.ts`: top-level authored-origin
+  admission removes a purely vertical navigation-height prefix only when an
+  already constructed complete launch/rope entrance is at the original XZ and
+  within the existing 1 cm foot-contact band. Full action and tail remain intact
+  and are retimed. Partial, ordered-waypoint, multi-window, low-stamina, boost,
+  required-gait and insufficient-source cases conservatively keep the old route.
+- `bench/mechanism-query.ts` (new), `mechanism-suite.ts`, `mechanism-worker.ts`,
+  `adapters/ganglia-v1/scene.ts`: consume the source-start setup for the 36 rope/
+  launch cases. Source volume binds by start ID to the original interaction file
+  and normalized device facts. Feet are selected inside that volume and the
+  original +/-0.5 m height band, without solver answers. Original/resolved query,
+  source, snapshot, profile, candidates and chosen feet are recorded. Finite
+  32-witness exhaustion is `input-unresolved`, not proof of no route.
+- `bench/mechanism-run.ts`, `mechanism-suite.ts`, `mechanism-worker.ts` and
+  `test/mechanism-suite.test.ts` were then edited to remove automatic extra route
+  replay and its scoring. The worker no longer calls Scene.verify; its verify
+  protocol operation is unsupported. It records native solverMs separately.
+  **These latest benchmark edits were stopped before validation.** The source
+  adapter still has the earlier world-sharing changes; restoring shared behavior
+  and using a small source-only support view were planned but not completed.
+- Related tests changed in `test/physical-solver.test.ts`,
+  `physical-verifier.test.ts`, `scene-solver.test.ts`, and the new
+  `mechanism-query.test.ts`. Shared `src/evaluation` APIs and the other 50-case
+  benchmark were not deleted. Do not mistake their continued existence for this
+  266-case worker still invoking replay.
+
+### Actual validation, with its limits
+
+Before the final replay-removal policy change, the combined package check passed
+formatting, lint, typecheck and **522 tests**. Log:
+`/tmp/ganglia-direct-final-check.log`. That result does not validate the final
+stopped tree. After removing the direct post-route gate, 30 physical/window
+focused tests, formatting, lint and diff checks passed. The last benchmark
+replay-removal edits have no subsequent checks or real-query run. No full
+266-case rerun of this working tree was completed.
+
+Ordinary-query runs in `pass4/` returned complete routes for 174, 195, 193, 167,
+115, 114 and 134. `pass5/` checked authored-root admission: both 134 and 114 retained
+complete actions and reduced reported route cost. An earlier 0.5 ms independently
+recomputed difference in 134 was investigated rather than waived. Those extra
+replay costs are historical diagnostic evidence, not the user's current metric.
+The recorded action-only devices diagnostic for 167 took 2.134 s of solver time,
+including 0.228 s direct preparation, 1.283 ms graph search and 2.297 ms annotation;
+there was one terrain BVH build and no second full BVH for direct proof.
+
+Three paired old/new 167 groups completed with matching inputs, one lane, cold
+applications and no CPU sampling. Whole-request old/new seconds were
+57.696/44.601, 58.618/55.744 and 73.750/87.497. Preparation and extra replay caused
+most variation. The machine had 14.83 GB of 15 GB swap used and approximately
+70 MB free RAM, with unrelated GUI/simulator CPU load. No speedup or time
+non-regression acceptance was established. Five groups were not run. These
+measurements predate removal of the extra replay and candidate gate; do not use
+them as validation of the current pipeline. The paired runner itself expects old
+replay fields and requires adaptation before reuse.
+
+### Artifacts and resumption pointers
+
+The table requested by the user is:
+`.local/research/ts-point-fixes-20261115/points-000-266-solver.html`.
+It has only point ID, level, solver t/f, solver-estimated route time, solver time
+and historical Ganglia t/f. Ganglia records exist for the historical 113 only;
+other entries are blank. The table now uses raw solver completion, not replay.
+`render-table.py` regenerates it; `aggregate.mjs` still preserves the older physical
+classification alongside solver fields and must not be used as the new t/f rule.
+
+A stopped source snapshot is preserved at
+`.local/research/ts-point-fixes-20261115/stopped-worktree/`: tracked.patch, exact
+changed/new files and a manifest against df1d34f6. `unfinished.json` lists all
+93 remaining IDs, levels and result references under the latest solver criterion.
+The snapshot is not a validated commit.
+
+Evidence root: `.local/research/ts-point-fixes-20261115/`:
+
+- `progress.json`/CSV retain per-case source/result references and prior best costs.
+- `pass4/`, `pass5/` contain the latest ordinary functional/source/root checks.
+- `pass3/invalid-harness.json` marks seven runs invalid because this agent's private
+  deadline shim missed the QUERY_SLO_MS import. They were retried in pass4 and are
+  not solver failures. Original receipts remain intact.
+- `performance-control/` holds df1d34f6 control, exact bindings and all six paired
+  results. It created no branch/worktree. No additional hashing was performed.
+- `terrain-experiment/` preserves v1 failure and v2 successful offline 151 repair.
+  V2 rejects non-closed walkTrace output spans and passes the original full query;
+  it was not integrated into ordinary solving. Since 151 already returns a
+  complete route, do not count that offline repair as another solver completion.
+- `.local/research/arrival-admission-20261115/` retains original/source-bound 115,
+  167 and moving-pose diagnostics. Private v114 adapter is under the point-fixes
+  directory; generated `talos/.cache/noclip` is not an editing target.
+
+Before resumed work, inspect the stopped diff and finish the latest scoring/
+replay removal consistently. Run appropriate focused validation once stable.
+Do not restart a broad baseline or an old recurring task blindly. Four remaining
+coarse-waypoint execution failures (154,161,165,218) have a shared logic fix but no
+ordinary recheck; 089/092 had heap failures; 081/104 were historical Ganglia complete
+returns that timed out. Remaining source-start failures may benefit from the new
+36-case setup, but only 114/115/134 were actually rerun with it. Frozen seven-case
+binary input repair remains a private adapter path. Existing source transport
+records and other exporter/consumer gaps remain open; no claim was made that all
+facilities/obstacles are exported and consumed.
+
+No owned solver, profiler, test worker or recurring automation remains active.
+The user's table preview tabs were left open. Unrelated applications were not
+closed. All subagents were instructed to stop and froze their files.
+
 ## Existing pose contact and terrain-detour experiment, 2026-11-15
 
 The shared physical world preserves a legitimate sphere contact at the submitted

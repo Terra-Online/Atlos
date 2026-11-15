@@ -1,5 +1,74 @@
 # Route solver history and validation evidence
 
+## Human stop and revised solver-completion criterion, 2026-11-15
+
+The user ended this agent's work and requested handoff. Implementation and testing
+stopped; only the canonical handoff/history records were written afterward.
+Latest committed algorithm source is df1d34f6, pushed to chan/algo-progression;
+uncommitted source/benchmark changes remain in the workspace.
+
+The decisive policy change is explicit: for this 266-case campaign, t/f means
+whether the solver returns a complete end-to-end timed action route. Extra route
+replay is not an acceptance gate. Route time means the solver's reported cost;
+solver time excludes independent replay. All 266 remain targets. Previously
+refusal-designated 228,229,234,240 cannot be excluded or claimed complete. The suite
+still has their older assertions; resolving that mismatch is unfinished work.
+
+Frozen daab983c had 163 complete returns. Latest retained per-case results have
+173: eight moving-entry additions (167,168,172,174,192,193,194,195), 151's completed
+ordered-waypoint query, and 115 after its declared source-start setup was honored.
+There are 93 unfinished records. The prior physical acceptance count is not the
+user's completion count. A table initially mixed those criteria and was corrected
+in place; solver-complete routes rejected by replay now correctly remain t.
+
+Uncommitted direct transfer-graph work was independently exercised as ordinary
+queries in pass4, then root admission was checked in pass5. Source facts, original
+queries and the input-resolution receipts remain preserved. Root admission keeps
+complete authored actions and tails, requires original XZ and a <=0.010001 m
+actual-foot contact difference, and does not modify partial/ordered/multi-window/
+low-resource/boost cases. Reported 134 cost changed from the retained
+1.9488163721770657 s to 1.941859246158440 s; 114 changed from
+2.3711859879728663 s to 2.355569973190077 s. Check raw files before quoting further
+digits. Extra physically recomputed costs were used to diagnose the navigation
+prefix artifact, and are not the current scoring field.
+
+The last combined pre-cleanup check passed 522 TS tests plus formatting, lint and
+typecheck. The user then required replay removal: the direct branch's post-route
+proves/unproven filter was deleted, devices/all retain native improvement work and
+compare complete candidates by native cost. A focused cheaper-native RED-to-GREEN
+control protects against the new direct candidate hiding a lower-cost native
+result. Thirty related tests and local format/lint/diff checks passed afterward.
+The mechanism worker/runner/scoring replay deletion was edited but stopped before
+any checks. Do not claim a clean final check or a current full-population run.
+
+Three serial cold-application control/new pairs for 167 were retained. Inputs and
+harness matched, and all returned complete routes. Whole-request timings were
+57.696/44.601, 58.618/55.744 and 73.750/87.497 s. Direct preparation/search/annotation
+were approximately 0.161, 0.235 and 0.505 s in the new runs; there was one collision
+cold build in each old/new application. The third pair's extra 13.747 s was 93.4%
+preparation plus independent verification. Severe swap pressure and external CPU
+load prevented a time acceptance or speedup conclusion. Only three groups were
+run, and this pipeline subsequently changed when replay was removed. It is not a
+benchmark of the final stopped tree.
+
+Retain all earlier failed strategies and results. Terrain experiment v1 accepted
+local edges whose emitted feet failed later subspan sampling. V2 adds output-span
+closure, rejects 17 edges after 5,243 checks, repairs the same three local windows
+and passes the saved original 151 query offline. It remains private, with no
+ordinary-query integration and no additional completion credit. Do not repeat v1
+without the changed closure premise or resume this experiment automatically.
+
+The private pass3 deadline-shim error is explicitly marked invalid; seven records
+failed because QUERY_SLO_MS was not imported. It was fixed and those queries were
+retried in pass4. These were harness failures, not algorithm regressions, and were
+not allowed to replace solver grades. No extra source/input hash sweep was introduced for these bindings; normal loader provenance remained charged.
+
+Canonical source/details are in handoff.md. Evidence is under
+`.local/research/ts-point-fixes-20261115/` and
+`.local/research/arrival-admission-20261115/`. No owned experiment process or progress
+automation remained at stop. No algorithm/source changes, new tests, solver runs
+or remote pushes were performed as part of the handoff-only phase.
+
 ## Existing pose contacts and bounded detour closure, 2026-11-15
 
 After e6921d79, the shared world uses its existing source-support sphere index to
