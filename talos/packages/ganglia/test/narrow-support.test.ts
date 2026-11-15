@@ -6,6 +6,8 @@ import { createPhysicalWorld } from '#@/src/model/world.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { narrowGoalSupports } from '#@/src/v1/solver/ground-refinement.ts';
+import { createPhysicalCache } from '#@/src/v1/solver/physical/preparation.ts';
+import type { PhysicalCache } from '#@/src/v1/solver/physical/solve.ts';
 const scene: PhysicalInput = {
   ground: {
     surfaces: [],
@@ -171,4 +173,65 @@ test('ordinary solver recovers a narrow takeoff from the original arrival only a
     result.route,
   );
   assert.equal(evaluation.valid, true, JSON.stringify(evaluation));
+  const cache = createPhysicalCache();
+  let narrowBuilds = 0,
+    narrowHits = 0;
+  const observed: PhysicalCache = {
+    ...cache,
+    async memo(slot, key, create, scope) {
+      const prepared = await cache.memo(
+        slot,
+        key,
+        async (reserve) => {
+          let reserved = 0;
+          const value = await create((surfaces) => {
+            reserved = surfaces;
+            reserve?.(surfaces);
+            assert.ok(
+              cache.stats().resident.plannerSurfaces <= cache.stats().capacity.plannerSurfaces,
+            );
+          });
+          if (slot === 'refinement') {
+            const refinement = value as { surfaces: PhysicalInput['ground']['surfaces'] };
+            if (refinement.surfaces.some((surface) => surface.id.startsWith('narrow/'))) {
+              narrowBuilds++;
+              assert.equal(reserved, refinement.surfaces.length);
+              assert.ok(
+                scope?.parent,
+                'narrow preparation belongs to its original surface snapshot',
+              );
+            }
+          }
+          return value;
+        },
+        scope,
+      );
+      if (slot === 'refinement' && prepared.reused) {
+        const refinement = prepared.value as { surfaces: PhysicalInput['ground']['surfaces'] };
+        if (refinement.surfaces.some((surface) => surface.id.startsWith('narrow/'))) narrowHits++;
+      }
+      return prepared;
+    },
+  };
+  for (let round = 0; round < 2; round++) {
+    const cached: typeof results = [];
+    await solvePhysicalRoute(
+      input,
+      { arrival, target, interaction, walls: [] },
+      {
+        cache: observed,
+        effort: 'all',
+        emit: (candidate) => {
+          cached.push(candidate);
+        },
+      },
+      { ...gangliaV1Defaults, maxCandidates: 256, maxShortcutCandidates: 0 },
+    );
+    assert.deepEqual(cached.at(-1)?.route, result.route);
+    assert.deepEqual(cached.at(-1)?.connections, result.connections);
+  }
+  assert.equal(narrowBuilds, 1);
+  assert.equal(narrowHits, 1);
+  assert.ok(cache.stats().resident.refinement <= 2);
+  cache.clear();
 });

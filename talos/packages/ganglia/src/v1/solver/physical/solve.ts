@@ -1077,20 +1077,44 @@ export const solvePhysicalRoute = async (
             ).values(),
           ];
           const fallbackOptions = { ...options, connections };
-          const planner = createGroundPlanner(combined, fallbackOptions);
+          // Release local owners before reservation can evict the preceding
+          // graph. Validated actions and immutable input geometry remain shared.
+          initialGround = undefined;
+          groundPlanner = undefined;
+          const preparedFallback = await memo(
+            'refinement',
+            JSON.stringify([
+              groundKey,
+              'narrow-supports',
+              goal,
+              request.interaction,
+              model,
+              added.surfaces,
+              connections,
+            ]),
+            (reserve) => {
+              reserve?.(combined.length);
+              return {
+                surfaces: combined,
+                planner: createGroundPlanner(combined, fallbackOptions),
+              };
+            },
+            surfaces,
+          );
+          prepareReuse.narrowSupportFallback = preparedFallback.reused;
           fallbackDiagnostics.extraPasses = 1;
           // Missing source support changes the proposal geometry. Preserve the
           // failed pass and its validated actions; this is one charged extra
           // pass with the existing limits, rather than a larger search quota.
           const { result: fallback } = await runSearch([
-            combined,
+            preparedFallback.value.surfaces,
             world,
             [arrival],
             goal,
             {
               ...fallbackOptions,
               boosts,
-              groundPlanner: planner,
+              groundPlanner: preparedFallback.value.planner,
               interaction: request.interaction,
               runAirSpeed,
               maxSlope,
