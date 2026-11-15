@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
+import { verifyRoute } from '#@/src/evaluation/route.ts';
 import type { Route } from '#@/src/route.ts';
 import type { RouteEvent } from '#@/src/solver/contract.ts';
 import { prepareRouteSolver, gangliaV1Defaults, type SceneResources } from '#@/src/solver/index.ts';
@@ -87,6 +88,211 @@ function fixture() {
   const locomotion = { speed: 5, sprintSpeed: 5, sprintAcceleration: 1 };
   return { starts, resources, scene, config, locomotion };
 }
+
+function waypointFixture() {
+  const data = fixture();
+  data.scene.navigation.surfaces[0].vertices = [
+    [-1, 0, -10],
+    [21, 0, -10],
+    [21, 0, 10],
+    [-1, 0, 10],
+  ];
+  const options = {
+    speed: 5,
+    maxVertical: 0.1,
+    walls: [],
+    profile: { radius: 0.1, height: 1.8 },
+    locomotion: data.locomotion,
+  };
+  data.resources.ground = async () => ({ surfaces: data.scene.navigation.surfaces, options });
+  const planner = createGroundPlanner(data.scene.navigation.surfaces, options);
+  data.resources.solve = async (_job, request) => ({
+    status: 'ready',
+    route: planner.plan([request.arrival], request.target, { interaction: request.interaction }),
+  });
+  return data;
+}
+
+test('scene queries visit ordered waypoints before publishing a complete original query', async () => {
+  const { starts, resources, scene, config, locomotion } = waypointFixture();
+  const query = {
+    starts: [{ ...starts[1], position: [10, 0, 0] as [number, number, number], cost: 7 }],
+    goal: [20, 0, 0] as [number, number, number],
+    waypoints: [
+      [12, 0, 5],
+      [16, 0, -4],
+    ] as [number, number, number][],
+    interaction: { radius: 1 },
+  };
+  const events: RouteEvent[] = [];
+  const solver = await prepareRouteSolver(config, { kind: 'scene', scene, resources, locomotion });
+  try {
+    const result = await solver.solve(query, { onEvent: (event) => events.push(event) });
+    assert.equal(result.partial, false);
+    assert.equal(result.route.status, 'complete');
+    assert.deepEqual(verifyRoute(query, result.route, { maxVertical: 0.1 }).issues, []);
+    if (result.route.status === 'complete') {
+      assert.equal(result.route.arrivalCost, 7);
+      assert.equal(result.route.start, 'open');
+      assert.ok(result.route.cost > 7 + 10 / 5);
+    }
+    const complete = events.filter((event) => event.type === 'candidate' && !event.result.partial);
+    assert.ok(complete.length > 0);
+    for (const event of complete) {
+      if (event.type === 'candidate')
+        assert.deepEqual(verifyRoute(query, event.result.route, { maxVertical: 0.1 }).issues, []);
+    }
+  } finally {
+    await solver.close();
+  }
+});
+
+test('a required waypoint cannot be projected onto a different floor outside its height tolerance', async () => {
+  const { starts, resources, scene, config, locomotion } = waypointFixture();
+  const events: RouteEvent[] = [];
+  const solver = await prepareRouteSolver(config, { kind: 'scene', scene, resources, locomotion });
+  try {
+    const result = await solver.solve(
+      {
+        starts: [starts[1]],
+        goal: [20, 0, 0],
+        waypoints: [[12, 1, 5]],
+      },
+      { onEvent: (event) => events.push(event) },
+    );
+    assert.equal(result.route.status, 'no-verified-route');
+    assert.equal(result.reason, 'target-projection-error');
+    assert.equal(
+      events.some((event) => event.type === 'candidate' && !event.result.partial),
+      false,
+    );
+  } finally {
+    await solver.close();
+  }
+});
+
+test('only the last waypoint leg requests an airborne terminal', async () => {
+  const { starts, resources, scene, config, locomotion } = waypointFixture();
+  let terminals = 0;
+  resources.terminals = async (query) => {
+    terminals++;
+    assert.deepEqual(query.starts[0].position, [16, 0, -4]);
+    assert.equal(query.waypoints, undefined);
+    return [
+      {
+        id: 'terminal',
+        route: {
+          status: 'complete',
+          start: 'entry',
+          arrivalCost: 0,
+          cost: 0.4,
+          length: 2,
+          points: [
+            [18, 0, 0],
+            [20, 0, 0],
+          ],
+          segments: [
+            {
+              mode: 'walk',
+              points: [
+                [18, 0, 0],
+                [20, 0, 0],
+              ],
+              times: [0, 0.4],
+            },
+          ],
+          goalHit: { segment: 0, time: 0.4, position: [20, 0, 0] },
+        },
+      },
+    ];
+  };
+  const query = {
+    starts: [{ ...starts[1], position: [10, 0, 0] as [number, number, number], cost: 7 }],
+    goal: [20, 0, 0] as [number, number, number],
+    waypoints: [
+      [12, 0, 5],
+      [16, 0, -4],
+    ] as [number, number, number][],
+    interaction: { radius: 0.5, airborne: true },
+  };
+  const solver = await prepareRouteSolver(config, { kind: 'scene', scene, resources, locomotion });
+  try {
+    const result = await solver.solve(query);
+    assert.equal(terminals, 1);
+    assert.equal(result.partial, false);
+    assert.deepEqual(verifyRoute(query, result.route, { maxVertical: 0.1 }).issues, []);
+    if (result.route.status === 'complete')
+      assert.deepEqual(result.route.goalHit?.position, query.goal);
+  } finally {
+    await solver.close();
+  }
+});
+
+test('incompatible waypoint leg layouts cannot publish a complete query', async () => {
+  const { starts, resources, scene, config, locomotion } = waypointFixture();
+  const solve = resources.solve;
+  resources.solve = async (...args) => {
+    const job = await solve(...args);
+    if (job?.route?.status === 'complete')
+      job.route.placements =
+        args[1].target[2] === 5 ? [{ device: 'box', position: [0, 0, 0] }] : [];
+    return job;
+  };
+  const events: RouteEvent[] = [];
+  const solver = await prepareRouteSolver(config, { kind: 'scene', scene, resources, locomotion });
+  try {
+    const result = await solver.solve(
+      {
+        starts: [starts[1]],
+        goal: [20, 0, 0],
+        waypoints: [[12, 0, 5]],
+      },
+      { onEvent: (event) => events.push(event) },
+    );
+    assert.equal(result.route.status, 'no-verified-route');
+    assert.equal(result.reason, 'waypoint-composition');
+    assert.equal(
+      events.some((event) => event.type === 'candidate' && !event.result.partial),
+      false,
+    );
+  } finally {
+    await solver.close();
+  }
+});
+
+test('cancelling between waypoint legs does not publish the completed prefix', async () => {
+  const { starts, resources, scene, config, locomotion } = waypointFixture();
+  const controller = new AbortController();
+  const events: RouteEvent[] = [];
+  let searches = 0;
+  const solver = await prepareRouteSolver(config, { kind: 'scene', scene, resources, locomotion });
+  try {
+    const result = await solver.solve(
+      {
+        starts: [starts[1]],
+        goal: [20, 0, 0],
+        waypoints: [[12, 0, 5]],
+      },
+      {
+        signal: controller.signal,
+        onEvent(event) {
+          events.push(event);
+          if (event.type === 'progress' && event.phase === 'search' && ++searches === 2)
+            controller.abort();
+        },
+      },
+    );
+    assert.equal(result.route.status, 'no-verified-route');
+    assert.equal(result.reason, 'aborted');
+    assert.equal(result.diagnostics.truncated, true);
+    assert.equal(
+      events.some((event) => event.type === 'candidate'),
+      false,
+    );
+  } finally {
+    await solver.close();
+  }
+});
 
 test('a verified whole-guide target approach completes once and pays the selected arrival overhead', async () => {
   const { starts, resources, scene, config, locomotion } = fixture();

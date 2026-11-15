@@ -5,7 +5,11 @@ import type { Vec3 } from '#@/src/geometry.ts';
 import type { Segment } from '#@/src/movement.ts';
 import { sampleJourney } from '#@/src/playback.ts';
 import type { Route } from '#@/src/route.ts';
-import { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
+import {
+  retimeGroundRoute,
+  createLocomotion,
+  chooseTypeScriptSchedule,
+} from '#@/src/v1/resource/locomotion.ts';
 
 const options = { speed: 5, sprintSpeed: 7, sprintAcceleration: 2 };
 const stamina = {
@@ -724,4 +728,92 @@ test('ground completion events follow the final segment after stamina and dash s
   assert.equal(result.goalHit.time, result.segments.at(-1)!.times.at(-1));
   assert.deepEqual(result.goalHit.position, result.points.at(-1));
   assert.equal(input.goalHit.time, 60);
+});
+
+test('vertical navigation joins cannot acquire a horizontal gait from rest', () => {
+  const policy = {
+    speed: 5,
+    sprintSpeed: 7,
+    sprintAcceleration: 10,
+    dash: { speed: 10, duration: 0.3, cooldown: 0.8, cost: 1 },
+    stamina: {
+      capacity: 10,
+      initial: 10,
+      activationCost: 1,
+      recoveryRate: 0,
+      recoveryDelay: 0,
+      reserve: 0,
+    },
+  };
+  const vertical = walk([
+    [0, 0.1, 0],
+    [0, 0, 0],
+  ]);
+  vertical.times = [0, 0.02];
+  const flight: Segment = {
+    mode: 'drop',
+    points: [
+      [0, 0, 0],
+      [1, -1, 0],
+    ],
+    times: [0, 1],
+    requiredGait: 'sprint',
+  };
+  const locomotion = createLocomotion(policy);
+  const choices = locomotion.advance(vertical, locomotion.initial());
+  assert.ok(choices.length);
+  assert.ok(choices.every((choice) => !choice.state.sprinting && !(choice.state.dashCount ?? 0)));
+  assert.equal(chooseTypeScriptSchedule([[vertical], [flight]], policy), null);
+  const active = { ...locomotion.initial(), sprinting: true, hasActivated: true };
+  assert.ok(locomotion.advance(vertical, active).some((choice) => choice.state.sprinting));
+  assert.ok(
+    locomotion
+      .advance(
+        walk([
+          [0, 0, 0],
+          [1, 0, 0],
+        ]),
+        locomotion.initial(),
+      )
+      .some((choice) => choice.state.sprinting),
+  );
+});
+
+test('a vertical join cannot restart sprint after an exhausted approach', () => {
+  const policy = {
+    speed: 1,
+    sprintSpeed: 2,
+    sprintAcceleration: 10,
+    stamina: {
+      capacity: 10,
+      initial: 0.001,
+      sprintDrain: 1,
+      activationCost: 0,
+      recoveryRate: 100,
+      recoveryDelay: 0,
+      reserve: 0,
+    },
+  };
+  const approach = walk([
+    [0, 0.1, 0],
+    [0.001005, 0.1, 0],
+  ]);
+  const vertical = walk([
+    [0.001005, 0.1, 0],
+    [0.001005, 0, 0],
+  ]);
+  const locomotion = createLocomotion(policy);
+  const active = locomotion.advance(approach, locomotion.initial()).find((s) => s.state.sprinting);
+  assert.ok(active && active.state.energy <= 1e-9);
+  assert.ok(locomotion.advance(vertical, active.state).every((s) => !s.state.sprinting));
+  const flight: Segment = {
+    mode: 'drop',
+    points: [
+      [0.001005, 0, 0],
+      [1, -1, 0],
+    ],
+    times: [0, 1],
+    requiredGait: 'sprint',
+  };
+  assert.equal(chooseTypeScriptSchedule([[approach], [vertical], [flight]], policy), null);
 });

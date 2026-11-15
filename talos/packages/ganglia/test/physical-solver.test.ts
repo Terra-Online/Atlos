@@ -496,3 +496,169 @@ test('physical solver observes event-loop cancellation at a stage boundary and r
     await solver.close();
   }
 });
+
+test('moving source admission uses the clearance-baked support and reuses its preparation', async () => {
+  const physical = structuredClone(input);
+  physical.ground.build = {
+    bounds: { min: [0, 0], max: [10, 10] },
+    cellSize: 0.2,
+    cellHeight: 0.05,
+  };
+  const surfaces = [5, 0].map((height, index) => ({
+    id: `lift/${index}`,
+    vertices: [
+      [2, height, 2],
+      [2, height, 8],
+      [8, height, 8],
+      [8, height, 2],
+    ] as [number, number, number][],
+  }));
+  physical.devices = {
+    devices: [],
+    ropes: [],
+    movingSupports: [
+      {
+        id: 'lift',
+        family: 'platform',
+        level: 'fixture',
+        model: 'fixture',
+        assumption: 'phase-free-swept-support',
+        surfaces,
+        transfers: [{ from: [5, 5, 5], to: [5, 0, 5], speed: 1 }],
+      },
+    ],
+  };
+  const cache = createPhysicalCache();
+  let builds = 0;
+  const observed: PhysicalCache = {
+    ...cache,
+    async memo(slot, key, create, scope) {
+      const prepared = await cache.memo(slot, key, create, scope);
+      if (slot === 'moving' && !prepared.reused) builds++;
+      return prepared;
+    },
+  };
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const results: PhysicalResult[] = [];
+    await solvePhysicalRoute(
+      physical,
+      {
+        arrival: { id: 'player', state: 'available', cost: 0, position: [5, 5, 5] },
+        target: [6, 5, 5],
+        interaction: { radius: 0.35, maxVertical: 0.2 },
+        walls: [],
+      },
+      {
+        cache: observed,
+        effort: 'devices',
+        emit(result) {
+          results.push(result);
+        },
+      },
+      { ...gangliaV1Defaults, maxCandidates: 0 },
+    );
+    const completed = results.find((r) => r.route?.status === 'complete');
+    assert.ok(completed?.route?.status === 'complete', JSON.stringify(results));
+    assert.equal(completed.route.points[0][0], 5);
+    assert.equal(completed.route.points[0][2], 5);
+    assert.ok(Math.abs(completed.route.points[0][1] - 5) < 0.5);
+  }
+  assert.equal(builds, 1);
+  cache.clear();
+  const blocked = structuredClone(physical);
+  blocked.ground.options.walls = [{ min: [4, 5, 4], max: [6, 7, 6], state: 'active' }];
+  const rejected: PhysicalResult[] = [];
+  await solvePhysicalRoute(
+    blocked,
+    {
+      arrival: { id: 'player', state: 'available', cost: 0, position: [5, 5, 5] },
+      target: [6, 5, 5],
+      interaction: { radius: 0.35, maxVertical: 0.2 },
+      walls: [],
+    },
+    {
+      effort: 'devices',
+      emit(result) {
+        rejected.push(result);
+      },
+    },
+    { ...gangliaV1Defaults, maxCandidates: 0 },
+  );
+  assert.equal(rejected.at(-1)!.reason, 'arrival-unmapped');
+  assert.equal(
+    rejected.some((result) => result.route?.status === 'complete'),
+    false,
+  );
+});
+
+test('moving admission preserves static fast paths and rejects unavailable or unsupported origins', async () => {
+  const physical = structuredClone(input);
+  physical.ground.build = {
+    bounds: { min: [0, 0], max: [10, 10] },
+    cellSize: 0.2,
+    cellHeight: 0.05,
+  };
+  physical.devices = {
+    devices: [],
+    ropes: [],
+    movingSupports: [
+      {
+        id: 'lift',
+        family: 'platform',
+        level: 'fixture',
+        model: 'fixture',
+        assumption: 'phase-free-swept-support',
+        surfaces: [
+          {
+            id: 'lift/0',
+            vertices: [
+              [2, 5, 2],
+              [2, 5, 8],
+              [8, 5, 8],
+              [8, 5, 2],
+            ],
+          },
+        ],
+        poses: [{ min: [0, 0, 0], max: [10, 5, 10] }],
+        transfers: [],
+      },
+    ],
+  };
+  for (const scenario of [
+    { position: [1, 0, 1], state: 'available', reason: undefined },
+    { position: [9, 5, 9], state: 'available', reason: 'arrival-unmapped' },
+    { position: [5, 5, 5], state: 'locked', reason: 'arrival-unavailable' },
+    { position: [5, 5, 5], state: 'available', absent: true, reason: 'arrival-unmapped' },
+  ] as const) {
+    const snapshot = scenario.absent ? { ...physical, devices: null } : physical;
+    let moving = 0;
+    const cache: PhysicalCache = {
+      release() {},
+      async memo(slot, _key, create) {
+        if (slot === 'moving') moving++;
+        return { value: await create(), reused: false };
+      },
+    };
+    const results: PhysicalResult[] = [];
+    await solvePhysicalRoute(
+      snapshot,
+      {
+        arrival: { id: 'player', state: scenario.state, cost: 0, position: [...scenario.position] },
+        target: [2, 0, 1],
+        walls: [],
+      },
+      {
+        cache,
+        effort: 'walking',
+        emit(result) {
+          results.push(result);
+        },
+      },
+      gangliaV1Defaults,
+    );
+    const result = results.at(-1)!;
+    if (scenario.reason) assert.equal(result.reason, scenario.reason);
+    else assert.equal(result.route?.status, 'complete');
+    assert.equal(moving, 0);
+  }
+});

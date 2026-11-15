@@ -1,5 +1,5 @@
 import type { Vec3, Surface } from '#@/src/geometry.ts';
-import { type GoalProjector, createGoalProjector } from '#@/src/model/goals.ts';
+import { type GoalProjector, createGoalProjector, findGoalHit } from '#@/src/model/goals.ts';
 import type { InteractionGoal, Segment } from '#@/src/movement.ts';
 import type {
   GroundArrival,
@@ -258,6 +258,16 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
       if (!from || !to) continue;
       const fromId = endpoint(from),
         toId = endpoint(to);
+      // A fully executed supported action can already satisfy an ordinary
+      // interaction. Do not add a walk back to its navigation-height projection.
+      if (
+        query.interaction &&
+        !query.interaction.airborne &&
+        findGoalHit([to.position, to.position], goal, query.interaction)
+      ) {
+        targetIds.push(toId);
+        goals.add(toId);
+      }
       graph.edges.push({
         from: fromId,
         to: toId,

@@ -382,7 +382,12 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
           },
           target: supportedTarget,
           interaction: final ? request.interaction : undefined,
-          waypoints: [...(request.waypoints ?? []), ...coarseWaypoints([corridor])],
+          // Caller hints retain their sequence; generated corridor hints share
+          // the same bounded discovery budget rather than adding a second one.
+          waypoints: [
+            ...(request.waypoints ?? []),
+            ...coarseWaypoints([corridor], Math.max(0, 128 - (request.waypoints?.length ?? 0))),
+          ],
         };
         const evidenceRevision = stage === 2 ? catalogEvidenceRevision() : undefined;
         const revision =
@@ -541,7 +546,8 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
   };
 }
 
-const coarseWaypoints = (corridors: Corridor[]): Vec3[] => {
+const coarseWaypoints = (corridors: Corridor[], limit: number): Vec3[] => {
+  if (!limit) return [];
   const paths = corridors.map((entry) => entry.coarse.path.slice(1, -1));
   const points: Vec3[] = [],
     seen = new Set<string>();
@@ -555,9 +561,9 @@ const coarseWaypoints = (corridors: Corridor[]): Vec3[] => {
       points.push([...point]);
     }
   }
-  if (points.length <= 128) return points;
+  if (points.length <= limit) return points;
   return Array.from(
-    { length: 128 },
-    (_, index) => points[Math.round((index * (points.length - 1)) / 127)],
+    { length: limit },
+    (_, index) => points[limit === 1 ? 0 : Math.round((index * (points.length - 1)) / (limit - 1))],
   );
 };

@@ -505,3 +505,132 @@ test('fixed device transfers survive target changes and expire with removed endp
   check([3.2, 0, 1.5]);
   assert.equal(fixed().length, 3);
 });
+
+test('an ordinary interaction can finish at a complete supported device exit', async () => {
+  const { createPhysicalWorld, createPhysicalVerifier } =
+    await import('#@/src/evaluation/index.ts');
+  const floors: Surface[] = [
+    {
+      id: 'lower',
+      vertices: [
+        [0, 0.1, 0],
+        [0, 0.1, 4],
+        [4, 0.1, 4],
+        [4, 0.1, 0],
+      ],
+    },
+    {
+      id: 'upper',
+      vertices: [
+        [6, 5.1, 0],
+        [6, 5.1, 4],
+        [10, 5.1, 4],
+        [10, 5.1, 0],
+      ],
+    },
+  ];
+  const rope: GroundConnection = {
+    id: 'rope',
+    mode: 'rope',
+    state: 'open',
+    endpointTolerance: 0.2,
+    points: [
+      [2, 0.01, 2],
+      [2, 0.01, 2],
+      [2, 5.11, 2],
+      [8, 5.11, 2],
+      [8, 5.01, 2],
+    ],
+    times: [0, 0.5, 1.5, 2.5, 2.6],
+  };
+  const locomotion = {
+    speed: 5,
+    sprintSpeed: 8,
+    sprintAcceleration: 10,
+    stamina: {
+      capacity: 8,
+      initial: 8,
+      activationCost: 1,
+      recoveryRate: 0,
+      recoveryDelay: 0,
+      reserve: 0,
+    },
+    dash: { speed: 10, duration: 0.3, cooldown: 0.8, cost: 1 },
+  };
+  const settings = {
+    speed: 5,
+    maxVertical: 0.5,
+    walls: [],
+    profile: { radius: 0.2, height: 1.6 },
+    locomotion,
+    connections: [rope],
+  };
+  const starts: GroundArrival[] = [
+    { id: 'player', position: [2, 0.1, 2], cost: 0, state: 'available' },
+  ];
+  const goal: Vec3 = [8, 5.5, 2],
+    interaction = { radius: 1 };
+  const planner = createGroundPlanner(floors, settings);
+  const result = planner.plan(starts, goal, { interaction });
+  assert.ok(result.status === 'complete');
+  assert.equal(result.segments.at(-1)!.mode, 'rope');
+  assert.deepEqual(result.segments.at(-1)!.points, rope.points);
+  assert.deepEqual(result.segments.at(-1)!.times, rope.times);
+  assert.deepEqual(result.points.at(-1), rope.points.at(-1));
+  const collision = floors.map((surface) =>
+    surface.vertices.map(([x, y, z]): Vec3 => [x, y - 0.1, z]),
+  );
+  const world = createPhysicalWorld(
+    {
+      ground: { surfaces: floors, options: settings },
+      collision: { positions: collision.flat(2), indices: [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7] },
+      movement: {
+        model: {
+          gravity: 10,
+          fallingGravity: 10,
+          maxJumpHeight: 1,
+          maxFallingSpeed: 10,
+          apexTime: 0,
+          maxHorizontalSpeed: 5,
+          startHorizontalSpeed: 5,
+          airOverspeedDeceleration: 10,
+          airAcceleration: 20,
+          airDeceleration: 20,
+        },
+        maxSlope: 45,
+        runAirSpeed: 5,
+        stepUp: 0.4,
+        stepDown: 0.5,
+      },
+      locomotion,
+    },
+    'complete',
+  );
+  const evaluation = createPhysicalVerifier(() => [world])({ starts, goal, interaction }, result);
+  assert.equal(evaluation.valid, true, JSON.stringify(evaluation));
+  assert.ok(
+    Math.abs(evaluation.costSeconds! - (rope.times.at(-1)! + 0.005 / locomotion.speed)) < 1e-9,
+  );
+  for (const query of [
+    {},
+    { interaction: { radius: 0.1 } },
+    { interaction: { radius: 1, airborne: true } },
+    { interaction: { radius: 1, maxVertical: 0.45 } },
+    { interaction: { radius: 1, facing: [1, 0, 0] as Vec3, halfAngle: 30 } },
+  ]) {
+    const target: Vec3 = query.interaction?.facing
+      ? [8.5, 5.5, 2]
+      : query.interaction?.radius === 0.1
+        ? [9.5, 5.1, 2]
+        : query.interaction
+          ? goal
+          : [8, 5.1, 2];
+    const unchanged = planner.plan(starts, target, query);
+    assert.ok(unchanged.status === 'complete', JSON.stringify({ target, query, unchanged }));
+    assert.equal(unchanged.segments.at(-1)!.mode, 'walk');
+  }
+  assert.notEqual(
+    planner.plan(starts, goal, { interaction, connections: [{ ...rope, state: 'closed' }] }).status,
+    'complete',
+  );
+});

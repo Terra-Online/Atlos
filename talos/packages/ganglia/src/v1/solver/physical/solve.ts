@@ -1,5 +1,6 @@
 import type { Surface, Vec3, Wall } from '#@/src/geometry.ts';
 import { createCollisionWorld } from '#@/src/model/collision.ts';
+import { createWallChecker } from '#@/src/model/walls.ts';
 import type { SpeedBoost, InteractionGoal } from '#@/src/movement.ts';
 import type { GroundArrival, GroundConnection, GroundOptions, Route } from '#@/src/route.ts';
 import type { GangliaV1Config as SolverConfig } from '#@/src/solver/ganglia-v1.ts';
@@ -178,24 +179,52 @@ export const solvePhysicalRoute = async (
   const maxVertical = Math.max(
     ...range.map((height) => Math.abs(height - request.arrival.position[1])),
   );
-  let supportedStart: ReturnType<typeof projectPoint> = null;
-  for (const surface of verticalProjectionCandidates(
-    ground.surfaces,
-    request.arrival.position,
-    maxVertical,
-  )) {
-    const start = projectPoint([surface], request.arrival.position, { maxVertical });
-    if (
-      start &&
-      start.position[1] >= range[0] &&
-      start.position[1] <= range[1] &&
-      (!supportedStart ||
+  const projectArrival = (surfaces: Surface[]) => {
+    let supportedStart: ReturnType<typeof projectPoint> = null;
+    for (const surface of verticalProjectionCandidates(
+      surfaces,
+      request.arrival.position,
+      maxVertical,
+    )) {
+      const start = projectPoint([surface], request.arrival.position, { maxVertical });
+      if (
+        start &&
+        start.position[1] >= range[0] &&
+        start.position[1] <= range[1] &&
+        (!supportedStart ||
+          Math.abs(start.position[1] - request.arrival.position[1]) <
+            Math.abs(supportedStart.position[1] - request.arrival.position[1]))
+      ) {
+        supportedStart = start;
+      }
+    }
+    return supportedStart;
+  };
+  const movingTarget = Boolean(
+    deviceInput?.movingSupports?.length &&
+    ground.build?.bounds &&
+    ground.build.cellSize &&
+    ground.build.cellHeight,
+  );
+  let supportedStart = projectArrival(ground.surfaces);
+  const movingSources = new Set<number>();
+  if (!supportedStart && movingTarget) {
+    // Source contact faces only defer admission. Swept pose bounds do not prove
+    // support; the existing clearance-baked moving preparation must confirm it.
+    for (const [index, support] of deviceInput!.movingSupports!.entries()) {
+      if (support.assumption !== 'phase-free-swept-support') continue;
+      const start = projectArrival(support.surfaces);
+      if (!start) continue;
+      movingSources.add(index);
+      if (
+        !supportedStart ||
         Math.abs(start.position[1] - request.arrival.position[1]) <
-          Math.abs(supportedStart.position[1] - request.arrival.position[1]))
-    ) {
-      supportedStart = start;
+          Math.abs(supportedStart.position[1] - request.arrival.position[1])
+      )
+        supportedStart = start;
     }
   }
+  const movingArrival = movingSources.size > 0;
   if (!supportedStart || request.arrival.state !== 'available') {
     await emit({
       status: 'unavailable',
@@ -204,15 +233,10 @@ export const solvePhysicalRoute = async (
     return;
   }
   const arrival = { ...request.arrival, position: supportedStart.position };
-  diagnostics.arrival = { requested: request.arrival.position, grounded: arrival.position };
+  if (!movingArrival)
+    diagnostics.arrival = { requested: request.arrival.position, grounded: arrival.position };
   const target = request.interaction ? null : targetSupport(ground.surfaces, request.target);
   const followingTarget = Boolean(deviceInput?.followingSupports?.length);
-  const movingTarget = Boolean(
-    deviceInput?.movingSupports?.length &&
-    ground.build?.bounds &&
-    ground.build.cellSize &&
-    ground.build.cellHeight,
-  );
   if (!request.interaction && !target && !movingTarget && !followingTarget) {
     await emit({ status: 'unavailable', reason: 'target-unmapped' });
     return;
@@ -241,10 +265,12 @@ export const solvePhysicalRoute = async (
   // Publish supported walking feasibility before indexing airborne collision and
   // spending the optional action-discovery budget. The parent keeps polling for
   // a faster complete route while this atomic provisional result is available.
-  let walking = groundPlanner.plan([arrival], goal, {
-    interaction: request.interaction,
-  });
-  if (walking.status !== 'complete') {
+  let walking: Route = movingArrival
+    ? { status: 'unmapped' }
+    : groundPlanner.plan([arrival], goal, {
+        interaction: request.interaction,
+      });
+  if (walking.status !== 'complete' && !movingArrival) {
     const rounded = input.roundedWalls ?? options.walls;
     if (rounded.some((wall, index) => wall !== options.walls[index])) {
       // Refine conservative occupancy only after it fails to connect the query.
@@ -289,7 +315,10 @@ export const solvePhysicalRoute = async (
     await context.checkpoint?.();
     progress({ phase: 'ground-route', cost: walking.cost });
   }
-  if (context.effort === 'walking' || (context.effort === 'devices' && !deviceInput)) {
+  if (
+    !movingArrival &&
+    (context.effort === 'walking' || (context.effort === 'devices' && !deviceInput))
+  ) {
     if (walking.status !== 'complete') {
       await emit({ status: 'unavailable', reason: walking.status });
     }
@@ -503,19 +532,61 @@ export const solvePhysicalRoute = async (
       };
       timing.moving = performance.now() - movingStart;
       prepareReuse.moving = moving.reused;
+      if (movingArrival) {
+        const mapped = projectArrival(
+          surfaces.filter((surface) =>
+            moving.value.sourceFaces
+              .get(surface.id)
+              ?.some((source) => movingSources.has(source.support)),
+          ),
+        );
+        const hit =
+          mapped &&
+          world.groundAt(mapped.position, {
+            maxUp: ground.build.cellHeight * 3,
+            maxDown: ground.build.cellHeight * 3,
+            maxSlope,
+            radius: profile.radius,
+          });
+        const feet: Vec3 | null = hit && [hit.position[0], hit.position[1] + 0.01, hit.position[2]];
+        if (
+          !mapped ||
+          !feet ||
+          !hit ||
+          hit.position[1] < range[0] ||
+          hit.position[1] > range[1] ||
+          createWallChecker(options.walls, profile)(feet, feet) ||
+          world.sweepCapsule(feet, feet, profile)
+        ) {
+          await emit({ status: 'unavailable', reason: 'arrival-unmapped' });
+          return;
+        }
+        arrival.position = mapped.position;
+        diagnostics.arrival = { requested: request.arrival.position, grounded: arrival.position };
+      }
     }
     if (!request.interaction) {
       goal = targetSupport(surfaces, request.target)?.position ?? goal;
     }
-    let connected = options.connections.length
-      ? groundPlanner!.plan([arrival], goal, {
-          interaction: request.interaction,
-          connections: options.connections,
-        })
-      : walking;
+    if (movingArrival && context.effort === 'walking') {
+      const route = groundPlanner!.plan([arrival], goal, { interaction: request.interaction });
+      await emit(
+        route.status === 'complete'
+          ? { status: 'candidate', route, connections: [], groundedTarget: route.points.at(-1) }
+          : { status: 'unavailable', reason: route.status },
+      );
+      return;
+    }
+    let connected =
+      options.connections.length || movingArrival
+        ? groundPlanner!.plan([arrival], goal, {
+            interaction: request.interaction,
+            connections: options.connections,
+          })
+        : walking;
     // Preserve the raw search baseline before detour pruning changes its cost
     // and therefore the optional jump-discovery comparison and sampling budget.
-    if (options.connections.length)
+    if (options.connections.length || movingArrival)
       initialGround = {
         planner: groundPlanner!,
         surfaces,

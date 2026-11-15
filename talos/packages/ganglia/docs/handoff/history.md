@@ -1,5 +1,79 @@
 # Route solver history and validation evidence
 
+## TS representative-point contracts and first new completions, 2026-11-15
+
+The working source is parent 1544916f plus the point-fixes patches retained in
+`.local/research/ts-point-fixes-20261115/`. Inputs reuse the frozen v114 source,
+original queries and existing raw snapshots. Runs have no CPU sampling, catalog
+training or warmup and remain functional diagnostics. Each attempt retains its
+invocation, complete route/schedule, physical result, input bindings and process
+receipt. Source is frozen within each batch; experimental terrain code is private.
+
+Three independent RED-to-GREEN contracts drive the strategy work. Coarse hint
+concatenation produced 129 or 130 positions in actual queries; generated hints
+now use only the space remaining below 128. Public ordered waypoints had been
+passed through that optional hint interface: 151's complete route missed its
+waypoint by 26.387 m. Scene orchestration now solves ordered hard legs, retains
+interaction/airborne terminal semantics on the final leg and jointly composes
+resources and layouts. A height-projection regression rejects a different-floor
+substitute without changing coarse-anchor tolerances. Cancellation and prefix
+candidate publication have focused coverage.
+
+A 115 input-repair experiment exposed a purely vertical navigation join acquiring
+sprint/dash, and then a resource-search fallback losing its selected schedule.
+TS scheduling now disallows new horizontal gait on those joins, including a
+run-to-sprint restart after depletion. Resource fallback carries exact selected
+controls on original edge references; only the retained chain materializes its
+schedule. Shared model rules, independent checks, graph dominance and search
+budgets are unchanged. The repaired source-volume-constrained 115 route is valid
+at 1.100964 s executed cost in 6.385 s raw query time; this changes the input seed
+and is explicitly excluded from original-query success gains.
+
+Moving arrivals previously failed before moving preparation. Raw provider faces
+now defer admission, and existing baked provenance, original height bounds,
+real support, capsule and wall checks must confirm it before search. Focused
+controls cover unavailable/missing/off-support inputs, physical obstruction,
+static fast paths and one-build moving cache reuse. Original-query results:
+
+| Case | Physical executed cost (s) | Observed request time (s) | Exercised |
+| --- | ---: | ---: | --- |
+| 167-1bT3oSX | 5.009499695 | 25.296 | moving transfer, vertical reach |
+| 168-0CC3VHS | 7.440999898 | 8.360 | moving transfer, vertical reach |
+| 172-0hxEbRu | 2.351000381 | 17.563 | moving transfer, vertical reach |
+| 192-0UOd852 | 2.000999935 | 10.342 | moving transfer, swept roof |
+| 194-0rc62eo | 2.000999940 | 12.842 | moving transfer, vertical reach |
+
+Old successful control 008 retains executed cost 10.963577624828668 s. Initially
+114 regressed by 0.001 s after removing fake vertical dash. The supported-action
+endpoint goal strategy removes its redundant trailing walk while preserving the
+complete rope motion; executed cost is now 2.356569973190079 s versus retained
+2.356569973229814 s, a numerical difference of -3.97e-11 s. The 0.001 s regression
+was not waived. Neither control establishes a paired service-speed comparison.
+
+151's full query after waypoint repair takes 75.371 s and still fails independent
+walking replay. One offline scan of its two real snapshots found exactly two
+unsupported original schedule endpoints among 594 unique points. Both have
+complete body coverage and no wall obstruction; projected standing capsules hit
+actual static triangles. No verifier tolerance or route coordinate was changed.
+Local fine terrain plus physically checked graph transitions is being tested in
+isolation; no production gain is attributed to that experiment.
+
+174 completes in 36.015 s but fails takeoff support, and 193 has the same reported
+issue at 28.009 s. A single offline 174 world proves all 54 ride endpoints have
+clear capsule sweeps and legitimate source sphere contact; six takeoffs instead
+select higher alternative poses. This is a shared-model contact-selection defect,
+not permission to weaken physical checks. 188 remains incomplete after 69.261 s.
+183 does not settle cancellation; its 310.400 s process receipt records authorized
+cleanup, while the worker journal preserves the interruption as an execution error.
+Reporting must classify that receipt as a timeout with cleanup, not an ordinary
+search failure. Further retries stay linked instead of overwriting these outcomes.
+
+Focused RED-to-GREEN tests protect each contract, including complete authored-action
+physical replay and exact resource-control replay. Final combined package check
+passes formatting, lint, typecheck and 509 TS tests. Logs are
+`/tmp/ganglia-point-fixes-final-check.log`. No Rust source/native artifact changed,
+and no full-population speedup or strict per-point performance acceptance is claimed.
+
 ## Completed 266-case census and input repairs, 2026-11-15
 
 Source daab983c and a frozen v114 extractor were used without CPU sampling or

@@ -1,5 +1,52 @@
 # Route solver handoff
 
+## Representative-point strategy repairs, 2026-11-15
+
+The TS prototype admits an arrival on a provider moving contact face only after
+its existing moving preparation proves baked support, original height range,
+raw-body clearance and wall clearance. The raw face only defers the initial
+static-only rejection. Static arrivals retain their previous preparation path;
+moving preparation and its bounded cache are reused rather than duplicated.
+
+Resource graph search retains the exact selected edge and sprint/dash controls,
+materializing the whole-route schedule only for the selected chain. A navigation
+height join cannot start a horizontal gait or recover and restart sprint; an
+already active gait can continue. Shared resource rules and verifier tolerances
+are unchanged. A fully executed, supported open action endpoint may directly
+satisfy an ordinary interaction, including its facing and height constraints.
+This avoids an unnecessary walk back to navigation height without truncating the
+authored action. The no-navigation-target-witness boundary remains open.
+
+Public scene waypoints are ordered hard destinations. Their legs retain the
+original height tolerance, suppress prefix completion events, and compose one
+continuous resource/layout proof before publishing the full result. Local coarse
+waypoints remain optional discovery hints; caller hints and generated hints share
+the existing 128-position limit. Ordinary solving does not invoke executeRoute
+or the independent whole-route verifier.
+
+Original queries 167, 168, 172, 192 and 194 now complete with independent physical
+acceptance and their asserted moving mechanism exercised. Prior controls 008 and
+114 remain physically accepted; executed cost is identical in 008 and differs by
+less than 4e-11 s in 114. This is five new accepted points, not a current-source
+revalidation of all 266 or a speedup claim. Functional diagnostic lifecycles and
+concurrent diagnostic work are not comparable service measurements.
+
+115 remains a separate input-construction repair: its original rope trigger
+center is not standing feet. Source-volume and original-floor-constrained feet
+produce an independently valid route, but the original query and frozen census
+are preserved. 151 now visits its ordered waypoint; two actual static-triangle
+collisions still reject its walk. Raw coverage and wall checks confirm that
+re-exporting those windows is not the remedy. A bounded terrain-detour strategy
+is isolated under the point-fixes research directory and is not production code.
+174 and 193 return complete candidates but fail takeoff support. In 174, alternate
+phase-free poses incorrectly lift already supported feet; a separate shared-model
+correction is under investigation. 183 reaches the request deadline; its original
+journal and authorized cleanup receipt are retained. No unresolved point is removed.
+
+Artifacts are in `.local/research/ts-point-fixes-20261115/` and
+`.local/research/arrival-admission-20261115/`. Package formatting, lint, typecheck
+and all 509 TS tests pass. Rust implementation and verification policy are unchanged.
+
 ## 266-case functional census, 2026-11-15
 
 Frozen source daab983c completed all 266 case records, followed by seven independent

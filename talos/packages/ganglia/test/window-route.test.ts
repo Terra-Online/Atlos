@@ -6,6 +6,7 @@ import type { Route, GroundConnection } from '#@/src/route.ts';
 import type { WindowResources, WindowRequest, WindowJob } from '#@/src/solver/resources.ts';
 import { setActionCatalogPhase } from '#@/src/v1/route/action-catalog.ts';
 import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
+import { validateWaypoints } from '#@/src/v1/route/jump-planner.ts';
 import {
   createWindowGroundCache,
   createWindowRoute,
@@ -53,6 +54,39 @@ const settings: WindowConfig = {
   margin: 4,
   locomotion: { speed: 5, sprintSpeed: 5, sprintAcceleration: 1 },
 };
+
+test('window hints share the waypoint limit while preserving the supplied sequence', async () => {
+  for (const count of [1, 127, 128]) {
+    const supplied = Array.from({ length: count }, (_, i) => [i / 100, 0, 0] as const);
+    const points = Array.from(
+      { length: 131 },
+      (_, i) => [i / 100, 0, 0] as [number, number, number],
+    );
+    let observed: WindowRequest['waypoints'];
+    const reached = new Error('validated local request');
+    const window = createWindowRoute(
+      resources({
+        query: async () => ({ status: 'ready', output: groundPath, collision: groundPath }),
+        solve: async (_job, local) => {
+          observed = local.waypoints;
+          validateWaypoints(local.waypoints);
+          throw reached;
+        },
+      }),
+      {
+        ...request,
+        target: points.at(-1)!,
+        interaction: { radius: 0.1 },
+        waypoints: supplied.map((point) => [...point]),
+      },
+      points,
+      settings,
+    );
+    await assert.rejects(window.advance(), (error) => error === reached);
+    assert.deepEqual(observed?.slice(0, count), supplied);
+    assert.equal(observed?.length, 128);
+  }
+});
 
 test('shared ground preparation supports concurrent queries and target-side validation', async () => {
   let loads = 0;

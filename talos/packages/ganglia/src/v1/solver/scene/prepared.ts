@@ -66,7 +66,11 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
   let closing: Promise<void> | undefined;
   const batches = new Set<Promise<readonly RouteResult[]>>();
   const active = new Set<Promise<RouteResult>>();
-  const run = async (query: RouteQuery, options: SolveOptions): Promise<RouteResult> => {
+  const runLeg = async (
+    query: RouteQuery,
+    options: SolveOptions,
+    maxTargetError?: number,
+  ): Promise<RouteResult> => {
     validateWaypoints(query.waypoints);
     const excludedEdges: (number | string)[] = [],
       excludedArrivals = new Set<string>();
@@ -90,6 +94,11 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
     const cancelled = () => options.signal?.aborted;
     const progress = (phase: 'search' | 'validate') =>
       options.onEvent?.({ type: 'progress', phase });
+    // A required stop keeps its original height tolerance. Coarse window anchors
+    // may still project farther while locating a traversable corridor.
+    const targetAdmitted = (route: Complete) =>
+      maxTargetError === undefined ||
+      Math.abs(route.points.at(-1)![1] - query.goal[1]) <= maxTargetError + 1e-6;
     try {
       const terminals = query.interaction?.airborne
         ? await resources.terminals?.(query)
@@ -157,6 +166,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
               const tail = await window.advanceTail({ signal: options.signal });
               if ('diagnostics' in tail) truncated ||= tail.diagnostics.truncated;
               if (tail.status === 'partial') {
+                if (!targetAdmitted(tail.route)) return stopped('target-projection-error');
                 if (tail.coversStart) {
                   const route = {
                     ...tail.route,
@@ -183,6 +193,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
               ? composeRoutes([result.route, terminal.route], locomotion)
               : result.route;
             if (route.status !== 'complete') return stopped('terminal-composition');
+            if (!targetAdmitted(route)) return stopped('target-projection-error');
             return publish(
               route,
               [...result.evidence, ...(terminal ? [{ supportBoxes: terminal.supportBoxes }] : [])],
@@ -217,6 +228,99 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
       if (partial) return stopped(error instanceof Error ? error.message : String(error), true);
       throw error;
     }
+  };
+  const run = async (query: RouteQuery, options: SolveOptions): Promise<RouteResult> => {
+    validateWaypoints(query.waypoints);
+    if (!query.waypoints?.length) return runLeg(query, options);
+
+    // Public waypoints are ordered destinations. Local window waypoints remain
+    // optional discovery hints, so each required visit owns a separate goal leg.
+    const targets = [...query.waypoints, query.goal];
+    const pieces: Complete[] = [];
+    const connections: RouteResult['connections'] = [];
+    const supportBoxes: NonNullable<RouteResult['supportBoxes']> = [];
+    let starts = query.starts;
+    let arrival: GroundArrival | undefined;
+    let truncated = false,
+      attempts = 0;
+    const diagnostics = (result?: RouteResult) => ({
+      truncated: truncated || Boolean(result?.diagnostics.truncated),
+      candidateAttempts: attempts + (result?.diagnostics.candidateAttempts ?? 0),
+    });
+    const join = (result: RouteResult): RouteResult => {
+      const route =
+        result.route.status === 'complete' && !result.partial
+          ? composeRoutes([...pieces, result.route], locomotion)
+          : result.route;
+      return {
+        ...result,
+        route,
+        ...(route.status !== 'complete' && result.route.status === 'complete'
+          ? { reason: 'waypoint-composition' }
+          : {}),
+        arrival: arrival ?? result.arrival,
+        connections: [...connections, ...result.connections],
+        supportBoxes: [...supportBoxes, ...(result.supportBoxes ?? [])],
+        diagnostics: {
+          ...diagnostics(result),
+          truncated:
+            diagnostics(result).truncated ||
+            Boolean(
+              route.search?.truncated ||
+              (route.status === 'complete' && route.locomotion?.search?.truncated),
+            ),
+        },
+      };
+    };
+    for (const [index, goal] of targets.entries()) {
+      if (options.signal?.aborted)
+        return {
+          route: { status: 'no-verified-route' },
+          connections,
+          reason: 'aborted',
+          diagnostics: { ...diagnostics(), truncated: true },
+        };
+      const final = index === targets.length - 1;
+      const result = await runLeg(
+        { starts, goal, ...(final ? { interaction: query.interaction } : {}) },
+        {
+          ...options,
+          onEvent(event) {
+            if (event.type !== 'candidate') return options.onEvent?.(event);
+            // A prefix or an approach to an intermediate waypoint is not a
+            // candidate for the original destination. Only final-leg events may
+            // publish, after joint layout/resource composition has succeeded.
+            if (!final) return;
+            const result = join(event.result);
+            if (result.route.status === 'complete') options.onEvent?.({ ...event, result });
+          },
+        },
+        final ? undefined : navigation.options.maxVertical,
+      );
+      if (final) return join(result);
+      truncated ||= result.diagnostics.truncated;
+      attempts += result.diagnostics.candidateAttempts ?? 0;
+      if (result.route.status !== 'complete' || result.partial)
+        return {
+          route: { status: 'no-verified-route' },
+          connections: [...connections, ...result.connections],
+          reason: result.reason ?? 'waypoint-unreachable',
+          diagnostics: diagnostics(),
+        };
+      pieces.push(result.route);
+      arrival ??= result.arrival;
+      connections.push(...result.connections);
+      supportBoxes.push(...(result.supportBoxes ?? []));
+      starts = [
+        {
+          id: result.route.start,
+          position: result.route.points.at(-1)!,
+          cost: 0,
+          state: 'available',
+        },
+      ];
+    }
+    throw new Error('Missing final waypoint leg');
   };
   const submit = (query: RouteQuery, options: SolveOptions = {}) => {
     const task = run(query, options);

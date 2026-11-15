@@ -44,6 +44,30 @@ const dominates = (a: Scheduled, b: Scheduled) =>
   a.duration <= b.duration + epsilon &&
   a.state.energy >= b.state.energy - epsilon &&
   a.state.delay <= b.state.delay + epsilon;
+// Navigation/support height joins can contain a purely vertical walk. Such a
+// join cannot establish a new horizontal gait; an existing sprint may continue.
+const horizontalWalk = (block: Segment[]) =>
+  block.some((segment) =>
+    segment.points.some(
+      (point, index) =>
+        index > 0 &&
+        Math.hypot(
+          point[0] - segment.points[index - 1][0],
+          point[2] - segment.points[index - 1][2],
+        ) > epsilon,
+    ),
+  );
+const walkChoices = (walking: boolean, horizontal: boolean, state: LocomotionState) =>
+  !walking ? [true] : horizontal || state.sprinting ? [true, false] : [false];
+const restartsSprint = (segments: Segment[]) => {
+  let running = false;
+  for (const segment of segments) {
+    if (segment.gait === 'run') running = true;
+    else if (running && segment.gait === 'sprint') return true;
+  }
+  return false;
+};
+
 /** Shared transitions for graph search and fixed-corridor scheduling. The authored
  * non-ground policy still resets ground velocity at exit; physical air replay is
  * a separate contract. Do not infer a landing velocity from these resource states.
@@ -52,12 +76,19 @@ export function createLocomotion(options: LocomotionOptions) {
   return {
     initial: createLocomotionRules(options).initial,
     advance(segment: Segment, state: LocomotionState) {
-      const choices = segment.mode === 'walk' ? [true, false] : [true];
+      const walking = segment.mode === 'walk',
+        horizontal = walking && horizontalWalk([segment]);
+      const choices = walkChoices(walking, horizontal, state);
       return choices
         .flatMap((choice) =>
-          (options.dash && choice && segment.mode === 'walk' ? [true, false] : [false]).map(
-            (dashing) => scheduleBlock([segment], options, state, choice, dashing),
-          ),
+          (options.dash && choice && horizontal ? [true, false] : [false]).map((dashing) => {
+            const scheduled = scheduleBlock([segment], options, state, choice, dashing);
+            if (scheduled && walking && !horizontal && restartsSprint(scheduled.segments))
+              return null;
+            return (
+              scheduled && { ...scheduled, control: { allowSprint: choice, allowDash: dashing } }
+            );
+          }),
         )
         .filter((scheduled) => scheduled !== null);
     },
@@ -101,10 +132,11 @@ export function chooseTypeScriptSchedule(
   let truncated = false;
   for (const block of blocks) {
     const next: Label[] = [];
-    const choices = block[0].mode === 'walk' ? [true, false] : [true];
+    const walking = block[0].mode === 'walk',
+      horizontal = walking && horizontalWalk(block);
     for (const label of labels)
-      for (const allowSprint of choices)
-        for (const allowDash of options.dash && allowSprint && block[0].mode === 'walk'
+      for (const allowSprint of walkChoices(walking, horizontal, label.state))
+        for (const allowDash of options.dash && allowSprint && horizontal
           ? [true, false]
           : [false]) {
           const scheduled = scheduleBlock(
@@ -113,9 +145,12 @@ export function chooseTypeScriptSchedule(
             label.state,
             allowSprint,
             allowDash,
-            false,
+            walking && !horizontal && allowSprint,
           );
           if (!scheduled) continue;
+          // Continuing an existing gait must not recover and restart sprint on
+          // a height join. Only these rare candidates need materialized phases.
+          if (walking && !horizontal && restartsSprint(scheduled.segments)) continue;
           const candidate = {
             ...scheduled,
             duration: label.duration + scheduled.duration,
