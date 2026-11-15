@@ -932,8 +932,45 @@ export const solvePhysicalRoute = async (
   );
   await context.checkpoint?.();
   progress({ phase: 'jump-discovery', goalFaces: candidates.length });
-  const searchStart = performance.now();
-  const result = planJumpRoute(
+  const runSearch = async (args: Parameters<typeof planJumpRoute>) => {
+    const pending: Promise<void>[] = [];
+    let emissionFailed = false,
+      emissionError: unknown,
+      searchFailed = false;
+    args[4] = {
+      ...args[4],
+      onCandidate(candidate) {
+        // Emit enters the prepared solver synchronously, before its first await.
+        // Observe rejections immediately while the native search remains synchronous.
+        pending.push(
+          emit(
+            {
+              status: 'candidate',
+              ...candidate,
+              groundedTarget:
+                candidate.route.status === 'complete' ? candidate.route.points.at(-1) : undefined,
+            },
+            true,
+          ).catch((error: unknown) => {
+            if (!emissionFailed) emissionError = error;
+            emissionFailed = true;
+          }),
+        );
+      },
+    };
+    const started = performance.now();
+    try {
+      const result = planJumpRoute(...args);
+      return { result, searchMs: performance.now() - started };
+    } catch (error) {
+      searchFailed = true;
+      throw error;
+    } finally {
+      await Promise.all(pending);
+      if (!searchFailed && emissionFailed) throw emissionError;
+    }
+  };
+  const { result, searchMs } = await runSearch([
     surfaces,
     world,
     [arrival],
@@ -954,8 +991,8 @@ export const solvePhysicalRoute = async (
       model,
     },
     initialGround,
-  );
-  timing.search = performance.now() - searchStart;
+  ]);
+  timing.search = searchMs;
   Object.assign(diagnostics, result.diagnostics);
   let { route, connections } = result;
   if (
@@ -1045,21 +1082,27 @@ export const solvePhysicalRoute = async (
           // Missing source support changes the proposal geometry. Preserve the
           // failed pass and its validated actions; this is one charged extra
           // pass with the existing limits, rather than a larger search quota.
-          const fallback = planJumpRoute(combined, world, [arrival], goal, {
-            ...fallbackOptions,
-            boosts,
-            groundPlanner: planner,
-            interaction: request.interaction,
-            runAirSpeed,
-            maxSlope,
-            maxDrop,
-            maxHorizontalDistance,
-            ...limits,
-            maxShortcutCandidates: policy.maxShortcutCandidates,
-            waypoints: request.waypoints,
-            onProgress: progress,
-            model,
-          });
+          const { result: fallback } = await runSearch([
+            combined,
+            world,
+            [arrival],
+            goal,
+            {
+              ...fallbackOptions,
+              boosts,
+              groundPlanner: planner,
+              interaction: request.interaction,
+              runAirSpeed,
+              maxSlope,
+              maxDrop,
+              maxHorizontalDistance,
+              ...limits,
+              maxShortcutCandidates: policy.maxShortcutCandidates,
+              waypoints: request.waypoints,
+              onProgress: progress,
+              model,
+            },
+          ]);
           fallbackDiagnostics.discovery = fallback.diagnostics;
           fallbackDiagnostics.truncated =
             added.diagnostics.truncated || fallback.diagnostics.truncated;

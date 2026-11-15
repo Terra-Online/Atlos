@@ -1508,3 +1508,71 @@ test('partial translating rides board a proved interior pose within the original
   distorted.devices!.movingSupports![0].surfaces.at(-1)!.vertices[0][0] += 0.1;
   assert.notEqual(create(distorted).plan(request).route.status, 'complete');
 });
+
+test('airborne native candidates publish before terminal search progress and propagate observer failures', async () => {
+  const physical: PhysicalInput = {
+    ...input,
+    ground: { ...input.ground, options: { ...input.ground.options, speed: 6 } },
+    movement: {
+      ...input.movement,
+      runAirSpeed: 6,
+      model: {
+        ...input.movement.model,
+        startHorizontalSpeed: 6,
+        gravity: 10,
+        fallingGravity: 10,
+        maxJumpHeight: 2,
+        maxFallingSpeed: 20,
+        apexTime: 0.2,
+        maxHorizontalSpeed: 6,
+      },
+    },
+    locomotion: { speed: 6, sprintSpeed: 7, sprintAcceleration: 10 },
+  };
+  const request = {
+    arrival: {
+      id: 'source',
+      position: [2, 0, 5] as [number, number, number],
+      cost: 3,
+      state: 'available' as const,
+    },
+    target: [8, 2, 5] as [number, number, number],
+    interaction: { radius: 0.3, airborne: true },
+    walls: [],
+  };
+  const events: string[] = [];
+  await solvePhysicalRoute(
+    physical,
+    request,
+    {
+      progress(event) {
+        events.push(String(event.phase));
+      },
+      emit(result) {
+        if (result.route?.status === 'complete') {
+          assert.ok(result.route.goalHit);
+          assert.equal(result.route.start, 'source');
+          assert.equal(result.route.arrivalCost, 3);
+          events.push('candidate');
+        }
+      },
+    },
+    gangliaV1Defaults,
+  );
+  assert.ok(events.includes('candidate'));
+  assert.ok(events.indexOf('candidate') < events.indexOf('route-search'));
+  const failure = new Error('candidate observer failed');
+  await assert.rejects(
+    solvePhysicalRoute(
+      physical,
+      request,
+      {
+        emit(result) {
+          if (result.route?.status === 'complete') return Promise.reject(failure);
+        },
+      },
+      gangliaV1Defaults,
+    ),
+    (error) => error === failure,
+  );
+});

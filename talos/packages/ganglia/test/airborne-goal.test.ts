@@ -248,3 +248,96 @@ test('bounds later airborne approaches by the incumbent less the fixed terminal 
   );
   assert.equal(retimed.goalHit!.time, result.route.goalHit!.time);
 });
+
+test('publishes native airborne candidates during departure search without changing the final route', () => {
+  const goal: Vec3 = [8, 2, 0];
+  const events: string[] = [];
+  const solve = (publish: boolean) =>
+    planAirborneGoal(
+      scene,
+      world,
+      starts,
+      goal,
+      {
+        ...options,
+        ...(publish
+          ? {
+              onCandidate(result) {
+                assert.ok(result.route.status === 'complete');
+                assert.ok(result.route.goalHit);
+                assert.equal(result.route.start, starts[0].id);
+                assert.equal(result.route.arrivalCost, starts[0].cost);
+                assert.deepEqual(result.route.points.at(-1), result.route.goalHit.position);
+                events.push('candidate');
+              },
+            }
+          : {}),
+      },
+      (position, _bound, connections) => {
+        if (publish) events.push('approach');
+        return planJumpRoute(scene, world, starts, position, {
+          ...options,
+          interaction: undefined,
+          connections,
+        });
+      },
+    );
+  const control = solve(false);
+  const result = solve(true);
+  assert.ok(result.route.status === 'complete');
+  assert.deepEqual(result, control);
+  const first = events.indexOf('candidate');
+  assert.ok(first >= 0);
+  assert.ok(
+    events.slice(first + 1).includes('approach'),
+    'candidate precedes further native search',
+  );
+});
+
+test('failed airborne departures retain a bounded pool of nonterminal actions', () => {
+  const native = planJumpRoute(scene, world, starts, [9, 0, 0], {
+    ...options,
+    interaction: undefined,
+  });
+  assert.ok(native.connections.length > 0);
+  const authored = native.connections[0];
+  let calls = 0;
+  const visits = new Map<string, number>();
+  const result = planAirborneGoal(
+    scene,
+    world,
+    starts,
+    [8, 2, 0],
+    { ...options, connections: [authored] },
+    (position, _bound, connections) => {
+      const key = JSON.stringify(position);
+      visits.set(key, (visits.get(key) ?? 0) + 1);
+      assert.equal(connections[0], authored);
+      assert.ok(connections.length <= 1 + options.maxLinks);
+      if (calls++) assert.equal(connections[1].id, 'retained/0');
+      return {
+        route: { status: 'no-verified-route' },
+        connections: [
+          ...connections,
+          {
+            ...authored,
+            id: `retained/${calls - 1}`,
+            requiredGait: 'sprint',
+            requiredBoost: `boost/${calls}`,
+          },
+          { ...authored, id: `terminal/${calls}`, terminal: true },
+        ],
+      };
+    },
+  );
+  assert.ok(calls > 1);
+  assert.ok(result.connections.length > 1);
+  assert.ok(result.connections.length <= 1 + options.maxLinks);
+  assert.ok(!result.connections.some((edge) => edge.terminal));
+  assert.equal(result.connections[1].requiredGait, 'sprint');
+  assert.equal(result.connections[1].requiredBoost, 'boost/1');
+  assert.ok(
+    [...visits.values()].some((count) => count > 1),
+    'new actions invalidate failed prefixes',
+  );
+});
