@@ -1,7 +1,9 @@
 .host {
   display: contents;
 
-  > * {
+  // The glass shell uses display: contents; its fixed layers own the stacking order.
+  > *,
+  > * > * {
     z-index: 500;
   }
 }
