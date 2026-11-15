@@ -1,10 +1,29 @@
 # Route solver handoff
 
+## Noclip v119 integration, 2026-11-15
+
+The maintained noclip source is pinned to `152a38a0`, package format v119.
+The port preserves photography jitter alongside upstream jitter-phase access,
+animated material gaps/motion alongside authored render queues, and effect LOD
+selection. Offline instance decoding builds current row-group bounds. HTTP
+multi-range reads and fallback retain Atlos transport injection and semantic
+resource accounting; World counts their requested ranges together.
+
+Solver source and the raw normalized physical-input adapter patch are unchanged.
+The performance checkpoint below retains its original source and input binding.
+All seven OEM scenes have been repacked locally; the navigation release is
+`428d8af4c761ed76` under `.local/data/releases/noclip-152a38a0/`.
+Three real map02 point-framing checks pass. Full point-view baking, private-font
+production building and GPU visual acceptance remain deployment prerequisites.
+The deployed viewer/catalog pair has not changed; v106 packages cannot serve
+the v119 viewer.
+
 ## Full-population native latency objective achieved, 2026-11-15
 
 The ordinary map02 population now meets the requested 2x mean serial latency
-objective. The retained TS implementation remains available. No remote push has
-occurred; publishing the Rust work still requires the user's ready signal.
+objective. The retained TS implementation remains available. The user authorized
+publishing, and the accepted Rust work was pushed through `80fb78fc` to
+`misakavan/3d-preview` and PR #98.
 
 | Measurement | Result |
 | --- | ---: |

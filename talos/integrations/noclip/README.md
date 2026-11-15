@@ -2,7 +2,7 @@
 
 `source.json` pins the current upstream commit and its exact source archive. The patches own our
 renderer host, photography, OEM package contracts and extraction/navigation extensions. They are
-Atlos build inputs; the `EF Repos/endfield-noclip` checkout stays on upstream `trunk` without local
+Atlos build inputs; the `.local/repos/endfield-noclip` checkout stays on upstream `trunk` without local
 feature commits. `feat/filters` remains a separate PR development branch in that repository.
 
 ```sh
@@ -27,15 +27,19 @@ configure route data and the private game configuration. Neither keys nor game c
 
 ## updating
 
-The current pin uses package format v106, including sludge-erosion decals, subsurface
-water materials and decal ordering beneath water. Existing v104 archives must be repacked
-before using this viewer.
+The current pin uses package format v119, including animated material parameters, material-gap
+diagnostics, updated particle emission and effect LOD data. Existing v106 archives must be repacked
+before using this viewer. Update all scenes in a catalog together; an OEM export validates each
+package's format and source binding. Keep the deployed viewer and its immutable catalog paired until
+the replacement release is validated.
 Export companion and navigation metadata against the new states before rebaking point views with
 `oem-views --rebuild`. The exporter and `oem-check` use the indexed `openTraversalPicks` profile,
 matching World's default completed progression with doors open and activations enabled. Using only
 completed progression produces different visibility keys and makes the frontend discard baked poses.
 Offline decoding retains moving-row buffers and frames their initial path pose
-without mutating shared decoded rows. Publish the resulting immutable catalog only after `oem-check`
+without mutating shared decoded rows. It also builds the instance-group bounds used by the current
+viewer. HTTP multi-range reads and single-range fallback both use the injected Atlos transport,
+including their semantic resource-byte metadata. Publish the resulting immutable catalog only after `oem-check`
 confirms complete pose coverage and generation/visibility bindings. A context-only fallback remains
 an unconfirmed view, not proof that the target is visible.
 

@@ -71,7 +71,7 @@ export function createTransport(
                 input,
                 typeof location === 'undefined' ? undefined : location.href,
             ).href;
-            const range = /^bytes=(\d+)-(\d+)$/.exec(
+            const range = /^bytes=(\d+-\d+(?:,\s*\d+-\d+)*)$/.exec(
                 new Headers(init.headers).get('range') ?? '',
             );
             const row: Transfer = {
@@ -82,7 +82,10 @@ export function createTransport(
                 started: performance.now(),
                 durationMs: null,
                 requestedBytes: range
-                    ? Number(range[2]) - Number(range[1]) + 1
+                    ? range[1].split(',').reduce((bytes, part) => {
+                          const [start, end] = part.split('-').map(Number);
+                          return bytes + end - start + 1;
+                      }, 0)
                     : null,
                 uploadBytes:
                     typeof init.body === 'string'

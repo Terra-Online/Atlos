@@ -1,10 +1,34 @@
 # Route solver history and validation evidence
 
+## Noclip v106 to v119 migration, 2026-11-15
+
+Upstream advanced 35 commits from `ff48e1a715039b76b60bd30f6ad0c8a0cc978f04`
+to `152a38a0aafb0a7815323c07ffc75560502f4d9b`. The archived source and nine
+maintained patches prepare reproducibly with integration identity
+`8a55e56ab2db6dbacac741946ededececea27c95046181ed7723abcf4650c531`.
+Conflicts included material animation/render queues, photography jitter,
+effect LOD options, offline instance bounds and batched HTTP transport injection.
+The normalized routing-adapter patch is byte-for-byte unchanged.
+
+Validation passes World main/worker and extractor typechecks, 1,002 noclip tests,
+58 World UI/service tests, eight World Node integration tests, the preparation
+integrity test, focused World ESLint and a source-only World production build.
+The build uses a local HTTP catalog and omits unavailable private fonts; it is
+not a deployable artifact. All seven OEM scenes were repacked from the local
+game install with two conversion workers. OEM release `892695639068dfc2` and
+navigation release `428d8af4c761ed76` pass `oem-check`: 594 archives, 11,608
+points and 66,706 presets. Navigation contains 21 routes and 108 volumes.
+Bounded `oem-views --rebuild` checks for points `10100350000`, `22800280015`
+and `23300200002` produce three clear views and zero fallbacks. Their output is
+checkpoint-only. Full view baking and GPU visual acceptance were not run.
+No solver benchmark was rerun or new speedup inferred from this source update.
+
 ## Full-population native latency objective achieved, 2026-11-15
 
 The ordinary map02 population now meets the requested 2x mean serial latency
-objective. The retained TS implementation remains available. No remote push has
-occurred; publishing the Rust work still requires the user's ready signal.
+objective. The retained TS implementation remains available. The user authorized
+publishing, and the accepted Rust work was pushed through `80fb78fc` to
+`misakavan/3d-preview` and PR #98.
 
 | Measurement | Result |
 | --- | ---: |

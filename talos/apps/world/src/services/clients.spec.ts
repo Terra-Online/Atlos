@@ -3,6 +3,33 @@ import { describe, it, expect } from 'vitest';
 import { createTransport } from './transport';
 
 describe('client transfer accounting', () => {
+    it.each([200, 206])(
+        'accounts for multiple ranges with HTTP %i',
+        async (status) => {
+            const transport = createTransport(() =>
+                Promise.resolve(new Response('abcdef', { status })),
+            );
+            const content = [
+                { kind: 'geometry', bytes: 2 },
+                { kind: 'texture', bytes: 2 },
+            ];
+            const response = await transport.fetch(
+                'scene',
+                'https://assets.test/shard.czar',
+                { headers: { range: 'bytes=0-1, 4-5' } },
+                content,
+            );
+            await response.arrayBuffer();
+            expect(transport.snapshot().requests[0]).toMatchObject({
+                requestedBytes: 4,
+                responseBytes: 6,
+                rangeFallback: status === 200,
+                content,
+                outcome: 'complete',
+            });
+        },
+    );
+
     it('counts the complete response when a server ignores a range request', async () => {
         const transport = createTransport(() =>
             Promise.resolve(new Response('abcdefghij')),

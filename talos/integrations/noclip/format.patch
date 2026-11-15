@@ -143,7 +143,7 @@ index 00000000..cce8a7e0
 +	};
 +};
 diff --git a/packages/formats/src/endfield/dynamic-scene.test.ts b/packages/formats/src/endfield/dynamic-scene.test.ts
-index e3484c08..c7ebc428 100644
+index 482c748f..27f12ed3 100644
 --- a/packages/formats/src/endfield/dynamic-scene.test.ts
 +++ b/packages/formats/src/endfield/dynamic-scene.test.ts
 @@ -342,3 +342,128 @@ test('reads the sludge core a sludge patch belongs to', () => {
@@ -1887,7 +1887,7 @@ index 00000000..5dbe61ba
 +	return { x, z, vertices: points, polygons: faces };
 +};
 diff --git a/packages/package-format/src/materials.ts b/packages/package-format/src/materials.ts
-index c2f8bd38..9c1bb0c6 100644
+index 98be5e5e..a7447ce5 100644
 --- a/packages/package-format/src/materials.ts
 +++ b/packages/package-format/src/materials.ts
 @@ -17,6 +17,8 @@ export interface ReadyMaterial {
@@ -1898,7 +1898,7 @@ index c2f8bd38..9c1bb0c6 100644
 +	renderQueue?: number;
  	/** what the material draws, interpreted by the extractor */
  	surface: MaterialSurface;
- }
+ 	/**
 diff --git a/packages/package-format/src/navigation.test.ts b/packages/package-format/src/navigation.test.ts
 new file mode 100644
 index 00000000..b275f914
