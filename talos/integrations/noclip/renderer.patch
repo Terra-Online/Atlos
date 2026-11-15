@@ -315,7 +315,7 @@ index c94e2da8..b9bf0837 100644
  	castsShadows: true,
  	...emptySlots(),
 diff --git a/packages/viewer/src/looks/material-looks.ts b/packages/viewer/src/looks/material-looks.ts
-index f1df1d47..c71a3bb4 100644
+index 8235e112..8d0461f6 100644
 --- a/packages/viewer/src/looks/material-looks.ts
 +++ b/packages/viewer/src/looks/material-looks.ts
 @@ -107,7 +107,7 @@ const stencilMaskLook = (mask: StencilMaskSurface, cull: MaterialCull): Material
@@ -327,7 +327,7 @@ index f1df1d47..c71a3bb4 100644
  	// a material that didn't convert (its reason is in debug/assets.json) has nothing to draw by
  	if (entry.status !== 'ready') {
  		return unsupportedLook();
-@@ -272,6 +272,31 @@ const surfaceLook = (entry: ReadyMaterial): MaterialLook => {
+@@ -279,6 +279,31 @@ const surfaceLook = (entry: ReadyMaterial): MaterialLook => {
   * @param materials the package's material table
   * @returns a look per material id
   */
@@ -359,7 +359,7 @@ index f1df1d47..c71a3bb4 100644
  export const materialLooks = (materials: MaterialTable): MaterialLook[] =>
  	materials.entries.map(materialLook);
  
-@@ -341,6 +366,7 @@ const effectMaterialLook = (
+@@ -348,6 +373,7 @@ const effectMaterialLook = (
  	drawn: true,
  	unsupported: false,
  	queue,
@@ -441,10 +441,10 @@ index 00000000..a4b86d04
 +});
 diff --git a/packages/viewer/src/package/decode-data.ts b/packages/viewer/src/package/decode-data.ts
 new file mode 100644
-index 00000000..bb28ebe5
+index 00000000..3961d5e0
 --- /dev/null
 +++ b/packages/viewer/src/package/decode-data.ts
-@@ -0,0 +1,436 @@
+@@ -0,0 +1,439 @@
 +import { BlobCodec } from '@endfield-noclip/package-format/blobs';
 +import {
 +	decodeGeometryBlob,
@@ -466,7 +466,8 @@ index 00000000..bb28ebe5
 +
 +import { MeshoptDecoder } from 'meshoptimizer/decoder';
 +
-+import { buildInstanceRows } from '../content/instance-rows.ts';
++import { buildInstanceRows, movingRows } from '../content/instance-rows.ts';
++import { buildRowBounds } from '../streaming/row-groups.ts';
 +
 +import type {
 +	DecodedGeometry,
@@ -836,9 +837,11 @@ index 00000000..bb28ebe5
 +		}
 +		case 'instances': {
 +			const built = buildInstanceRows(decodeInstanceBlock(raw), request.rowKinds ?? []);
++			const bounds = buildRowBounds({ rowsF32: new Float32Array(built.rows.buffer), cull: built.cull, runs: built.runs, moving: movingRows(built.spins, built.rides) });
 +			return {
-+				response: { id: request.id, kind: 'instances', ...built },
++				response: { id: request.id, kind: 'instances', ...built, bounds },
 +				transfer: [
++					bounds.groups.buffer, bounds.mirrored.buffer, bounds.segments.buffer, bounds.groupSegments.buffer,
 +					built.rows.buffer,
 +					built.cull.buffer,
 +					built.runs.buffer,
@@ -1841,10 +1844,10 @@ index 00000000..f2f75f17
 +}
 diff --git a/packages/viewer/src/render/post/photo-filters.test.ts b/packages/viewer/src/render/post/photo-filters.test.ts
 new file mode 100644
-index 00000000..4ba48478
+index 00000000..0cbb7b2d
 --- /dev/null
 +++ b/packages/viewer/src/render/post/photo-filters.test.ts
-@@ -0,0 +1,249 @@
+@@ -0,0 +1,250 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
@@ -1867,6 +1870,7 @@ index 00000000..4ba48478
 +	tint: [1, 1, 1, 1],
 +	ignorePostExposure: false,
 +	particles: {
++		emitterMotion: null,
 +		renderMode: 0,
 +		alignment: 0,
 +		stretch: null,
@@ -5906,40 +5910,3 @@ index d6866073..c3183a2e 100644
  	worker: {
  		format: 'es',
  	},
-diff --git a/packages/viewer/src/package/decode-data.ts b/packages/viewer/src/package/decode-data.ts
---- a/packages/viewer/src/package/decode-data.ts
-+++ b/packages/viewer/src/package/decode-data.ts
-@@ -19,7 +19,8 @@
- 
- import { MeshoptDecoder } from 'meshoptimizer/decoder';
- 
--import { buildInstanceRows } from '../content/instance-rows.ts';
-+import { buildInstanceRows, movingRows } from '../content/instance-rows.ts';
-+import { buildRowBounds } from '../streaming/row-groups.ts';
- 
- import type {
- 	DecodedGeometry,
-@@ -389,9 +390,11 @@
- 		}
- 		case 'instances': {
- 			const built = buildInstanceRows(decodeInstanceBlock(raw), request.rowKinds ?? []);
-+			const bounds = buildRowBounds({ rowsF32: new Float32Array(built.rows.buffer), cull: built.cull, runs: built.runs, moving: movingRows(built.spins, built.rides) });
- 			return {
--				response: { id: request.id, kind: 'instances', ...built },
-+				response: { id: request.id, kind: 'instances', ...built, bounds },
- 				transfer: [
-+					bounds.groups.buffer, bounds.mirrored.buffer, bounds.segments.buffer, bounds.groupSegments.buffer,
- 					built.rows.buffer,
- 					built.cull.buffer,
- 					built.runs.buffer,
-diff --git a/packages/viewer/src/render/post/photo-filters.test.ts b/packages/viewer/src/render/post/photo-filters.test.ts
---- a/packages/viewer/src/render/post/photo-filters.test.ts
-+++ b/packages/viewer/src/render/post/photo-filters.test.ts
-@@ -20,6 +20,7 @@
- 	tint: [1, 1, 1, 1],
- 	ignorePostExposure: false,
- 	particles: {
-+		emitterMotion: null,
- 		renderMode: 0,
- 		alignment: 0,
- 		stretch: null,

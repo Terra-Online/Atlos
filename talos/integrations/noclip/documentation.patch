@@ -1349,7 +1349,7 @@ index 00000000..37f79965
 +ordinary-area-only routing has so far established only a short local approach. no all-point routing
 +bake, in-game traversal validation or browser screenshot comparison has been completed.
 diff --git a/docs/package-format.md b/docs/package-format.md
-index b3c652e9..856ed633 100644
+index f09ab774..519ddc14 100644
 --- a/docs/package-format.md
 +++ b/docs/package-format.md
 @@ -550,6 +550,9 @@ material is ready or an `UnconvertedEntry`, as in the [asset tables](#asset-tabl
@@ -1363,7 +1363,7 @@ index b3c652e9..856ed633 100644
  state ([material and shader](game-data/assets.md#material-and-shader), decoded as
  [extraction.md](extraction.md#asset-classes) describes) into what it draws
 diff --git a/docs/status.md b/docs/status.md
-index 9cacad34..5a01ead8 100644
+index eb9b1a2e..6ca745fc 100644
 --- a/docs/status.md
 +++ b/docs/status.md
 @@ -42,6 +42,14 @@ packs or renders correctly.
@@ -1381,7 +1381,7 @@ index 9cacad34..5a01ead8 100644
  - ambient ([ambient](viewer/lighting.md#ambient)): checked against an in-game shot only at Jingyu's
    cave arch; the volume's default SH isn't recovered ([open](game-data/lighting.md#open)); the
    lookup has no jitter or forward-shifted clipmap centres; the AO multi-bounce fit uses the albedo's
-@@ -770,3 +778,77 @@ an entry when it's done or ruled out.
+@@ -777,3 +785,77 @@ an entry when it's done or ruled out.
  - `world vars <scene>`: join AutoName, MapConfig, LevelData and DynamicStreaming variables
  - `world scripts find <type>`: print level-script nodes of a type
  - `vfs table <name>`: dump a config table
