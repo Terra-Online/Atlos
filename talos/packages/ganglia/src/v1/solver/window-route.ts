@@ -1,5 +1,5 @@
 import type { Surface, Vec3 } from '#@/src/geometry.ts';
-import { createGoalProjector } from '#@/src/model/goals.ts';
+import { createGoalProjector, findGoalHit } from '#@/src/model/goals.ts';
 import type { LocomotionOptions } from '#@/src/movement.ts';
 import type { GroundOptions, Route } from '#@/src/route.ts';
 import type {
@@ -7,6 +7,7 @@ import type {
   WindowJob,
   Corridor,
   WindowResources,
+  SceneResources,
 } from '#@/src/solver/resources.ts';
 import { catalogEvidenceRevision, isActionCatalogFrozen } from '#@/src/v1/route/action-catalog.ts';
 import { pruneGroundDetours } from '#@/src/v1/route/ground-detours.ts';
@@ -78,7 +79,7 @@ const distance = (a: Vec3, b: Vec3) => Math.hypot(...a.map((v, i) => v - b[i]));
 /** Poll one bounded region at a time. Candidate points only select windows;
  * completion requires physical routes and one continuous resource schedule. */
 export function createWindowRoute<Request extends WindowRequest, Job extends WindowJob>(
-  builder: WindowResources<Request, Job>,
+  builder: WindowResources<Request, Job> & Pick<SceneResources<Request['source'], Job>, 'physical'>,
   request: Request,
   points: Vec3[],
   settings: WindowConfig,
@@ -186,6 +187,8 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
   });
   let tail: ReturnType<typeof createWindowRoute<Request, Job>> | undefined;
   let tailCoversStart = false;
+  let compactChecked = false;
+  let compact: ReturnType<typeof createWindowRoute<Request, Job>> | undefined;
   return {
     async advanceTail(options: { signal?: AbortSignal } = {}): Promise<
       | ReturnType<typeof progress>
@@ -277,6 +280,110 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
       running = true;
       try {
         if (signal?.aborted) return progress('incomplete', 'aborted');
+        if (!compactChecked) {
+          compactChecked = true;
+          // A coarse detour can split an authored ride even when its real
+          // endpoints fit one existing window. Provider facts select this
+          // opportunity; the ordinary native solver still admits every action.
+          const guide = windowBounds(candidates.length - 1);
+          if (
+            builder.physical &&
+            request.arrival.state === 'available' &&
+            !request.interaction?.airborne &&
+            tiles(request.arrival.position, request.target, settings.margin) <= settings.maxTiles &&
+            tiles(guide.min, guide.max, settings.margin) > settings.maxTiles
+          ) {
+            const physical = builder.physical.bind(builder);
+            let eligible: boolean | undefined;
+            compact = createWindowRoute(
+              {
+                query: builder.query.bind(builder),
+                key: builder.key.bind(builder),
+                ground: builder.ground.bind(builder),
+                route: builder.route.bind(builder),
+                physicalRevision: builder.physicalRevision?.bind(builder),
+                physical,
+                async solve(job, local, start, work, options) {
+                  if (eligible === undefined) {
+                    const snapshot = await physical(job, local);
+                    const facts = snapshot.input.devices;
+                    const reachesGoal = (point: Vec3) =>
+                      request.interaction
+                        ? Boolean(findGoalHit([point, point], request.target, request.interaction))
+                        : distance(point, request.target) <= 1e-6;
+                    eligible = Boolean(
+                      facts?.movingSupports?.some(
+                        (support) =>
+                          support.id === request.arrival.id &&
+                          support.assumption === 'phase-free-swept-support' &&
+                          !support.circular &&
+                          support.transfers.some((transfer) => {
+                            if (
+                              !(
+                                transfer.speed !== null &&
+                                Number.isFinite(transfer.speed) &&
+                                transfer.speed > 0
+                              )
+                            )
+                              return false;
+                            return [
+                              [transfer.from, transfer.to],
+                              [transfer.to, transfer.from],
+                            ].some(([from, to]) => {
+                              if (
+                                from[0] !== request.arrival.position[0] ||
+                                from[2] !== request.arrival.position[2]
+                              )
+                                return false;
+                              const feet: Vec3 = [to[0], to[1] + 0.01, to[2]];
+                              return reachesGoal(feet);
+                            });
+                          }),
+                      ) ||
+                      facts?.ropes.some((pair) => {
+                        if (pair.bottom !== request.arrival.id) return false;
+                        const lower = facts.devices.find((device) => device.id === pair.bottom);
+                        const upper = facts.devices.find((device) => device.id === pair.top);
+                        return Boolean(
+                          lower?.resolved &&
+                          upper?.resolved &&
+                          lower.unitScale &&
+                          upper.unitScale &&
+                          lower.goal &&
+                          upper.goal &&
+                          Number.isFinite(lower.speed) &&
+                          lower.speed > 0 &&
+                          Number.isFinite(lower.overhead) &&
+                          lower.overhead >= 0 &&
+                          findGoalHit(
+                            [request.arrival.position, request.arrival.position],
+                            lower.goal.position,
+                            lower.goal.interaction,
+                          ) &&
+                          reachesGoal(upper.goal.position),
+                        );
+                      }),
+                    );
+                  }
+                  return eligible ? builder.solve(job, local, start, work, options) : null;
+                },
+              },
+              request,
+              [request.target],
+              settings,
+              groundCache,
+            );
+          }
+        }
+        if (compact) {
+          const result = await compact.advance({ maxWindows, signal });
+          truncated ||= result.diagnostics.truncated;
+          if (result.status === 'complete') return result;
+          if (result.status === 'pending' && result.window.stage !== 'all') return result;
+          // One walking/device attempt missed. Keep the original coarse guide
+          // and its discovery stages rather than extending this local search.
+          compact = undefined;
+        }
         while (cursor < candidates.length - 1 && distance(position, candidates[cursor]) <= 1e-6)
           cursor++;
         if (cursor >= candidates.length) {

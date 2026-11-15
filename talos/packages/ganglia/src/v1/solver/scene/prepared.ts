@@ -66,12 +66,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
   let closing: Promise<void> | undefined;
   const batches = new Set<Promise<readonly RouteResult[]>>();
   const active = new Set<Promise<RouteResult>>();
-  const runLeg = async (
-    query: RouteQuery,
-    options: SolveOptions,
-    maxTargetError?: number,
-    rootOrigin = false,
-  ): Promise<RouteResult> => {
+  const runLeg = async (query: RouteQuery, options: SolveOptions): Promise<RouteResult> => {
     validateWaypoints(query.waypoints);
     const excludedEdges: (number | string)[] = [],
       excludedArrivals = new Set<string>();
@@ -95,11 +90,6 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
     const cancelled = () => options.signal?.aborted;
     const progress = (phase: 'search' | 'validate') =>
       options.onEvent?.({ type: 'progress', phase });
-    // A required stop keeps its original height tolerance. Coarse window anchors
-    // may still project farther while locating a traversable corridor.
-    const targetAdmitted = (route: Complete) =>
-      maxTargetError === undefined ||
-      Math.abs(route.points.at(-1)![1] - query.goal[1]) <= maxTargetError + 1e-6;
     try {
       const terminals = query.interaction?.airborne
         ? await resources.terminals?.(query)
@@ -138,13 +128,12 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
           {
             ...config,
             locomotion,
-            maxTargetError,
             transfers: proposal.path?.filter((edge) => edge.unresolved).map((edge) => edge.points),
           },
           groundCache,
         );
         const publish = (route: Complete, evidence: unknown[], isPartial: boolean): RouteResult => {
-          if (rootOrigin && !isPartial)
+          if (!isPartial)
             route = admitAuthoredStart(
               route,
               arrival,
@@ -176,7 +165,6 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
               const tail = await window.advanceTail({ signal: options.signal });
               if ('diagnostics' in tail) truncated ||= tail.diagnostics.truncated;
               if (tail.status === 'partial') {
-                if (!targetAdmitted(tail.route)) return stopped('target-projection-error');
                 if (tail.coversStart) {
                   const route = {
                     ...tail.route,
@@ -203,7 +191,6 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
               ? composeRoutes([result.route, terminal.route], locomotion)
               : result.route;
             if (route.status !== 'complete') return stopped('terminal-composition');
-            if (!targetAdmitted(route)) return stopped('target-projection-error');
             return publish(
               route,
               [...result.evidence, ...(terminal ? [{ supportBoxes: terminal.supportBoxes }] : [])],
@@ -240,7 +227,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
     }
   };
   const submit = (query: RouteQuery, options: SolveOptions = {}) => {
-    const task = runLeg(query, options, undefined, true);
+    const task = runLeg(query, options);
     active.add(task);
     void task.then(
       () => active.delete(task),

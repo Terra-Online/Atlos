@@ -48,27 +48,53 @@ clone expose the flag; generated `.cache/noclip` was not edited.
 
 ### Evidence, point work and open issues
 
-The published source-bound per-case snapshot is **211/266** with 52 cases observed in the
+The latest source-bound per-case snapshot is **215/266** with 54 cases observed in the
 resumed campaign. This includes retained older completions and multiple frozen
 revisions, not a complete current-source census. R6 added 148,161,165,218; R7 added
 141 with two launch segments, route cost 4.088485514 s and solver time 10.197 s.
 Original 001 completed in R5, route cost 30.794364748 s, solver time 93.797 s.
 R7 then completed revised collectible 229 (14.850936688 s route, 31.622 s solver)
 and source-expansion case 234 (23.974124613 s route, 34.592 s solver).
+Subsequent R7 240 completed at 53.860977580 s route / 105.213 s solver. R8 166
+completed at 3.359996796 s route / 34.629 s solver, bringing live mixed evidence to
+213/266. R9 then completed 116 (3.435801215 s route / 5.644 s solver) and 173
+(8.039365348 s route / 13.307 s solver). Its 166 guard keeps cost 3.359996796 s.
+The earlier 211-completion snapshot remains frozen at commit 352c62b9.
 No observed cost/reachability regression is currently flagged in the tested set;
 this does not validate all retained points or comparable latency.
 
-The latest combined package check passed formatting, lint, typecheck and **538
-tests** (`/tmp/ganglia-ts266-r8-check.log`), including the synthetic-tail strategy
-and structured-clone regression. Adapter normalization passes three focused tests.
-Actual 166 validation of that tail strategy remains open; no all-population claim
-follows from the package checks.
+R10's combined package check passed formatting, lint, typecheck and **540 tests**
+(`/tmp/ganglia-ts266-r10-check.log`), including the endpoint-window strategy,
+native mechanism-ID regression, bounded traversal scheduling and timeout diagnostic
+preservation. R9's earlier combined check passed 539 tests. Adapter normalization
+passes three focused tests. No all-population claim follows from package checks.
 
 166's R7 journal shows a synthetic `target-approach` source, rather than actor
 2100010064's actual source. Optional non-covering tails now yield after walking
 instead of consuming the deadline in device/placement searches, allowing the
 original-source pipeline to run. Root-covering tails keep their existing stages.
-This change is not yet bound to a completed real 166 run.
+R8 166 now binds this change to a complete native moving-support rope route. Its
+source, original target and modeled cost remain protected by the live aggregate.
+
+R9 gives an available, source-owned known moving transfer or rope one actual
+source-to-goal window when both endpoints fit the existing tile limit but the
+coarse guide does not. Raw provider facts only select this opportunity; the
+existing native solver still constructs and admits actions. A missed walking/device
+attempt resumes the original coarse guide without an all-actions local retry.
+Resource method bindings, original source/range/goal and ordinary budgets remain.
+Real 173 facts meet this gate; its R8 search instead targeted remote intermediate
+anchors and timed out after 309.236 s. A local original-input 116 diagnostic already
+joins walk-to-rope with its first existing rope pair, so adding pairs was rejected.
+R9 real 116/166/173 all completed. The native 116 walk-to-rope route and 173 moving
+transfer use the original goals, source setup and authored device models. Only
+116/173 add completion credit; the 166 guard does not add another point.
+
+The uncommitted R10 experiment is an explicit strategy variant: a new optimistic traversal chain keeps its
+source-first validation, while repeated visits alternate between its source and
+goal ends under unchanged shared limits. It is not an equivalent-work change;
+real 004/011/012 comparison remains pending. Parent timeout results retain final
+worker diagnostic data but still return no complete route and the original
+timeout/cancellation timings. This avoids losing failure context at the deadline.
 
 R7 173 also exposed an IPC error: device diagnostics retained the callable direct
 planner. The data projection now excludes that cache. Original failures and the
@@ -121,7 +147,7 @@ Milestone d812e38f precedes the current simplification, passive capture, free-la
 and starvation/IPC repairs. The publication checkpoint also includes the revision-10
 definitions and a portable frozen snapshot at
 `bench/scenes/mechanisms/progress.{json,html}`. Those artifacts contain all 266 IDs,
-211 complete native artifacts, 55 remaining cases and no absolute machine paths.
+215 complete native artifacts, 51 remaining cases and no absolute machine paths.
 They preserve incomplete/timeout outcomes and invalid-run flags; raw game geometry,
 private configuration and detailed run artifacts remain local. Point solving and
 the live local HTML continue independently of this GitHub snapshot.

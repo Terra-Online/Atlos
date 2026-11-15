@@ -1,5 +1,73 @@
 # Route solver history and validation evidence
 
+## Endpoint windows and bounded validation scheduling, 2026-11-15
+
+After publication at 352c62b9, the user explicitly required point work to continue.
+The single heavy lane completed R7 240 (53.860977580 s route / 105.213 s solver),
+then R8 166 (3.359996796 s route / 34.629 s solver). The latter is a complete native
+moving-support rope route, binding the synthetic-tail starvation change to a real
+success. Live mixed evidence reached 213/266; the published 211 snapshot stays
+frozen. R8 173 returned a normal cooperative timeout at 309.236 s, without the R7
+IPC serialization error; this fixes operational reporting, not its reachability.
+R8 182 and 183 also timed out at 300.810 s and 312.092 s. None had a first complete
+artifact. The R8 batch finished operationally valid, with all four cases retained.
+
+173's actual source-owned provider transfer never saw its true target during the
+coarse route's first expensive requests. The original endpoints fit four physical
+tiles under the existing sixteen-tile allowance, its authored speed is 4, and its
+opposite foot satisfies the original goal predicate. R9 selects a compact original
+endpoint window from these existing facts before an oversized coarse guide. It
+uses ordinary walking/devices phases, then resumes the unchanged coarse guide on
+a miss. Prototype resource methods retain bound delegation. No new query budget,
+physical tolerance, source edit or whole-route replay was introduced.
+
+116's first-clear-rope-pair hypothesis was investigated and rejected: near-field
+original navigation and portals already join the original source to the original
+goal through that first rope pair. Strict source projection and original resource
+policy also complete locally, at approximately 3.44835 s modeled cost. Existing
+scene windows instead followed other coarse anchors. The same compact opportunity
+rule covers an owned, resolved, unit-scale rope with known speed/overhead and the
+original endpoint interaction tests. R9 passes 539 package tests plus format,
+lint and typecheck. The frozen R9 batch then completed all three original queries:
+116 at 3.435801215 s route / 5.643823 s solver, 173 at 8.039365348 s / 13.307451 s,
+and guard 166 at its protected 3.359996796 s cost / 7.465543 s solver. Latest mixed
+evidence reached 215/266, 54 resumed cases observed and no flagged reachability/cost
+regression in that subset. R9 is a real source-to-goal strategy improvement, without
+changed case coordinates, resource rules or physical tolerances. These individual
+timings do not establish a population speedup. The local HTML updated immediately;
+the tracked portable snapshot now also records 215 completions and 51 remaining.
+
+154/156/163 are source-resolved boost triggers, not missing free-launch models.
+Their source durations are 3/1/1 seconds with multiplier 2.2. Existing evidence is
+insufficient to blame boost loss, so no device-model or required-hint change was
+made. Likewise, static 004/011/012 near-field audits found no competing-component
+projection masking: 19,570 eligible owned projections among 25,260 boundary seeds
+had zero such masks. Existing closest-support contracts were left unchanged.
+
+The uncommitted R10 strategy variant preserves each new optimistic chain's initial source-first
+validation, then alternates repeated visits from the source and goal ends. It
+retains validated links and the same 32-attempt batches and shared arc/seed/region
+limits. A three-platform counterexample under 64 arc attempts gains a valid goal
+side action while still rejecting the wall-blocked source and complete route.
+This is a bounded coverage change, not an equivalent-work optimization or real
+004/011/012 completion. Its 22 focused traversal tests pass; real benefit remains
+to be measured on the same original inputs.
+
+R10 also retains the worker's final diagnostic data after cooperative timeout or
+cancellation while preserving failed terminal routes, timeout reason and parent
+timing. A late complete response still cannot become success. The existing soft
+deadline regression verifies diagnostic retention and trained-worker reuse. Stable
+format, lint, typecheck and all 540 package tests pass. The scene's now-unused
+mandatory-stop scaffolding was removed from its private single-query path; its
+only caller already supplied no height override and enabled root-source binding.
+
+141's native launch segments have indexed IDs such as launch/23400240044/18 and
+/47. Mechanism diagnostics now accept the exact device prefix plus a slash-bound
+suffix, without accepting a different device with a similar ID. The retained
+artifact's two native launch segments now classify exercised even with an empty
+top-level connection catalog. This is a diagnostic correction, not a new route or
+retroactive rerun; the original artifact is unchanged. Eleven mechanism tests pass.
+
 ## Visualization scope correction and authored actions, 2026-11-15
 
 The user clarified that the goal is drawing a complete route with concrete timed

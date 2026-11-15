@@ -258,6 +258,48 @@ test('mechanism witnesses are separate from valid alternative routes', () => {
     { assertion: 'exercise:stair-support-transitions', status: 'unassessed' },
   ]);
 });
+test('indexed native device actions count without a top-level connection catalog', () => {
+  const c = item();
+  c.setup.requiredDevice = 'pad';
+  c.assertions = ['exercise:launch'];
+  const result: RouteResult = {
+    ...unavailable,
+    route: {
+      status: 'complete',
+      start: 'player',
+      arrivalCost: 0,
+      cost: 1,
+      length: 3,
+      points: [
+        [0, 0, 0],
+        [3, 0, 0],
+      ],
+      segments: [
+        {
+          mode: 'launch',
+          connection: 'launch/pad/18',
+          points: [
+            [0, 0, 0],
+            [3, 0, 0],
+          ],
+          times: [0, 1],
+        },
+      ],
+    },
+  };
+  assert.deepEqual(result.connections, []);
+  assert.equal(exercised(c, result)[0].status, 'exercised');
+  if (result.route.status !== 'complete') return;
+  const segment = result.route.segments[0];
+  for (const connection of ['launch/pad', 'launch/pad/47']) {
+    segment.connection = connection;
+    assert.equal(exercised(c, result)[0].status, 'exercised');
+  }
+  for (const connection of ['launch/padding/18', 'launch/other/18', undefined]) {
+    segment.connection = connection;
+    assert.equal(exercised(c, result)[0].status, 'not-exercised');
+  }
+});
 test('diagnostic bootstrap is separate from the cooperative query deadline and forwards memory progress', async () => {
   const events: unknown[] = [];
   const prepared = await prepareWorkerSolver({

@@ -959,41 +959,43 @@ test('direct provider rides preserve resources, annotations and exact arrival ga
   const windowCache = createPhysicalCache(),
     hintCounts: number[] = [],
     steps: number[] = [];
-  const window = createWindowRoute<import('#@/src/solver/resources.ts').WindowRequest, Job>(
-    {
-      query: async () => ({ status: 'ready' }),
-      key: () => 'moving-fixture',
-      ground: async () => physical.ground,
-      route: (job) => job.result ?? {},
-      async solve(job, local, _start, work, options) {
-        hintCounts.push(local.waypoints?.length ?? 0);
-        steps.push(work.step);
-        const solver = await preparePhysicalSolver(
-          physical,
-          { ...gangliaV1Defaults, maxCandidates: 0, maxShortcutCandidates: 0 },
-          {
-            cache: windowCache,
-            effort: work.step === 0 ? 'walking' : work.step === 1 ? 'devices' : 'all',
-          },
-        );
-        try {
-          return {
-            ...job,
-            result: await solver.solve(
-              {
-                starts: [local.arrival],
-                goal: local.target,
-                interaction: local.interaction,
-                waypoints: local.waypoints,
-              },
-              { signal: options?.signal },
-            ),
-          };
-        } finally {
-          await solver.close();
-        }
-      },
+  type Window = import('#@/src/solver/resources.ts').WindowRequest;
+  const windowResources: Parameters<typeof createWindowRoute<Window, Job>>[0] = {
+    query: async () => ({ status: 'ready' }),
+    key: () => 'moving-fixture',
+    ground: async () => physical.ground,
+    route: (job) => job.result ?? {},
+    async solve(job, local, _start, work, options) {
+      hintCounts.push(local.waypoints?.length ?? 0);
+      steps.push(work.step);
+      const solver = await preparePhysicalSolver(
+        physical,
+        { ...gangliaV1Defaults, maxCandidates: 0, maxShortcutCandidates: 0 },
+        {
+          cache: windowCache,
+          effort: work.step === 0 ? 'walking' : work.step === 1 ? 'devices' : 'all',
+        },
+      );
+      try {
+        return {
+          ...job,
+          result: await solver.solve(
+            {
+              starts: [local.arrival],
+              goal: local.target,
+              interaction: local.interaction,
+              waypoints: local.waypoints,
+            },
+            { signal: options?.signal },
+          ),
+        };
+      } finally {
+        await solver.close();
+      }
     },
+  };
+  const window = createWindowRoute(
+    windowResources,
     { scene: 'fixture', source: {}, ...request },
     [request.arrival.position, [5, 6, 5], request.target],
     { tileSpan: 38.4, gridSpan: 32, maxTiles: 16, margin: 8, locomotion: physical.locomotion },
@@ -1013,6 +1015,240 @@ test('direct provider rides preserve resources, annotations and exact arrival ga
       ['rope'],
     );
   windowCache.clear();
+
+  const compactRequest = {
+    scene: 'fixture',
+    source: {},
+    ...request,
+    arrival: { ...request.arrival, id: 'lift', groundRange: [4.9, 5.1] as [number, number] },
+  };
+  const compactSettings = {
+    tileSpan: 38.4,
+    gridSpan: 32,
+    maxTiles: 16,
+    margin: 8,
+    locomotion: physical.locomotion,
+  };
+  const guide: [number, number, number][] = [
+    request.arrival.position,
+    [400, 5, 400],
+    request.target,
+  ];
+  const compactRequests: Window[] = [];
+  let providerLoads = 0;
+  const providerResources: typeof windowResources = {
+    ...windowResources,
+    physical: async () => {
+      providerLoads++;
+      return { input: physical, revision: 'fixture', coverage: 'complete' };
+    },
+    async solve(...args) {
+      compactRequests.push(args[1]);
+      return windowResources.solve(...args);
+    },
+  };
+  class PrototypeResources {
+    query(...args: Parameters<typeof windowResources.query>) {
+      return windowResources.query(...args);
+    }
+    key(...args: Parameters<typeof windowResources.key>) {
+      return windowResources.key(...args);
+    }
+    ground(...args: Parameters<typeof windowResources.ground>) {
+      return windowResources.ground(...args);
+    }
+    route(...args: Parameters<typeof windowResources.route>) {
+      return windowResources.route(...args);
+    }
+    physical() {
+      providerLoads++;
+      return Promise.resolve({
+        input: physical,
+        revision: 'fixture',
+        coverage: 'complete' as const,
+      });
+    }
+    solve(...args: Parameters<typeof windowResources.solve>) {
+      compactRequests.push(args[1]);
+      return windowResources.solve(...args);
+    }
+  }
+  const compact = createWindowRoute(
+    new PrototypeResources(),
+    compactRequest,
+    guide,
+    compactSettings,
+  );
+  let compactResult = await compact.advance();
+  for (let i = 0; i < 5 && compactResult.status === 'pending'; i++)
+    compactResult = await compact.advance();
+  assert.ok(compactResult.status === 'complete');
+  assert.equal(compactResult.route.cost, 2);
+  assert.deepEqual(
+    compactRequests.map((local) => local.target),
+    [request.target, request.target],
+  );
+  assert.ok(compactRequests.every((local) => local.arrival.id === 'lift'));
+  assert.deepEqual(compactRequests[0].arrival.groundRange, [4.9, 5.1]);
+  assert.equal(providerLoads, 1);
+  windowCache.clear();
+
+  const ropePhysical = structuredClone(physical);
+  ropePhysical.devices!.movingSupports = [];
+  ropePhysical.ground.surfaces = [
+    {
+      id: 'lower',
+      vertices: [
+        [2, 5, 4],
+        [2, 5, 6],
+        [4, 5, 6],
+        [4, 5, 4],
+      ],
+    },
+    {
+      id: 'upper',
+      vertices: [
+        [6, 7, 4],
+        [6, 7, 6],
+        [8, 7, 6],
+        [8, 7, 4],
+      ],
+    },
+  ];
+  ropePhysical.collision = {
+    positions: ropePhysical.ground.surfaces.flatMap((surface) => surface.vertices.flat()),
+    indices: [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7],
+  };
+  ropePhysical.devices!.ropes = [{ bottom: 'rope-bottom', top: 'rope-top' }];
+  ropePhysical.devices!.devices = [5, 7].map((height, index) => ({
+    id: index ? 'rope-top' : 'rope-bottom',
+    kind: 'rope',
+    position: [index ? 7 : 3, height, 5],
+    goal: { position: [index ? 7 : 3, height, 5], interaction: { radius: 0.35, maxVertical: 0.2 } },
+    seeds: [[index ? 7 : 3, height, 5]],
+    unitScale: true,
+    resolved: true,
+    speed: 1,
+    overhead: 0,
+    duration: null,
+    fixedLaunch: false,
+    aim: null,
+    height: 0,
+    aimClearance: 0,
+    boostMultiplier: 1,
+  }));
+  const ropeRequests: Window[] = [];
+  const ropeWindow = createWindowRoute(
+    {
+      ...windowResources,
+      physical: async () => ({
+        input: ropePhysical,
+        revision: 'rope',
+        coverage: 'complete' as const,
+      }),
+      async solve(job, local, _start, work): Promise<Job> {
+        ropeRequests.push(local);
+        const solver = await preparePhysicalSolver(
+          ropePhysical,
+          { ...gangliaV1Defaults, maxCandidates: 0, maxShortcutCandidates: 0 },
+          { effort: work.step === 0 ? 'walking' : 'devices' },
+        );
+        try {
+          return {
+            ...job,
+            result: await solver.solve({
+              starts: [local.arrival],
+              goal: local.target,
+              interaction: local.interaction,
+            }),
+          };
+        } finally {
+          await solver.close();
+        }
+      },
+    },
+    {
+      ...compactRequest,
+      arrival: { ...compactRequest.arrival, id: 'rope-bottom', position: [3, 5, 5] },
+      target: [7, 7, 5],
+    },
+    [
+      [3, 5, 5],
+      [400, 5, 400],
+      [7, 7, 5],
+    ],
+    compactSettings,
+  );
+  let ropeResult = await ropeWindow.advance();
+  for (let i = 0; i < 5 && ropeResult.status === 'pending'; i++)
+    ropeResult = await ropeWindow.advance();
+  assert.ok(ropeResult.status === 'complete', JSON.stringify({ ropeResult, ropeRequests }));
+  assert.ok(
+    ropeResult.route.segments.some((segment) => segment.connection === 'rope/rope-bottom/rope-top'),
+  );
+  assert.ok(ropeRequests.every((local) => local.target.every((v, i) => v === [7, 7, 5][i])));
+
+  // A missed authored opportunity gets no all-actions retry in the compact
+  // window; the original coarse guide resumes with its unchanged stages.
+  const misses: { target: number[]; step: number }[] = [];
+  const missedCompact = createWindowRoute(
+    {
+      ...providerResources,
+      async solve(job, local, _start, work): Promise<Job> {
+        misses.push({ target: local.target, step: work.step });
+        return {
+          ...job,
+          result: {
+            route: { status: 'no-verified-route' },
+            connections: [],
+            diagnostics: { truncated: false },
+          },
+        };
+      },
+    },
+    compactRequest,
+    guide,
+    compactSettings,
+  );
+  await missedCompact.advance();
+  await missedCompact.advance();
+  assert.deepEqual(misses.slice(0, 2), [
+    { target: request.target, step: 0 },
+    { target: request.target, step: 1 },
+  ]);
+  assert.equal(misses[2].step, 0);
+  assert.notDeepEqual(misses[2].target, request.target);
+
+  const unknownProvider = structuredClone(physical);
+  unknownProvider.devices!.movingSupports![0].transfers[0].speed = null;
+  const rejectedTargets: number[][] = [];
+  const unknownCompact = createWindowRoute(
+    {
+      ...providerResources,
+      physical: async () => ({
+        input: unknownProvider,
+        revision: 'unknown',
+        coverage: 'complete' as const,
+      }),
+      async solve(job, local): Promise<Job> {
+        rejectedTargets.push(local.target);
+        return {
+          ...job,
+          result: {
+            route: { status: 'no-verified-route' },
+            connections: [],
+            diagnostics: { truncated: false },
+          },
+        };
+      },
+    },
+    compactRequest,
+    guide,
+    compactSettings,
+  );
+  await unknownCompact.advance();
+  assert.equal(rejectedTargets.length, 1);
+  assert.notDeepEqual(rejectedTargets[0], request.target);
 
   assert.notEqual(
     direct.plan({ ...request, arrival: { ...request.arrival, state: 'locked' } }).route.status,
