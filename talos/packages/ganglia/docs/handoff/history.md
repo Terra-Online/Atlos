@@ -1,5 +1,81 @@
 # Route solver history and validation evidence
 
+## Interior translating-board contacts and continued evidence, 2026-11-15
+
+R10 completed original 197 at 24.751004651 s modeled route cost / 203.500674 s solver
+time. It is an alternative route without box use: completion gains credit, box
+exercise does not. R10 static 004/011/012 remained incomplete; 196 timed out at
+305.390 s. Their original queries, bindings, failures and journals remain retained.
+
+182's normalized collision binding was audited before changing strategy. Its
+authored initial cap is at Y266.8091769 under fixed actor274780035's top at Y267;
+the original raw endpoint capsule overlaps that floor. The matching normalized
+triangle set equals the raw set in this window; no collision exclusions were
+silently substituted. The existing source navigation projects to Y267.0500183
+inside the original arrival band. A rigidly translating cap at fraction
+0.0115420698 proves that exact standing/contact, while the unchanged static world
+admits the complete remaining ride at original speed10.
+
+R11 generalizes this construction using existing translating-cap, faceInterval,
+projection and native graph/resource helpers. It adds no scene constants, budget,
+source edit or global physical tolerance. Unknown speed, deformed caps, locked
+sources, tight incompatible arrival bands and blocking walls remain rejected.
+Board/leave boxes show actual selected poses. All 541 package tests, typecheck,
+lint and format pass. The real original 182 then completed at route1.976915860 s /
+solver64.948036 s, advancing mixed evidence to217/266 with49 remaining. Earlier
+synthetic-tail journal events were intermediate activity, not its final failure.
+The exact staged translating-board subset also passes typecheck and12 physical
+solver tests independently of uncommitted scheduling/tail changes. Its indexed
+copy required the existing Atlos pointToken helper. An additional format invocation
+in that ignored .local copy found no targets; it is not a separate format pass.
+The frozen/live package checks above provide formatting/lint evidence.
+
+183 differs: normalized static actor603690015 obstructs the full authored ride.
+Several fixed offsets, a15-layer selected-cap contact graph and the existing local
+clearance bake supplied no full same-cap route; one critical cap has zero clearance
+surfaces. A safe short prefix has no demonstrated nearby static walk-off. These
+finite diagnostics do not prove global impossibility. No speculative offset or
+layer-graph production feature was added; wider static/device alternatives remain.
+
+196's actual target remains original. Its64 layout trials include18 valid single
+roof route misses,15 valid joint-roof-set misses, and geometric rejections; source
+ownership is not the blocker. Required box2100390859 has six proven single roof
+poses. A single original-input/125-candidate local comparison with an optional roof
+hint still fails and reduces discovered actions3→1. This does not support shipping
+roof hints. Raw facts, roof capture and separate baseline/hint diagnostics remain
+under diagnostics/device-audit/following196-roof.*.
+
+The R10 traversal trial is inconclusive: on004 its entire discovery and input
+diagnostics equal R6, not just the final failure. Per-chain visit counts can reset
+when a deferred optimistic edge changes the selected chain. R12 uses cross-chain
+direction state and changes011 coverage, but still fails: first source endpoints
+451→29, target0→740, arcs256→51 and region proposals92→128 (limit). Large zero-arc
+closures kept target-first scheduling and spent region work before remaining arc
+allowance. Query/setup/input bindings match R10/R7; isolated elapsed differences
+are not performance gains. These trials are retained, not accepted as real gains.
+
+R14 retains source-first behavior until motion attempts start, then flips direction
+on failed/deferred chains including later zero-arc closures, without new limits or
+configuration. Focused controls retain the blocked source and prove both-side work
+under shared bounds. R13 separately preserves owner identity/cost when existing
+tailCoversStart already proves a complete-root approach. Original proof conditions
+remain; noncovering tails retain anonymous zero-cost walking-only behavior. Scene
+fixture corrections keep partial/truncation assertions and explicitly request a
+source height band when testing noncovering tails. The stable bundle passes542
+package tests plus format/lint/typecheck; real gains remain unproven.
+
+A separate proposal-only diagnostic tested reuse of createCandidatePlanner on
+027's original306122 physical faces and43108 portals. Preparation took7.253 s,
+but no proposal returned before the operator stopped that unscored standalone
+process after approximately168 s (768MiB heap limit, sampled RSS up to892452864 B).
+The real solver worker was untouched. This is human-interrupted/inconclusive,
+not a case timeout. A source-authored coarse subset retaining7114 complete original
+polygons/1484 original portals inside the same window prepared in101 ms, but a
+diagnostic-only million-pair limit stopped its first transfer expansion after106 ms.
+No physical solve, new geometry, input replacement or completion credit followed.
+Receipts retain hashes and command/resource bindings. Optional coarse hints remain
+an unproven direction; the default fine-mesh proposal cannot be assumed cheap.
+
 ## Endpoint windows and bounded validation scheduling, 2026-11-15
 
 After publication at 352c62b9, the user explicitly required point work to continue.

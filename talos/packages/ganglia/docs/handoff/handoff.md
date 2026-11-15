@@ -48,7 +48,7 @@ clone expose the flag; generated `.cache/noclip` was not edited.
 
 ### Evidence, point work and open issues
 
-The latest source-bound per-case snapshot is **215/266** with 54 cases observed in the
+The latest tracked source-bound per-case snapshot is **217/266** with 55 cases observed in the
 resumed campaign. This includes retained older completions and multiple frozen
 revisions, not a complete current-source census. R6 added 148,161,165,218; R7 added
 141 with two launch segments, route cost 4.088485514 s and solver time 10.197 s.
@@ -60,14 +60,18 @@ completed at 3.359996796 s route / 34.629 s solver, bringing live mixed evidence
 213/266. R9 then completed 116 (3.435801215 s route / 5.644 s solver) and 173
 (8.039365348 s route / 13.307 s solver). Its 166 guard keeps cost 3.359996796 s.
 The earlier 211-completion snapshot remains frozen at commit 352c62b9.
+R10 also completed original 197 (24.751004651 s route / 203.501 s solver), using
+an alternative without box placement. R11 completed original 182 at 1.976915860 s
+route / 64.948 s solver. Mechanism exercise remains separate from route completion.
 No observed cost/reachability regression is currently flagged in the tested set;
 this does not validate all retained points or comparable latency.
 
-R10's combined package check passed formatting, lint, typecheck and **540 tests**
-(`/tmp/ganglia-ts266-r10-check.log`), including the endpoint-window strategy,
-native mechanism-ID regression, bounded traversal scheduling and timeout diagnostic
-preservation. R9's earlier combined check passed 539 tests. Adapter normalization
-passes three focused tests. No all-population claim follows from package checks.
+R11's combined package check passed formatting, lint, typecheck and **541 tests**
+(`/tmp/ganglia-ts266-r11-check.log`), including the translating interior boarding
+regression. The subsequent R13/R14 bundle passes **542 tests** plus the same checks
+(`/tmp/ganglia-ts266-r14-check.log`), but remains an uncommitted strategy experiment.
+R9/R10 passed 539/540 tests respectively. Adapter normalization passes three focused
+tests. No all-population claim follows from package checks.
 
 166's R7 journal shows a synthetic `target-approach` source, rather than actor
 2100010064's actual source. Optional non-covering tails now yield after walking
@@ -89,12 +93,24 @@ R9 real 116/166/173 all completed. The native 116 walk-to-rope route and 173 mov
 transfer use the original goals, source setup and authored device models. Only
 116/173 add completion credit; the 166 guard does not add another point.
 
-The uncommitted R10 experiment is an explicit strategy variant: a new optimistic traversal chain keeps its
-source-first validation, while repeated visits alternate between its source and
-goal ends under unchanged shared limits. It is not an equivalent-work change;
-real 004/011/012 comparison remains pending. Parent timeout results retain final
-worker diagnostic data but still return no complete route and the original
-timeout/cancellation timings. This avoids losing failure context at the deadline.
+Source-owned translating supports can now board an interior authored pose within
+the original arrival height band, then ride the remaining displacement at original
+speed. Selected-cap standing/contact, unchanged static collision and a full ride
+capsule sweep remain action-construction checks. This resolves 182's initial cap
+below the fixed floor without changing its query, activity facts or tolerances;
+board/leave display boxes retain the actual selected poses.
+
+R10's per-chain alternation had no observable discovery change on 004/011/012.
+R12's cross-chain variant changed 011 coverage but exhausted region proposals with
+too much target-side work and still failed. The uncommitted R14 experiment preserves
+initial source admission, then alternates after failures once motion attempts begin,
+including later zero-arc closures. It has no proven real-point gain yet. R13 also
+preserves the original arrival's identity/cost for tails already proven to cover the
+root; noncovering tails remain synthetic, partial and walking-only.
+
+Parent timeout results retain final worker diagnostic data but still return no
+complete route and the original timeout/cancellation timings. This avoids losing
+failure context at the deadline.
 
 R7 173 also exposed an IPC error: device diagnostics retained the callable direct
 planner. The data projection now excludes that cache. Original failures and the
@@ -147,10 +163,15 @@ Milestone d812e38f precedes the current simplification, passive capture, free-la
 and starvation/IPC repairs. The publication checkpoint also includes the revision-10
 definitions and a portable frozen snapshot at
 `bench/scenes/mechanisms/progress.{json,html}`. Those artifacts contain all 266 IDs,
-215 complete native artifacts, 51 remaining cases and no absolute machine paths.
+217 complete native artifacts, 49 remaining cases and no absolute machine paths.
 They preserve incomplete/timeout outcomes and invalid-run flags; raw game geometry,
 private configuration and detailed run artifacts remain local. Point solving and
 the live local HTML continue independently of this GitHub snapshot.
+
+Local milestones cb834502 (endpoint-first routes and 215 snapshot) and 7b1575f7
+(cancelled-worker diagnostics) follow publication at 352c62b9. Current R12/R14
+experiments are separate from those validated committed behaviors. The single heavy
+lane continues original cases while source-bound frozen snapshots remain independent.
 
 ## Work stopped at the user's request, 2026-11-15 14:36 CST
 

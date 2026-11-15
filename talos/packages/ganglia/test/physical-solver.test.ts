@@ -1335,3 +1335,98 @@ test('direct provider rides preserve resources, annotations and exact arrival ga
   };
   assert.notEqual(create(circular).plan(request).route.status, 'complete');
 });
+
+test('partial translating rides board a proved interior pose within the original source band', async () => {
+  const [{ prepareMovingDirect }, { createCollisionWorld }, { createGoalProjector }] =
+    await Promise.all([
+      import('#@/src/v1/solver/physical/moving-direct.ts'),
+      import('#@/src/model/collision.ts'),
+      import('#@/src/model/goals.ts'),
+    ]);
+  const physical = structuredClone(input);
+  physical.ground.surfaces[0].vertices = physical.ground.surfaces[0].vertices.map(([x, , z]) => [
+    x,
+    5.25,
+    z,
+  ]);
+  physical.collision.positions = physical.collision.positions.map((v, i) =>
+    i % 3 === 1 ? 5.2 : v,
+  );
+  const body = (height: number): [number, number, number][] =>
+    Array.from({ length: 8 }, (_, bits) => [
+      bits & 1 ? 8 : 2,
+      bits & 2 ? height : height - 0.5,
+      bits & 4 ? 8 : 2,
+    ]);
+  physical.devices = {
+    devices: [],
+    ropes: [],
+    movingSupports: [
+      {
+        id: 'lift',
+        family: 'platform',
+        level: 'fixture',
+        model: 'fixture',
+        assumption: 'phase-free-swept-support',
+        ...sweepSupports('lift', [[body(5)], [body(7)]], 1),
+      },
+    ],
+  };
+  const create = (snapshot: PhysicalInput, walls = snapshot.ground.options.walls) =>
+    prepareMovingDirect(
+      snapshot,
+      { geometry: snapshot.collision, world: createCollisionWorld(snapshot.collision) },
+      walls,
+      createGoalProjector(snapshot.ground.surfaces),
+    );
+  const request = {
+    arrival: {
+      id: 'lift',
+      position: [5, 5, 5] as [number, number, number],
+      state: 'available' as const,
+      cost: 3,
+    },
+    target: [5, 7, 5] as [number, number, number],
+    interaction: { radius: 0.35, maxVertical: 0.2 },
+    walls: [],
+  };
+  const direct = create(physical);
+  const candidate = direct.plan(request, new Set([0]));
+  assert.ok(candidate.route.status === 'complete');
+  assert.equal(candidate.route.start, 'lift');
+  assert.equal(candidate.route.arrivalCost, 3);
+  assert.deepEqual(candidate.route.points, [
+    [5, 5.25, 5],
+    [5, 7.01, 5],
+  ]);
+  assert.ok(Math.abs(candidate.route.cost - 3 - 1.76) < 1e-8);
+  assert.ok(Math.abs(candidate.connections[0].times[1] - 1.76) < 1e-8);
+  assert.equal(candidate.route.segments[0].traversal, 'moving-support');
+  const boxes = direct.annotate(candidate.route, candidate.connections);
+  assert.deepEqual(
+    boxes.map((box) => box.role),
+    ['board', 'leave'],
+  );
+  assert.ok(Math.abs(boxes[0].max[1] - 5.24) < 1e-8);
+  assert.equal(boxes[1].max[1], 7);
+  assert.notEqual(
+    direct.plan({ ...request, arrival: { ...request.arrival, groundRange: [4.9, 5.1] } }).route
+      .status,
+    'complete',
+  );
+  assert.notEqual(
+    direct.plan({ ...request, arrival: { ...request.arrival, state: 'locked' } }).route.status,
+    'complete',
+  );
+  assert.notEqual(
+    create(physical, [{ min: [4, 6, 4], max: [6, 6.2, 6], state: 'active' }]).plan(request).route
+      .status,
+    'complete',
+  );
+  const unknown = structuredClone(physical);
+  unknown.devices!.movingSupports![0].transfers[0].speed = null;
+  assert.notEqual(create(unknown).plan(request).route.status, 'complete');
+  const distorted = structuredClone(physical);
+  distorted.devices!.movingSupports![0].surfaces.at(-1)!.vertices[0][0] += 0.1;
+  assert.notEqual(create(distorted).plan(request).route.status, 'complete');
+});
