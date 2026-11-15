@@ -114,10 +114,18 @@ test('Rust fixed launch crosses a gap with independently replayable pad controls
   const input = physical([surface('left', -5, 0, 0), surface('right', 3, 8, 0)], {
     devices: [
       device('pad', 'launch', [-1, 0, 0], {
+        speed: Number.NaN,
+        overhead: Number.NaN,
         fixedLaunch: true,
         aim: [4, 0, 0],
         height: 3,
         aimClearance: 0.2,
+      }),
+      device('unresolved-pad', 'launch', [-4, 0, 0], {
+        resolved: false,
+        speed: Number.NaN,
+        overhead: Number.NaN,
+        height: Number.NaN,
       }),
     ],
     ropes: [],

@@ -5,7 +5,7 @@ import { resolve, dirname } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 
-import type { Route } from '@opendfieldmap/ganglia';
+import type { Route, Wall } from '@opendfieldmap/ganglia';
 import {
   type SceneResources,
   type RouteResult,
@@ -55,6 +55,7 @@ export async function loadScene(
   concurrency: number,
   scene = 'map02',
   build?: RegionBuild,
+  transformInput?: (input: PhysicalInput) => PhysicalInput,
 ) {
   const loadingStarted = performance.now();
   const dataset = await loadSceneData(dataRoot, scene, build);
@@ -94,6 +95,7 @@ export async function loadScene(
     preparePhysicalRoute,
     concurrency,
     gameAdapterSha256,
+    transformInput,
   );
   prepared.timings.preparationMs = performance.now() - loadingStarted - inputLoadMs;
   return {
@@ -102,7 +104,7 @@ export async function loadScene(
       scene: {
         scene: dataset.navigation.scene,
         source: dataset.navigation.source,
-        walls: [],
+        walls: [] as Wall[],
         navigation: dataset.navigation,
       },
       resources: prepared.resources,
@@ -143,6 +145,7 @@ export function prepareSceneResources(
   preparePhysicalRoute: GameAdapter['preparePhysicalRoute'],
   concurrency: number,
   gameAdapterSha256: string,
+  transformInput: (input: PhysicalInput) => PhysicalInput = (input) => input,
 ) {
   let inputFailure: { error: unknown } | undefined;
   const failInput = (error: unknown): never => {
@@ -215,8 +218,9 @@ export function prepareSceneResources(
             },
           },
         );
-        const input = normalized.input;
-        if (!input) throw new Error('Exporter did not provide normalized verifier input');
+        const raw = normalized.input;
+        if (!raw) throw new Error('Exporter did not provide normalized verifier input');
+        const input = transformInput(raw);
         physicalInputs.set(region.binding, { input, region });
       }
     return evaluatePhysical(query, route);
@@ -248,8 +252,9 @@ export function prepareSceneResources(
           if (!thisRegion()) throw new Error('Missing verifier input region');
           const region = thisRegion()!;
           const key = region.binding + JSON.stringify(args[0].ground.options.walls);
-          if (!physicalInputs.has(key)) physicalInputs.set(key, { input: args[0], region });
-          return preparation.solve(...args);
+          const input = transformInput(args[0]);
+          if (!physicalInputs.has(key)) physicalInputs.set(key, { input, region });
+          return preparation.solve(input, args[1], args[2]);
         },
       },
       clear: preparation.clear,
@@ -308,13 +313,14 @@ export function prepareSceneResources(
         });
         if (!normalized.input)
           throw new Error('Game adapter does not expose normalized physical facts');
+        const input = transformInput(normalized.input);
         physicalInputs.set(JSON.stringify([job.region.binding, request.walls]), {
-          input: normalized.input,
+          input,
           region: job.region,
         });
         timings.normalizationMs += performance.now() - started;
         return {
-          input: normalized.input,
+          input,
           revision: JSON.stringify([job.region.binding, gameAdapterSha256, request.walls]),
           coverage: {
             bounds: job.region.ground.build.bounds,

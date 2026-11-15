@@ -21,6 +21,15 @@ const presets: Record<string, Workload> = {
 };
 
 export async function readWorkload(name = 'map02'): Promise<Workload> {
+  if (name === 'mechanisms')
+    throw new Error(
+      'Use benchmark:mechanisms for scenario setup, training and mechanism acceptance',
+    );
   if (presets[name]) return presets[name];
-  return { cases: JSON.parse(await readFile(name, 'utf8')), directory: '' };
+  const cases: unknown = JSON.parse(await readFile(name, 'utf8'));
+  if (!Array.isArray(cases))
+    throw new Error(
+      'Scenario manifests require benchmark:mechanisms; --workload expects a query array',
+    );
+  return { cases, directory: '' };
 }

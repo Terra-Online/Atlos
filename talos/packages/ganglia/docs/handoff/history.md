@@ -1,5 +1,34 @@
 # Route solver history and validation evidence
 
+## Mechanism benchmark integration and input repair, 2026-11-15
+
+The shared revision-10 suite is imported unchanged from `352c62b9`, including 266
+real entity/contact cases and separate geometry/development/negative controls.
+Candidate source exports and all 16 fixed physical windows were regenerated from
+the same game build. Candidate revision is
+`1013af60ca501ee471ebb8c2e8f16a8df7cb2aacb1454f0e93c0ddbd1f4b6399`.
+The local preparation recipe and provenance are retained alongside the data;
+the suite's historical snapshots and request-wall choices were not reconstructed.
+
+An initial input audit correctly rejected the existing 1.80 m male-character
+profile against the suite's 1.66 m source profile. Fresh movement extraction over
+all authored characters supplies the matching profile, and geometry was rebuilt
+before further execution. Rich device facts then reproduced a native deserialization
+failure: inapplicable TS NaN fields arrive as JSON null. Only device speed,
+overhead and height decoding changed; action admission still uses finite checks.
+The extended fixed-launch regression is red on the retained native artifact and
+green after rebuilding. Validation passes 464 TS tests, 26 N-API integration
+fixtures, 152 Rust unit tests plus two authored tests, Clippy with N-API enabled,
+Rust formatting, TS checking and package lint/format checks.
+
+The first trained case `001-05f0PbU` records 149.748 s training, 163.808 s readiness,
+two complete warmups and a 60.017 s measured timeout without a complete route.
+This is a pilot, not a population result. Raw pilot evidence is retained in
+`.local/research/mechanisms-266/pilots/`. The full runner defaults to one measured
+round and one scenario worker; independent scenario groups can run concurrently
+for coverage checks, without interpreting their contended timings as speedups.
+The source and native artifact remain frozen during a scored run.
+
 ## Noclip v106 to v119 migration, 2026-11-15
 
 Upstream advanced 35 commits from `ff48e1a715039b76b60bd30f6ad0c8a0cc978f04`

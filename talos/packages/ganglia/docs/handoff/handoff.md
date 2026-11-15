@@ -1,5 +1,27 @@
 # Route solver handoff
 
+## Shared 266-case mechanism workload, 2026-11-15
+
+`benchmark:mechanisms` consumes the unchanged revision-10 acceptance specification
+from `chan/algo-progression` at `352c62b9`. Its 266 source entity/contact targets
+span map01/map02 and 16 levels. The runner preserves scenario resources, frozen
+physical bounds, following-box policies and source-volume start resolution. It
+uses the ordinary worker host, configured training/freeze/warmup and cooperative
+cancellation. Complete routes receive independent physical replay after timing;
+mechanism exercise remains separate from feasibility.
+
+Local candidate inputs are regenerated under `.local/data/mechanisms-266-v119/`.
+They use the selected 1.66 m source capsule rather than the prior 50-case data's
+1.80 m single-character capsule. Historical retained geometry is unavailable;
+new source geometry and air walls have an explicit candidate binding. The four
+circular-waterwheel cases remain unsupported in this branch. Full-suite results
+are pending; no mechanism-population speedup or complete acceptance is claimed.
+
+Rich device exports exposed NaN values in inapplicable speed, overhead and height
+fields. Rust now reads their JSON null representation as unavailable, preserving
+kind-specific finite checks. The existing fixed-launch N-API fixture reproduces
+the old parsing failure and passes with the corrected native artifact.
+
 ## Noclip v119 integration, 2026-11-15
 
 The maintained noclip source is pinned to `152a38a0`, package format v119.
