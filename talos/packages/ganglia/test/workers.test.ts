@@ -150,6 +150,10 @@ test('a soft deadline waits for the current stage and retains the trained worker
       query('next', 1),
     ]);
     assert.equal(expired.reason, 'timeout');
+    assert.equal(expired.route.status, 'no-verified-route');
+    assert.equal(expired.diagnostics.truncated, true);
+    assert.equal((expired as WorkerResult).diagnostics.timedOut, true);
+    assert.equal(expired.diagnostics.candidateAttempts, 1);
     assert.ok((expired as WorkerResult).diagnostics.solveWallMs >= 500);
     assert.equal(next.route.status, 'complete');
     assert.equal(next.reason, trained.reason);
