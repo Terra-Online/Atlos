@@ -37,6 +37,13 @@ suite's fixed-window domain without claiming coverage of the proposed halo.
 The stopped report remains at `.local/research/mechanisms-266/native-full/report.json`;
 it has zero measured attempts and is not a population result.
 
+The next dispatch trained both initial groups and completed group-two warmup,
+then its first scored query returned `Motion exceeds declared physical coverage`
+from Rust. The worker remained alive. Request errors now carry `WorkerQueryError`
+so the coverage runner records them per case and retains the same process;
+process/IPC failures still stop the run. This stopped report is retained under
+`native-full-windowed/`. Neither stopped dispatch establishes population coverage.
+
 ## Noclip v106 to v119 migration, 2026-11-15
 
 Upstream advanced 35 commits from `ff48e1a715039b76b60bd30f6ad0c8a0cc978f04`

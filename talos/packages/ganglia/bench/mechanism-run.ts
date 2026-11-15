@@ -11,7 +11,7 @@ import { checkSetup, classify, readMechanismSuite } from '#@/bench/mechanism-sui
 import { requirePreparedCatalog } from '#@/bench/preparation.ts';
 import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { sourceHash } from '#@/bench/source.ts';
-import { prepareWorkerSolver, type WorkerResult } from '#@/bench/workers.ts';
+import { prepareWorkerSolver, WorkerQueryError, type WorkerResult } from '#@/bench/workers.ts';
 import type { RouteQuery } from '#@/src/solver/contract.ts';
 import { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
 
@@ -248,6 +248,29 @@ if (values.help) {
           resolutionErrors: Record<string, { status: string; reason: string }>;
         };
       };
+      const solve: typeof prepared.solver.solve = async (query, options) => {
+        const started = performance.now();
+        try {
+          return await prepared!.solver.solve(query, options);
+        } catch (error) {
+          if (!(error instanceof WorkerQueryError)) throw error;
+          const serviceMs = performance.now() - started;
+          const result: WorkerResult = {
+            route: { status: 'no-verified-route' },
+            connections: [],
+            reason: 'execution-error:' + error.message,
+            diagnostics: {
+              truncated: false,
+              solveWallMs: serviceMs,
+              queueMs: 0,
+              responseMs: serviceMs,
+              timedOut: false,
+            },
+          };
+          record({ phase: 'request-error', servicePhase, scenario, error: error.message });
+          return result;
+        }
+      };
       items = items.filter((item) => {
         const error = metadata.mechanism.resolutionErrors[item.id];
         if (!error) return true;
@@ -278,16 +301,15 @@ if (values.help) {
       const trainingStarted = performance.now();
       const trained = [[] as import('#@/src/solver/contract.ts').RouteResult[]];
       for (const item of training)
-        trained[0].push(await prepared.solver.solve(item.query, { signal: controller.signal }));
+        trained[0].push(await solve(item.query, { signal: controller.signal }));
       const trainingMs = performance.now() - trainingStarted;
       await prepared.setCatalogPhase('frozen');
       const stats = prepared.catalogStatsAll();
       servicePhase = 'warmup';
       const warmStarted = performance.now();
-      const warmed = await prepared.solver.solveBatch(
-        warmup.map((c) => c.query),
-        { signal: controller.signal },
-      );
+      const warmed = [];
+      for (const item of warmup)
+        warmed.push(await solve(item.query, { signal: controller.signal }));
       requirePreparedCatalog(
         config,
         { ids: training.map((c) => c.id), perWorker: stats.map((stats) => ({ stats })) },
@@ -311,7 +333,7 @@ if (values.help) {
       servicePhase = 'measurement';
       for (const [i, item] of items.entries()) {
         if (controller.signal.aborted) break;
-        const result = (await prepared.solver.solve(queries[i], {
+        const result = (await solve(queries[i], {
           signal: controller.signal,
           onEvent: (event) => {
             if (event.type === 'progress') record({ phase: 'progress', id: item.id, event });

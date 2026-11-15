@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { gangliaV1Defaults, type RouteQuery } from '@opendfieldmap/ganglia';
 
 import { resetTimings } from '#@/bench/timings.ts';
-import { prepareWorkerSolver, type WorkerResult } from '#@/bench/workers.ts';
+import { prepareWorkerSolver, WorkerQueryError, type WorkerResult } from '#@/bench/workers.ts';
 
 const query = (id: string, delay = 5, mode = 0): RouteQuery => ({
   starts: [{ id, position: [0, 0, 0], state: 'available', cost: 0 }],
@@ -59,7 +59,11 @@ test('whole-query workers return ordered batches, aggregate measured work and dr
 test('query errors preserve the worker but an actual crash rejects the run without replacement', async () => {
   const { solver } = await prepare(1);
   try {
-    await assert.rejects(solver.solve(query('rejected', 0, 2)), /fixture failure/);
+    await assert.rejects(
+      solver.solve(query('rejected', 0, 2)),
+      (error: unknown) =>
+        error instanceof WorkerQueryError && /fixture failure/.test(error.message),
+    );
     assert.equal((await solver.solve(query('next'))).route.status, 'complete');
     await assert.rejects(
       solver.solveBatch([query('crashed', 0, 1), query('queued')]),
