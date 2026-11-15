@@ -21,6 +21,10 @@ const presets: Record<string, Workload> = {
 };
 
 export async function readWorkload(name = 'map02'): Promise<Workload> {
+  if (name === 'mechanisms')
+    throw new Error(
+      'Scenario manifests require benchmark:mechanisms for service scoring or bench/mechanism-run.ts for native route diagnostics',
+    );
   if (presets[name]) return presets[name];
   const cases: unknown = JSON.parse(await readFile(name, 'utf8'));
   if (

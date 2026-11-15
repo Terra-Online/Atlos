@@ -46,8 +46,7 @@ use std::sync::Arc;
 
 #[path = "engine/catalog.rs"]
 mod catalog;
-#[path = "engine/proposal.rs"]
-mod proposal;
+use crate::navigation as proposal;
 #[path = "engine/schedule.rs"]
 mod schedule;
 
@@ -222,7 +221,10 @@ impl Engine {
         if !["scene", "physical", "surfaces"].contains(&kind.as_str()) {
             return Err("Unknown input kind".into());
         }
-        let navigation = proposal::Navigation::new(&input["scene"]["navigation"])?;
+        let navigation = proposal::Navigation::new(
+            serde_json::from_value(input["scene"]["navigation"].clone())
+                .map_err(|e| e.to_string())?,
+        )?;
         let mut engine = Self {
             config,
             input,
@@ -589,6 +591,11 @@ impl Engine {
             }
         }
 
+        // The walking-only pass consumes no catalog assets. Defer selection
+        // until the action pass instead of attaching the same query twice.
+        if stage == 0 && !self.catalog.training {
+            return Ok(config);
+        }
         if let Some(bank) = key.and_then(|k| self.catalog.banks.get(k)) {
             if self.catalog.frozen
                 && let Some(index) = key.and_then(|k| self.catalog.prepared.get(k))
@@ -596,6 +603,7 @@ impl Engine {
                 let selected =
                     index.select(world, query, number(&self.config, "maxLinks", 64.) as usize)?;
                 config["catalogConnected"] = json!(selected.connects_goal);
+                config["catalogWalks"] = json!(selected.walks);
                 config["catalogTruncated"] = json!(selected.actions.len() < bank.len());
                 config["catalogConnections"] = json!(
                     selected
@@ -702,7 +710,11 @@ impl Engine {
                 let mut targets = stops.iter().map(point).collect::<Result<Vec<_>, _>>()?;
                 targets.push(goal);
                 let mut proposal = None;
-                let mut leg_starts = starts;
+                let mut leg_starts: Vec<proposal::Arrival> = starts
+                    .into_iter()
+                    .map(serde_json::from_value)
+                    .collect::<Result<_, _>>()
+                    .map_err(|e| e.to_string())?;
                 for target in targets {
                     let Some(mut leg) =
                         self.navigation
@@ -711,9 +723,13 @@ impl Engine {
                         proposal = None;
                         break;
                     };
-                    leg_starts = vec![
-                        json!({"id":leg.arrival["id"],"position":target,"cost":0,"state":"available"}),
-                    ];
+                    leg_starts = vec![proposal::Arrival {
+                        id: leg.arrival.id.clone(),
+                        position: target,
+                        cost: 0.,
+                        state: proposal::Availability::Available,
+                        extra: Default::default(),
+                    }];
                     if let Some(joined) = proposal.as_mut() {
                         let joined: &mut proposal::Proposal = joined;
                         joined.points.extend(leg.points.drain(1..));
@@ -734,7 +750,7 @@ impl Engine {
                     &proposal.protected,
                     number(&self.config, "tileSpan", 38.4) / 2.,
                 );
-                let arrival = proposal.arrival.clone();
+                let arrival = serde_json::to_value(&proposal.arrival).map_err(|e| e.to_string())?;
                 q.proposal = Some(proposal);
                 q.tail = q.partial.is_none();
                 let mut first = points.len() - 1;
@@ -830,13 +846,13 @@ impl Engine {
                             // Explicit ground ranges still require the forward pass.
                             let arrival = &q.proposal.as_ref().unwrap().arrival;
                             result["partial"] = json!(false);
-                            result["route"]["start"] = arrival["id"].clone();
+                            result["route"]["start"] = json!(arrival.id);
                             result["route"]["cost"] = json!(
                                 number(&result["route"], "cost", 0.)
                                     - number(&result["route"], "arrivalCost", 0.)
-                                    + number(arrival, "cost", 0.)
+                                    + arrival.cost
                             );
-                            result["route"]["arrivalCost"] = arrival["cost"].clone();
+                            result["route"]["arrivalCost"] = json!(arrival.cost);
                             if let Some(done) = self.accept_complete(result) {
                                 return Ok(done);
                             }
@@ -942,7 +958,10 @@ impl Engine {
             &p.protected,
             number(&self.config, "tileSpan", 38.4) / 2.,
         );
-        q.window = Some(Window::new(points, p.arrival.clone())?);
+        q.window = Some(Window::new(
+            points,
+            serde_json::to_value(&p.arrival).map_err(|e| e.to_string())?,
+        )?);
         Ok(())
     }
 
@@ -1236,6 +1255,14 @@ impl Engine {
         let mut config = self.search_config(w.stage, Some(&key), &world, &local)?;
         config["fixedPlacements"] = json!(fixed);
         if self.catalog.training {
+            // Training covers the corridor between its endpoints as well as
+            // endpoint neighborhoods. Hints propose physical action sources;
+            // they never authorize walking or become cached query answers.
+            config["corridorAnchors"] = json!(sample_corridor(
+                &q.proposal.as_ref().unwrap().points,
+                number(&self.config, "sampleSpacing", 2.),
+                number(&self.config, "maxLinks", 64.).max(1.) as usize,
+            ));
             // One loaded physical window supplies bounded, verified connections.
             // A training request does not need a complete scene route, expanded
             // windows or resource scheduling to retain those facts.
@@ -1465,8 +1492,7 @@ impl Engine {
         }) {
             q.excluded_edges.insert(edge.key.clone());
         } else {
-            q.excluded_arrivals
-                .insert(p.arrival["id"].as_str().unwrap_or("").into());
+            q.excluded_arrivals.insert(p.arrival.id.clone());
         }
         q.proposal = None;
         q.window = None;
@@ -1508,10 +1534,7 @@ impl Engine {
                 .map(|terminal| terminal["route"].clone());
             q.incumbent = Some(result);
         }
-        let arrival = q.proposal.as_ref().unwrap().arrival["id"]
-            .as_str()
-            .unwrap_or("")
-            .to_string();
+        let arrival = q.proposal.as_ref().unwrap().arrival.id.clone();
         q.excluded_arrivals.insert(arrival);
         q.proposal = None;
         q.window = None;
@@ -1574,6 +1597,23 @@ impl Window {
             terminal_verified: false,
         })
     }
+}
+
+// Bounded arc-length samples retain bends without copying the dense navigation
+// tessellation into an all-pairs physical graph. Each sample needs fresh support.
+fn sample_corridor(points: &[Point], spacing: f64, limit: usize) -> Vec<Point> {
+    let length: f64 = points.windows(2).map(|p| distance(p[0], p[1])).sum();
+    let spacing = spacing.max(length / limit as f64);
+    let mut hints = Vec::new();
+    let mut traversed = 0.;
+    for pair in points.windows(2) {
+        traversed += distance(pair[0], pair[1]);
+        if traversed >= spacing {
+            hints.push(pair[1]);
+            traversed = 0.;
+        }
+    }
+    hints
 }
 
 fn merge_placements(placements: &mut Vec<Value>, additions: &[Value]) -> Result<(), String> {
@@ -1698,7 +1738,12 @@ fn trace_clear(world: &World, route: &Value, query: &Value) -> Result<bool, Stri
             }
         }
         for pair in points.windows(2) {
-            if !world.clear(pair[0], pair[1], 0.)? {
+            let clear = if segment["mode"] == "walk" {
+                world.walk_clear(pair[0], pair[1])?
+            } else {
+                world.clear(pair[0], pair[1], 0.)?
+            };
+            if !clear {
                 return Ok(false);
             }
             if segment["mode"] == "walk" {

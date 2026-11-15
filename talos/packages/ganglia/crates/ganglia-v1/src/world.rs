@@ -3,8 +3,10 @@
 //! A projection is only a support proposal: walking and flight methods additionally
 //! validate the full swept body against collision, walls and declared coverage.
 mod boundaries;
-mod collision;
+mod support;
+use crate::geometry as collision;
 mod devices;
+pub(crate) mod discovery;
 mod flight;
 mod following;
 mod ground;
@@ -43,12 +45,7 @@ pub fn is_coverage_error(error: &str) -> bool {
             | "Collision query exceeds indexed XZ bounds"
     )
 }
-#[derive(Clone, Debug)]
-pub struct Projection {
-    pub surface: String,
-    pub position: Vec3,
-    pub distance: f64,
-}
+pub use crate::mesh::Projection;
 /// An uncovered source edge interval, clipped to an XZ query rectangle.
 /// Search chooses insets and validates physical support and motion separately.
 #[derive(Clone, Debug)]
@@ -140,7 +137,10 @@ pub struct World {
     components: Vec<usize>,
     authored_navigation: HashSet<usize>,
     ground_graph: std::sync::OnceLock<ground::Graph>,
-    ground_cache: std::sync::Arc<std::sync::Mutex<ground_cache::Cache>>,
+    discovery_graph: std::sync::OnceLock<discovery::Graph>,
+    boundary_geometry: std::sync::OnceLock<Vec<Vec<Boundary>>>,
+    ground_cache: std::sync::Arc<std::sync::Mutex<ground_cache::Cache<Option<GroundPath>>>>,
+    direct_cache: std::sync::Arc<std::sync::Mutex<ground_cache::Cache<GroundProbe>>>,
 }
 pub fn distance(a: Vec3, b: Vec3) -> f64 {
     hypot(sub(a, b))
@@ -250,7 +250,7 @@ impl World {
                 if len == 0. || n[1] / len < movement.max_slope.to_radians().cos() {
                     continue;
                 }
-                let vertices = ground::clip_to_bounds(t.to_vec(), support_bounds.as_ref());
+                let vertices = crate::mesh::clip_to_bounds(t.to_vec(), support_bounds.as_ref());
                 if vertices.len() >= 3 {
                     surfaces.push(Surface {
                         id: format!("ground/{id}"),
@@ -398,7 +398,11 @@ impl World {
             stitching.step_up = 0.;
             stitching.step_down = 0.;
         }
-        portals.extend(ground::portals(&surfaces, &stitching));
+        portals.extend(crate::mesh::portals(
+            &surfaces,
+            stitching.step_up,
+            stitching.step_down,
+        ));
         let mut seen = HashSet::new();
         portals.retain(|p| seen.insert(serde_json::to_string(p).unwrap_or_default()));
         for p in &portals {
@@ -464,7 +468,10 @@ impl World {
             components,
             authored_navigation,
             ground_graph: std::sync::OnceLock::new(),
+            discovery_graph: std::sync::OnceLock::new(),
+            boundary_geometry: std::sync::OnceLock::new(),
             ground_cache: Default::default(),
+            direct_cache: Default::default(),
         };
         world.prepare_devices()?;
         Ok(world)
@@ -558,11 +565,18 @@ impl World {
             return Err("Invalid surface projection point".into());
         }
         let surface = self.surface(surface_id).ok_or("Unknown support surface")?;
-        Ok(ground::closest_on_surface(surface, p))
+        Ok(crate::mesh::closest_on_surface(surface, p))
     }
     /// Bounded canonical direct proof; no LazySP or ground-detour search.
     pub fn probe_ground(&self, a: Vec3, b: Vec3) -> Result<GroundProbe, String> {
-        ground::probe(self, a, b)
+        crate::cancel::check()?;
+        let key = [a, b].map(|p| p.map(f64::to_bits));
+        if let Some(probe) = self.direct_cache.lock().unwrap().get(&key) {
+            return Ok(probe);
+        }
+        let probe = ground::probe(self, a, b)?;
+        self.direct_cache.lock().unwrap().insert(key, probe.clone());
+        Ok(probe)
     }
     /// One directed optimistic navigation path, followed by bounded prefix
     /// canonical proofs. A rejection or exhausted budget makes no detour claim.
@@ -605,6 +619,30 @@ impl World {
         Ok(!self.wall_blocked(a, b, inflation)
             && self
                 .sweep_capsule(a, b, self.movement.profile, inflation)?
+                .is_none())
+    }
+    /// Walking uses the shared model's 1 cm raw-mesh contact allowance.
+    /// Coverage and explicit solid walls retain the full body; flight proofs
+    /// continue to use `clear` with the original capsule.
+    pub(crate) fn walk_clear(&self, a: Vec3, b: Vec3) -> Result<bool, String> {
+        let body = self.movement.profile;
+        self.require_coverage(a, b, body.radius)?;
+        if self.wall_blocked(a, b, 0.) {
+            return Ok(false);
+        }
+        let skin = 0.01_f64.min(body.radius / 2.).min(body.height / 4.);
+        let shape = Profile {
+            radius: body.radius - skin,
+            height: body.height - 2. * skin,
+        };
+        let shifted = |p: Vec3| [p[0], p[1] + skin, p[2]];
+        Ok(self
+            .collision
+            .sweep(shifted(a), shifted(b), shape, 0.)?
+            .is_none()
+            && self
+                .following_collision
+                .sweep(shifted(a), shifted(b), shape, 0.)?
                 .is_none())
     }
     pub fn ground_at(
@@ -683,7 +721,14 @@ impl World {
         tolerance: f64,
         interaction: Option<&Interaction>,
     ) -> Result<Vec<Projection>, String> {
-        ground::project(self, p, tolerance, interaction)
+        crate::mesh::project(
+            &self.support,
+            &self.owners,
+            &self.surfaces,
+            p,
+            tolerance,
+            interaction,
+        )
     }
     /// Preserve feet already 5–10 mm above physical support, or on an authorized
     /// surface mesh with no raw support. Other seeds receive 1 cm clearance.

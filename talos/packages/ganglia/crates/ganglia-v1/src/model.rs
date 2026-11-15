@@ -304,6 +304,11 @@ pub struct DeviceGoal {
     pub position: Vec3,
     pub interaction: Interaction,
 }
+// The TS normalizer uses NaN for inapplicable device parameters. JSON represents
+// those as null; kind-specific finite checks still decide whether a device works.
+fn device_number<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<f64, D::Error> {
+    Ok(Option::<f64>::deserialize(deserializer)?.unwrap_or(f64::NAN))
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Device {
@@ -317,9 +322,9 @@ pub struct Device {
     pub unit_scale: bool,
     #[serde(default)]
     pub resolved: bool,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "device_number")]
     pub speed: f64,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "device_number")]
     pub overhead: f64,
     #[serde(default)]
     pub duration: Value,
@@ -327,7 +332,7 @@ pub struct Device {
     pub fixed_launch: bool,
     #[serde(default)]
     pub aim: Value,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "device_number")]
     pub height: f64,
     #[serde(default)]
     pub aim_clearance: f64,

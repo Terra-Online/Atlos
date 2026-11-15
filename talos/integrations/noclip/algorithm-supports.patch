@@ -380,15 +380,3 @@ diff --git a/packages/extractor/src/game/circular-rotations.test.ts b/packages/e
  const nodes=()=>[
      {key:'root',parent:null,matrix:trsMatrix([3,5,7],unityEulerQuaternion([0,90,0]),[1,1,1]),paths:[''],local:{position:[3,5,7]}},
      {key:'rotor',parent:'root',matrix:trsMatrix([0,0,0],[0,0,0,1],[1,1,1]),paths:['Rotor'],local:{position:[2,0,0]}},
-diff --git a/packages/extractor/src/game/static-supports.test.ts b/packages/extractor/src/game/static-supports.test.ts
---- a/packages/extractor/src/game/static-supports.test.ts
-+++ b/packages/extractor/src/game/static-supports.test.ts
-@@ -30,7 +30,7 @@
- test('looping transform animation survives JSON as authored-rate samples', () => {
-     const pose: PrefabPose = { key: 'wheel:state=1', active: new Map(), clips: [{ animator: 'WheelRoot',
-         transforms: new Map(), active: new Map(), materials: new Map(), renderers: new Map(),
--        motion: { duration: 1, sampleRate: 2, loops: true, paths: [17], sample: time =>
-+        motion: { materials: () => new Map(), duration: 1, sampleRate: 2, loops: true, paths: [17], sample: time =>
-             new Map([[17, [{ kind: 'position', value: [time, 0, 0] }]]]) },
-     }] };
-     const motion = JSON.parse(JSON.stringify(supportMotion(pose)));

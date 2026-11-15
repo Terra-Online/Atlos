@@ -49,6 +49,7 @@ export interface MechanismSuite {
   schema: number;
   source: unknown;
   cases: MechanismCase[];
+  physicalRegions: { id: string; scene: string; bounds: number[] }[];
   sources: Record<
     string,
     {

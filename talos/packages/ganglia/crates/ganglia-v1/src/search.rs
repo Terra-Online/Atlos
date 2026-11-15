@@ -8,6 +8,8 @@ use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 #[path = "search/geometry.rs"]
 mod geometry;
+#[path = "search/improvement.rs"]
+mod improvement;
 #[path = "search/locomotion.rs"]
 mod locomotion;
 #[path = "search/training.rs"]
@@ -218,6 +220,44 @@ struct Graph {
     anchors: std::collections::HashSet<usize>,
 }
 impl Graph {
+    // Geometric discovery may inspect many seeds. Only query anchors and
+    // endpoints of proved actions/paths enter the expensive resource graph.
+    fn retain_connections(&mut self) -> Vec<usize> {
+        let mut keep = vec![false; self.points.len()];
+        for &id in &self.anchors {
+            keep[id] = true;
+        }
+        for (from, edges) in self.edges.iter().enumerate() {
+            if !edges.is_empty() {
+                keep[from] = true;
+            }
+            for edge in edges {
+                keep[edge.to] = true;
+            }
+        }
+        let mut ids = vec![usize::MAX; keep.len()];
+        let mut points = Vec::new();
+        for (id, &point) in self.points.iter().enumerate() {
+            if keep[id] {
+                ids[id] = points.len();
+                points.push(point);
+            }
+        }
+        let mut edges = Vec::new();
+        for (id, mut row) in std::mem::take(&mut self.edges).into_iter().enumerate() {
+            if keep[id] {
+                for edge in &mut row {
+                    edge.to = ids[edge.to];
+                }
+                edges.push(row);
+            }
+        }
+        self.anchors = self.anchors.iter().map(|&id| ids[id]).collect();
+        self.points = points;
+        self.edges = edges;
+        ids
+    }
+
     fn node(&mut self, p: Point) -> usize {
         if let Some(i) = self.points.iter().position(|q| distance(p, *q) < EPS) {
             return i;
@@ -491,6 +531,7 @@ struct Label {
     dashes: usize,
     active: bool,
 }
+
 #[derive(Clone, Copy)]
 struct Queue {
     cost: f64,
@@ -727,13 +768,15 @@ fn remaining_costs(
 
 #[derive(Clone, Copy)]
 struct GroundJob {
+    priority: f64,
+    source_cost: f64,
     lower_bound: f64,
     from: usize,
     to: usize,
 }
 impl PartialEq for GroundJob {
     fn eq(&self, b: &Self) -> bool {
-        self.lower_bound == b.lower_bound && self.from == b.from && self.to == b.to
+        self.priority == b.priority && self.from == b.from && self.to == b.to
     }
 }
 impl Eq for GroundJob {}
@@ -744,8 +787,8 @@ impl PartialOrd for GroundJob {
 }
 impl Ord for GroundJob {
     fn cmp(&self, b: &Self) -> Ordering {
-        b.lower_bound
-            .total_cmp(&self.lower_bound)
+        b.priority
+            .total_cmp(&self.priority)
             .then_with(|| b.from.cmp(&self.from))
             .then_with(|| b.to.cmp(&self.to))
     }
@@ -1084,6 +1127,15 @@ fn solve_world(
             }
         }
     }
+    if config["catalogTraining"] == true {
+        for hint in array(&config["corridorAnchors"]) {
+            if let Some(p) = geometry.project(point(hint)?, tolerance)
+                && geometry.clear(p, p, 0.)
+            {
+                graph.anchor(p);
+            }
+        }
+    }
     // Boundary samples supply takeoffs, landings and turns. Endpoints are retained
     // independently of polygon representatives, avoiding centre-only device detours.
     let spacing = number(config, "sampleSpacing", 2.)?;
@@ -1098,7 +1150,13 @@ fn solve_world(
     let max_links = budget(config, "maxLinks", 64)?.max(1);
     // Work and retained geometry are different budgets. Dense detail meshes
     // must not turn a bounded trajectory search into an all-pairs mesh graph.
-    let sample_budget = max_candidates.min(max_links.saturating_mul(2));
+    let sample_budget = max_candidates.min(max_links.saturating_mul(
+        if config["costLimit"].is_number() {
+            8
+        } else {
+            2
+        },
+    ));
     let mut truncated = config["catalogTruncated"] == true;
     let mut samples = 0;
     let mut supported_paths = std::collections::HashMap::new();
@@ -1218,7 +1276,29 @@ fn solve_world(
             s.vertices.iter().map(|p| p[axis]).sum::<f64>() / s.vertices.len() as f64
         })
     };
+    let improving = config["costLimit"].as_f64().is_some();
+    let origins: Vec<_> = seeds
+        .iter()
+        .map(|&(id, _, _, _)| graph.points[id])
+        .collect();
+    let departure_distance = |p: Point| {
+        origins
+            .iter()
+            .map(|&q| distance(p, q))
+            .fold(f64::INFINITY, f64::min)
+    };
+    let departure_height = |p: Point| {
+        origins
+            .iter()
+            .map(|q| (p[1] - q[1]).abs())
+            .fold(f64::INFINITY, f64::min)
+    };
     let proximity = |p: Point| {
+        // Once a route exists, compare departures near the fresh origin even
+        // when the useful cliff lies away from the straight goal corridor.
+        if improving {
+            return departure_distance(p);
+        }
         let near = anchors
             .iter()
             .map(|&q| horizontal(p, q))
@@ -1300,12 +1380,28 @@ fn solve_world(
     // line, which can rank every upper takeoff below irrelevant middle floors.
     let total = bands.iter().map(|(_, band)| band.len()).sum::<usize>();
     let mut surfaces = Vec::new();
+    if improving {
+        let mut departures: Vec<_> = bands
+            .iter()
+            .flat_map(|(_, band)| band.iter())
+            .filter(|(_, surface)| departure_height(center(surface)) <= stratum)
+            .collect();
+        departures.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1.id.cmp(&b.1.id)));
+        surfaces.extend(
+            departures
+                .into_iter()
+                .take(face_budget / 2)
+                .map(|(_, surface)| *surface),
+        );
+    }
     'bands: for rank in 0..bands.iter().map(|(_, band)| band.len()).max().unwrap_or(0) {
         for (_, band) in &bands {
             if surfaces.len() >= face_budget {
                 break 'bands;
             }
-            if let Some((_, surface)) = band.get(rank) {
+            if let Some((_, surface)) = band.get(rank)
+                && !surfaces.iter().any(|s| s.id == surface.id)
+            {
                 surfaces.push(*surface);
             }
         }
@@ -1321,7 +1417,13 @@ fn solve_world(
             .movement
             .model
             .max_horizontal_speed
-            .max(world.movement.profile.radius * 2.);
+            .max(world.movement.profile.radius * 2.)
+            .max(config["costLimit"].as_f64().map_or(0., |cost| {
+                cost * options
+                    .speed
+                    .max(options.sprint_speed)
+                    .max(options.dash.as_ref().map_or(0., |dash| dash.speed))
+            }));
         let bounds = crate::model::Bounds {
             min: [0, 2].map(|axis| {
                 anchors
@@ -1464,26 +1566,57 @@ fn solve_world(
                     .then(a.1[0].0.total_cmp(&b.1[0].0))
                     .then(a.0.cmp(&b.0))
             });
-            'boundaries: for rank in 0..bands.iter().map(|(_, b)| b.len()).max().unwrap_or(0) {
-                for (_, band) in &bands {
-                    if let Some(&(_, p, inward)) = band.get(rank) {
-                        for inset in [
-                            world.movement.profile.radius * 0.5,
-                            world.movement.profile.radius,
-                        ] {
-                            if samples >= boundary_limit {
-                                truncated = true;
-                                break 'boundaries;
-                            }
-                            let p = std::array::from_fn(|i| p[i] + inward[i] * inset);
-                            if let Some(p) = optional_proof(world.standing_foot(p), &mut truncated)?
-                            {
-                                let before = graph.points.len();
-                                graph.node(p);
-                                if graph.points.len() > before {
-                                    samples += 1;
-                                }
-                            }
+            let mut ordered = Vec::new();
+            if improving {
+                let mut departures: Vec<_> = bands
+                    .iter()
+                    .flat_map(|(_, band)| band.iter().copied())
+                    .filter(|(_, p, _)| departure_height(*p) <= stratum)
+                    .collect();
+                departures.sort_by(|a, b| a.0.total_cmp(&b.0));
+                // V1 spends work across coarse regions before refining body-
+                // scale offsets. Nearby detail triangles must not consume all
+                // launch slots before a neighboring cliff is represented.
+                let size = spacing.max(world.movement.model.max_horizontal_speed);
+                let mut cells = std::collections::BTreeMap::<[i64; 2], Vec<_>>::new();
+                for candidate in departures {
+                    let p = candidate.1;
+                    cells
+                        .entry([(p[0] / size).floor() as i64, (p[2] / size).floor() as i64])
+                        .or_default()
+                        .push(candidate);
+                }
+                let mut cells = cells.into_values().collect::<Vec<_>>();
+                cells.sort_by(|a, b| a[0].0.total_cmp(&b[0].0));
+                'departure: for rank in 0..cells.iter().map(Vec::len).max().unwrap_or(0) {
+                    for cell in &cells {
+                        if ordered.len() >= boundary_limit / 4 {
+                            break 'departure;
+                        }
+                        if let Some(&candidate) = cell.get(rank) {
+                            ordered.push(candidate);
+                        }
+                    }
+                }
+            }
+            for rank in 0..bands.iter().map(|(_, b)| b.len()).max().unwrap_or(0) {
+                ordered.extend(bands.iter().filter_map(|(_, band)| band.get(rank).copied()));
+            }
+            'boundaries: for (_, p, inward) in ordered {
+                for inset in [
+                    world.movement.profile.radius * 0.5,
+                    world.movement.profile.radius,
+                ] {
+                    if samples >= boundary_limit {
+                        truncated = true;
+                        break 'boundaries;
+                    }
+                    let p = std::array::from_fn(|i| p[i] + inward[i] * inset);
+                    if let Some(p) = optional_proof(world.standing_foot(p), &mut truncated)? {
+                        let before = graph.points.len();
+                        graph.node(p);
+                        if graph.points.len() > before {
+                            samples += 1;
                         }
                     }
                 }
@@ -1694,6 +1827,64 @@ fn solve_world(
         graph.action_ids.insert(id.into());
         known.push(c.clone());
     }
+    if stage >= 1 {
+        for pair in array(&config["catalogWalks"]) {
+            let a = point(&pair[0])?;
+            let b = point(&pair[1])?;
+            let proof = world.probe_ground(a, b).and_then(|probe| match probe {
+                crate::world::GroundProbe::Supported(path) => Ok(Some(path)),
+                crate::world::GroundProbe::Rejected(_) => world.ground_path(a, b),
+            });
+            if let Some(path) = optional_proof(proof, &mut truncated)?
+                && distance(path.points[0], a) <= 1e-5
+                && distance(*path.points.last().unwrap(), b) <= 1e-5
+            {
+                let from = graph.anchor(a);
+                let to = graph.anchor(b);
+                graph.edge(
+                    from,
+                    to,
+                    Segment {
+                        mode: "walk".into(),
+                        times: walk_times(&path.points, speed),
+                        points: path.points,
+                        ..Default::default()
+                    },
+                    false,
+                    None,
+                );
+            }
+        }
+    }
+    if std::env::var_os("GANGLIA_PROFILE").is_some()
+        && stage >= 1
+        && config["catalogTraining"] != true
+    {
+        let mut reached = vec![false; graph.points.len()];
+        let mut pending = Vec::new();
+        for &(id, _, _, _) in &seeds {
+            reached[id] = true;
+            pending.push(id);
+        }
+        let mut cursor = 0;
+        while cursor < pending.len() {
+            let id = pending[cursor];
+            cursor += 1;
+            for edge in &graph.edges[id] {
+                if !reached[edge.to] {
+                    reached[edge.to] = true;
+                    pending.push(edge.to);
+                }
+            }
+        }
+        eprintln!(
+            "{}",
+            json!({"native":"search","phase":"prepared-connectivity",
+            "actions":known.len(),"requestedActions":array(&config["catalogConnections"]).len(),
+            "walks":array(&config["catalogWalks"]).len(),"nodes":graph.points.len(),
+            "reachable":pending.len(),"goalReachable":targets.iter().any(|&i|reached[i])})
+        );
+    }
     let mut incoming_attempts = 0;
     if config["catalogTraining"] == true {
         let goal_points = targets.iter().map(|&i| graph.points[i]).collect::<Vec<_>>();
@@ -1750,6 +1941,17 @@ fn solve_world(
         Vec::new()
     };
     let original_sources = action_sources.len();
+    let complete_attempt_budget = max_attempts;
+    let preparation_reserve = if config["catalogTraining"] == true {
+        max_attempts.min(max_links.saturating_mul(8))
+    } else {
+        0
+    };
+    let max_attempts = if improving {
+        attempts + max_attempts.saturating_sub(attempts).div_ceil(2)
+    } else {
+        max_attempts.saturating_sub(preparation_reserve)
+    };
     let mut target_eligible = vec![true; count];
     let mut interior_landings = std::collections::HashSet::new();
     let mut source_cursor = 0usize;
@@ -1781,7 +1983,9 @@ fn solve_world(
             // to the original supported-source count, rather than a fresh node
             // allowance per newly discovered source.
             let landing_limit = if interior_landings.len() < original_sources {
-                ((source_end - attempts) / 3).min(16)
+                ((source_end - attempts) / 3)
+                    .max(usize::from(improving))
+                    .min(16)
             } else {
                 truncated = true;
                 0
@@ -1926,6 +2130,33 @@ fn solve_world(
             }
         }
     }
+    let max_attempts = complete_attempt_budget;
+    if improving {
+        attempts += improvement::discover(
+            &mut graph,
+            world,
+            &origins,
+            goal,
+            max_attempts.saturating_sub(attempts),
+            max_links,
+            options.speed.max(options.sprint_speed),
+            &authority,
+            &mut truncated,
+        )?;
+    }
+    if config["catalogTraining"] == true {
+        attempts += improvement::prepare(
+            &mut graph,
+            world,
+            &origins,
+            goal,
+            preparation_reserve.min(max_attempts.saturating_sub(attempts)),
+            max_links,
+            options.speed.max(options.sprint_speed),
+            &authority,
+            &mut truncated,
+        )?;
+    }
     let discovery = json!({"originalSources":original_sources,"processedSources":source_cursor,
         "queuedSources":action_sources.len(),"pendingSources":action_sources.len()-source_cursor,
         "interiorLandings":interior_landings.len(),"maxInteriorLandings":original_sources});
@@ -1948,10 +2179,36 @@ fn solve_world(
             "diagnostics":{"truncated":truncated,"candidateAttempts":attempts,
                 "discovery":discovery,"groundProbes":ground_probes}}));
     }
+    if improving {
+        let before = graph.points.len();
+        let ids = graph.retain_connections();
+        for seed in &mut seeds {
+            seed.0 = ids[seed.0];
+        }
+        for target in &mut targets {
+            *target = ids[*target];
+        }
+        for waypoint in &mut waypoint_nodes {
+            *waypoint = ids[*waypoint];
+        }
+        supported_paths = supported_paths
+            .into_iter()
+            .filter_map(|((a, b), path)| {
+                (ids[a] != usize::MAX && ids[b] != usize::MAX).then_some(((ids[a], ids[b]), path))
+            })
+            .collect();
+        if std::env::var_os("GANGLIA_PROFILE").is_some() {
+            eprintln!(
+                "{}",
+                json!({"native":"search","phase":"candidate-pool",
+                "candidates":before,"retained":graph.points.len()})
+            );
+        }
+    }
     profile("actions", &started, attempts);
     let max_expanded = budget(&movement["locomotion"]["search"], "maxExpanded", 100_000)?;
     let mut arena = Vec::<Label>::new();
-    let mut rows = vec![Vec::<usize>::new(); graph.points.len()];
+    let mut rows = vec![Frontier::default(); graph.points.len()];
     let mut queue = BinaryHeap::new();
     let mut initial_labels = Vec::new();
     for (node, origin, cost, entry) in seeds {
@@ -2037,19 +2294,36 @@ fn solve_world(
             .max(1e-6)
             * largest_multiplier,
     )?;
+    // Once a complete route exists, bias bounded improvement work toward the
+    // goal more strongly. Initial feasibility and carried resource-state search
+    // retain their ordinary order. Pruning still uses unweighted lower bounds.
+    let weight = if improving && max_candidates > 0 {
+        2.
+    } else {
+        1.5
+    };
+    let priorities = estimates
+        .iter()
+        .map(|cost| cost * weight)
+        .collect::<Vec<_>>();
     let mut walking_phases = Vec::new();
     let mut unexplored_detours = 0usize;
     // Known-action lookup starts with direct walks. Connected catalog chains
     // then admit lazily ordered detour proofs; incomplete prefixes leave those
     // proofs to fresh discovery. Restart labels
     // so earlier dominance cannot suppress paths introduced by the larger graph.
-    for pass in 0..if stage >= 2 || (stage == 1 && config["catalogConnected"] == true) {
+    let prepared = stage >= 1 && !improving && !array(&config["catalogWalks"]).is_empty();
+    let passes = if stage >= 2 || (stage == 1 && config["catalogConnected"] == true) {
         2
     } else {
         1
-    } {
-        let direct_only = stage >= 1 && pass == 0;
-        let phase = if direct_only {
+    };
+    for pass in 0..passes + usize::from(prepared) {
+        let prepared_only = prepared && pass == 0;
+        let direct_only = stage >= 1 && pass == usize::from(prepared);
+        let phase = if prepared_only {
+            "prepared"
+        } else if direct_only {
             "direct"
         } else if stage >= 1 {
             "detours"
@@ -2069,14 +2343,15 @@ fn solve_world(
                 &mut arena,
                 &mut rows,
                 &mut queue,
-                &estimates,
+                &priorities,
                 max_labels,
                 &mut truncated,
             );
         }
-        let mut walked = vec![false; graph.points.len()];
+        let mut walked_costs = vec![f64::INFINITY; graph.points.len()];
         let mut ground_jobs = BinaryHeap::<GroundJob>::new();
-        let mut queued_pairs = std::collections::HashSet::new();
+        let mut queued_pairs = std::collections::HashMap::new();
+        let mut rejected_pairs = std::collections::HashSet::new();
         let mut jobs_proved = 0usize;
         let mut jobs_rejected = 0usize;
         loop {
@@ -2085,19 +2360,25 @@ fn solve_world(
                 queue.pop();
             }
             let next_label_cost = queue.peek().map_or(f64::INFINITY, |item| item.cost);
-            // The caller already owns a feasible route. More expensive optimistic
-            // labels/jobs cannot improve it; retain the caller's incumbent.
+            // Unknown walking proofs compete with resource labels using their
+            // optimistic travel cost. Prove only work that reaches the frontier.
             let cost_limit = config["costLimit"].as_f64().unwrap_or(f64::INFINITY);
-            if next_label_cost.min(ground_jobs.peek().map_or(f64::INFINITY, |j| j.lower_bound))
-                >= cost_limit
-            {
+            if queue.is_empty() && ground_jobs.is_empty() {
                 break;
             }
             if ground_jobs
                 .peek()
-                .is_some_and(|job| job.lower_bound <= next_label_cost)
+                .is_some_and(|job| job.priority <= next_label_cost)
             {
                 let job = ground_jobs.pop().unwrap();
+                let pair = (job.from, job.to);
+                if queued_pairs.get(&pair) != Some(&job.source_cost) {
+                    continue;
+                }
+                queued_pairs.remove(&pair);
+                if job.lower_bound >= cost_limit {
+                    continue;
+                }
                 ground_attempts += 1;
                 let p = graph.points[job.from];
                 let q = graph.points[job.to];
@@ -2113,7 +2394,18 @@ fn solve_world(
                         "expanded":expanded,"proved":jobs_proved,"rejected":jobs_rejected})
                     );
                 }
-                let path = geometry.path(p, q).filter(|points| {
+                let path = if direct_only {
+                    match optional_proof(world.probe_ground(p, q).map(Some), &mut truncated)? {
+                        Some(crate::world::GroundProbe::Supported(path)) => Some(path.points),
+                        Some(crate::world::GroundProbe::Rejected(_)) | None => {
+                            unexplored_detours += 1;
+                            None
+                        }
+                    }
+                } else {
+                    geometry.path(p, q)
+                }
+                .filter(|points| {
                     points.first().is_some_and(|a| distance(*a, p) <= 1e-5)
                         && points.last().is_some_and(|b| distance(*b, q) <= 1e-5)
                 });
@@ -2127,6 +2419,7 @@ fn solve_world(
                     );
                 }
                 let Some(points) = path else {
+                    rejected_pairs.insert(pair);
                     jobs_rejected += 1;
                     continue;
                 };
@@ -2159,7 +2452,7 @@ fn solve_world(
                             &mut arena,
                             &mut rows,
                             &mut queue,
-                            &estimates,
+                            &priorities,
                             max_labels,
                             &mut truncated,
                         );
@@ -2174,6 +2467,9 @@ fn solve_world(
                 continue;
             }
             let label = arena[item.label].clone();
+            if label.cost + estimates[label.node] >= cost_limit {
+                continue;
+            }
             if label.stage == waypoints.len()
                 && goal_at(
                     graph.points[label.node],
@@ -2214,15 +2510,15 @@ fn solve_world(
                             &mut arena,
                             &mut rows,
                             &mut queue,
-                            &estimates,
+                            &priorities,
                             max_labels,
                             &mut truncated,
                         );
                     }
                 }
             }
-            if !walked[label.node] {
-                walked[label.node] = true;
+            if !prepared_only && label.cost < walked_costs[label.node] {
+                walked_costs[label.node] = label.cost;
                 let p = graph.points[label.node];
                 // Ground successors are materialized only from reached action nodes.
                 // Resource labels reuse the same physical path proof without sharing
@@ -2240,19 +2536,27 @@ fn solve_world(
                     {
                         continue;
                     }
-                    if !direct_only && stage >= 1 && !supported_paths.contains_key(&(label.node, b))
-                    {
-                        if queued_pairs.insert((label.node, b)) {
-                            let source_cost = rows[label.node]
-                                .iter()
-                                .copied()
-                                .filter(|&i| arena[i].active)
-                                .map(|i| arena[i].cost)
-                                .fold(f64::INFINITY, f64::min);
-                            // Endpoint admission allows 1e-5 at either end;
-                            // subtract it so normalization cannot raise the bound.
+                    if stage >= 1 && !supported_paths.contains_key(&(label.node, b)) {
+                        let pair = (label.node, b);
+                        if rejected_pairs.contains(&pair) {
+                            continue;
+                        }
+                        let source_cost = rows[label.node]
+                            .iter()
+                            .copied()
+                            .filter(|&i| arena[i].active)
+                            .map(|i| arena[i].cost)
+                            .fold(f64::INFINITY, f64::min);
+                        let queued = queued_pairs.entry(pair).or_insert(f64::INFINITY);
+                        if source_cost < *queued {
+                            *queued = source_cost;
+                            // Geometry is shared across resource labels. A later
+                            // cheaper entry reprices pending proof work; completed
+                            // proofs still relax every active source state.
                             let travel = (distance(p, q) - 2e-5).max(0.) / maximum_walk_speed;
                             ground_jobs.push(GroundJob {
+                                source_cost,
+                                priority: source_cost + weight * (travel + estimates[b]),
                                 lower_bound: source_cost + travel + estimates[b],
                                 from: label.node,
                                 to: b,
@@ -2264,22 +2568,7 @@ fn solve_world(
                         Some(points.clone())
                     } else {
                         ground_attempts += 1;
-                        if direct_only {
-                            match optional_proof(
-                                world.probe_ground(p, q).map(Some),
-                                &mut truncated,
-                            )? {
-                                Some(crate::world::GroundProbe::Supported(path)) => {
-                                    Some(path.points)
-                                }
-                                Some(crate::world::GroundProbe::Rejected(_)) | None => {
-                                    unexplored_detours += 1;
-                                    None
-                                }
-                            }
-                        } else {
-                            geometry.path(p, q)
-                        }
+                        geometry.path(p, q)
                     };
                     if let Some(points) = path {
                         if points.first().is_none_or(|a| distance(*a, p) > 1e-5)
@@ -2316,7 +2605,7 @@ fn solve_world(
                         &mut arena,
                         &mut rows,
                         &mut queue,
-                        &estimates,
+                        &priorities,
                         max_labels,
                         &mut truncated,
                     );
@@ -2335,9 +2624,9 @@ fn solve_world(
                 "result":walking_phases.last()})
             );
         }
-        truncated |= direct_only && unexplored_detours > 0;
+        truncated |= direct_only && (unexplored_detours > 0 || !ground_jobs.is_empty());
         if winner.is_some() {
-            // Returning the direct graph's winner avoids all detour proofs.
+            // A proved sparse/direct graph winner avoids detour proofs.
             // Unexplored alternatives may offer a cheaper route.
             break;
         }
@@ -2517,16 +2806,43 @@ fn budget(v: &Value, key: &str, default: usize) -> Result<usize, String> {
             .ok_or_else(|| format!("invalid {key} budget"))
     }
 }
+// TS resource search indexes its frontier by continuation state. Use the
+// existing energy/delay equivalence cells to narrow comparisons, then retain
+// the full continuation check inside each bucket. No dominance rule changes.
+#[derive(Clone, Default)]
+struct Frontier {
+    labels: Vec<usize>,
+    buckets: std::collections::HashMap<(i64, i64), Vec<usize>>,
+}
+impl Frontier {
+    fn iter(&self) -> std::slice::Iter<'_, usize> {
+        self.labels.iter()
+    }
+    fn clear(&mut self) {
+        self.labels.clear();
+        self.buckets.clear();
+    }
+}
+
 fn insert(
     candidate: Label,
     arena: &mut Vec<Label>,
-    rows: &mut [Vec<usize>],
+    rows: &mut [Frontier],
     queue: &mut BinaryHeap<Queue>,
-    estimates: &[f64],
+    priorities: &[f64],
     max: usize,
     truncated: &mut bool,
 ) {
-    let row = &mut rows[candidate.node];
+    let frontier = &mut rows[candidate.node];
+    let row = &mut frontier.labels;
+    let bucket = frontier
+        .buckets
+        .entry((
+            (candidate.state.energy / 0.25).floor() as i64,
+            (candidate.state.delay / 0.05).floor() as i64,
+        ))
+        .or_default();
+    bucket.retain(|&i| arena[i].active);
     let comparable = |a: &Label, b: &Label| {
         a.stage == b.stage
             && a.boost == b.boost
@@ -2535,18 +2851,25 @@ fn insert(
             && locomotion::continuation(a.state, b.state)
     };
     let dominates = |a: &Label, b: &Label| {
-        // Automatic sprint restart makes extra energy non-monotone. Only an
-        // identical resource continuation can replace a more costly prefix.
-        a.cost <= b.cost + EPS && a.state.energy == b.state.energy && a.state.delay == b.state.delay
+        // This is bounded approximate search, not a monotonic-energy proof.
+        // Keep the real selected state; quantization only limits which prefixes
+        // compete for the frontier. Every returned route is replayed exactly.
+        a.cost <= b.cost + EPS
+            && (a.state.energy / 0.25).floor() == (b.state.energy / 0.25).floor()
+            && (a.state.delay / 0.05).floor() == (b.state.delay / 0.05).floor()
     };
-    if row.iter().any(|&i| {
+    let approximate =
+        |a: &Label, b: &Label| a.state.energy != b.state.energy || a.state.delay != b.state.delay;
+    if let Some(&i) = bucket.iter().find(|&&i| {
         arena[i].active && comparable(&arena[i], &candidate) && dominates(&arena[i], &candidate)
     }) {
+        *truncated |= approximate(&arena[i], &candidate);
         return;
     }
-    for &i in row.iter() {
+    for &i in bucket.iter() {
         if arena[i].active && comparable(&candidate, &arena[i]) && dominates(&candidate, &arena[i])
         {
+            *truncated |= approximate(&candidate, &arena[i]);
             arena[i].active = false;
         }
     }
@@ -2556,14 +2879,20 @@ fn insert(
     row.push(index);
     if row.len() > max {
         *truncated = true;
-        row.sort_by(|&a, &b| arena[a].cost.total_cmp(&arena[b].cost));
         let half = max / 2;
-        row[half..].sort_by(|&a, &b| {
+        // Only membership matters: retain half by cost, then fill the rest
+        // by energy. Linear selection avoids sorting the whole capped row for
+        // every candidate. Arena order resolves otherwise equal priorities.
+        row.select_nth_unstable_by(half, |&a, &b| {
+            arena[a].cost.total_cmp(&arena[b].cost).then(a.cmp(&b))
+        });
+        row[half..].select_nth_unstable_by(max - half, |&a, &b| {
             arena[b]
                 .state
                 .energy
                 .total_cmp(&arena[a].state.energy)
                 .then(arena[a].cost.total_cmp(&arena[b].cost))
+                .then(a.cmp(&b))
         });
         for &i in &row[max..] {
             arena[i].active = false;
@@ -2571,8 +2900,9 @@ fn insert(
         row.truncate(max);
     }
     if arena[index].active {
+        bucket.push(index);
         queue.push(Queue {
-            cost: arena[index].cost + estimates[arena[index].node],
+            cost: arena[index].cost + priorities[arena[index].node],
             label: index,
         });
     } else {

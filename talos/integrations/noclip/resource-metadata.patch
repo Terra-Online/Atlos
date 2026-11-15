@@ -1,5 +1,81 @@
+diff --git a/packages/viewer/src/package/package-source.test.ts b/packages/viewer/src/package/package-source.test.ts
+index d1c65061..4b140ce5 100644
+--- a/packages/viewer/src/package/package-source.test.ts
++++ b/packages/viewer/src/package/package-source.test.ts
+@@ -3,7 +3,7 @@ import { it } from 'node:test';
+ 
+ import { CORE_ARCHIVE } from '@endfield-noclip/package-format/manifest';
+ 
+-import { fileListSource, PackageChangedError, parseByteRanges } from './package-source.ts';
++import { fileListSource, httpSource, PackageChangedError, parseByteRanges } from './package-source.ts';
+ 
+ /** a file as a directory input lists it (Node's `File` has no `webkitRelativePath`) */
+ const picked = (bytes: Uint8Array<ArrayBuffer>, name: string): File =>
+@@ -61,3 +61,62 @@ it('splits a multipart/byteranges body by its parts’ content ranges', () => {
+ 	);
+ 	assert.throws(() => parseByteRanges(body.subarray(0, body.length - 12).slice(), 'b'), /malformed/);
+ });
++
++it('keeps injected transport metadata for multipart reads and their single-range fallback', async () => {
++	const previous = Object.getOwnPropertyDescriptor(globalThis, 'location');
++	Object.defineProperty(globalThis, 'location', {
++		configurable: true,
++		value: { href: 'https://viewer.test/' },
++	});
++	try {
++		for (const multipart of [true, false]) {
++			const calls: { range: string | null; content: unknown }[] = [];
++			const source = httpSource('https://data.test/map02/', async (url, init, metadata) => {
++				assert.equal(url.href, 'https://data.test/map02/shard.czar');
++				const range = new Headers(init.headers).get('range');
++				calls.push({ range, content: metadata?.content });
++				if (range === 'bytes=0-1,4-5') {
++					if (!multipart) {
++						return new Response('abcdef');
++					}
++					return new Response(
++						'--b\r\nContent-Range: bytes 0-1/6\r\n\r\nab\r\n--b\r\nContent-Range: bytes 4-5/6\r\n\r\nef\r\n--b--\r\n',
++						{
++							status: 206,
++							headers: { 'content-type': 'multipart/byteranges; boundary=b' },
++						},
++					);
++				}
++				return new Response(range === 'bytes=0-1' ? 'ab' : 'ef', {
++					status: 206,
++					headers: { 'content-range': range === 'bytes=0-1' ? 'bytes 0-1/6' : 'bytes 4-5/6' },
++				});
++			});
++			const parts = await source.readRanges('shard.czar', [
++				{ offset: 0, length: 2, fileSize: 6, content: [{ kind: 'geometry', bytes: 2 }] },
++				{ offset: 4, length: 2, fileSize: 6, content: [{ kind: 'texture', bytes: 2 }] },
++			]);
++			assert.deepEqual(
++				parts.map((bytes) => new TextDecoder().decode(bytes)),
++				['ab', 'ef'],
++			);
++			assert.deepEqual(calls[0].content, [
++				{ kind: 'geometry', bytes: 2 },
++				{ kind: 'texture', bytes: 2 },
++			]);
++			assert.equal(calls.length, multipart ? 1 : 3);
++			if (!multipart) {
++				assert.deepEqual(
++					calls.slice(1).map((call) => call.content),
++					[[{ kind: 'geometry', bytes: 2 }], [{ kind: 'texture', bytes: 2 }]],
++				);
++			}
++		}
++	} finally {
++		if (previous) {
++			Object.defineProperty(globalThis, 'location', previous);
++		} else {
++			Reflect.deleteProperty(globalThis, 'location');
++		}
++	}
++});
 diff --git a/packages/viewer/src/package/package-source.ts b/packages/viewer/src/package/package-source.ts
-index d80af09b..7842e2d8 100644
+index d80af09b..9f8a9991 100644
 --- a/packages/viewer/src/package/package-source.ts
 +++ b/packages/viewer/src/package/package-source.ts
 @@ -44,6 +44,8 @@ export interface ByteRange {
@@ -7,103 +83,89 @@ index d80af09b..7842e2d8 100644
  	/** the whole file's size in the opened package's manifest */
  	fileSize: number;
 +	/** Stored blob bytes by semantic kind; excludes coalescing gaps and HTTP overhead. */
-+	content?: {kind:string;bytes:number}[];
++	content?: { kind: string; bytes: number }[];
  }
  
  /**
-@@ -145,10 +147,10 @@ export const parseByteRanges = (body: Uint8Array<ArrayBuffer>, boundary: string)
+@@ -145,10 +147,13 @@ export const parseByteRanges = (body: Uint8Array<ArrayBuffer>, boundary: string)
   * @returns a source issuing one HTTP range request per read, or per several where the server answers
   *   multi-range requests
   */
 -export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): PackageSource => {
-+export const httpSource = (baseUrl: string, fetcher: (url:URL,init:RequestInit,range?:ByteRange)=>Promise<Response> = fetch): PackageSource => {
++export const httpSource = (
++	baseUrl: string,
++	fetcher: (url: URL, init: RequestInit, range?: Pick<ByteRange, 'content'>) => Promise<Response> = fetch,
++): PackageSource => {
  	const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
 -	const fetchOk = async (path: string, init: RequestInit): Promise<Response> => {
 -		const response = await fetcher(new URL(path, new URL(base, location.href)), init);
-+	const fetchOk = async (path: string, init: RequestInit, range?:ByteRange): Promise<Response> => {
++	const fetchOk = async (path: string, init: RequestInit, range?: ByteRange): Promise<Response> => {
 +		const response = await fetcher(new URL(path, new URL(base, location.href)), init, range);
  		if (!response.ok) {
  			throw new Error(`${path}: HTTP ${response.status}`);
  		}
-@@ -172,12 +174,12 @@ export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): Pack
+@@ -172,12 +177,16 @@ export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): Pack
  			if (multiRange === 'refused' || ranges.length < 2) {
  				return single();
  			}
 -			const response = await fetch(new URL(path, new URL(base, location.href)), {
-+			const response = await fetcher(new URL(path, new URL(base, location.href)), {
- 				signal,
- 				headers: {
- 					range: `bytes=${ranges.map(({ offset, length }) => `${offset}-${offset + length - 1}`).join(',')}`,
+-				signal,
+-				headers: {
+-					range: `bytes=${ranges.map(({ offset, length }) => `${offset}-${offset + length - 1}`).join(',')}`,
++			const response = await fetcher(
++				new URL(path, new URL(base, location.href)),
++				{
++					signal,
++					headers: {
++						range: `bytes=${ranges.map(({ offset, length }) => `${offset}-${offset + length - 1}`).join(',')}`,
++					},
  				},
 -			}).catch((err: unknown) => {
-+			}, { offset: ranges[0].offset, length: ranges.reduce((sum, r) => sum + r.length, 0), fileSize: ranges[0].fileSize, content: ranges.flatMap(r => r.content ?? []) }).catch((err: unknown) => {
++				{ content: ranges.flatMap((range) => range.content ?? []) },
++			).catch((err: unknown) => {
  				// from a server that has answered in parts, a failure is the network's
  				if (multiRange === 'answered' || signal?.aborted === true) {
  					throw err;
-@@ -216,11 +218,12 @@ export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): Pack
+@@ -216,11 +225,16 @@ export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): Pack
  				return part.bytes.slice(offset - part.offset, offset - part.offset + length);
  			});
  		},
 -		async readRange(path, { offset, length, fileSize }, signal) {
+-			const response = await fetchOk(path, {
+-				signal,
+-				headers: { range: `bytes=${offset}-${offset + length - 1}` },
+-			});
 +		async readRange(path, range, signal) {
 +			const { offset, length, fileSize } = range;
- 			const response = await fetchOk(path, {
- 				signal,
- 				headers: { range: `bytes=${offset}-${offset + length - 1}` },
--			});
-+			},range);
++			const response = await fetchOk(
++				path,
++				{
++					signal,
++					headers: { range: `bytes=${offset}-${offset + length - 1}` },
++				},
++				range,
++			);
  			const bytes = new Uint8Array(await response.arrayBuffer());
  			const partial = response.status === 206;
  			// `bytes <first>-<last>/<size>`; the size may be `*` (unknown)
 diff --git a/packages/viewer/src/streaming/stream-manager.ts b/packages/viewer/src/streaming/stream-manager.ts
-index 4e6a0616..17aaf2a1 100644
+index 4e6a0616..92723ae3 100644
 --- a/packages/viewer/src/streaming/stream-manager.ts
 +++ b/packages/viewer/src/streaming/stream-manager.ts
-@@ -542,7 +542,7 @@ export class StreamManager {
+@@ -542,7 +542,15 @@ export class StreamManager {
  		this.#package.source
  			.readRanges(
  				shard.path,
 -				reads.map(({ start, end }) => ({ offset: start, length: end - start, fileSize: shard.archiveSize })),
-+				reads.map(({ start, end, members }) => ({ offset: start, length: end - start, fileSize: shard.archiveSize, content: members.map(item => { const r = this.#shardRange(item.blob); return { kind: RESIDENT_KINDS[item.kind] ?? 'other', bytes: r.end - r.start }; }) })),
++				reads.map(({ start, end, members }) => ({
++					offset: start,
++					length: end - start,
++					fileSize: shard.archiveSize,
++					content: members.map((item) => {
++						const range = this.#shardRange(item.blob);
++						return { kind: RESIDENT_KINDS[item.kind] ?? 'other', bytes: range.end - range.start };
++					}),
++				})),
  				request.abort.signal,
  			)
  			.then((parts) => {
-diff --git a/packages/viewer/src/package/resource-metadata.test.ts b/packages/viewer/src/package/resource-metadata.test.ts
-new file mode 100644
---- /dev/null
-+++ b/packages/viewer/src/package/resource-metadata.test.ts
-@@ -0,0 +1,34 @@
-+import assert from 'node:assert/strict';
-+import { it } from 'node:test';
-+
-+import { httpSource, type ByteRange } from './package-source.ts';
-+
-+it('routes multipart reads through the host transport with all semantic bytes', async () => {
-+	const previous = Object.getOwnPropertyDescriptor(globalThis, 'location');
-+	Object.defineProperty(globalThis, 'location', { configurable: true, value: { href: 'https://example.test/' } });
-+	try {
-+		const calls: { header: string | null; range: ByteRange | undefined }[] = [];
-+		const source = httpSource('https://example.test/packages/', async (_url, init, range) => {
-+			calls.push({ header: new Headers(init.headers).get('range'), range });
-+			return new Response(
-+				'--parts\r\nContent-Range: bytes 0-1/8\r\n\r\nab\r\n' +
-+				'--parts\r\nContent-Range: bytes 6-7/8\r\n\r\ngh\r\n--parts--\r\n',
-+				{ status: 206, headers: { 'content-type': 'multipart/byteranges; boundary=parts' } },
-+			);
-+		});
-+		const parts = await source.readRanges('shard.czar', [
-+			{ offset: 0, length: 2, fileSize: 8, content: [{ kind: 'geometry', bytes: 2 }] },
-+			{ offset: 6, length: 2, fileSize: 8, content: [{ kind: 'texture', bytes: 2 }] },
-+		]);
-+		assert.deepEqual(parts.map(bytes => new TextDecoder().decode(bytes)), ['ab', 'gh']);
-+		assert.equal(calls.length, 1);
-+		assert.equal(calls[0].header, 'bytes=0-1,6-7');
-+		assert.deepEqual(calls[0].range?.content, [
-+			{ kind: 'geometry', bytes: 2 },
-+			{ kind: 'texture', bytes: 2 },
-+		]);
-+	} finally {
-+		if (previous) Object.defineProperty(globalThis, 'location', previous);
-+		else Reflect.deleteProperty(globalThis, 'location');
-+	}
-+});

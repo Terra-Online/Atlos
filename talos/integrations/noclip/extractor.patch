@@ -1390,10 +1390,10 @@ index 00000000..86219bf7
 +};
 diff --git a/packages/extractor/src/commands/oem-views.ts b/packages/extractor/src/commands/oem-views.ts
 new file mode 100644
-index 00000000..6754bd7a
+index 00000000..a38bf5ee
 --- /dev/null
 +++ b/packages/extractor/src/commands/oem-views.ts
-@@ -0,0 +1,426 @@
+@@ -0,0 +1,429 @@
 +import { createHash } from 'node:crypto';
 +import { open, readFile, mkdir, writeFile, rename, link } from 'node:fs/promises';
 +import { dirname, join, resolve } from 'node:path';
@@ -1560,6 +1560,9 @@ index 00000000..6754bd7a
 +			label: scene,
 +			async readFile(path) {
 +				return Uint8Array.from(await readFile(join(root, entry.path, path)));
++			},
++			readRanges(path, ranges, signal) {
++				return Promise.all(ranges.map((range) => source.readRange(path, range, signal)));
 +			},
 +			async readRange(path, range, signal) {
 +				signal?.throwIfAborted();
@@ -9236,10 +9239,10 @@ index 00000000..8bf497bc
 +};
 diff --git a/packages/extractor/src/game/photo-effects.ts b/packages/extractor/src/game/photo-effects.ts
 new file mode 100644
-index 00000000..ac4ff889
+index 00000000..eedcf100
 --- /dev/null
 +++ b/packages/extractor/src/game/photo-effects.ts
-@@ -0,0 +1,169 @@
+@@ -0,0 +1,170 @@
 +/* oxlint-disable no-await-in-loop -- bounded prefab traversal and conversion */
 +import { UnityClass } from '@endfield-noclip/formats/unity/serialized-file';
 +import { arrayField, asPPtr, isObject, pptrField } from '@endfield-noclip/formats/unity/values';
@@ -9282,6 +9285,7 @@ index 00000000..ac4ff889
 +		viewPose: null,
 +		particleQuad: quad,
 +		locked: false,
++		effectLod: 'camera',
 +	})) {
 +		const particles = draw.particles;
 +		if (
@@ -10797,7 +10801,7 @@ index 89c08f1c..18641769 100644
  		return value === undefined ? null : stripMarkup(value);
 diff --git a/packages/extractor/src/game/static-supports.test.ts b/packages/extractor/src/game/static-supports.test.ts
 new file mode 100644
-index 00000000..4ab7babf
+index 00000000..29964c51
 --- /dev/null
 +++ b/packages/extractor/src/game/static-supports.test.ts
 @@ -0,0 +1,42 @@
@@ -10833,7 +10837,7 @@ index 00000000..4ab7babf
 +test('looping transform animation survives JSON as authored-rate samples', () => {
 +    const pose: PrefabPose = { key: 'wheel:state=1', active: new Map(), clips: [{ animator: 'WheelRoot',
 +        transforms: new Map(), active: new Map(), materials: new Map(), renderers: new Map(),
-+        motion: { duration: 1, sampleRate: 2, loops: true, paths: [17], sample: time =>
++        motion: { duration: 1, sampleRate: 2, loops: true, paths: [17], materials: null, sample: time =>
 +            new Map([[17, [{ kind: 'position', value: [time, 0, 0] }]]]) },
 +    }] };
 +    const motion = JSON.parse(JSON.stringify(supportMotion(pose)));

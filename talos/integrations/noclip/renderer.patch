@@ -266,10 +266,10 @@ index 00000000..ed61d7ae
 +export { useViewerState } from './ui/use-viewer.ts';
 +export { Panel, PanelProvider, type PanelProps } from './ui/panel.tsx';
 diff --git a/packages/viewer/src/looks/lit-look.test.ts b/packages/viewer/src/looks/lit-look.test.ts
-index b06a5f9d..065149c7 100644
+index 1eeec747..c65cb62d 100644
 --- a/packages/viewer/src/looks/lit-look.test.ts
 +++ b/packages/viewer/src/looks/lit-look.test.ts
-@@ -544,3 +544,23 @@ test('foliage: leaves and grass fill the foliage rows, and surfaces keeping lit
+@@ -577,3 +577,23 @@ test('foliage: leaves and grass fill the foliage rows, and surfaces keeping lit
  	assert.deepEqual(row(grass, LookRow.foliage2), [0.1, 3, 4, 0.25].map(Math.fround));
  	assert.equal(grass.params[LookRow.detail2 + 3], 0);
  });
@@ -294,7 +294,7 @@ index b06a5f9d..065149c7 100644
 +	);
 +});
 diff --git a/packages/viewer/src/looks/look.ts b/packages/viewer/src/looks/look.ts
-index 9d5d4367..59f653a9 100644
+index c94e2da8..b9bf0837 100644
 --- a/packages/viewer/src/looks/look.ts
 +++ b/packages/viewer/src/looks/look.ts
 @@ -124,6 +124,8 @@ export interface MaterialLook {
@@ -306,7 +306,7 @@ index 9d5d4367..59f653a9 100644
  	/** the faces the game culls, for unmirrored instances */
  	cull: MaterialCull;
  	/** whether the material draws into shadow maps */
-@@ -357,6 +359,7 @@ export const emptyLook = ({ drawn }: { drawn: boolean }): MaterialLook => ({
+@@ -360,6 +362,7 @@ export const emptyLook = ({ drawn }: { drawn: boolean }): MaterialLook => ({
  	drawn,
  	unsupported: false,
  	queue: 'opaque',
@@ -315,7 +315,7 @@ index 9d5d4367..59f653a9 100644
  	castsShadows: true,
  	...emptySlots(),
 diff --git a/packages/viewer/src/looks/material-looks.ts b/packages/viewer/src/looks/material-looks.ts
-index ba1d2afc..4439a396 100644
+index 8235e112..8d0461f6 100644
 --- a/packages/viewer/src/looks/material-looks.ts
 +++ b/packages/viewer/src/looks/material-looks.ts
 @@ -107,7 +107,7 @@ const stencilMaskLook = (mask: StencilMaskSurface, cull: MaterialCull): Material
@@ -327,7 +327,7 @@ index ba1d2afc..4439a396 100644
  	// a material that didn't convert (its reason is in debug/assets.json) has nothing to draw by
  	if (entry.status !== 'ready') {
  		return unsupportedLook();
-@@ -272,6 +272,31 @@ const surfaceLook = (entry: ReadyMaterial): MaterialLook => {
+@@ -279,6 +279,31 @@ const surfaceLook = (entry: ReadyMaterial): MaterialLook => {
   * @param materials the package's material table
   * @returns a look per material id
   */
@@ -359,7 +359,7 @@ index ba1d2afc..4439a396 100644
  export const materialLooks = (materials: MaterialTable): MaterialLook[] =>
  	materials.entries.map(materialLook);
  
-@@ -341,6 +366,7 @@ const effectMaterialLook = (
+@@ -348,6 +373,7 @@ const effectMaterialLook = (
  	drawn: true,
  	unsupported: false,
  	queue,
@@ -441,10 +441,10 @@ index 00000000..a4b86d04
 +});
 diff --git a/packages/viewer/src/package/decode-data.ts b/packages/viewer/src/package/decode-data.ts
 new file mode 100644
-index 00000000..bb28ebe5
+index 00000000..d0fd0ba8
 --- /dev/null
 +++ b/packages/viewer/src/package/decode-data.ts
-@@ -0,0 +1,436 @@
+@@ -0,0 +1,447 @@
 +import { BlobCodec } from '@endfield-noclip/package-format/blobs';
 +import {
 +	decodeGeometryBlob,
@@ -466,7 +466,8 @@ index 00000000..bb28ebe5
 +
 +import { MeshoptDecoder } from 'meshoptimizer/decoder';
 +
-+import { buildInstanceRows } from '../content/instance-rows.ts';
++import { buildInstanceRows, movingRows } from '../content/instance-rows.ts';
++import { buildRowBounds } from '../streaming/row-groups.ts';
 +
 +import type {
 +	DecodedGeometry,
@@ -836,9 +837,19 @@ index 00000000..bb28ebe5
 +		}
 +		case 'instances': {
 +			const built = buildInstanceRows(decodeInstanceBlock(raw), request.rowKinds ?? []);
++			const bounds = buildRowBounds({
++				rowsF32: new Float32Array(built.rows.buffer),
++				cull: built.cull,
++				runs: built.runs,
++				moving: movingRows(built.spins, built.rides),
++			});
 +			return {
-+				response: { id: request.id, kind: 'instances', ...built },
++				response: { id: request.id, kind: 'instances', ...built, bounds },
 +				transfer: [
++					bounds.groups.buffer,
++					bounds.mirrored.buffer,
++					bounds.segments.buffer,
++					bounds.groupSegments.buffer,
 +					built.rows.buffer,
 +					built.cull.buffer,
 +					built.runs.buffer,
@@ -855,12 +866,12 @@ index 00000000..bb28ebe5
 +					...(built.rides === null
 +						? []
 +						: [
-+							built.rides.rows.buffer,
-+							built.rides.pathOf.buffer,
-+							built.rides.base.buffer,
-+							built.rides.runs.buffer,
-+							...built.rides.paths.map((path) => path.offsets.buffer),
-+						]),
++								built.rides.rows.buffer,
++								built.rides.pathOf.buffer,
++								built.rides.base.buffer,
++								built.rides.runs.buffer,
++								...built.rides.paths.map((path) => path.offsets.buffer),
++							]),
 +				],
 +			};
 +		}
@@ -909,10 +920,10 @@ index 2cac49c2..b9b132b5 100644
  		throw new Error(`zstd frame decoded to ${raw.byteLength} bytes, expected ${rawLength ?? 'more'}`);
  	}
 diff --git a/packages/viewer/src/render/frame/frame-graph.ts b/packages/viewer/src/render/frame/frame-graph.ts
-index 7e987709..157de97d 100644
+index c07bf220..f8349da0 100644
 --- a/packages/viewer/src/render/frame/frame-graph.ts
 +++ b/packages/viewer/src/render/frame/frame-graph.ts
-@@ -437,6 +437,25 @@ export const encodeFrame = (
+@@ -462,6 +462,25 @@ export const encodeFrame = (
  		outputWidth,
  		outputHeight,
  		settings: settings.post,
@@ -939,10 +950,10 @@ index 7e987709..157de97d 100644
  	return draws;
  };
 diff --git a/packages/viewer/src/render/frame/render-targets.ts b/packages/viewer/src/render/frame/render-targets.ts
-index efcd22e1..d68ef024 100644
+index d427d2ea..2a47d3e9 100644
 --- a/packages/viewer/src/render/frame/render-targets.ts
 +++ b/packages/viewer/src/render/frame/render-targets.ts
-@@ -334,7 +334,8 @@ export class RenderTargets {
+@@ -350,7 +350,8 @@ export class RenderTargets {
  		};
  		if (this.format.stencil) {
  			depth.stencilLoadOp = 'load';
@@ -953,10 +964,10 @@ index efcd22e1..d68ef024 100644
  		this.#transparentDepth = depth;
  		return depth;
 diff --git a/packages/viewer/src/render/meshes/draw-ranges.ts b/packages/viewer/src/render/meshes/draw-ranges.ts
-index 9e27118b..cbc4e1a7 100644
+index de4e23a6..2149d78f 100644
 --- a/packages/viewer/src/render/meshes/draw-ranges.ts
 +++ b/packages/viewer/src/render/meshes/draw-ranges.ts
-@@ -117,7 +117,7 @@ export const PHASES = {
+@@ -119,7 +119,7 @@ export const PHASES = {
  } as const satisfies Record<string, DrawPhase>;
  
  /** the passes that draw meshes */
@@ -965,7 +976,7 @@ index 9e27118b..cbc4e1a7 100644
  
  /** passes over the main pass's targets */
  export type SurfacePass = 'prepass' | 'main';
-@@ -146,6 +146,15 @@ export const PASS_PHASES: Record<MeshPass, readonly DrawPhase[]> = {
+@@ -158,6 +158,15 @@ export const PASS_PHASES: Record<MeshPass, readonly DrawPhase[]> = {
  	// of the scene, then those it tests behind it, then those it doesn't test
  	waterFoam: [PHASES.waterFoam, PHASES.waterFoamBehind, PHASES.waterFoamThrough],
  	shadow: [PHASES.shadowOpaque, PHASES.shadowCutout],
@@ -982,7 +993,7 @@ index 9e27118b..cbc4e1a7 100644
  
  /**
 diff --git a/packages/viewer/src/render/meshes/mesh-renderer.ts b/packages/viewer/src/render/meshes/mesh-renderer.ts
-index 982a9019..7033fc84 100644
+index 46ed020e..df6c22bb 100644
 --- a/packages/viewer/src/render/meshes/mesh-renderer.ts
 +++ b/packages/viewer/src/render/meshes/mesh-renderer.ts
 @@ -73,7 +73,17 @@ const createLookTable = (device: GPUDevice): GrowableBuffer =>
@@ -1075,7 +1086,7 @@ index 982a9019..7033fc84 100644
  		if (!bucket.castOnly && gpu === null) {
  			this.instanceCount += span.count;
  			this.triangles += (span.count * range.indexCount) / 3;
-@@ -883,6 +916,21 @@ export class MeshRenderer {
+@@ -891,6 +924,21 @@ export class MeshRenderer {
  		return this.#encode(which, pass, -1);
  	}
  
@@ -1097,7 +1108,7 @@ index 982a9019..7033fc84 100644
  	/** builds the groups of a pass's effect draws, which also bind the main pass's outputs */
  	#bindEffectGroups(which: MeshPass, inputs: EffectInputs): void {
  		for (const phase of PASS_PHASES[which]) {
-@@ -935,7 +983,7 @@ export class MeshRenderer {
+@@ -943,7 +991,7 @@ export class MeshRenderer {
  	 * encodes a pass's phases in order; nothing if any of its or its paired pass's pipelines isn't ready.
  	 * `layer` limits each draw to the rows that shadow layer draws, or is -1 for all of them
  	 */
@@ -1106,7 +1117,7 @@ index 982a9019..7033fc84 100644
  		if (this.#drawCount === 0) {
  			return 0;
  		}
-@@ -959,6 +1007,14 @@ export class MeshRenderer {
+@@ -967,6 +1015,14 @@ export class MeshRenderer {
  			material: null,
  		};
  		let draws = 0;
@@ -1121,7 +1132,7 @@ index 982a9019..7033fc84 100644
  		if (which === 'transparent') {
  			const phases = PASS_PHASES.transparent;
  			const runs = this.#sortedRuns;
-@@ -983,6 +1039,9 @@ export class MeshRenderer {
+@@ -991,6 +1047,9 @@ export class MeshRenderer {
  			const to = phase.shadow ? range.castersEnd : range.end;
  			for (let i = from; i < to; i++) {
  				const draw = this.#draws[i];
@@ -5906,29 +5917,3 @@ index d6866073..c3183a2e 100644
  	worker: {
  		format: 'es',
  	},
-diff --git a/packages/viewer/src/package/decode-data.ts b/packages/viewer/src/package/decode-data.ts
---- a/packages/viewer/src/package/decode-data.ts
-+++ b/packages/viewer/src/package/decode-data.ts
-@@ -19,7 +19,8 @@
- 
- import { MeshoptDecoder } from 'meshoptimizer/decoder';
- 
--import { buildInstanceRows } from '../content/instance-rows.ts';
-+import { buildInstanceRows, movingRows } from '../content/instance-rows.ts';
-+import { buildRowBounds } from '../streaming/row-groups.ts';
- 
- import type {
- 	DecodedGeometry,
-@@ -389,9 +390,11 @@
- 		}
- 		case 'instances': {
- 			const built = buildInstanceRows(decodeInstanceBlock(raw), request.rowKinds ?? []);
-+			const bounds = buildRowBounds({ rowsF32: new Float32Array(built.rows.buffer), cull: built.cull, runs: built.runs, moving: movingRows(built.spins, built.rides) });
- 			return {
--				response: { id: request.id, kind: 'instances', ...built },
-+				response: { id: request.id, kind: 'instances', ...built, bounds },
- 				transfer: [
-+					bounds.groups.buffer, bounds.mirrored.buffer, bounds.segments.buffer, bounds.groupSegments.buffer,
- 					built.rows.buffer,
- 					built.cull.buffer,
- 					built.runs.buffer,

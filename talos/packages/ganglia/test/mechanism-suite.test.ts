@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -250,6 +250,59 @@ test('portable roots cannot resolve outside their explicitly supplied directorie
     () => resourcePath('exports/../../config', { exports: '/data/export', retained: '/data/old' }),
     /escapes/,
   );
+});
+test('service mechanism audit preserves input bindings and leaves queries unrun', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'ganglia-service-audit-'));
+  const output = join(directory, 'report.json');
+  const suiteFile = new URL('../bench/scenes/mechanisms/suite.json', import.meta.url);
+  const bytes = await readFile(suiteFile);
+  const suite = JSON.parse(bytes.toString());
+  const selected = suite.cases[0];
+  try {
+    await writeFile(
+      join(directory, 'input-index.json'),
+      JSON.stringify({
+        suiteSha256: createHash('sha256').update(bytes).digest('hex'),
+        revision: 'audit-only',
+        source: suite.source,
+        profiles: Object.fromEntries(
+          Object.entries(suite.sources).map(([scene, value]) => [
+            scene,
+            (value as { profile: unknown }).profile,
+          ]),
+        ),
+        cases: { [selected.id]: { directory: selected.id } },
+      }),
+    );
+    const process = spawnSync(
+      globalThis.process.execPath,
+      [
+        fileURLToPath(new URL('../bench/mechanism-benchmark.ts', import.meta.url)),
+        '--audit',
+        '--adapter',
+        'ganglia-v1-ts',
+        '--data-root',
+        directory,
+        '--ids',
+        selected.id,
+        '--output',
+        output,
+      ],
+      { encoding: 'utf8' },
+    );
+    assert.equal(process.status, 1, process.stderr);
+    const report = JSON.parse(await readFile(output, 'utf8'));
+    assert.equal(report.adapter, 'ganglia-v1-ts');
+    assert.deepEqual(report.selectedIds, [selected.id]);
+    assert.equal(report.results[0].status, 'input-bound-unrun');
+    assert.deepEqual(report.preparations, []);
+    assert.equal(report.sourceUnchanged, true);
+    const binding = JSON.parse(await readFile(report.results[0].binding, 'utf8'));
+    assert.deepEqual(binding.ids, [selected.id]);
+    assert.equal(binding.inputRevision, 'audit-only');
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 test('resource scenarios are applied before preparation without changing the source policy', () => {
   const source = input(),

@@ -1,5 +1,38 @@
 # Route solver history and validation evidence
 
+## Delivery synchronization through e777af66, 2026-11-15
+
+The user authorized pushing the current strategies/progress to PR#100 and merging
+misakavan/3d-preview, then explicitly requested no comment and paused point work.
+No additional query was dispatched for delivery. Existing workers had returned;
+there were no active mechanism processes at the delivery check. The frozen progress
+remains222/266 complete native routes and44 unfinished across revisions, not a
+new full-current-source result or a matched historical-main comparison.
+
+Fetched upstream e777af66 contributes23 commits:12 Rust implementation commits,
+six diagnostic-record commits, one v119 integration and four mechanism service
+benchmark commits. Rust source/tests equal the incoming tip without local edits.
+The TS algorithm tree equals61d83990. The merge retains revision11 case definitions,
+seven original negative controls, TS circular/free-launch support, native early
+candidate capture and diagnostic provenance. Earlier source-bound results are
+not attributed to the merged commit without rerunning.
+
+The incoming service runner is preserved in mechanism-benchmark.ts and
+mechanism-service-worker.ts; benchmark:mechanisms points there. Its shared worker
+host, input index, scenario resource clock, fixed domains, training and verification
+remain available. The native physical-diagnostic entry and source-bound first/final
+route records remain intact. WorkerQueryError preserves live workers after request
+errors, alongside retained event/memory and cooperative-timeout diagnostic data.
+
+Validation: merged Ganglia format/lint/typecheck and551 tests pass
+(/tmp/ganglia-sync-final-check.log); World application/worker typechecks pass;
+six focused transport tests pass. The new service audit is metadata-only and
+asserts input-bound-unrun records, not route success. Incoming integration patches
+compose against v119 with circular/free-launch additions; an obsolete material-test
+hunk was removed because upstream already supplies that field. Frozen offline
+install required no lockfile changes. No game-data repack, deployment, Rust build,
+Rust test, service-performance run or new point-solving batch was performed.
+
 ## Parallel continuation and native publication, 2026-11-15
 
 The user requested more CPU utilization and concurrent point work. Three disjoint
@@ -4143,3 +4176,752 @@ unknown or occupied gaps between separate cuboids. The regression includes a
 missing gap tile and a static slab between the bodies. Package formatting, lint,
 typecheck and all 440 tests pass. Independent correctness and Standards reviews
 found no remaining scoped findings. No solver benchmark was rerun for this fix.
+
+
+## Upstream native development through e777af66, 2026-11-15
+
+The following source-bound upstream record is retained for native implementation
+history. Its service benchmark and verification contracts do not redefine the
+current TS native-route diagnostic completion rule above.
+
+## Mechanism benchmark integration and input repair, 2026-11-15
+
+The shared revision-10 suite is imported unchanged from `352c62b9`, including 266
+real entity/contact cases and separate geometry/development/negative controls.
+Candidate source exports and all 16 fixed physical windows were regenerated from
+the same game build. Candidate revision is
+`1013af60ca501ee471ebb8c2e8f16a8df7cb2aacb1454f0e93c0ddbd1f4b6399`.
+The local preparation recipe and provenance are retained alongside the data;
+the suite's historical snapshots and request-wall choices were not reconstructed.
+
+An initial input audit correctly rejected the existing 1.80 m male-character
+profile against the suite's 1.66 m source profile. Fresh movement extraction over
+all authored characters supplies the matching profile, and geometry was rebuilt
+before further execution. Rich device facts then reproduced a native deserialization
+failure: inapplicable TS NaN fields arrive as JSON null. Only device speed,
+overhead and height decoding changed; action admission still uses finite checks.
+The extended fixed-launch regression is red on the retained native artifact and
+green after rebuilding. Validation passes 464 TS tests, 26 N-API integration
+fixtures, 152 Rust unit tests plus two authored tests, Clippy with N-API enabled,
+Rust formatting, TS checking and package lint/format checks.
+
+The first trained case `001-05f0PbU` records 149.748 s training, 163.808 s readiness,
+two complete warmups and a 60.017 s measured timeout without a complete route.
+This is a pilot, not a population result. Raw pilot evidence is retained in
+`.local/research/mechanisms-266/pilots/`. The full runner defaults to one measured
+round and one scenario worker; independent scenario groups can run concurrently
+for coverage checks, without interpreting their contended timings as speedups.
+The source and native artifact remain frozen during a scored run.
+
+The first population dispatch stopped before measurement because Scene resource
+selection required the entire proposed corridor halo inside each fixed window.
+Frozen cases now offer their specified window to corridor requests, retaining
+the snapshot's exact bounds and tiles for search and replay. This matches the
+suite's fixed-window domain without claiming coverage of the proposed halo.
+The stopped report remains at `.local/research/mechanisms-266/native-full/report.json`;
+it has zero measured attempts and is not a population result.
+
+The next dispatch trained both initial groups and completed group-two warmup,
+then its first scored query returned `Motion exceeds declared physical coverage`
+from Rust. The worker remained alive. Request errors now carry `WorkerQueryError`
+so the coverage runner records them per case and retains the same process;
+process/IPC failures still stop the run. This stopped report is retained under
+`native-full-windowed/`. Neither stopped dispatch establishes population coverage.
+
+The first population run at `7281d145` finished all 262 dispatchable cases plus
+four unsupported circular-waterwheel cases, with source unchanged and no process
+crashes. It recorded 100 complete, 125 timeout, 26 request errors, six physically
+invalid and five incomplete outcomes. Its three resource-replay failures exposed
+a benchmark omission: scenario locomotion reached windows and replay, but Scene
+kept the default whole-route resource clock. The Scene clock now receives the
+same policy. All eight resource-policy cases require replacement measurements;
+their first-run outcomes are not solver acceptance evidence. Raw results remain
+under `.local/research/mechanisms-266/native-coverage/`.
+
+## Noclip v106 to v119 migration, 2026-11-15
+
+Upstream advanced 35 commits from `ff48e1a715039b76b60bd30f6ad0c8a0cc978f04`
+to `152a38a0aafb0a7815323c07ffc75560502f4d9b`. The archived source and nine
+maintained patches prepare reproducibly with integration identity
+`8a55e56ab2db6dbacac741946ededececea27c95046181ed7723abcf4650c531`.
+Conflicts included material animation/render queues, photography jitter,
+effect LOD options, offline instance bounds and batched HTTP transport injection.
+The normalized routing-adapter patch is byte-for-byte unchanged.
+
+Validation passes World main/worker and extractor typechecks, 1,002 noclip tests,
+58 World UI/service tests, eight World Node integration tests, the preparation
+integrity test, focused World ESLint and a source-only World production build.
+The build uses a local HTTP catalog and omits unavailable private fonts; it is
+not a deployable artifact. All seven OEM scenes were repacked from the local
+game install with two conversion workers. OEM release `892695639068dfc2` and
+navigation release `428d8af4c761ed76` pass `oem-check`: 594 archives, 11,608
+points and 66,706 presets. Navigation contains 21 routes and 108 volumes.
+Bounded `oem-views --rebuild` checks for points `10100350000`, `22800280015`
+and `23300200002` produce three clear views and zero fallbacks. Their output is
+checkpoint-only. Full view baking and GPU visual acceptance were not run.
+No solver benchmark was rerun or new speedup inferred from this source update.
+
+## Full-population native latency objective achieved, 2026-11-15
+
+The ordinary map02 population now meets the requested 2x mean serial latency
+objective. The retained TS implementation remains available. The user authorized
+publishing, and the accepted Rust work was pushed through `80fb78fc` to
+`misakavan/3d-preview` and PR #98.
+
+| Measurement | Result |
+| --- | ---: |
+| Scored requests / rounds / workers / lanes | 50 / 1 / 1 / 1 |
+| Catalog training / frozen warmup | 10 / 2 |
+| Complete, independently physically valid routes | 50 / 50 |
+| Mean serial service time | 592.597189 ms/query |
+| Median / nearest-rank P95 / maximum service time | 436.209688 / 1270.544416 / 1390.189500 ms |
+| Retained TS mean over the same 50 requests | 1589.409605 ms/query |
+| Per-attempt mean latency ratio, TS/native | 2.682107905x |
+| Paired modeled-cost geometric mean / worst ratio | 0.946529343 / 1.033627466 |
+| Readiness / training / total end-to-end | 36.572813 / 30.079314 / 77.771487 s |
+| Timeouts / worker recoveries / frozen catalog resets | 0 / 0 / 0 |
+
+The unchanged 1.01 geometric-mean and 1.05 worst-cost gates pass over the 46
+retained TS routes that pass the current physical audit. Native additionally
+completes the other four requests validly. The latency ratio uses all fifty
+attempts in both reports; automatic completed-route batch/end-to-end speedups
+remain unavailable because the valid completion set changed. This is one measured
+round, with training overlapping ten scored requests; it is not a new unseen
+holdout or a repeatability claim. Current sampled total process RSS peaks at
+6.919 GiB, including a 6.793 GiB worker peak. Memory remains a separate opportunity.
+
+The accepted source reuses TS-style prepared geometry, startup action discovery,
+directed candidate fields and indexed resource states. The final native-specific
+work is confined to `geometry.rs` and `search.rs`: conservative capsule-plane
+separation before exact distance tests, closest-segment projection, unsorted
+predicate candidates, linear capped-frontier selection, and preweighted queue
+potentials. Weight 2 applies only to generated-action improvement of an existing
+complete route; initial feasibility and zero-candidate resource continuation keep
+weight 1.5. Unweighted lower bounds still prune, and the engine retains its complete
+incumbent unless the candidate improves its modeled cost. Budgets and verifier
+rules are unchanged.
+
+A global weight-2 draft failed the existing cross-window boost-clock fixture and
+was rejected before a full benchmark. The restricted policy passes that fixture.
+Complete intermediate runs physically and qualitatively passed at 1077.410812 ms
+(plane separation), 910.326498 ms (linear frontier cap), and 901.260618 ms (segment
+projection/predicate ordering). Their directories are `native-plane-separated-50`,
+`native-linear-cap-50`, and `native-projected-distance-50` under `.local/research/`.
+The TS 1e-7 metric-compaction trial passed at 905.601007 ms but had no material
+benefit and was removed (`native-metric-compact-50`). No broad sampler replacement,
+proof relaxation, larger budget, stress run or new TS measurement was adopted.
+
+Accepted raw evidence is `.local/research/native-incumbent-weight-50/report.json`
+and its adjacent event journal. Report SHA-256 is
+`1451319527f9945af56b120c6b633a2514917799a95e5e32dc8ceb3e6f74b761`;
+source SHA-256 is
+`c5f5b3cad199ad2c570da6f2e80b3a9590bf1cccc0dbcf4aeefdcf80b3006d63`;
+native SHA-256 is
+`2ea9f78c3346734b5abd15ecd8128d068b0a091b2da015e6ab09ab2d2915b4b2`.
+The current source and binary were independently rehashed after the run and match.
+All fifty query objects and the game-adapter digest match the retained TS reference.
+Validation passes 152 Rust unit tests, two authored integration tests, 26 common
+N-API physical/lifecycle fixtures, feature-enabled Clippy, Rust formatting and diff
+checks. The two added geometry tests compare plane rejection to the unculled narrow
+phase and segment projection to endpoint/interior minima, including degeneracy,
+near-parallel lines, tangency, reversed normals and large coordinates.
+
+Reproduce from `talos/packages/ganglia` with the verified Node 26 binary on PATH:
+
+```sh
+GANGLIA_V1_RUST_LIBRARY="$PWD/../../../.local/cache/ganglia-v1/incumbent-weight-final.node" \
+node --max-old-space-size=6144 bench/cli.ts \
+  --adapter ganglia-v1-rust --workload map02 --workers 1 --concurrency 1 \
+  --reference ../../../.local/research/ts-reference-v3/report.json \
+  --output /tmp/ganglia-native-report.json --json
+```
+
+The named native artifact is local. Build current release source with an explicit
+`GANGLIA_V1_RUST_LIBRARY` destination and `pnpm rust:build` when recreating it.
+
+## Prepared fine actions and indexed resource frontier, 2026-11-15
+
+Fine boundary launch/continuous landing discovery now runs during configured
+catalog preparation. It reserves up to `catalogLinks * 8` physical attempts from
+the existing catalog candidate budget; neither training nor query budgets grow.
+The frozen catalog retains proved actions rather than query answers. Runtime
+keeps broad discovery and performs fresh whole-route resource scheduling.
+
+Resource frontiers now index the existing energy/recovery-delay cells, following
+TS's state-indexed resource search. Full continuation comparisons, quantization,
+label caps and selection order remain unchanged. Rejected capped candidates enter
+no index: an extended repeated-candidate regression caught an invalid recycled
+arena ID in the first draft, before acceptance. The associated interrupted run
+`native-indexed-frontier-50/report.json` is invalid and carries no performance claim.
+
+The complete `native-indexed-frontier-final-50/report.json` under `.local/research/`
+trains ten, freezes, warms two and scores fifty once on one worker/lane. All 50
+physically pass, with no timeouts or recoveries. Mean serial service time is
+1268.697836 ms/query. The unchanged cost gates pass over 46 valid retained TS
+routes: geometric mean 0.932941408 and worst 1.015420947. Preparation reaches
+readiness at 64.015427 s, including 57.279614 s catalog training; total end-to-end
+is 139.879857 s. The 794.705 ms/query objective remains unmet. Source digest is
+`b397e554c72cdf366955e0d3e99eccdb802be490c21c88fddd84377a0a89df20`;
+native digest is
+`03328e5dddd5acef8f006b976a8e789a79b3458401aeb29d89e8603e010014f4`.
+All 150 Rust unit tests, two authored integration tests, feature-enabled Clippy,
+Rust formatting and 26 common N-API physical/lifecycle fixtures pass. TS source
+and verifier are unchanged. No TS baseline rerun or remote push occurred.
+
+Training-only fine migration independently passed 50/50 and the cost gates at
+1444.030975 ms/query (`native-prepared-fine-50/report.json`). An incumbent-only
+replacement sampler was rejected: 50/50 physical but 1037.934899 ms/query, geometric
+mean 1.012038282 and worst 1.614110871. Its changed premise was prepared fine
+catalog actions plus TS-style incumbent samples; that still lost useful broad
+coverage (`native-incumbent-guided-50/report.json`). Broad discovery is retained.
+A flat-chord interval-proof trial passed all validation and quality, but offered
+no full-population benefit: 1462.312784 ms/query, identical costs to preparation-only
+(`native-planar-chord-50/report.json`). It was removed. Its broader first draft
+failed existing nonlinear-support bend tests and was narrowed before measurement;
+none of those physical checks were relaxed. Further work should profile the
+remaining selected geometry/resource costs before changing discovery policy.
+
+## Supplemental TS refinement and proof scheduling, 2026-11-15
+
+Search preserves the broad departure pool and supplements it with body-scale
+boundary insets, directed approach/departure ranking and continuous standing
+landings. Both phases share the existing physical-attempt budget. The fine phase
+retains its best proved actions and excludes walking-dominated flights, following
+TS shortcut discovery. Immutable face metadata avoids repeated vertex scans.
+Direct walking proofs currently share the lazy geometry queue with resource
+labels; queued work is repriced when a cheaper source arrives. All directional
+targets and live continuation states remain eligible.
+
+The complete `native-ground-dominated-50/report.json` under `.local/research/`
+trains ten requests, freezes, warms two and scores all fifty once. It physically
+passes 50/50 with no timeouts/recoveries and passes unchanged cost gates: paired
+geometric mean 0.917469599, worst 1.014946863 over the 46 valid retained TS routes.
+Mean serial time is 1449.995361 ms/query, so the 794.705 ms/query objective remains
+unmet. Source digest is
+`d1f39ab95883b7c7ce6bc1f3804bfb32833970ca455afa9c722feee208b2aa65`;
+native digest is
+`a00430b9bebf1bd668e5e1fd1464973b4eed2a841245444ac7944f00ad739adc`.
+Subsequent edits only restore the measured policy and format/test its diagnostics.
+The preceding weighted-lazy run also passed quality at 1451.209901 ms/query;
+walking-dominance filtering alone did not improve performance.
+
+The batch-direct-proof trial is rejected: 1805.719139 ms/query, 50/50 physically
+valid, paired geometric mean 0.907564138 and worst 0.996217709. Evidence is
+`native-batched-direct-50/report.json`. A profiled representative under
+`/tmp/ganglia-fine-profile-full.log` spent 1083.950418 ms on 617 direct proofs and
+expanded 15739 resource states. Fine query-time discovery has not met the speed
+objective. Next move reusable fine action discovery into configured catalog
+training before optimizing the remaining resource frontier.
+
+A separate schedule contract bug rejected an unchanged nearly collinear walk
+after a gait split. Ordered arc-length comparison now checks the union of knots
+instead of independently simplifying corners. The reproduced discrepancy was zero
+geometric displacement; physical tolerances and nonwalking witness identity are
+unchanged. The durable regression fails the old implementation and passes the
+new comparison; the corner-shortcut rejection remains covered. One interrupted
+trial retained 49 other results and continued on its existing worker; it is not a
+complete benchmark. Final focused validation passes 150 Rust unit tests, two authored integration
+tests, feature-enabled Clippy, formatting and 26 common N-API physical/lifecycle
+fixtures. No TS baseline rerun or remote push occurred.
+
+## Preserve broad coverage while refining, 2026-11-15
+
+World now caches immutable exposed boundary intervals after directed portal
+subtraction. Per-query bounds clip those cached intervals independently. The
+existing sloped-clipping regression additionally checks that a wider second query
+recovers geometry omitted by the first narrow window. Other support/flight rules
+are unchanged. This reuses TS's prepared-geometry ownership; no isolated cache
+speedup is claimed.
+
+The complete competitive/fine replacement trial is rejected. It physically passed
+50/50 with no timeouts or recoveries, but measured 820.069060 ms/query and lost a
+useful connection at ground-jump-22-1: cost ratio 1.332071667. Paired geometric
+mean was 0.931616735. The original 1.01/1.05 gates still fail. Its raw evidence is
+`.local/research/native-shared-competitive-50/report.json` and adjacent events;
+source digest `338d4a0785ab70211935c3302f22229837274c2960a0312955eaa084f5656472`,
+native digest `8e301a810d0b5d66beb8f6111d3e9bb85452d1c1f391dcdd49d7d8ded6817605`.
+It fixed the known case 15 gap but displaced another useful broad candidate.
+Smaller allocation/fine/fine-cache probes remain diagnostic only, under
+`.local/research/native-shared-{allocation,fine,fine-cache,competitive}-result.json`.
+
+Search sampling and its budget split are restored to `e3d265e`. Only the independent
+boundary cache remains from these trials. The latest complete retained-search
+measurement is still the 766.565510 ms/query checkpoint with its case 15 cost
+failure; the added cache has no new complete-population performance measurement.
+All 149 Rust unit and two authored integration tests, feature-enabled Clippy,
+release N-API build and 26 common physical/lifecycle fixtures pass. The extended
+cache-window regression also passes. Source and verifier TS remain unchanged.
+
+A direct World diagnostic proves the TS case 15 takeoff is reachable from both
+implementations' initial feet: a 10.448013 m ground path, followed by the already
+accepted flight. Evidence is `/tmp/ganglia-native-case15-approach.log`. The gap is
+proposal coverage, rather than an unavailable physical path. Next preserve the
+original broad pool and supplement it with fine competitive launch witnesses,
+sharing the remaining physical-attempt budget instead of replacing the broad
+pool. Avoid repeating replacement-only finer cells or budget redistribution.
+Cache face metadata and bound neighbor work before adding more enumeration.
+The full-population quality and 2x objective remain active; no remote push.
+
+## TS-style bounded action refinement checkpoint, 2026-11-15
+
+The native improvement pass now shares its existing 640 physical-attempt budget
+between generated-landing discovery and a bounded landing/control queue. The
+second pass sees proved endpoints from the first pass. It uses TS-style directed
+approach/departure navigation fields, continuous face/envelope landing witnesses,
+spatially interleaved launch/landing cells and a maxLinks admission limit. Landing
+proposals are normalized to actual standing feet before flight proof. Navigation
+costs rank proposals only; all retained motion still requires World proof and
+common physical replay. Training and first-feasible policies are unchanged.
+
+An unbounded first draft materialized about 2.65 million proposals in one captured
+window. Bounding neighbor enumeration before projection reduced this to about
+111 thousand; the measured proposal/queue preparation fell from about 876 to
+277 ms in that diagnostic. Standalone globally ranked or shared-queue-only trials
+lost useful actions and were rejected. The retained composition preserves the
+first pass's generated landing sources before refining their continuous landings.
+Evidence includes `native-shared-result.json`, `native-shared-continuous-result.json`,
+`native-shared-bounded-result.json`, `native-shared-fields-result.json` and
+`native-shared-standing-result.json` under `.local/research/`. Those small probes
+are diagnostics, not accepted benchmark results.
+
+The complete ordinary map02 run trains ten requests, freezes, warms two requests
+and scores all fifty once on one worker/lane. All 50 routes independently pass
+physical replay; no timeout or worker recovery occurs. Mean serial service time
+is 766.565510 ms/query, readiness 68.829175 s and end-to-end 118.268789 s. Compared
+with the retained 1589.409605 ms/query TS measurement, latency is below half, but
+**the quality gate still fails**. Paired cost geometric mean is 0.926148732;
+worst ratio is 1.126873081 on ground-jump-15-1 (6.982318 versus 6.196188 modeled
+seconds). It is the only paired request above the unchanged 1.05 worst gate.
+No accepted speedup or completed rewrite objective is claimed.
+
+Raw evidence: `.local/research/native-shared-refinement-50/report.json` and its
+adjacent events journal. Source digest:
+`a844702d71ca258b20cf40ec6b68dbf2e58f5b9a8cef3a7de2c01d6addd7b909`;
+native binary digest:
+`fda5b73393c5a8ee1cef2a7c7a21d0036aef08c8f371b29470b5db3c5880906a`.
+The compatible derived TS reference retains its original timing and the current
+verifier audit, with 46 valid retained routes; four new valid completions are
+reported separately. Readiness/end-to-end scopes retain those provenance limits.
+
+Rust unit/authored tests (149 + 2), feature-enabled all-target Clippy with warnings
+denied, Rustfmt, release N-API build, 26 common physical/lifecycle N-API fixtures
+and diff checks pass. The next task is the
+remaining generic candidate-coverage gap at case 15, preserving all fifty requests,
+current physical policy, original quality gates and the latency goal. Rust remains
+local until the user says ready.
+
+## Fine-pool coverage and grouping diagnostic, 2026-11-15
+
+Dumped the actual pre-action candidate pool after `2ddfba5` for case 18-1:
+522 points, nearest critical takeoff about 1.48 m from the TS witness (previous
+small graph about 5.4 m). Its intermediate landing is represented within 0.17 m;
+the deep landing is still about 6.94 m away. Evidence:
+`.local/research/native-pool-candidate-graph.json` and the retained TS event 34.
+
+A body-diameter boundary-cell trial improved case 17 cost slightly but worsened
+18 and 21 relative to the retained source. Removed. All six diagnostic requests
+remained physically valid; no complete-population speedup or quality claim follows.
+Evidence is `.local/research/native-body-cells-result.json`. Production source is
+restored to `2ddfba5`; the temporary candidate dump instrumentation is removed.
+
+Next migrate the TS active landing/control candidate lifecycle. Larger native
+pools often allocate only one flight attempt to a source; a blocked first landing
+then retires that source instead of allowing another landing/control witness.
+Preserve unfinished candidates in a bounded shared work queue, with the same total
+attempt pool. Do not repeat only source-cell refinement before fixing candidate
+pair scheduling. The full 2x objective and path-cost gates remain unmet; no push.
+
+## Separate geometric candidates from the resource graph, 2026-11-15
+
+Improvement discovery now retains a larger bounded geometric pool (at most eight
+maxLinks, still within maxCandidates), then compacts the resource graph to query
+anchors and endpoints of proved actions/paths. Dense temporary node IDs are
+remapped in starts, targets, ordered waypoints and supported-path keys before
+resource scheduling. Unproved geometric proposals do not become expensive walking
+or resource vertices. Training and first-feasible discovery keep their existing
+sampling policy.
+
+The first larger-pool diagnostic exposed a budget floor defect: a one-attempt
+source received zero interior-landing proposals because integer division by three
+rounded to zero. Improvement discovery now permits its existing single attempt
+to generate a landing; no new attempts are granted. Both changes follow TS's
+separation of geometric enumeration, physical action admission and final routing.
+
+The six-request trained diagnostic physically accepts every route. Lower cases
+17/18/19/21 measured about 563/523/480/441 ms, with modeled costs
+7.367911/7.081703/6.511280/5.894853 s. Upper cases 4/12 measured 1663/2203 ms.
+Cases 17/18 still exceed the retained TS cost gates; upper latency still prevents
+an inference of 2x performance. Evidence is
+`.local/research/native-pool-landings-result.json` and its probe log. This is a
+focused diagnostic, not a complete-population benchmark or accepted speedup.
+The larger pool without landing budget correction was worse
+(`native-pool-result.json`); do not repeat it unchanged.
+
+Validation passes 149 Rust unit tests, two authored integration tests, 26 N-API
+common physical/lifecycle fixtures, release native build, Rustfmt, feature-enabled
+all-target Clippy with warnings denied and diff checks. TS/verifier source is unchanged.
+
+Continue migrating TS candidate pairing/control coverage and reducing resource
+work, then run all 50 ordinary requests with training, freeze, warmup and one round.
+The objective remains active and Rust commits remain local until ready.
+
+## Exact-flight and boundary ownership diagnostic, 2026-11-15
+
+Replayed saved TS jump witnesses from lower-floor cases 17/18/19 directly against
+Rust World using the captured normalized physical window. All four TS jumps are
+accepted both by native generation at their exact endpoints and native witness
+replay. Most nearest native sampled takeoffs fail the corresponding exact landing.
+This rules out a general motion-model inability for those successful witnesses.
+The diagnostic tool/artifacts are `.local/research/roadmap-inspect/src/bin/flights.rs`
+and `/tmp/ganglia-native-ts-flight-inspection.log`.
+
+A local boundary inventory finds navigation boundaries only 0.14--0.56 m from
+those TS takeoffs, and raw support boundaries 0.045--0.44 m away. The geometry
+exists; bounded representative selection loses its useful neighborhoods. Evidence:
+`/tmp/ganglia-native-ts-flight-boundaries.log`. A nearest-approach plus route-directed
+representative trial retained valid routes but did not resolve 17/18 cost gates;
+removed (`native-region-exits-result.json`). Production source remains `6571e5c`.
+
+The next migration needs TS's separation of geometric candidate pool and final
+resource graph. Native currently inserts sampled proposals directly into the graph
+and gives each source a small flight quota; TS keeps finer seeds/pairs independently
+and admits proved actions. Increasing graph samples would inflate all-pairs walking,
+while rearranging the existing small sample graph cannot recover absent witnesses.
+Implement a bounded separate candidate pool and admit only successful action
+endpoints before retrying source or landing ranking. The objective remains unmet;
+no remote push is authorized.
+
+## Continuous landing diagnostics, 2026-11-15
+
+Compared TS `motion/landings.ts` with native angular landing proposals. TS emits
+nearest-source, nearest-goal, center and horizontal-envelope/edge intersections,
+then tries control variants. Native finite angular/range seeds omit some continuous
+landing neighborhoods. A trial prepended nearest-source/goal/center projections
+for improvement queries; six requests remained physically valid, but 17/18 still
+failed cost comparison and 19 lost its retained improvement. Removed. Evidence:
+`.local/research/native-continuous-result.json` and its corresponding probe log.
+
+A separate raw-support-boundary stream near fresh origins, sharing the existing
+sample quota, produced the same routes/costs as `6571e5c` on the six diagnostics.
+Removed as unproductive (`native-raw-departure-result.json`). No performance claim
+or full benchmark is derived from either diagnostic. Production source remains
+`6571e5c`; the active goal and no-push instruction remain.
+
+Further migration needs the complete TS landing/control handoff: reach-envelope
+intersections and fair control variants for each candidate, rather than replacing
+angular seeds with only nearest-point projections. Inspect attempted candidates
+and rejection causes before another surface/sample allocation trial.
+
+## Spatial launch coverage checkpoint, 2026-11-15
+
+A diagnostic dump of the actual improvement graph for ground-jump-18-1 found
+nearest native samples about 5.4 m from the TS critical takeoff and 6.9 m from its
+landing. This confirms a candidate-coverage defect; ranking absent endpoints
+cannot reproduce the TS route. Evidence is `.local/research/native-candidate-graph.json`
+and `native-candidate-dump-result.json`, compared to saved TS report event 34.
+
+Native improvement now follows TS's coarse-before-fine launch enumeration:
+within the existing departure share, interleave spatial regions before consuming
+adjacent body-scale points. Candidate and flight-attempt budgets are unchanged.
+The focused six-request replay passes common physical validation. Request 19-1
+improves to cost 6.215470 s (retained TS 6.998164 s), about 531 ms diagnostic service;
+21-1 costs 5.901076 s, about 604 ms. Cases 17/18 remain over the original cost gate,
+and upper diagnostics remain slow. This is partial improvement, not accepted full
+population quality or speedup. Evidence: `.local/research/native-spread-result.json`.
+Doubling the launch-region share displaced useful landing samples and worsened
+19/21; removed (`native-spread-departures-result.json`).
+
+The retained source passes 149 Rust unit tests, two authored-action integration
+tests, 26 N-API common physical/lifecycle fixtures, Clippy with warnings denied,
+Rustfmt and diff checks. No new full-population benchmark has been run.
+
+Next inspect the TS landing projection/control generator against the missing
+landing neighborhood, preserving the coarse spatial coverage and fixed budgets.
+Do not retry departure-share expansion without changed landing coverage. The 2x
+objective remains active; no remote push is authorized.
+
+## Approach/departure ranking diagnostics, 2026-11-15
+
+An optimistic approach/departure field trial ranked whole flight journeys over
+sample nodes instead of per-source nearest-target quotas. It did not resolve the
+lower-floor cost regressions. Replacing those fields with prepared directed
+navigation-centroid distances plus existing-action overlays also failed the
+focused quality comparison. All six physical replays completed validly; cases
+17/18/19/21 still exceeded their retained TS costs. The directed-field trial passed
+Clippy. It was removed rather than retaining new topology state without benefit.
+Evidence is `.local/research/native-journey-result.json` and
+`native-fields-result.json`, with corresponding probe logs under `/tmp`.
+
+These trials change the next diagnostic: compare retained TS successful takeoff
+and landing locations to the actual native candidate graph. Sorting cannot recover
+an absent witness. Identify whether source or landing generation omits that local
+neighborhood, then migrate the corresponding TS seed/projection/continuous-control
+logic. Do not repeat distance-field ranking alone without changed candidate coverage.
+Production source remains the full-population `947366c` checkpoint. No new accepted
+speedup or complete-population quality pass exists; the 2x objective remains active.
+
+## TS shortcut strategy migration diagnostics, 2026-11-15
+
+Read TS `route-shortcuts.ts` and `search/shortcuts.ts` before retrying smaller
+native improvement budgets. An experimental native incumbent sampler ranked
+forward walking-sample pairs by possible time savings and proved up to 128 flight
+candidates. With 128 broad attempts it still exceeded cost gates on lower-floor
+starts 17/18/19/21; retaining 640 broad attempts did not resolve 17/18/19 and added
+query work. Both implementations of this experiment were removed. Evidence is
+`.local/research/native-incumbent-result.json` and
+`native-incumbent-combined-result.json`. All six diagnostic routes passed physical
+replay, which does not establish the required quality or speed improvement.
+
+A separate TS-derived pullback trial added 1/2/3 m boundary launch offsets within
+the existing node/attempt quotas. It worsened several diagnostic latencies and
+retained the cost regressions; removed. Evidence is
+`.local/research/native-pullback-result.json`. The trial passed 149 unit tests,
+two authored integration tests, 26 common N-API fixtures and Clippy. Those results
+validate that trial only, not a new accepted optimization. Production solver source
+is restored to `947366c`; no new complete-population measurement is needed for
+restoring identical source.
+
+The changed premise for further work is TS's full ranking strategy: prepared
+forward approach and reverse departure distance fields, existing-action overlays,
+spatially diverse launch enumeration and candidate lower bounds. Native per-source
+nearest-target quotas do not reproduce that strategy. Migrate the ranking before
+retrying smaller budgets or additional body-scale offsets. The full-population
+2x objective and original modeled-cost gates remain unmet; no push is authorized.
+
+## Sparse scheduling full-population checkpoint, 2026-11-15
+
+Commit `947366c` completes and independently physically verifies all 50 normal
+map02 requests, with zero timeouts. Mean serial time is 1547.401 ms/query, against
+retained TS 1589.410 ms/query. The 2x objective is unmet. Paired cost geometric mean
+is 0.950314; worst ratio 1.121001 on ground-jump-18-1 fails the unchanged 1.05 limit.
+Nearby lower-floor starts 17 and 19 also exceed that limit. No speedup is accepted.
+Evidence is `.local/research/native-continuation-50/report.json` and its adjacent
+journal, with configured training10, freeze, warmup2 and one measured round.
+
+The user's current direction is to reuse TS's implemented optimizations. Next
+migration target is `src/v1/route/route-shortcuts.ts`: sample walking portions of
+the incumbent, rank feasible forward pairs by saved modeled time, physically
+validate only the bounded best proposals, and jointly retime the accumulated graph.
+Copying only TS's smaller budget before copying candidate ranking failed earlier.
+Preserve the fast prepared-only resource pass and successful local attachments.
+Do not push Rust work until the user explicitly says ready.
+
+## Sparse prepared scheduling and fresh-start refinement, 2026-11-15
+
+Search schedules the selected prepared graph before expanding direct walks and
+full detours. A source-bound slow-case diagnostic dropped ground-jump-4-2 from
+about 52 s to 0.30 s with common physical acceptance. Roadmap attachments now seek
+physically successful neighbors within the finite neighborhood; if no direct link
+exists, at most four nearby local ground-detour proposals can attach a fresh
+endpoint. Query-selected spans are re-proved, retaining real geometry and resources.
+
+TS source comparison identified its incumbent-guided departure refinement. Native
+improvement now reserves spatial sampling for departure neighborhoods, including
+cliffs away from the straight goal corridor, using the incumbent cost to bound
+useful walking reach. The previous worst-cost request ground-jump-21-1 improved
+from cost 8.792 s to 5.876 s, versus retained TS 6.651 s, with common physical replay.
+The departure diagnostic completed the two slow upper cases in 2.63/2.72 s and the
+worst-cost case in 0.90 s. These remain diagnostic observations, not accepted full
+population speedup. Evidence: `.local/research/native-local-approach-result.json`
+and `native-departure-result.json`.
+
+A direct copy of TS's smaller catalog refinement budgets plus incumbent sample
+hints lost useful departures under Rust's different candidate ordering; withdrawn.
+Limiting improvement walking to nearest neighbors did not consistently reduce
+latency; withdrawn. Faithful migration still requires TS's candidate ranking and
+local incumbent refinement, rather than budget reduction alone. The retained
+source passes 149 Rust unit tests, two authored integration tests and 26 N-API
+physical/lifecycle fixtures; Clippy passes. Full 50-request validation remains
+required and the 2x objective remains active. No remote push is authorized.
+
+## Prepared graph full-population failure, 2026-11-15
+
+Commit `894f9fa` completed and physically verified all 50 normal map02 requests
+with zero timeouts, after configured training, freeze and warmup. It did not meet
+the objective: mean serial time was 19805.902 ms/query, with long fallback searches
+on several upper-floor starts. Paired modeled cost improved on average (geometric
+mean ratio 0.975642) but the worst ratio remained 1.321836, on ground-jump-21-1.
+The unchanged worst-cost gate failed. No speedup is accepted.
+
+The source-bound report is `.local/research/native-roadmap-50/report.json` and its
+adjacent event journal. This result supersedes extrapolation from the fast two-case
+diagnostic. Followup separates missing roadmap attachments/connectivity from
+physical admission and resource-search expansion, and first schedules the already
+proved sparse graph before adding direct all-pairs walks or detours. Targeted
+replays use cooperative deadlines; the next full run waits for representative
+slow and worst-cost requests to show a worthwhile improvement.
+
+## Prepared native connection graph, 2026-11-15
+
+The walking-only raw-contact correction passed its new N-API common-verifier
+regression (old artifact red, corrected artifact green). It reduced the previously
+worst lower route cost from 9.263 to 6.309 s in a focused replay, versus retained
+TS cost 6.024 s; upper latency still remained about 23 s. Artifacts are
+`.local/research/native-contact-result.json` and `native-catalog-profile-result.json`.
+
+Catalog inspection found roughly 28000 learned actions but no nearby witnesses for
+several required middle-corridor jumps. Training corridor samples supplied these
+without increasing the configured attempt budget. Merely ranking local actions by
+walking-leg overhead and prechecking redundant hops did not yield a connected query
+graph; its upper diagnostic timed out. A bounded runtime corridor-anchor trial also
+timed out. Both runtime-anchor and local-ranking experiments were removed.
+
+The retained replacement prepares physical walking connectivity among all learned
+endpoints. The inspected trained bank had 34532 actions but only 2343 distinct
+endpoints; its graph retained 6884 proved walking links. A frozen diagnostic completed
+and physically accepted the upper query in 1279.910 ms at cost 10.610448 s, and the
+worst lower-cost regression query in 1283.382 ms at cost 6.309413 s. Preparation took
+68.283 s. Evidence is `.local/research/native-roadmap-result.json` and
+`/tmp/ganglia-native-roadmap-probe.log`; this is not a population speedup claim.
+Subsequent static transfer-ranking reuse removes repeated navigation string/sort
+work, and walking-only passes no longer select unused catalog assets.
+
+Final validation covers 149 Rust unit tests plus two authored integration tests,
+26 N-API common physical/lifecycle fixtures, release native build, Rustfmt and
+feature-enabled all-target Clippy. The added TS fixture passes typecheck, lint and
+formatting. The navigation regression preserves a cheaper unknown arrival against
+an expensive known corridor; the existing excluded-witness test covers cached
+alternative selection. Complete-population performance/quality acceptance is next.
+
+## Full normal-population native check, 2026-11-15
+
+Commit `116bc4d` completed all 50 ordinary map02 requests in one scored round after
+ten training requests, freeze and two warmups. All 50 passed independent physical
+verification, with no timeout or worker recovery. The performance and modeled-cost
+goals failed: mean serial time was 12613.794 ms/query; paired cost geometric mean
+was 1.017768 and worst ratio 1.537557, exceeding unchanged limits 1.01 and 1.05.
+Service readiness was 49.505 s; end-to-end time was 703.402 s. No speedup is accepted.
+
+The lower/upper strata averaged 1876.070/23351.518 ms/query. The largest cost
+regressions occur in later lower-floor starts, especially ground-jump-23-1.
+The complete report and request journal are under
+`.local/research/native-optimized-50/`. This full-population result supersedes any
+inference from the earlier two-goal diagnostics. Further work must address both
+repeated walking-proof failures and catalog/local-improvement route quality.
+
+## Native walking/search optimization, 2026-11-15
+
+The retained trial combines compact proven walking geometry, approximate resource
+frontier buckets (0.25 energy, 0.05 s recovery delay), weighted search ordering
+(1.5), immutable-World direct-proof reuse, prepared triangle normals and median
+BVH partitioning. Walking clearance remains physically checked; the representation
+bound is 2 cm, inside the unchanged independent verifier's 2.5 cm default.
+Frontier merging retains real state and records approximation as truncation.
+Catalog selection groups nearby transfer endpoints in 2 m cells without changing
+the sixteen-action selection limit or dropping prerequisites from a selected chain.
+
+Diagnostic sequence: compaction alone did not resolve the upper bottleneck;
+resource bucketing reduced lower-query labels; the weighted combination completed
+the lower query in about 0.71 s and upper query in 27.24 s. Spatial catalog diversity
+completed them in about 0.61 s and 20.97 s. Both routes passed common physical
+replay in those two-goal probes. These are profiling observations, not population
+speedup measurements. Artifacts are `.local/research/native-weighted-result.json`
+and `native-diverse-result.json`, with corresponding `/tmp/ganglia-native-*-probe.log`.
+
+Rejected experiments: adding all coarse corridor points to the runtime graph
+inflated it and timed out both diagnostic requests. Restricting runtime hints to
+protected transfer endpoints still worsened the upper case. Adding those endpoints
+only during training also worsened the upper diagnostic (41.19 s); that change was
+removed. No production map coordinates, witness-route hints or per-case budgets
+were introduced. Training, freeze, warmup and cooperative worker reuse remain.
+
+The retained TS timing report is reused without rerunning TS. A derived reference
+at `.local/research/ts-reference-v3/report.json` binds its original serial timings
+to the saved-route v3 verifier audit (46/50 accepted), preserving provenance and
+marking lifecycle totals as measured with the original verifier. The serial target
+is at most 794.705 ms/query against 1589.410 ms/query. No 2x claim is accepted yet.
+
+Validation of the retained batch: 148 Rust unit tests, two authored-action
+integration tests and 25 N-API common physical/lifecycle fixtures pass. Release
+build, Rustfmt, all-target N-API Clippy with warnings denied and diff checks pass.
+TS source and verifier are unchanged. Full-population measurement is next.
+
+## Native capsule support coverage, 2026-11-15
+
+The active local objective is at least 2x TS serial throughput on the full normal
+50-request workload with training, freeze and warmup, physical acceptance and
+comparable route cost. Rust commits remain local until explicit user approval.
+Stress is excluded. No accepted speedup has been reached.
+
+Profiling the navigation checkpoint identified 1802 completed detour proofs in a
+trained two-goal diagnostic; roughly 99 of 102 cumulative proof seconds ended in
+rejection. The Rust proof still required raw centerline triangle coverage, whereas
+the shared physical model admits finite-radius face, edge and vertex support.
+`world/support` now computes that continuous footprint/contact intersection with
+fixed-size interval storage and merged feature intervals. It expands no horizontal
+reach beyond the real capsule radius. Actual supported feet, collision, coverage
+and resource checks remain. This fixes physical semantics rather than increasing
+search work or changing the verifier.
+
+Four old negative fixtures relied on rejecting gaps narrower than the capsule.
+Their negative cases now use genuinely unsupported wide gaps; the positive
+capsule-edge case remains explicit. A bent-navigation fixture moves its unsupported
+crossing away from an adjacent floor that legitimately supports a rounded corner.
+Both support and clearance failures count as physical rejection witnesses.
+
+The frozen `support-stage.node` diagnostic keeps ten training requests, both
+warmups and two ordinary map02 targets. Both target routes now complete and pass
+independent physical replay, including the formerly timed-out upper target. This
+is functional diagnostic evidence, not full-population acceptance or speedup.
+Results/profile are `.local/research/native-support-result.json` and
+`/tmp/ganglia-native-support-probe.log`; the preceding profile summary is
+`.local/research/native-core-profile-summary.json`. Query time remains far above
+the objective; unnecessary trajectory density and repeated local-search work are
+next. Native N-API physical/lifecycle integration passes all 25 fixtures.
+
+## Incremental Rust navigation module, 2026-11-15
+
+Rust development resumes beside the retained TS implementation. This rewrite and
+its related records remain local until the user explicitly says ready; do not
+push these commits. Long-range stress is excluded from this work. Ordinary map02
+requests and independent physical replay remain the functional reference; output
+coordinates, tie order and route choices need not align byte-for-byte with TS.
+
+The first replacement establishes these crate-private modules:
+
+- `navigation` owns typed prepared mesh proposals, endpoint projection, lazy
+  transfer materialization and query search. Its interface accepts typed arrivals
+  and returns a proposed corridor; physical feasibility remains a separate proof.
+- `navigation/topology` stores directed adjacency in CSR and computes strongly
+  connected components with iterative linear-time traversals. One-way portals
+  cannot imply mutual reachability or hide a required return transfer.
+- `mesh` owns shared polygon projection and portal stitching. It consumes geometry
+  and step limits without requiring a physical World or synthetic movement model.
+- `geometry` owns triangle/BVH and capsule primitives, shared by mesh and World.
+
+The native Engine calls the typed navigation interface, converting its current
+protocol representation at that seam. Prepared navigation no longer constructs a
+physical World, retains a duplicate JSON snapshot, or creates unused collision,
+resource and movement state. Static edges occupy one contiguous arena; temporary
+query edges occupy another. Predecessors contain edge IDs, so successful label
+relaxation does not clone strings or path vectors. Only selected output edges are
+materialized. TS source, external Solver seam, verifier and solver budgets remain
+unchanged. Native `search`, resource scheduling and most Engine protocol state
+still use the existing implementation and are subsequent replacement work.
+
+The directed-connectivity correction has one new behavior-level regression:
+a known downhill portal remains usable and the reverse journey still proposes
+an unresolved uphill crossing. Existing Rust and N-API tests cover the retained
+physical/action/resource and cancellation contracts. No byte-level route assertions
+or implementation-mirroring test suite was added.
+
+Validation: 150 Rust tests and 25 N-API integration fixtures pass, along with
+release native build, Rustfmt and feature-enabled all-target Clippy with warnings
+denied. Only the directional-navigation regression is new. TS implementation and
+its tests are unchanged; its full test suite was not rerun for this Rust-only slice.
+
+A frozen native functional diagnostic used the regular map02 dataset, ten catalog
+training requests, catalog freeze and both configured warmups, on the same worker.
+Lower-floor warmup and the lower-floor query pass independent physical replay.
+Upper-floor warmup and the upper-floor query still reach the 60-second cooperative
+deadline. The navigation change does not resolve the upper-floor bottleneck;
+this is not a full-population acceptance or a speedup measurement. No stress input
+was loaded. The worker remained usable after warmup cancellation.
+
+The explicitly selected artifact is `.local/cache/ganglia-v1/navigation-stage.node`;
+the default native artifact was not overwritten. Diagnostic source/results are
+`.local/research/native-navigation-probe.ts` and `native-navigation-result.json`.
+The current TS and verifier checkpoints remain available for comparison. Next
+work should replace the local action/geometry search and its prepared state with
+typed Rust modules, preserving training and shared physical verification rather
+than increasing query budgets or changing the verifier to accommodate this port.

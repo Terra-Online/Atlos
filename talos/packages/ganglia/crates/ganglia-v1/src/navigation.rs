@@ -1,21 +1,130 @@
 //! Coarse proposals rank coverage requests, never certify physical motion.
-//! Support projection and directed mesh portals come from the World module.
-use super::{Point, distance, horizontal, point};
-use crate::{model::Interaction, world::World};
+//! Prepared geometry and topology are immutable. Query arenas hold only
+//! temporary endpoints/transfers; predecessor labels contain compact edge IDs.
+mod topology;
+use crate::geometry::{Index, distance};
+use crate::model::{Interaction, Portal, Surface, Vec3 as Point};
+use serde::{Deserialize, Serialize};
+#[cfg(test)]
 use serde_json::{Value, json};
+use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::collections::{BTreeMap, BinaryHeap, HashMap, HashSet};
+use topology::Topology;
 
-pub(super) struct Navigation {
-    world: Option<World>,
+const TRANSFER_PENALTY: f64 = 10_000.;
+
+fn horizontal(a: Point, b: Point) -> f64 {
+    (a[0] - b[0]).hypot(a[2] - b[2])
+}
+
+#[derive(Deserialize)]
+pub(crate) struct Input {
+    surfaces: Vec<Surface>,
+    options: MeshOptions,
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct MeshOptions {
+    max_vertical: f64,
+    #[serde(default)]
+    portals: Vec<Portal>,
+}
+struct Mesh {
+    surfaces: Vec<Surface>,
+    portals: Vec<Portal>,
+    index: Index,
+    owners: Vec<usize>,
+}
+impl Mesh {
+    fn new(input: Input) -> Result<Self, String> {
+        let mut faces = Vec::new();
+        let mut owners = Vec::new();
+        for (owner, surface) in input.surfaces.iter().enumerate() {
+            for i in 1..surface.vertices.len().saturating_sub(1) {
+                let triangle = [
+                    surface.vertices[0],
+                    surface.vertices[i],
+                    surface.vertices[i + 1],
+                ];
+                let normal = crate::geometry::cross(
+                    crate::geometry::sub(triangle[1], triangle[0]),
+                    crate::geometry::sub(triangle[2], triangle[0]),
+                );
+                if normal[1].abs() <= 1e-12 {
+                    continue;
+                }
+                faces.push(if normal[1] < 0. {
+                    [triangle[0], triangle[2], triangle[1]]
+                } else {
+                    triangle
+                });
+                owners.push(owner);
+            }
+        }
+        let mut portals = input.options.portals;
+        // Authored meshes authorize height-changing portals explicitly.
+        portals.extend(crate::mesh::portals(&input.surfaces, 0., 0.));
+        let index = Index::from_faces(faces, None)?;
+        Ok(Self {
+            surfaces: input.surfaces,
+            portals,
+            index,
+            owners,
+        })
+    }
+    fn project(
+        &self,
+        point: Point,
+        tolerance: f64,
+        interaction: Option<&Interaction>,
+    ) -> Result<Vec<crate::mesh::Projection>, String> {
+        crate::mesh::project(
+            &self.index,
+            &self.owners,
+            &self.surfaces,
+            point,
+            tolerance,
+            interaction,
+        )
+    }
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+pub(crate) struct Arrival {
+    pub id: String,
+    pub position: Point,
+    pub cost: f64,
+    pub state: Availability,
+    #[serde(flatten)]
+    pub extra: crate::model::Extra,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub(crate) enum Availability {
+    Available,
+    Locked,
+    Unknown,
+}
+
+pub(crate) struct Navigation {
+    mesh: Option<Mesh>,
     centers: Vec<Point>,
-    edges: Vec<Vec<Edge>>,
+    graph: Topology,
     ids: HashMap<String, usize>,
     max_vertical: f64,
-    components: Vec<usize>,
-    members: Vec<Vec<usize>>,
+
     seams: HashMap<[i64; 3], BTreeMap<usize, Vec<Witness>>>,
+    transfers: RefCell<HashMap<usize, Vec<Transfer>>>,
 }
+struct Transfer {
+    key: String,
+    to: usize,
+    source: usize,
+    target: usize,
+    length: f64,
+}
+
 const CELL: Point = [8., 50., 8.];
 const ALTERNATIVES: usize = 4;
 
@@ -113,18 +222,23 @@ fn nearest(members: &[usize], centers: &[Point], target: Point, limit: usize) ->
         .collect()
 }
 #[derive(Clone)]
-pub(super) struct Edge {
+pub(crate) struct Edge {
     pub key: String,
     pub points: Vec<Point>,
     pub unresolved: bool,
     to: usize,
     length: f64,
 }
-pub(super) struct Proposal {
-    pub arrival: Value,
+pub(crate) struct Proposal {
+    pub arrival: Arrival,
     pub points: Vec<Point>,
     pub protected: Vec<[Point; 2]>,
     pub edges: Vec<Edge>,
+}
+#[derive(Clone, Copy)]
+enum EdgeId {
+    Prepared(usize),
+    Query(usize),
 }
 #[derive(Clone)]
 struct Label {
@@ -153,42 +267,28 @@ impl Ord for Label {
 
 impl Navigation {
     pub fn clear(&mut self) {
-        self.world = None;
+        self.mesh = None;
         self.centers.clear();
-        self.edges.clear();
+        self.graph = Topology::default();
         self.ids.clear();
-        self.components.clear();
-        self.members.clear();
         self.seams.clear();
+        self.transfers.get_mut().clear();
     }
-    pub fn new(data: &Value) -> Result<Self, String> {
-        if data.is_null() {
+    pub fn new(data: Option<Input>) -> Result<Self, String> {
+        let Some(mesh) = data else {
             return Ok(Self {
-                world: None,
+                mesh: None,
                 centers: vec![],
-                edges: vec![],
+                graph: Topology::default(),
                 ids: HashMap::new(),
                 max_vertical: 3.,
-                components: vec![],
-                members: vec![],
                 seams: HashMap::new(),
+                transfers: RefCell::default(),
             });
-        }
-        let options = &data["options"];
-        let vertical = options["maxVertical"].as_f64().unwrap_or(3.);
-        // A navigation-only World supplies the shared projection/portal geometry.
-        // Its inert motion carrier is never used for flight, physical validation,
-        // or route timing. Those always use loaded physical snapshots.
-        let world = World::new(json!({"kind":"surfaces","coverage":"complete","input":{
-            "surfaces":data["surfaces"],"collision":{"positions":[],"indices":[]},
-            "walls":options["walls"].as_array().cloned().unwrap_or_default(),
-            "portals":options["portals"].as_array().cloned().unwrap_or_default(),
-            "movement":{"speed":options["speed"].as_f64().unwrap_or(1.),"maxVertical":vertical,
-                "stepUp":vertical,"stepDown":vertical,
-                "profile":options.get("profile").cloned().unwrap_or(json!({"radius":0.,"height":1.})),
-                "model":{"gravity":1.,"fallingGravity":1.,"maxJumpHeight":0.,"maxFallingSpeed":1.,"apexTime":0.,"maxHorizontalSpeed":0.}}
-        }}))?;
-        let centers = world
+        };
+        let vertical = mesh.options.max_vertical;
+        let mesh = Mesh::new(mesh)?;
+        let centers = mesh
             .surfaces
             .iter()
             .map(|f| {
@@ -197,16 +297,20 @@ impl Navigation {
                 })
             })
             .collect::<Vec<Point>>();
-        let ids = world
+        let ids = mesh
             .surfaces
             .iter()
             .enumerate()
             .map(|(i, f)| (f.id.clone(), i))
             .collect::<HashMap<_, _>>();
         let mut edges = vec![vec![]; centers.len()];
-        for portal in &world.portals {
-            let from = ids[&portal.from];
-            let to = ids[&portal.to];
+        for portal in &mesh.portals {
+            let from = *ids
+                .get(&portal.from)
+                .ok_or("Unknown navigation portal source")?;
+            let to = *ids
+                .get(&portal.to)
+                .ok_or("Unknown navigation portal target")?;
             let points = vec![
                 centers[from],
                 portal.points[0],
@@ -229,34 +333,15 @@ impl Navigation {
                     .then_with(|| a.key.cmp(&b.key))
             });
         }
-        let mut components: Vec<usize> = (0..centers.len()).collect();
-        fn root(parents: &mut [usize], mut at: usize) -> usize {
-            while at != parents[at] {
-                parents[at] = parents[parents[at]];
-                at = parents[at];
-            }
-            at
-        }
-        for (i, list) in edges.iter().enumerate() {
-            for edge in list {
-                let a = root(&mut components, i);
-                let b = root(&mut components, edge.to);
-                components[a] = b;
-            }
-        }
-        let mut members = vec![vec![]; centers.len()];
-        for i in 0..centers.len() {
-            components[i] = root(&mut components, i);
-            members[components[i]].push(i);
-        }
+        let graph = Topology::new(edges);
         let mut sampled: HashMap<[i64; 3], BTreeMap<usize, Representatives>> = HashMap::new();
-        for (surface, face) in world.surfaces.iter().enumerate() {
+        for (surface, face) in mesh.surfaces.iter().enumerate() {
             for (vertex, &position) in face.vertices.iter().enumerate() {
                 let key = cell(position);
                 sampled
                     .entry(key)
                     .or_default()
-                    .entry(components[surface])
+                    .entry(graph.components[surface])
                     .or_insert_with(Representatives::new)
                     .consider(Witness { surface, vertex }, position, key);
             }
@@ -274,44 +359,66 @@ impl Navigation {
             })
             .collect();
         Ok(Self {
-            world: Some(world),
+            mesh: Some(mesh),
             centers,
-            edges,
+            graph,
             ids,
             max_vertical: vertical,
-            components,
-            members,
             seams,
+            transfers: RefCell::default(),
         })
     }
 
     pub fn plan(
         &self,
-        arrivals: &[Value],
+        arrivals: &[Arrival],
         goal: Point,
         excluded: &HashSet<String>,
     ) -> Result<Option<Proposal>, String> {
-        if let Some(proposal) = self.plan_projected(arrivals, goal, excluded, false)? {
+        // A cheap known corridor already beats every unresolved transfer.
+        // Avoid materializing those geometric proposals until their lower bound
+        // can compete. The general search still handles disconnected endpoints,
+        // costly arrivals and unusually long known corridors.
+        if let Some(proposal) = self.plan_projected(arrivals, goal, excluded, false, false)? {
+            let rank = proposal.arrival.cost + proposal.edges.iter().map(Edge::rank).sum::<f64>();
+            let lower = arrivals
+                .iter()
+                .filter(|a| a.state == Availability::Available)
+                .map(|a| a.cost)
+                .fold(f64::INFINITY, f64::min)
+                + TRANSFER_PENALTY;
+            if rank < lower {
+                return Ok(Some(proposal));
+            }
+        }
+        if let Some(proposal) = self.plan_projected(arrivals, goal, excluded, false, true)? {
             return Ok(Some(proposal));
         }
-        self.plan_projected(arrivals, goal, excluded, true)
+        self.plan_projected(arrivals, goal, excluded, true, true)
     }
 
     fn plan_projected(
         &self,
-        arrivals: &[Value],
+        arrivals: &[Arrival],
         goal: Point,
         excluded: &HashSet<String>,
         broad: bool,
+        allow_transfers: bool,
     ) -> Result<Option<Proposal>, String> {
-        let Some(world) = &self.world else {
+        let Some(mesh) = &self.mesh else {
             return Ok(None);
         };
         if self.centers.is_empty() {
             return Ok(None);
         }
-        let domain: Interaction = serde_json::from_value(json!({"radius":96.,"maxVertical":96.}))
-            .map_err(|e| e.to_string())?;
+        let domain = Interaction {
+            radius: 96.,
+            max_vertical: Some(96.),
+            airborne: false,
+            facing: None,
+            half_angle: None,
+            extra: Default::default(),
+        };
         let n = self.centers.len();
         let end = n;
         let remaining = |node: usize| {
@@ -322,11 +429,12 @@ impl Navigation {
             }
         };
         let mut endpoints = HashMap::new();
+        let mut query_edges = Vec::new();
         // Supported endpoints enter the actual directed topology. Broad fallback
         // handles missing endpoints without synthesizing every nearby start/goal
         // connection on ordinary queries.
         let project = |position| {
-            world.project_with_tolerance(
+            mesh.project(
                 position,
                 if broad { 96. } else { self.max_vertical },
                 if broad { Some(&domain) } else { None },
@@ -343,21 +451,22 @@ impl Navigation {
                 horizontal(hit.position, goal) > 1e-6
                     || (hit.position[1] - goal[1]).abs() > self.max_vertical,
             );
-            endpoints.insert(i, edge);
+            endpoints.insert(i, query_edges.len());
+            query_edges.push(edge);
         }
         let mut costs = vec![f64::INFINITY; n + 1];
-        let mut previous: Vec<Option<(usize, Edge)>> = vec![None; n + 1];
+        let mut previous: Vec<Option<(usize, EdgeId)>> = vec![None; n + 1];
         let mut origins = vec![None; n + 1];
         let mut heap = BinaryHeap::new();
         let mut serial = 0;
         let mut expanded_components = HashSet::new();
-        let mut transfers: HashMap<usize, Vec<Edge>> = HashMap::new();
+        let mut transfers: HashMap<usize, Vec<usize>> = HashMap::new();
         for (origin, a) in arrivals
             .iter()
             .enumerate()
-            .filter(|(_, a)| a["state"] == "available")
+            .filter(|(_, a)| a.state == Availability::Available)
         {
-            let start = point(&a["position"])?;
+            let start = a.position;
             for hit in project(start)? {
                 let Some(&i) = self.ids.get(&hit.surface) else {
                     continue;
@@ -372,11 +481,12 @@ impl Navigation {
                 if excluded.contains(&edge.key) {
                     continue;
                 }
-                let cost = a["cost"].as_f64().unwrap_or(0.) + edge.rank();
+                let cost = a.cost + edge.rank();
                 if cost < costs[i] {
                     costs[i] = cost;
                     origins[i] = Some(origin);
-                    previous[i] = Some((n + 1, edge));
+                    previous[i] = Some((n + 1, EdgeId::Query(query_edges.len())));
+                    query_edges.push(edge);
                     heap.push(Label {
                         cost: cost + remaining(i),
                         node: i,
@@ -394,16 +504,25 @@ impl Navigation {
             if node == end {
                 break;
             }
-            let component = self.components[node];
-            if expanded_components.insert(component) {
+            let component = self.graph.components[node];
+            if allow_transfers && expanded_components.insert(component) {
                 for (from, edge) in self.transfers(component, arrivals, goal, excluded)? {
-                    transfers.entry(from).or_default().push(edge);
+                    transfers.entry(from).or_default().push(query_edges.len());
+                    query_edges.push(edge);
                 }
             }
-            for edge in self.edges[node]
-                .iter()
-                .chain(transfers.get(&node).into_iter().flatten())
-                .chain(endpoints.get(&node))
+            for (id, edge) in self
+                .graph
+                .outgoing(node)
+                .map(|(id, edge)| (EdgeId::Prepared(id), edge))
+                .chain(
+                    transfers
+                        .get(&node)
+                        .into_iter()
+                        .flatten()
+                        .chain(endpoints.get(&node))
+                        .map(|&id| (EdgeId::Query(id), &query_edges[id])),
+                )
             {
                 if excluded.contains(&edge.key) {
                     continue;
@@ -412,7 +531,7 @@ impl Navigation {
                 if next < costs[edge.to] {
                     costs[edge.to] = next;
                     origins[edge.to] = origins[node];
-                    previous[edge.to] = Some((node, edge.clone()));
+                    previous[edge.to] = Some((node, id));
                     heap.push(Label {
                         cost: next + remaining(edge.to),
                         node: edge.to,
@@ -428,7 +547,10 @@ impl Navigation {
         let mut path = vec![];
         let mut node = end;
         while let Some((from, edge)) = &previous[node] {
-            path.push(edge.clone());
+            path.push(match *edge {
+                EdgeId::Prepared(id) => self.graph.edges[id].clone(),
+                EdgeId::Query(id) => query_edges[id].clone(),
+            });
             if *from == n + 1 {
                 break;
             }
@@ -477,103 +599,124 @@ impl Navigation {
     fn transfers(
         &self,
         component: usize,
-        arrivals: &[Value],
+        arrivals: &[Arrival],
         goal: Point,
         excluded: &HashSet<String>,
     ) -> Result<Vec<(usize, Edge)>, String> {
-        let world = self.world.as_ref().unwrap();
-        let sources = &self.members[component];
+        let mesh = self.mesh.as_ref().unwrap();
+        let sources = &self.graph.members[component];
         let mut selected = nearest(sources, &self.centers, goal, 12);
-        for arrival in arrivals.iter().filter(|a| a["state"] == "available") {
-            let start = point(&arrival["position"])?;
+        for arrival in arrivals
+            .iter()
+            .filter(|a| a.state == Availability::Available)
+        {
+            let start = arrival.position;
             selected.extend(nearest(sources, &self.centers, start, 4));
         }
         selected.sort_unstable();
         selected.dedup();
-        let mut candidates: BTreeMap<(usize, usize), Vec<Edge>> = BTreeMap::new();
-        // Unknown transfers are query-directed finite proposals. Materialize
-        // only reached component interfaces. Cells exclude the source component
-        // before visiting representatives, so dense connected floors do not cause
-        // repeated broad projection, face cloning, or sorting. Both ends are
-        // retained vertices; physical support/flight validation remains in World.
-        // Nine representatives per component/cell and four alternatives per
-        // source face/target component define finite proposal coverage, not an
-        // equivalence claim with continuous nearest-surface projection.
+        let mut candidates = Vec::new();
+        let mut cached = self.transfers.borrow_mut();
         for from in selected {
-            for (source, &vertex) in world.surfaces[from].vertices.iter().enumerate() {
-                let origin = cell(vertex);
-                for dx in -2..=2 {
-                    for dy in -1..=1 {
-                        for dz in -2..=2 {
-                            let Some(groups) =
-                                self.seams
-                                    .get(&[origin[0] + dx, origin[1] + dy, origin[2] + dz])
-                            else {
+            if let std::collections::hash_map::Entry::Vacant(slot) = cached.entry(from) {
+                slot.insert(self.transfer_candidates(from, component)?);
+            }
+            let mut group = usize::MAX;
+            let mut emitted = 0;
+            for candidate in &cached[&from] {
+                let to = candidate.to;
+                let target_component = self.graph.components[to];
+                if group != target_component {
+                    group = target_component;
+                    emitted = 0;
+                }
+                // Geometry and ranking are static. Filter exclusions before
+                // limiting each group, so failures reveal all later witnesses.
+                if emitted == ALTERNATIVES || excluded.contains(&candidate.key) {
+                    continue;
+                }
+                candidates.push((
+                    from,
+                    Edge {
+                        key: candidate.key.clone(),
+                        to,
+                        length: candidate.length,
+                        points: vec![
+                            self.centers[from],
+                            mesh.surfaces[from].vertices[candidate.source],
+                            mesh.surfaces[to].vertices[candidate.target],
+                            self.centers[to],
+                        ],
+                        unresolved: true,
+                    },
+                ));
+                emitted += 1;
+            }
+        }
+        Ok(candidates)
+    }
+
+    fn transfer_candidates(&self, from: usize, component: usize) -> Result<Vec<Transfer>, String> {
+        let mesh = self.mesh.as_ref().unwrap();
+        let mut candidates = Vec::new();
+        for (source, &vertex) in mesh.surfaces[from].vertices.iter().enumerate() {
+            crate::cancel::check()?;
+            let origin = cell(vertex);
+            for dx in -2..=2 {
+                for dy in -1..=1 {
+                    for dz in -2..=2 {
+                        let Some(groups) =
+                            self.seams
+                                .get(&[origin[0] + dx, origin[1] + dy, origin[2] + dz])
+                        else {
+                            continue;
+                        };
+                        for (&target_component, witnesses) in groups {
+                            if target_component == component {
                                 continue;
-                            };
-                            for (&target_component, witnesses) in groups {
-                                if target_component == component {
+                            }
+                            for witness in witnesses {
+                                let to = witness.surface;
+                                let target = mesh.surfaces[to].vertices[witness.vertex];
+                                if (vertex[1] - target[1]).abs() > 50.
+                                    || horizontal(vertex, target) > 16.
+                                {
                                     continue;
                                 }
-                                for witness in witnesses {
-                                    let to = witness.surface;
-                                    let target = world.surfaces[to].vertices[witness.vertex];
-                                    if (vertex[1] - target[1]).abs() > 50.
-                                        || horizontal(vertex, target) > 16.
-                                    {
-                                        continue;
-                                    }
-                                    let key = format!(
+                                let path = [self.centers[from], vertex, target, self.centers[to]];
+                                candidates.push(Transfer {
+                                    key: format!(
                                         "transfer:{}:{}:{source}:{}",
-                                        world.surfaces[from].id,
-                                        world.surfaces[to].id,
+                                        mesh.surfaces[from].id,
+                                        mesh.surfaces[to].id,
                                         witness.vertex
-                                    );
-                                    // Reject the actual retained witness before ranking;
-                                    // a failed cheapest seam must reveal other witnesses.
-                                    if excluded.contains(&key) {
-                                        continue;
-                                    }
-                                    let path =
-                                        [self.centers[from], vertex, target, self.centers[to]];
-                                    let length =
-                                        path.windows(2).map(|p| distance(p[0], p[1])).sum::<f64>();
-                                    let list =
-                                        candidates.entry((from, target_component)).or_default();
-                                    let score = length
-                                        + if path[3][1] - path[0][1] > 2.1 {
-                                            1_000_000.
-                                        } else {
-                                            10_000.
-                                        };
-                                    let rank = list.partition_point(|old| {
-                                        old.rank().total_cmp(&score).then_with(|| old.key.cmp(&key))
-                                            != Ordering::Greater
-                                    });
-                                    if rank < ALTERNATIVES {
-                                        list.insert(
-                                            rank,
-                                            Edge {
-                                                key,
-                                                to,
-                                                length,
-                                                points: path.to_vec(),
-                                                unresolved: true,
-                                            },
-                                        );
-                                        list.truncate(ALTERNATIVES);
-                                    }
-                                }
+                                    ),
+                                    to,
+                                    source,
+                                    target: witness.vertex,
+                                    length: path.windows(2).map(|p| distance(p[0], p[1])).sum(),
+                                });
                             }
                         }
                     }
                 }
             }
         }
-        Ok(candidates
-            .into_iter()
-            .flat_map(|((from, _), edges)| edges.into_iter().map(move |edge| (from, edge)))
-            .collect())
+        let rank = |candidate: &Transfer| {
+            candidate.length
+                + if self.centers[candidate.to][1] - self.centers[from][1] > 2.1 {
+                    1_000_000.
+                } else {
+                    TRANSFER_PENALTY
+                }
+        };
+        candidates.sort_by(|a, b| {
+            self.graph.components[a.to]
+                .cmp(&self.graph.components[b.to])
+                .then_with(|| rank(a).total_cmp(&rank(b)))
+                .then_with(|| a.key.cmp(&b.key))
+        });
+        Ok(candidates)
     }
 }
 impl Edge {
@@ -592,7 +735,7 @@ impl Edge {
                 if self.points.last().unwrap()[1] - self.points[0][1] > 2.1 {
                     1_000_000.
                 } else {
-                    10_000.
+                    TRANSFER_PENALTY
                 }
             } else {
                 0.
@@ -608,13 +751,19 @@ mod tests {
         json!({"id":id,"vertices":[[x-1.,y,-1.],[x+1.,y,-1.],[x+1.,y,1.],[x-1.,y,1.]]})
     }
     fn navigation(faces: Vec<Value>, portals: Vec<Value>) -> Navigation {
-        Navigation::new(
-            &json!({"surfaces":faces,"options":{"speed":1.,"maxVertical":0.5,"portals":portals}}),
-        )
+        Navigation::new(Some(serde_json::from_value(
+            json!({"surfaces":faces,"options":{"speed":1.,"maxVertical":0.5,"portals":portals}})
+        ).unwrap()))
         .unwrap()
     }
-    fn start(x: f64) -> Vec<Value> {
-        vec![json!({"id":"start","position":[x,0.,0.],"cost":0.,"state":"available"})]
+    fn start(x: f64) -> Vec<Arrival> {
+        vec![Arrival {
+            id: "start".into(),
+            position: [x, 0., 0.],
+            cost: 0.,
+            state: Availability::Available,
+            extra: Default::default(),
+        }]
     }
 
     #[test]
@@ -623,7 +772,7 @@ mod tests {
             vec![face("a", 0., 0.), face("b", 6., 0.), face("c", 10., 0.)],
             vec![json!({"from":"b","to":"c","points":[[7.,0.,0.],[9.,0.,0.]]})],
         );
-        let component = nav.components[nav.ids["a"]];
+        let component = nav.graph.components[nav.ids["a"]];
         let first = nav
             .transfers(component, &start(0.), [10., 0., 0.], &HashSet::new())
             .unwrap();
@@ -661,7 +810,7 @@ mod tests {
         let source = nav.ids["a"];
         let transfers = nav
             .transfers(
-                nav.components[source],
+                nav.graph.components[source],
                 &start(-8.),
                 [8., 50., 0.],
                 &HashSet::new(),
@@ -674,12 +823,56 @@ mod tests {
                 .all(|(_, edge)| edge.to != nav.ids["too-high"] && edge.to != nav.ids["too-far"])
         );
         for (from, edge) in transfers {
-            let world = nav.world.as_ref().unwrap();
-            assert!(world.surfaces[from].vertices.contains(&edge.points[1]));
-            assert!(world.surfaces[edge.to].vertices.contains(&edge.points[2]));
+            let mesh = nav.mesh.as_ref().unwrap();
+            assert!(mesh.surfaces[from].vertices.contains(&edge.points[1]));
+            assert!(mesh.surfaces[edge.to].vertices.contains(&edge.points[2]));
             assert!(horizontal(edge.points[1], edge.points[2]) <= 16.);
             assert!((edge.points[1][1] - edge.points[2][1]).abs() <= 50.);
         }
+    }
+
+    #[test]
+    fn one_way_portal_keeps_the_reverse_transfer_available() {
+        let nav = navigation(
+            vec![face("upper", 0., 1.), face("lower", 6., 0.)],
+            vec![json!({"from":"upper","to":"lower","points":[[1.,1.,0.],[5.,0.,0.]]})],
+        );
+        let mut upper = start(0.);
+        upper[0].position[1] = 1.;
+        let downhill = nav
+            .plan(&upper, [6., 0., 0.], &HashSet::new())
+            .unwrap()
+            .unwrap();
+        assert!(downhill.edges.iter().all(|edge| !edge.unresolved));
+        let uphill = nav
+            .plan(&start(6.), [0., 1., 0.], &HashSet::new())
+            .unwrap()
+            .unwrap();
+        assert!(
+            uphill
+                .edges
+                .iter()
+                .any(|edge| edge.unresolved && edge.points[1][0] >= 5. && edge.points[2][0] <= 1.)
+        );
+        // A proposal remains hypothetical: its crossing must be physically
+        // solved before it can become a route.
+        assert!(!uphill.protected.is_empty());
+    }
+
+    #[test]
+    fn cheap_unknown_arrival_can_beat_an_expensive_known_corridor() {
+        let nav = navigation(vec![face("goal", 0., 0.), face("other", 5., 0.)], vec![]);
+        let mut arrivals = start(0.);
+        arrivals[0].id = "expensive".into();
+        arrivals[0].cost = 20_000.;
+        let mut cheap = start(5.).remove(0);
+        cheap.id = "cheap".into();
+        arrivals.push(cheap);
+        let proposal = nav
+            .plan(&arrivals, [0., 0., 0.], &HashSet::new())
+            .unwrap()
+            .unwrap();
+        assert_eq!(proposal.arrival.id, "cheap");
     }
 
     #[test]

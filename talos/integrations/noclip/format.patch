@@ -143,7 +143,7 @@ index 00000000..cce8a7e0
 +	};
 +};
 diff --git a/packages/formats/src/endfield/dynamic-scene.test.ts b/packages/formats/src/endfield/dynamic-scene.test.ts
-index e3484c08..c7ebc428 100644
+index 482c748f..27f12ed3 100644
 --- a/packages/formats/src/endfield/dynamic-scene.test.ts
 +++ b/packages/formats/src/endfield/dynamic-scene.test.ts
 @@ -342,3 +342,128 @@ test('reads the sludge core a sludge patch belongs to', () => {

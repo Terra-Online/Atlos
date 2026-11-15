@@ -1,5 +1,7 @@
 //! Frozen navigation index for proposing connected action chains. Navigation is
 //! optimistic: Search still proves every walk, action and resource transition.
+#[path = "catalog/roadmap.rs"]
+mod roadmap;
 use super::{Point, horizontal, point};
 use crate::{model::Interaction, world::World};
 use serde_json::Value;
@@ -18,8 +20,10 @@ struct Entry {
 pub(super) struct Selection {
     pub actions: Vec<String>,
     pub connects_goal: bool,
+    pub walks: Vec<[Point; 2]>,
 }
 pub(super) struct Index {
+    roadmap: roadmap::Roadmap,
     components: HashMap<String, usize>,
     forward: Vec<Vec<usize>>,
     entries: Vec<Entry>,
@@ -170,7 +174,9 @@ impl Index {
                 serde_json::json!({"native":"catalog","phase":"index","components":count,"entries":entries.len(),"bank":bank.len()})
             );
         }
+        let roadmap = roadmap::Roadmap::prepare(world, &entries)?;
         Ok(Self {
+            roadmap,
             components,
             forward: dag,
             entries,
@@ -207,6 +213,35 @@ impl Index {
         limit: usize,
     ) -> Result<Selection, String> {
         let goal = point(&query["goal"])?;
+        let starts = query["starts"]
+            .as_array()
+            .ok_or("Missing starts")?
+            .iter()
+            .filter(|s| s["state"] == "available")
+            .map(|s| Ok((point(&s["position"])?, s["cost"].as_f64().unwrap_or(0.))))
+            .collect::<Result<Vec<_>, String>>()?;
+        let mut destinations = query["waypoints"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(point)
+            .collect::<Result<Vec<_>, _>>()?;
+        destinations.push(goal);
+        if let Some(mut path) = self.roadmap.select(world, &starts, &destinations)? {
+            let mut seen = HashSet::new();
+            path.actions.retain(|id| seen.insert(*id));
+            if path.actions.len() <= limit {
+                return Ok(Selection {
+                    actions: path
+                        .actions
+                        .into_iter()
+                        .map(|i| self.entries[i].id.clone())
+                        .collect(),
+                    connects_goal: true,
+                    walks: path.walks,
+                });
+            }
+        }
         let interaction: Option<Interaction> = if query["interaction"].is_null() {
             None
         } else {
@@ -282,6 +317,15 @@ impl Index {
         let mut selected = Vec::new();
         let mut used = HashSet::new();
         let mut alternatives = 0;
+        // Nearby launch/landing witnesses compete for one proposal slot. Keep
+        // their exact controls, but spend the bounded query graph on distinct
+        // transfers rather than many samples of the same trajectory.
+        let signature = |edge: usize| {
+            let e = &self.entries[edge];
+            let cell = |p: Point| p.map(|x| (x / 2.).floor() as i64);
+            (e.from, e.to, cell(e.start), cell(e.end))
+        };
+        let mut transfers = HashSet::new();
         let mut prefixes = HashMap::<usize, (f64, State)>::new();
         while let Some(state) = heap.pop() {
             crate::cancel::check()?;
@@ -303,9 +347,14 @@ impl Index {
                     .copied()
                     .filter(|i| !used.contains(i))
                     .collect();
-                if !additions.is_empty() && selected.len() + additions.len() <= limit {
+                if additions
+                    .iter()
+                    .any(|i| !transfers.contains(&signature(*i)))
+                    && selected.len() + additions.len() <= limit
+                {
                     for i in additions {
                         used.insert(i);
+                        transfers.insert(signature(i));
                         selected.push(self.entries[i].id.clone());
                     }
                     alternatives += 1;
@@ -360,8 +409,13 @@ impl Index {
         }
         let mut local = local.into_iter().collect::<Vec<_>>();
         local.sort_by(|a, b| a.1.total_cmp(&b.1).then(a.0.cmp(&b.0)));
-        for (edge, _) in local.into_iter().take(limit.saturating_sub(selected.len())) {
-            selected.push(self.entries[edge].id.clone());
+        for (edge, _) in local {
+            if selected.len() == limit {
+                break;
+            }
+            if transfers.insert(signature(edge)) {
+                selected.push(self.entries[edge].id.clone());
+            }
         }
         if std::env::var_os("GANGLIA_PROFILE").is_some() {
             eprintln!(
@@ -372,6 +426,7 @@ impl Index {
         Ok(Selection {
             actions: selected,
             connects_goal,
+            walks: Vec::new(),
         })
     }
 }

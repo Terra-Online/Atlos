@@ -455,7 +455,7 @@ fn frontier_keeps_distinct_energy_and_recovery_delay_and_does_not_retain_capped_
         active: true,
     };
     let mut arena = vec![];
-    let mut rows = vec![vec![]];
+    let mut rows = vec![Frontier::default()];
     let mut heap = BinaryHeap::new();
     let mut truncated = false;
     insert(
@@ -489,7 +489,7 @@ fn frontier_keeps_distinct_energy_and_recovery_delay_and_does_not_retain_capped_
         4,
         &mut truncated,
     );
-    assert_eq!(rows[0].len(), 3);
+    assert_eq!(rows[0].labels.len(), 3);
     let mut unique = base.clone();
     unique.state.delay = 2.;
     insert(
@@ -502,7 +502,7 @@ fn frontier_keeps_distinct_energy_and_recovery_delay_and_does_not_retain_capped_
         &mut truncated,
     );
     assert_eq!(arena.len(), 4);
-    for i in 1..100 {
+    for i in (1..100).cycle().take(198) {
         let mut worse = base.clone();
         worse.cost += i as f64;
         worse.state.energy = 0.;
@@ -518,7 +518,7 @@ fn frontier_keeps_distinct_energy_and_recovery_delay_and_does_not_retain_capped_
         );
     }
     assert!(truncated);
-    assert_eq!(rows[0].len(), 4);
+    assert_eq!(rows[0].labels.len(), 4);
     assert_eq!(arena.len(), 4);
     assert_eq!(heap.len(), 4);
 }
@@ -805,7 +805,11 @@ fn bounded_sample_walking_keeps_all_device_endpoints_for_multiple_hops() {
     assert_eq!(phases.len(), 1);
     assert_eq!(phases[0]["kind"], "direct");
     assert_eq!(phases[0]["complete"], true);
-    assert!(phases[0]["unexploredDetours"].as_u64().unwrap() > 0);
+    // Pending direct proofs are also visible unresolved alternatives.
+    assert!(
+        phases[0]["unexploredDetours"].as_u64().unwrap() > 0
+            || phases[0]["groundJobs"]["pending"].as_u64().unwrap() > 0
+    );
     assert_eq!(result["route"]["search"]["truncated"], true);
     for authored in array(&snapshot["connections"]) {
         let segment = array(&result["route"]["segments"])

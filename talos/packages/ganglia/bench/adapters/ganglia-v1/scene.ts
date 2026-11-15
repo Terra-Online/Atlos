@@ -5,7 +5,7 @@ import { resolve, dirname } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 
-import type { Route } from '@opendfieldmap/ganglia';
+import type { Route, Wall } from '@opendfieldmap/ganglia';
 import {
   type SceneResources,
   type RouteResult,
@@ -121,7 +121,7 @@ export async function loadScene(
       scene: {
         scene: dataset.navigation.scene,
         source: dataset.navigation.source,
-        walls: [],
+        walls: [] as Wall[],
         navigation: dataset.navigation,
       },
       resources: prepared.resources,

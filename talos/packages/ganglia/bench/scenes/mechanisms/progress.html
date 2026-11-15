@@ -50,12 +50,12 @@
   <h1>222/266 完整路线产物可用</h1>
   <p>
     更新：2026/11/15
-    22:54:23（UTC+8）。这是逐点最新证据汇总，包含未重跑的保留记录，并非同一版本完整验证。本轮已观察
-    91 点，其中 53 点完整。新增完整：49；已观察的可达性回退 0、成本回退
+    23:19:38（UTC+8）。这是逐点最新证据汇总，包含未重跑的保留记录，并非同一版本完整验证。本轮已观察
+    92 点，其中 53 点完整。新增完整：49；已观察的可达性回退 0、成本回退
     0。时间单位为秒；未知求解时间留空。原始Ganglia记录只有历史113点。
   </p>
   <p>
-    本轮并发上限 3 路独立 worker，新增批次堆上限 6
+    点位调查已暂停，保留已有结果。本轮并发上限 3 路独立 worker，新增批次堆上限 6
     GiB；已经启动的批次沿用记录的配置。并发耗时仅供功能诊断，不能作为串行服务性能比较。资源错误 5
     项单列保留，不判不可达。
   </p>
@@ -67,7 +67,7 @@
     完整产物可供路线展示与终局优化分别记录：终局 t/f、路线时间、求解时间沿用已有结果；产物 t/f
     与最佳路线时间保留历史完整结果，并接纳具有原始查询、场景源和 setup
     一致证据的新原生完整候选。首次候选时间只在新捕获证据存在时显示；旧超时不补判成功。终局完成 222
-    点，新捕获首次候选 19 点。批次无效/中断或捕获错误 10 份报告，候选证据校验问题 0
+    点，新捕获首次候选 19 点。批次无效/中断或捕获错误 12 份报告，候选证据校验问题 0
     项；这些记录不构成同版全量通过或延迟达标。
   </p>
   <details>
@@ -113,6 +113,18 @@
     },
     {
       &quot;report&quot;: &quot;.local/research/ts-266-20261115/diagnostics/r20-parallel-c4-resource-restored/report.json&quot;,
+      &quot;invalid&quot;: true,
+      &quot;interrupted&quot;: false,
+      &quot;captureErrors&quot;: []
+    },
+    {
+      &quot;report&quot;: &quot;.local/research/ts-266-20261115/diagnostics/r22-parallel-b6-memory-lifecycle/report.json&quot;,
+      &quot;invalid&quot;: true,
+      &quot;interrupted&quot;: false,
+      &quot;captureErrors&quot;: []
+    },
+    {
+      &quot;report&quot;: &quot;.local/research/ts-266-20261115/diagnostics/r22-parallel-b6b-110-memory-lifecycle/report.json&quot;,
       &quot;invalid&quot;: true,
       &quot;interrupted&quot;: false,
       &quot;captureErrors&quot;: []
@@ -336,17 +348,17 @@
         <td title="no-verified-route">incomplete</td>
       </tr>
       <tr class="">
-        <td title="352c62b9397a9e738a041c4dce9426bdc7933509-snapshot-r10">012-0sGWStg</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r22">012-0sGWStg</td>
         <td>map01_lv002</td>
         <td>f</td>
         <td></td>
-        <td>118.104</td>
+        <td>305.514</td>
         <td>f</td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="no-verified-route">incomplete</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">013-15Nz7D1</td>
@@ -587,11 +599,11 @@
         <td title="">retained-complete</td>
       </tr>
       <tr class="">
-        <td title="cb8345021a496ec521ebab3f8459bf019b09a9dd-snapshot-r12">027-056MV71</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r22">027-056MV71</td>
         <td>map01_lv005</td>
         <td>f</td>
         <td></td>
-        <td>300.090</td>
+        <td>305.211</td>
         <td>f</td>
         <td title="">f</td>
         <td></td>
@@ -1681,17 +1693,17 @@
         <td title="timeout">timeout</td>
       </tr>
       <tr class="">
-        <td title="daab983c">093-08fw2Xg</td>
+        <td title="7486fc107150b8fc64084e64c469e6b816bdee22-snapshot-r21">093-08fw2Xg</td>
         <td>map02_lv008</td>
         <td>f</td>
         <td></td>
-        <td></td>
+        <td>1096.230</td>
         <td>f</td>
         <td title="">f</td>
         <td></td>
         <td title="首次候选求解时间；不等于终局时间"></td>
         <td title="首次候选从用例启动到观察到产物的时间"></td>
-        <td title="timeout">timeout（批次无效）</td>
+        <td title="timeout">timeout</td>
       </tr>
       <tr class="">
         <td title="daab983c">094-14JKTkX</td>

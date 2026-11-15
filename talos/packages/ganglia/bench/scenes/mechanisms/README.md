@@ -7,6 +7,16 @@ assets, collision/navigation snapshots, profiles and private configuration remai
 local. `progress.json` and `progress.html` publish a frozen per-case progress
 snapshot; they do not represent a successful same-source full-suite replay.
 
+`pnpm benchmark:mechanisms` runs the prepared service benchmark through
+`bench/mechanism-benchmark.ts` and `mechanism-service-worker.ts`. It requires a
+source-bound `input-index.json`, trains/freezes/warms each scenario worker, then
+measures and independently verifies its routes. Its default adapter is Rust;
+`--adapter ganglia-v1-ts` selects TS. `--audit` records input-bound unrun cases
+without preparing or solving. Service results keep their own acceptance contract.
+`bench/mechanism-run.ts --mode physical-diagnostic` remains the explicit TS native
+route diagnostic entry, retaining the original per-case setup, source snapshots,
+first complete artifacts and terminal outcomes used by the progress table.
+
 The main collection contains 266 distinct real entity/contact target positions
 across map01/map02 and 16 authored levels. Six non-entity navigation queries are
 retained separately as geometry probes. They include

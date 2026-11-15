@@ -30,6 +30,30 @@ describe('client transfer accounting', () => {
         });
     });
 
+    it('accounts for multipart partial responses', async () => {
+        const transport = createTransport(() =>
+            Promise.resolve(new Response('abcdef', { status: 206 })),
+        );
+        const content = [
+            { kind: 'geometry', bytes: 2 },
+            { kind: 'texture', bytes: 2 },
+        ];
+        const response = await transport.fetch(
+            'scene',
+            'https://assets.test/shard.czar',
+            { headers: { range: 'bytes=0-1, 4-5' } },
+            content,
+        );
+        await response.arrayBuffer();
+        expect(transport.snapshot().requests[0]).toMatchObject({
+            requestedBytes: 4,
+            responseBytes: 6,
+            rangeFallback: false,
+            content,
+            outcome: 'complete',
+        });
+    });
+
     it('counts the complete response when a server ignores a range request', async () => {
         const transport = createTransport(() =>
             Promise.resolve(new Response('abcdefghij')),

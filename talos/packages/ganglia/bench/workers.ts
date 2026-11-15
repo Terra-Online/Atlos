@@ -25,6 +25,8 @@ export const workerMemory = () => {
   return { rssBytes: memory.rss, heapUsedBytes: memory.heapUsed };
 };
 type Memory = ReturnType<typeof workerMemory>;
+/** A failed request returned by a live worker; process failures use ordinary Error. */
+export class WorkerQueryError extends Error {}
 export type WorkerResult = RouteResult & {
   diagnostics: RouteResult['diagnostics'] & {
     solveWallMs: number;
@@ -389,7 +391,7 @@ export async function prepareWorkerSolver(options: {
                   reason === 'timeout',
                 ),
               );
-          } else if (message.type === 'error') task.reject(new Error(message.error));
+          } else if (message.type === 'error') task.reject(new WorkerQueryError(message.error));
           else {
             slot.catalog = message.catalog;
             sample(slot, message.memory);
