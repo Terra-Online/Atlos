@@ -251,11 +251,11 @@ export async function prepareWorkerSolver(options: {
       fail(error instanceof Error ? error : new Error(String(error)));
     }
   };
-  const interrupted = (reason: string): RouteResult => ({
+  const interrupted = (reason: string, diagnostics?: RouteResult['diagnostics']): RouteResult => ({
     route: { status: 'no-verified-route' },
     connections: [],
     reason,
-    diagnostics: { truncated: true },
+    diagnostics: { ...diagnostics, truncated: true },
   });
   // Keep the slot occupied until the interrupted computation has actually exited.
   // A late reply cannot become a successful result or overlap the next request.
@@ -377,7 +377,20 @@ export async function prepareWorkerSolver(options: {
             }
             const { reason, error } = task.interruption;
             if (error !== undefined) task.reject(error);
-            else publish(task, measured(interrupted(reason), task, reason === 'timeout'));
+            else
+              publish(
+                task,
+                measured(
+                  // Keep the worker's final diagnostic data without accepting
+                  // a route returned after cancellation or the deadline.
+                  interrupted(
+                    reason,
+                    message.type === 'result' ? message.result.diagnostics : undefined,
+                  ),
+                  task,
+                  reason === 'timeout',
+                ),
+              );
           } else if (message.type === 'error') task.reject(new WorkerQueryError(message.error));
           else {
             slot.catalog = message.catalog;

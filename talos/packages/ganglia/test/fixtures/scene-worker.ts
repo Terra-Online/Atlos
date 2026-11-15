@@ -151,7 +151,7 @@ process.once('message', async (message: WorkerRequest) => {
         segments: [],
       },
       connections: [],
-      diagnostics: { truncated: false },
+      diagnostics: { truncated: false, candidateAttempts: 1 },
       reason: String(process.pid),
     };
     const timings = createTimings();

@@ -410,7 +410,12 @@ export function planAirborneGoal(
   starts: GroundArrival[],
   goal: Vec3,
   options: Options,
-  approach: (position: Vec3, maxCost: number) => Pick<JumpResult, 'route' | 'connections'>,
+  approach: (
+    position: Vec3,
+    maxCost: number,
+    connections: GroundConnection[],
+  ) => Pick<JumpResult, 'route' | 'connections'>,
+  discovered: GroundConnection[] = [],
 ): {
   route: Route;
   connections: GroundConnection[];
@@ -445,9 +450,33 @@ export function planAirborneGoal(
     connections: GroundConnection[] = [];
   const prefixes = new Map<
     string,
-    { result: Pick<JumpResult, 'route' | 'connections'>; maxCost: number }
+    { result: Pick<JumpResult, 'route' | 'connections'>; maxCost: number; version: number }
   >();
+  // Only this immutable physical query owns these actions. A terminal pickup
+  // flight cannot become a transfer to another departure.
+  const known = new Map((options.connections ?? []).map((edge) => [edge.id, edge]));
+  const actionKey = ({ id: _id, ...motion }: GroundConnection) => JSON.stringify(motion);
+  const motions = new Set([...known.values()].map(actionKey));
+  const initialActions = known.size;
+  let version = 0;
   const ids = new Set<string>((options.connections ?? []).map((edge) => edge.id));
+  const retain = (edges: GroundConnection[]) => {
+    for (const edge of edges) {
+      ids.add(edge.id);
+      if (
+        edge.state !== 'open' ||
+        edge.terminal ||
+        known.has(edge.id) ||
+        motions.has(actionKey(edge)) ||
+        known.size - initialActions >= options.maxLinks
+      )
+        continue;
+      known.set(edge.id, edge);
+      motions.add(actionKey(edge));
+      version++;
+    }
+  };
+  retain(discovered);
   let serial = 0;
   for (const candidate of candidates) {
     // A known complete result bounds further entry searches. Include supplied
@@ -479,11 +508,24 @@ export function planAirborneGoal(
     // if a later ordering widens one after an incomplete or over-budget solve.
     if (
       !saved ||
+      saved.version !== version ||
       (maxCost > saved.maxCost &&
         (saved.result.route.status !== 'complete' || saved.result.route.cost > saved.maxCost))
     ) {
       diagnostics.approaches++;
-      saved = { result: approach(candidate.start.position, maxCost), maxCost };
+      const fresh = approach(candidate.start.position, maxCost, [...known.values()]);
+      retain(fresh.connections);
+      // A larger action overlay can improve a prefix, but a failed or slower
+      // fresh search must not discard a usable prefix for a later flight.
+      const previous = saved?.result;
+      const result =
+        previous?.route.status === 'complete' &&
+        (fresh.route.status !== 'complete' || previous.route.cost <= fresh.route.cost)
+          ? previous
+          : fresh.route.status === 'complete'
+            ? fresh
+            : { ...fresh, connections: [] };
+      saved = { result, maxCost, version };
       prefixes.set(key, saved);
     }
     const prefix: Pick<JumpResult, 'route' | 'connections'> = saved.result;
@@ -539,6 +581,11 @@ export function planAirborneGoal(
         endpointTolerance: Math.min(options.maxVertical, profile.radius),
       },
     ];
+    if (route.goalHit) options.onCandidate?.({ route, connections });
   }
-  return { route: best, connections, diagnostics };
+  return {
+    route: best,
+    connections: best.status === 'complete' ? connections : [...known.values()],
+    diagnostics,
+  };
 }

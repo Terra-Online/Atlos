@@ -1,5 +1,24 @@
 # Route solver handoff
 
+## Latest Cirisus strategies, 2026-11-16
+
+The subsequent `chan/algo-progression` update through `463b737a` is integrated.
+Node `src/v1` matches that source, including interior moving-support boarding,
+authored transfer priorities, sprint-aware reach/shortcut bounds, materialized
+pair reuse, envelope fast paths, early airborne candidates and bounded narrow
+planner replacement. Rust and v119 integration remain unchanged. The shared
+population stays 266; revision 11 repairs case 250's occupied bridge contact and
+retains its original definition as a negative control. Candidate inputs must be
+rebound to this specification before measurement.
+
+`benchmark:mechanisms` now enters `bench/mechanism-benchmark.ts` and its service
+worker. `bench/mechanism-run.ts --mode physical-diagnostic` retains the author's
+direct physical diagnostic entry. Service scoring retains configured scenario
+training, frozen warmup, one round and cooperative phase-boundary cancellation.
+Solver completion and independent physical validity are separate report counts.
+The author's 222/266 mixed-revision campaign is retained in the published progress
+files; it is not a fresh service benchmark result.
+
 ## Cirisus Node solver integration, 2026-11-15
 
 `chan/algo-progression` at `352c62b9` is merged. `src/v1` matches that branch:

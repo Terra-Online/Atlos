@@ -133,11 +133,11 @@ export function prepareMovingDirect(
     owners.set(id, source);
     return id;
   };
-  const endpoint = (support: SweptSupport, raw: Vec3): Vec3 | null => {
+  const endpoint = (support: SweptSupport, raw: Vec3, contactModel = physical): Vec3 | null => {
     const point: Vec3 = [raw[0], raw[1] + 0.01, raw[2]];
     if (!snapshot.covered(point, point)) return null;
-    const feet = physical.standing(point),
-      contact = physical.movingContact(support, point);
+    const feet = contactModel.standing(point),
+      contact = contactModel.movingContact(support, point);
     return feet &&
       distance(feet, point) <= 1e-5 &&
       contact &&
@@ -198,6 +198,22 @@ export function prepareMovingDirect(
   for (const [index, support] of supports.entries())
     for (const [surfaceIndex, surface] of support.surfaces.entries())
       sourceFaces.set(surface.id, [{ support: index, surface: surfaceIndex }]);
+  const selectedContact = (support: SweptSupport) =>
+    createPhysicalWorld(
+      {
+        ...input,
+        roundedWalls: walls,
+        devices: { ...input.devices!, movingSupports: [support] },
+      },
+      input.ground.build?.bounds && input.ground.tiles
+        ? {
+            bounds: input.ground.build.bounds,
+            tiles: input.ground.tiles,
+            tileSpan: physicalTileSpan,
+          }
+        : 'complete',
+      prepared,
+    ).configured([]);
   const selectedPoses = new WeakMap<Route, SupportBox[]>();
   const annotateDefault = createMovingRouteAnnotator({
     supports,
@@ -221,6 +237,7 @@ export function prepareMovingDirect(
         settling = Math.max(0.5, input.movement.stepDown + (input.ground.build?.cellHeight ?? 0));
       const range = start.groundRange ?? [start.position[1] - settling, start.position[1] + 0.5];
       let walking: Route = { status: 'unmapped' };
+      let localConnections: GroundConnection[] = [];
       for (const [supportIndex, support] of supports.entries()) {
         if (sources && !sources.has(supportIndex)) continue;
         if (support.circular || support.assumption !== 'phase-free-swept-support') continue;
@@ -237,24 +254,7 @@ export function prepareMovingDirect(
           // Recheck an interpolated candidate against only its selected cap.
           // A neighbouring alternative pose must not lift any part of the walk.
           const contact = box
-            ? createPhysicalWorld(
-                {
-                  ...input,
-                  roundedWalls: walls,
-                  devices: {
-                    ...input.devices!,
-                    movingSupports: [{ ...support, surfaces: [surface], transfers: [] }],
-                  },
-                },
-                input.ground.build?.bounds && input.ground.tiles
-                  ? {
-                      bounds: input.ground.build.bounds,
-                      tiles: input.ground.tiles,
-                      tileSpan: physicalTileSpan,
-                    }
-                  : 'complete',
-                prepared,
-              ).configured([])
+            ? selectedContact({ ...support, surfaces: [surface], transfers: [] })
             : physical;
           const trace = snapshot.covered(a, b) && contact.walkTrace(a, b);
           if (
@@ -298,6 +298,153 @@ export function prepareMovingDirect(
           }
         }
       }
+      // The authored initial cap may be below an independently supported source.
+      // Board only a proved translating pose inside the original height band,
+      // then charge the remaining authored displacement at its original speed.
+      const projected = baseProject(start.position, {
+        maxVertical: Math.max(...range.map((height) => Math.abs(height - start.position[1]))),
+      }).filter(
+        ({ position: p }) =>
+          p[0] === start.position[0] &&
+          p[2] === start.position[2] &&
+          p[1] >= range[0] &&
+          p[1] <= range[1],
+      );
+      const visited = new Set<string>();
+      for (const [supportIndex, support] of supports.entries()) {
+        if (sources && !sources.has(supportIndex)) continue;
+        if (support.assumption !== 'phase-free-swept-support' || support.circular) continue;
+        for (const [index, transfer] of support.transfers.entries()) {
+          if (
+            transfer.speed === null ||
+            !Number.isFinite(transfer.speed) ||
+            transfer.speed <= 0 ||
+            transfer.body === undefined ||
+            transfer.fromPose === undefined ||
+            transfer.toPose === undefined
+          )
+            continue;
+          for (const reverse of [false, true]) {
+            const fromPose = reverse ? transfer.toPose : transfer.fromPose;
+            const toPose = reverse ? transfer.fromPose : transfer.toPose;
+            const delta = translating(support, fromPose, toPose);
+            if (!delta) continue;
+            const caps = support.surfaces.filter((_surface, i) =>
+              support.surfacePoses?.[i]?.some(
+                (span) => span.fromPose === fromPose && span.toPose === fromPose,
+              ),
+            );
+            const terminal = support.surfaces.filter((_surface, i) =>
+              support.surfacePoses?.[i]?.some(
+                (span) => span.fromPose === toPose && span.toPose === toPose,
+              ),
+            );
+            for (const cap of caps) {
+              const capIndex = support.surfaces.indexOf(cap);
+              if (
+                !support.surfacePoses?.[capIndex]?.some(
+                  (span) =>
+                    span.body === transfer.body &&
+                    span.fromPose === fromPose &&
+                    span.toPose === fromPose,
+                )
+              )
+                continue;
+              for (const { position: feet } of projected) {
+                const raw: Vec3 = [feet[0], feet[1] - 0.01, feet[2]];
+                const interval = faceInterval(
+                  raw,
+                  raw.map((v, i) => v - delta[i]) as Vec3,
+                  cap,
+                  1e-6,
+                );
+                if (!interval) continue;
+                const fraction = (interval[0] + interval[1]) / 2;
+                if (fraction <= 0 || fraction >= 1) continue;
+                const key = JSON.stringify([supportIndex, index, reverse, feet, fraction]);
+                if (visited.has(key)) continue;
+                visited.add(key);
+                const end = feet.map((v, i) => v + delta[i] * (1 - fraction)) as Vec3;
+                if (
+                  request.interaction
+                    ? !findGoalHit([end, end], request.target, request.interaction)
+                    : distance(end, request.target) > 1e-6
+                )
+                  continue;
+                const shift = (p: Vec3) => p.map((v, i) => v + delta[i] * fraction) as Vec3;
+                const selected: SweptSupport = {
+                  ...support,
+                  surfaces: [
+                    ...caps.map((surface) => ({
+                      ...surface,
+                      vertices: surface.vertices.map(shift),
+                    })),
+                    ...terminal,
+                  ],
+                  transfers: [],
+                };
+                const contact = selectedContact(selected);
+                const a = endpoint(selected, raw, contact);
+                const b = endpoint(selected, [end[0], end[1] - 0.01, end[2]], contact);
+                if (
+                  !a ||
+                  !b ||
+                  !snapshot.covered(a, b) ||
+                  contact.blocked(a, b) ||
+                  contact.world.sweepCapsule(a, b, profile)
+                )
+                  continue;
+                const cost = distance(a, b) / transfer.speed;
+                const connection: GroundConnection = {
+                  id: `moving-ride/${support.id}/${index}/partial${reverse ? '/reverse' : ''}`,
+                  state: 'open',
+                  mode: 'rope',
+                  traversal: 'moving-support',
+                  points: [a, b],
+                  times: [0, cost],
+                  endpointTolerance: profile.radius,
+                };
+                const candidate = routeFrom(
+                  {
+                    nodes: [
+                      { id: 'from', position: a },
+                      { id: 'to', position: b },
+                    ],
+                    edges: [
+                      { ...connection, from: 'from', to: 'to', cost, connection: connection.id },
+                    ],
+                  },
+                  [{ ...start, node: 'from' }],
+                  'to',
+                  { walls, profile, locomotion: input.locomotion },
+                );
+                if (
+                  candidate.status !== 'complete' ||
+                  (walking.status === 'complete' && candidate.cost >= walking.cost)
+                )
+                  continue;
+                walking = candidate;
+                localConnections = [connection];
+                selectedPoses.set(candidate, [
+                  {
+                    device: support.id,
+                    family: support.family,
+                    role: 'board',
+                    min: shift(support.poses![fromPose].min),
+                    max: shift(support.poses![fromPose].max),
+                  },
+                  {
+                    device: support.id,
+                    family: support.family,
+                    role: 'leave',
+                    ...support.poses![toPose],
+                  },
+                ]);
+              }
+            }
+          }
+        }
+      }
       const arrivals = graph.nodes
         .filter(
           ({ position: p }) =>
@@ -331,7 +478,8 @@ export function prepareMovingDirect(
             : distance(p, request.target) <= 1e-6,
         )
         .map((n) => n.id);
-      if (!arrivals.length || !goals.length) return { route: walking, connections: [] };
+      if (!arrivals.length || !goals.length)
+        return { route: walking, connections: localConnections };
       const route = routeFrom(graph, [{ ...start, node: arrivals[0].id }], goals, {
         walls,
         profile,
@@ -339,7 +487,7 @@ export function prepareMovingDirect(
       });
       return walking.status === 'complete' &&
         (route.status !== 'complete' || walking.cost < route.cost)
-        ? { route: walking, connections: [] }
+        ? { route: walking, connections: localConnections }
         : { route, connections };
     },
   };

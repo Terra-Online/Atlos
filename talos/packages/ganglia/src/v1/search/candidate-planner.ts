@@ -92,7 +92,9 @@ export function createCandidatePlanner(
   const expand = (component: number | undefined) => {
     if (component === undefined || expanded.has(component)) return;
     expanded.add(component);
-    for (const proposal of transfers(component)) {
+    // Earlier expansions already materialized every proposal for their component
+    // pairs in both directions, including the same encounter ranks and keys.
+    for (const proposal of transfers(component, expanded)) {
       if (materialized.has(proposal.key)) continue;
       materialized.add(proposal.key);
       const { key, rank, first, ...forward } = proposal;

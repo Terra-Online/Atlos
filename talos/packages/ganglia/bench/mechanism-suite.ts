@@ -336,14 +336,17 @@ export function exercised(c: MechanismCase, result: RouteResult, input?: Physica
               (!family || b.family === family) &&
               (!c.setup.requiredSupport || b.device === c.setup.requiredSupport),
           ) ?? false;
-        if (['rope', 'drop', 'launch'].includes(name))
+        if (['rope', 'drop', 'launch'].includes(name)) {
+          const prefix = `${name}/${c.setup.requiredDevice}`;
           hit = segments.some(
             (s) =>
               s.mode === name &&
               !s.traversal &&
-              (!c.setup.requiredDevice || s.connection === `launch/${c.setup.requiredDevice}`),
+              (!c.setup.requiredDevice ||
+                s.connection === prefix ||
+                s.connection?.startsWith(prefix + '/')),
           );
-        else if (name === 'boost-pickup')
+        } else if (name === 'boost-pickup')
           hit =
             route.boosts?.some((b) => !c.setup.requiredDevice || b.id === c.setup.requiredDevice) ??
             false;

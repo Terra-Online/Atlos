@@ -233,6 +233,28 @@ test('large coarse, moving and target graphs share a budget before construction'
   );
   assert.equal(cache.stats().evictions['ground:surface-capacity'], 2);
   assert.equal(cache.stats().evictions['moving:surface-capacity'], 1);
+  await cache.memo(
+    'refinement',
+    'narrow-with-validated-actions',
+    (reserve) => {
+      reserve!(faces + 1);
+      assert.equal(cache.stats().resident.refinement, 0);
+      assert.equal(cache.stats().resident.plannerSurfaces, 0);
+      return 'narrow';
+    },
+    { view: 'rounded', parent },
+  );
+  assert.equal(cache.stats().resident.plannerSurfaces, faces + 1);
+  assert.equal(cache.stats().evictions['refinement:surface-capacity'], 1);
+  assert.equal(
+    (
+      await cache.memo('refinement', 'narrow-with-validated-actions', () => 'wrong', {
+        view: 'rounded',
+        parent,
+      })
+    ).value,
+    'narrow',
+  );
 });
 
 test('an oversized graph remains usable without displacing the retained-memory bound', async () => {

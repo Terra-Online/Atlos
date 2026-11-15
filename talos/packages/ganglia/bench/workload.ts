@@ -23,13 +23,21 @@ const presets: Record<string, Workload> = {
 export async function readWorkload(name = 'map02'): Promise<Workload> {
   if (name === 'mechanisms')
     throw new Error(
-      'Use benchmark:mechanisms for scenario setup, training and mechanism acceptance',
+      'Scenario manifests require benchmark:mechanisms for service scoring or bench/mechanism-run.ts for native route diagnostics',
     );
   if (presets[name]) return presets[name];
   const cases: unknown = JSON.parse(await readFile(name, 'utf8'));
-  if (!Array.isArray(cases))
+  if (
+    !Array.isArray(cases) ||
+    cases.some(
+      (item) =>
+        item &&
+        typeof item === 'object' &&
+        ('setup' in item || 'scene' in item || 'assertions' in item),
+    )
+  )
     throw new Error(
-      'Scenario manifests require benchmark:mechanisms; --workload expects a query array',
+      'Scenario manifests require bench/mechanism-run.ts; do not discard scene/setup to score them as query arrays',
     );
   return { cases, directory: '' };
 }

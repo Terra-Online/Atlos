@@ -1,5 +1,24 @@
 # Route solver history and validation evidence
 
+## Latest Node strategy synchronization, 2026-11-16
+
+Integrated `463b737aff952b87b3a113b779ad1fcedfed3943`, including the source
+strategy commits through `688f5fc5` and revision-11 bridge contact repair
+`61d83990`. All Node algorithm files match the source branch. Existing trained
+scenario config caps and local deadline transport are retained in the renamed
+service benchmark. The author's direct physical diagnostic and frozen progress
+pages remain separate. His 222/266 tally combines retained source revisions and
+does not establish this branch's service completion or independent replay score.
+
+The short `76e80967` launch was cooperatively stopped before measurement after
+discovering the newer remote revision. Its report remains under
+`.local/research/mechanisms-266-node-cirisus-phase/`; no source changed while it
+was active. The revision-11 suite requires a new input-index/provenance binding;
+its physical regions and all 265 other case definitions are unchanged.
+The merged package passes formatting, lint, typecheck and all 552 TS tests.
+The v119 World transport files retain this branch's implementation; the incoming
+transport-only edits are outside the solver synchronization.
+
 ## Cirisus Node solver merge, 2026-11-15
 
 Merged `352c62b9397a9e738a041c4dce9426bdc7933509` from `chan/algo-progression`.

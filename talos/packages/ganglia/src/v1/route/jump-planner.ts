@@ -27,6 +27,9 @@ import {
 import { type DiscoveryDiagnostics, findJumpConnections } from '#@/src/v1/search/traversal.ts';
 
 export interface JumpRouteOptions extends GroundOptions {
+  /** A complete airborne route after joint resource timing and goal-event binding.
+   * Called synchronously while further departure alternatives may still be searched. */
+  onCandidate?: (result: Pick<JumpResult, 'route' | 'connections'>) => void;
   boosts?: SpeedBoost[];
   /** Optimistic coarse direction samples. At most 128 finite positions. These only
    * guide action discovery; the final route need not visit them. */
@@ -656,8 +659,12 @@ function planBaseRoute(
       world,
       starts,
       goal,
-      { ...options, groundPlanner: planner, interaction: options.interaction },
-      (position: Vec3, maxCost: number) =>
+      {
+        ...options,
+        groundPlanner: planner,
+        interaction: options.interaction,
+      },
+      (position: Vec3, maxCost: number, connections: GroundConnection[]) =>
         planDirectedRoute(
           surfaces,
           world,
@@ -668,13 +675,14 @@ function planBaseRoute(
             groundPlanner: planner,
             interaction: undefined,
             endpointTolerance: Math.min(options.maxVertical, options.profile.radius),
-            connections: result.connections,
+            connections,
             maxShortcutCandidates: options.activeBoost ? options.maxCandidates : 0,
             ...(Number.isFinite(maxCost) ? { costBound: maxCost, boundGoal: position } : {}),
           },
           shared,
           'entry',
         ),
+      result.connections,
     );
     result.diagnostics.airborne = airborne.diagnostics;
     result.diagnostics.truncated ||= airborne.diagnostics.truncated;
@@ -685,6 +693,7 @@ function planBaseRoute(
         connections: airborne.connections,
         diagnostics: { ...result.diagnostics, selectedCost: airborne.route.cost },
       };
+    result.connections = airborne.connections;
   }
   if (result.route.status === 'complete' || !options.connections?.length) return result;
   const planner = options.groundPlanner ?? createGroundPlanner(surfaces, options);
@@ -923,7 +932,12 @@ export function planJumpRoute(
     seeds,
   );
   const best = options.boosts?.length
-    ? planBoostedRoute(surfaces, world, starts, goal, options, result, planBaseRoute)
+    ? planBoostedRoute(surfaces, world, starts, goal, options, result, (...args) => {
+        // Boost pickup approaches and synthetic boosted tails are local queries,
+        // not complete routes from the original source to its requested goal.
+        args[4] = { ...args[4], onCandidate: undefined };
+        return planBaseRoute(...args);
+      })
     : result;
   if (options.interaction?.airborne && best.route.status === 'complete' && !best.route.goalHit) {
     const point = best.route.points.at(-1)!;
