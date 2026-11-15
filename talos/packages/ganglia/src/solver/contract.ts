@@ -47,6 +47,7 @@ export interface RouteQuery {
   starts: GroundArrival[];
   goal: Vec3;
   interaction?: InteractionGoal;
+  /** Coarse action-discovery hints; the route need not visit these positions. */
   waypoints?: Vec3[];
 }
 

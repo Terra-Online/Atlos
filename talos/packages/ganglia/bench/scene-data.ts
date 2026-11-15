@@ -53,6 +53,11 @@ const missing = (error: unknown) =>
   error instanceof Error && 'code' in error && error.code === 'ENOENT';
 const tileKey = (tile: Tile) => `${tile.x},${tile.z}`;
 
+// Large collision snapshots cannot pass through V8's single-string JSON limit.
+// Both diagnostic input paths preserve the same numeric buffers and setup work.
+export const decodeSnapshot = (name: string, bytes: Buffer): unknown =>
+  name.endsWith('.bin') ? deserialize(bytes) : JSON.parse(bytes.toString());
+
 export async function loadSceneData(dataRoot: string, scene: string, build?: RegionBuild) {
   const hashes: Record<string, string> = {};
   const inputs = new Map<string, unknown>();
@@ -63,11 +68,7 @@ export async function loadSceneData(dataRoot: string, scene: string, build?: Reg
     const started = performance.now();
     try {
       const bytes = await readFile(name);
-      // Large collision snapshots exceed V8's single-string limit. Binary inputs
-      // keep exact numeric buffers outside the JS heap; decoding remains setup work.
-      const value: unknown = name.endsWith('.bin')
-        ? deserialize(bytes)
-        : JSON.parse(bytes.toString());
+      const value = decodeSnapshot(name, bytes);
       inputBytes += bytes.byteLength;
       hashes[name] = createHash('sha256').update(bytes).digest('hex');
       inputs.set(name, value);

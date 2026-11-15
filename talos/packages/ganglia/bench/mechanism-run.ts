@@ -112,6 +112,7 @@ if (values.help) {
       counts,
       groups,
       measuredAttempts: attempts.length,
+      nativeComplete: report.results.filter((row) => row.nativeComplete === true).length,
       meanSerialAttemptMs: attempts.length
         ? attempts.reduce((sum, row) => sum + row.serviceMs!, 0) / attempts.length
         : null,
@@ -162,6 +163,8 @@ if (values.help) {
   for (const item of selected) {
     try {
       checkSetup(item);
+      if (config.algorithm === 'ganglia-v1-rust' && item.setup.supportModel)
+        throw new Error('Unsupported setup: Rust circular waterwheel domains are not implemented');
       if (!index.cases[item.id]) throw new Error('Missing candidate input binding');
       const setup = item.setup;
       const key = JSON.stringify([
@@ -359,6 +362,8 @@ if (values.help) {
             : evaluation && !evaluation.valid
               ? 'physical-invalid'
               : classify(item, result),
+          nativeComplete: result.route.status === 'complete' && !result.partial,
+          reason: result.reason,
           serviceMs: result.diagnostics.solveWallMs,
           verificationMs: performance.now() - verificationStarted,
           timedOut: result.diagnostics.timedOut,

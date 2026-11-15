@@ -577,7 +577,7 @@ diff --git a/packages/extractor/src/game/traversal-links.ts b/packages/extractor
 new file mode 100644
 --- /dev/null
 +++ b/packages/extractor/src/game/traversal-links.ts
-@@ -0,0 +1,305 @@
+@@ -0,0 +1,310 @@
 +import {
 +	trsMatrix,
 +	transformPoint,
@@ -834,6 +834,11 @@ new file mode 100644
 +			fixedLaunch:
 +				!!p &&
 +				p.get('free_jump') === false &&
++				typeof p.get('use_electric') === 'boolean' &&
++				p.get('unlock_height_limit') === false,
++			freeLaunch:
++				!!p &&
++				p.get('free_jump') === true &&
 +				typeof p.get('use_electric') === 'boolean' &&
 +				p.get('unlock_height_limit') === false,
 +			aim: p?.get('target_position'),

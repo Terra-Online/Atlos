@@ -510,12 +510,19 @@ export function planAirborneGoal(
       const part = route.segments[index],
         hit = findGoalHit(part.points, goal, interaction);
       if (!hit) continue;
+      const time =
+        part.times[hit.index - 1] +
+        hit.fraction * (part.times[hit.index] - part.times[hit.index - 1]);
+      // The clipped flight owns its terminal event. An inward-rounded entry
+      // can re-intersect a few floating-point increments before that endpoint.
+      const terminal =
+        index === route.segments.length - 1 &&
+        Math.abs(time - part.times.at(-1)!) <=
+          4096 * Number.EPSILON * Math.max(1, part.times.at(-1)!);
       route.goalHit = {
         segment: index,
-        position: hit.position,
-        time:
-          part.times[hit.index - 1] +
-          hit.fraction * (part.times[hit.index] - part.times[hit.index - 1]),
+        position: terminal ? part.points.at(-1)! : hit.position,
+        time: terminal ? part.times.at(-1)! : time,
       };
       break;
     }

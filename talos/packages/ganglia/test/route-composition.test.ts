@@ -214,3 +214,69 @@ test('walking goal evidence follows a stamina-induced gait split', () => {
     assert.deepEqual(result.goalHit, { segment: 1, time: 18.5, position: [20, 0, 0] });
   }
 });
+
+const placedPiece = (
+  x: number,
+  placements?: Extract<Route, { status: 'complete' }>['placements'],
+): Extract<Route, { status: 'complete' }> => ({
+  status: 'complete',
+  start: 'entry',
+  arrivalCost: 0,
+  cost: 1,
+  length: 1,
+  points: [
+    [x, 0, 0],
+    [x + 1, 0, 0],
+  ],
+  segments: [
+    {
+      mode: 'walk',
+      points: [
+        [x, 0, 0],
+        [x + 1, 0, 0],
+      ],
+      times: [0, 1],
+    },
+  ],
+  placements,
+});
+const compositionMovement = { speed: 1, sprintSpeed: 1, sprintAcceleration: 1 };
+
+test('composition deduplicates identical complete layouts independently of declaration order', () => {
+  const a = { device: 'a', position: [4, 0, 0] as [number, number, number] };
+  const b = { device: 'b', position: [6, 0, 0] as [number, number, number] };
+  const pieces = [placedPiece(0, [a, b, a]), placedPiece(1, [b, a])];
+  const before = structuredClone(pieces);
+  const result = composeRoutes(pieces, compositionMovement);
+  assert.equal(result.status, 'complete');
+  if (result.status === 'complete') assert.deepEqual(result.placements, [a, b]);
+  assert.deepEqual(pieces, before);
+});
+
+test('composition rejects conflicting bindings within a piece and across pieces', () => {
+  const a = { device: 'box', position: [4, 0, 0] as [number, number, number] };
+  const b = { device: 'box', position: [6, 0, 0] as [number, number, number] };
+  assert.equal(
+    composeRoutes([placedPiece(0, [a, b])], compositionMovement).status,
+    'no-verified-route',
+  );
+  assert.equal(
+    composeRoutes([placedPiece(0, [a]), placedPiece(1, [b])], compositionMovement).status,
+    'no-verified-route',
+  );
+});
+
+test('a later box placement cannot invalidate the prefix by being silently merged', () => {
+  // The tail's box occupies the prefix corridor. Composition has no geometry
+  // evidence that the prefix remains valid under this new placement.
+  const box = { device: 'box', position: [0.5, 0, 0] as [number, number, number] };
+  const prefix = placedPiece(0);
+  const tail = placedPiece(1, [box]);
+  assert.equal(composeRoutes([prefix], compositionMovement).status, 'complete');
+  assert.equal(composeRoutes([tail], compositionMovement).status, 'complete');
+  assert.equal(composeRoutes([prefix, tail], compositionMovement).status, 'no-verified-route');
+  assert.equal(
+    composeRoutes([placedPiece(0, [box]), placedPiece(1)], compositionMovement).status,
+    'no-verified-route',
+  );
+});

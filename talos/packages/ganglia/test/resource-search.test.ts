@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
+import { createPhysicalVerifier, createPhysicalWorld } from '#@/src/evaluation/index.ts';
 import type { Surface } from '#@/src/geometry.ts';
+import { createLocomotionRules } from '#@/src/model/locomotion.ts';
+import type { LocomotionOptions } from '#@/src/movement.ts';
+import type { PhysicalInput } from '#@/src/solver/physical.ts';
 import { planGroundRoute } from '#@/src/v1/route/ground.ts';
 import { route, type Edge, type Graph } from '#@/src/v1/route/routes.ts';
 import { expectStatus } from '#@/test/assertions.ts';
@@ -41,6 +45,60 @@ const fast: Edge & { mode: 'jump'; times: number[] } = {
   times: [0, 1],
   cost: 1,
 };
+
+function verifyResourceRoute(result: ReturnType<typeof route>, options: LocomotionOptions) {
+  assert.ok(result.status === 'complete');
+  const vertices: Surface['vertices'] = [
+    [-1, -0.005, -1],
+    [-1, -0.005, 1],
+    [5, -0.005, 1],
+    [5, -0.005, -1],
+  ];
+  const input: PhysicalInput = {
+    ground: {
+      surfaces: [{ id: 'floor', vertices }],
+      options: { walls: [], profile: constraints.profile, speed: 1, maxVertical: 0.5 },
+    },
+    collision: { positions: vertices.flat(), indices: [0, 1, 2, 0, 2, 3] },
+    movement: {
+      model: {
+        gravity: 10,
+        fallingGravity: 10,
+        maxJumpHeight: 1,
+        maxFallingSpeed: 10,
+        apexTime: 0,
+        maxHorizontalSpeed: 5,
+        startHorizontalSpeed: 5,
+        airOverspeedDeceleration: 10,
+        airAcceleration: 20,
+        airDeceleration: 20,
+      },
+      maxSlope: 45,
+      runAirSpeed: 5,
+      stepUp: 0.4,
+      stepDown: 0.5,
+    },
+    locomotion: options,
+  };
+  const world = createPhysicalWorld(input, 'complete');
+  const query = {
+    starts: [
+      {
+        id: result.start,
+        position: result.points[0],
+        cost: result.arrivalCost,
+        state: 'available' as const,
+      },
+    ],
+    goal: result.points.at(-1)!,
+  };
+  const evaluate = createPhysicalVerifier(() => [world]);
+  assert.deepEqual(evaluate(query, result).issues, []);
+  const { schedule: _schedule, ...withoutControls } = result;
+  assert.ok(
+    evaluate(query, withoutControls).issues.includes('Missing whole-route resource controls'),
+  );
+}
 
 test('adding a resource-infeasible fast edge preserves the six-second route', () => {
   const graph: Graph = {
@@ -96,6 +154,16 @@ test('the ordinary ground entry falls back to a resource-feasible corridor', () 
   assert.ok(result.status === 'complete');
   assert.equal(result.cost, 6);
   assert.ok(result.segments.some((segment) => segment.connection === 'ordinary'));
+  const rules = createLocomotionRules(locomotion);
+  let state = rules.initial(),
+    duration = 0;
+  for (const block of result.schedule ?? []) {
+    const replay = rules.advance(block.segments, state, block);
+    assert.ok(replay);
+    state = replay.state;
+    duration += replay.duration;
+  }
+  assert.equal(duration, result.cost);
 });
 
 test('bounded search reports unfinished work on unresolved output', () => {
@@ -134,4 +202,53 @@ test('bounded search reports unfinished work on unresolved output', () => {
   });
   assert.equal(result.status, 'no-verified-route');
   assert.equal(result.search!.truncated, true);
+});
+
+test('resource search preserves selected dash controls and continuation for physical replay', () => {
+  const options: LocomotionOptions = {
+    speed: 1,
+    sprintSpeed: 2,
+    sprintAcceleration: 2,
+    stamina: { ...locomotion.stamina, capacity: 4, initial: 4 },
+    dash: { speed: 4, duration: 0.5, cooldown: 2, cost: 1 },
+  };
+  const result = route(
+    {
+      nodes: [
+        { id: 'a', position: [0, 0, 0] },
+        { id: 'b', position: [2, 0, 0] },
+        { id: 'c', position: [4, 0, 0] },
+      ],
+      edges: [
+        {
+          from: 'a',
+          to: 'b',
+          points: [
+            [0, 0, 0],
+            [2, 0, 0],
+          ],
+          cost: 2,
+          state: 'open',
+        },
+        {
+          from: 'b',
+          to: 'c',
+          points: [
+            [2, 0, 0],
+            [4, 0, 0],
+          ],
+          cost: 2,
+          state: 'open',
+        },
+      ],
+    },
+    'a',
+    'c',
+    { ...constraints, locomotion: options },
+  );
+  assert.ok(result.status === 'complete');
+  assert.equal(result.cost, 1.5);
+  assert.equal(result.locomotion!.dashes, 1);
+  assert.deepEqual(result.locomotion!.dash, options.dash);
+  verifyResourceRoute(result, options);
 });

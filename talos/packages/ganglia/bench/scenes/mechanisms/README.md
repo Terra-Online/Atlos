@@ -48,11 +48,15 @@ untrained diagnostics and directly called its physical solver for those cases;
 the imported workload is shared while the service lifecycle follows this branch.
 Scenario locomotion configures both the Scene resource clock and physical windows.
 
+The Node adapter includes the `352c62b9` solver and circular-support facts. Reports
+count `nativeComplete` separately from independently verified completion. Rust
+continues to report circular-waterwheel setup as unsupported.
+
 Route completion, independent whole-route physical validity and mechanism exercise
 are separate results. An alternative valid route can complete a case without using
 its intended mechanism. Multi-box credit requires actual support use of all counted
 placements in one joint layout. The current branch does not implement circular
-waterwheel domains and reports those cases as unsupported setup.
+waterwheel domains in Rust and reports those cases as unsupported setup for that adapter.
 
 ## Candidate inputs
 

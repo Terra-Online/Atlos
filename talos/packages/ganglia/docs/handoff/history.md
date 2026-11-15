@@ -1,5 +1,29 @@
 # Route solver history and validation evidence
 
+## Cirisus Node solver merge, 2026-11-15
+
+Merged `352c62b9397a9e738a041c4dce9426bdc7933509` from `chan/algo-progression`.
+The integrated `src/v1` is identical to that source. The v119 archive, renderer,
+transport fixes, Rust path, trained benchmark host and prior canonical evidence
+are retained. Imported historical progress pages are omitted; current-source
+measurements will have their own reports. The selected 266-case revision-10
+definition is unchanged.
+
+The incoming contract treats waypoints as coarse discovery hints. Its Node search
+retains concrete action construction and source contact checks while independent
+physical replay is separate from search. Benchmark replay stays enabled after
+timing, reporting native complete outcomes and physical validity independently.
+Circular-surface and exact phase-free contacts extend the common physical model.
+
+`algorithm-supports.patch` applies after the v119 patches. Redundant v114
+`oem-views.readRanges` and motion-material test compatibility hunks are omitted.
+Preparation identity is `49b578cdba8a04e8b9e6deded4de761148ab9c8ee4e18e14e4d813a75a7e3003`.
+Validation passes package formatting/lint/typecheck and 531 TS tests, 26 retained
+N-API fixtures, 14 focused exporter tests, World main/worker and extractor
+typechecks, and noclip preparation integrity. Native Rust source is unchanged.
+Fresh input preparation and the full Node population measurement are pending;
+the source branch's reported mixed-revision 211/266 campaign is historical evidence.
+
 ## Mechanism benchmark integration and input repair, 2026-11-15
 
 The shared revision-10 suite is imported unchanged from `352c62b9`, including 266

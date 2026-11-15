@@ -30,7 +30,7 @@ const interpolate = (a: Vec3, b: Vec3, t: number): Vec3 => [
 ];
 
 // clip a route chord against a convex support footprint and its height tolerance.
-const faceInterval = (
+export const faceInterval = (
   a: Vec3,
   b: Vec3,
   face: Surface,

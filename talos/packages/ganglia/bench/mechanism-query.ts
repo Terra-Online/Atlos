@@ -46,7 +46,14 @@ export function sourceSupportWorld(
   )
     throw new Error('Source support volume exceeds physical coverage');
   const base = createTypeScriptCollisionWorld(input.collision, { bounds });
-  const world = createPhysicalWorld(input, { ...coverage, bounds });
+  const world = createPhysicalWorld(
+    input,
+    { ...coverage, bounds },
+    {
+      geometry: input.collision,
+      world: base,
+    },
+  );
   sourceIndexes.set(world, base);
   return world;
 }

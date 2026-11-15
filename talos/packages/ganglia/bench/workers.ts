@@ -74,7 +74,7 @@ export type WorkerReply =
       catalog?: CatalogStats;
     }
   | { type: 'verified'; id: number; evaluation: Evaluation }
-  | { type: 'event'; id: number; event: RouteEvent }
+  | { type: 'event'; id: number; event: RouteEvent; memory?: Memory; detail?: string }
   | { type: 'region'; files: RegionFiles }
   | { type: 'control'; id: number; catalog?: CatalogStats; memory?: Memory }
   | { type: 'error'; id: number; error: string }
@@ -122,6 +122,7 @@ export async function prepareWorkerSolver(options: {
   preparation?: WorkerSetup['preparation'];
   onRegion?: (files: RegionFiles) => void;
   onResult?: (query: RouteQuery, result: WorkerResult) => void;
+  onEvent?: (query: RouteQuery, event: RouteEvent, memory?: Memory, detail?: string) => void;
 }) {
   const timeoutMs = options.timeoutMs ?? QUERY_SLO_MS;
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0 || timeoutMs > QUERY_SLO_MS)
@@ -358,6 +359,8 @@ export async function prepareWorkerSolver(options: {
           if (message.type === 'event') {
             if (task.interruption) return;
             try {
+              if (message.memory) sample(slot, message.memory);
+              options.onEvent?.(task.message.query, message.event, message.memory, message.detail);
               task.options.onEvent?.(message.event);
             } catch (error) {
               interrupt(slot, 'aborted', error);
@@ -484,7 +487,12 @@ export async function prepareWorkerSolver(options: {
     if (closed) return Promise.reject(new Error('Scene worker solver is closed'));
     return new Promise<RouteResult>((resolve, reject) => {
       const task: Task = {
-        message: { type: 'solve', id: ++serial, query, events: Boolean(solveOptions.onEvent) },
+        message: {
+          type: 'solve',
+          id: ++serial,
+          query,
+          events: Boolean(solveOptions.onEvent || options.onEvent),
+        },
         options: solveOptions,
         enqueued: performance.now(),
         workerIndex,

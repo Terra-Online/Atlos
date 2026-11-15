@@ -929,3 +929,175 @@ test('walking mesh contact tolerance bounds skin overlap without allowing wall c
     assert.equal(verify(input, crossing).valid, false);
   }
 });
+
+function alternativeContacts(): PhysicalInput {
+  const input = snapshot();
+  input.ground.build = { cellHeight: 0.05 };
+  input.devices = {
+    devices: [],
+    ropes: [],
+    movingSupports: [
+      {
+        id: 'platform',
+        family: 'platform',
+        level: 'fixture',
+        model: 'fixture',
+        assumption: 'phase-free-swept-support',
+        surfaces: [2, 2.05, 2.1].map((height, index) => ({
+          id: `pose/${index}`,
+          vertices: [
+            [-2, height, -2],
+            [-2, height, 2],
+            [2, height, 2],
+            [2, height, -2],
+          ] as Vec3[],
+        })),
+        transfers: [{ from: [0, 2, 0], to: [1, 2, 0], speed: 1 }],
+      },
+    ],
+  };
+  return input;
+}
+
+test('phase-free alternative roofs preserve a supported pose contact during full ride replay', () => {
+  const input = alternativeContacts(),
+    physical = createPhysicalWorld(input, 'complete').configured();
+  for (const height of [2, 2.05, 2.1]) {
+    const feet: Vec3 = [0, height + 0.01, 0];
+    assert.deepEqual(physical.standing(feet), feet);
+  }
+  assert.notDeepEqual(physical.standing([0, 2.3, 0]), [0, 2.3, 0]);
+  const ride: Segment = {
+    mode: 'rope',
+    traversal: 'moving-support',
+    connection: 'moving-ride/platform/0',
+    points: [
+      [0, 2.01, 0],
+      [1, 2.01, 0],
+    ],
+    times: [0, 1],
+  };
+  const result = verify(input, candidate(input, [ride]));
+  assert.equal(result.valid, true, JSON.stringify(result));
+  assert.equal(result.costSeconds, 1);
+});
+
+test('retained phase-free contact still requires sphere support and complete body clearance', () => {
+  const clear = alternativeContacts(),
+    feet: Vec3 = [0, 2.01, 0];
+  const overhead = structuredClone(clear);
+  overhead.collision.positions = [
+    ...overhead.collision.positions,
+    -2,
+    3,
+    -2,
+    -2,
+    3,
+    2,
+    2,
+    3,
+    2,
+    2,
+    3,
+    -2,
+  ];
+  overhead.collision.indices = [...overhead.collision.indices, 4, 5, 6, 4, 6, 7];
+  const wall = structuredClone(clear);
+  wall.ground.options.walls = [{ min: [-0.5, 2, -0.5], max: [0.5, 4, 0.5], state: 'active' }];
+  const box = structuredClone(clear);
+  box.devices!.followingSupports = [
+    {
+      id: 'box',
+      level: 'fixture',
+      model: 'fixture',
+      spawn: [0, 0, 0],
+      bodies: [
+        Array.from({ length: 8 }, (_, bits): Vec3 => [
+          bits & 1 ? 0.5 : -0.5,
+          bits & 2 ? 3 : 0,
+          bits & 4 ? 0.5 : -0.5,
+        ]),
+      ],
+      geometryKind: 'box',
+      maxDistance: 5,
+      initialState: 0,
+      assumption: 'placement-within-activity-range',
+    },
+  ];
+  for (const blocked of [overhead, wall, box])
+    assert.equal(createPhysicalWorld(blocked, 'complete').configured().standing(feet), null);
+  const slope = structuredClone(clear);
+  slope.devices!.movingSupports![0].surfaces = [
+    {
+      id: 'slope',
+      vertices: [
+        [-2, 1, -2],
+        [-2, 1, 2],
+        [2, 3, 2],
+        [2, 3, -2],
+      ],
+    },
+  ];
+  const physical = createPhysicalWorld(slope, 'complete').configured();
+  assert.notDeepEqual(
+    physical.standing(feet),
+    feet,
+    'point support cannot bypass bottom-sphere lift',
+  );
+  const supported: Vec3 = [0, 2 + 0.2 * (Math.sqrt(1.25) - 1) + 0.005, 0];
+  assert.deepEqual(physical.standing(supported), supported);
+  slope.movement.maxSlope = 10;
+  assert.equal(createPhysicalWorld(slope, 'complete').configured().standing(supported), null);
+});
+
+test('a prepared physical base must share the collision buffers and cover the source scope', async () => {
+  const { createCollisionWorld } = await import('#@/src/model/collision.ts');
+  const input = snapshot(),
+    base = createCollisionWorld(input.collision);
+  let calls = 0;
+  const world = {
+    ...base,
+    groundAt(...args: Parameters<typeof base.groundAt>) {
+      calls++;
+      return base.groundAt(...args);
+    },
+  };
+  assert.deepEqual(
+    createPhysicalWorld(input, 'complete', { geometry: input.collision, world })
+      .configured()
+      .standing([0, 0.005, 0]),
+    [0, 0.005, 0],
+  );
+  assert.ok(calls > 0, 'the caller-owned terrain index serves physical queries');
+  assert.throws(
+    () =>
+      createPhysicalWorld(input, 'complete', { geometry: structuredClone(input.collision), world }),
+    /Prepared collision/,
+  );
+  const clipped = createCollisionWorld(input.collision, { bounds: { min: [-1, -1], max: [1, 1] } });
+  const bounded = createPhysicalWorld(input, 'complete', {
+    geometry: input.collision,
+    world: clipped,
+  });
+  assert.equal(bounded.covered([0, 0.005, 0], [0, 0.005, 0]), true);
+  assert.equal(bounded.covered([0.95, 0.005, 0], [0.95, 0.005, 0]), false);
+  assert.equal(bounded.covered([2, 0.005, 0], [2, 0.005, 0]), false);
+  assert.equal(createPhysicalWorld(input, 'complete').covered([2, 0.005, 0], [2, 0.005, 0]), true);
+  assert.throws(
+    () =>
+      bounded
+        .configured()
+        .world.groundAt([2, 0.005, 0], { maxUp: 0.1, maxDown: 0.1, maxSlope: 45 }),
+    /Incomplete support coverage/,
+  );
+
+  assert.throws(
+    () =>
+      createPhysicalWorld(
+        input,
+        { bounds: { min: [-2, -2], max: [2, 2] }, tiles: [], tileSpan: 1 },
+        { geometry: input.collision, world: clipped },
+      ),
+    /Prepared collision/,
+  );
+});

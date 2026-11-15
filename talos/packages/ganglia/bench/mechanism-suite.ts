@@ -125,10 +125,6 @@ export function checkSetup(c: MechanismCase) {
   for (const key of Object.keys(c.setup))
     if (!keys.has(key)) throw new Error('Unsupported setup: ' + key);
   const s = c.setup;
-  if (s.supportModel)
-    throw new Error(
-      'Unsupported setup: circular waterwheel domains are not implemented in this branch',
-    );
   if (
     s.sourceAnimation &&
     (s.sourceAnimation.collection !== 'staticSupports.parts.motion' ||
@@ -189,8 +185,7 @@ export function scenarioInput(input: PhysicalInput, c: MechanismCase): PhysicalI
     const following = input.devices?.followingSupports?.find((d) => d.id === s.requiredSupport);
     if (!moving && !following)
       throw new Error('Missing required source support: ' + s.requiredSupport);
-    if (s.supportModel && (!moving || !('circular' in moving)))
-      throw new Error('Missing circular support facts');
+    if (s.supportModel && !moving?.circular) throw new Error('Missing circular support facts');
     if (s.assumption && moving?.assumption !== s.assumption)
       throw new Error('Support assumption mismatch');
   }

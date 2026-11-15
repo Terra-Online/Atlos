@@ -1,10 +1,17 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
+import { createPhysicalWorld, createPhysicalVerifier } from '#@/src/evaluation/index.ts';
+import { verifyRoute } from '#@/src/evaluation/route.ts';
+import type { Vec3 } from '#@/src/geometry.ts';
+import { createCollisionWorld } from '#@/src/model/collision.ts';
 import type { Route } from '#@/src/route.ts';
 import type { RouteEvent } from '#@/src/solver/contract.ts';
 import { prepareRouteSolver, gangliaV1Defaults, type SceneResources } from '#@/src/solver/index.ts';
+import type { PhysicalInput } from '#@/src/solver/physical.ts';
 import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
+import { createDeviceConnections } from '#@/src/v1/solver/physical/devices.ts';
+import { composeRoutes, admitAuthoredStart } from '#@/src/v1/solver/route-result.ts';
 import { createWindowRoute } from '#@/src/v1/solver/window-route.ts';
 
 type Job = { status: 'ready'; route?: Route };
@@ -87,6 +94,305 @@ function fixture() {
   const locomotion = { speed: 5, sprintSpeed: 5, sprintAcceleration: 1 };
   return { starts, resources, scene, config, locomotion };
 }
+
+function waypointFixture() {
+  const data = fixture();
+  data.scene.navigation.surfaces[0].vertices = [
+    [-1, 0, -10],
+    [21, 0, -10],
+    [21, 0, 10],
+    [-1, 0, 10],
+  ];
+  const options = {
+    speed: 5,
+    maxVertical: 0.1,
+    walls: [],
+    profile: { radius: 0.1, height: 1.8 },
+    locomotion: data.locomotion,
+  };
+  data.resources.ground = async () => ({ surfaces: data.scene.navigation.surfaces, options });
+  const planner = createGroundPlanner(data.scene.navigation.surfaces, options);
+  data.resources.solve = async (_job, request) => ({
+    status: 'ready',
+    route: planner.plan([request.arrival], request.target, { interaction: request.interaction }),
+  });
+  return data;
+}
+
+test('a complete root query admits the built authored entry without paying a vertical navigation join', async () => {
+  const { starts, resources, scene, config } = fixture();
+  const vertices = scene.navigation.surfaces[0].vertices;
+  const input: PhysicalInput = {
+    ground: {
+      surfaces: scene.navigation.surfaces,
+      options: {
+        speed: 5,
+        maxVertical: 0.5,
+        walls: [],
+        profile: { radius: 0.1, height: 1.8 },
+      },
+    },
+    collision: { positions: vertices.flat(), indices: [0, 2, 1, 0, 3, 2] },
+    movement: {
+      model: {
+        gravity: 10,
+        fallingGravity: 10,
+        maxJumpHeight: 1,
+        maxFallingSpeed: 10,
+        apexTime: 0,
+        maxHorizontalSpeed: 5,
+        startHorizontalSpeed: 5,
+        airOverspeedDeceleration: 10,
+        airAcceleration: 20,
+        airDeceleration: 20,
+      },
+      maxSlope: 45,
+      runAirSpeed: 5,
+      stepUp: 0.4,
+      stepDown: 0.5,
+    },
+    locomotion: {
+      speed: 5,
+      sprintSpeed: 5,
+      sprintAcceleration: 1,
+      stamina: {
+        capacity: 8,
+        initial: 8,
+        activationCost: 1,
+        sprintDrain: 0,
+        recoveryRate: 0.5,
+        recoveryDelay: 1,
+        reserve: 0,
+      },
+    },
+    devices: {
+      ropes: [],
+      devices: [
+        {
+          id: 'pad',
+          kind: 'launch',
+          position: [10, 0, 0],
+          goal: { position: [10, 0.3, 0], interaction: { radius: 0.5 } },
+          seeds: [[10, 0, 0]],
+          unitScale: true,
+          resolved: true,
+          speed: 1,
+          overhead: 0,
+          duration: 0,
+          fixedLaunch: true,
+          aim: [18, 0, 0],
+          height: 2,
+          aimClearance: 3,
+          boostMultiplier: 1,
+        },
+      ],
+    },
+  };
+  const built = createDeviceConnections(input.devices!, {
+    surfaces: input.ground.surfaces,
+    world: createCollisionWorld(input.collision),
+    profile: input.ground.options.profile,
+    walls: [],
+    model: input.movement.model,
+    maxSlope: input.movement.maxSlope,
+  });
+  const launch = built.connections.find((connection) => connection.mode === 'launch');
+  assert.ok(launch, JSON.stringify(built.outcomes));
+  const entry = launch.points[0],
+    end = launch.points.at(-1)!;
+  const origin: Vec3 = [entry[0], entry[1] + 0.09, entry[2]],
+    goal: Vec3 = [20, end[1], 0];
+  const piece: Extract<Route, { status: 'complete' }> = {
+    status: 'complete',
+    start: 'open',
+    arrivalCost: 7,
+    cost: 0,
+    length: 0,
+    points: [origin, entry, ...launch.points.slice(1), goal],
+    segments: [
+      { mode: 'walk', points: [origin, entry], times: [0, 0.09 / 5] },
+      { ...launch, connection: launch.id },
+      { mode: 'walk', points: [end, goal], times: [0, 2 / 5] },
+    ],
+  };
+  const candidate = composeRoutes([piece], input.locomotion);
+  assert.ok(candidate.status === 'complete');
+  let currentCandidate = candidate;
+  resources.solve = async (_job, request) => {
+    if (request.target[0] !== 19) return { status: 'ready', route: currentCandidate };
+    const from = request.arrival.position,
+      to = request.target;
+    const length = Math.hypot(...from.map((v, i) => v - to[i]));
+    return {
+      status: 'ready',
+      route: {
+        status: 'complete',
+        start: request.arrival.id,
+        arrivalCost: 0,
+        cost: length / 5,
+        length,
+        points: [from, to],
+        segments: [{ mode: 'walk', points: [from, to], times: [0, length / 5] }],
+      },
+    };
+  };
+  resources.route = (job) => ({ route: job.route, connections: built.connections });
+  const query = { starts: [{ ...starts[1], cost: 7, position: [10, 0.005, 0] as Vec3 }], goal };
+  const events: RouteEvent[] = [];
+  const solver = await prepareRouteSolver(config, {
+    kind: 'scene',
+    scene,
+    resources,
+    locomotion: input.locomotion,
+  });
+  try {
+    const result = await solver.solve(query, { onEvent: (event) => events.push(event) });
+    assert.equal(result.partial, false);
+    assert.equal(result.route.status, 'complete');
+    if (result.route.status !== 'complete') return;
+    assert.equal(result.route.segments[0].mode, 'launch');
+    assert.deepEqual(result.route.segments[0].points, launch.points);
+    const world = createPhysicalWorld(input, 'complete');
+    const physical = createPhysicalVerifier(() => [world]);
+    const evaluation = physical(query, result.route),
+      old = physical(query, candidate);
+    assert.equal(evaluation.valid, true, evaluation.issues.join());
+    assert.equal(old.valid, true, old.issues.join());
+    assert.ok(evaluation.costSeconds! < old.costSeconds!);
+    for (const event of events)
+      if (
+        event.type === 'candidate' &&
+        !event.result.partial &&
+        event.result.route.status === 'complete'
+      )
+        assert.equal(event.result.route.segments[0].mode, 'launch');
+    assert.ok(
+      events.some(
+        (event) =>
+          event.type === 'candidate' &&
+          event.result.partial &&
+          event.result.route.status === 'complete' &&
+          event.result.route.segments[0].mode === 'walk',
+      ),
+    );
+    const wholeTail = await solver.solve({
+      ...query,
+      starts: [{ ...query.starts[0], position: origin }],
+    });
+    assert.ok(wholeTail.route.status === 'complete');
+    assert.equal(wholeTail.partial, false);
+    assert.equal(wholeTail.route.segments[0].mode, 'walk');
+    const nearOrigin: Vec3 = [entry[0], entry[1] + 0.005, entry[2]];
+    const near = composeRoutes(
+      [
+        {
+          ...piece,
+          points: [nearOrigin, ...piece.points.slice(1)],
+          segments: [
+            { mode: 'walk', points: [nearOrigin, entry], times: [0, 0.005 / 5] },
+            ...piece.segments.slice(1),
+          ],
+        },
+      ],
+      input.locomotion,
+    );
+    assert.ok(near.status === 'complete');
+    currentCandidate = near;
+    const admittedTail = await solver.solve({
+      ...query,
+      starts: [{ ...query.starts[0], position: nearOrigin }],
+    });
+    assert.ok(admittedTail.route.status === 'complete');
+    assert.equal(admittedTail.partial, false);
+    assert.equal(admittedTail.route.segments[0].mode, 'launch');
+    const ordered = await solver.solve({ ...query, goal: [19, entry[1], 0], waypoints: [goal] });
+    assert.ok(ordered.route.status === 'complete');
+    assert.equal(ordered.route.segments[0].mode, 'walk');
+    assert.deepEqual(
+      verifyRoute({ ...query, goal: [19, entry[1], 0], waypoints: [goal] }, ordered.route, {
+        maxVertical: 0.5,
+      }).issues,
+      [],
+    );
+    const proof = { connections: built.connections };
+    assert.equal(
+      admitAuthoredStart(
+        candidate,
+        { ...query.starts[0], position: [entry[0], entry[1] + 0.4, entry[2]] },
+        0.5,
+        input.locomotion,
+        [proof],
+      ),
+      candidate,
+    );
+    assert.equal(
+      admitAuthoredStart(candidate, query.starts[0], 0.5, input.locomotion, [proof, proof]),
+      candidate,
+    );
+    assert.equal(
+      admitAuthoredStart(
+        candidate,
+        query.starts[0],
+        0.5,
+        { ...input.locomotion, stamina: { ...input.locomotion.stamina!, initial: 7 } },
+        [proof],
+      ),
+      candidate,
+    );
+    const boosted = {
+      ...candidate,
+      boosts: [{ id: 'boost', multiplier: 2, duration: 3, position: origin, elapsed: 0 }],
+    };
+    assert.equal(
+      admitAuthoredStart(boosted, query.starts[0], 0.5, input.locomotion, [proof]),
+      boosted,
+    );
+    assert.equal(
+      admitAuthoredStart(candidate, query.starts[0], 0.5, input.locomotion, []),
+      candidate,
+    );
+    assert.equal(
+      admitAuthoredStart(candidate, query.starts[0], 0.5, input.locomotion, [
+        { connections: [{ ...launch, times: launch.times.slice(1) }] },
+      ]),
+      candidate,
+    );
+  } finally {
+    await solver.close();
+  }
+});
+
+test('coarse hints do not require detours or grounded stops before the goal', async () => {
+  const { starts, resources, scene, config, locomotion } = waypointFixture();
+  const query = {
+    starts: [{ ...starts[1], position: [10, 0, 0] as Vec3, cost: 7 }],
+    goal: [20, 0, 0] as Vec3,
+    waypoints: [
+      [16, 30, -4],
+      [12, 1, 5],
+    ] as Vec3[],
+  };
+  const requests: Vec3[] = [];
+  const solve = resources.solve;
+  resources.solve = async (...args) => {
+    requests.push(args[1].target);
+    return solve(...args);
+  };
+  const solver = await prepareRouteSolver(config, { kind: 'scene', scene, resources, locomotion });
+  try {
+    const baseline = await solver.solve({ ...query, waypoints: undefined });
+    requests.length = 0;
+    const result = await solver.solve(query);
+    assert.equal(result.route.status, 'complete');
+    assert.equal(result.partial, false);
+    assert.deepEqual(result.route, baseline.route);
+    assert.ok(requests.length > 0);
+    assert.ok(requests.every((target) => target.every((v, axis) => v === query.goal[axis])));
+    assert.deepEqual(verifyRoute(query, result.route, { maxVertical: 0.1 }).issues, []);
+  } finally {
+    await solver.close();
+  }
+});
 
 test('a verified whole-guide target approach completes once and pays the selected arrival overhead', async () => {
   const { starts, resources, scene, config, locomotion } = fixture();
@@ -181,6 +487,39 @@ test('a target approach after a guide loop cannot certify the omitted prefix', a
     assert.equal(result.route.cost, 2);
   }
   assert.deepEqual(calls, ['target-approach']);
+});
+
+test('synthetic target approaches yield to the original source before action discovery', async () => {
+  const { resources, config, locomotion, scene } = fixture();
+  const calls: { id: string; step: number }[] = [];
+  resources.solve = async (_job, request, _start, work) => {
+    calls.push({ id: request.arrival.id, step: work.step });
+    return { status: 'ready', route: { status: 'no-verified-route' } };
+  };
+  const arrival = {
+    id: 'provider',
+    position: [0, 0, 0] as Vec3,
+    state: 'available' as const,
+    cost: 0,
+  };
+  const window = createWindowRoute(
+    resources,
+    { ...scene, arrival, target: [20, 0, 0] as Vec3, walls: [] },
+    [
+      [10, 0, 0],
+      [20, 0, 0],
+    ],
+    { ...config, locomotion },
+  );
+  const tail = await window.advanceTail();
+  assert.equal(tail.status, 'incomplete');
+  assert.deepEqual(calls, [{ id: 'target-approach', step: 0 }]);
+  await window.advance();
+  await window.advance();
+  assert.deepEqual(calls.slice(1), [
+    { id: 'provider', step: 0 },
+    { id: 'provider', step: 1 },
+  ]);
 });
 
 test('a failed anchor does not discard a verified target approach or poison later queries', async () => {

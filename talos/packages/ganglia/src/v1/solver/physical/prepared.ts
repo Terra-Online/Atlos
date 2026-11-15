@@ -36,6 +36,7 @@ export async function preparePhysicalSolver(
     validateWaypoints(query.waypoints);
     const fixed = scene;
     const preparation = cache;
+    preparation.begin?.(context.generation ?? '');
     let best: RouteResult = {
       route: { status: 'unmapped' },
       connections: [],

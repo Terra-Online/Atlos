@@ -10,9 +10,15 @@ import {
   onBoxFace,
 } from '#@/src/model/placement.ts';
 import { supportIntervals } from '#@/src/model/support-coverage.ts';
+import { projectPoint } from '#@/src/model/support.ts';
 import { supportBounds } from '#@/src/model/supports.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
-import type { FollowingSupport, PhysicalInput } from '#@/src/solver/physical.ts';
+import type { FollowingSupport, PhysicalInput, SweptSupport } from '#@/src/solver/physical.ts';
+
+export interface PreparedBase {
+  geometry: CollisionGeometry;
+  world: CollisionWorld;
+}
 
 interface Configuration {
   followingSupports?: readonly FollowingSupport[];
@@ -43,7 +49,11 @@ const faces = [
 
 /** The provider declares complete source coverage. Sparse tile holes are not
  * inferred to be empty geometry, even inside an enclosing rectangle. */
-export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
+export function createPhysicalWorld(
+  input: PhysicalInput,
+  coverage: Coverage,
+  prepared?: PreparedBase,
+) {
   if (
     coverage !== 'complete' &&
     (!Number.isFinite(coverage.tileSpan) ||
@@ -62,9 +72,13 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
     coverage === 'complete' ? [] : coverage.tiles.map(({ x, z }) => `${x},${z}`),
   );
   const covered = (a: Vec3, b: Vec3, radius = profile.radius) => {
-    if (coverage === 'complete') return true;
     const low = [Math.min(a[0], b[0]) - radius, Math.min(a[2], b[2]) - radius];
     const high = [Math.max(a[0], b[0]) + radius, Math.max(a[2], b[2]) + radius];
+    // A prepared bounded index cannot claim facts outside its own scope,
+    // including when the caller otherwise declares complete source geometry.
+    const scope = prepared?.world.bounds;
+    if (scope && low.some((v, i) => v < scope.min[i] || high[i] > scope.max[i])) return false;
+    if (coverage === 'complete') return true;
     if (
       low.some((v, i) => v < coverage.bounds.min[i]) ||
       high.some((v, i) => v > coverage.bounds.max[i])
@@ -83,7 +97,24 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
         if (!tiles.has(`${x},${z}`)) return false;
     return true;
   };
-  const base = createTypeScriptCollisionWorld(input.collision);
+  if (prepared) {
+    const scope =
+      coverage === 'complete'
+        ? (input.ground.build?.bounds ?? prepared.world.bounds)
+        : coverage.bounds;
+    if (
+      prepared.geometry.positions !== input.collision.positions ||
+      prepared.geometry.indices !== input.collision.indices ||
+      (prepared.world.bounds &&
+        (!scope ||
+          scope.min.some(
+            (v, i) =>
+              v < prepared.world.bounds!.min[i] || scope.max[i] > prepared.world.bounds!.max[i],
+          )))
+    )
+      throw new Error('Prepared collision does not match physical input and coverage');
+  }
+  const base = prepared?.world ?? createTypeScriptCollisionWorld(input.collision);
   const blocked = createWallChecker(input.roundedWalls ?? input.ground.options.walls, profile);
   const tolerance = Math.max(0.02, (input.ground.build?.cellHeight ?? 0.1) * 3 + 0.01);
   const configured = new Map<string, ReturnType<typeof build>>();
@@ -93,9 +124,14 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
   ) {
     const followingSupports = options.followingSupports ?? input.devices?.followingSupports ?? [];
     const validatedPlacements: string[] = [];
+    const movingRanges = new Map<SweptSupport, [number, number]>();
+    let movingTriangles = 0;
     const extra: Surface[] = (input.devices?.movingSupports ?? []).flatMap((support) => {
       if (support.assumption !== 'phase-free-swept-support')
         throw new Error('Unsupported moving support assumption');
+      const start = movingTriangles;
+      for (const surface of support.surfaces) movingTriangles += surface.vertices.length - 2;
+      movingRanges.set(support, [start, movingTriangles]);
       return support.surfaces;
     });
     const solidWalls: import('#@/src/geometry.ts').Wall[] = [];
@@ -315,13 +351,64 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
       }
       return false;
     };
-    const support = (p: Vec3) =>
-      world.groundAt(p, {
+    const contactAt = (p: Vec3) =>
+      supports.groundAt(p, {
+        maxUp: 1e-6,
+        maxDown: 0.01 + 1e-6,
+        maxSlope: input.movement.maxSlope,
+        radius: profile.radius,
+      });
+    const support = (p: Vec3) => {
+      // Circular attachments have explicit contact heights. A radius query can
+      // select a neighbouring rim patch above the submitted feet; it does not
+      // prove that this contact moved vertically. External collision still
+      // applies in standing(), including braces and other placed bodies.
+      let circularNeighbour = false;
+      for (const circular of input.devices?.movingSupports ?? []) {
+        if (!circular.circular) continue;
+        circularNeighbour ||= !!projectPoint(circular.surfaces, p, { maxVertical: tolerance });
+        const contact = projectPoint(circular.surfaces, p, { maxVertical: 0.02 });
+        if (
+          contact &&
+          p[1] - contact.position[1] >= 0.005 - 1e-6 &&
+          p[1] - contact.position[1] <= 0.01 + 1e-6
+        )
+          return contact;
+      }
+      if (circularNeighbour) {
+        // An abstract rim is an alternative contact, not a solid surface that
+        // lifts feet already resting on independently supported static ground.
+        const ground = base.groundAt(p, {
+          maxUp: tolerance,
+          maxDown: tolerance,
+          maxSlope: input.movement.maxSlope,
+          radius: profile.radius,
+        });
+        if (
+          ground &&
+          p[1] - ground.position[1] >= 0.005 - 1e-6 &&
+          p[1] - ground.position[1] <= 0.01 + 1e-6
+        )
+          return ground;
+      }
+      if (input.devices?.movingSupports?.length) {
+        // Phase-free poses are alternative contacts. Preserve supported feet
+        // before a wider query can select a different pose above them.
+        const contact = contactAt(p);
+        if (
+          contact &&
+          p[1] - contact.position[1] >= -1e-6 &&
+          p[1] - contact.position[1] <= 0.01 + 1e-6
+        )
+          return contact;
+      }
+      return world.groundAt(p, {
         maxUp: tolerance,
         maxDown: tolerance,
         maxSlope: input.movement.maxSlope,
         radius: profile.radius,
       });
+    };
     const standing = (p: Vec3) => {
       const hit = support(p);
       if (!hit) return null;
@@ -367,6 +454,13 @@ export function createPhysicalWorld(input: PhysicalInput, coverage: Coverage) {
     return {
       validatedPlacements,
       world,
+      movingContact(support: SweptSupport, point: Vec3) {
+        const range = movingRanges.get(support),
+          contact = range && contactAt(point);
+        return contact && contact.triangle >= range![0] && contact.triangle < range![1]
+          ? contact
+          : null;
+      },
       blocked: combinedBlocked,
       standing,
       stepTrace,

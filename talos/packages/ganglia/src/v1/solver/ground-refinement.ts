@@ -161,3 +161,110 @@ export const refineGoalGround = async (
   }
   return { surfaces: additions, bounds };
 };
+
+/** Candidate charts for narrow source support omitted by clearance erosion.
+ * Candidates retain terrain support/body checks; actions use the ordinary
+ * trajectory checks and navigation routes retain their native representation. */
+export function narrowGoalSupports(
+  geometry: CollisionGeometry,
+  surfaces: Surface[],
+  options: Options & {
+    physical: import('#@/src/model/world.ts').PhysicalWorld;
+    maxCandidates: number;
+  },
+) {
+  const { build, goal, interaction, model, physical, maxCandidates } = options;
+  const diagnostics = { candidates: 0, tested: 0, admitted: 0, truncated: false };
+  const empty = () => ({ surfaces: [] as Surface[], diagnostics });
+  const duration = jumpDuration(goal[1], goal[1], { ...model, mode: 'jump' });
+  if (!duration || !build.bounds || maxCandidates <= 0) return empty();
+  const reach =
+    (interaction?.radius ?? 0) + duration * model.maxHorizontalSpeed + build.profile.radius;
+  const bounds = {
+    min: [
+      Math.max(build.bounds.min[0], goal[0] - reach),
+      Math.max(build.bounds.min[1], goal[2] - reach),
+    ] as [number, number],
+    max: [
+      Math.min(build.bounds.max[0], goal[0] + reach),
+      Math.min(build.bounds.max[1], goal[2] + reach),
+    ] as [number, number],
+  };
+  if (bounds.min.some((v, i) => v >= bounds.max[i])) return empty();
+  const selected = options.queryTriangles?.(bounds);
+  if (
+    selected?.some(
+      (id, index) =>
+        !Number.isSafeInteger(id) ||
+        id < 0 ||
+        id >= geometry.indices.length / 3 ||
+        (index > 0 && id <= selected[index - 1]),
+    )
+  )
+    throw new Error('Invalid narrow support triangle query');
+  const project = options.project ?? createGoalProjector(surfaces);
+  const candidates: { surface: Surface; point: Vec3; score: number }[] = [];
+  const configured = physical.configured();
+  for (let i = 0; i < (selected?.length ?? geometry.indices.length / 3); i++) {
+    const index = selected?.[i] ?? i;
+    const vertices = [0, 1, 2].map((j) => {
+      const offset = geometry.indices[index * 3 + j] * 3;
+      return [
+        geometry.positions[offset],
+        geometry.positions[offset + 1],
+        geometry.positions[offset + 2],
+      ] as Vec3;
+    });
+    if (
+      ![0, 2].every(
+        (axis, side) =>
+          Math.min(...vertices.map((v) => v[axis])) <= bounds.max[side] &&
+          Math.max(...vertices.map((v) => v[axis])) >= bounds.min[side],
+      )
+    )
+      continue;
+    const [a, b, c] = vertices,
+      u = b.map((v, j) => v - a[j]),
+      v = c.map((value, j) => value - a[j]);
+    const normal = [
+      u[1] * v[2] - u[2] * v[1],
+      u[2] * v[0] - u[0] * v[2],
+      u[0] * v[1] - u[1] * v[0],
+    ];
+    if (
+      normal[1] <= 0 ||
+      normal[1] / Math.hypot(...normal) < Math.cos((build.maxSlope * Math.PI) / 180)
+    )
+      continue;
+    const surface = { id: `narrow/${index}`, vertices };
+    const nearest = createGoalProjector([surface]).closest(goal, {
+      maxVertical: reach,
+      interaction: { radius: reach },
+    });
+    if (
+      !nearest ||
+      nearest.position[1] + model.maxJumpHeight + (interaction?.radius ?? 0) < goal[1]
+    )
+      continue;
+    const point = nearest.position;
+    if (project(point, { maxVertical: build.cellHeight * 2 }).length) continue;
+    candidates.push({ surface, point, score: nearest.distance });
+  }
+  candidates.sort((a, b) => a.score - b.score || a.surface.id.localeCompare(b.surface.id));
+  const charts: Surface[] = [];
+  diagnostics.candidates = candidates.length;
+  for (const candidate of candidates) {
+    if (diagnostics.tested >= maxCandidates) {
+      diagnostics.truncated = true;
+      break;
+    }
+    diagnostics.tested++;
+    const point: Vec3 = [candidate.point[0], candidate.point[1] + 0.01, candidate.point[2]];
+    if (!physical.covered(point, point)) continue;
+    const feet = configured.standing(point);
+    if (!feet || Math.hypot(...feet.map((v, i) => v - point[i])) > 1e-5) continue;
+    charts.push(candidate.surface);
+  }
+  diagnostics.admitted = charts.length;
+  return { surfaces: charts, diagnostics };
+}

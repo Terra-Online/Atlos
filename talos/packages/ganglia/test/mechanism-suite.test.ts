@@ -117,7 +117,9 @@ test('a selected movable box retains unselected bodies as source collision', () 
 test('missing capabilities and scenario manifests cannot silently become ordinary query success', async () => {
   const c = item();
   c.setup.supportModel = 'phase-free-circular-surface';
-  assert.throws(() => checkSetup(c), /Unsupported setup/);
+  assert.doesNotThrow(() => checkSetup(c));
+  Object.assign(c.setup, { supportModel: 'unknown' });
+  assert.throws(() => checkSetup(c), /Unsupported support model/);
   await assert.rejects(
     readWorkload(fileURLToPath(new URL('../bench/scenes/mechanisms/suite.json', import.meta.url))),
     /Scenario manifests/,

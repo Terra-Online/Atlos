@@ -1,5 +1,24 @@
 # Route solver handoff
 
+## Cirisus Node solver integration, 2026-11-15
+
+`chan/algo-progression` at `352c62b9` is merged. `src/v1` matches that branch:
+provider-backed contact admission, narrow supports, moving-device routes, joint
+following-box search, free launch and retained concrete action composition are
+included. Search uses its action-construction checks; independent physical replay
+runs separately after benchmark timing. `waypoints` are coarse discovery hints,
+as specified by acceptance revision 10, rather than mandatory itinerary stops.
+The retained Rust implementation and its native artifact are unchanged.
+
+Noclip stays at v119. `algorithm-supports.patch` adds circular collider ownership
+and bit-indexed following-box facts; the routing adapter exports explicit
+`freeLaunch`. Integration identity is `49b578cdba8a04e8b9e6deded4de761148ab9c8ee4e18e14e4d813a75a7e3003`.
+The Node coverage run will use freshly bound inputs under
+`.local/data/mechanisms-266-cirisus-v119/`; prior Rust inputs remain intact.
+The trained benchmark lifecycle and cooperative cancellation remain in place.
+Reports now count native completion separately from independent physical validity.
+Full Node measurements are pending.
+
 ## Shared 266-case mechanism workload, 2026-11-15
 
 `benchmark:mechanisms` consumes the unchanged revision-10 acceptance specification
@@ -112,7 +131,7 @@ source SHA-256 is
 `c5f5b3cad199ad2c570da6f2e80b3a9590bf1cccc0dbcf4aeefdcf80b3006d63`;
 native SHA-256 is
 `2ea9f78c3346734b5abd15ecd8128d068b0a091b2da015e6ab09ab2d2915b4b2`.
-The current source and binary were independently rehashed after the run and match.
+The accepted source and binary were independently rehashed after that run and matched.
 All fifty query objects and the game-adapter digest match the retained TS reference.
 Validation passes 152 Rust unit tests, two authored integration tests, 26 common
 N-API physical/lifecycle fixtures, feature-enabled Clippy, Rust formatting and diff

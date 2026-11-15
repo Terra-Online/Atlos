@@ -77,28 +77,31 @@ export async function loadMechanismScene(
           return files;
         }
       : undefined,
-    (raw) => {
-      if (first.setup.physical) {
-        const region = suite.physicalRegions.find((r) => r.id === first.setup.physical!.region);
-        if (
-          !region ||
-          !isDeepStrictEqual(raw.ground.build?.bounds, {
-            min: region.bounds.slice(0, 2),
-            max: region.bounds.slice(2, 4),
-          })
-        )
-          throw new Error('Frozen physical bounds differ from the selected specification');
-      }
-      const audit = facilityAudit(raw, catalog);
-      if (audit.staticImport !== 'matched')
-        throw new Error(
-          'Missing source facility geometry: ' + [...audit.missing, ...audit.mismatched].join(','),
-        );
-      const input = scenarioInput(raw, policy);
-      if (!isDeepStrictEqual(input.ground.options.profile, suite.sources[first.scene].profile))
-        throw new Error('Mechanism player profile differs from the frozen specification');
-      if (!inputs.includes(input)) inputs.push(input);
-      return input;
+    {
+      transformInput: (raw) => {
+        if (first.setup.physical) {
+          const region = suite.physicalRegions.find((r) => r.id === first.setup.physical!.region);
+          if (
+            !region ||
+            !isDeepStrictEqual(raw.ground.build?.bounds, {
+              min: region.bounds.slice(0, 2),
+              max: region.bounds.slice(2, 4),
+            })
+          )
+            throw new Error('Frozen physical bounds differ from the selected specification');
+        }
+        const audit = facilityAudit(raw, catalog);
+        if (audit.staticImport !== 'matched')
+          throw new Error(
+            'Missing source facility geometry: ' +
+              [...audit.missing, ...audit.mismatched].join(','),
+          );
+        const input = scenarioInput(raw, policy);
+        if (!isDeepStrictEqual(input.ground.options.profile, suite.sources[first.scene].profile))
+          throw new Error('Mechanism player profile differs from the frozen specification');
+        if (!inputs.includes(input)) inputs.push(input);
+        return input;
+      },
     },
   );
   // Scene owns the whole-route resource clock. Physical windows and replay

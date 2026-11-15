@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import type { Surface, Vec3 } from '#@/src/geometry.ts';
+import { createGoalProjector } from '#@/src/model/goals.ts';
 import {
   createSupportProjector,
   verticalProjectionCandidates,
@@ -16,6 +17,39 @@ const floor = (id: string, y: number): Surface => ({
     [2, y, 2],
     [-2, y, 2],
   ],
+});
+
+test('local XZ footprints preserve nearby multi-floor projections without scanning distant faces', () => {
+  const shifted = (id: string, y: number, x: number): Surface => ({
+    ...floor(id, y),
+    vertices: floor(id, y).vertices.map((p) => [p[0] + x, p[1], p[2]]),
+  });
+  const surfaces = [
+    shifted('below', -20, 3),
+    shifted('far', 0, 20),
+    shifted('above', 20, 3),
+    shifted('too-high', 40, 3),
+  ];
+  const position: Vec3 = [0, 0, 0],
+    vertical = 30,
+    horizontal = 1.5;
+  const options = {
+    maxVertical: vertical,
+    interaction: { radius: Math.hypot(horizontal, vertical), maxVertical: vertical },
+  };
+  const nearby = (hits: ReturnType<ReturnType<typeof createGoalProjector>>) =>
+    hits.filter((h) => Math.hypot(h.position[0], h.position[2]) <= horizontal);
+  const candidates = verticalProjectionCandidates(surfaces, position, vertical, horizontal);
+  assert.deepEqual(
+    candidates.map((s) => s.id),
+    ['below', 'above'],
+  );
+  assert.deepEqual(
+    nearby(createGoalProjector(candidates)(position, options)),
+    nearby(createGoalProjector(surfaces)(position, options)),
+  );
+  assert.equal(verticalProjectionCandidates(surfaces, position, vertical).length, 0);
+  assert.throws(() => verticalProjectionCandidates(surfaces, position, vertical, -1), /footprint/);
 });
 
 test('cached support projections preserve exact floor selection, tolerances and mutated endpoint coordinates', () => {

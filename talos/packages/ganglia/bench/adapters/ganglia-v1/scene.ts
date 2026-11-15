@@ -13,6 +13,7 @@ import {
 } from '@opendfieldmap/ganglia/solver';
 import { createPhysicalPreparation, type PhysicalWork } from '@opendfieldmap/ganglia/solver/host';
 
+import { sourceSupportWorld, type SourceSnapshot } from '#@/bench/mechanism-query.ts';
 import {
   loadSceneData,
   type SceneData,
@@ -24,8 +25,12 @@ import {
 import { createTimings } from '#@/bench/timings.ts';
 import { createPhysicalVerifier } from '#@/src/evaluation/physical.ts';
 import { verificationDefaults } from '#@/src/evaluation/policy.ts';
+import type { Vec3 } from '#@/src/geometry.ts';
 import { physicalTileSpan } from '#@/src/model/coverage.ts';
 import { createPhysicalWorld } from '#@/src/model/world.ts';
+import type { InteractionGoal } from '#@/src/movement.ts';
+import type { GroundArrival } from '#@/src/route.ts';
+import type { RouteQuery } from '#@/src/solver/contract.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 
 type Report = {
@@ -45,9 +50,21 @@ export type GameAdapter = {
     context: { cache: unknown },
   ): Promise<{
     input?: PhysicalInput;
-    solve(options: { work: PhysicalWork; signal?: AbortSignal }): Promise<Report>;
+    solve(options: {
+      work: PhysicalWork;
+      signal?: AbortSignal;
+      onProgress?: (progress: { phase: string; completed?: number; total?: number }) => void;
+    }): Promise<Report>;
   }>;
 };
+
+export interface SceneHooks {
+  kernelRoot?: string;
+  transformInput?: (input: PhysicalInput) => PhysicalInput;
+  createPreparation?: typeof createPhysicalPreparation;
+  onResult?: (report: Report) => void;
+  onProgress?: (progress: { phase: string; completed?: number; total?: number }) => void;
+}
 
 export async function loadScene(
   dataRoot: string,
@@ -55,14 +72,14 @@ export async function loadScene(
   concurrency: number,
   scene = 'map02',
   build?: RegionBuild,
-  transformInput?: (input: PhysicalInput) => PhysicalInput,
+  hooks: SceneHooks = {},
 ) {
   const loadingStarted = performance.now();
   const dataset = await loadSceneData(dataRoot, scene, build);
   const entry = resolve(extractor, 'packages/extractor/src/game/physical-input.ts');
   const resolvedKernel = createRequire(entry).resolve('@opendfieldmap/ganglia/solver');
   const kernelRoot = resolve(dirname(resolvedKernel), '../..');
-  const sourceRoot = fileURLToPath(new URL('../../../', import.meta.url));
+  const sourceRoot = hooks.kernelRoot ?? fileURLToPath(new URL('../../../', import.meta.url));
   const kernelDigest = async (base: string) => {
     const hash = createHash('sha256');
     for (const name of (await readdir(resolve(base, 'src'), { recursive: true })).sort()) {
@@ -95,7 +112,7 @@ export async function loadScene(
     preparePhysicalRoute,
     concurrency,
     gameAdapterSha256,
-    transformInput,
+    hooks,
   );
   prepared.timings.preparationMs = performance.now() - loadingStarted - inputLoadMs;
   return {
@@ -114,6 +131,7 @@ export async function loadScene(
     timings: prepared.timings,
     verifyInputs: prepared.verifyInputs,
     verify: prepared.verify,
+    prepareSourceSnapshot: prepared.prepareSourceSnapshot,
     metadata: {
       scene: dataset.navigation.scene,
       source: dataset.navigation.source,
@@ -145,8 +163,9 @@ export function prepareSceneResources(
   preparePhysicalRoute: GameAdapter['preparePhysicalRoute'],
   concurrency: number,
   gameAdapterSha256: string,
-  transformInput: (input: PhysicalInput) => PhysicalInput = (input) => input,
+  hooks: SceneHooks = {},
 ) {
+  const transform = hooks.transformInput ?? ((input: PhysicalInput) => input);
   let inputFailure: { error: unknown } | undefined;
   const failInput = (error: unknown): never => {
     inputFailure ??= { error };
@@ -218,9 +237,8 @@ export function prepareSceneResources(
             },
           },
         );
-        const raw = normalized.input;
-        if (!raw) throw new Error('Exporter did not provide normalized verifier input');
-        const input = transformInput(raw);
+        const input = normalized.input && transform(normalized.input);
+        if (!input) throw new Error('Exporter did not provide normalized verifier input');
         physicalInputs.set(region.binding, { input, region });
       }
     return evaluatePhysical(query, route);
@@ -229,7 +247,7 @@ export function prepareSceneResources(
   // Lane-local caches keep mutable preparation isolated across concurrent solves.
   // Timed input reads are served from the preloaded snapshot.
   const caches = Array.from({ length: concurrency }, () => {
-    const preparation = createPhysicalPreparation();
+    const preparation = (hooks.createPreparation ?? createPhysicalPreparation)();
     const cache = {
       region: undefined as PhysicalRegion | undefined,
       async begin(files: PhysicalFiles) {
@@ -251,10 +269,10 @@ export function prepareSceneResources(
         solve: (...args: Parameters<typeof preparation.solve>) => {
           if (!thisRegion()) throw new Error('Missing verifier input region');
           const region = thisRegion()!;
+          args[0] = transform(args[0]);
           const key = region.binding + JSON.stringify(args[0].ground.options.walls);
-          const input = transformInput(args[0]);
-          if (!physicalInputs.has(key)) physicalInputs.set(key, { input, region });
-          return preparation.solve(input, args[1], args[2]);
+          if (!physicalInputs.has(key)) physicalInputs.set(key, { input: args[0], region });
+          return preparation.solve(...args);
         },
       },
       clear: preparation.clear,
@@ -272,6 +290,7 @@ export function prepareSceneResources(
   };
   const timings = createTimings(performance.now() - preparationStarted);
   const observe = (report: Report) => {
+    hooks.onResult?.(report);
     timings.physical.calls++;
     const diagnostics = report.diagnostics;
     if (!diagnostics || typeof diagnostics !== 'object') return;
@@ -313,7 +332,7 @@ export function prepareSceneResources(
         });
         if (!normalized.input)
           throw new Error('Game adapter does not expose normalized physical facts');
-        const input = transformInput(normalized.input);
+        const input = transform(normalized.input);
         physicalInputs.set(JSON.stringify([job.region.binding, request.walls]), {
           input,
           region: job.region,
@@ -353,7 +372,11 @@ export function prepareSceneResources(
         const prepared = await preparePhysicalRoute(job.region.files, request, { cache });
         timings.normalizationMs += performance.now() - started;
         started = performance.now();
-        const result = await prepared.solve({ work, signal: options?.signal });
+        const result = await prepared.solve({
+          work,
+          signal: options?.signal,
+          onProgress: hooks.onProgress,
+        });
         timings.localSolveMs += performance.now() - started;
         observe(result);
         return { status: 'ready', region: job.region, result };
@@ -390,6 +413,64 @@ export function prepareSceneResources(
   return {
     resources,
     verify,
+    async prepareSourceSnapshot(
+      query: RouteQuery,
+      start: GroundArrival,
+      volume: { position: Vec3; interaction: InteractionGoal },
+    ): Promise<SourceSnapshot | null> {
+      const region = dataset.regions.find((candidate) => {
+        const radius = volume.interaction.radius + candidate.ground.options.profile.radius;
+        const low = [volume.position[0] - radius, volume.position[2] - radius];
+        const high = [volume.position[0] + radius, volume.position[2] + radius];
+        const bounds = candidate.ground.build.bounds;
+        if (low.some((v, i) => v < bounds.min[i]) || high.some((v, i) => v > bounds.max[i]))
+          return false;
+        for (
+          let x = Math.floor(low[0] / physicalTileSpan);
+          x <= Math.floor(high[0] / physicalTileSpan);
+          x++
+        )
+          for (
+            let z = Math.floor(low[1] / physicalTileSpan);
+            z <= Math.floor(high[1] / physicalTileSpan);
+            z++
+          )
+            if (!candidate.tiles.has(`${x},${z}`)) return false;
+        return true;
+      });
+      if (!region) return null;
+      const normalize = resources.physical;
+      if (!normalize) throw new Error('Source physical normalization is unavailable');
+      const snapshot = await normalize(
+        { status: 'ready', region },
+        {
+          scene: dataset.navigation.scene,
+          source: dataset.navigation.source,
+          arrival: start,
+          target: query.goal,
+          interaction: query.interaction,
+          walls: [],
+          waypoints: query.waypoints,
+        },
+      );
+      const world = sourceSupportWorld(
+        snapshot.input,
+        {
+          bounds: region.ground.build.bounds,
+          tiles: region.ground.tiles,
+          tileSpan: physicalTileSpan,
+        },
+        volume,
+      );
+      return {
+        input: snapshot.input,
+        world,
+        revision: snapshot.revision,
+        source: dataset.navigation.source,
+        files: region.files,
+        reuse: 'source-only bounded collision index',
+      };
+    },
     timings,
     verifyInputs() {
       // A scene solver may preserve a validated tail after a provider error.

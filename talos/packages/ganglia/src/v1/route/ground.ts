@@ -1,5 +1,5 @@
 import type { Vec3, Surface } from '#@/src/geometry.ts';
-import { type GoalProjector, createGoalProjector } from '#@/src/model/goals.ts';
+import { type GoalProjector, createGoalProjector, findGoalHit } from '#@/src/model/goals.ts';
 import type { InteractionGoal, Segment } from '#@/src/movement.ts';
 import type {
   GroundArrival,
@@ -127,7 +127,7 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
       const support = projectSupport(goal, tolerance);
       targets = support ? [{ ...support, support: support.position, position: goal }] : [];
     }
-    if (!targets.length) {
+    if (!targets.length && (!query.interaction || query.interaction.airborne)) {
       visibility.clear();
       failedVisibility.clear();
       endpointKeys.clear();
@@ -258,6 +258,16 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
       if (!from || !to) continue;
       const fromId = endpoint(from),
         toId = endpoint(to);
+      // A fully executed supported action can already satisfy an ordinary
+      // interaction. Do not add a walk back to its navigation-height projection.
+      if (
+        query.interaction &&
+        !query.interaction.airborne &&
+        findGoalHit([to.position, to.position], goal, query.interaction)
+      ) {
+        targetIds.push(toId);
+        goals.add(toId);
+      }
       graph.edges.push({
         from: fromId,
         to: toId,
@@ -271,6 +281,12 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
         ...(requiredGait === undefined ? {} : { requiredGait }),
         ...(connection.traversal === undefined ? {} : { traversal: connection.traversal }),
       });
+    }
+    if (!targetIds.length) {
+      visibility.clear();
+      failedVisibility.clear();
+      endpointKeys.clear();
+      return { status: 'unmapped' };
     }
     // Transfer proofs belong only to the live endpoints. Growing action overlays
     // need no pair scan; removed or moved endpoints discard both directions.
