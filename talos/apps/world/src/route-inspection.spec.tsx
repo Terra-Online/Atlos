@@ -26,7 +26,10 @@ it('draws only selected contact boxes in the existing route overlay and releases
     let overlay: ((frame: OverlayFrame) => void) | undefined;
     const remove = vi.fn();
     const source = { buildGuid: 'build', contentHash: 'hash' };
-    const addOverlay = vi.fn((callback: typeof overlay) => { overlay = callback; return remove; });
+    const addOverlay = vi.fn((callback: typeof overlay) => {
+        overlay = callback;
+        return remove;
+    });
     const viewer = {
         scene: { pkg: { manifest: { scene: { id: 'map02' }, source } } },
         level: 'map02_lv009',
@@ -84,24 +87,34 @@ it('draws only selected contact boxes in the existing route overlay and releases
     );
     expect(screen.queryByText('Moving devices')).toBeNull();
     expect(overlay).toBeDefined();
-    expect(addOverlay).toHaveBeenCalledWith(expect.any(Function), { animated: true });
+    expect(addOverlay).toHaveBeenCalledWith(expect.any(Function), {
+        animated: true,
+    });
     overlay!({ device: {}, format: 'rgba8unorm' } as OverlayFrame);
     const renderers = vi
         .mocked(createRouteLines)
-        .mock.results.map((result) => result.value as ReturnType<typeof createRouteLines>);
+        .mock.results.flatMap((result) =>
+            result.type === 'return' ? [result.value] : [],
+        );
     expect(createRouteLines).toHaveBeenCalledTimes(2);
     expect(vi.mocked(createRouteLines).mock.calls[1][2]).toHaveLength(12);
-    expect(vi.mocked(createRouteLines).mock.calls[0][3]?.hideOccluded).toBe(false);
+    expect(vi.mocked(createRouteLines).mock.calls[0][3]?.hideOccluded).toBe(
+        false,
+    );
     fireEvent.click(screen.getByRole('checkbox', { name: 'Hide occluded' }));
     expect(remove).toHaveBeenCalledTimes(1);
     overlay!({ device: {}, format: 'rgba8unorm' } as OverlayFrame);
     expect(createRouteLines).toHaveBeenCalledTimes(4);
-    expect(vi.mocked(createRouteLines).mock.calls[2][3]?.hideOccluded).toBe(true);
-    expect(vi.mocked(createRouteLines).mock.calls[3][3]?.hideOccluded).toBe(true);
+    expect(vi.mocked(createRouteLines).mock.calls[2][3]?.hideOccluded).toBe(
+        true,
+    );
+    expect(vi.mocked(createRouteLines).mock.calls[3][3]?.hideOccluded).toBe(
+        true,
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Hide' }));
     expect(remove).toHaveBeenCalledTimes(2);
     for (const renderer of renderers)
-        expect(vi.mocked(renderer).destroy.mock.calls).toHaveLength(1);
+        expect(renderer.destroy).toHaveBeenCalledTimes(1);
     view.unmount();
     panelRoot.remove();
 });

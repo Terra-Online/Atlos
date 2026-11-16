@@ -1,4 +1,6 @@
-import { routeFrom, type Surface, type Vec3 } from '@opendfieldmap/ganglia';
+import type { Corridor } from '@opendfieldmap/ganglia/solver';
+import { routeFrom } from '@opendfieldmap/ganglia/solver/host';
+import { type Surface, type Vec3 } from '@opendfieldmap/ganglia';
 
 type Data = {
     surfaces: Surface[];
@@ -21,12 +23,6 @@ type Edge = {
     points: Vec3[];
 };
 type Prepared = { span: number; band: number; nodes: Region[]; edges: Edge[] };
-export type Corridor = {
-    kind: 'corridor-proposal';
-    bounds: { min: [number, number]; max: [number, number] };
-    tiles: { x: number; z: number }[];
-    coarse: { regions: number; edges: number; path: Vec3[]; halo: number };
-};
 const cache = new WeakMap<Data, Prepared>();
 const cell = (x: number, z: number) => `${x},${z}`;
 const distance = (a: Vec3, b: Vec3) => Math.hypot(...a.map((v, i) => v - b[i]));
@@ -304,30 +300,4 @@ export const coarseCorridors = (
         if (wider) proposals.push(wider);
     }
     return proposals;
-};
-
-/** Spread discovery directions across alternative approaches before refining them. */
-export const coarseWaypoints = (corridors: Corridor[]): Vec3[] => {
-    const paths = corridors.map((entry) => entry.coarse.path.slice(1, -1));
-    const points: Vec3[] = [],
-        seen = new Set<string>();
-    for (
-        let index = 0;
-        index < Math.max(0, ...paths.map((path) => path.length));
-        index++
-    ) {
-        for (const path of paths) {
-            const point = path[index];
-            if (!point) continue;
-            const key = JSON.stringify(point);
-            if (seen.has(key)) continue;
-            seen.add(key);
-            points.push([...point]);
-        }
-    }
-    if (points.length <= 128) return points;
-    return Array.from(
-        { length: 128 },
-        (_, index) => points[Math.round((index * (points.length - 1)) / 127)],
-    );
 };

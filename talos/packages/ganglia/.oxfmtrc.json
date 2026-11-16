@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "arrowParens": "always",
+  "endOfLine": "lf",
+  "bracketSpacing": true,
+  "singleAttributePerLine": true,
+  "sortImports": true,
+  "sortPackageJson": true,
+  "ignorePatterns": [".local/**", "**/target/**", "dist/**", "docs/**", "**/*.md"]
+}

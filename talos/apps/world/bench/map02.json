@@ -1,0 +1,38 @@
+{
+    "version": 1,
+    "release": "57c465136526c3c6",
+    "source": {
+        "buildGuid": "2954fa80-23c1-1579-2b22-4ecfd6d70418",
+        "contentHash": "23821a7611be5c0478dc4695d96fd74a"
+    },
+    "scene": "map02",
+    "points": ["23400070201", "23400070174"],
+    "entry": "/18azxcs?benchmark=1",
+    "camera": [
+        {
+            "position": [-1368, 307, -1647],
+            "yaw": 0.55,
+            "pitch": -0.6,
+            "ms": 1500
+        },
+        {
+            "position": [-1347, 303, -1634],
+            "yaw": -1.57,
+            "pitch": -0.3,
+            "ms": 1500
+        },
+        {
+            "position": [-1368, 307, -1647],
+            "yaw": 0.55,
+            "pitch": -0.6,
+            "ms": 1500
+        }
+    ],
+    "tailMs": 2000,
+    "timeoutMs": 240000,
+    "generation": "d97fad65acb7098870b2d99c1f45b8f8",
+    "query": {
+        "level": "map02_lv004",
+        "position": [-1359.697021484375, 298.2070007324219, -1634.3179931640625]
+    }
+}

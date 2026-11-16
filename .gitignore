@@ -101,3 +101,6 @@ talos/.stylelintcache
 # Local test coverage reports.
 /talos/coverage/
 /talos/test-results/
+
+# Private development inputs and solver research artifacts.
+/.local/

@@ -1,8 +1,16 @@
-import { candidateJobs, type CandidateJob } from './candidate-job.ts';
-import type { createWindowRoute } from './window-route.ts';
+import { setTimeout as delay } from 'node:timers/promises';
+import {
+    prepareRouteSolver,
+    gangliaV1Defaults,
+    type RouteResult,
+    type SceneResources,
+} from '@opendfieldmap/ganglia/solver';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { selectTerminal, joinTerminal, type Terminal, type Catalog as TerminalCatalog } from './terminal-routes.ts';
+import {
+    matchingTerminals,
+    type Catalog as TerminalCatalog,
+} from './terminal-routes.ts';
 import { resolve } from 'node:path';
 import type { ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
@@ -10,23 +18,19 @@ import { supportBoxes, type SupportBox } from './src/moving-bounds.ts';
 import {
     type GroundArrival,
     type GroundOptions,
-    type LocomotionOptions,
     type InteractionGoal,
+    type LocomotionOptions,
     type Route,
     type Surface,
     type Vec3,
 } from '@opendfieldmap/ganglia';
 import { physicalRouteBuilder } from './physical-route-builder.ts';
 
-import {
-    travelArrivals,
-    type TravelPoint,
-} from './travel-arrivals.ts';
+import { travelArrivals, type TravelPoint } from './travel-arrivals.ts';
 
 type Source = { buildGuid: string; contentHash: string };
 type Bounds = { min: [number, number]; max: [number, number] };
 type Data = {
-    generator?: string;
     scene: string;
     level?: string;
     progression?: 'completed' | 'fully-enabled';
@@ -72,13 +76,11 @@ type Candidate = {
         traversal?: unknown;
     };
 };
-type WindowQuery = { physicalFailure?: { reason: string; diagnostics: unknown }; attempts: number; excludedEdges: (number | string)[]; excludedArrivals: string[]; job: CandidateJob; window?: ReturnType<typeof createWindowRoute>; tailDone?: boolean; partial?: Candidate };
 type Query = {
-    windows?: WindowQuery;
     pending: Promise<Answer>;
+    latest?: Answer;
     done: boolean;
     progress?: boolean;
-    log?: string;
     candidate?: Candidate;
 };
 
@@ -86,7 +88,9 @@ const finiteVector = (value: unknown): value is Vec3 =>
     Array.isArray(value) && value.length === 3 && value.every(Number.isFinite);
 const sameSource = (a: Source, b: Source) =>
     a.buildGuid === b.buildGuid && a.contentHash === b.contentHash;
-const indexData = (data: Data): IndexedData => {
+const indexData = (value: unknown): IndexedData => {
+    // The envelope is checked here; Ganglia validates the exported geometry.
+    const data = value as Data;
     if (
         !data.source ||
         !Array.isArray(data.surfaces) ||
@@ -113,13 +117,16 @@ export function routeServer(
         config?: string;
         node?: string;
         solver?: string;
+        sceneBinding?: (
+            scene: string,
+        ) => Promise<{ generation: string; source: Source }>;
     } = {},
 ): Plugin {
     const cache = new Map<string, Promise<IndexedData>>();
     const builder = physicalRouteBuilder({ ...build, directory });
-    const globalJobs = candidateJobs(directory, build.node);
+    const solvers = new Map<Data, ReturnType<typeof prepareRouteSolver>>();
     let travel: Promise<{ source: Source; points: TravelPoint[] }> | undefined;
-    let terminalCatalog: Promise<TerminalCatalog|null> | undefined;
+    let terminalCatalog: Promise<TerminalCatalog | null> | undefined;
     let movementHash: Promise<string> | undefined;
     const interactionCache = new Map<
         string,
@@ -127,23 +134,106 @@ export function routeServer(
     >();
     const queries = new Map<string, Query>();
     let removeCloseListener = () => {};
+    const shutdown = new AbortController();
+    const running = new Set<Promise<unknown>>();
     const close = async () => {
-        globalJobs.close();
+        shutdown.abort();
         const drained = builder.close();
         cache.clear();
         interactionCache.clear();
         queries.clear();
         travel = undefined;
-        terminalCatalog = undefined; movementHash = undefined;
+        terminalCatalog = undefined;
+        movementHash = undefined;
         removeCloseListener();
+        await Promise.allSettled(running);
+        await Promise.allSettled(
+            [...solvers.values()].map(async (pending) =>
+                (await pending).close(),
+            ),
+        );
+        solvers.clear();
         await drained;
     };
-    const read = async <T = unknown>(name: string): Promise<T> =>
-        JSON.parse(await readFile(resolve(directory!, name), 'utf8')) as T;
+    const readBytes = (name: string) => readFile(resolve(directory!, name));
+    const read = async (name: string): Promise<unknown> =>
+        JSON.parse((await readBytes(name)).toString());
+    const sceneSolver = (data: Data, locomotion: LocomotionOptions) => {
+        let pending = solvers.get(data);
+        if (!pending) {
+            const { scene, source } = data;
+            const resources: SceneResources<
+                Source,
+                Awaited<ReturnType<typeof builder.query>> & {}
+            > = {
+                query: builder.query,
+                solve: builder.solve,
+                key: (job) => job.output,
+                ground: async (job) =>
+                    JSON.parse(await readFile(job.output, 'utf8')) as {
+                        surfaces: Surface[];
+                        options: GroundOptions;
+                    },
+                route: (job) =>
+                    job.result as { route?: Route; reason?: string },
+                wait: async (signal) => {
+                    if (!signal?.aborted)
+                        await delay(25, undefined, { signal }).catch(
+                            (error) => {
+                                if (!signal?.aborted) throw error;
+                            },
+                        );
+                },
+                terminals: async (query) => {
+                    terminalCatalog ??= read('terminal-routes.json')
+                        .then((value) => value as TerminalCatalog)
+                        .catch((error: unknown) => {
+                            if (
+                                error instanceof Error &&
+                                'code' in error &&
+                                error.code === 'ENOENT'
+                            )
+                                return null;
+                            terminalCatalog = undefined;
+                            throw error;
+                        });
+                    movementHash ??= readBytes(
+                        'movement-settings-current.json',
+                    ).then((bytes) =>
+                        createHash('sha256').update(bytes).digest('hex'),
+                    );
+                    return matchingTerminals(await terminalCatalog, {
+                        scene,
+                        source,
+                        generator: (data as Data & { generator?: string })
+                            .generator,
+                        solver: build.solver,
+                        movementHash: await movementHash,
+                        target: query.goal,
+                        interaction: query.interaction,
+                    });
+                },
+            };
+            pending = prepareRouteSolver(gangliaV1Defaults, {
+                kind: 'scene',
+                scene: {
+                    scene,
+                    source,
+                    walls: data.options.walls,
+                    navigation: data,
+                },
+                resources,
+                locomotion,
+            });
+            solvers.set(data, pending);
+            pending.catch(() => solvers.delete(data));
+        }
+        return pending;
+    };
     const sceneData = (scene: string) => {
         let pending = cache.get(scene);
         if (!pending) {
-            pending = read<Data>(`${scene}-ground-all.json`)
+            pending = read(`${scene}-ground-all.json`)
                 .then(indexData)
                 .catch((error) => {
                     cache.delete(scene);
@@ -156,8 +246,13 @@ export function routeServer(
     const interactionData = (scene: string) => {
         let pending = interactionCache.get(scene);
         if (!pending) {
-            pending = read<{ scene: string; source: Source; points: InteractionPoint[] }>(`${scene}-interaction-points.json`)
-                .then((catalog) => {
+            pending = read(`${scene}-interaction-points.json`)
+                .then((value) => {
+                    const catalog = value as {
+                        scene: string;
+                        source: Source;
+                        points: InteractionPoint[];
+                    };
                     if (
                         catalog.scene !== scene ||
                         !catalog.source ||
@@ -183,8 +278,13 @@ export function routeServer(
                     }
                     return { scene, source: catalog.source, points };
                 })
-                .catch((error) => {
-                    if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') return null;
+                .catch((error: unknown) => {
+                    if (
+                        error instanceof Error &&
+                        'code' in error &&
+                        error.code === 'ENOENT'
+                    )
+                        return null;
                     interactionCache.delete(scene);
                     throw error;
                 });
@@ -196,10 +296,16 @@ export function routeServer(
         name: 'world-local-route-inspection',
         closeBundle: close,
         configureServer(server) {
-            const closeListener = () => { void close(); };
-            server.httpServer?.once('close', closeListener);
+            const onClose = () => {
+                void close().catch((error: unknown) =>
+                    server.config.logger.error(
+                        `Route cleanup failed: ${String(error)}`,
+                    ),
+                );
+            };
+            server.httpServer?.once('close', onClose);
             removeCloseListener = () => {
-                server.httpServer?.removeListener('close', closeListener);
+                server.httpServer?.removeListener('close', onClose);
             };
             const serveLog = async (name: string, response: ServerResponse) => {
                 try {
@@ -247,9 +353,20 @@ export function routeServer(
                 void serveLog(name, response);
             });
             server.middlewares.use('/__routes/preview', (request, response) => {
-                if (request.method !== 'GET') { response.statusCode = 405; response.end(); return; }
-                void read('route-preview-current.json').then(value => send(response, value))
-                    .catch(() => send(response, { message: 'Route preview is not ready' }, 404));
+                if (request.method !== 'GET') {
+                    response.statusCode = 405;
+                    response.end();
+                    return;
+                }
+                void read('route-preview-current.json')
+                    .then((value) => send(response, value))
+                    .catch(() =>
+                        send(
+                            response,
+                            { message: 'Route preview is not ready' },
+                            404,
+                        ),
+                    );
             });
             server.middlewares.use('/__routes/nearest', (request, response) => {
                 let reply = (value: unknown, status = 200) =>
@@ -321,7 +438,50 @@ export function routeServer(
                         );
                         return;
                     }
+                    const generation = params.get('generation'),
+                        state = params.get('state');
+                    if (!build.sceneBinding) {
+                        reply(
+                            {
+                                status: 'unavailable',
+                                category: 'missing-data',
+                                message:
+                                    'Scene resource binding is not configured',
+                            },
+                            503,
+                        );
+                        return;
+                    }
+                    const binding = await build.sceneBinding(scene);
+                    if (
+                        generation !== binding.generation ||
+                        state !== 'fully-enabled' ||
+                        !sameSource(source, binding.source)
+                    ) {
+                        reply(
+                            {
+                                status: 'unavailable',
+                                category: sameSource(source, binding.source)
+                                    ? 'stale-scene'
+                                    : 'stale-build',
+                                message:
+                                    'Route query does not match the supported scene generation and fully enabled state',
+                            },
+                            409,
+                        );
+                        return;
+                    }
+                    const boundReply = reply;
+                    reply = (value, status) =>
+                        boundReply(
+                            value && typeof value === 'object'
+                                ? { ...value, generation, state }
+                                : value,
+                            status,
+                        );
                     const queryKey = JSON.stringify({
+                        generation,
+                        state,
                         scene,
                         level,
                         source,
@@ -329,23 +489,21 @@ export function routeServer(
                         pointId,
                     });
                     const previous = queries.get(queryKey);
+                    response.setHeader(
+                        'X-Route-Cache',
+                        previous?.done &&
+                            !previous.progress &&
+                            !previous.candidate?.optimizing
+                            ? 'result'
+                            : previous
+                              ? 'in-flight'
+                              : 'miss',
+                    );
                     if (previous) {
-                        const alreadyDone = previous.done;
-                        let answer = await previous.pending;
-                        const current = queries.get(queryKey);
-                        if (
-                            !alreadyDone ||
-                            (!previous.progress &&
-                                !previous.candidate?.optimizing) ||
-                            current !== previous
-                        ) {
-                            if (current && current !== previous)
-                                answer = await current.pending;
-                            reply(answer.value, answer.status);
-                            return;
-                        }
-                        fallback = previous.candidate;
-                        queries.delete(queryKey);
+                        const answer =
+                            previous.latest ?? (await previous.pending);
+                        reply(answer.value, answer.status);
+                        return;
                     }
                     let finish!: (answer: Answer) => void;
                     const entry: Query = {
@@ -353,18 +511,11 @@ export function routeServer(
                             finish = resolve;
                         }),
                         done: false,
-                        windows: previous?.windows,
                     };
                     queries.set(queryKey, entry);
                     const deliver = reply;
+                    let delivered = false;
                     reply = (value, status = 200) => {
-                        if (
-                            entry.log &&
-                            value !== null &&
-                            typeof value === 'object'
-                        )
-                            value = { ...value, log: entry.log };
-                        entry.done = true;
                         const progress =
                             value !== null &&
                             typeof value === 'object' &&
@@ -372,8 +523,13 @@ export function routeServer(
                             value.status === 'building-ground';
                         entry.progress = progress;
                         if (status >= 500) queries.delete(queryKey);
-                        finish({ value, status });
-                        deliver(value, status);
+                        entry.done = !progress && !entry.candidate?.optimizing;
+                        entry.latest = { value, status };
+                        if (!delivered) {
+                            delivered = true;
+                            finish(entry.latest);
+                            deliver(value, status);
+                        }
                         // Identical concurrent queries share one calculation. Terminal results
                         // belong to this immutable development snapshot and stay bounded.
                         for (const [key, cached] of queries) {
@@ -426,9 +582,17 @@ export function routeServer(
                         : null;
                     // Collection triggers can be entered during flight. Preserve
                     // their source-derived volume and finish at the collection event.
-                    const goal = normalizedGoal && pointRules?.template?.startsWith('int_collection_coin')
-                        ? { ...normalizedGoal, interaction: { ...normalizedGoal.interaction, airborne: true } }
-                        : normalizedGoal;
+                    const goal =
+                        normalizedGoal &&
+                        pointRules?.template?.startsWith('int_collection_coin')
+                            ? {
+                                  ...normalizedGoal,
+                                  interaction: {
+                                      ...normalizedGoal.interaction,
+                                      airborne: true,
+                                  },
+                              }
+                            : normalizedGoal;
                     if (
                         goal &&
                         (!finiteVector(goal.position) || !goal.interaction)
@@ -448,10 +612,18 @@ export function routeServer(
                                       'interaction-rules-unavailable',
                                   ]),
                     };
-                    travel ??= read<{ source: Source; points: TravelPoint[] }>('travel-points.json').catch((error) => {
-                        travel = undefined;
-                        throw error;
-                    });
+                    travel ??= read('travel-points.json')
+                        .then(
+                            (value) =>
+                                value as {
+                                    source: Source;
+                                    points: TravelPoint[];
+                                },
+                        )
+                        .catch((error: unknown) => {
+                            travel = undefined;
+                            throw error;
+                        });
                     const anchors = await travel;
                     if (!sameSource(source, anchors.source)) {
                         reply({
@@ -471,136 +643,132 @@ export function routeServer(
                         target,
                     );
                     if (!candidates.length) {
-                        reply({ status: 'unavailable', category: 'missing-data', message: 'No teleport anchors are available for this scene' });
-                        return;
-                    }
-                    let terminal:Terminal|null=null;
-                    if(goal?.interaction.airborne){
-                        terminalCatalog ??= read<TerminalCatalog>('terminal-routes.json').catch(error=>{
-                            if((error as NodeJS.ErrnoException)?.code==='ENOENT') return null;
-                            terminalCatalog=undefined; throw error;
+                        reply({
+                            status: 'unavailable',
+                            category: 'missing-data',
+                            message:
+                                'No teleport anchors are available for this scene',
                         });
-                        const catalog=await terminalCatalog;
-                        if(catalog){
-                            movementHash ??= readFile(resolve(directory,'movement-settings-current.json')).then(bytes=>
-                                createHash('sha256').update(bytes).digest('hex'));
-                            terminal=selectTerminal(catalog,{scene,source,generator:data.generator,
-                                solver:build.solver,movementHash:await movementHash,target:goal.position,interaction:goal.interaction,
-                                arrivals:candidates,speed:data.options.locomotion?.sprintSpeed??data.options.speed});
-                        }
+                        return;
                     }
-                    const planningTarget=terminal?.route.points[0]??goal?.position??target;
-                    // Every distance uses one global candidate and bounded physical windows.
-                    entry.windows ??= { attempts: 1, excludedEdges: [], excludedArrivals: [], job: globalJobs.start({ scene, source, arrivals: candidates,
-                        target: planningTarget }) };
-                    const windowQuery = entry.windows;
-                    const pendingWindows = (message: string) => {
-                        if (windowQuery.partial) {
-                            entry.candidate = { ...windowQuery.partial, optimizing: true, optimizationMessage: message };
-                            reply(entry.candidate);
-                        } else reply({ status: 'building-ground', message, retryAfter: 1000 });
+                    const movement = (await read(
+                        'movement-settings-current.json',
+                    )) as {
+                        source: Source;
+                        sustainedSprint: LocomotionOptions;
                     };
-                    if (windowQuery.job.status === 'pending') {
-                        pendingWindows('Finding a global route corridor…');
-                        return;
-                    }
-                    const stopWindows = (reason: string, diagnostics?: unknown) => {
-                        if (windowQuery.partial) {
-                            entry.candidate = { ...windowQuery.partial, optimizing: false, optimizationMessage: reason };
-                            reply(entry.candidate);
-                        } else reply({ status: 'unavailable', category: windowQuery.physicalFailure ? 'window-route' : 'candidate-search',
-                            message: windowQuery.physicalFailure?.reason ?? reason, diagnostics: windowQuery.physicalFailure?.diagnostics ?? diagnostics });
-                    };
-                    if (windowQuery.job.status === 'failed') {
-                        stopWindows(windowQuery.job.error ?? 'Candidate search failed');
-                        return;
-                    }
-                    const global = windowQuery.job.result!;
-                    if (!global.points?.length) {
-                        stopWindows(global.reason ?? 'No global route corridor found', global.diagnostics);
-                        return;
-                    }
-                    const selectedArrival = global.arrival;
-                    if (!selectedArrival) throw new Error('Candidate route omitted its arrival');
-                    if (!windowQuery.window) {
-                        const movement = await read<{ source: Source; sustainedSprint: LocomotionOptions }>('movement-settings-current.json');
-                        if (!sameSource(source, movement.source)) throw new Error('Movement settings do not match scene build');
-                        windowQuery.window = builder.windows({ point: pointId, scene, source, arrival: selectedArrival,
-                            target: planningTarget, interaction: terminal?undefined:goal?.interaction, walls: data.options.walls },
-                            global.points, { maxTiles: 16, margin: 8, locomotion: movement.sustainedSprint,
-                                transfers: global.path?.filter(edge => edge.unresolved).map(edge => edge.points) });
-                    }
-                    const publishWindow = (route: Extract<Route, { status: 'complete' }>, partial: boolean, diagnostics: unknown, evidence: unknown[]) => {
-                        const contacts = evidence.flatMap(item => supportBoxes((item as { supportBoxes?: unknown })?.supportBoxes));
-                        const result = { version: 1, supportBoxes: contacts, status: 'candidate' as const, scene, level, source, route, partial,
-                            title: partial ? 'Target approach · Partial route' : 'Teleport → Target',
-                            markers: [{ label: partial ? 'Local approach start' : 'Teleport', position: route.points[0] },
-                                { label: 'Target', position: target }],
-                            coverage: partial ? 'Verified target-side window; teleport approach pending' : 'Verified physical route windows',
-                            diagnostics: { anchorCandidates: candidates.length, traversal: diagnostics },
-                            anchor: { id: selectedArrival.id, position: selectedArrival.position }, interaction,
-                            optimizing: partial, optimizationMessage: partial ? 'Connecting the teleport approach…' : '',
-                            assumptions: ['All tasks completed; devices enabled and powered'],
+                    if (!sameSource(source, movement.source))
+                        throw new Error(
+                            'Movement settings do not match scene build',
+                        );
+                    const solver = await sceneSolver(
+                        data,
+                        movement.sustainedSprint,
+                    );
+                    const display = (
+                        result: RouteResult,
+                        optimizing: boolean,
+                        message = '',
+                    ) => {
+                        if (result.route.status !== 'complete') return;
+                        const route = result.route,
+                            partial = result.partial === true;
+                        const candidate = {
+                            version: 1,
+                            status: 'candidate' as const,
+                            scene,
+                            level,
+                            source,
+                            route,
+                            partial,
+                            supportBoxes: supportBoxes(result.supportBoxes),
+                            title: partial
+                                ? 'Target approach · Partial route'
+                                : 'Teleport → Target',
+                            markers: [
+                                {
+                                    label: partial
+                                        ? 'Local approach start'
+                                        : 'Teleport',
+                                    position: route.points[0],
+                                },
+                                { label: 'Target', position: target },
+                            ],
+                            coverage: partial
+                                ? 'Verified target-side window; teleport approach pending'
+                                : 'Verified physical route windows',
+                            diagnostics: {
+                                anchorCandidates: candidates.length,
+                                traversal: result.diagnostics,
+                            },
+                            anchor: result.arrival,
+                            interaction,
+                            optimizing,
+                            optimizationMessage: message,
+                            assumptions: [
+                                'All tasks completed; devices enabled and powered',
+                            ],
                         };
-                        entry.candidate = result;
-                        if (partial) windowQuery.partial = result;
-                        reply(result);
+                        entry.candidate = candidate;
+                        fallback = candidate;
+                        reply(candidate);
                     };
-                    if (!windowQuery.tailDone) {
-                        if(terminal){
-                            windowQuery.tailDone=true;
-                            publishWindow(terminal.route,true,{terminalAsset:terminal.id},[{supportBoxes:terminal.supportBoxes??[]}]);
-                            return;
-                        }
-                        const tail = await windowQuery.window.advanceTail();
-                        if (tail.status === 'partial') {
-                            windowQuery.tailDone = true;
-                            publishWindow(tail.route, true, { global: global.diagnostics, partial: true }, tail.evidence);
-                            return;
-                        }
-                        if (tail.status === 'pending') {
-                            pendingWindows('Validating the target approach…');
-                            return;
-                        }
-                        windowQuery.tailDone = true;
+                    const solving = solver.solve(
+                        {
+                            starts: candidates,
+                            goal: goal?.position ?? target,
+                            interaction: goal?.interaction,
+                        },
+                        {
+                            signal: shutdown.signal,
+                            onEvent: (event) => {
+                                if (event.type === 'candidate')
+                                    display(event.result, event.optimizing);
+                                else if (entry.candidate) {
+                                    entry.candidate = {
+                                        ...entry.candidate,
+                                        optimizing: true,
+                                        optimizationMessage:
+                                            'Connecting the route…',
+                                    };
+                                    reply(entry.candidate);
+                                } else
+                                    reply({
+                                        status: 'building-ground',
+                                        message:
+                                            'Finding and validating route corridors…',
+                                        retryAfter: 1000,
+                                    });
+                            },
+                        },
+                    );
+                    running.add(solving);
+                    let result: RouteResult;
+                    try {
+                        result = await solving;
+                    } finally {
+                        running.delete(solving);
                     }
-                    const windowResult = await windowQuery.window.advance();
-                    if (windowResult.status === 'complete') {
-                        const route=terminal?joinTerminal(windowResult.route,terminal.route,(await read<{ source: Source; sustainedSprint: LocomotionOptions }>('movement-settings-current.json')).sustainedSprint):windowResult.route;
-                        if(route.status!=='complete'){
-                            stopWindows('Terminal entry or resource schedule changed; the verified target approach is retained');
-                            return;
-                        }
-                        publishWindow(route, false, { global: global.diagnostics, windows: windowResult.pieces.length,
-                            ...(terminal?{terminalAsset:terminal.id}:{}) }, [...windowResult.evidence,...(terminal?[{supportBoxes:terminal.supportBoxes??[]}]:[])]);
-                    } else if (windowResult.status === 'pending') {
-                        pendingWindows(`Connecting route windows (${windowResult.completedWindows} complete)…`);
-                    } else {
-                        // Reject only this query's failed transfer. Other targets can still
-                        // use the shared prepared graph and its untested alternatives.
-                        windowQuery.physicalFailure = { reason: windowResult.reason ?? 'no-verified-route', diagnostics: windowResult };
-                        const local = windowResult.window.points;
-                        const edge = global.path?.find(edge => edge.unresolved &&
-                            !windowQuery.excludedEdges.includes(edge.key ?? edge.index) && edge.points.some(point =>
-                                local.some(candidate => Math.hypot(...point.map((value, axis) => value - candidate[axis])) < 1e-5)));
-                        if (edge) windowQuery.excludedEdges.push(edge.key ?? edge.index);
-                        else windowQuery.excludedArrivals.push(selectedArrival.id);
-                        const alternatives = candidates.filter(candidate => !windowQuery.excludedArrivals.includes(candidate.id));
-                        if (windowQuery.attempts < 6 && alternatives.length) {
-                            windowQuery.attempts++;
-                            windowQuery.job = globalJobs.start({ scene, source, arrivals: alternatives,
-                                target: planningTarget, excludedEdges: windowQuery.excludedEdges });
-                            windowQuery.window = undefined;
-                            windowQuery.tailDone = Boolean(windowQuery.partial);
-                            pendingWindows('Checking an alternative route after a failed physical window…');
-                        } else if (windowQuery.partial) {
-                            stopWindows(`Teleport approach incomplete after ${windowQuery.attempts} candidates: ${windowResult.reason}`);
-                        } else reply({ status: 'unavailable', category: 'window-route', message: windowResult.reason,
-                            diagnostics: { ...windowResult, candidateAttempts: windowQuery.attempts, candidateBudget: 6 } });
+                    if (result.route.status === 'complete')
+                        display(result, false, result.reason);
+                    else {
+                        entry.candidate = undefined;
+                        reply({
+                            status: 'unavailable',
+                            category:
+                                result.reason === 'no-global-candidate'
+                                    ? 'candidate-search'
+                                    : 'window-route',
+                            message: result.reason,
+                            diagnostics: result.diagnostics,
+                        });
                     }
                     return;
-                })().catch((error) => {
-                    const missing = (error as NodeJS.ErrnoException)?.code === 'ENOENT';
+                })().catch((error: unknown) => {
+                    const missing =
+                        error instanceof Error &&
+                        'code' in error &&
+                        error.code === 'ENOENT';
                     server.config.logger.error(
                         `Local route inspection failed: ${error instanceof Error ? error.message : String(error)}`,
                     );

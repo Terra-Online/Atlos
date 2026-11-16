@@ -86,7 +86,7 @@ it('retains action colours and dash phase when segments are clipped or hidden', 
     expect(Array.from(output.slice(20, 23))).toEqual(ROUTE_STYLES.flight.color.map(Math.fround));
     expect(output[15]).toBeCloseTo(output[7] % DASH_PERIOD);
     expect(routeStyle({ ...segments[0], gait: 'sprint' })).toBe(ROUTE_STYLES.sprint);
-    expect(routeStyle({ ...segments[0], mode: 'rope', connection: 'moving-ride/lift/0' })).toBe(ROUTE_STYLES.transport);
+    expect(routeStyle({ ...segments[0], mode: 'rope', connection: 'opaque', traversal: 'moving-support' })).toBe(ROUTE_STYLES.transport);
     expect(routeStyle({ ...segments[0], mode: 'rope', connection: 'rope/lower/upper' })).toBe(ROUTE_STYLES.rope);
 });
 

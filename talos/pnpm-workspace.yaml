@@ -8,3 +8,4 @@ packages:
   - .cache/noclip/packages/package-format
   - .cache/noclip/packages/formats
   - .cache/noclip/packages/extractor
+  - packages/ganglia

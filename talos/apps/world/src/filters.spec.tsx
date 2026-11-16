@@ -52,28 +52,31 @@ it('puts game looks in Filters and keeps renderer controls in Display with the h
         },
     };
     const viewer = state as unknown as Viewer;
-    const fetch = vi.fn(() => Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({
-            format: 'endfield-noclip.photo-filters',
-            version: 4,
-            filters: [
-                {
-                    id: 'test-look',
-                    name: 'Test look',
-                    unsupported: [],
-                    grading: null,
-                    vignette: null,
-                    lut: {
-                        size: 4,
-                        format: 'bc7-rgba-unorm',
-                        data: btoa('\0'.repeat(64)),
-                        contribution: 1,
-                    },
-                },
-            ],
+    const fetch = vi.fn(() =>
+        Promise.resolve({
+            ok: true,
+            json: () =>
+                Promise.resolve({
+                    format: 'endfield-noclip.photo-filters',
+                    version: 4,
+                    filters: [
+                        {
+                            id: 'test-look',
+                            name: 'Test look',
+                            unsupported: [],
+                            grading: null,
+                            vignette: null,
+                            lut: {
+                                size: 4,
+                                format: 'bc7-rgba-unorm',
+                                data: btoa('\0'.repeat(64)),
+                                contribution: 1,
+                            },
+                        },
+                    ],
+                }),
         }),
-    }));
+    );
     vi.stubGlobal('fetch', fetch);
     render(
         <PanelProvider component={Panel}>
@@ -86,8 +89,9 @@ it('puts game looks in Filters and keeps renderer controls in Display with the h
     const display = within(
         screen.getByRole('region', { name: 'display settings' }),
     );
+    const anySignal: unknown = expect.any(AbortSignal);
     expect(fetch).toHaveBeenCalledWith('/filter-library.json', {
-        signal: expect.any(AbortSignal) as AbortSignal,
+        signal: anySignal,
     });
     expect(
         within(filters).getByRole('button', { name: 'Filters' }),

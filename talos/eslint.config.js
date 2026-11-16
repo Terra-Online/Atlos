@@ -14,6 +14,8 @@ export default [
       '**/node_modules/**', '**/dist/**', '**/build/**', '**/coverage/**',
       '.pages-dist/**', '.cache/**', '.vite/**', '**/.wrangler/**',
       'performance/**', 'public/**', 'originData/**',
+      // Ganglia owns its stricter native TypeScript lint configuration.
+      'packages/ganglia/**',
       '**/*.generated.*', 'apps/*/src/data/generated/**',
     ],
   },
@@ -99,9 +101,8 @@ export default [
   },
   ...['intel', 'user-hub', 'world'].map((app) => ({
     files: [`apps/${app}/**/*.{ts,tsx,mts,cts}`],
-    languageOptions: { parserOptions: { project: [`./apps/${app}/${app === 'world' ? 'tsconfig.eslint' : 'tsconfig'}.json`] } },
+    languageOptions: { parserOptions: { project: [`./apps/${app}/tsconfig.json`, ...(app === 'world' ? ['./apps/world/tsconfig.worker.json'] : [])] } },
   })),
-  { files: ['apps/world/*.ts'], languageOptions: { globals: globals.node } },
   ...['oem-relink', 'oem-search'].map((worker) => ({
     files: [`${worker}/src/**/*.{ts,tsx}`],
     languageOptions: {

@@ -58,52 +58,68 @@ afterEach(() => {
     vi.useRealTimers();
 });
 
-it('shows original then result, supports replay, and cancels/restores on leaving the point', () => {
+it('shows original then result, supports replay, and cancels/restores on leaving the point', async () => {
     vi.useFakeTimers();
     const { viewer, picks, setSceneValues } = fixture();
     const rendered = render(
         <InteractionPreview viewer={viewer} view={view} enabled />,
     );
     expect(picks).toEqual({ unrelated: 7, 'door:1': 0 });
-    void act(() => vi.advanceTimersByTime(800));
+    await act(async () => {
+        await vi.advanceTimersByTimeAsync(800);
+    });
     expect(picks['door:1']).toBe(1);
     fireEvent.click(screen.getByRole('button', { name: 'Replay' }));
     expect(picks['door:1']).toBe(0);
     rendered.unmount();
     expect(picks).toEqual({ unrelated: 7 });
     const calls = setSceneValues.mock.calls.length;
-    void act(() => vi.advanceTimersByTime(3000));
+    await act(async () => {
+        await vi.advanceTimersByTimeAsync(3000);
+    });
     expect(setSceneValues).toHaveBeenCalledTimes(calls);
 });
 
-it('does not overwrite manual scene edits or run while a different preset is selected', () => {
+it('does not overwrite manual scene edits or run while a different preset is selected', async () => {
     vi.useFakeTimers();
     const { viewer, picks } = fixture();
     const rendered = render(
         <InteractionPreview viewer={viewer} view={view} enabled={false} />,
     );
-    void act(() => vi.advanceTimersByTime(3000));
+    await act(async () => {
+        await vi.advanceTimersByTimeAsync(3000);
+    });
     expect(picks).toEqual({ unrelated: 7 });
     rendered.rerender(
         <InteractionPreview viewer={viewer} view={view} enabled />,
     );
     delete picks['door:1'];
-    void act(() => vi.advanceTimersByTime(3000));
+    await act(async () => {
+        await vi.advanceTimersByTimeAsync(3000);
+    });
     expect(picks).toEqual({ unrelated: 7 });
 });
 
-it('waits for camera arrival before showing the result', () => {
+it('waits for camera arrival before showing the result', async () => {
     vi.useFakeTimers();
     const { viewer, picks } = fixture();
     const flying = vi.spyOn(viewer.controls, 'flying', 'get');
     flying.mockReturnValue(true);
     render(<InteractionPreview viewer={viewer} view={view} enabled />);
-    void act(() => vi.advanceTimersByTime(5000));
+    await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+    });
     expect(picks['door:1']).toBe(0);
     flying.mockReturnValue(false);
-    void act(() => vi.advanceTimersByTime(100));
-    void act(() => vi.advanceTimersByTime(799));
+    await act(async () => {
+        await vi.advanceTimersByTimeAsync(100);
+    });
+    await act(async () => {
+        await vi.advanceTimersByTimeAsync(799);
+    });
     expect(picks['door:1']).toBe(0);
-    void act(() => vi.advanceTimersByTime(1));
+    await act(async () => {
+        await vi.advanceTimersByTimeAsync(1);
+    });
     expect(picks['door:1']).toBe(1);
 });

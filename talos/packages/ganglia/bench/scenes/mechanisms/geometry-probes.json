@@ -1,0 +1,388 @@
+{
+  "schema": 1,
+  "source": {
+    "buildGuid": "2954fa80-23c1-1579-2b22-4ecfd6d70418",
+    "contentHash": "23821a7611be5c0478dc4695d96fd74a"
+  },
+  "scope": "Six original unrun navigation-geometry queries, preserved unchanged except their display ID. They have no map point token and are not part of the 266 real-entity population.",
+  "cases": [
+    {
+      "id": "geometry-235",
+      "group": "navigation-context",
+      "scene": "map01",
+      "level": "source-navigation",
+      "target": {
+        "kind": "navigation-contact",
+        "id": "163713922_NavMeshChunkData.asset/18/5"
+      },
+      "query": {
+        "starts": [
+          {
+            "id": "player",
+            "position": [-345.86666043599445, 119.48333740234375, -208.10000928243002],
+            "cost": 0,
+            "state": "available"
+          }
+        ],
+        "goal": [-343.94999384880066, 119.46249389648438, -208.82500886917114],
+        "interaction": {
+          "radius": 0.25,
+          "maxVertical": 0.2
+        }
+      },
+      "tags": ["portal-interface"],
+      "evidence": [
+        {
+          "file": "exports/map01-ground-all.json",
+          "collection": "options.portals",
+          "index": 43184
+        },
+        {
+          "file": "exports/map01-ground-all.json",
+          "collection": "surfaces",
+          "id": "163713922_NavMeshChunkData.asset/17/64"
+        },
+        {
+          "file": "exports/map01-ground-all.json",
+          "collection": "surfaces",
+          "id": "163713922_NavMeshChunkData.asset/18/5"
+        }
+      ],
+      "setup": {},
+      "assertions": ["respect-declared-portal-direction", "physical-support-and-clearance"],
+      "status": "selected-unrun",
+      "note": "This exported interface has a reverse portal. It does not establish one-way-only passage coverage.",
+      "legacyCaseId": "v250-235",
+      "role": "geometry-probe-no-map-token"
+    },
+    {
+      "id": "geometry-236",
+      "group": "navigation-context",
+      "scene": "map01",
+      "level": "source-navigation",
+      "target": {
+        "kind": "navigation-contact",
+        "id": "163713940_NavMeshChunkData.asset/10/0"
+      },
+      "query": {
+        "starts": [
+          {
+            "id": "player",
+            "position": [771.0667031606039, 101.43878173828125, -217.400008837382],
+            "cost": 0,
+            "state": "available"
+          }
+        ],
+        "goal": [770.5600364685058, 101.43878173828125, -219.10000896453857],
+        "interaction": {
+          "radius": 0.25,
+          "maxVertical": 0.2
+        }
+      },
+      "tags": ["portal-interface"],
+      "evidence": [
+        {
+          "file": "exports/map01-ground-all.json",
+          "collection": "options.portals",
+          "index": 5529
+        },
+        {
+          "file": "exports/map01-ground-all.json",
+          "collection": "surfaces",
+          "id": "163713940_NavMeshChunkData.asset/15/3"
+        },
+        {
+          "file": "exports/map01-ground-all.json",
+          "collection": "surfaces",
+          "id": "163713940_NavMeshChunkData.asset/10/0"
+        }
+      ],
+      "setup": {},
+      "assertions": ["respect-declared-portal-direction", "physical-support-and-clearance"],
+      "status": "selected-unrun",
+      "note": "This exported interface has a reverse portal. It does not establish one-way-only passage coverage.",
+      "legacyCaseId": "v250-236",
+      "role": "geometry-probe-no-map-token"
+    },
+    {
+      "id": "geometry-237",
+      "group": "navigation-context",
+      "scene": "map01",
+      "level": "source-navigation",
+      "target": {
+        "kind": "navigation-contact",
+        "id": "163943310_NavMeshChunkData.asset/8/23"
+      },
+      "query": {
+        "starts": [
+          {
+            "id": "player",
+            "position": [427.7000063260396, 19.669342041015625, 216.10000610351562],
+            "cost": 0,
+            "state": "available"
+          }
+        ],
+        "goal": [427.7000063260396, 36.3193359375, 216.10000610351562],
+        "interaction": {
+          "radius": 0.25,
+          "maxVertical": 0.2
+        }
+      },
+      "tags": ["layered-ground", "height-preservation"],
+      "evidence": [
+        {
+          "file": "exports/map01-ground-all.json",
+          "collection": "surfaces",
+          "index": 86181,
+          "id": "163943310_NavMeshChunkData.asset/8/44"
+        },
+        {
+          "file": "exports/map01-ground-all.json",
+          "collection": "surfaces",
+          "index": 86160,
+          "id": "163943310_NavMeshChunkData.asset/8/23"
+        }
+      ],
+      "setup": {},
+      "assertions": [
+        "original-height-goal",
+        "no-nearest-floor-goal-substitution",
+        "physical-support-and-clearance"
+      ],
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-237",
+      "role": "geometry-probe-no-map-token"
+    },
+    {
+      "id": "geometry-241",
+      "group": "navigation-context",
+      "scene": "map02",
+      "level": "source-navigation",
+      "target": {
+        "kind": "navigation-contact",
+        "id": "163124095_NavMeshChunkData.asset/17/59"
+      },
+      "query": {
+        "starts": [
+          {
+            "id": "player",
+            "position": [-544.6500242948532, 259.82301330566406, -1356.6000242233276],
+            "cost": 0,
+            "state": "available"
+          }
+        ],
+        "goal": [-544.6666909853617, 259.56882731119794, -1357.4000237782795],
+        "interaction": {
+          "radius": 0.25,
+          "maxVertical": 0.2
+        }
+      },
+      "tags": ["portal-interface"],
+      "evidence": [
+        {
+          "file": "exports/map02-ground-all.json",
+          "collection": "options.portals",
+          "index": 71457
+        },
+        {
+          "file": "exports/map02-ground-all.json",
+          "collection": "surfaces",
+          "id": "163124095_NavMeshChunkData.asset/22/2"
+        },
+        {
+          "file": "exports/map02-ground-all.json",
+          "collection": "surfaces",
+          "id": "163124095_NavMeshChunkData.asset/17/59"
+        }
+      ],
+      "setup": {},
+      "assertions": ["respect-declared-portal-direction", "physical-support-and-clearance"],
+      "status": "selected-unrun",
+      "note": "This exported interface has a reverse portal. It does not establish one-way-only passage coverage.",
+      "legacyCaseId": "v250-241",
+      "role": "geometry-probe-no-map-token"
+    },
+    {
+      "id": "geometry-242",
+      "group": "navigation-context",
+      "scene": "map02",
+      "level": "source-navigation",
+      "target": {
+        "kind": "navigation-contact",
+        "id": "164139909_NavMeshChunkData.asset/4/45"
+      },
+      "query": {
+        "starts": [
+          {
+            "id": "player",
+            "position": [-136.5333423614502, 170.2098185221354, 576.1667029062907],
+            "cost": 0,
+            "state": "available"
+          }
+        ],
+        "goal": [-136.5333423614502, 214.60901484803497, 576.1667029062907],
+        "interaction": {
+          "radius": 0.25,
+          "maxVertical": 0.2
+        }
+      },
+      "tags": ["layered-ground", "height-preservation"],
+      "evidence": [
+        {
+          "file": "exports/map02-ground-all.json",
+          "collection": "surfaces",
+          "index": 264607,
+          "id": "164139909_NavMeshChunkData.asset/4/9"
+        },
+        {
+          "file": "exports/map02-ground-all.json",
+          "collection": "surfaces",
+          "index": 264643,
+          "id": "164139909_NavMeshChunkData.asset/4/45"
+        }
+      ],
+      "setup": {},
+      "assertions": [
+        "original-height-goal",
+        "no-nearest-floor-goal-substitution",
+        "physical-support-and-clearance"
+      ],
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-242",
+      "role": "geometry-probe-no-map-token"
+    },
+    {
+      "id": "geometry-243",
+      "group": "navigation-context",
+      "scene": "map02",
+      "level": "source-navigation",
+      "target": {
+        "kind": "navigation-contact",
+        "id": "163713923_NavMeshChunkData.asset/9/11"
+      },
+      "query": {
+        "starts": [
+          {
+            "id": "player",
+            "position": [-260.2833267847697, 242.42333984375, -235.83334255218506],
+            "cost": 0,
+            "state": "available"
+          }
+        ],
+        "goal": [-260.2833267847697, 250.44000244140625, -235.83334255218506],
+        "interaction": {
+          "radius": 0.25,
+          "maxVertical": 0.2
+        }
+      },
+      "tags": ["layered-ground", "height-preservation"],
+      "evidence": [
+        {
+          "file": "exports/map02-ground-all.json",
+          "collection": "surfaces",
+          "index": 94294,
+          "id": "163713923_NavMeshChunkData.asset/9/30"
+        },
+        {
+          "file": "exports/map02-ground-all.json",
+          "collection": "surfaces",
+          "index": 94275,
+          "id": "163713923_NavMeshChunkData.asset/9/11"
+        }
+      ],
+      "setup": {},
+      "assertions": [
+        "original-height-goal",
+        "no-nearest-floor-goal-substitution",
+        "physical-support-and-clearance"
+      ],
+      "status": "selected-unrun",
+      "legacyCaseId": "v250-243",
+      "role": "geometry-probe-no-map-token"
+    }
+  ],
+  "sources": {
+    "map01": {
+      "scene": "map01",
+      "source": {
+        "buildGuid": "2954fa80-23c1-1579-2b22-4ecfd6d70418",
+        "contentHash": "23821a7611be5c0478dc4695d96fd74a"
+      },
+      "interactives": "exports/map01-interaction-points.json",
+      "navigation": "exports/map01-ground-all.json",
+      "traversal": "exports/map01-traversal-devices.json",
+      "traversalExportRevision": 2,
+      "traversalGenerator": "780e4d31e00cf6c9cfc39475567f526df76407e3c862a8fd1eaffe033837bdd1",
+      "navigationExportRevision": 2,
+      "navigationGenerator": "780e4d31e00cf6c9cfc39475567f526df76407e3c862a8fd1eaffe033837bdd1",
+      "profile": {
+        "radius": 0.3499999940395355,
+        "height": 1.659999966621399
+      },
+      "locomotion": {
+        "speed": 5,
+        "sprintSpeed": 7,
+        "sprintAcceleration": 60,
+        "dash": {
+          "speed": 9.999999602635718,
+          "duration": 0.30000001192092896,
+          "cooldown": 0.800000011920929,
+          "cost": 1
+        },
+        "sprintThrough": ["jump", "drop"],
+        "stamina": {
+          "capacity": 8,
+          "initial": 8,
+          "activationCost": 1,
+          "sprintDrain": 0,
+          "recoveryRate": 0.5882352776180919,
+          "recoveryDelay": 0.8999999761581421,
+          "reserve": 0,
+          "recoveryDuringSprint": true,
+          "recoveryDuringNonWalk": true
+        }
+      }
+    },
+    "map02": {
+      "scene": "map02",
+      "source": {
+        "buildGuid": "2954fa80-23c1-1579-2b22-4ecfd6d70418",
+        "contentHash": "23821a7611be5c0478dc4695d96fd74a"
+      },
+      "interactives": "exports/map02-interaction-points.json",
+      "navigation": "exports/map02-ground-all.json",
+      "traversal": "exports/map02-traversal-devices.json",
+      "traversalExportRevision": 2,
+      "traversalGenerator": "780e4d31e00cf6c9cfc39475567f526df76407e3c862a8fd1eaffe033837bdd1",
+      "navigationExportRevision": 2,
+      "navigationGenerator": "780e4d31e00cf6c9cfc39475567f526df76407e3c862a8fd1eaffe033837bdd1",
+      "profile": {
+        "radius": 0.3499999940395355,
+        "height": 1.659999966621399
+      },
+      "locomotion": {
+        "speed": 5,
+        "sprintSpeed": 7,
+        "sprintAcceleration": 60,
+        "dash": {
+          "speed": 9.999999602635718,
+          "duration": 0.30000001192092896,
+          "cooldown": 0.800000011920929,
+          "cost": 1
+        },
+        "sprintThrough": ["jump", "drop"],
+        "stamina": {
+          "capacity": 8,
+          "initial": 8,
+          "activationCost": 1,
+          "sprintDrain": 0,
+          "recoveryRate": 0.5882352776180919,
+          "recoveryDelay": 0.8999999761581421,
+          "reserve": 0,
+          "recoveryDuringSprint": true,
+          "recoveryDuringNonWalk": true
+        }
+      }
+    }
+  }
+}

@@ -94,7 +94,7 @@ index 00000000..6b06d53b
 +    }
 +}
 diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/viewer.ts
-index 577ef634..5f24c62d 100644
+index 67207bb4..1eb5cbd9 100644
 --- a/packages/viewer/src/viewer/viewer.ts
 +++ b/packages/viewer/src/viewer/viewer.ts
 @@ -20,6 +20,7 @@ import type { WaterSurfaceEntry } from '@endfield-noclip/package-format/water';
@@ -129,7 +129,7 @@ index 577ef634..5f24c62d 100644
  		viewer.#raf = requestAnimationFrame(viewer.#onFrame);
  		document.addEventListener('visibilitychange', viewer.#onVisibilityChange);
  		return viewer;
-@@ -893,6 +902,9 @@ export class Viewer {
+@@ -873,6 +882,9 @@ export class Viewer {
  		this.#raf = requestAnimationFrame(this.#onFrame);
  		const dt = this.#lastTime === 0 ? 1 / 60 : Math.min(0.1, (time - this.#lastTime) / 1000);
  		this.#lastTime = time;
@@ -139,7 +139,7 @@ index 577ef634..5f24c62d 100644
  		this.#times.begin();
  		const renderer = this.#renderer;
  		const traversal = this.#traversal;
-@@ -994,6 +1006,7 @@ export class Viewer {
+@@ -974,6 +986,7 @@ export class Viewer {
  				times: this.#times,
  				overlays: this.#overlays,
  			});

@@ -1,0 +1,89 @@
+Ganglia Source-Available License 1.1
+Effective for distributions carrying this notice from 10 November 2026.
+
+Copyright (c) 2026 cirisus and the respective copyright holders.
+
+1. Copyleft terms for eligible recipients
+
+This is a custom source-available license. It is not the GNU Affero General
+Public License and must not be represented as an OSI-approved open-source
+license. The exclusions in section 2 are an essential part of every permission
+under this license.
+
+For recipients and uses not excluded by section 2, the permissions, conditions,
+obligations, protections and limitations in sections 0 through 17 of the GNU
+Affero General Public License, version 3, dated 19 November 2007, are incorporated
+into this license by reference, subject only to the adaptations below. The full
+reference text is supplied in LICENSE-AGPL-3.0. Its preamble and application
+instructions are reference material, not separate licensing grants for Ganglia.
+
+For the incorporated terms, "this License" means this complete custom license,
+including section 2 and these adaptations. "The Program" means the project-owned
+Ganglia material distributed under this license. "Corresponding Source", "covered
+work", "convey", "modify" and other defined terms retain their version-3 meanings.
+
+Eligible recipients must meet the same version-3 requirements for source and
+object-code distribution, notices, licensing of modified and combined covered
+works, Corresponding Source, Installation Information where applicable, patents,
+and remote network interaction. In particular, a modified version supporting
+remote network interaction must prominently offer its interacting users access
+to its Corresponding Source at no charge, as required by incorporated section 13.
+These examples summarize obligations; all incorporated sections apply, including
+the version-3 termination, reinstatement, warranty and liability provisions.
+
+The following adaptations preserve the exclusions:
+
+(a) All permissions, automatic downstream grants and patent permissions are
+    conditional on the recipient and use being eligible under section 2. No
+    grant, automatic licensing or downstream distribution authorizes an
+    Excluded Party or an excluded use.
+(b) Section 2 is mandatory and inseparable from the grant. The provisions of
+    incorporated sections 7 and 10 concerning removal of further restrictions
+    or imposition of additional restrictions do not permit its removal,
+    disregard or replacement. Those provisions otherwise continue to apply.
+(c) Every distribution of covered material, including modified or combined
+    covered works, must preserve this complete custom license and the supplied
+    reference text. Licensing requirements in the incorporated terms require
+    this custom license for covered material, not a standalone license grant
+    under the reference text. No combination or cross-license permission
+    authorizes removal of section 2 or grants an exception to it.
+(d) The incorporated version is fixed at version 3. Incorporated section 14 does
+    not grant a choice of a later license version or allow a proxy to remove
+    or relax section 2.
+
+If an incorporated provision conflicts with these adaptations or section 2,
+these adaptations and section 2 control. The reference text does not provide an
+independent or alternative license for the covered material. All rights not
+expressly granted are reserved.
+
+2. Excluded parties and projects
+
+No permission is granted under this license to, or for the benefit of:
+
+(a) the websites, services and projects known as zmdmap.com or fz.wiki, including
+    their subdomains, renamed versions, successor domains and successor services;
+(b) any person or entity operating, owning, controlling or directing those
+    websites, services or projects;
+(c) any project, service or entity owned or controlled by, under common control
+    with, or principally directed by the same ultimate person or entity as a
+    party described in (a) or (b); or
+(d) any affiliate, subsidiary, constituent project, agent, contractor or other
+    intermediary acting on behalf of, at the direction of, or for the specific
+    benefit of a party or project described in (a), (b) or (c).
+
+These are the "Excluded Parties". Control includes direct or indirect authority
+to direct management, development or operations, whether through ownership,
+agreement or actual decision-making authority. A change of name, domain,
+organizational form, intermediary or repository does not remove an exclusion
+while that relationship continues. Mere unrelated use of the same hosting
+provider, employment elsewhere or personal acquaintance is not by itself control
+or agency.
+
+Excluded Parties have no authorization under this license to copy, modify,
+distribute, deploy, host, integrate or operate the covered code, nor to use it to
+provide route computation or another service for an excluded project. Other
+recipients may not supply covered code or a service based on it specifically to
+circumvent these exclusions. Public source visibility, attribution, payment,
+noncommercial use or exposing a network API does not create an exception.
+A separate express written license from the relevant copyright holders is
+required for any such permission. Silence is not consent.

@@ -1,5 +1,5 @@
+import { createGroundPlanner } from '@opendfieldmap/ganglia/solver/host';
 import {
-    createGroundPlanner,
     sampleJourney,
     type GroundArrival,
     type GroundOptions,

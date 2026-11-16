@@ -441,10 +441,10 @@ index 00000000..a4b86d04
 +});
 diff --git a/packages/viewer/src/package/decode-data.ts b/packages/viewer/src/package/decode-data.ts
 new file mode 100644
-index 00000000..3961d5e0
+index 00000000..d0fd0ba8
 --- /dev/null
 +++ b/packages/viewer/src/package/decode-data.ts
-@@ -0,0 +1,439 @@
+@@ -0,0 +1,447 @@
 +import { BlobCodec } from '@endfield-noclip/package-format/blobs';
 +import {
 +	decodeGeometryBlob,
@@ -837,11 +837,19 @@ index 00000000..3961d5e0
 +		}
 +		case 'instances': {
 +			const built = buildInstanceRows(decodeInstanceBlock(raw), request.rowKinds ?? []);
-+			const bounds = buildRowBounds({ rowsF32: new Float32Array(built.rows.buffer), cull: built.cull, runs: built.runs, moving: movingRows(built.spins, built.rides) });
++			const bounds = buildRowBounds({
++				rowsF32: new Float32Array(built.rows.buffer),
++				cull: built.cull,
++				runs: built.runs,
++				moving: movingRows(built.spins, built.rides),
++			});
 +			return {
 +				response: { id: request.id, kind: 'instances', ...built, bounds },
 +				transfer: [
-+					bounds.groups.buffer, bounds.mirrored.buffer, bounds.segments.buffer, bounds.groupSegments.buffer,
++					bounds.groups.buffer,
++					bounds.mirrored.buffer,
++					bounds.segments.buffer,
++					bounds.groupSegments.buffer,
 +					built.rows.buffer,
 +					built.cull.buffer,
 +					built.runs.buffer,
@@ -858,12 +866,12 @@ index 00000000..3961d5e0
 +					...(built.rides === null
 +						? []
 +						: [
-+							built.rides.rows.buffer,
-+							built.rides.pathOf.buffer,
-+							built.rides.base.buffer,
-+							built.rides.runs.buffer,
-+							...built.rides.paths.map((path) => path.offsets.buffer),
-+						]),
++								built.rides.rows.buffer,
++								built.rides.pathOf.buffer,
++								built.rides.base.buffer,
++								built.rides.runs.buffer,
++								...built.rides.paths.map((path) => path.offsets.buffer),
++							]),
 +				],
 +			};
 +		}
@@ -1844,10 +1852,10 @@ index 00000000..f2f75f17
 +}
 diff --git a/packages/viewer/src/render/post/photo-filters.test.ts b/packages/viewer/src/render/post/photo-filters.test.ts
 new file mode 100644
-index 00000000..0cbb7b2d
+index 00000000..4ba48478
 --- /dev/null
 +++ b/packages/viewer/src/render/post/photo-filters.test.ts
-@@ -0,0 +1,250 @@
+@@ -0,0 +1,249 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
@@ -1870,7 +1878,6 @@ index 00000000..0cbb7b2d
 +	tint: [1, 1, 1, 1],
 +	ignorePostExposure: false,
 +	particles: {
-+		emitterMotion: null,
 +		renderMode: 0,
 +		alignment: 0,
 +		stretch: null,

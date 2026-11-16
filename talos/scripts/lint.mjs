@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { ESLint } from 'eslint';
 import stylelint from 'stylelint';
 import { projectFiles } from './project-files.mjs';
@@ -41,4 +42,8 @@ if (css?.report) console.log(css.report);
 console.log(
     `[stylelint] ${styles.length} files; ${css?.errored ? 'failed' : 'passed'}`,
 );
+execFileSync('pnpm', ['--filter', '@opendfieldmap/ganglia', 'lint'], {
+    cwd: ROOT,
+    stdio: 'inherit',
+});
 if (errors || css?.errored) process.exitCode = 1;

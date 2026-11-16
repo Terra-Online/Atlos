@@ -1,3 +1,4 @@
+import { writePhysicalAdapter } from '../../test-support/physical-adapter.mjs';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { tmpdir } from 'node:os';
@@ -5,54 +6,7 @@ import { join } from 'node:path';
 import { EventEmitter } from 'node:events';
 import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { routeServer } from './dev-route-server.ts';
-import { physicalApproaches } from './physical-route-builder.ts';
 
-test('ranks local and corridor coverage by tile cost for every endpoint geometry', () => {
-    const corridor = {
-        kind: 'corridor-proposal',
-        bounds: { min: [-38.4, -38.4], max: [76.8, 76.8] },
-        tiles: Array.from({ length: 9 }, (_, index) => ({
-            x: (index % 3) - 1,
-            z: Math.floor(index / 3) - 1,
-        })),
-        coarse: {
-            regions: 1,
-            edges: 0,
-            path: [
-                [0, 0, 0],
-                [1, 0, 1],
-            ],
-            halo: 1,
-        },
-    };
-    for (const elevation of [0, 10, 100, 1000]) {
-        const approaches = physicalApproaches(
-            [0, elevation, 0],
-            [1, 0, 1],
-            [corridor],
-        );
-        assert.equal(approaches[0].corridor, undefined);
-        assert.ok(
-            approaches.some((approach) => approach.corridor === corridor),
-        );
-    }
-    const longCorridor = {
-        ...corridor,
-        bounds: { min: [-38.4, -38.4], max: [1036.8, 1036.8] },
-        tiles: Array.from({ length: 81 }, (_, index) => ({
-            x: Math.floor(index / 3),
-            z: Math.floor(index / 3) + (index % 3) - 1,
-        })),
-    };
-    const far = physicalApproaches([0, 0, 0], [1000, 0, 1000], [longCorridor]);
-    assert.equal(far[0].corridor, longCorridor);
-    assert.deepEqual(
-        far
-            .filter((approach) => !approach.corridor)
-            .map((approach) => approach.margin),
-        [24, 64, 128, 256],
-    );
-});
 test(
     'polls global candidates and bounded windows, distinguishes partial output and caches terminal results',
     { timeout: 15000 },
@@ -69,6 +23,10 @@ test(
             };
             const anchor = {
                 id: 'tp',
+                // An explicit support range requires prefix projection verification,
+                // so a tail covering the same coordinates remains provisional.
+                groundRange: [0, 0],
+                requiresGroundProjection: true,
                 position: [0.5, 0, 0.5],
                 cost: 0,
                 state: 'available',
@@ -87,7 +45,10 @@ test(
                 JSON.stringify({
                     scene: 'map01',
                     source,
-                    arrivals: [anchor, { ...anchor, id: 'alternate', position: [1, 0, 0.5] }],
+                    arrivals: [
+                        anchor,
+                        { ...anchor, id: 'alternate', position: [1, 0, 0.5] },
+                    ],
                     surfaces: [floor],
                     options,
                 }),
@@ -96,7 +57,15 @@ test(
                 join(directory, 'travel-points.json'),
                 JSON.stringify({
                     source,
-                    points: [{ ...anchor, level: 'map01_lv001' }, { ...anchor, id: 'alternate', position: [1, 0, 0.5], level: 'map01_lv002' }],
+                    points: [
+                        { ...anchor, level: 'map01_lv001' },
+                        {
+                            ...anchor,
+                            id: 'alternate',
+                            position: [1, 0, 0.5],
+                            level: 'map01_lv002',
+                        },
+                    ],
                 }),
             );
             const extractor = join(directory, 'extractor');
@@ -106,7 +75,14 @@ test(
             const config = join(directory, 'fixture-config.json');
             await writeFile(
                 join(directory, 'movement-settings-current.json'),
-                JSON.stringify({ source, sustainedSprint: { speed: 5, sprintSpeed: 5, sprintAcceleration: 1 } }),
+                JSON.stringify({
+                    source,
+                    sustainedSprint: {
+                        speed: 5,
+                        sprintSpeed: 5,
+                        sprintAcceleration: 1,
+                    },
+                }),
             );
             const fixture = {
                 scene: 'map01',
@@ -184,8 +160,13 @@ test(
             }
         `,
             );
+            await writePhysicalAdapter(extractor);
             let handle;
             routeServer(directory, {
+                sceneBinding: async () => ({
+                    generation: 'fixture-generation',
+                    source,
+                }),
                 extractor,
                 config,
                 node: process.execPath,
@@ -201,6 +182,8 @@ test(
             const request = async (overrides = {}) =>
                 new Promise((resolve) => {
                     const params = new URLSearchParams({
+                        generation: 'fixture-generation',
+                        state: 'fully-enabled',
                         scene: 'map01',
                         level: 'map01_lv001',
                         x: '5.5',
@@ -228,16 +211,31 @@ test(
                 let result;
                 do {
                     result = await request(overrides);
-                    if (result.body.status !== 'building-ground' && (!terminal || !result.body.optimizing)) return result;
-                    await new Promise(resolve => setTimeout(resolve, 25));
+                    if (
+                        result.body.status !== 'building-ground' &&
+                        (!terminal || !result.body.optimizing)
+                    )
+                        return result;
+                    await new Promise((resolve) => setTimeout(resolve, 25));
                 } while (Date.now() < deadline);
-                throw new Error('Route polling timed out: ' + JSON.stringify(result.body));
+                throw new Error(
+                    'Route polling timed out: ' + JSON.stringify(result.body),
+                );
             };
+            assert.equal(
+                (await request({ generation: 'stale-generation' })).code,
+                409,
+            );
+            assert.equal((await request({ state: 'closed-doors' })).code, 409);
             let result = await request();
             assert.equal(result.body.status, 'building-ground');
             assert.equal(result.body.retryAfter, 1000);
             result = await poll();
-            assert.equal(result.body.status, 'candidate');
+            assert.equal(
+                result.body.status,
+                'candidate',
+                JSON.stringify(result.body),
+            );
             assert.equal(result.body.partial, true);
             assert.equal(result.body.optimizing, true);
             assert.match(result.body.title, /Partial/);
@@ -253,19 +251,36 @@ test(
             assert.deepEqual((await request()).body, result.body);
             assert.equal(await readFile(config + '.route-runs', 'utf8'), runs);
             assert.equal((await request({ scene: 'map../01' })).code, 400);
-            assert.equal((await request({ buildGuid: 'stale' })).body.category, 'stale-build');
+            assert.equal(
+                (await request({ buildGuid: 'stale' })).body.category,
+                'stale-build',
+            );
             const missing = await poll({ x: '500' }, true);
             assert.equal(missing.body.status, 'unavailable');
             assert.equal(missing.body.category, 'candidate-search');
             assert.deepEqual((await request({ x: '500' })).body, missing.body);
             // Preserve a verified tail while retrying another scene anchor after a prefix failure.
-            await writeFile(config, JSON.stringify({ result: fixture, routeCost: 1, failPrefix: true }));
+            await writeFile(
+                config,
+                JSON.stringify({
+                    result: fixture,
+                    routeCost: 1,
+                    failPrefix: true,
+                }),
+            );
             const rerouted = await poll({ x: '7' }, true);
             assert.equal(rerouted.body.status, 'candidate');
             assert.equal(rerouted.body.partial, false);
             assert.equal(rerouted.body.anchor.id, 'alternate');
             assert.equal(rerouted.body.route.start, 'alternate');
-            await writeFile(config, JSON.stringify({ result: fixture, routeCost: 1, onlyTail: true }));
+            await writeFile(
+                config,
+                JSON.stringify({
+                    result: fixture,
+                    routeCost: 1,
+                    onlyTail: true,
+                }),
+            );
             const partial = await poll({ x: '7.5' }, true);
             assert.equal(partial.body.status, 'candidate');
             assert.equal(partial.body.partial, true);
@@ -274,13 +289,19 @@ test(
             assert.equal(partial.body.markers[0].label, 'Local approach start');
             assert.deepEqual((await request({ x: '7.5' })).body, partial.body);
             // A failed physical search is terminal, and subsequent polls retain it.
-            await writeFile(config, JSON.stringify({ result: fixture, failRoute: true }));
+            await writeFile(
+                config,
+                JSON.stringify({ result: fixture, failRoute: true }),
+            );
             const failed = await poll({ x: '6.5' }, true);
             assert.equal(failed.body.status, 'unavailable');
             assert.equal(failed.body.category, 'window-route');
             const failedRuns = await readFile(config + '.route-runs', 'utf8');
             assert.deepEqual((await request({ x: '6.5' })).body, failed.body);
-            assert.equal(await readFile(config + '.route-runs', 'utf8'), failedRuns);
+            assert.equal(
+                await readFile(config + '.route-runs', 'utf8'),
+                failedRuns,
+            );
         } finally {
             await Promise.all(
                 httpServer
@@ -341,28 +362,3 @@ test('serves retained task logs while rejecting paths outside the task directori
         await rm(directory, { recursive: true, force: true });
     }
 });
-
-for (const scenario of ['unmapped', 'disconnected']) {
-    test(`global candidate rejects ${scenario} nearest anchor and selects a connected scene anchor`, async () => {
-        const directory = await mkdtemp(join(tmpdir(), 'world-global-arrivals-'));
-        const source = { buildGuid: 'fixture', contentHash: 'fixture' };
-        const { candidateJobs } = await import('./candidate-job.ts');
-        const jobs = candidateJobs(directory);
-        try {
-            const surfaces = [{ id: 'floor', vertices: [[0, 0, 0], [8, 0, 0], [8, 0, 4], [0, 0, 4]] }];
-            if (scenario === 'disconnected') surfaces.push({ id: 'upper', vertices: [[4, 2, 0], [8, 2, 0], [8, 2, 4], [4, 2, 4]] });
-            await writeFile(join(directory, 'map01-ground-all.json'), JSON.stringify({ source, surfaces,
-                options: { speed: 5, maxVertical: 0.5, walls: [], profile: { radius: 0.35, height: 1.66 } } }));
-            const job = jobs.start({ scene: 'map01', source, target: [6, 0, 1], arrivals: [
-                { id: 'bad', position: [5, 2, 1], cost: 0, state: 'available' },
-                { id: 'good', position: [1, 0, 1], cost: 0, state: 'available' },
-            ] });
-            const deadline = Date.now() + 3000;
-            while (job.status === 'pending' && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 10));
-            assert.equal(job.status, 'ready');
-            assert.equal(job.result.status, 'candidate');
-            assert.equal(job.result.arrival.id, 'good');
-            assert.deepEqual(job.result.points.at(-1), [6, 0, 1]);
-        } finally { jobs.close(); await rm(directory, { recursive: true, force: true }); }
-    });
-}
