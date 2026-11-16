@@ -2,13 +2,11 @@
 
 Use this contract when preparing mechanism inputs or changing the runner.
 `suite.json` owns queries, setup, source bindings and exercise assertions. Keep raw
-game assets, profiles and private config local. For the primary benchmark command,
-comparison gates, read [AGENTS.md](../../../AGENTS.md).
+game assets, profiles and private config local.
 
 ## Choose the runner
 
-PR mechanism acceptance uses `pnpm benchmark:mechanisms --adapter ganglia-v1-ts`;
-see [AGENTS.md](../../../AGENTS.md#mechanism-benchmark) for the command and gates.
+Use `pnpm benchmark:mechanisms --adapter ganglia-v1-ts` for service measurements.
 This service runner reads `input-index.json`, trains/freezes/warms scenario workers,
 then scores routes and independently replays complete results. The CLI defaults
 to Rust, so select TS explicitly. `--audit` checks the suite/index binding without
@@ -39,8 +37,7 @@ the service generator below does not create this retained/per-case layout.
 ## Generate service inputs
 
 Use Node 26, a game installation matching `suite.json.source`, the pinned extractor
-and a validated private config. For workspace preparation and key initialization,
-follow [the development guide](../../../docs/contributing.md). From repository root:
+and a validated private config. From repository root:
 
 ```sh
 export GANGLIA_CONFIG=/absolute/path/to/private-config.json

@@ -13,6 +13,10 @@ pnpm dev:user-hub
 
 The main dev server proxies the selected app at `/intel/` or `/me/`.
 
+For World setup, routing, renderer integration and deployment, start at
+[the World guide](docs/world.md). For standalone solver development, see
+[Ganglia](packages/ganglia/README.md).
+
 ## Build and check
 
 ```sh
@@ -101,6 +105,5 @@ pnpm worker search deploy
 `pnpm data --help` lists individual tasks. Unknown CLI values are rejected;
 `--` separators are accepted.
 
-Map tiles and other large/licensed assets are not distributed in this
-repository. For map clips for local preview, contact cirisus at
-`cirisus@outlook.com`.
+For private map, font and icon prerequisites, follow
+[local asset setup](docs/local-assets.md).

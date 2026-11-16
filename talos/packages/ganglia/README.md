@@ -2,7 +2,7 @@
 
 Ganglia is an experimental route solver for Open Endfield Map. Atlos owns game-data
 adaptation and visualization; Ganglia owns route feasibility, search and movement
-scheduling. See the [development guide](docs/contributing.md) for local integration.
+scheduling.
 
 **License notice:** current project-owned releases use the custom [Ganglia Source-Available
 License](LICENSE), which excludes zmdmap.com, fz.wiki and the related operators and projects
@@ -44,8 +44,7 @@ integration patches.
 
 ## Development
 
-Use Node 26 for the integrated noclip toolchain and install from the `talos`
-workspace with its pinned package manager.
+Install from the Talos workspace with its pinned package manager.
 
 ```bash
 pnpm check

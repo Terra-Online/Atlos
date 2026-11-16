@@ -39,21 +39,30 @@ Otherwise, place necessary explanations in code comments.
 
 Apply these rules to both code comments and other documentation:
 
-- **Stateless and self-contained:** text must be understandable without the agent
+1. **Navigation:** apply this for tracked doc files. Link from entry points to task guides and narrower references
+  as a directed acyclic graph (local tree-shaped graphs would be even better). Keep setup instructions with the subsystem that
+  owns them.
+  Reason: a cyclic doc graph would easily turn everything into a navigation hell and makes you confused where to place a new doc file.
+2. **Stateless and self-contained:** text must be understandable without the agent
   session, PR discussion or other conversational context. Do not refer to local
   development documents or describe what the code used to do. References to
   external sources and GitHub issues or PRs are allowed.
-- **Do not duplicate implementation:** explain decisions, constraints and reasons
+  Reason: improve readability for both human and agents.
+3. **Do not duplicate implementation:** explain decisions, constraints and reasons
   for surprising choices that the code cannot express. If a small implementation
   change elsewhere would make the text stale, remove the duplicated detail.
   Capture useful rationale directly; do not create formal ADRs by default.
-- **How-to and handoff exception:** a human-requested explanation saved for another
+  Reason: otherwise, the documentation turns stale quickly.
+4. **Trials and previous failures**: do not maintain seperate "history" files to track previous behaviours. Instead, document that something has failed (e.g. algorithm pieces, hyperparameters) (i) near the code that implements it (like in point 3 above), and/or (ii) in the PR or commit message that brings the lesson.
+  Reason: history files are hard to maintain and turns into staled slop easily. Writing trials and lessons near implementation at least gives the observability (via git blame) and tends to make them less stale (when you clean up code, you clean up those decisions as well).
+5. **How-to and handoff exception:** a human-requested explanation saved for another
   human or agent may repeat necessary implementation details. State its scope and
   freshness conditions, and update or remove it when it becomes outdated.
 
 ## Working on Route Solver (Ganglia)
 
-When working on the Ganglia and related implementation, read and follow [talos/packages/ganglia/AGENTS.md](talos/packages/ganglia/AGENTS.md).
+For Ganglia solver work, follow [the package rules](talos/packages/ganglia/AGENTS.md).
+For World integration, start at [the World guide](talos/docs/world.md).
 
 ## Testing and Validation
 

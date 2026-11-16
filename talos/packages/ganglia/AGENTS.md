@@ -2,8 +2,6 @@
 
 Algorithm changes belong in this package. Maintain noclip adapters and renderer
 extensions through `talos/integrations/noclip` patches; `.cache/noclip` is generated.
-For local game-data setup, World inspection or consumer checks, read
-[the development guide](docs/contributing.md).
 
 `feat/3d-preview` is the base branch. Unless specified otherwise, target it with
 one independently reviewable strategy or fix per PR.
@@ -12,8 +10,8 @@ one independently reviewable strategy or fix per PR.
 
 No CI currently covers solver acceptance on this branch. Before merging changes:
 
-1. Lint, format and test: run `pnpm check` for TS solver changes; `pnpm rust:build`, `pnpm rust:test` and `pnpm rust:integration` for Rust changes;
-   World typecheck/tests/build for World integration changes.
+1. Lint, format and test: run `pnpm check` for TS solver changes;
+   `pnpm rust:build`, `pnpm rust:test` and `pnpm rust:integration` for Rust changes.
 2. Run the complete mechanism benchmark and apply the merge gates below (skip if no code is touched). Report benchmark results.
 
 ## Mechanism benchmark

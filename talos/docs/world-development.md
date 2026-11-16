@@ -1,9 +1,8 @@
-# Local Ganglia and World development
+# Local World development
 
-Use this guide to provision game inputs, run local previews or validate integration
-changes. Commands assume the current pinned noclip archive and patches. For solver
-benchmarks and performance claims, follow [the benchmark policy](../AGENTS.md).
-Read the [license](../LICENSE) before contributing; preserve third-party notices.
+Use this guide to provision game inputs, run local previews and validate World
+integration. Commands use the pinned noclip archive and patches. For solver
+changes, follow the [Ganglia development rules](../packages/ganglia/AGENTS.md).
 
 ## Prepare the workspace
 
@@ -27,13 +26,13 @@ pnpm install --frozen-lockfile
 pnpm data prepare
 ```
 
-Provision map imagery, fonts and other local assets following
-[the Talos README](../../../README.md). Keep private configuration, game assets,
-clones and evidence under ignored `.local/`, or use verified external paths.
-Preserve dataset provenance and hard links when relocating inputs.
+Provision the [local frontend assets](local-assets.md) for the Talos workspace.
+Keep private configuration, game assets and evidence under ignored `.local/`,
+or select verified external paths. Preserve dataset provenance and hard links
+when relocating inputs.
 
 For adapter or renderer edits, read the
-[noclip integration workflow](../../../integrations/noclip/README.md).
+[noclip integration workflow](../integrations/noclip/README.md).
 Edit its committed patches and regenerate the cache before validating consumers.
 
 ## Prepare client inputs
@@ -44,7 +43,7 @@ under `StreamingAssets/VFS` (plus matching `Persistent/VFS` updates when present
 Retain the archive directory layout. Missing chunks are missing input.
 
 For selective downloads from matching launcher metadata, follow the
-[download instructions](../../../scripts/noclip-download.md). The exporter reads
+[download instructions](../scripts/noclip-download.md). The exporter reads
 VFS directly; a separate bundle dump is unnecessary.
 
 Initialize the private config using compatible local key sources:
@@ -147,15 +146,18 @@ WORLD_ROUTING_DIRECTORY="$DATA/routing" WORLD_GAME_CONFIG="$GAME_CONFIG" \
 WORLD_EXTRACTOR_NODE="$(command -v node)" pnpm dev:world
 ```
 
+For standalone World development, use `pnpm --filter @atlos/world dev` with the
+same environment. Map assets proxy through the main development server on 5173.
+The [environment example](../.env.world.example) lists the frontend variables.
+
 Open `http://localhost:5173/`, select a point in the catalog and choose **Route from
 nearest teleport**. It opens `http://127.0.0.1:5176/POINT_TOKEN?planRoute=nearest`.
 Use the encoded point token from the detail link. The route assumes an unlocked
-origin; bounded failure does not prove unreachability.
+origin.
 
 For a retained candidate, append `?routePreview=/oem/<local-file>.json` to a World
 point URL. This development-only path uses the local OEM mount. Inspect the target,
-minimap route, segment timing and playback. Model output does not establish game
-execution validity.
+minimap route, segment timing and playback.
 
 If packages return 404, check the release ID and 5199 mounts. Missing detail actions
 usually indicate a missing point/catalog binding. For route failures, check routing
@@ -164,7 +166,7 @@ replacing catalogs or route inputs.
 
 ## Validate the changed boundary
 
-Run `pnpm check` in `talos/packages/ganglia` for solver changes. For World integration:
+For World integration:
 
 ```sh
 cd "$TALOS"

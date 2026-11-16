@@ -40,23 +40,8 @@ or a closed opener works independently. The initial hello contains only the prot
 
 ## Local work
 
-```sh
-cd talos
-pnpm noclip:prepare
-pnpm install --frozen-lockfile
-```
-
-Set the two variables in `.env.world.example` using a local-only env file or shell environment.
-Run noclip's existing data server on port 5199 against its retained `out/releases`, then run
-`pnpm dev:world` for the main site and World together. World can also run alone with
-`pnpm --filter @atlos/world dev`; map assets proxy through the main development server on 5173.
-The frontend can be rebuilt without unpacking game data or clearing browser caches.
-
-```sh
-pnpm type-check --app world
-pnpm test --app world
-pnpm build --app world
-```
+Follow the [local development guide](world-development.md) to prepare game inputs,
+start the main site and World, inspect routes and run integration checks.
 
 The independent build writes `dist/world` and a receipt with the renderer pin, catalog and file
 hashes. Main-site full builds exclude World. Its build checks the source pin and uses an immutable
@@ -192,13 +177,6 @@ explicitly unconfirmed context views.
 
 ## Ground journeys
 
-For local route setup and inspection, use the Ganglia
-[development guide](../packages/ganglia/docs/contributing.md). For solver changes
-and performance claims, follow the package's
-[benchmark policy](../packages/ganglia/AGENTS.md).
-
-World consumes the editable Ganglia workspace package. Routing assumes matching
-scene, movement and player-state inputs; an unlocked origin is a planning
-assumption. Bounded search failure does not establish physical unreachability.
-Completed HTTP cache hits do not measure solver performance, and model routes
-require separate validation against game execution.
+World consumes the editable Ganglia workspace package. For solver behavior,
+configuration and benchmark policy, start at the
+[Ganglia package](../packages/ganglia/README.md).
