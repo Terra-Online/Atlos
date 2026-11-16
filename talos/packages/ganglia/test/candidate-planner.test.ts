@@ -362,3 +362,36 @@ test('endpoint index retains a large face whose centre is outside the query sphe
   assert.ok(result.status === 'candidate');
   assert.equal(result.unresolved.length, 0);
 });
+
+test('a capsule-sized start attachment keeps its physical proof without a transfer-sized ranking penalty', () => {
+  const surfaces = [
+    {
+      id: 'floor',
+      vertices: [
+        [0, 0, 0],
+        [30, 0, 0],
+        [30, 0, 2],
+        [0, 0, 2],
+      ] as Vec3[],
+    },
+  ];
+  const planner = createCandidatePlanner({
+    surfaces,
+    options: {
+      speed: 5,
+      maxVertical: 0.5,
+      profile: { radius: 0.35, height: 1.66 },
+    },
+  });
+  const near: GroundArrival = {
+    id: 'near',
+    position: [25, 0.4, -0.04],
+    cost: 0,
+    state: 'available',
+  };
+  const far: GroundArrival = { id: 'far', position: [1, 0, 1], cost: 0, state: 'available' };
+  const result = expectStatus(planner.plan([far, near], [29, 0, 1]), 'candidate');
+  assert.equal(result.arrival.id, 'near');
+  assert.ok(result.unresolved.some((edge) => edge.points[0] === near.position));
+  assert.deepEqual(result.points[0], near.position);
+});

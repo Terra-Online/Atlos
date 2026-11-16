@@ -722,3 +722,84 @@ test('the fixed scene policy reaches every physical resource request', async () 
     await solver.close();
   }
 });
+
+for (const outcome of ['cheaper', 'failure', 'cancel'] as const) {
+  test(`scene selection compares a promising alternative and preserves its incumbent on ${outcome}`, async () => {
+    const { resources, scene, config, locomotion } = fixture();
+    const starts = [
+      { id: 'far', position: [0, 0, 0] as Vec3, cost: 0, state: 'available' as const },
+      { id: 'near', position: [18, 0, 3] as Vec3, cost: 0, state: 'available' as const },
+    ];
+    const physicalSurfaces = [
+      {
+        id: 'physical',
+        vertices: [
+          [-1, 0, -10],
+          [21, 0, -10],
+          [21, 0, 10],
+          [-1, 0, 10],
+        ] as Vec3[],
+      },
+    ];
+    const options = {
+      speed: 5,
+      maxVertical: 0.1,
+      walls: [],
+      profile: { radius: 0.1, height: 1.8 },
+      locomotion,
+    };
+    const planner = createGroundPlanner(physicalSurfaces, options);
+    resources.ground = async () => ({ surfaces: physicalSurfaces, options });
+    const calls: string[] = [];
+    resources.solve = async (_job, request) => {
+      calls.push(request.arrival.id);
+      if (outcome === 'failure' && request.arrival.id === 'near')
+        throw new Error('alternative input unavailable');
+      return { status: 'ready', route: planner.plan([request.arrival], request.target) };
+    };
+    const controller = new AbortController();
+    const events: RouteEvent[] = [];
+    const solver = await prepareRouteSolver(config, {
+      kind: 'scene',
+      scene,
+      resources,
+      locomotion,
+    });
+    try {
+      const result = await solver.solve(
+        { starts, goal: [20, 0, 0] },
+        {
+          signal: controller.signal,
+          onEvent(event) {
+            events.push(event);
+            if (outcome === 'cancel' && event.type === 'candidate' && !event.result.partial)
+              controller.abort();
+          },
+        },
+      );
+      assert.equal(result.route.status, 'complete');
+      if (result.route.status !== 'complete') return;
+      assert.equal(result.route.start, outcome === 'cheaper' ? 'near' : 'far');
+      if (outcome !== 'cancel') assert.ok(calls.includes('near'));
+      assert.deepEqual(
+        verifyRoute({ starts, goal: [20, 0, 0] }, result.route, { maxVertical: 0.1 }).issues,
+        [],
+      );
+      const complete = events.filter((e) => e.type === 'candidate' && !e.result.partial);
+      assert.ok(complete.length > 0);
+      for (let i = 1; i < complete.length; i++) {
+        const a = complete[i - 1],
+          b = complete[i];
+        if (
+          a.type === 'candidate' &&
+          b.type === 'candidate' &&
+          a.result.route.status === 'complete' &&
+          b.result.route.status === 'complete'
+        )
+          assert.ok(b.result.route.cost < a.result.route.cost);
+      }
+    } finally {
+      await solver.close();
+    }
+  });
+}

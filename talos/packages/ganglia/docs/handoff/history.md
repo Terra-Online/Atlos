@@ -1,5 +1,50 @@
 # Route solver history and validation evidence
 
+## Anchors suppressed by endpoint exploration penalties, 2026-11-16
+
+Observed on baseline `3b8aa5d9` using the retained local map01 routing exports,
+release `3a69198f8ae5cf1e` (v119), build `2954fa80-23c1-1579-2b22-4ecfd6d70418` /
+content `23821a7611be5c0478dc4695d96fd74a`. Original World point IDs are `3400021012`
+and `3400021271` (tokens `0vHdD6n` / `0ydxpZA`); original interaction goals and all 32
+available arrivals remain unchanged. Nearest teleport `3400020746` is 37.35 / 94.03 m
+from the goals; the previously selected `3400020747` is 255.07 / 221.37 m away.
+
+A same-input candidate-only control explains both failures without route solving:
+all-arrival scores 20152.738 / 10080.513 select the far teleport, while near-only
+scores 30053.368 / 20039.440 retain shorter proposals. A 4.6 cm horizontal and 0.438 m
+vertical authored-entry projection adds a whole 10000-point unresolved-transfer
+penalty. Scene orchestration then returns its first complete route, so native
+completion and candidateAttempts 1 do not establish a time-optimal anchor.
+The penalty originates in Ganglia `9b75ecc`; scene/window first-completion behavior
+is present in Atlos `86ac4024` and retained through later shared-solver migrations.
+No historical same-input bisection was run to identify the first observable
+regression; source lineage alone is not that proof.
+
+The changed premise is explicit endpoint exploration ranking plus incumbent
+comparison across arrivals, rather than weakening physical rules or lowering
+all transfer penalties. Four focused controls cover near authored-entry ranking
+while preserving unresolved proof, a genuinely cheaper alternative, a failed
+alternative and cancellation. The first three reproduce failures on baseline;
+all pass with the patch. No case coordinates, hint routes, case budgets or
+expected-score relaxations are added to production search.
+
+Evidence is `.local/research/route-anchor-audit/`: original URLs/responses,
+all/near-only proposals, patched responses and final-summary.json with frozen
+source hash and per-request observed times. Replay uses each original
+`/__routes/nearest` query unchanged against the isolated World server on 5186,
+Node 26.13.1 and 6144 MiB heap. The local rendering catalog and source/profile are
+unchanged. Original response costs 57.110255 / 32.983626s become 18.991155 /
+13.728391s; this is a focused modeled-cost gain, with native complete outputs.
+Cold preparation, response polling and concurrent local activity make the observed
+wall times unsuitable for a service speedup claim. No independent physical replay,
+Rust benchmark or complete 266-case campaign was run. Remaining anchor exploration
+is heuristic and bounded; reported truncation preserves that limitation.
+
+Final checks: Ganglia format/lint/typecheck plus 557 tests; World main/worker
+TypeScript checks and 2 route-server Node tests pass. The full package check first
+exposed an unrelated existing URL.pathname fixture bug in space-containing paths;
+fileURLToPath corrects that lookup and the unchanged 266-case assertions pass.
+
 ## Collaborator input preparation, 2026-11-16
 
 `benchmark:prepare-mechanisms` now generates a new service input binding from

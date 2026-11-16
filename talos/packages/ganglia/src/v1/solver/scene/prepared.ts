@@ -71,15 +71,19 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
     const excludedEdges: (number | string)[] = [],
       excludedArrivals = new Set<string>();
     let lastReason: string | undefined;
+    let incumbent: RouteResult | undefined;
     let partial: RouteResult | undefined,
       attempts = 0;
     let truncated = false;
     const stopped = (reason: string, limited = false): RouteResult =>
-      partial
+      incumbent || partial
         ? {
-            ...partial,
+            ...(incumbent ?? partial!),
             reason,
-            diagnostics: { truncated: truncated || limited, candidateAttempts: attempts },
+            diagnostics: {
+              truncated: truncated || limited || Boolean(incumbent?.diagnostics.truncated),
+              candidateAttempts: attempts,
+            },
           }
         : {
             route: { status: 'no-verified-route' },
@@ -100,10 +104,26 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         locomotion.sprintSpeed ?? locomotion.speed,
       );
       const goal = terminal?.route.points[0] ?? query.goal;
-      for (; attempts < maxAttempts;) {
+      const estimate = (arrival: GroundArrival) =>
+        arrival.cost +
+        distance(arrival.position, query.goal) / Math.max(locomotion.speed, locomotion.sprintSpeed);
+      candidates: for (; attempts < maxAttempts;) {
         if (cancelled()) return stopped('aborted', true);
-        const starts = query.starts.filter((a) => !excludedArrivals.has(a.id));
-        if (!starts.length) return stopped(lastReason ?? 'no-available-arrival');
+        let starts = query.starts.filter(
+          (a) => a.state === 'available' && !excludedArrivals.has(a.id),
+        );
+        if (incumbent?.route.status === 'complete') {
+          const cost = incumbent.route.cost;
+          // This is an exploration heuristic, not a physical lower bound: devices
+          // and boosts can beat straight-line sprint estimates. Keep truncation explicit.
+          const promising = starts.filter((a) => estimate(a) < cost);
+          truncated ||= promising.length < starts.length;
+          starts = promising.sort((a, b) => estimate(a) - estimate(b)).slice(0, 1);
+        }
+        if (!starts.length)
+          return stopped(
+            incumbent ? 'anchor-comparison-complete' : (lastReason ?? 'no-available-arrival'),
+          );
         attempts++;
         await checkpoint(options.signal);
         progress('search');
@@ -111,7 +131,11 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         const proposal = planner.plan(starts, goal, { excludedEdges });
         await checkpoint(options.signal);
         if (cancelled()) return stopped('aborted', true);
-        if (proposal.status !== 'candidate') return stopped('no-global-candidate');
+        if (proposal.status !== 'candidate') {
+          if (!incumbent) return stopped('no-global-candidate');
+          excludedArrivals.add(starts[0].id);
+          continue;
+        }
         const arrival = proposal.arrival;
         const window = createWindowRoute(
           resources,
@@ -154,10 +178,20 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
               candidateAttempts: attempts,
             },
           };
-          options.onEvent?.({ type: 'candidate', result, optimizing: isPartial });
+          if (!isPartial) {
+            if (incumbent?.route.status === 'complete' && route.cost >= incumbent.route.cost)
+              return incumbent;
+            incumbent = result;
+          }
+          if (!isPartial || !incumbent)
+            options.onEvent?.({
+              type: 'candidate',
+              result,
+              optimizing: isPartial || query.starts.length > 1,
+            });
           return result;
         };
-        if (!partial) {
+        if (!partial && !incumbent) {
           if (terminal)
             partial = publish(terminal.route, [{ supportBoxes: terminal.supportBoxes }], true);
           else {
@@ -172,7 +206,10 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
                     arrivalCost: arrival.cost,
                     cost: tail.route.cost - tail.route.arrivalCost + arrival.cost,
                   };
-                  return publish(route, tail.evidence, false);
+                  publish(route, tail.evidence, false);
+                  excludedArrivals.add(arrival.id);
+                  partial = undefined;
+                  continue candidates;
                 }
                 partial = publish(tail.route, tail.evidence, true);
                 break;
@@ -191,11 +228,14 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
               ? composeRoutes([result.route, terminal.route], locomotion)
               : result.route;
             if (route.status !== 'complete') return stopped('terminal-composition');
-            return publish(
+            publish(
               route,
               [...result.evidence, ...(terminal ? [{ supportBoxes: terminal.supportBoxes }] : [])],
               false,
             );
+            excludedArrivals.add(arrival.id);
+            partial = undefined;
+            continue candidates;
           }
           if (result.status === 'pending') {
             progress('validate');
@@ -222,7 +262,8 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
       return stopped('candidate-budget', true);
     } catch (error) {
       if (cancelled()) return stopped('aborted', true);
-      if (partial) return stopped(error instanceof Error ? error.message : String(error), true);
+      if (incumbent || partial)
+        return stopped(error instanceof Error ? error.message : String(error), true);
       throw error;
     }
   };

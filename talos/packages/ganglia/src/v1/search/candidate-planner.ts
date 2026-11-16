@@ -51,6 +51,7 @@ type Arc = Omit<CandidateEdge, 'index' | 'unresolved'> & {
   connectionIndex?: number;
   length?: number;
   cost?: number;
+  localStart?: boolean;
   state?: 'open' | 'closed' | 'unknown';
 };
 
@@ -185,6 +186,13 @@ export function createCandidatePlanner(
         from: graph.nodes[from].id,
         to: graph.nodes[to].id,
         points: direction === 'start' ? points : points.reverse(),
+        // A short authored-start attachment is still physically unresolved, but
+        // does not carry the exploration penalty of a generated movement transfer.
+        localStart:
+          direction === 'start' &&
+          Math.hypot(position[0] - support.position[0], position[2] - support.position[2]) <=
+            (data.options.profile?.radius ?? 0) &&
+          Math.abs(position[1] - support.position[1]) <= data.options.maxVertical,
         unresolved:
           Math.hypot(position[0] - support.position[0], position[2] - support.position[2]) > 1e-6 ||
           Math.abs(position[1] - support.position[1]) > data.options.maxVertical,
@@ -392,11 +400,12 @@ export function createCandidatePlanner(
           )
             continue;
           const ascent = edge.points.at(-1)![1] - edge.points[0][1];
-          const penalty = edge.unresolved
-            ? ascent > 2.1 && !edge.mode
-              ? ascentPenalty
-              : transferPenalty
-            : 0;
+          const penalty =
+            edge.unresolved && !edge.localStart
+              ? ascent > 2.1 && !edge.mode
+                ? ascentPenalty
+                : transferPenalty
+              : 0;
           const score = current.cost + penalty + (edge.length ?? edge.cost!);
           if (score >= scores[to]) continue;
           scores[to] = score;

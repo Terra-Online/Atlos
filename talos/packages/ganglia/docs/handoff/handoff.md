@@ -1,5 +1,40 @@
 # Route solver handoff
 
+## Multi-anchor route selection patch, 2026-11-16
+
+Scene candidate ranking retains physical proof for authored-start attachments
+within the navigation profile's capsule radius and maxVertical, but omits the
+10000-point transfer exploration penalty for those local attachments. Original
+start coordinates, unresolved edge identity, physical collision/support admission,
+resources and interaction goals remain required. This does not certify a short
+attachment as walkable or remove normal penalties from inter-platform transfers.
+
+The scene solver retains a complete incumbent while spending the existing
+maxAttempts budget on alternative available arrivals. Alternatives are ranked
+by arrival overhead plus straight-line distance / maximum ordinary ground speed;
+only estimates below the incumbent's modeled cost are investigated. This is a
+bounded exploration heuristic: authored devices and boosts can invalidate it as
+a lower bound, so skipped alternatives and exhausted budgets remain truncated.
+Only strictly cheaper complete routes replace/publish the incumbent. Partial
+alternatives, cancellation and later failures preserve the complete route and
+its selected arrival/support evidence. Single-start queries retain their existing
+physical planning flow. Global optimality is not established.
+
+The real World requests for tokens `0vHdD6n` / `0ydxpZA` use 32 available map01
+arrivals. Both previously selected teleport `3400020747` after one candidate; they
+now select nearby teleport `3400020746`. Native complete route costs change from
+57.110255 / 32.983626 seconds to 18.991155 / 13.728391 seconds, with lengths
+428.179952 / 243.446262 metres to 146.547738 / 100.363041 metres. These are route
+travel costs, not solver latency or full-population speedups. Neither point belongs
+to the current 266-case suite. Independent whole-route replay and full 266/native
+performance acceptance remain outside this focused patch's validation.
+
+Package checks pass 557 tests on Node 26.13.1, including red-to-green attachment
+and multi-arrival regressions plus incumbent preservation on failure/cancellation.
+World main/worker typechecks and both route-service Node tests pass. A separate
+fixture-path correction uses fileURLToPath so checks work in paths containing
+spaces; it does not change benchmark behavior.
+
 ## Collaborator input preparation, 2026-11-16
 
 `benchmark:prepare-mechanisms` now generates a new service input binding from
