@@ -74,6 +74,8 @@ Periodically organize changes into local commits at coherent work milestones. Se
 
 Commit cleanup should normally be limited to local commits created for the current task. Do not rewrite the user's existing or shared history without authorization. **Do not push to a remote unless the user explicitly authorizes it.** Permission to create local commits is not permission to push, and using another tool does not bypass this restriction.
 
+Publishing and deployment must run from the original, asset-complete Atlos checkout, with its private assets, tile directories, generated fonts, and deployment configuration present. **Do not publish or deploy from isolated Git worktrees, temporary checkouts, or separate clones.** Missing local assets must never be treated as an empty dataset for reconciling or deleting remote objects.
+
 Prefer `rclone` for Cloudflare R2 file management and transfers, reusing existing configuration where available. Before operations that overwrite or delete data, verify the bucket, paths, and affected scope. Prefer the `gh` CLI for GitHub operations involving repository information, issues, pull requests, reviews, or Actions. Use `git` for local version control. Use an alternative only when the preferred tool is unavailable or cannot meet the task's requirements, and explain the reason instead of introducing redundant scripts.
 
 ## Code Review Guidelines
