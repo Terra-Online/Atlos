@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import { readMechanismSuite } from '#@/bench/mechanism-suite.ts';
 import { inputGroups } from '#@/bench/prepare-mechanisms.ts';
 
 test('service input groups preserve all cases and isolate frozen windows from expandable scenes', async () => {
   const suite = await readMechanismSuite(
-    new URL('../bench/scenes/mechanisms/suite.json', import.meta.url).pathname,
+    fileURLToPath(new URL('../bench/scenes/mechanisms/suite.json', import.meta.url)),
   );
   const { cases, groups } = inputGroups(suite);
   assert.equal(Object.keys(cases).length, 266);
