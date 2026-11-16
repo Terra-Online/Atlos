@@ -15,7 +15,7 @@ const row = (id: string, cost: number, partial = false): QualityRow => ({
   id,
   cost,
   partial,
-  status: 'complete',
+  status: partial ? 'no-route' : 'success',
 });
 
 test('quality gates reject lost routes, excessive individual cost and unstable measured rounds', () => {
@@ -47,15 +47,14 @@ test('modeled time distinguishes quality without favoring missing or partial sol
   assert.throws(() => summarizeQuality([row('broken', NaN)]), /Invalid modeled route cost/);
 });
 
-test('timeouts and late complete routes fail the SLO without contributing modeled quality cost', () => {
+test('timeouts and late complete routes reach the cutoff without contributing modeled quality cost', () => {
   const rows = [
-    { ...row('on-time', 4), wallMs: 300_000 },
-    { ...row('late', 1), wallMs: 300_001 },
-    { ...row('deadline', 0), status: 'no-verified-route' as const, reason: 'timeout' },
+    { ...row('on-time', 4), wallMs: 60_000 },
+    { ...row('late', 1), status: 'timeout' as const, wallMs: 60_001, timedOut: true },
+    { ...row('deadline', 0), status: 'timeout' as const, reason: 'timeout' },
   ];
   const quality = summarizeQuality(rows);
   assert.equal(quality.completed, 1);
-  assert.equal(quality.sloCompleted, 1);
   assert.equal(quality.timedOut, 2);
   assert.equal(quality.failed, 2);
   assert.equal(quality.totalCostSeconds, null);
@@ -71,8 +70,8 @@ test('timeouts and late complete routes fail the SLO without contributing modele
 
 test('recovering timed-out routes gains solutions while common routes retain cost gates', () => {
   const before = [
-    { ...row('timeout', 0), status: 'no-verified-route' as const, reason: 'timeout' },
-    { ...row('failed', 0), status: 'no-verified-route' as const },
+    { ...row('timeout', 0), status: 'timeout' as const, reason: 'timeout' },
+    { ...row('failed', 0), status: 'no-route' as const },
     row('existing', 10),
   ];
   const current = [row('timeout', 15), row('failed', 20), row('existing', 10.6)];
@@ -93,14 +92,17 @@ test('recovering timed-out routes gains solutions while common routes retain cos
     ).passed,
     false,
   );
-  const lost = compareQuality([{ ...row('existing', 0), timedOut: true }], [row('existing', 10)]);
+  const lost = compareQuality(
+    [{ ...row('existing', 0), status: 'timeout' as const, timedOut: true }],
+    [row('existing', 10)],
+  );
   assert.deepEqual(lost.lostSolutions, ['existing']);
   assert.equal(lost.pairedCompleted, 0);
 });
 
 test('markdown exposes timeout failures and successful throughput without claiming failure as speedup', () => {
   const measured = [
-    { ...row('one', 0), status: 'no-verified-route' as const, reason: 'timeout', timedOut: true },
+    { ...row('one', 0), status: 'timeout' as const, reason: 'timeout', timedOut: true },
   ];
   const report: MarkdownReport = {
     scene: 'fixture',
@@ -110,7 +112,8 @@ test('markdown exposes timeout failures and successful throughput without claimi
     concurrency: 1,
     execution: { mode: 'serial', workers: 0, lanes: 1 },
     config: gangliaV1Defaults,
-    querySloMs: 300_000,
+    queryCutoffMs: 300_000,
+    verificationWallMs: 0,
     warmup: { results: [], ids: [], wallMs: 0, recoverySetupMs: 0, quality: summarizeQuality([]) },
     intervals: {
       warmup: { startedMs: 0, endedMs: 0 },
@@ -133,6 +136,8 @@ test('markdown exposes timeout failures and successful throughput without claimi
       quality: summarizeQuality(measured),
       results: measured.map((r) => ({
         ...r,
+        verification: 'not-run' as const,
+        verificationMs: 0,
         partial: false,
         cost: null,
         length: null,
@@ -162,12 +167,12 @@ test('markdown exposes timeout failures and successful throughput without claimi
   assert.match(markdown, /Lost \/ gained solutions \| 1 \/ 0/);
   assert.match(markdown, /Batch speedup vs reference \| n\/a/);
   assert.doesNotMatch(markdown, /20\.000×/);
-  assert.match(markdown, /\| one \| timeout \| n\/a \|/);
+  assert.match(markdown, /\| one \| timeout \| not-run \| n\/a \|/);
   const noReference = benchmarkMarkdown({ ...report, comparison: undefined });
   assert.match(noReference, /Batch speedup vs reference \| n\/a \(No reference supplied\)/);
   const completeRows = report.batch.results.map((item) => ({
     ...item,
-    status: 'complete' as const,
+    status: 'success' as const,
     cost: 10,
     timedOut: false,
     reason: null,
@@ -226,16 +231,27 @@ test('references bind the same problem and data while allowing algorithm/config 
   };
   const reference = {
     ...binding,
+    schemaVersion: 11,
+    queryCutoffMs: 60_000,
     hashes: { '/old/ground.json': 'abc' },
     config: { algorithm: 'other' },
     batch: { results: [row('one', 2)] },
   };
   assert.deepEqual(readReference(reference, binding), [row('one', 2)]);
+  assert.throws(() => readReference({ ...reference, queryCutoffMs: 300_000 }, binding), /cutoff/);
   const timedReference = readReference(
     {
       ...reference,
       batch: {
-        results: [{ ...row('one', 2), reason: 'timeout', timedOut: true, wallMs: 300_001 }],
+        results: [
+          {
+            ...row('one', 2),
+            status: 'timeout' as const,
+            reason: 'timeout',
+            timedOut: true,
+            wallMs: 300_001,
+          },
+        ],
       },
     },
     binding,

@@ -192,7 +192,7 @@ test('a middle-round lost or changed route and truncation remain unstable after 
   );
   assert.equal(batches, 3);
   assert.equal(closes, 1);
-  assert.ok(report.batch.results.every((row) => row.status === 'complete' && !row.truncated));
+  assert.ok(report.batch.results.every((row) => row.status === 'success' && !row.truncated));
   assert.deepEqual(
     report.batch.results.map((row) => row.sameOutcomeAcrossRounds),
     [false, false, true],
@@ -239,7 +239,7 @@ test('a later measured batch failure closes the solver without running more roun
   assert.equal(closes, 1);
 });
 
-test('SLO accounting preserves a middle-round timeout and counts actual successful attempts', async () => {
+test('cutoff accounting preserves a middle-round timeout and counts actual successful attempts', async () => {
   let batches = 0;
   const complete: RouteResult = {
     route: {
@@ -377,7 +377,7 @@ test('renaming a measured query cannot leak it into warmup, and invalid runs clo
   assert.equal(closes, 1);
 });
 
-test('a solver cannot improve benchmark quality by understating the trace cost', async () => {
+test('beta verification does not override solver completion or modeled cost', async () => {
   const result: RouteResult = {
     route: {
       status: 'complete',
@@ -413,7 +413,61 @@ test('a solver cannot improve benchmark quality by understating the trace cost',
     [{ id: 'one', query: { starts: [], goal: [1, 0, 0] } }],
     { maxVertical: 0.5 },
   );
-  assert.equal(report.batch.results[0].status, 'invalid-route');
-  assert.equal(report.batch.results[0].cost, null);
-  assert.equal(qualityGate(report.batch.results, undefined).passed, false);
+  assert.equal(report.batch.results[0].status, 'success');
+  assert.equal(report.batch.results[0].verification, 'invalid');
+  assert.equal(report.batch.results[0].cost, 0.01);
+  assert.equal(qualityGate(report.batch.results, undefined).passed, true);
+});
+
+test('a beta verifier exception preserves the route and subsequent measured requests', async () => {
+  const result: RouteResult = {
+    route: {
+      status: 'complete',
+      start: 'player',
+      arrivalCost: 0,
+      cost: 2,
+      length: 0,
+      points: [[0, 0, 0]],
+      segments: [],
+    },
+    connections: [],
+    diagnostics: { truncated: false },
+  };
+  let checked = 0;
+  const report = await runBenchmark(
+    {
+      config: fixtureConfig,
+      solve: async () => result,
+      solveBatch: async () => [result, result],
+      close: async () => {},
+    },
+    ['first', 'next'].map((id) => ({ id, query: { starts: [], goal: [0, 0, 0] } })),
+    { maxVertical: 0.5 },
+    undefined,
+    1,
+    undefined,
+    [],
+    async () => {
+      if (++checked === 1) throw new Error('beta replay failed');
+      return {
+        scope: 'physical',
+        valid: false,
+        issues: ['beta mismatch'],
+        costSeconds: null,
+        length: null,
+      };
+    },
+  );
+  assert.deepEqual(
+    report.batch.results.map((row) => row.status),
+    ['success', 'success'],
+  );
+  assert.deepEqual(
+    report.batch.results.map((row) => row.verification),
+    ['error', 'invalid'],
+  );
+  assert.match(report.batch.results[0].verificationError!, /beta replay failed/);
+  assert.equal(report.batch.quality.completed, 2);
+  assert.equal(report.batch.quality.totalCostSeconds, 4);
+  assert.equal(qualityGate(report.batch.results, undefined).passed, true);
 });

@@ -4,10 +4,12 @@ import { isDeepStrictEqual } from 'node:util';
 
 import type { PreparedRouteSolver, RouteQuery, RouteResult } from '@opendfieldmap/ganglia';
 
+import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
+import { classify, verifyResult } from '#@/bench/outcome.ts';
 import { requirePreparedCatalog, type TrainedCatalog } from '#@/bench/preparation.ts';
 import { summarizeQuality } from '#@/bench/quality.ts';
-import { QUERY_SLO_MS } from '#@/bench/slo.ts';
-import { evaluateRoute, verifyRoute } from '#@/src/evaluation/route.ts';
+import type { Evaluation } from '#@/src/evaluation/route.ts';
+import { verifyRoute } from '#@/src/evaluation/route.ts';
 
 const digest = (value: unknown): string =>
   createHash('sha256')
@@ -23,24 +25,23 @@ const outcome = (result: RouteResult) => ({
   ...(result.partial ? { partial: true } : {}),
   ...(result.reason === 'timeout' ? { timedOut: true } : {}),
 });
-const summarize = (result: RouteResult, evaluation = evaluateRoute(result.route)) => {
+const summarize = (result: RouteResult) => {
   const complete = result.route.status === 'complete' ? result.route : null;
-  const invalid = complete !== null && !evaluation.valid;
   const wallMs =
     'solveWallMs' in result.diagnostics && typeof result.diagnostics.solveWallMs === 'number'
       ? result.diagnostics.solveWallMs
       : undefined;
+  const status = classify(result);
   return {
-    status: invalid ? 'invalid-route' : result.route.status,
-    evaluation,
+    status,
     partial: result.partial === true,
-    reason: invalid ? evaluation.issues.join('; ') : (result.reason ?? null),
-    cost: evaluation.costSeconds,
-    length: evaluation.length,
+    reason: result.reason ?? null,
+    cost: status === 'success' && complete ? complete.cost : null,
+    length: complete?.length ?? null,
     jumps: complete?.segments?.filter((segment) => segment.mode === 'jump').length ?? 0,
     drops: complete?.segments?.filter((segment) => segment.mode === 'drop').length ?? 0,
     truncated: result.diagnostics.truncated,
-    timedOut: result.reason === 'timeout' || (wallMs !== undefined && wallMs > QUERY_SLO_MS),
+    timedOut: status === 'timeout',
     ...(wallMs === undefined ? {} : { wallMs }),
     ...('cancellationMs' in result.diagnostics
       ? { cancellationMs: result.diagnostics.cancellationMs }
@@ -84,18 +85,31 @@ export async function runBenchmark(
   rounds = 1,
   recoverySetup = () => 0,
   warmupCases: readonly Case[] = [],
-  verifyPhysical?: (
-    query: RouteQuery,
-    result: RouteResult,
-  ) => Promise<ReturnType<typeof evaluateRoute>>,
+  verifyPhysical?: (query: RouteQuery, result: RouteResult) => Promise<Evaluation>,
   catalog?: TrainedCatalog,
 ) {
-  const evaluate = async (query: RouteQuery, result: RouteResult) =>
-    result.partial
-      ? evaluateRoute(result.route)
-      : verifyPhysical
-        ? verifyPhysical(query, result)
-        : verifyRoute(query, result.route, rules);
+  const evaluate = (query: RouteQuery, result: RouteResult) =>
+    verifyResult(
+      query,
+      result,
+      verifyPhysical ?? (async (query, result) => verifyRoute(query, result.route, rules)),
+    );
+  let verificationWallMs = 0;
+  const summarizeBatch = async (batch: readonly RouteResult[], cases: readonly Case[]) => {
+    // Verifiers may overlap across workers. Measure the enclosing interval once.
+    const started = performance.now();
+    try {
+      return await Promise.all(
+        batch.map(async (result, i) => ({
+          id: cases[i].id,
+          ...summarize(result),
+          ...(await evaluate(cases[i].query, result)),
+        })),
+      );
+    } finally {
+      verificationWallMs += performance.now() - started;
+    }
+  };
   const intervals = {
     warmup: { startedMs: 0, endedMs: 0 },
     queries: { startedMs: 0, endedMs: 0 },
@@ -116,15 +130,10 @@ export async function runBenchmark(
       if (warm.length !== warmupCases.length)
         throw new Error('Warmup returned a different number of results');
     }
-    const warmupResults = await Promise.all(
-      warm.map(async (result, i) => ({
-        id: warmupCases[i].id,
-        ...summarize(result, await evaluate(warmupCases[i].query, result)),
-      })),
-    );
+    const warmupResults = await summarizeBatch(warm, warmupCases);
     const warmup = {
       ids: warmupCases.map((item) => item.id),
-      wallMs: performance.now() - warmupStarted,
+      wallMs: performance.now() - warmupStarted - verificationWallMs,
       recoverySetupMs: recoverySetup() - recoveryBefore,
       quality: summarizeQuality(warmupResults),
       results: warmupResults,
@@ -137,7 +146,8 @@ export async function runBenchmark(
     const samples: {
       wallMs: number;
       recoverySetupMs: number;
-      results: ({ id: string } & ReturnType<typeof summarize>)[];
+      results: ({ id: string } & ReturnType<typeof summarize> &
+        Awaited<ReturnType<typeof evaluate>>)[];
     }[] = [];
     for (let round = 0; round < rounds; round++) {
       const started = performance.now();
@@ -151,27 +161,27 @@ export async function runBenchmark(
       samples.push({
         wallMs,
         recoverySetupMs,
-        results: await Promise.all(
-          batch.map(async (result, i) => ({
-            id: cases[i].id,
-            ...summarize(result, await evaluate(cases[i].query, result)),
-          })),
-        ),
+        results: await summarizeBatch(batch, cases),
       });
     }
     intervals.queries.endedMs = performance.now();
     const first = samples[0].results;
-    const results = samples.at(-1)!.results.map((row, i) => ({
-      ...row,
-      timedOut: samples.some((sample) => sample.results[i].timedOut),
-      wallSamplesMs: samples.map((sample) => sample.results[i].wallMs ?? null),
-      sameOutcomeAcrossRounds: samples.every(
-        (sample) => sample.results[i].outcomeSha256 === first[i].outcomeSha256,
-      ),
-      sameTruncationAcrossRounds: samples.every(
-        (sample) => sample.results[i].truncated === first[i].truncated,
-      ),
-    }));
+    const results = samples.at(-1)!.results.map((row, i) => {
+      // Preserve an actual timed-out attempt rather than mixing its status with
+      // a later successful attempt's cost, timing and verification evidence.
+      const representative =
+        samples.find((sample) => sample.results[i].status === 'timeout')?.results[i] ?? row;
+      return {
+        ...representative,
+        wallSamplesMs: samples.map((sample) => sample.results[i].wallMs ?? null),
+        sameOutcomeAcrossRounds: samples.every(
+          (sample) => sample.results[i].outcomeSha256 === first[i].outcomeSha256,
+        ),
+        sameTruncationAcrossRounds: samples.every(
+          (sample) => sample.results[i].truncated === first[i].truncated,
+        ),
+      };
+    });
     const wallSamplesMs = samples.map((sample) => sample.wallMs);
     const totalWallMs = wallSamplesMs.reduce((sum, sample) => sum + sample, 0);
     const successfulQueries = samples.reduce(
@@ -182,7 +192,8 @@ export async function runBenchmark(
     const serviceMs = attempts.flatMap((row) => (row.wallMs === undefined ? [] : [row.wallMs]));
     return {
       config: solver.config,
-      querySloMs: QUERY_SLO_MS,
+      queryCutoffMs: QUERY_CUTOFF_MS,
+      verificationWallMs,
       warmup,
       intervals,
       batch: {

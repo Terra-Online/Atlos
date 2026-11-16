@@ -2,11 +2,12 @@ import { isDeepStrictEqual } from 'node:util';
 
 import type { RouteQuery } from '@opendfieldmap/ganglia';
 
-import { QUERY_SLO_MS } from '#@/bench/slo.ts';
+import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
+import type { Status } from '#@/bench/outcome.ts';
 
 export interface QualityRow {
   id: string;
-  status: string;
+  status: Status;
   partial: boolean;
   cost: number | null;
   outcomeSha256?: string;
@@ -16,12 +17,8 @@ export interface QualityRow {
   wallMs?: number;
 }
 
-export const isTimedOut = (row: QualityRow) =>
-  row.timedOut === true ||
-  row.reason === 'timeout' ||
-  row.status === 'timeout' ||
-  (row.wallMs !== undefined && row.wallMs > QUERY_SLO_MS);
-const complete = (row: QualityRow) => row.status === 'complete' && !row.partial && !isTimedOut(row);
+export const isTimedOut = (row: QualityRow) => row.status === 'timeout';
+const complete = (row: QualityRow) => row.status === 'success';
 const cost = (row: QualityRow) => {
   if (row.cost === null || !Number.isFinite(row.cost) || row.cost < 0)
     throw new Error(`Invalid modeled route cost: ${row.id}`);
@@ -39,9 +36,6 @@ export function summarizeQuality(rows: readonly QualityRow[]) {
     objective: 'modeled-travel-time-seconds' as const,
     requested: rows.length,
     completed: values.length,
-    sloMs: QUERY_SLO_MS,
-    sloCompleted: values.length,
-    sloMet: values.length === rows.length,
     timedOut: rows.filter(isTimedOut).length,
     failed: rows.length - values.length,
     completionRate: rows.length ? values.length / rows.length : null,
@@ -124,9 +118,9 @@ export function qualityGate(
   const failures: string[] = [];
   if (rows.some((row) => !row.sameOutcomeAcrossRounds || !row.sameTruncationAcrossRounds))
     failures.push('Measured results differ across rounds');
-  if (rows.some(isTimedOut)) failures.push('Queries exceeded the 300,000 ms SLO');
+  if (rows.some(isTimedOut)) failures.push('Queries reached the benchmark cutoff');
   if (rows.some((row) => !complete(row)))
-    failures.push('Some queries have no complete route within the SLO');
+    failures.push('Some queries have no complete route within the benchmark cutoff');
   if (comparison) {
     if (comparison.lostSolutions.length) failures.push('Lost complete routes');
     if (comparison.unboundedCostRegressions) failures.push('A zero-cost route became more costly');
@@ -155,6 +149,7 @@ const record = (value: unknown): value is Record<string, unknown> =>
 export function readReference(value: unknown, binding: Binding): QualityRow[] {
   if (
     !record(value) ||
+    value.schemaVersion !== 11 ||
     !record(value.hashes) ||
     !record(value.batch) ||
     !Array.isArray(value.batch.results)
@@ -162,6 +157,7 @@ export function readReference(value: unknown, binding: Binding): QualityRow[] {
     throw new Error('Invalid benchmark reference report');
   // Input paths can change across machines; compare all consumed content hashes.
   if (
+    value.queryCutoffMs !== QUERY_CUTOFF_MS ||
     value.scene !== binding.scene ||
     !isDeepStrictEqual(value.source, binding.source) ||
     !isDeepStrictEqual(Object.values(value.hashes).sort(), Object.values(binding.hashes).sort()) ||
@@ -170,14 +166,17 @@ export function readReference(value: unknown, binding: Binding): QualityRow[] {
     !isDeepStrictEqual(value.cases, binding.cases)
   )
     throw new Error(
-      'Reference scene, input snapshot, game adapter, verification rules or queries do not match',
+      'Reference cutoff, scene, input snapshot, game adapter, rules or queries do not match',
     );
   // Algorithm/config/source hashes may differ: comparing those variants is the purpose.
-  const rows = value.batch.results.map((row: unknown, index: number) => {
+  const rows = value.batch.results.map((row: unknown, index: number): QualityRow => {
     if (
       !record(row) ||
       typeof row.id !== 'string' ||
-      typeof row.status !== 'string' ||
+      (row.status !== 'success' &&
+        row.status !== 'no-route' &&
+        row.status !== 'timeout' &&
+        row.status !== 'error') ||
       typeof row.partial !== 'boolean' ||
       (row.cost !== null && typeof row.cost !== 'number')
     )

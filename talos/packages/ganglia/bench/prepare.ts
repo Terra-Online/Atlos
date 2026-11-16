@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { loadAdapter } from '#@/bench/adapter.ts';
+import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { prepareCoverage, type CoveragePass } from '#@/bench/prepare-coverage.ts';
-import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { prepareWorkerSolver } from '#@/bench/workers.ts';
 import { readWorkload } from '#@/bench/workload.ts';
 import type { SolverSettings } from '#@/src/solver/contract.ts';
@@ -141,7 +141,7 @@ if (values.help) {
         source: prepared.metadata.source,
         selection: { terminalScene: true, sceneState: 0, area: 0 },
         profile: movement.defaultProfile,
-        querySloMs: QUERY_SLO_MS,
+        queryCutoffMs: QUERY_CUTOFF_MS,
         solverConfig: { ...solverConfig, batchConcurrency: 1 },
         configSha256,
         workload: {

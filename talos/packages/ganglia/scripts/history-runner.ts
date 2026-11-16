@@ -1,13 +1,14 @@
-// Frozen measurement core from Atlos 4ec7b65f. Its gate checks reported
-// completion, modeled cost, SLO and repeatability; physical replay is a separate audit.
+// Historical solver measurement core. Its gate checks reported
+// completion, modeled cost, cutoff and repeatability; physical replay is a separate audit.
 import { createHash } from 'node:crypto';
 import { performance } from 'node:perf_hooks';
 import { isDeepStrictEqual } from 'node:util';
 
 import type { PreparedRouteSolver, RouteQuery, RouteResult } from '@opendfieldmap/ganglia';
 
+import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
+import { classify } from '#@/bench/outcome.ts';
 import { summarizeQuality } from '#@/bench/quality.ts';
-import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 
 const digest = (value: unknown): string =>
   createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -24,7 +25,7 @@ const summarize = (result: RouteResult) => {
       ? result.diagnostics.solveWallMs
       : undefined;
   return {
-    status: result.route.status,
+    status: classify(result),
     partial: result.partial === true,
     reason: result.reason ?? null,
     cost: complete?.cost ?? null,
@@ -32,7 +33,7 @@ const summarize = (result: RouteResult) => {
     jumps: complete?.segments?.filter((segment) => segment.mode === 'jump').length ?? 0,
     drops: complete?.segments?.filter((segment) => segment.mode === 'drop').length ?? 0,
     truncated: result.diagnostics.truncated,
-    timedOut: result.reason === 'timeout' || (wallMs !== undefined && wallMs > QUERY_SLO_MS),
+    timedOut: result.reason === 'timeout' || (wallMs !== undefined && wallMs > QUERY_CUTOFF_MS),
     ...(wallMs === undefined ? {} : { wallMs }),
     queueMs:
       'queueMs' in result.diagnostics && typeof result.diagnostics.queueMs === 'number'
@@ -146,7 +147,7 @@ export async function runBenchmark(
     const serviceMs = attempts.flatMap((row) => (row.wallMs === undefined ? [] : [row.wallMs]));
     return {
       config: solver.config,
-      querySloMs: QUERY_SLO_MS,
+      queryCutoffMs: QUERY_CUTOFF_MS,
       warmup,
       intervals,
       batch: {

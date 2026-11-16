@@ -109,11 +109,11 @@
       "solver-reported route cost and solverMs exclude extra independent whole-route replay"
     ],
     "exercise": "Report a separate exercised/not-exercised result for each exercise assertion. A valid alternative does not establish mechanism coverage.",
-    "comparison": "Preserve each independently valid old success on matched inputs, setup, budgets and lifecycle: reachability, modeled route time and comparable end-to-end solve time must not regress per point. Route time permits numerical roundoff only. Use three interleaved timing groups, five for suspected regression, with same-version noise controls. Failure-to-success within the common SLO is progress and becomes a new guard. Preserve unconfirmed historical best results as explicit protection targets.",
-    "deadlineSeconds": 300,
+    "comparison": "Preserve each solver success on matched inputs, setup, budgets and lifecycle: reachability, modeled route time and comparable end-to-end solve time must not regress per point. Route time permits numerical roundoff only. Use three interleaved timing groups, five for suspected regression, with same-version noise controls. Failure-to-success within the common benchmark cutoff is progress and becomes a new guard. Preserve unconfirmed historical best results as explicit protection targets.",
+    "defaultCutoffSeconds": 60,
     "cleanup": "Close owned browser pages and terminate owned profiler/worker processes after every profile batch. Do not stop unrelated development services.",
     "waypoints": "Optional coarse discovery hints, including internally generated cells and device-center witnesses. They are not mandatory visits or grounded stops. Endpoint, complete actions, resource continuity and original source/goal ownership remain required.",
-    "physicalCertification": "Optional explicit diagnostic; not a default completion gate or repeated solver-subplan proof."
+    "physicalCertification": "Beta whole-route replay, reported independently as valid, invalid, error or not-run. It does not change search status, cost or timing comparisons, or acceptance."
   },
   "excludedScope": [
     "Moving-platform phase synchronization and waiting are explicitly excluded by the user; they are not acceptance gaps."
@@ -17460,5 +17460,5 @@
     "source": "Numeric target entity ID; conveyor contacts use their real source group actor ID.",
     "geometryProbeCount": 6
   },
-  "revision": 11
+  "revision": 12
 }

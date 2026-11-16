@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { prepareRouteSolver } from '@opendfieldmap/ganglia';
 
 import type { loadScene } from '#@/bench/adapters/ganglia-v1/scene.ts';
-import { QUERY_SLO_MS } from '#@/bench/slo.ts';
+import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { resetTimings } from '#@/bench/timings.ts';
 import {
   workerMemory,
@@ -95,11 +95,15 @@ export function serveWorker(
         return;
       }
       if (message.type === 'verify') {
-        send({
-          type: 'verified',
-          id: message.id,
-          evaluation: await scene.verify(message.query, message.route),
-        });
+        try {
+          send({
+            type: 'verified',
+            id: message.id,
+            evaluation: await scene.verify(message.query, message.route),
+          });
+        } catch (error) {
+          send({ type: 'error', id: message.id, error: String(error) });
+        }
         return;
       }
       if (message.type === 'catalog-phase' || message.type === 'benchmark-phase') {
@@ -121,7 +125,7 @@ export function serveWorker(
       }
       if (message.type !== 'solve') throw new Error('Unexpected scene worker setup');
       const { id, query, events } = message;
-      const control = requestControl(message.timeoutMs ?? QUERY_SLO_MS);
+      const control = requestControl(message.timeoutMs ?? QUERY_CUTOFF_MS);
       const { controller } = control;
       active = { id, ...control };
       resetTimings(scene.timings);

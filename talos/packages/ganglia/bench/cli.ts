@@ -8,11 +8,11 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs, isDeepStrictEqual } from 'node:util';
 
 import { loadAdapter } from '#@/bench/adapter.ts';
+import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { benchmarkMarkdown } from '#@/bench/markdown.ts';
 import { benchmarkPreparation } from '#@/bench/preparation.ts';
 import { compareQuality, qualityGate, readReference, summarizeQuality } from '#@/bench/quality.ts';
 import { runBenchmark, validateWarmup } from '#@/bench/run.ts';
-import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { sourceHash } from '#@/bench/source.ts';
 import { resetTimings } from '#@/bench/timings.ts';
 import { prepareWorkerSolver } from '#@/bench/workers.ts';
@@ -44,11 +44,11 @@ const { values } = parseArgs({
 });
 if (values.help) {
   console.log(
-    'Usage: pnpm benchmark:full [--adapter ganglia-v1-ts|ganglia-v1-rust|<module-path>] [--json | --markdown] [--data-root <path>] [--scene <name; default map02>] [--extractor <path>] [--workload <json-file | map02-long-range | map02-long-detours | map02-stress>] [--offset <index>] [--limit <count>] [--concurrency <scene-lanes>] [--workers <prepared solver processes; default 1>] [--rounds <measured batches; default 1>] [--config <json-file>] [--reference <benchmark-json>] [--max-mean-cost-ratio <ratio; default 1.01>] [--max-worst-cost-ratio <ratio; default 1.05>]. After the configured SLO a query receives a cooperative cancellation request; timeouts count as failures. Reference comparisons reject lost solutions or excess modeled route cost; stability is checked across measured rounds. V1 service preparation is required by its solver config and supplied by the benchmark adapter.',
+    'Usage: pnpm benchmark:full [--adapter ganglia-v1-ts|ganglia-v1-rust|<module-path>] [--json | --markdown] [--data-root <path>] [--scene <name; default map02>] [--extractor <path>] [--workload <json-file | map02-long-range | map02-long-detours | map02-stress>] [--offset <index>] [--limit <count>] [--concurrency <scene-lanes>] [--workers <prepared solver processes; default 1>] [--rounds <measured batches; default 1>] [--config <json-file>] [--reference <benchmark-json>] [--max-mean-cost-ratio <ratio; default 1.01>] [--max-worst-cost-ratio <ratio; default 1.05>]. At the configured benchmark cutoff a query receives a cooperative cancellation request; timeouts count as failures. Reference comparisons reject lost solutions or excess modeled route cost; stability is checked across measured rounds. V1 service preparation is required by its solver config and supplied by the benchmark adapter.',
   );
   console.log('GANGLIA_BENCHMARK_HEAP_MB sets the Node heap cap in MiB (default 6144).');
   console.log(
-    'GANGLIA_BENCHMARK_QUERY_SLO_MS sets the cooperative per-query deadline in milliseconds (default 300000).',
+    'GANGLIA_BENCHMARK_QUERY_CUTOFF_MS sets the cooperative per-query cutoff in milliseconds (default 60000).',
   );
 } else {
   const outputPath = values.output
@@ -131,6 +131,7 @@ if (values.help) {
       throw new Error('Invalid concurrency');
     const fixed = { ...config, batchConcurrency: concurrency };
     const measurement = {
+      queryCutoffMs: QUERY_CUTOFF_MS,
       cancellation: 'cooperative-checkpoints',
       warmupCases,
       rounds,
@@ -144,7 +145,7 @@ if (values.help) {
           schemaVersion?: number;
           measurement?: unknown;
           batch: { wallMs: number };
-          lifecycle?: { endToEndMs: number };
+          lifecycle?: { solverLifecycleMs: number };
         })
       : undefined;
     const started = performance.now();
@@ -258,6 +259,7 @@ if (values.help) {
         catalogTraining,
       );
       const endToEndMs = performance.now();
+      const solverLifecycleMs = endToEndMs - report.verificationWallMs;
       if (
         catalogTraining &&
         prepared
@@ -278,21 +280,18 @@ if (values.help) {
       const comparablePolicy =
         gate.passed &&
         comparableSpeed &&
-        referenceReport?.schemaVersion === 10 &&
-        isDeepStrictEqual(referenceReport.measurement, measurement);
+        isDeepStrictEqual(referenceReport?.measurement, measurement);
       const timingUnavailableReason = !gate.passed
-        ? 'Quality or SLO gate failed'
+        ? 'Quality gate failed'
         : !comparableSpeed
           ? 'The set of complete routes changed'
-          : referenceReport?.schemaVersion !== 10
-            ? 'Reference uses an earlier timing contract; rerun the baseline with schema 10'
-            : !isDeepStrictEqual(referenceReport.measurement, measurement)
-              ? 'Preparation, warmup or execution settings differ from the reference'
-              : undefined;
+          : !isDeepStrictEqual(referenceReport?.measurement, measurement)
+            ? 'Preparation, warmup or execution settings differ from the reference'
+            : undefined;
       const referenceBatchMs = referenceReport?.batch.wallMs;
-      const referenceEndToEndMs = referenceReport?.lifecycle?.endToEndMs;
+      const referenceSolverLifecycleMs = referenceReport?.lifecycle?.solverLifecycleMs;
       const output = {
-        schemaVersion: 10,
+        schemaVersion: 11,
         measurement,
         lifecycle: {
           workerReadyMs,
@@ -302,7 +301,10 @@ if (values.help) {
           runtimeWarmupMs: report.warmup.wallMs,
           catalogTrainingMs: catalogTraining?.wallMs ?? 0,
           endToEndMs,
+          solverLifecycleMs,
           successfulQueries: report.batch.successfulQueries,
+          solverLifecycleSuccessfulQueriesPerSecond:
+            report.batch.successfulQueries / (solverLifecycleMs / 1000),
           endToEndSuccessfulQueriesPerSecond: report.batch.successfulQueries / (endToEndMs / 1000),
           browserArtifacts: null,
         },
@@ -326,14 +328,14 @@ if (values.help) {
             }
           : {}),
         policy:
-          'One algorithm and preparation lifecycle serve every interpretation of this report. Decoded input loading is separate from adapter/source validation, resource indexing and factory preparation. Algorithm-configured catalog training runs identically in every worker, freezes before service readiness, and belongs to service preparation. Algorithm-configured runtime warmup uses separate declared requests. No scored query is prewarmed; every measured round counts and repeatability compares measured rounds. Existing immutable preparation, geometry proofs and frozen catalog data are reused by the same solver; lazy work remains inside query time. Every dispatched query, including training and warmup, receives a cooperative cancellation request after 300,000 ms. The worker exits the query at its next checkpoint; no grace-period kill or replacement occurs. Cancellation tail time remains measured. Queueing and initial worker setup are outside that deadline; service, queue and response times are separate. Workers retain their trained state across query cancellation. End-to-end time starts at Node process time origin and ends after solver shutdown, including loading, preparation, training, runtime warmup, all measured rounds and cooperative shutdown. Final source re-verification and report formatting are excluded. Per-worker phase timers overlap and must not be summed into wall time. Memory peaks are sampled. Browser index transfer, restoration and browser execution are unmeasured. OS scheduling/JIT/GC uncontrolled.',
+          'One algorithm and preparation lifecycle serve every interpretation of this report. Decoded input loading is separate from adapter/source validation, resource indexing and factory preparation. Algorithm-configured catalog training runs identically in every worker, freezes before service readiness, and belongs to service preparation. Algorithm-configured runtime warmup uses separate declared requests. No scored query is prewarmed; every measured round counts and repeatability compares measured rounds. Existing immutable preparation, geometry proofs and frozen catalog data are reused by the same solver; lazy work remains inside query time. Every dispatched query, including training and warmup, receives a cooperative cancellation request at the configured benchmark cutoff. The worker exits the query at its next checkpoint; no grace-period kill or replacement occurs. Cancellation tail time remains measured. Queueing and initial worker setup are outside that deadline; service, queue and response times are separate. Workers retain their trained state across query cancellation. End-to-end time starts at Node process time origin and ends after solver shutdown, including loading, preparation, training, runtime warmup, all measured rounds and cooperative shutdown. Observed end-to-end time includes beta verification; solver lifecycle timing subtracts its non-overlapping wall intervals for comparisons. Final source re-verification and report formatting are excluded. Per-worker phase timers overlap and must not be summed into wall time. Memory peaks are sampled. Browser index transfer, restoration and browser execution are unmeasured. OS scheduling/JIT/GC uncontrolled.',
         ...report,
         ...(comparison && referenceBytes
           ? {
               comparison: {
                 referenceSha256: createHash('sha256').update(referenceBytes).digest('hex'),
                 referenceBatchWallMs: referenceBatchMs,
-                referenceEndToEndMs,
+                referenceSolverLifecycleMs,
                 ...(comparablePolicy &&
                 referenceBatchMs !== undefined &&
                 Number.isFinite(referenceBatchMs) &&
@@ -344,12 +346,12 @@ if (values.help) {
                         timingUnavailableReason ?? 'Reference has no valid batch timing',
                     }),
                 ...(comparablePolicy &&
-                referenceEndToEndMs !== undefined &&
-                Number.isFinite(referenceEndToEndMs) &&
-                referenceEndToEndMs > 0
-                  ? { endToEndSpeedup: referenceEndToEndMs / endToEndMs }
+                referenceSolverLifecycleMs !== undefined &&
+                Number.isFinite(referenceSolverLifecycleMs) &&
+                referenceSolverLifecycleMs > 0
+                  ? { solverLifecycleSpeedup: referenceSolverLifecycleMs / solverLifecycleMs }
                   : {
-                      endToEndSpeedupUnavailableReason:
+                      solverLifecycleSpeedupUnavailableReason:
                         timingUnavailableReason ??
                         'Reference has no valid process-start-to-shutdown timing',
                     }),
@@ -379,7 +381,7 @@ if (values.help) {
           `Ready at ${(readyMs / 1000).toFixed(2)} s; end-to-end ${(endToEndMs / 1000).toFixed(2)} s; ${output.lifecycle.endToEndSuccessfulQueriesPerSecond.toFixed(3)} end-to-end complete routes/s`,
         );
         console.log(
-          `Per-query SLO: ${QUERY_SLO_MS / 1000} s; ${report.batch.quality.completed}/${selected.length} complete, ${report.batch.timedOutAttempts} measured timeouts; ${report.batch.successfulQueriesPerSecond.toFixed(3)} complete routes/s`,
+          `Per-query benchmark cutoff: ${QUERY_CUTOFF_MS / 1000} s; ${report.batch.quality.completed}/${selected.length} complete, ${report.batch.timedOutAttempts} measured timeouts; ${report.batch.successfulQueriesPerSecond.toFixed(3)} complete routes/s`,
         );
         console.log(
           `Recovery input loading: ${(report.batch.recoverySetupMs / 1000).toFixed(2)} s; included in batch wall time`,

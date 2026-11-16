@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import type { RouteResult } from '@opendfieldmap/ganglia';
 
 import { requestControl } from '#@/bench/adapters/ganglia-v1/worker-host.ts';
-import { QUERY_SLO_MS } from '#@/bench/slo.ts';
+import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { createTimings } from '#@/bench/timings.ts';
 import { workerMemory, type WorkerRequest, type WorkerReply } from '#@/bench/workers.ts';
 import { actionCatalogStats, setActionCatalogPhase } from '#@/src/v1/route/action-catalog.ts';
@@ -112,7 +112,7 @@ process.once('message', async (message: WorkerRequest) => {
         });
     }
     if (query.goal[1] === 9) {
-      const control = requestControl(message.timeoutMs ?? QUERY_SLO_MS);
+      const control = requestControl(message.timeoutMs ?? QUERY_CUTOFF_MS);
       const end = performance.now() + query.goal[0];
       try {
         while (performance.now() < end) {

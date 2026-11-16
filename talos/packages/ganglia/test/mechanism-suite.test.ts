@@ -8,7 +8,7 @@ import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import {
-  classify,
+  matchesExpectation,
   captureFirstComplete,
   expectation,
   resourcePath,
@@ -17,6 +17,7 @@ import {
   readMechanismSuite,
   type MechanismCase,
 } from '#@/bench/mechanism-suite.ts';
+import { classify } from '#@/bench/outcome.ts';
 import { prepareWorkerSolver } from '#@/bench/workers.ts';
 import { readWorkload } from '#@/bench/workload.ts';
 import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
@@ -115,7 +116,7 @@ test('shared manifest remains a complete population and cannot be mistaken for p
   assert.ok(controls.cases.slice(0, 4).every((c: MechanismCase) => expectation(c) === 'reject'));
   assert.equal(controls.cases[4].knownIssue.kind, 'occupied-origin-and-target');
   assert.equal(controls.cases[5].knownIssue.kind, 'occupied-device-center');
-  assert.equal(raw.revision, 11);
+  assert.equal(raw.revision, 12);
   const repaired = raw.cases.find((entry: MechanismCase) => entry.id === '250-0HTXfPs');
   const original = controls.cases[6];
   assert.equal(original.id, repaired.id);
@@ -227,15 +228,16 @@ test('diagnostic audit records its cooperative deadline and solver output scorin
         '--output',
         output,
       ],
-      { env: { ...process.env, GANGLIA_BENCHMARK_QUERY_SLO_MS: '60000' }, stdio: 'pipe' },
+      { env: { ...process.env, GANGLIA_BENCHMARK_QUERY_CUTOFF_MS: '60000' }, stdio: 'pipe' },
     );
     const report = JSON.parse(await readFile(output, 'utf8'));
-    assert.equal(report.deadlineMs, 60000);
+    assert.equal(report.queryCutoffMs, 60000);
     assert.equal(report.cancellation, 'cooperative-checkpoints');
     assert.equal(report.deadlineScope, 'dispatch-through-solver');
     assert.equal(report.acceptance, 'solver complete route, excluding partial approaches');
     assert.equal('verification' in report, false);
-    assert.equal(report.results[0].status, 'input-unavailable');
+    assert.deepEqual(report.results, []);
+    assert.match(report.inputAudit[0].errors.join('; '), /Missing/);
     assert.equal(report.invalid, false);
   } finally {
     await rm(directory, { recursive: true, force: true });
@@ -290,14 +292,15 @@ test('service mechanism audit preserves input bindings and leaves queries unrun'
       ],
       { encoding: 'utf8' },
     );
-    assert.equal(process.status, 1, process.stderr);
+    assert.equal(process.status, 0, process.stderr);
     const report = JSON.parse(await readFile(output, 'utf8'));
     assert.equal(report.adapter, 'ganglia-v1-ts');
     assert.deepEqual(report.selectedIds, [selected.id]);
-    assert.equal(report.results[0].status, 'input-bound-unrun');
+    assert.deepEqual(report.results, []);
+    assert.equal(report.inputAudit.length, 1);
     assert.deepEqual(report.preparations, []);
     assert.equal(report.sourceUnchanged, true);
-    const binding = JSON.parse(await readFile(report.results[0].binding, 'utf8'));
+    const binding = JSON.parse(await readFile(report.inputAudit[0].binding, 'utf8'));
     assert.deepEqual(binding.ids, [selected.id]);
     assert.equal(binding.inputRevision, 'audit-only');
   } finally {
@@ -342,14 +345,18 @@ test('disallowed boxes become fixed collision while movable source spheres remai
 test('explicit rejections never turn missing assets, timeouts or partial traces into passes', () => {
   const c = item();
   c.assertions = ['no-complete-route-from-unavailable-arrival'];
-  assert.equal(classify(c, unavailable), 'correct-rejection');
+  assert.equal(classify(unavailable), 'no-route');
+  assert.equal(matchesExpectation(c, unavailable), true);
+  assert.equal(matchesExpectation(c, { ...unavailable, reason: 'timeout' }), false);
+  assert.equal(matchesExpectation(c, { ...unavailable, partial: true }), false);
   for (const [reason, status] of [
     ['timeout', 'timeout'],
-    ['input-unavailable:missing', 'input-unavailable'],
-    ['unsupported-setup:x', 'unsupported-setup'],
+    ['aborted', 'error'],
+    ['input-unavailable:missing', 'error'],
+    ['unsupported-setup:x', 'error'],
   ] as const)
-    assert.equal(classify(c, { ...unavailable, reason }), status);
-  assert.equal(classify(c, { ...unavailable, partial: true }), 'incomplete');
+    assert.equal(classify({ ...unavailable, reason }), status);
+  assert.equal(classify({ ...unavailable, partial: true }), 'no-route');
   const invalid = {
     ...unavailable,
     route: {
@@ -365,11 +372,12 @@ test('explicit rejections never turn missing assets, timeouts or partial traces 
       segments: [],
     },
   } as RouteResult;
-  assert.equal(classify(c, invalid), 'unexpected-complete');
+  assert.equal(classify(invalid), 'success');
+  assert.equal(matchesExpectation(c, invalid), false);
   c.assertions = [];
-  assert.equal(classify(c, invalid), 'complete');
-  assert.equal(classify(c, { ...invalid, partial: true }), 'incomplete');
-  assert.equal(classify(c, { ...invalid, reason: 'timeout' }), 'complete');
+  assert.equal(classify(invalid), 'success');
+  assert.equal(classify({ ...invalid, partial: true }), 'no-route');
+  assert.equal(classify({ ...invalid, reason: 'timeout' }), 'timeout');
 });
 test('mechanism witnesses are separate from valid alternative routes', () => {
   const c = item();
@@ -546,7 +554,7 @@ test('first complete candidate survives later cancellation without changing time
       starts: [{ id: 'player', state: 'available', position: [0, 0, 0], cost: 0 }],
       goal: [1000, 0, 0],
     });
-    assert.equal(classify(item(), result), 'timeout');
+    assert.equal(classify(result), 'timeout');
     assert.equal(result.route.status, 'no-verified-route');
     assert.equal(captured.length, 1);
     assert.equal(captured[0].partial, false);
