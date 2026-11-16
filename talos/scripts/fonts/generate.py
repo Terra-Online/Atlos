@@ -20,6 +20,10 @@ import brotli
 ROOT = Path(__file__).resolve().parents[2]
 LAYOUT = Path(__file__).with_name('layout-v1.json')
 FACES = {'b': 'B', 'db': 'DB', 'm': 'M', 'r': 'R'}
+# Keep normal script shaping (including localized/vertical CJK forms) and the
+# explicit features used by app CSS. Preserving every optional alternate causes
+# layout closure to pull thousands of unused glyphs into each small UI pack.
+LAYOUT_FEATURES = sorted(set(subset.Options().layout_features) | {'case', 'lnum', 'onum', 'tnum'})
 
 # Semantic packs describe the preferred face for their normal text path.  A
 # character omitted from a face-specific semantic pack remains in `full`, so
@@ -133,6 +137,7 @@ def build_face(job):
         + json.dumps(
             {
                 'face': face,
+                'layoutFeatures': LAYOUT_FEATURES,
                 'semanticFacePolicy': {
                     group: {
                         region: sorted(faces)
@@ -171,7 +176,7 @@ def build_face(job):
         options = subset.Options()
         options.flavor = 'woff2'
         options.desubroutinize = True
-        options.layout_features = ['*']
+        options.layout_features = LAYOUT_FEATURES
         options.recalc_timestamp = False
         font = TTFont(io.BytesIO(source), recalcTimestamp=False)
         subsetter = subset.Subsetter(options=options)

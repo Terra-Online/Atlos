@@ -22,6 +22,23 @@ beforeEach(async () => {
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
+it('prepares fixed native-language labels before the picker opens', () => {
+    const descriptor = Object.getOwnPropertyDescriptor(document, 'fonts');
+    const load = vi.fn().mockResolvedValue([]);
+    Object.defineProperty(document, 'fonts', { configurable: true, value: { load, ready: Promise.resolve() } });
+    try {
+        const view = render(<LanguageModal open={false} onClose={vi.fn()} />);
+        expect(load).toHaveBeenCalledExactlyOnceWith("700 1rem 'Lang Origin'", '简体中文繁體中文日本語');
+        expect(fonts.manifests).not.toHaveBeenCalled();
+        view.rerender(<LanguageModal open onClose={vi.fn()} />);
+        expect(load).toHaveBeenCalledTimes(1);
+        expect(getCurrentLocale()).toBe('en-US');
+    } finally {
+        if (descriptor) Object.defineProperty(document, 'fonts', descriptor);
+        else Reflect.deleteProperty(document, 'fonts');
+    }
+});
+
 it('lists every supported locale as a radio and warms intent without changing the committed locale', async () => {
     const prepare = vi.fn().mockResolvedValue({});
     const warmFonts = vi.fn();

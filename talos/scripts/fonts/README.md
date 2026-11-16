@@ -40,6 +40,13 @@ semantic policy is the same; Harmony packs its actual cmap separately. This
 avoids tiny fragments from sparse CJK extensions, compatibility characters and
 private-use blocks.
 
+Generation retains normal script shaping and the numeric/case features used by
+app CSS. Unused optional alternates are excluded so layout closure does not pull
+thousands of additional glyphs into small UI packs. Unicode partitions and font
+family/weight selection stay unchanged. The retained feature policy participates
+in generation's cache identity; regenerated outputs get new content hashes and
+published resources are never overwritten.
+
 Manifest parts use one interned coverage map for both selection and
 `unicode-range`. Older beta manifests may still contain the redundant `range`
 field and remain readable; newly generated manifests omit it.

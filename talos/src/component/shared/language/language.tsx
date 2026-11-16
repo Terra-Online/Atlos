@@ -75,10 +75,13 @@ const LanguageModal: React.FC<LanguageProps> = ({ open, onClose, onChange, onSel
       preloadLocale(lang);
       void Promise.resolve(prepareLocale?.(lang)).catch(() => undefined);
     }
-    // These native labels keep their own glyphs across document languages.
-    // Warm the existing CSS face while the closed dialog is already mounted.
-    void document.fonts?.load("700 1rem 'Lang Origin'", '简体中文繁體中文日本語').catch(() => undefined);
   }, [open, current, prepareLocale]);
+
+  useEffect(() => {
+    // Prepare the small, fixed native-label face while the picker is closed.
+    // Starting it only after opening can briefly show a fallback face.
+    void document.fonts?.load("700 1rem 'Lang Origin'", '简体中文繁體中文日本語').catch(() => undefined);
+  }, []);
 
   // freeze last active current lang, avoiding flicker when switching langs
   const [freeze, setFreeze] = useState<{ from: string; currentText: string } | null>(null);
