@@ -1,5 +1,42 @@
 # Route solver history and validation evidence
 
+## OOM capacity and lifecycle diagnosis, 2026-11-16
+
+Two focused runs use unchanged algorithm/input source at `5d43f1cf` (the source
+changes since `9e1a7906` are documentation only), the same 60-second cooperative
+deadline and no worker replacement. An isolated 017 scenario at 6144 MiB performs
+one training request, two warmups and one measured request. Training and measurement
+time out normally; no OOM occurs. Evidence is
+`.local/research/mechanisms-266-node-oom-cold017/report.json`, SHA-256
+`c1f527dee5ce5d299db4f16fc8ec8aaf87b27e6120359f286c5e90152a52e9a3`.
+
+The second run repeats original scenario three's exact 016--022 order, seven
+training queries, two warmups and seven measurements. Only the heap cap changes
+from 6144 to 8192 MiB. It finishes all seven measurements with no execution error:
+five timeouts and two solver-complete routes, of which one passes physical replay.
+017 now exits by timeout and the same worker continues. Sampled worker RSS peaks
+at 8,061,763,584 bytes and heap-used at 6,156,929,992 bytes; sampling does not bound
+transient peaks or isolate retained object sizes. Evidence is
+`.local/research/mechanisms-266-node-oom-group3-8192/report.json`, SHA-256
+`6146a8e143be73a21311ba38276aa06f4a79106d5cf313c9411268fcbe08214a`.
+Both runs retain worker logs and unchanged-source bindings. Nonzero CLI exit
+reflects failed completion gates in these focused runs, not process crashes.
+
+The original OOM is therefore sensitive to heap capacity and request history;
+increasing the cap avoids this observed crash but does not fix slow completion
+or prove full-population stability. No allocation/retainer profile was captured,
+so a leak or a specific dominant object owner is not established. Preparation
+limits count planner surfaces, not all live bytes or transient graph construction.
+
+The imported author progress manifest records 6144 MiB operation and OOMs for
+089/110 at that limit, plus earlier 4096 MiB failures. Its diagnostic runner
+creates/closes a worker per case and uses direct physical preparation for frozen
+cases, without service training/warmup. Our runner keeps one trained scene worker
+across a scenario and captures independent replay facts. Thus identical algorithm
+files and heap caps do not imply identical resident state. Author case 017 is a
+retained `daab983c` completion with `currentObserved=false`, not a latest-source
+reproduction. No upstream changes were fetched or integrated during diagnosis.
+
 ## Node population launch: operational failure, 2026-11-16
 
 The revision-11 service run at `9e1a79067783bd816e4deb4f33778db949d801b8`

@@ -30,6 +30,14 @@ including the unchanged report, event journal, worker log and validation summary
 Source stayed frozen; no worker was killed or replaced. All processes have exited.
 Further upstream synchronization is manual at the user's request.
 
+Focused OOM diagnosis shows capacity sensitivity to request history: isolated 017
+at 6144 MiB exits by timeout, while repeating the exact seven-case third scenario
+with only the heap raised to 8192 MiB finishes every dispatch without OOM. Five
+queries still time out, so this is operational evidence rather than a speedup.
+Cirisus also used a 6144 MiB limit and recorded OOMs at that limit for 089/110;
+his per-case worker lifecycle differs from this trained scenario service. Exact
+retained object ownership and a suitable full-population memory budget remain open.
+
 ## Cirisus Node solver integration, 2026-11-15
 
 `chan/algo-progression` at `352c62b9` is merged. `src/v1` matches that branch:
