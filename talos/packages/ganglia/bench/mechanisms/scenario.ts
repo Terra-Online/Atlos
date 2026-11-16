@@ -3,23 +3,23 @@ import { resolve } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 
 import { loadScene } from '#@/bench/adapters/ganglia-v1/scene.ts';
-import {
-  QueryInputError,
-  resolveMechanismQuery,
-  sourceSupportWorld,
-} from '#@/bench/mechanism-query.ts';
-import {
-  exercised,
-  facilityAudit,
-  readMechanismSuite,
-  scenarioInput,
-} from '#@/bench/mechanism-suite.ts';
+/**
+ * Construct a mechanism world once, retaining its resource windows and resolved
+ * query evidence for all training and measured requests. World setup is applied
+ * to every physical snapshot; case requirements check source facts rather than
+ * forcing a solver route. The returned scene stays inside its owning worker.
+ */
+import { exercised, facilityAudit } from '#@/bench/mechanisms/assessment.ts';
+import { QueryInputError, resolveQuery, sourceSupportWorld } from '#@/bench/mechanisms/query.ts';
+import { checkSetup, type Case, readSuite } from '#@/bench/mechanisms/suite.ts';
 import { exportPhysicalRegion } from '#@/bench/prepare-region.ts';
 import type { WorkerSetup } from '#@/bench/workers.ts';
+import type { LocomotionOptions } from '#@/src/index.ts';
+import { joinedGeometry } from '#@/src/model/placement.ts';
 import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 
-export interface SceneBinding {
+export interface Binding {
   suite: string;
   ids: string[];
   dataRoot: string;
@@ -28,13 +28,13 @@ export interface SceneBinding {
   inputRevision: string;
 }
 
-export async function loadMechanismScene(
+export async function loadScenario(
   setup: WorkerSetup,
   onRegion: (files: { ground: string; collision: string }) => void,
   checkpoint: () => void,
 ) {
-  const binding = JSON.parse(await readFile(setup.dataRoot, 'utf8')) as SceneBinding;
-  const suite = await readMechanismSuite(binding.suite);
+  const binding = JSON.parse(await readFile(setup.dataRoot, 'utf8')) as Binding;
+  const suite = await readSuite(binding.suite);
   const items = suite.cases.filter((c) => binding.ids.includes(c.id));
   const first = items[0];
   const catalog = JSON.parse(
@@ -140,7 +140,7 @@ export async function loadMechanismScene(
     }
     const file = resolve(binding.exports, `${item.scene}-interaction-points.json`);
     try {
-      const prepared = await resolveMechanismQuery(
+      const prepared = await resolveQuery(
         item,
         {
           file,
@@ -225,4 +225,65 @@ export async function loadMechanismScene(
       };
     },
   };
+}
+
+export function scenarioInput(input: PhysicalInput, c: Case): PhysicalInput {
+  checkSetup(c);
+  const s = c.setup;
+  let result = {
+    ...input,
+    locomotion: s.locomotion ?? input.locomotion,
+    ground: {
+      ...input.ground,
+      options: { ...input.ground.options, locomotion: s.locomotion ?? input.locomotion },
+    },
+  };
+  if (s.locomotionPatch?.stamina)
+    for (const [key, value] of Object.entries(s.locomotionPatch.stamina))
+      if (
+        !isDeepStrictEqual(
+          result.locomotion.stamina?.[key as keyof NonNullable<LocomotionOptions['stamina']>],
+          value,
+        )
+      )
+        throw new Error('Resolved locomotion differs from scenario patch');
+  const required = s.requiredDevice;
+  if (required && !input.devices?.devices.some((d) => d.id === required))
+    throw new Error('Missing required source device: ' + required);
+  if (s.requiredSupport) {
+    const moving = input.devices?.movingSupports?.find((d) => d.id === s.requiredSupport);
+    const following = input.devices?.followingSupports?.find((d) => d.id === s.requiredSupport);
+    if (!moving && !following)
+      throw new Error('Missing required source support: ' + s.requiredSupport);
+    if (s.supportModel && !moving?.circular) throw new Error('Missing circular support facts');
+    if (s.assumption && moving?.assumption !== s.assumption)
+      throw new Error('Support assumption mismatch');
+  }
+  if (s.excludedUnresolvedDevice) {
+    const device = input.devices?.devices.find((d) => d.id === s.excludedUnresolvedDevice);
+    if (!device || device.resolved)
+      throw new Error('Unresolved-device scenario no longer matches its source');
+  }
+  const policy = s.followingPlacement;
+  if (policy) {
+    const all = input.devices?.followingSupports ?? [],
+      ids = new Set(policy.movableSourceIds);
+    if (policy.movableSourceIds.some((id) => !all.some((b) => b.id === id)))
+      throw new Error('Missing movable box facts');
+    for (const source of policy.sourceActivityRanges) {
+      const b = all.find((b) => b.id === source.id);
+      if (!b || !isDeepStrictEqual(b.spawn, source.spawn) || b.maxDistance !== source.radius)
+        throw new Error('Following source activity sphere mismatch');
+    }
+    const fixed = all.filter((b) => !ids.has(b.id));
+    result = {
+      ...result,
+      collision: joinedGeometry(
+        input.collision,
+        fixed.flatMap((b) => b.bodies),
+      ),
+      devices: { ...input.devices!, followingSupports: all.filter((b) => ids.has(b.id)) },
+    };
+  }
+  return result;
 }

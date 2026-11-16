@@ -1,13 +1,13 @@
 # Mechanism acceptance inputs
 
 Use this contract when preparing mechanism inputs or changing the runner.
-`suite.json` owns queries, setup, source bindings and exercise assertions. Keep raw
+`suite.json` declares scenarios with shared world setup, ordered training case IDs, queries, source bindings and exercise assertions. Training selection is independent of measured ID filters; no runtime warmup precedes the first measured query. Keep raw
 game assets, profiles and private config local.
 
 ## Choose the runner
 
 Use `pnpm benchmark:mechanisms --adapter ganglia-v1-ts` for service measurements.
-This service runner reads `input-index.json`, trains/freezes/warms scenario workers,
+This service runner reads `input-index.json`, loads explicit scenarios, trains/freezes their kernels,
 then scores routes and independently replays complete results. The beta replay
 result is reported separately and does not gate search completion or acceptance. The CLI defaults
 to Rust, so select TS explicitly. `--audit` checks the suite/index binding without

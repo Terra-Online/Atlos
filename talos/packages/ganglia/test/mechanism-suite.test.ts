@@ -11,12 +11,10 @@ import {
   matchesExpectation,
   captureFirstComplete,
   expectation,
-  resourcePath,
-  scenarioInput,
   exercised,
-  readMechanismSuite,
-  type MechanismCase,
-} from '#@/bench/mechanism-suite.ts';
+} from '#@/bench/mechanisms/assessment.ts';
+import { scenarioInput } from '#@/bench/mechanisms/scenario.ts';
+import { resourcePath, readSuite, type Case } from '#@/bench/mechanisms/suite.ts';
 import { classify } from '#@/bench/outcome.ts';
 import { prepareWorkerSolver } from '#@/bench/workers.ts';
 import { readWorkload } from '#@/bench/workload.ts';
@@ -24,7 +22,7 @@ import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
 import { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
 import type { PhysicalInput, FollowingSupport } from '#@/src/solver/physical.ts';
 
-const item = (): MechanismCase => ({
+const item = (): Case => ({
   id: 'test',
   scene: 'map01',
   group: 'positive',
@@ -94,11 +92,12 @@ const unavailable: RouteResult = {
 
 test('shared manifest remains a complete population and cannot be mistaken for plain service queries', async () => {
   const file = new URL('../bench/scenes/mechanisms/suite.json', import.meta.url);
-  const suite = await readMechanismSuite(fileURLToPath(file));
+  const suite = await readSuite(fileURLToPath(file));
   assert.equal(suite.cases.length, 266);
   assert.equal(suite.cases.filter((c) => expectation(c) === 'reject').length, 0);
   assert.ok(suite.cases.every((c) => c.query.starts.some((start) => start.state === 'available')));
   const raw = JSON.parse(await readFile(file, 'utf8'));
+  raw.cases = suite.cases;
   assert.ok(
     raw.cases.every(
       (c: { target: { template?: string } }) => !/teleport|campfire/.test(c.target.template ?? ''),
@@ -112,12 +111,16 @@ test('shared manifest remains a complete population and cannot be mistaken for p
       'utf8',
     ),
   );
+  const decodedControls = await readSuite(
+    fileURLToPath(new URL('../bench/scenes/mechanisms/negative-controls.json', import.meta.url)),
+  );
+  assert.equal(decodedControls.cases.length, 7);
   assert.equal(controls.cases.length, 7);
-  assert.ok(controls.cases.slice(0, 4).every((c: MechanismCase) => expectation(c) === 'reject'));
+  assert.ok(controls.cases.slice(0, 4).every((c: Case) => expectation(c) === 'reject'));
   assert.equal(controls.cases[4].knownIssue.kind, 'occupied-origin-and-target');
   assert.equal(controls.cases[5].knownIssue.kind, 'occupied-device-center');
   assert.equal(raw.revision, 12);
-  const repaired = raw.cases.find((entry: MechanismCase) => entry.id === '250-0HTXfPs');
+  const repaired = raw.cases.find((entry: Case) => entry.id === '250-0HTXfPs');
   const original = controls.cases[6];
   assert.equal(original.id, repaired.id);
   assert.deepEqual(original.query, {
@@ -199,16 +202,28 @@ test('shared manifest remains a complete population and cannot be mistaken for p
   ]);
   assert.equal(Number(row[16]), separation);
   await assert.rejects(readWorkload(fileURLToPath(file)), /Scenario manifests/);
-  assert.equal(
-    JSON.parse(await readFile(file, 'utf8')).cases[0].query.goal[0],
-    suite.cases[0].query.goal[0],
-  );
+  assert.equal(raw.scenarios[0].cases[0].query.goal[0], suite.cases[0].query.goal[0]);
+});
+
+test('scenario training references must name cases in the same scenario', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'ganglia-suite-'));
+  try {
+    const raw = JSON.parse(
+      await readFile(new URL('../bench/scenes/mechanisms/suite.json', import.meta.url), 'utf8'),
+    );
+    raw.scenarios[0].training = [raw.scenarios[1].cases[0].id];
+    const file = join(directory, 'suite.json');
+    await writeFile(file, JSON.stringify(raw));
+    await assert.rejects(readSuite(file), /training references/);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 test('diagnostic audit records its cooperative deadline and solver output scoring without solving', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'ganglia-mechanism-audit-'));
   const output = join(directory, 'report.json');
-  const suite = await readMechanismSuite(
+  const suite = await readSuite(
     fileURLToPath(new URL('../bench/scenes/mechanisms/suite.json', import.meta.url)),
   );
   try {
@@ -259,21 +274,26 @@ test('service mechanism audit preserves input bindings and leaves queries unrun'
   const suiteFile = new URL('../bench/scenes/mechanisms/suite.json', import.meta.url);
   const bytes = await readFile(suiteFile);
   const suite = JSON.parse(bytes.toString());
-  const selected = suite.cases[0];
+  const scenario = suite.scenarios[0];
+  const selected = scenario.cases[0];
+  const required = new Set<string>([...scenario.training, selected.id]);
+  const bindingIds = scenario.cases
+    .filter((item: { id: string }) => required.has(item.id))
+    .map((item: { id: string }) => item.id);
   try {
     await writeFile(
       join(directory, 'input-index.json'),
       JSON.stringify({
         suiteSha256: createHash('sha256').update(bytes).digest('hex'),
         revision: 'audit-only',
-        source: suite.source,
+        source: suite.requiredSource,
         profiles: Object.fromEntries(
           Object.entries(suite.sources).map(([scene, value]) => [
             scene,
             (value as { profile: unknown }).profile,
           ]),
         ),
-        cases: { [selected.id]: { directory: selected.id } },
+        cases: Object.fromEntries(bindingIds.map((id: string) => [id, { directory: selected.id }])),
       }),
     );
     const process = spawnSync(
@@ -301,7 +321,7 @@ test('service mechanism audit preserves input bindings and leaves queries unrun'
     assert.deepEqual(report.preparations, []);
     assert.equal(report.sourceUnchanged, true);
     const binding = JSON.parse(await readFile(report.inputAudit[0].binding, 'utf8'));
-    assert.deepEqual(binding.ids, [selected.id]);
+    assert.deepEqual(binding.ids, bindingIds);
     assert.equal(binding.inputRevision, 'audit-only');
   } finally {
     await rm(directory, { recursive: true, force: true });

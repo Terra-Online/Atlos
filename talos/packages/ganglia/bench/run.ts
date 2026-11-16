@@ -1,13 +1,31 @@
+/**
+ * The runner owns phase order and shutdown. A Scenario contains reusable loaded
+ * resources and resolved requests; only a trained kernel can enter measurement.
+ * Training requests belong to the suite, while one worker config remains fixed.
+ * Search outcomes, beta verification and report callbacks are independent: a
+ * verifier failure never rewrites completion or modeled cost. Serial measurement
+ * excludes verification intervals; batch measurement retains the existing full
+ * benchmark scheduling contract. The positional entry point remains for callers
+ * which already own a prepared solver and explicitly request legacy warmup.
+ */
 import { createHash } from 'node:crypto';
 import { performance } from 'node:perf_hooks';
 import { isDeepStrictEqual } from 'node:util';
 
-import type { PreparedRouteSolver, RouteQuery, RouteResult } from '@opendfieldmap/ganglia';
+import type {
+  PreparedRouteSolver,
+  RouteQuery,
+  RouteResult,
+  RouteEvent,
+} from '@opendfieldmap/ganglia';
 
 import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
-import { classify, verifyResult } from '#@/bench/outcome.ts';
+import { createKernel, type TrainedKernel } from '#@/bench/kernel.ts';
+import { classify, verifyResult, type Verification } from '#@/bench/outcome.ts';
 import { requirePreparedCatalog, type TrainedCatalog } from '#@/bench/preparation.ts';
 import { summarizeQuality } from '#@/bench/quality.ts';
+import { workerInput, type Scenario } from '#@/bench/scenario.ts';
+import type { Case } from '#@/bench/suite.ts';
 import type { Evaluation } from '#@/src/evaluation/route.ts';
 import { verifyRoute } from '#@/src/evaluation/route.ts';
 
@@ -58,7 +76,7 @@ const summarize = (result: RouteResult) => {
   };
 };
 
-export type Case = { id: string; query: RouteQuery };
+export type { Case } from '#@/bench/suite.ts';
 
 /** Runtime warmup may exercise the implementation, but never a scored query.
  * Query equality, rather than an id, prevents renamed holdouts leaking into warmup. */
@@ -77,7 +95,7 @@ export function validateWarmup(cases: readonly Case[], warmup: readonly Case[]) 
 
 // Owns the solver through shutdown. Every measured round is scored, including
 // its first query; no scored pass is silently reclassified as preparation.
-export async function runBenchmark(
+async function measureBenchmark(
   solver: PreparedRouteSolver,
   cases: readonly Case[],
   rules: { maxVertical: number },
@@ -87,6 +105,17 @@ export async function runBenchmark(
   warmupCases: readonly Case[] = [],
   verifyPhysical?: (query: RouteQuery, result: RouteResult) => Promise<Evaluation>,
   catalog?: TrainedCatalog,
+  options?: {
+    trained?: boolean;
+    serial?: boolean;
+    signal?: AbortSignal;
+    onEvent?: (test: Case, event: RouteEvent) => void;
+    onResult?: (
+      test: Case,
+      result: RouteResult,
+      verification: Verification,
+    ) => void | Promise<void>;
+  },
 ) {
   const evaluate = (query: RouteQuery, result: RouteResult) =>
     verifyResult(
@@ -100,11 +129,11 @@ export async function runBenchmark(
     const started = performance.now();
     try {
       return await Promise.all(
-        batch.map(async (result, i) => ({
-          id: cases[i].id,
-          ...summarize(result),
-          ...(await evaluate(cases[i].query, result)),
-        })),
+        batch.map(async (result, i) => {
+          const verification = await evaluate(cases[i].query, result);
+          await options?.onResult?.(cases[i], result, verification);
+          return { id: cases[i].id, ...summarize(result), ...verification };
+        }),
       );
     } finally {
       verificationWallMs += performance.now() - started;
@@ -118,7 +147,7 @@ export async function runBenchmark(
   try {
     if (!Number.isSafeInteger(rounds) || rounds < 1) throw new Error('Invalid benchmark rounds');
     if (!cases.length) throw new Error('Benchmark requires measured queries');
-    requirePreparedCatalog(solver.config, catalog, warmupCases);
+    if (!options?.trained) requirePreparedCatalog(solver.config, catalog, warmupCases);
     validateWarmup(cases, warmupCases);
     const warmupStarted = performance.now();
     intervals.warmup.startedMs = warmupStarted;
@@ -152,16 +181,41 @@ export async function runBenchmark(
     for (let round = 0; round < rounds; round++) {
       const started = performance.now();
       const setupBefore = recoverySetup();
-      const batch = await solver.solveBatch(cases.map((item) => item.query));
-      // Recovery is separately explained, and remains in actual batch wall time.
-      const wallMs = performance.now() - started;
-      const recoverySetupMs = recoverySetup() - setupBefore;
-      if (batch.length !== cases.length)
-        throw new Error('Batch returned a different number of results');
+      let results: (typeof samples)[number]['results'];
+      let wallMs: number;
+      if (options?.serial) {
+        results = [];
+        wallMs = 0;
+        for (const item of cases) {
+          options.signal?.throwIfAborted();
+          const solving = performance.now();
+          const result = await solver.solve(item.query, {
+            signal: options.signal,
+            onEvent: options.onEvent && ((event) => options.onEvent!(item, event)),
+          });
+          wallMs += performance.now() - solving;
+          const verificationStarted = performance.now();
+          const verification = await evaluate(item.query, result);
+          verificationWallMs += performance.now() - verificationStarted;
+          results.push({ id: item.id, ...summarize(result), ...verification });
+          await options.onResult?.(item, result, verification);
+        }
+      } else {
+        const batch = await solver.solveBatch(
+          cases.map((item) => item.query),
+          {
+            signal: options?.signal,
+          },
+        );
+        wallMs = performance.now() - started;
+        if (batch.length !== cases.length)
+          throw new Error('Batch returned a different number of results');
+        results = await summarizeBatch(batch, cases);
+      }
       samples.push({
         wallMs,
-        recoverySetupMs,
-        results: await summarizeBatch(batch, cases),
+        recoverySetupMs: recoverySetup() - setupBefore,
+        results,
       });
     }
     intervals.queries.endedMs = performance.now();
@@ -222,5 +276,97 @@ export async function runBenchmark(
     } finally {
       intervals.shutdown.endedMs = performance.now();
     }
+  }
+}
+
+// Keep the legacy interface explicit: callers cannot bypass readiness with the
+// private measurement option used by the typed Scenario/Kernel lifecycle.
+export function runBenchmark(
+  solver: PreparedRouteSolver,
+  cases: readonly Case[],
+  rules: { maxVertical: number },
+  onPhase?: (phase: 'prewarm' | 'batch') => void | Promise<void>,
+  rounds = 1,
+  recoverySetup = () => 0,
+  warmupCases: readonly Case[] = [],
+  verifyPhysical?: (query: RouteQuery, result: RouteResult) => Promise<Evaluation>,
+  catalog?: TrainedCatalog,
+) {
+  return measureBenchmark(
+    solver,
+    cases,
+    rules,
+    onPhase,
+    rounds,
+    recoverySetup,
+    warmupCases,
+    verifyPhysical,
+    catalog,
+  );
+}
+
+export async function runScenario<Test extends Case>(
+  scenario: Scenario<Test>,
+  options: {
+    rounds?: number;
+    serial?: boolean;
+    signal?: AbortSignal;
+    onPhase?: (phase: 'training' | 'batch') => void | Promise<void>;
+    onReady?: (kernel: TrainedKernel) => void | Promise<void>;
+    onTrainingResult?: (test: Case, index: number, results: readonly RouteResult[]) => void;
+    onEvent?: (test: Test, event: RouteEvent) => void;
+    onResult?: (
+      test: Test,
+      result: RouteResult,
+      verification: Verification,
+    ) => void | Promise<void>;
+  } = {},
+) {
+  const kernel = createKernel(scenario);
+  try {
+    await options.onPhase?.('training');
+    const trained = await kernel.train({
+      signal: options.signal,
+      onResult: options.onTrainingResult,
+    });
+    await options.onReady?.(trained);
+    const byId = new Map(scenario.cases.map((item) => [item.id, item]));
+    let verificationTail: Promise<unknown> = Promise.resolve();
+    const report = await measureBenchmark(
+      {
+        config: trained.config,
+        solve: (query, options) => trained.query(query, options),
+        solveBatch: (queries, options) => trained.queryBatch(queries, options),
+        close: () => trained.close(),
+      },
+      scenario.cases,
+      scenario.input.metadata.rules,
+      async () => {
+        await workerInput(scenario).setBenchmarkPhase('batch');
+        await options.onPhase?.('batch');
+      },
+      options.rounds ?? 1,
+      () => scenario.input.recoverySetupMs,
+      [],
+      (query, result) => {
+        const verification = verificationTail.then(() => trained.verify(query, result));
+        verificationTail = verification.catch(() => {});
+        return verification;
+      },
+      undefined,
+      {
+        trained: true,
+        serial: options.serial ?? true,
+        signal: options.signal,
+        onEvent: options.onEvent && ((item, event) => options.onEvent!(byId.get(item.id)!, event)),
+        onResult:
+          options.onResult &&
+          ((item, result, verification) =>
+            options.onResult!(byId.get(item.id)!, result, verification)),
+      },
+    );
+    return { ...report, training: trained.training };
+  } finally {
+    await kernel.close();
   }
 }

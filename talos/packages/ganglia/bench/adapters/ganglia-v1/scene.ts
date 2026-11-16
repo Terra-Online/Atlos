@@ -13,7 +13,7 @@ import {
 } from '@opendfieldmap/ganglia/solver';
 import { createPhysicalPreparation, type PhysicalWork } from '@opendfieldmap/ganglia/solver/host';
 
-import { sourceSupportWorld, type SourceSnapshot } from '#@/bench/mechanism-query.ts';
+import { sourceSupportWorld, type SourceSnapshot } from '#@/bench/mechanisms/query.ts';
 import {
   loadSceneData,
   type SceneData,

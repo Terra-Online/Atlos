@@ -9,7 +9,16 @@ import {
 } from '../../../src/services/routing/pointToken.ts';
 
 const directory = new URL('../bench/scenes/mechanisms/', import.meta.url);
-const read = async (name: string) => JSON.parse(await readFile(new URL(name, directory), 'utf8'));
+const read = async (name: string) => {
+  const data = JSON.parse(await readFile(new URL(name, directory), 'utf8'));
+  if (name === 'suite.json')
+    data.cases = data.scenarios
+      .flatMap((scenario: { cases: { id: string; query: unknown; metadata: object }[] }) =>
+        scenario.cases.map((c) => ({ ...c.metadata, id: c.id, query: c.query })),
+      )
+      .sort((a: { id: string }, b: { id: string }) => a.id.localeCompare(b.id));
+  return data;
+};
 test('all main cases use their real source token and preserve the original regression tokens', async () => {
   const suite = await read('suite.json');
   assert.equal(suite.cases.length, 266);

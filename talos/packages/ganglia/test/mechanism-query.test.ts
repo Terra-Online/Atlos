@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import {
-  resolveMechanismQuery,
+  resolveQuery,
   sourceSupportWorld,
   QueryInputError,
   type QuerySource,
-} from '#@/bench/mechanism-query.ts';
-import { type MechanismCase } from '#@/bench/mechanism-suite.ts';
+} from '#@/bench/mechanisms/query.ts';
+import { type Case } from '#@/bench/mechanisms/suite.ts';
 import { classify } from '#@/bench/outcome.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
 import { createPhysicalWorld } from '#@/src/model/world.ts';
@@ -27,7 +27,7 @@ function fixture() {
     template: 'rope',
     source: 'level.json',
   };
-  const item: MechanismCase = {
+  const item: Case = {
     id: 'fixture',
     scene: 'scene',
     group: 'rope',
@@ -129,7 +129,7 @@ function fixture() {
 test('source-start resolution binds by start id and preserves the frozen query contract', async () => {
   const { item, input, binding, snapshot } = fixture();
   const original = structuredClone(item.query);
-  const resolved = await resolveMechanismQuery(item, binding, snapshot);
+  const resolved = await resolveQuery(item, binding, snapshot);
   assert.equal(resolved.receipt.status, 'resolved');
   assert.equal(resolved.receipt.starts[0].direction, 'descent');
   const start = resolved.query.starts[0];
@@ -145,17 +145,13 @@ test('source-start resolution binds by start id and preserves the frozen query c
 test('a legal original foot is retained and an unrequested repair does no preflight work', async () => {
   const { item, binding, snapshot } = fixture();
   item.query.starts[0].position = [1.5, 0.005, 0];
-  const resolved = await resolveMechanismQuery(item, binding, snapshot);
+  const resolved = await resolveQuery(item, binding, snapshot);
   assert.equal(resolved.receipt.status, 'retained');
   assert.equal(resolved.query.starts[0], item.query.starts[0]);
   item.setup.projectStartToPhysicalSupport = undefined;
-  const unrequested = await resolveMechanismQuery(
-    item,
-    { ...binding, document: null },
-    async () => {
-      throw new Error('No snapshot may be prepared without the explicit setup flag');
-    },
-  );
+  const unrequested = await resolveQuery(item, { ...binding, document: null }, async () => {
+    throw new Error('No snapshot may be prepared without the explicit setup flag');
+  });
   assert.equal(unrequested.query, item.query);
   assert.equal(unrequested.receipt.status, 'not-requested');
 });
@@ -163,24 +159,24 @@ test('source provenance and normalized device conflicts remain input errors', as
   const { item, input, binding, placed, snapshot } = fixture();
   placed.navigationGoal.source.path = 'wrong-template.json';
   await assert.rejects(
-    resolveMechanismQuery(item, binding, snapshot),
+    resolveQuery(item, binding, snapshot),
     (error) => error instanceof QueryInputError && error.status === 'input-invalid',
   );
   placed.navigationGoal.source.path = 'template.json';
   input.devices!.devices[0].goal = { position: [9, 0, 0], interaction: { radius: 2 } };
   await assert.rejects(
-    resolveMechanismQuery(item, binding, snapshot),
+    resolveQuery(item, binding, snapshot),
     (error) => error instanceof QueryInputError && error.status === 'input-invalid',
   );
 });
 test('missing coverage differs from finite witness exhaustion and cannot authorize another floor', async () => {
   const { item, input, binding, snapshot } = fixture();
   await assert.rejects(
-    resolveMechanismQuery(item, binding, async () => null),
+    resolveQuery(item, binding, async () => null),
     (error) => error instanceof QueryInputError && error.status === 'input-unavailable',
   );
   input.ground.surfaces[0].vertices = input.ground.surfaces[0].vertices.map((p) => [p[0], 1, p[2]]);
-  await assert.rejects(resolveMechanismQuery(item, binding, snapshot), (error) => {
+  await assert.rejects(resolveQuery(item, binding, snapshot), (error) => {
     assert.ok(error instanceof QueryInputError);
     assert.equal(error.status, 'input-unresolved');
     assert.equal(error.receipt.starts[0].witnessCount, 0);
@@ -202,10 +198,10 @@ test('launch starts require their own normalized launch id and kind', async () =
   item.tags = [];
   item.setup.requiredDevice = item.query.starts[0].id;
   input.devices!.devices[0].kind = 'launch';
-  assert.equal((await resolveMechanismQuery(item, binding, snapshot)).receipt.status, 'resolved');
+  assert.equal((await resolveQuery(item, binding, snapshot)).receipt.status, 'resolved');
   item.setup.requiredDevice = 'another-device';
   await assert.rejects(
-    resolveMechanismQuery(item, binding, snapshot),
+    resolveQuery(item, binding, snapshot),
     (error) => error instanceof QueryInputError && error.status === 'input-invalid',
   );
 });
@@ -388,7 +384,7 @@ test('source snapshot preflight bounds support without routing or exporting', as
 test('source candidates cannot bypass a blocking full-body exclusion', async () => {
   const { item, input, binding, snapshot } = fixture();
   input.ground.options.walls = [{ min: [0.5, -1, -4], max: [4.5, 3, 4], state: 'active' }];
-  await assert.rejects(resolveMechanismQuery(item, binding, snapshot), (error) => {
+  await assert.rejects(resolveQuery(item, binding, snapshot), (error) => {
     assert.ok(error instanceof QueryInputError);
     assert.equal(error.status, 'input-unresolved');
     assert.ok(error.receipt.starts[0].candidates?.every((candidate) => candidate.reason));
@@ -421,19 +417,19 @@ test('an eroded source contact can use raw support without relaxing floor or cap
     files: {},
     reuse: 'bounded-source',
   });
-  const resolved = await resolveMechanismQuery(item, binding, snapshot);
+  const resolved = await resolveQuery(item, binding, snapshot);
   assert.deepEqual(resolved.query.starts[0].position, [1, 0.005, 0]);
   assert.equal(resolved.receipt.starts[0].witnessCount, 0);
   assert.ok(resolved.receipt.starts[0].selected?.witness?.surface.startsWith('source-raw/'));
   input.ground.options.walls = [{ min: [0.5, -1, -4], max: [2, 3, 4], state: 'active' }];
   await assert.rejects(
-    resolveMechanismQuery(item, binding, snapshot),
+    resolveQuery(item, binding, snapshot),
     (error) => error instanceof QueryInputError && error.status === 'input-unresolved',
   );
   input.ground.options.walls = [];
   input.collision.positions = input.collision.positions.map((v, i) => (i % 3 === 1 ? v - 1 : v));
   await assert.rejects(
-    resolveMechanismQuery(item, binding, snapshot),
+    resolveQuery(item, binding, snapshot),
     (error) => error instanceof QueryInputError && error.status === 'input-unresolved',
   );
 });
@@ -488,7 +484,7 @@ test('raw witness quota favors support caps while retaining valid neighbouring c
     files: {},
     reuse: 'bounded-source',
   });
-  const resolved = await resolveMechanismQuery(item, binding, snapshot);
+  const resolved = await resolveQuery(item, binding, snapshot);
   assert.deepEqual(resolved.query.starts[0].position, [1, 0.005, 0]);
   assert.equal(resolved.receipt.starts[0].rawWitnessCount, 42);
   assert.equal(resolved.receipt.starts[0].rawCandidates?.length, 32);
@@ -502,7 +498,7 @@ test('raw witness quota favors support caps while retaining valid neighbouring c
     ],
     indices: [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7],
   };
-  const adjacent = await resolveMechanismQuery(item, binding, snapshot);
+  const adjacent = await resolveQuery(item, binding, snapshot);
   const selected = adjacent.receipt.starts[0].selected!;
   assert.ok(selected.witness && selected.feet);
   assert.equal(selected.witness.position[1], 0.05);
@@ -514,13 +510,13 @@ test('malformed source direction and absent build identities remain typed input-
   const { item, binding, placed, snapshot } = fixture();
   Object.assign(placed.navigationGoal.interaction, { facing: [0, 0, 0], halfAngle: 90 });
   await assert.rejects(
-    resolveMechanismQuery(item, binding, snapshot),
+    resolveQuery(item, binding, snapshot),
     (error) => error instanceof QueryInputError && error.status === 'input-invalid',
   );
   binding.source = {};
   binding.document = { scene: item.scene, source: {}, points: [placed] };
   await assert.rejects(
-    resolveMechanismQuery(item, binding, snapshot),
+    resolveQuery(item, binding, snapshot),
     (error) => error instanceof QueryInputError && error.status === 'input-invalid',
   );
 });
