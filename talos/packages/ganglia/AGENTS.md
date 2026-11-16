@@ -22,32 +22,34 @@ published 222/266 direct-diagnostic census mixes source revisions and is not thi
 service baseline's completion score. Consult the canonical handoff/history for
 the retained evidence and the unresolved replay discrepancies.
 
-Run from this package with Node 26 on PATH (original run: v26.13.0). Set the three
-paths below to verified local candidate inputs, the prepared extractor and a
-fresh report destination. The recorded candidate input directory was
-`.local/data/mechanisms-266-cirisus-v119/` at repository root; it is private and
-must be provisioned explicitly when absent. Do not substitute another dataset.
+Use Node 26 and prepare inputs from a matching local game installation using the
+[collaborator setup recipe](bench/scenes/mechanisms/README.md#generate-service-benchmark-inputs).
+Run `pnpm benchmark:prepare-mechanisms` as documented there; it creates routing
+exports, frozen physical windows and `input-index.json`. No author-local dataset
+or historical candidate hash is required. Run the command below from this package
+with the generated directory, prepared extractor and a fresh report destination.
 
 ```sh
-export GANGLIA_INPUT_ROOT=/absolute/path/to/mechanisms-266-cirisus-v119
+export GANGLIA_INPUT_ROOT=/absolute/path/to/generated-mechanisms-266
 export GANGLIA_EXTRACTOR=/absolute/path/to/talos/.cache/noclip
+export GANGLIA_CONFIG=/absolute/path/to/endfield.local.json
 export GANGLIA_REPORT=/absolute/path/to/new-run/report.json
 GANGLIA_BENCHMARK_HEAP_MB=6144 GANGLIA_BENCHMARK_QUERY_SLO_MS=60000 \
   pnpm --silent benchmark:mechanisms \
   --adapter ganglia-v1-ts \
   --suite bench/scenes/mechanisms/suite.json \
   --data-root "$GANGLIA_INPUT_ROOT" --extractor "$GANGLIA_EXTRACTOR" \
+  --prepare-config "$GANGLIA_CONFIG" \
   --scenario-workers 1 --output "$GANGLIA_REPORT"
 ```
 
-Verify `input-index.json` against suite SHA-256
-`bc9491ade01cff662e10d03053965238290d3b78dfeb2ffc78e71335827166ff`
-and candidate revision
-`a81d74f68cddd9d14ebc363474e8ec17d0e500776e59113cbe454017f5be9ce2`.
-Keep game build, exporter, player profile and resource policies bound to the run.
-If dynamic scene preparation needs private game configuration, supply
-`--prepare-config /absolute/path/to/private-config.json` and record it in the
-invocation provenance without publishing credentials.
+The runner verifies the index against the checked-out suite, game source and
+player profiles. Regeneration creates a new candidate revision; the historical
+`a81d74f68cddd9d14ebc363474e8ec17d0e500776e59113cbe454017f5be9ce2`
+is provenance only, not a value to copy into new inputs. Freeze one generated
+input directory for both baseline and candidate measurements. The checked-in
+recipe is a new input binding, not a byte-identical reconstruction of missing
+historical exports. Always supply `--prepare-config` for expandable scene cases.
 
 The benchmark uses one scenario worker and one serial lane, trains
 `min(10, scenario case count)` queries, freezes the catalog, performs two warmups

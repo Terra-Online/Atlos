@@ -1,5 +1,21 @@
 # Route solver handoff
 
+## Collaborator input preparation, 2026-11-16
+
+`benchmark:prepare-mechanisms` now generates a new service input binding from
+a matching local game config using the pinned extractor. The mechanism README
+contains installation, config initialization, generation, audit and run steps.
+The historical candidate revision is provenance, not a required generated hash.
+The recipe groups frozen cases by declared region and expandable cases by scene;
+it binds exported files and source/profile checks before writing the index.
+Baseline and candidate must use the same new inputs; historical service scores
+and the mixed-revision census do not transfer to regenerated data.
+
+Validation: package format/lint/typecheck and 553 tests pass on Node v25.9.0;
+the no-data plan accounts for all 266 IDs and isolates frozen/expandable groups.
+Full game export and Node 26 service execution were not performed. This change
+provides preparation tooling, not new route coverage or performance evidence.
+
 ## Shared integration baseline and acceptance policy, 2026-11-16
 
 `feat/3d-preview` integrates `0c4d5dfb` through merge `bf398c77`. Both branches

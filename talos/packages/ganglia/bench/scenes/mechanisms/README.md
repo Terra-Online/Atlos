@@ -30,6 +30,82 @@ implementation and probe results live in the canonical handoff/history records.
 The specification's selection status is separate from the latest per-case results;
 mechanism selection or implementation alone does not establish completion.
 
+## Generate service benchmark inputs
+
+Prerequisites: Node 26, pnpm, the game installation matching `suite.json.source`
+(including `Endfield_Data`, its metadata and adjacent `GameAssembly.dll`), and a
+local extractor configuration. The repository provides code and case definitions;
+it does not provide the game installation or keys. A different game build requires
+an explicit new workload binding, not editing the index to impersonate this build.
+
+From the repository root, prepare the pinned extractor before installing its
+workspace dependencies:
+
+```sh
+pnpm --dir talos noclip:prepare
+pnpm --dir talos install --frozen-lockfile
+mkdir -p .local/config
+```
+
+Reuse an existing validated private config by setting `GANGLIA_CONFIG` to its
+absolute path. Otherwise generate one using your local installation and local
+key-source checkouts (Endfield-map-extractor / AnimeStudio):
+
+```sh
+export GANGLIA_CONFIG="$PWD/.local/config/endfield.local.json"
+node talos/.cache/noclip/packages/extractor/src/cli.ts init \
+  --game /absolute/path/to/Endfield_Data \
+  --keys-from /absolute/path/to/local-key-source-checkouts \
+  --config "$GANGLIA_CONFIG"
+```
+
+The extractor's generated `docs/extraction.md#local-config-and-keys` describes
+required key sources and validation. Keep this config local; it contains keys.
+Then generate a **new** input directory, without copying the author's `.local/`:
+
+```sh
+export GANGLIA_INPUT_ROOT="$PWD/.local/data/mechanisms-266-generated"
+export GANGLIA_EXTRACTOR="$PWD/talos/.cache/noclip"
+pnpm --dir talos/packages/ganglia benchmark:prepare-mechanisms \
+  --config "$GANGLIA_CONFIG" --extractor "$GANGLIA_EXTRACTOR" \
+  --output "$GANGLIA_INPUT_ROOT"
+```
+
+Add `--plan` to inspect the 266 bindings and export plan without reading game data
+or writing outputs. Actual preparation runs the existing movement, navigation,
+air-wall, device and interaction exporters, then `groundData` and
+`exportPhysicalRegion`; it never runs the route solver. It checks the exported
+game source, capsule and locomotion against the suite. Navigation uses area 0 on
+map01, areas 0/10 on map02, the exported assets and fully-enabled progression.
+Frozen cases share only their declared region's physical window; expandable cases
+share a scene directory. The service runner further partitions groups by resource
+and following-box policy. Fixed region exports use terminal scene, scene state 0
+and area 0, preserving their manifest bounds.
+
+Preparation refuses an existing output directory. On failure, keep the partial
+output for diagnosis and use a new destination when retrying. `input-index.json`
+is written only after all exports succeed; it includes all case bindings, exporter
+identity and content hashes. Its candidate revision is newly computed, not the
+historical author's revision. Generated inputs require a fresh baseline/candidate
+comparison on the same directory; historical timing and coverage are not inherited.
+Dynamic physical regions are added by the service during preparation using the
+same config and exporter and are recorded in each run's input provenance.
+
+Check bindings without solving, then use the full command in the package
+[AGENTS.md](../../../AGENTS.md#primary-266-case-baseline-and-soft-merge-gates):
+
+```sh
+pnpm --dir talos/packages/ganglia benchmark:mechanisms \
+  --adapter ganglia-v1-ts --data-root "$GANGLIA_INPUT_ROOT" \
+  --extractor "$GANGLIA_EXTRACTOR" --prepare-config "$GANGLIA_CONFIG" \
+  --audit --output "$GANGLIA_INPUT_ROOT/audit/report.json"
+```
+
+`--audit` validates the manifest/index binding and enumerates cases; it does not
+prove physical validity, exporter correctness or route completion. A collaborator
+without the matching game installation/config must obtain those prerequisites
+or an explicitly shared matching dataset; a stored hash cannot generate assets.
+
 ## Files
 
 - `suite.json`: authoritative queries, per-case setup, assertions, source bindings,
