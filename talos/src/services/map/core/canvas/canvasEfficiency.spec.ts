@@ -26,6 +26,22 @@ function fixture() {
   return { host, map, point, surface, canvas, clear, frame };
 }
 describe('Retained camera surface', () => {
+  it('settles a retained point after a cluster transition without another camera event', () => {
+    const clock = vi.spyOn(performance, 'now').mockReturnValue(1000);
+    const { point, surface, frame } = fixture();
+    frame();
+    clock.mockReturnValue(2000); frame();
+    // A zoom can retain a point while its previous rendered pose differs from
+    // the committed camera. Cluster reconciliation must finish that displacement.
+    surface.beginClusterTransition();
+    surface.animateFrom(point, L.latLng(0, 30));
+    surface.endClusterTransition();
+    frame();
+    for (let i = 0; i < 30; i++) {
+      clock.mockReturnValue(performance.now() + 16); frame();
+    }
+    expect(surface.visualPosition(point)?.equals(point.getLatLng())).toBe(true);
+  });
   it('starts later visible icons before rasterizing an earlier ready point', () => {
     const images: HTMLImageElement[] = [], NativeImage = Image;
     vi.stubGlobal('Image', class extends NativeImage {

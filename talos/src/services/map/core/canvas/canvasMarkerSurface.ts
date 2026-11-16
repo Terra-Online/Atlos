@@ -260,6 +260,9 @@ export class CanvasMarkerSurface {
     const start = this.map.latLngToContainerPoint(origin), target = this.map.latLngToContainerPoint(entry.latlng);
     (entry.offsetX ??= new Motion(0)).jump(start.x - target.x); (entry.offsetY ??= new Motion(0)).jump(start.y - target.y);
     this.moving.add(entry);
+    // Retained points can keep the same artwork and state, so read() may not
+    // invalidate them. Their displacement still needs frames through completion.
+    this.active.add(entry);
     entry.clusterUntil = Infinity;
     const same = this.ghosts.get(marker);
     if (same) { this.batch?.release(same); this.ghosts.delete(marker); }
