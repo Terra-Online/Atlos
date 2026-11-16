@@ -2,6 +2,7 @@ import { bundleReport } from '../../scripts/lib/bundle-report.mjs';
 import { fontShardsPlugin } from '../../scripts/fonts/vite-plugin.mjs';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
+import { createHtmlPlugin } from 'vite-plugin-html';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { defineConfig, type UserConfig } from 'vite';
 import { resolve } from 'node:path';
@@ -56,6 +57,8 @@ export default defineConfig(async ({ command }) => {
             fontShardsPlugin('user-hub'),
             react(),
             svgr(),
+            // Compact before publishing so CDN whitespace optimization preserves the release fingerprint.
+            ...(command === 'build' ? [createHtmlPlugin({ minify: true })] : []),
             ...(command === 'serve'
                 ? [
                       viteStaticCopy({

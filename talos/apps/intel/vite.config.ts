@@ -2,6 +2,7 @@ import { bundleReport } from '../../scripts/lib/bundle-report.mjs';
 import { fontShardsPlugin } from '../../scripts/fonts/vite-plugin.mjs';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
+import { createHtmlPlugin } from 'vite-plugin-html';
 import { defineConfig } from 'vite';
 import { resolve } from 'node:path';
 import { gunzipSync } from 'node:zlib';
@@ -81,9 +82,13 @@ const intelImportDebugPlugin = (): import('vite').Plugin => ({
   },
 });
 
-export default defineConfig(() => ({
+export default defineConfig(({ command }) => ({
   base: '/intel/',
-  plugins: [bundleReport('intel'), intelHtmlMetadataPlugin(), fontShardsPlugin('intel'), intelImportDebugPlugin(), react(), svgr()],
+  plugins: [
+    bundleReport('intel'), intelHtmlMetadataPlugin(), fontShardsPlugin('intel'), intelImportDebugPlugin(), react(), svgr(),
+    // Compact before publishing so CDN whitespace optimization preserves the release fingerprint.
+    ...(command === 'build' ? [createHtmlPlugin({ minify: true })] : []),
+  ],
   resolve: {
     alias: [
       { find: '@intel', replacement: resolve(import.meta.dirname, 'src') },
