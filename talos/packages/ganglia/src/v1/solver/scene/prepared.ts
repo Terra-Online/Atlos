@@ -18,15 +18,16 @@ import type {
 import { validateWaypoints } from '#@/src/v1/route/jump-planner.ts';
 import { createCandidatePlanner } from '#@/src/v1/search/candidate-planner.ts';
 import { composeRoutes, admitAuthoredStart } from '#@/src/v1/solver/route-result.ts';
+import { discoverAirborneEntries, type Entry } from '#@/src/v1/solver/scene/airborne.ts';
 import { createWindowGroundCache, createWindowRoute } from '#@/src/v1/solver/window-route.ts';
 
 type Complete = Extract<Route, { status: 'complete' }>;
 
-function selectSceneTerminal(
-  terminals: readonly SceneTerminal[],
+function selectSceneTerminal<T extends SceneTerminal>(
+  terminals: readonly T[],
   starts: GroundArrival[],
   speed: number,
-): SceneTerminal | undefined {
+): T | undefined {
   const estimate = (asset: SceneTerminal) =>
     asset.route.cost +
     Math.min(
@@ -98,12 +99,45 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
       const terminals = query.interaction?.airborne
         ? await resources.terminals?.(query)
         : undefined;
-      const terminal = selectSceneTerminal(
+      let terminal = selectSceneTerminal(
         terminals ?? [],
         query.starts,
         locomotion.sprintSpeed ?? locomotion.speed,
       );
-      const goal = terminal?.route.points[0] ?? query.goal;
+      let goal = terminal?.route.points[0] ?? query.goal;
+      let bind: ((route: Complete) => boolean) | undefined;
+      let discoveryTried = false;
+      let entries: Entry[] = [];
+      const discover = async () => {
+        if (incumbent || (terminal && !bind) || !query.interaction?.airborne) return false;
+        if (!discoveryTried) {
+          discoveryTried = true;
+          entries = await discoverAirborneEntries(scene, resources, config, query, options);
+        }
+        // Entry proximity alone can favor a roof that the original arrivals
+        // cannot approach. Rank current entry proposals through the scene graph;
+        // the ordinary window search still owns complete physical admission.
+        const ranked = entries
+          .map((entry) => {
+            const approach = planner.plan(query.starts, entry.route.points[0]);
+            return {
+              entry,
+              score: approach.status === 'candidate' ? approach.score + entry.route.cost : Infinity,
+            };
+          })
+          .sort((a, b) => a.score - b.score);
+        const selected = ranked.find((candidate) => Number.isFinite(candidate.score))?.entry;
+        if (!selected) return false;
+        entries = entries.filter((entry) => entry.id !== selected.id);
+        terminal = selected;
+        bind = selected.bind;
+        truncated = true;
+        goal = terminal.route.points[0];
+        partial = undefined;
+        excludedEdges.length = 0;
+        excludedArrivals.clear();
+        return true;
+      };
       const estimate = (arrival: GroundArrival) =>
         arrival.cost +
         distance(arrival.position, query.goal) / Math.max(locomotion.speed, locomotion.sprintSpeed);
@@ -132,6 +166,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         await checkpoint(options.signal);
         if (cancelled()) return stopped('aborted', true);
         if (proposal.status !== 'candidate') {
+          if (await discover()) continue;
           if (!incumbent) return stopped('no-global-candidate');
           excludedArrivals.add(starts[0].id);
           continue;
@@ -214,7 +249,10 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
                 partial = publish(tail.route, tail.evidence, true);
                 break;
               }
-              if (tail.status !== 'pending') break;
+              if (tail.status !== 'pending') {
+                if (await discover()) continue candidates;
+                break;
+              }
               progress('validate');
               await resources.wait(options.signal);
             }
@@ -228,6 +266,10 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
               ? composeRoutes([result.route, terminal.route], locomotion)
               : result.route;
             if (route.status !== 'complete') return stopped('terminal-composition');
+            if (bind && !bind(route)) {
+              excludedArrivals.add(arrival.id);
+              continue candidates;
+            }
             publish(
               route,
               [...result.evidence, ...(terminal ? [{ supportBoxes: terminal.supportBoxes }] : [])],
@@ -244,6 +286,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
           }
           if (cancelled()) return stopped('aborted', true);
           lastReason = result.reason;
+          if (await discover()) continue candidates;
           const edge = proposal.path?.find(
             (edge) =>
               edge.unresolved &&
