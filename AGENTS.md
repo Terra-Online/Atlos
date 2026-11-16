@@ -74,6 +74,26 @@ handoff or duplicate their status elsewhere. Historical test results do not coun
 as validation of a new change. Follow the focused testing standards in `history.md`
 alongside the required checks below.
 
+## Route Solver Baseline and PR Cadence
+
+For solver changes targeting `feat/3d-preview`, follow the benchmark commands,
+numeric objectives and soft merge gates in
+[talos/packages/ganglia/AGENTS.md](talos/packages/ganglia/AGENTS.md#primary-266-case-baseline-and-soft-merge-gates).
+The shared integration checkpoint is `0c4d5dfb`; its known failures are part of
+the baseline, not evidence of acceptance. Keep subsequent experiments in separate
+branches based on the updated target instead of merging development branches back
+and forth.
+
+Deliver one independently reviewable solver strategy or defect fix per PR,
+including its focused validation and evidence. Open the PR when that slice is
+validated; do not wait to finish the entire 266-case campaign or accumulate several
+strategies. Separate input repairs, benchmark infrastructure and algorithm changes
+when they can be reviewed independently. State the baseline/candidate SHAs, exact
+command, input binding, coverage delta, cost/time/memory changes and remaining
+failures. Explain exceptions to the soft gates for human review. Ask promptly when
+requirements, physical semantics or tradeoffs are unclear. This cadence does not
+authorize remote pushes or PR publication without explicit user authorization.
+
 ## Testing and Validation
 
 Concentrate testing after the current refactor or feature change is complete and the implementation has stabilized. Do not repeatedly run tests, full builds, or broad checks after every few file edits. During implementation, use code inspection, call-site checks, and diff review to guide the work. When execution is necessary to diagnose a specific issue, use a minimal reproduction or focused diagnostic rather than repeatedly running the entire validation suite.

@@ -1,5 +1,27 @@
 # Route solver history and validation evidence
 
+## Shared integration baseline and acceptance policy, 2026-11-16
+
+`feat/3d-preview` integrates `0c4d5dfb` through merge `bf398c77`. Both branches
+used the same v119 upstream archive; resolving their duplicate upgrade patches
+retained the complete `0c4d5dfb` patch set. The resulting source tree is identical
+to that checkpoint before this policy update. Later local strategy experiments
+remain outside this baseline. The Node service OOM and replay discrepancies below
+remain unresolved; the mixed-revision 222/266 census is not service acceptance.
+
+The authoritative primary benchmark invocation, numerical goals and soft PR gates
+are now in `../../AGENTS.md`, section “Primary 266-case baseline and soft merge
+gates”. The primary workload is the revision-11 Node/TS mechanism service suite;
+map02 remains supplementary. Continue in small independent PRs from the shared
+target. This integration does not resume the previous optimization campaign.
+
+Fresh local integration validation: Ganglia format/lint/typecheck and all 552
+TS tests pass on Node v25.9.0. Noclip preparation applies all patches and reproduces
+identity `49b578cdba8a04e8b9e6deded4de761148ab9c8ee4e18e14e4d813a75a7e3003`.
+No Node 26 service benchmark, native rebuild, full World check or browser acceptance
+was run for this merge. The private service input directory is absent in this
+checkout; provision its recorded binding before reproducing the command.
+
 ## OOM capacity and lifecycle diagnosis, 2026-11-16
 
 Two focused runs use unchanged algorithm/input source at `5d43f1cf` (the source
