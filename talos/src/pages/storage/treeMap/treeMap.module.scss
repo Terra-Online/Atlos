@@ -77,9 +77,7 @@
 }
 
 $anim-duration: 350;
-$anim-ease: 'easeCubic';
 
 :export {
   animDuration: $anim-duration;
-  animEase: $anim-ease;
 }

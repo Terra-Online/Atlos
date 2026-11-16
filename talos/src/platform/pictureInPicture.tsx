@@ -3,7 +3,7 @@ import { fontLoader, stopFontLoader, migrateFontRegions } from '@/locale/fontLoa
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import type { Map as LeafletMap } from 'leaflet';
-import L from 'leaflet';
+import type L from 'leaflet';
 import { useTranslateUI } from '@/locale';
 import Icon from '@/assets/images/UI/observator_6.webp';
 import {
@@ -38,7 +38,8 @@ type SvgElementInstanceLike = Element & {
 
 type StateListener = (active: boolean) => void;
 type ViewportListener = () => void;
-type LeafletWithMutableDocument = typeof L & {
+type Leaflet = typeof L;
+type LeafletWithMutableDocument = Leaflet & {
     DomEvent?: {
         _pointers?: Record<number, PointerEvent>;
         _pointersCount?: number;
@@ -132,6 +133,7 @@ let documentResourceMirrorCleanup: (() => void) | null = null;
 let waitForMirroredStyles: (() => Promise<void>) | null = null;
 const listeners = new Set<StateListener>();
 const viewportListeners = new Set<ViewportListener>();
+let resetMapDragState: (() => void) | undefined;
 
 // eslint-disable-next-line react-refresh/only-export-components
 const PictureInPicturePlaceholder = ({ onReturn }: { onReturn: () => void }) => {
@@ -458,21 +460,21 @@ const getSizedParentNodeForDocument = (element: HTMLElement, targetDocument: Doc
     return current ?? targetDocument.body;
 };
 
-const disableScopedTextSelection = (targetWindow: Window) => {
+const disableScopedTextSelection = (L: Leaflet, targetWindow: Window) => {
     L.DomEvent.on(targetWindow as unknown as HTMLElement, 'selectstart', L.DomEvent.preventDefault);
     return () => {
         L.DomEvent.off(targetWindow as unknown as HTMLElement, 'selectstart', L.DomEvent.preventDefault);
     };
 };
 
-const disableScopedImageDrag = (targetWindow: Window) => {
+const disableScopedImageDrag = (L: Leaflet, targetWindow: Window) => {
     L.DomEvent.on(targetWindow as unknown as HTMLElement, 'dragstart', L.DomEvent.preventDefault);
     return () => {
         L.DomEvent.off(targetWindow as unknown as HTMLElement, 'dragstart', L.DomEvent.preventDefault);
     };
 };
 
-const preventScopedOutline = (draggable: LeafletDraggableInstance, targetWindow: Window) => {
+const preventScopedOutline = (L: Leaflet, draggable: LeafletDraggableInstance, targetWindow: Window) => {
     let element = draggable._element;
     if (!draggable._preventOutline || !element) return;
 
@@ -505,7 +507,7 @@ const cleanupScopedDragGuards = (draggable: LeafletDraggableInstance) => {
     draggable.__talosOutlineCleanup = null;
 };
 
-const installLeafletDraggableDocumentPatch = () => {
+const installLeafletDraggableDocumentPatch = (L: Leaflet) => {
     const leaflet = L as LeafletWithMutableDocument;
     const draggablePrototype = leaflet.Draggable?.prototype;
     if (!draggablePrototype || draggablePrototype.__talosPatched) return;
@@ -556,9 +558,9 @@ const installLeafletDraggableDocumentPatch = () => {
         this.__talosDragWasMouse = event.type === 'mousedown';
         leaflet.Draggable._dragging = this;
 
-        preventScopedOutline(this, targetWindow);
-        const restoreImageDrag = disableScopedImageDrag(targetWindow);
-        const restoreTextSelection = disableScopedTextSelection(targetWindow);
+        preventScopedOutline(L, this, targetWindow);
+        const restoreImageDrag = disableScopedImageDrag(L, targetWindow);
+        const restoreTextSelection = disableScopedTextSelection(L, targetWindow);
         this.__talosDragCleanup = () => {
             restoreImageDrag();
             restoreTextSelection();
@@ -696,9 +698,7 @@ const installLeafletDraggableDocumentPatch = () => {
     draggablePrototype.__talosPatched = true;
 };
 
-installLeafletDraggableDocumentPatch();
-
-const resetLeafletDragState = () => {
+const resetLeafletDragState = (L: Leaflet) => {
     const leaflet = L as LeafletWithMutableDocument;
     const activeDraggable = leaflet.Draggable?._dragging;
     if (activeDraggable) {
@@ -711,6 +711,13 @@ const resetLeafletDragState = () => {
         leaflet.DomEvent._pointers = {};
         leaflet.DomEvent._pointersCount = 0;
     }
+};
+
+// Shared document/viewport consumers do not require a map runtime. The map
+// owner supplies its Leaflet instance before creating any draggable layers.
+export const installLeafletPictureInPicture = (leaflet: Leaflet) => {
+    installLeafletDraggableDocumentPatch(leaflet);
+    resetMapDragState = () => resetLeafletDragState(leaflet);
 };
 
 const mountPlaceholder = () => {
@@ -733,7 +740,7 @@ export const closeAppPictureInPicture = () => {
     documentResourceMirrorCleanup?.();
     documentResourceMirrorCleanup = null;
     waitForMirroredStyles = null;
-    resetLeafletDragState();
+    resetMapDragState?.();
     pipWindow?.removeEventListener('resize', handlePictureInPictureResize);
 
     if (root && originalParent && restoreAnchor?.parentNode === originalParent) {

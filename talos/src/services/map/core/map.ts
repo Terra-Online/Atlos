@@ -13,6 +13,7 @@ import { getAvailableLayers, getMaxTileZoom, getRegionTileCoverage, resolveTileS
 import { enableSmoothWheelZoom } from '@/services/map/core/smoothWheelZoom';
 import { createMapTileLayer } from '@/services/map/core/tileLayer';
 import { CoverageBounds } from '@/services/map/core/coverageBounds';
+import { installLeafletPictureInPicture } from '@/platform/pictureInPicture';
 
 export interface IMapOptions {
     onSwitchCurrentMarker?: (marker: IMarkerData) => void;
@@ -56,6 +57,7 @@ export class MapCore {
     private initialView?: IMapOptions['initialView'];
 
     constructor(ele: HTMLDivElement, options?: IMapOptions) {
+        installLeafletPictureInPicture(L);
         this.initialView = options?.initialView;
         this.map = L.map(ele, {
             crs: L.CRS.Simple,

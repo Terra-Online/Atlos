@@ -1,10 +1,23 @@
 // Fixed TypeScript errors
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import * as d3 from 'd3';
+// Dynamic easing lookups on the D3 namespace prevent unused exports from being removed.
+import {
+  easeCubic,
+  hierarchy as createHierarchy,
+  interpolate,
+  scaleLinear,
+  select,
+  treemap,
+  treemapBinary,
+  type HierarchyNode,
+  type HierarchyRectangularNode,
+  type Selection,
+  type Transition,
+} from 'd3';
 import { getStorageTreeMapData, type TreeMapNode } from '@/services/storageInspector';
 import styles from '@/pages/storage/treeMap/treeMap.module.scss';
 
-type CustomHierarchyRectangularNode = d3.HierarchyRectangularNode<TreeMapNode> & {
+type CustomHierarchyRectangularNode = HierarchyRectangularNode<TreeMapNode> & {
   realValue?: number;
   leafUid?: string;
   clipUid?: string;
@@ -16,7 +29,7 @@ type CustomHierarchyRectangularNode = d3.HierarchyRectangularNode<TreeMapNode> &
   };
 };
 
-type CustomHierarchyNode = d3.HierarchyNode<TreeMapNode> & {
+type CustomHierarchyNode = HierarchyNode<TreeMapNode> & {
   realValue?: number;
 };
 
@@ -73,14 +86,14 @@ const TreeMap: React.FC<TreeMapProps> = ({ onSelect, refreshTrigger = 0 }) => {
     if (!svgRef.current || !wrapperRef.current || !treeData) return;
 
     // Clear previous render
-    d3.select(svgRef.current).selectAll('*').remove();
+    select(svgRef.current).selectAll('*').remove();
 
     const width = wrapperRef.current.clientWidth || 928;
     const totalHeight = wrapperRef.current.clientHeight || 400;
     const height = totalHeight - 30;
 
-    function tile(node: d3.HierarchyRectangularNode<TreeMapNode>, x0: number, y0: number, x1: number, y1: number) {
-      d3.treemapBinary(node, 0, 0, width, height);
+    function tile(node: HierarchyRectangularNode<TreeMapNode>, x0: number, y0: number, x1: number, y1: number) {
+      treemapBinary(node, 0, 0, width, height);
       if (node.children) {
         for (const child of node.children) {
           child.x0 = x0 + child.x0 / width * (x1 - x0);
@@ -91,7 +104,7 @@ const TreeMap: React.FC<TreeMapProps> = ({ onSelect, refreshTrigger = 0 }) => {
       }
     }
 
-    const hierarchy = d3.hierarchy<TreeMapNode>(treeData)
+    const hierarchy = createHierarchy<TreeMapNode>(treeData)
       .sum(d => d.value || 0) as CustomHierarchyNode;
 
     // Store real values and clamp visual values
@@ -116,21 +129,21 @@ const TreeMap: React.FC<TreeMapProps> = ({ onSelect, refreshTrigger = 0 }) => {
 
     hierarchy.sort((a, b) => (b.value || 0) - (a.value || 0));
 
-    const root = d3.treemap<TreeMapNode>().tile(tile)(hierarchy) as CustomHierarchyRectangularNode;
+    const root = treemap<TreeMapNode>().tile(tile)(hierarchy) as CustomHierarchyRectangularNode;
 
-    const x = d3.scaleLinear().rangeRound([0, width]);
-    const y = d3.scaleLinear().rangeRound([0, height]);
+    const x = scaleLinear().rangeRound([0, width]);
+    const y = scaleLinear().rangeRound([0, height]);
 
     const name = (d: CustomHierarchyRectangularNode) => d.ancestors().reverse().map(d => formatName(d.data.name)).join("/");
 
-    const svg = d3.select(svgRef.current)
+    const svg = select(svgRef.current)
         .attr("viewBox", [0.5, -30.5, width, height + 30])
         .attr("class", styles.svg);
 
     let group = svg.append("g")
         .call(render, root);
 
-    function render(group: d3.Selection<SVGGElement, unknown, null, undefined>, root: CustomHierarchyRectangularNode) {
+    function render(group: Selection<SVGGElement, unknown, null, undefined>, root: CustomHierarchyRectangularNode) {
       const node = group
         .selectAll("g")
         .data(root.children ? root.children.concat(root) : [root])
@@ -179,8 +192,8 @@ const TreeMap: React.FC<TreeMapProps> = ({ onSelect, refreshTrigger = 0 }) => {
       group.call(position, root);
     }
 
-    function position(group: d3.Selection<SVGGElement, unknown, null, undefined> | d3.Transition<SVGGElement, unknown, null, undefined>, root: CustomHierarchyRectangularNode) {
-      const g = group as d3.Selection<SVGGElement, unknown, null, undefined>;
+    function position(group: Selection<SVGGElement, unknown, null, undefined> | Transition<SVGGElement, unknown, null, undefined>, root: CustomHierarchyRectangularNode) {
+      const g = group as Selection<SVGGElement, unknown, null, undefined>;
       g.selectAll("g")
           .attr("transform", (d: unknown) => {
             const node = d as CustomHierarchyRectangularNode;
@@ -208,15 +221,14 @@ const TreeMap: React.FC<TreeMapProps> = ({ onSelect, refreshTrigger = 0 }) => {
       y.domain([d.y0, d.y1]);
 
       const duration = parseInt(styles.animDuration) || 750;
-      const ease = (d3 as unknown as Record<string, (t: number) => number>)[styles.animEase] || d3.easeCubic;
 
       svg.transition()
           .duration(duration)
-          .ease(ease)
+          .ease(easeCubic)
           .call(t => group0.transition(t as unknown as string).remove()
             .call(position, parent))
           .call(t => group1.transition(t as unknown as string)
-            .attrTween("opacity", () => d3.interpolate("0", "1"))
+            .attrTween("opacity", () => interpolate("0", "1"))
             .call(position, d));
     }
 
@@ -231,13 +243,12 @@ const TreeMap: React.FC<TreeMapProps> = ({ onSelect, refreshTrigger = 0 }) => {
       y.domain([parent.y0, parent.y1]);
 
       const duration = parseInt(styles.animDuration) || 750;
-      const ease = (d3 as unknown as Record<string, (t: number) => number>)[styles.animEase] || d3.easeCubic;
 
       svg.transition()
           .duration(duration)
-          .ease(ease)
+          .ease(easeCubic)
           .call(t => group0.transition(t as unknown as string).remove()
-            .attrTween("opacity", () => d3.interpolate("1", "0"))
+            .attrTween("opacity", () => interpolate("1", "0"))
             .call(position, d))
           .call(t => group1.transition(t as unknown as string)
             .call(position, parent));
