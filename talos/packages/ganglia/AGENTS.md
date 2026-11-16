@@ -14,6 +14,38 @@ No CI currently covers solver acceptance on this branch. Before merging changes:
    `pnpm rust:build`, `pnpm rust:test` and `pnpm rust:integration` for Rust changes.
 2. Run the complete mechanism benchmark and apply the merge gates below (skip if no code is touched). Report benchmark results.
 
+## Benchmark operation and interpretation
+
+`GANGLIA_BENCHMARK_QUERY_CUTOFF_MS` is a cooperative benchmark runtime cutoff,
+with a default of 60,000 ms. Local development may adjust it freely, for example
+to give a search more time to converge. Baseline and candidate comparisons must
+use the same cutoff and record it in both reports. Performance targets are
+separate analyses of the observed request times.
+
+Each request has one search status:
+
+- `success`: the solver returned a complete route within the benchmark cutoff.
+- `no-route`: the search finished within the cutoff without a complete route;
+  any partial route is recorded separately.
+- `timeout`: the request reached the benchmark cutoff and cooperative cancellation
+  was requested. Its measured time includes the cancellation tail.
+- `error`: input preparation or solver execution failed, or the request was
+  interrupted externally. The report records the failure or interruption reason.
+
+When maintaining benchmark output types, use algebraic data types (ADTs) to
+express valid state combinations. Represent mutually exclusive states with a
+tagged union or an enum in a single field. Otherwise, prefer orthogonal fields
+for independently combinable dimensions, such as search outcome and verification,
+to keep the output model maintainable.
+
+Expected rejections and mechanism exercise are assessed separately. Keep solver
+action construction and physical feasibility checks active.
+
+Independent whole-route verification is beta evidence. Report `valid`, `invalid`,
+`error` and `not-run` separately from search status. Verification failures and
+exceptions do not change completion, route-cost or timing comparisons, or merge
+acceptance; retain their diagnostics and continue the benchmark.
+
 ## Mechanism benchmark
 
 Use Node 26. For input preparation, follow the
@@ -28,22 +60,6 @@ GANGLIA_BENCHMARK_HEAP_MB=6144 GANGLIA_BENCHMARK_QUERY_CUTOFF_MS=60000 \
   --prepare-config /absolute/path/to/private-config.json \
   --scenario-workers 1 --output /absolute/path/to/new-report.json
 ```
-
-`GANGLIA_BENCHMARK_QUERY_CUTOFF_MS` is a cooperative benchmark runtime cutoff,
-with a default of 60,000 ms. Local development may adjust it freely, for example
-to give a search more time to converge. Baseline and candidate comparisons must
-use the same cutoff and record it in both reports. Performance targets are
-separate analyses of the observed request times.
-
-Search status is `success`, `no-route`, `timeout` or `error`. Normal exhaustion
-without a complete route is `no-route`, not proof of impossibility. Expected
-rejections and mechanism exercise are assessed separately. Keep solver action
-construction and physical feasibility checks active.
-
-Independent whole-route verification is beta evidence. Report `valid`, `invalid`,
-`error` and `not-run` separately from search status. Verification failures and
-exceptions do not change completion, route-cost or timing comparisons, or merge
-acceptance; retain their diagnostics and continue the benchmark.
 
 ## Merge gates
 
