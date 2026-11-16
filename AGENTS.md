@@ -51,48 +51,9 @@ Apply these rules to both code comments and other documentation:
   human or agent may repeat necessary implementation details. State its scope and
   freshness conditions, and update or remove it when it becomes outdated.
 
-## Route Solver Handoff
+## Working on Route Solver (Ganglia)
 
-Before investigating or changing Ganglia/World route solving, spatial generation,
-action discovery, caching, or solver performance, read the two canonical English
-records in the Ganglia workspace package:
-
-- [Current implementation and open work](talos/packages/ganglia/docs/handoff/handoff.md).
-- [Strategy history and testing standards](talos/packages/ganglia/docs/handoff/history.md).
-
-Check the recorded versions against current source and the user's
-latest requirements. Consult implemented, rejected, reverted, and inconclusive
-approaches before repeating work; identify the changed premise for a retry.
-
-Keep both records synchronized with completed solver optimization work, including
-Atlos integration changes. Update `handoff.md` for resulting behavior, code ownership,
-cache/model contracts, and remaining gaps. Update `history.md` for strategies tried,
-their outcomes and reasons, actual input/code bindings, measurements, checks, and
-changed testing standards. Verify an unaffected record remains accurate instead of
-making a cosmetic edit. Keep both records in English; do not add another numbered
-handoff or duplicate their status elsewhere. Historical test results do not count
-as validation of a new change. Follow the focused testing standards in `history.md`
-alongside the required checks below.
-
-## Route Solver Baseline and PR Cadence
-
-For solver changes targeting `feat/3d-preview`, follow the benchmark commands,
-numeric objectives and soft merge gates in
-[talos/packages/ganglia/AGENTS.md](talos/packages/ganglia/AGENTS.md#primary-266-case-baseline-and-soft-merge-gates).
-The shared integration checkpoint is `0c4d5dfb`; its known failures are part of
-the baseline, not evidence of acceptance. Keep subsequent experiments in separate
-branches based on the updated target instead of merging development branches back
-and forth.
-
-Deliver one independently reviewable solver strategy or defect fix per PR,
-including its focused validation and evidence. Open the PR when that slice is
-validated; do not wait to finish the entire 266-case campaign or accumulate several
-strategies. Separate input repairs, benchmark infrastructure and algorithm changes
-when they can be reviewed independently. State the baseline/candidate SHAs, exact
-command, input binding, coverage delta, cost/time/memory changes and remaining
-failures. Explain exceptions to the soft gates for human review. Ask promptly when
-requirements, physical semantics or tradeoffs are unclear. This cadence does not
-authorize remote pushes or PR publication without explicit user authorization.
+When working on the Ganglia and related implementation, read and follow [talos/packages/ganglia/AGENTS.md](talos/packages/ganglia/AGENTS.md).
 
 ## Testing and Validation
 
