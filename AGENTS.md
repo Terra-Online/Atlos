@@ -39,60 +39,30 @@ Otherwise, place necessary explanations in code comments.
 
 Apply these rules to both code comments and other documentation:
 
-- **Stateless and self-contained:** text must be understandable without the agent
+1. **Navigation:** apply this for tracked doc files. Link from entry points to task guides and narrower references
+  as a directed acyclic graph (local tree-shaped graphs would be even better). Keep setup instructions with the subsystem that
+  owns them.
+  Reason: a cyclic doc graph would easily turn everything into a navigation hell and makes you confused where to place a new doc file.
+2. **Stateless and self-contained:** text must be understandable without the agent
   session, PR discussion or other conversational context. Do not refer to local
   development documents or describe what the code used to do. References to
   external sources and GitHub issues or PRs are allowed.
-- **Do not duplicate implementation:** explain decisions, constraints and reasons
+  Reason: improve readability for both human and agents.
+3. **Do not duplicate implementation:** explain decisions, constraints and reasons
   for surprising choices that the code cannot express. If a small implementation
   change elsewhere would make the text stale, remove the duplicated detail.
   Capture useful rationale directly; do not create formal ADRs by default.
-- **How-to and handoff exception:** a human-requested explanation saved for another
+  Reason: otherwise, the documentation turns stale quickly.
+4. **Trials and previous failures**: do not maintain seperate "history" files to track previous behaviours. Instead, document that something has failed (e.g. algorithm pieces, hyperparameters) (i) near the code that implements it (like in point 3 above), and/or (ii) in the PR or commit message that brings the lesson.
+  Reason: history files are hard to maintain and turns into staled slop easily. Writing trials and lessons near implementation at least gives the observability (via git blame) and tends to make them less stale (when you clean up code, you clean up those decisions as well).
+5. **How-to and handoff exception:** a human-requested explanation saved for another
   human or agent may repeat necessary implementation details. State its scope and
   freshness conditions, and update or remove it when it becomes outdated.
 
-## Route Solver Handoff
+## Working on Route Solver (Ganglia)
 
-Before investigating or changing Ganglia/World route solving, spatial generation,
-action discovery, caching, or solver performance, read the two canonical English
-records in the Ganglia workspace package:
-
-- [Current implementation and open work](talos/packages/ganglia/docs/handoff/handoff.md).
-- [Strategy history and testing standards](talos/packages/ganglia/docs/handoff/history.md).
-
-Check the recorded versions against current source and the user's
-latest requirements. Consult implemented, rejected, reverted, and inconclusive
-approaches before repeating work; identify the changed premise for a retry.
-
-Keep both records synchronized with completed solver optimization work, including
-Atlos integration changes. Update `handoff.md` for resulting behavior, code ownership,
-cache/model contracts, and remaining gaps. Update `history.md` for strategies tried,
-their outcomes and reasons, actual input/code bindings, measurements, checks, and
-changed testing standards. Verify an unaffected record remains accurate instead of
-making a cosmetic edit. Keep both records in English; do not add another numbered
-handoff or duplicate their status elsewhere. Historical test results do not count
-as validation of a new change. Follow the focused testing standards in `history.md`
-alongside the required checks below.
-
-## Route Solver Baseline and PR Cadence
-
-For solver changes targeting `feat/3d-preview`, follow the benchmark commands,
-numeric objectives and soft merge gates in
-[talos/packages/ganglia/AGENTS.md](talos/packages/ganglia/AGENTS.md#primary-266-case-baseline-and-soft-merge-gates).
-The shared integration checkpoint is `0c4d5dfb`; its known failures are part of
-the baseline, not evidence of acceptance. Keep subsequent experiments in separate
-branches based on the updated target instead of merging development branches back
-and forth.
-
-Deliver one independently reviewable solver strategy or defect fix per PR,
-including its focused validation and evidence. Open the PR when that slice is
-validated; do not wait to finish the entire 266-case campaign or accumulate several
-strategies. Separate input repairs, benchmark infrastructure and algorithm changes
-when they can be reviewed independently. State the baseline/candidate SHAs, exact
-command, input binding, coverage delta, cost/time/memory changes and remaining
-failures. Explain exceptions to the soft gates for human review. Ask promptly when
-requirements, physical semantics or tradeoffs are unclear. This cadence does not
-authorize remote pushes or PR publication without explicit user authorization.
+For Ganglia solver work, follow [the package rules](talos/packages/ganglia/AGENTS.md).
+For World integration, start at [the World guide](talos/docs/world.md).
 
 ## Testing and Validation
 

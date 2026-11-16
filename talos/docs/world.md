@@ -40,23 +40,8 @@ or a closed opener works independently. The initial hello contains only the prot
 
 ## Local work
 
-```sh
-cd talos
-pnpm noclip:prepare
-pnpm install --frozen-lockfile
-```
-
-Set the two variables in `.env.world.example` using a local-only env file or shell environment.
-Run noclip's existing data server on port 5199 against its retained `out/releases`, then run
-`pnpm dev:world` for the main site and World together. World can also run alone with
-`pnpm --filter @atlos/world dev`; map assets proxy through the main development server on 5173.
-The frontend can be rebuilt without unpacking game data or clearing browser caches.
-
-```sh
-pnpm type-check --app world
-pnpm test --app world
-pnpm build --app world
-```
+Follow the [local development guide](world-development.md) to prepare game inputs,
+start the main site and World, inspect routes and run integration checks.
 
 The independent build writes `dist/world` and a receipt with the renderer pin, catalog and file
 hashes. Main-site full builds exclude World. Its build checks the source pin and uses an immutable
@@ -192,116 +177,6 @@ explicitly unconfirmed context views.
 
 ## Ground journeys
 
-`walking-route.ts` consumes the packed `@opendfieldmap/ganglia` dependency. Its source binding
-includes the selected build, scene, state and body profile. Directed rope/jump/drop/launch
-connections carry verified sample positions and times. `journeySample` returns the
-current position, movement mode and optional connection ID; playback begins after the
-selected teleport arrival and does not draw a flight from the previous position.
-
-The local preview plans physical routes through the configured extractor and retains each job's
-progress log. Fully enabled planning reads all same-level travel points from the source-bound
-catalog, including industrial-base centres absent from older AI-ground arrival exports. Base
-centres carry explicit vertical projection bounds; the importer resolves them to physical support.
-An unmapped landing tries the next distance-ranked origin without widening the same region. Other
-origin failures can fall back after their bounded coverage attempts. This is a feasibility fallback,
-not a claim that all origins have been compared for the globally fastest journey.
-
-Route-result identity changes independently of physical-tile identity. Updating arrival semantics
-invalidates failed route results while retaining compatible physical terrain. The model still depends
-on the exported collision coverage and device motion model; the preview is not a game execution proof.
-
-
-### Corridor discovery corrections (2026-11-06)
-
-Physical requests now receive direction samples only from the corridor used for
-that request's tiles. Alternative corridors remain separate retries; their missing
-supports must not be projected onto the currently loaded corridor. Ganglia alpha.30
-groups duplicate direction goals by directed ground connectivity and advances
-bounded frontier batches beyond rejected pairs. This is not yet a regional
-entry/exit graph or a guarantee of global optimality.
-
-Four existing physical replay costs remain 32.5137026, 56.8194175, 8.1988517 and
-22.6338346 seconds. The distant rear-approach case `0bzZEM3` remains unresolved;
-loading a wider corridor and experimenting with local coarse-point transfers did
-not establish a complete physical route. Those transfer/priority experiments
-were not enabled. Task logs retain the separate build and search results.
-
-### Progressive origin and corridor scheduling (2026-11-06)
-
-Physical route attempts now interleave distance-ranked teleport origins with wider
-approaches. The order begins with origin 0 / coverage 0, origin 1 / coverage 0,
-origin 0 / coverage 1, then continues by the sum of origin and coverage indices.
-This keeps a disconnected nearby origin from consuming all four coverage rounds
-before another origin gets a first attempt. Deferred coverage rounds remain
-available. Unmapped/unavailable landings and failed origin jobs are excluded from
-later rounds as before. Complete incumbents retain the existing comparison policy.
-
-This scheduling change applies to every query; it does not add point-specific
-waypoints, movement edges, costs or collision exceptions. Ground generation and
-physical route cache identities are unchanged, so already built tiles and solved
-jobs remain reusable. It establishes first feasibility, not globally fastest
-selection across every teleport and corridor.
-
-The previously unresolved `0bzZEM3` now completes through the normal nearest-route
-endpoint and viewer with a 50.8116844-second model route. It starts from the second
-nearest same-level teleport, uses five swept jumps and supported walking, then
-approaches the target through the building's rear side. The successful physical
-command took 65.73 seconds, including 44.52 seconds of search; these are command
-timings, not the whole multi-attempt task latency. A retained HTTP query returned
-the completed result in 43.7 ms. The first origin remains unresolved within its
-initial corridor rather than being classified as physically unreachable.
-
-The normal endpoint replays for `10YLgUg` and `17nac6U` retain their original
-successful model costs of 8.1988517 and 22.6338346 seconds. Six server integration
-tests cover the existing behavior, unmapped-origin skipping, disconnected-origin
-interleaving, and revisiting deferred wider coverage after other origins fail.
-Local interface-graph and step-trace experiments did not establish a better
-solution and are not part of the shipped planner.
-
-### Prepared solver workers
-
-The physical builder keeps up to two serial solver workers, alongside the existing
-foreground/build and optimization queues. A free worker with matching physical input
-paths is preferred, so optimization can continue from a completed foreground device
-check without immediately rebuilding the same region. Foreground work can use the
-other worker while optimization runs. Older configured extractors without the worker
-entry continue through their one-shot CLI.
-
-Workers retain preparation, not route results: each invocation still runs the solver
-and writes a new result. The extractor validates input file generations and retains
-at most one region plus one target refinement per worker. An idle worker exits after
-60 seconds. Before an idle worker switches to different physical input paths, the
-host retires its process so the previous region's expanded heap is released.
-Server shutdown terminates running and idle workers. A crashed worker
-fails its current job and is recreated for subsequent work. Task logs include the
-worker PID, process reuse, prepared-stage reuse and reported memory. The extractor's
-serialized-input limit is not an upper bound on expanded heap memory.
-
-Fresh-process first-query time is the primary performance gate. Same-region
-new-goal and repeated-input timings are auxiliary and must be reported separately.
-Completed-result HTTP cache hits do not measure solver performance.
-
-### Cold first-query validation
-
-The integrated alpha.39 solver preserves complete route, discovered connection and
-candidate-limit objects for all 38 fixed alpha.31 successes. Every solve used a new
-Node process with retained physical input files. Aggregate command time was
-554.891 / 452.624 seconds; search time was 202.690 / 152.695 seconds. The rear
-approach example was 53.197 / 32.983 seconds. This is an intermediate 18.4 percent
-command reduction, well short of the requested 90 percent reduction. Worker reuse
-and completed HTTP results are excluded from these figures. Ten historical cost
-gaps already present in the baseline remain a separate route-quality backlog.
-
-The next alpha.47 integration preserves all 38 exact route/connection/limit checks
-and reduces that fixed population to 417.453 seconds total and 140.154 seconds
-search. It shares one filtered graph/SCC, updates current-query distance labels
-incrementally and avoids a complete weighted edge copy. The rear approach query
-takes 29.731 seconds against 53.197 seconds in the alpha.31 baseline. These figures
-still exclude parent queueing, Node startup and physical tile extraction/build.
-Peak RSS did not uniformly decrease; runtime cache limits have not been raised.
-The ten-percent remaining-time target is still open.
-
-The extractor's physical ground generator identity is unchanged by this runtime
-upgrade, so retained tile meshes remain reusable. Route output identities still
-advance with the solver release. The installed integration passes 11 server/worker
-tests, the focused server type check and the World production build.
+World consumes the editable Ganglia workspace package. For solver behavior,
+configuration and benchmark policy, start at the
+[Ganglia package](../packages/ganglia/README.md).
