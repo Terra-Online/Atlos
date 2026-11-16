@@ -51,7 +51,7 @@
     "intl-messageformat": "^11.2.13",
     "leaflet": "^1.9.4",
     "lexical": "^0.51.0",
-    "liquid-glass-react-positioning": "^1.1.1",
+    "liquid-glass-react-positioning": "1.1.1",
     "motion": "^12.9.4",
     "pinyin-pro": "^3.28.0",
     "progressive-blur": "^1.0.0",
@@ -111,5 +111,10 @@
     "vitest": "^3.2.4",
     "wrangler": "^4.104.0"
   },
-  "packageManager": "pnpm@10.5.0+sha512.11106a5916c7406fe4b8cb8e3067974b8728f47308a4f5ac5e850304afa6f57e2847d7950dfe78877d8d36bfb401d381c4215db3a4c3547ffa63c14333a6fa51"
+  "packageManager": "pnpm@10.5.0+sha512.11106a5916c7406fe4b8cb8e3067974b8728f47308a4f5ac5e850304afa6f57e2847d7950dfe78877d8d36bfb401d381c4215db3a4c3547ffa63c14333a6fa51",
+  "pnpm": {
+    "patchedDependencies": {
+      "liquid-glass-react-positioning@1.1.1": "patches/liquid-glass-react-positioning@1.1.1.patch"
+    }
+  }
 }

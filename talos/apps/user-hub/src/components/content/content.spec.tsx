@@ -10,7 +10,7 @@ vi.mock('../../api/client', () => ({ getContributions: api.pages, isUnauthorized
 vi.mock('@hub/locale', () => ({ useLocale: () => 'en-US', getCurrentLocale: () => 'en-US', useTranslateUI: () => (key: string) => key }));
 vi.mock('@main/locale', () => ({ useTranslateGame: () => (key: string) => key }));
 vi.mock('@main/locale/useFontRegion', () => ({ useFontRegion: () => () => {} }));
-vi.mock('@main/data/marker', () => ({ loadAllMarkers: () => Promise.resolve([]), MARKER_TYPE_DICT: {} }));
+vi.mock('@main/data/marker', () => ({ getMarkerSubregion: () => Promise.resolve(null), MARKER_TYPE_DICT: {} }));
 
 type Observer = { targets: Set<Element>; callback: (entries: { isIntersecting: boolean }[]) => void };
 const observers: Observer[] = [];

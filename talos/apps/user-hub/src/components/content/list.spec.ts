@@ -5,10 +5,12 @@ import { flush } from '../../testSetup';
 import type { Contribution } from '../../types';
 import List from './list';
 import { formatDate } from '../../config';
+import { deferred } from '../../../../../test-support/pages';
 
+const api = vi.hoisted(() => ({ subregion: vi.fn<(id: string) => Promise<string | null>>(), all: vi.fn() }));
 vi.mock('@main/data/marker', () => ({
-    loadAllMarkers: () =>
-        Promise.resolve([{ id: '42', type: 'sample', subregId: 'WL_12' }]),
+    loadAllMarkers: api.all,
+    getMarkerSubregion: api.subregion,
     MARKER_TYPE_DICT: { sample: { category: { main: 'nature' } } },
 }));
 vi.mock('@main/services/map/subregionLabel', () => ({
@@ -61,6 +63,8 @@ const item: Contribution = {
 let node: HTMLDivElement;
 let root: ReturnType<typeof createRoot>;
 beforeEach(() => {
+    api.subregion.mockReset().mockResolvedValue('WL_12');
+    api.all.mockReset().mockResolvedValue([{ id: '42', type: 'sample', subregId: 'WL_12' }]);
     locale.value = 'zh-CN';
     node = document.createElement('div');
     document.body.append(node);
@@ -81,6 +85,45 @@ const render = (overrides: Partial<Contribution> = {}) =>
         ),
     );
 const stages = () => [...node.querySelectorAll('ol li')];
+
+it('looks up each comment point once without loading point rows and preserves missing-point links', async () => {
+    api.subregion.mockImplementation((id: string) => Promise.resolve(id === '42' ? 'WL_12' : null));
+    await flush(() => root.render(createElement(List, { kind: 'comment', items: [
+        item, { ...item, id: 'reply' }, { ...item, id: 'missing', markerId: '99' },
+    ] })));
+    expect(api.subregion.mock.calls.map(([id]) => id)).toEqual(['42', '99']);
+    expect(api.all).not.toHaveBeenCalled();
+    const links = [...node.querySelectorAll<HTMLAnchorElement>('a')];
+    expect(links.map((link) => link.textContent)).toEqual(['醚质・应龙关', '醚质・应龙关', '醚质']);
+    expect(new URL(links[2].href).searchParams.get('commentId')).toBe('missing');
+});
+
+it('keeps the current point region when an earlier lookup finishes late', async () => {
+    const old = deferred<string | null>();
+    const current = deferred<string | null>();
+    api.subregion.mockReturnValueOnce(old.promise).mockReturnValueOnce(current.promise);
+    await render();
+    await render({ markerId: '99' });
+    await flush(() => current.resolve('WL_12'));
+    expect(node.querySelector('a')?.textContent).toBe('醚质・应龙关');
+    await flush(() => old.resolve(null));
+    expect(node.querySelector('a')?.textContent).toBe('醚质・应龙关');
+});
+
+it('retains comment content and its link when the region index is unavailable', async () => {
+    api.subregion.mockRejectedValue(new Error('index unavailable'));
+    await render();
+    expect(node.querySelector('p')?.textContent).toBe(item.content);
+    expect(node.querySelector('a')?.textContent).toBe('醚质');
+    expect(new URL(node.querySelector<HTMLAnchorElement>('a')!.href).searchParams.get('commentId')).toBe(item.id);
+});
+
+it('does not resolve point regions for image or empty lists', async () => {
+    await flush(() => root.render(createElement(List, { kind: 'image', items: [{ ...item, kind: 'image' }] })));
+    await flush(() => root.render(createElement(List, { kind: 'comment', items: [] })));
+    expect(api.subregion).not.toHaveBeenCalled();
+    expect(api.all).not.toHaveBeenCalled();
+});
 
 it('shows the comment before its dated point label and the default three stages', async () => {
     await render();

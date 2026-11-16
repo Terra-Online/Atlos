@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  liquid-glass-react-positioning@1.1.1:
+    hash: 1956fe56906925d88822b1ce628f862f3baa59589eba19e79f8b8f72693db190
+    path: patches/liquid-glass-react-positioning@1.1.1.patch
+
 importers:
 
   .:
@@ -57,8 +62,8 @@ importers:
         specifier: ^0.51.0
         version: 0.51.0(typescript@5.8.3)
       liquid-glass-react-positioning:
-        specifier: ^1.1.1
-        version: 1.1.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        specifier: 1.1.1
+        version: 1.1.1(patch_hash=1956fe56906925d88822b1ce628f862f3baa59589eba19e79f8b8f72693db190)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       motion:
         specifier: ^12.9.4
         version: 12.9.4(@emotion/is-prop-valid@1.4.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -10189,7 +10194,7 @@ snapshots:
 
   lines-and-columns@1.2.4: {}
 
-  liquid-glass-react-positioning@1.1.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  liquid-glass-react-positioning@1.1.1(patch_hash=1956fe56906925d88822b1ce628f862f3baa59589eba19e79f8b8f72693db190)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)

@@ -10,9 +10,8 @@ import {
     parseTimestamp,
 } from '@main/lib/format/time';
 import {
-    loadAllMarkers,
+    getMarkerSubregion,
     MARKER_TYPE_DICT,
-    type IMarkerData,
 } from '@main/data/marker';
 import { generatePointShareUrl } from '@main/services/routing/share';
 import { getSubregionLabel } from '@main/services/map/subregionLabel';
@@ -118,33 +117,27 @@ export default function List({
     const t = useTranslateUI();
     const game = useTranslateGame();
     const locale = useLocale();
-    const [markers, setMarkers] = useState<Record<string, IMarkerData>>({});
+    const [subregions, setSubregions] = useState<Record<string, string | null>>({});
     useEffect(() => {
         if (kind !== 'comment' || !items.length) return;
         let active = true;
         const ids = new Set(items.map((item) => item.markerId));
-        void loadAllMarkers()
-            .then((all) => {
-                if (active)
-                    setMarkers(
-                        Object.fromEntries(
-                            all
-                                .filter((marker) => ids.has(marker.id))
-                                .map((marker) => [marker.id, marker]),
-                        ),
-                    );
+        // Attribution and share links need only the subregion, not point rows.
+        void Promise.all([...ids].map(async (id) => [id, await getMarkerSubregion(id)] as const))
+            .then((entries) => {
+                if (active) setSubregions(Object.fromEntries(entries));
             })
             .catch(() => {
-                if (active) setMarkers({});
+                if (active) setSubregions({});
             });
         return () => {
             active = false;
         };
     }, [items, kind]);
     const pointText = items.map((item) => {
-        const marker = markers[item.markerId];
+        const subregion = subregions[item.markerId];
         return (game(`markerType.key.${item.poiType}`) || item.poiType)
-            + (marker ? getSubregionLabel(marker.subregId, game) : '');
+            + (subregion ? getSubregionLabel(subregion, game) : '');
     }).join('');
     const fontRef = useFontRegion([
         { faces: ['r', 'h'], text: items.map((item) => item.content || '').join('') },
@@ -159,15 +152,15 @@ export default function List({
             {items.map((item) => {
                 const pointName =
                     game(`markerType.key.${item.poiType}`) || item.poiType;
-                const marker = markers[item.markerId];
+                const subregion = subregions[item.markerId];
                 const area =
-                    marker &&
+                    subregion &&
                     MARKER_TYPE_DICT[item.poiType]?.category.main !== 'files'
-                        ? getSubregionLabel(marker.subregId, game)
+                        ? getSubregionLabel(subregion, game)
                         : '';
                 const point = [
                     pointName,
-                    area && area !== marker?.subregId ? area : '',
+                    area && area !== subregion ? area : '',
                 ]
                     .filter(Boolean)
                     .join(t('userHub.pointSeparator'));
@@ -175,7 +168,7 @@ export default function List({
                     {
                         id: item.markerId,
                         type: item.poiType,
-                        subregId: marker?.subregId ?? '',
+                        subregId: subregion ?? '',
                     },
                     { content: { kind, id: item.id } },
                 );
