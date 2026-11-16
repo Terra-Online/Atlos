@@ -1,12 +1,16 @@
 import type { compareQuality, qualityGate } from '#@/bench/quality.ts';
 import { isTimedOut, summarizeQuality } from '#@/bench/quality.ts';
 import type { runBenchmark } from '#@/bench/run.ts';
-import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 
 type Report = Awaited<ReturnType<typeof runBenchmark>>;
 export interface MarkdownReport extends Report {
   scene: string;
-  lifecycle?: { readyMs: number; endToEndMs: number; endToEndSuccessfulQueriesPerSecond: number };
+  lifecycle?: {
+    readyMs: number;
+    endToEndMs: number;
+    solverLifecycleMs: number;
+    endToEndSuccessfulQueriesPerSecond: number;
+  };
   revision: string;
   sourceSha256: string;
   node: string;
@@ -14,11 +18,11 @@ export interface MarkdownReport extends Report {
   execution: { mode: string; workers: number; lanes: number };
   comparison?: ReturnType<typeof compareQuality> & {
     batchSpeedup?: number;
-    endToEndSpeedup?: number;
+    solverLifecycleSpeedup?: number;
     referenceBatchWallMs?: number;
-    referenceEndToEndMs?: number;
+    referenceSolverLifecycleMs?: number;
     batchSpeedupUnavailableReason?: string;
-    endToEndSpeedupUnavailableReason?: string;
+    solverLifecycleSpeedupUnavailableReason?: string;
   };
   prototype?: {
     implementation: string;
@@ -52,7 +56,7 @@ export function benchmarkMarkdown(report: MarkdownReport): string {
   const successfulThroughput =
     batch.successfulQueriesPerSecond ??
     (quality.completed * (batch.rounds ?? 1)) / ((batch.totalWallMs ?? batch.wallMs) / 1000);
-  const speed = (metric: 'batchSpeedup' | 'endToEndSpeedup') => {
+  const speed = (metric: 'batchSpeedup' | 'solverLifecycleSpeedup') => {
     if (!comparison) return 'n/a (No reference supplied)';
     if (
       report.qualityGate?.passed === false ||
@@ -60,7 +64,7 @@ export function benchmarkMarkdown(report: MarkdownReport): string {
       comparison.gainedSolutions.length ||
       quality.completed !== batch.results.length
     )
-      return 'n/a (Quality/SLO gate or complete solution set changed)';
+      return 'n/a (Quality gate or complete solution set changed)';
     const value = comparison[metric];
     return value === undefined
       ? `n/a (${cell(comparison[`${metric}UnavailableReason`] ?? 'No comparable timing baseline recorded')})`
@@ -76,23 +80,23 @@ export function benchmarkMarkdown(report: MarkdownReport): string {
     '| Metric | Result |',
     '| --- | ---: |',
     `| Batch speedup vs reference | ${speed('batchSpeedup')} |`,
-    `| End-to-end speedup vs reference | ${speed('endToEndSpeedup')} |`,
+    `| Solver lifecycle speedup vs reference | ${speed('solverLifecycleSpeedup')} |`,
     ...(comparison?.referenceBatchWallMs === undefined
       ? []
       : [
           `| Batch time, reference → current | ${number(comparison.referenceBatchWallMs)} → ${number(batch.wallMs)} ms |`,
         ]),
-    ...(comparison?.referenceEndToEndMs === undefined || !report.lifecycle
+    ...(comparison?.referenceSolverLifecycleMs === undefined || !report.lifecycle
       ? []
       : [
-          `| End-to-end time, reference → current | ${number(comparison.referenceEndToEndMs / 1000)} → ${number(report.lifecycle.endToEndMs / 1000)} s |`,
+          `| Solver lifecycle time excluding beta verification, reference → current | ${number(comparison.referenceSolverLifecycleMs / 1000)} → ${number(report.lifecycle.solverLifecycleMs / 1000)} s |`,
         ]),
     ...(batch.meanSerialQueryMs === undefined
       ? []
       : [`| Mean serial attempt time | ${number(batch.meanSerialQueryMs)} ms/query |`]),
     `| Attempt throughput | ${number(batch.queriesPerSecond, 3)} queries/s |`,
     `| Successful throughput | ${number(successfulThroughput, 3)} complete routes/s |`,
-    `| SLO complete routes (≤ ${QUERY_SLO_MS.toLocaleString('en-US')} ms/query) | ${quality.completed}/${batch.results.length} |`,
+    `| Complete routes within cutoff (≤ ${report.queryCutoffMs.toLocaleString('en-US')} ms/query) | ${quality.completed}/${batch.results.length} |`,
     `| Timed-out queries | ${quality.timedOut}/${batch.results.length} |`,
   ];
   if (comparison)
@@ -118,8 +122,10 @@ export function benchmarkMarkdown(report: MarkdownReport): string {
     `- Recovery setup (included in batch wall time): ${number((batch.recoverySetupMs ?? 0) / 1000)} s.`,
     `- Repeatability: ${batch.repeatability}; matching outcomes across recorded rounds: ${batch.results.filter((r) => r.sameOutcomeAcrossRounds && r.sameTruncationAcrossRounds).length}/${batch.results.length}.`,
     `- Truncated discovery: ${batch.results.filter((r) => r.truncated).length}/${batch.results.length}.`,
+    `- Beta verification wall time: ${number(report.verificationWallMs / 1000)} s, excluded from solver lifecycle comparisons.`,
+    `- Beta verification: ${batch.results.filter((r) => r.verification === 'valid').length} valid, ${batch.results.filter((r) => r.verification === 'invalid').length} invalid, ${batch.results.filter((r) => r.verification === 'error').length} errors. Verification does not affect search outcomes or quality gates.`,
     `- Total modeled travel time: ${number(quality.totalCostSeconds, 6)} s.`,
-    `- The per-query SLO excludes queueing and initial input loading. Deferred preparation is included in service time. Timeouts count as failed routes. Successful throughput uses completed routes and the full measured batch wall time.`,
+    `- The per-query benchmark cutoff excludes queueing and initial input loading. Deferred preparation is included in service time. Timeouts count as failed routes. Successful throughput uses completed routes and the full measured batch wall time.`,
   );
   if (report.lifecycle)
     rows.push(
@@ -142,11 +148,11 @@ export function benchmarkMarkdown(report: MarkdownReport): string {
     '<details>',
     '<summary>Per-query route results</summary>',
     '',
-    '| Query | Status | Query time (ms) | Modeled cost (s) |',
-    '| --- | --- | ---: | ---: |',
+    '| Query | Status | Verification (beta) | Query time (ms) | Modeled cost (s) |',
+    '| --- | --- | --- | ---: | ---: |',
     ...batch.results.map(
       (row) =>
-        `| ${cell(row.id)} | ${isTimedOut(row) ? 'timeout' : `${cell(row.status)}${row.partial ? ' (partial)' : ''}`} | ${number(row.wallMs ?? null)} | ${number(isTimedOut(row) ? null : row.cost, 6)} |`,
+        `| ${cell(row.id)} | ${isTimedOut(row) ? 'timeout' : `${cell(row.status)}${row.partial ? ' (partial)' : ''}`} | ${row.verification} | ${number(row.wallMs ?? null)} | ${number(isTimedOut(row) ? null : row.cost, 6)} |`,
     ),
     '',
     '</details>',

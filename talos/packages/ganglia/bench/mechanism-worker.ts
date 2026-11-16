@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 
 import { loadScene, type GameAdapter } from '#@/bench/adapters/ganglia-v1/scene.ts';
+import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import {
   resolveMechanismQuery,
   sourceSupportWorld,
@@ -26,7 +27,6 @@ import {
 } from '#@/bench/mechanism-suite.ts';
 import { exportPhysicalRegion } from '#@/bench/prepare-region.ts';
 import { decodeSnapshot } from '#@/bench/scene-data.ts';
-import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { createTimings } from '#@/bench/timings.ts';
 import { workerMemory, type WorkerRequest, type WorkerReply } from '#@/bench/workers.ts';
 import { physicalTileSpan } from '#@/src/model/coverage.ts';
@@ -63,7 +63,7 @@ process.once('message', async (message: WorkerRequest) => {
     lastEventKey = '',
     lastEventAt = 0;
   const progress = (event: Extract<RouteEvent, { type: 'progress' }>, detail?: string) => {
-    if (controller && performance.now() - activeStarted >= QUERY_SLO_MS) {
+    if (controller && performance.now() - activeStarted >= QUERY_CUTOFF_MS) {
       controller.abort();
       controller.signal.throwIfAborted();
     }
@@ -420,7 +420,7 @@ process.once('message', async (message: WorkerRequest) => {
       const solving = performance.now();
       const candidate = captureFirstComplete((event) => {
         const now = performance.now();
-        if (!activeEvents || controller!.signal.aborted || now - started >= QUERY_SLO_MS) return;
+        if (!activeEvents || controller!.signal.aborted || now - started >= QUERY_CUTOFF_MS) return;
         const result = describe(event.result, now - solving);
         result.diagnostics.mechanism = {
           ...result.diagnostics.mechanism,

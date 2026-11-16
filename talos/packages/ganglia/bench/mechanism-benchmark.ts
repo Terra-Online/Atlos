@@ -6,12 +6,18 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, isDeepStrictEqual } from 'node:util';
 
+import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import type { SceneBinding } from '#@/bench/mechanism-scene.ts';
-import { checkSetup, classify, readMechanismSuite } from '#@/bench/mechanism-suite.ts';
+import {
+  checkSetup,
+  expectation,
+  matchesExpectation,
+  readMechanismSuite,
+} from '#@/bench/mechanism-suite.ts';
+import { classify, verifyResult, type Status } from '#@/bench/outcome.ts';
 import { requirePreparedCatalog } from '#@/bench/preparation.ts';
-import { QUERY_SLO_MS } from '#@/bench/slo.ts';
 import { sourceHash } from '#@/bench/source.ts';
-import { prepareWorkerSolver, WorkerQueryError, type WorkerResult } from '#@/bench/workers.ts';
+import { prepareWorkerSolver, type WorkerResult } from '#@/bench/workers.ts';
 import type { RouteQuery } from '#@/src/solver/contract.ts';
 import { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
 
@@ -35,7 +41,7 @@ const { values } = parseArgs({
 });
 if (values.help) {
   console.log(
-    'Usage: node bench/mechanism-benchmark.ts --output <new-report.json> [--data-root <candidate-input-root>] [--prepare-config <private-game-config>] [--adapter ganglia-v1-rust|ganglia-v1-ts] [--ids id,id] [--audit]. Input roots require input-index.json with explicitly rebound per-case directories. Each scenario trains the configured catalog, freezes it, warms the same worker, then measures one round. Independent physical verification runs after solving. Deadlines use GANGLIA_BENCHMARK_QUERY_SLO_MS and cooperative cancellation; workers are never replaced.',
+    'Usage: node bench/mechanism-benchmark.ts --output <new-report.json> [--data-root <candidate-input-root>] [--prepare-config <private-game-config>] [--adapter ganglia-v1-rust|ganglia-v1-ts] [--ids id,id] [--audit]. Input roots require input-index.json with explicitly rebound per-case directories. Each scenario trains the configured catalog, freezes it, warms the same worker, then measures one round. Independent physical verification runs after solving. Deadlines use GANGLIA_BENCHMARK_QUERY_CUTOFF_MS and cooperative cancellation; workers are never replaced.',
   );
 } else {
   if (!values.output) throw new Error('Provide --output for a new mechanism report');
@@ -91,28 +97,38 @@ if (values.help) {
   type Row = {
     id: string;
     group: string;
-    status: string;
+    status: Status;
+    verification: 'valid' | 'invalid' | 'error' | 'not-run';
+    matchesExpectation: boolean;
     serviceMs?: number;
     timedOut?: boolean;
     [key: string]: unknown;
   };
   const summary = () => {
     const counts: Record<string, number> = {};
-    const groups: Record<string, { attempted: number; complete: number; physicalInvalid: number }> =
-      {};
+    const groups: Record<
+      string,
+      { attempted: number; success: number; verificationInvalid: number }
+    > = {};
     for (const row of report.results) {
       counts[row.status] = (counts[row.status] ?? 0) + 1;
-      const group = (groups[row.group] ??= { attempted: 0, complete: 0, physicalInvalid: 0 });
+      const group = (groups[row.group] ??= { attempted: 0, success: 0, verificationInvalid: 0 });
       group.attempted++;
-      group.complete += Number(row.status === 'complete');
-      group.physicalInvalid += Number(row.status === 'physical-invalid');
+      group.success += Number(row.status === 'success');
+      group.verificationInvalid += Number(row.verification === 'invalid');
     }
     const attempts = report.results.filter((row) => typeof row.serviceMs === 'number');
     return {
       counts,
       groups,
       measuredAttempts: attempts.length,
-      nativeComplete: report.results.filter((row) => row.nativeComplete === true).length,
+      verification: Object.fromEntries(
+        ['valid', 'invalid', 'error', 'not-run'].map((status) => [
+          status,
+          report.results.filter((row) => row.verification === status).length,
+        ]),
+      ),
+      expectationsMet: report.results.filter((row) => row.matchesExpectation).length,
       meanSerialAttemptMs: attempts.length
         ? attempts.reduce((sum, row) => sum + row.serviceMs!, 0) / attempts.length
         : null,
@@ -122,7 +138,7 @@ if (values.help) {
     };
   };
   const report = {
-    schema: 1,
+    schema: 2,
     adapter: config.algorithm,
     revision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
     workingTreeDirty: !!execFileSync('git', ['status', '--porcelain'], {
@@ -138,13 +154,16 @@ if (values.help) {
       'Each scenario caps trainingQueries at its manifest case count; each preparation records its effective config.',
     rounds: 1,
     scenarioWorkers,
-    deadlineMs: QUERY_SLO_MS,
+    queryCutoffMs: QUERY_CUTOFF_MS,
+    verificationPolicy:
+      'beta; observations do not affect search status, cost comparisons or acceptance',
     cancellation: 'cooperative-checkpoints; no worker replacement',
     timing:
       'Serial solve attempts include cancellation tails. Preparation, warmup and independent verification are separate. Scenario groups retain the same trained worker. Training overlaps scored queries and retains physical actions, never query answers.',
     populationTotal: suite.cases.length,
     selectedIds: selected.map((c) => c.id),
     preparations: [] as object[],
+    inputAudit: [] as object[],
     results: [] as Row[],
     interrupted: false,
     executionError: undefined as string | undefined,
@@ -181,9 +200,9 @@ if (values.help) {
       report.results.push({
         id: item.id,
         group: item.group,
-        status: String(error).includes('Unsupported setup')
-          ? 'unsupported-setup'
-          : 'input-unavailable',
+        status: 'error',
+        verification: 'not-run',
+        matchesExpectation: false,
         reason: String(error),
       });
     }
@@ -215,10 +234,9 @@ if (values.help) {
     writeFileSync(file, JSON.stringify(binding));
     if (values.audit) {
       for (const item of items)
-        report.results.push({
+        report.inputAudit.push({
           id: item.id,
           group: item.group,
-          status: 'input-bound-unrun',
           binding: file,
           config: scenarioConfig,
         });
@@ -261,33 +279,18 @@ if (values.help) {
           resolutionErrors: Record<string, { status: string; reason: string }>;
         };
       };
-      const solve: typeof prepared.solver.solve = async (query, options) => {
-        const started = performance.now();
-        try {
-          return await prepared!.solver.solve(query, options);
-        } catch (error) {
-          if (!(error instanceof WorkerQueryError)) throw error;
-          const serviceMs = performance.now() - started;
-          const result: WorkerResult = {
-            route: { status: 'no-verified-route' },
-            connections: [],
-            reason: 'execution-error:' + error.message,
-            diagnostics: {
-              truncated: false,
-              solveWallMs: serviceMs,
-              queueMs: 0,
-              responseMs: serviceMs,
-              timedOut: false,
-            },
-          };
-          record({ phase: 'request-error', servicePhase, scenario, error: error.message });
-          return result;
-        }
-      };
+      const solve = prepared.solver.solve;
       items = items.filter((item) => {
         const error = metadata.mechanism.resolutionErrors[item.id];
         if (!error) return true;
-        report.results.push({ id: item.id, group: item.group, ...error });
+        report.results.push({
+          id: item.id,
+          group: item.group,
+          status: 'error',
+          reason: `${error.status}: ${error.reason}`,
+          verification: 'not-run',
+          matchesExpectation: false,
+        });
         return false;
       });
       if (!items.length) {
@@ -357,35 +360,30 @@ if (values.help) {
             if (event.type === 'progress') record({ phase: 'progress', id: item.id, event });
           },
         })) as WorkerResult;
-        const verificationStarted = performance.now();
-        const evaluation =
-          result.route.status === 'complete' && !result.partial
-            ? await prepared.verify(queries[i], result)
-            : undefined;
+        const verification = await verifyResult(queries[i], result, prepared.verify);
         const resultFile = join(artifacts, `${item.id}.json`);
         writeFileSync(
           resultFile,
-          JSON.stringify({ originalQuery: item.query, query: queries[i], result, evaluation }),
+          JSON.stringify({ originalQuery: item.query, query: queries[i], result, ...verification }),
         );
         const row = {
           id: item.id,
           scene: item.scene,
           group: item.group,
           scenario,
-          status: result.diagnostics.timedOut
-            ? 'timeout'
-            : evaluation && !evaluation.valid
-              ? 'physical-invalid'
-              : classify(item, result),
-          nativeComplete: result.route.status === 'complete' && !result.partial,
+          status: classify(result),
+          expectation: expectation(item),
+          matchesExpectation: matchesExpectation(item, result),
+          ...verification,
           reason: result.reason,
           serviceMs: result.diagnostics.solveWallMs,
-          verificationMs: performance.now() - verificationStarted,
           timedOut: result.diagnostics.timedOut,
           partial: !!result.partial,
-          cost: result.route.status === 'complete' ? result.route.cost : undefined,
+          cost:
+            classify(result) === 'success' && result.route.status === 'complete'
+              ? result.route.cost
+              : undefined,
           diagnostics: result.diagnostics,
-          evaluation,
           resultFile,
         };
         report.results.push(row);
@@ -411,7 +409,9 @@ if (values.help) {
           report.results.push({
             id: item.id,
             group: item.group,
-            status: 'execution-error',
+            status: 'error',
+            verification: 'not-run',
+            matchesExpectation: false,
             reason: String(error),
           });
       record({ phase: 'error', ordinal: scenario, error: String(error) });
@@ -435,8 +435,12 @@ if (values.help) {
   console.log(output);
   if (!report.sourceUnchanged) throw new Error('Benchmark source changed during measurement');
   if (
-    report.results.length !== selected.length ||
-    report.results.some((row) => row.status !== 'complete')
+    report.executionError ||
+    (values.audit
+      ? report.inputAudit.length + report.results.length !== selected.length ||
+        report.results.length > 0
+      : report.results.length !== selected.length ||
+        report.results.some((row) => !row.matchesExpectation))
   )
     process.exitCode = 1;
 }

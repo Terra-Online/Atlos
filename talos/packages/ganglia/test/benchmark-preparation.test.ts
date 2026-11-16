@@ -96,8 +96,14 @@ test('V1 records unsuccessful warmup and measures after the configured preparati
         },
         async solveBatch(queries) {
           batches.push(queries.map((query) => query.goal[0]));
-          return queries.map((query) =>
-            result(validWarmup || batches.length > 1 ? query : request(999).query),
+          return queries.map((query): RouteResult =>
+            validWarmup || batches.length > 1
+              ? result(query)
+              : {
+                  route: { status: 'no-verified-route' },
+                  connections: [],
+                  diagnostics: { truncated: false },
+                },
           );
         },
         async close() {

@@ -21,13 +21,29 @@ Use Node 26. For input preparation, follow the
 Run from this package:
 
 ```sh
-GANGLIA_BENCHMARK_HEAP_MB=6144 GANGLIA_BENCHMARK_QUERY_SLO_MS=60000 \
+GANGLIA_BENCHMARK_HEAP_MB=6144 GANGLIA_BENCHMARK_QUERY_CUTOFF_MS=60000 \
   pnpm --silent benchmark:mechanisms --adapter ganglia-v1-ts \
   --data-root /absolute/path/to/mechanism-inputs \
   --extractor /absolute/path/to/talos/.cache/noclip \
   --prepare-config /absolute/path/to/private-config.json \
   --scenario-workers 1 --output /absolute/path/to/new-report.json
 ```
+
+`GANGLIA_BENCHMARK_QUERY_CUTOFF_MS` is a cooperative benchmark runtime cutoff,
+with a default of 60,000 ms. Local development may adjust it freely, for example
+to give a search more time to converge. Baseline and candidate comparisons must
+use the same cutoff and record it in both reports. Performance targets are
+separate analyses of the observed request times.
+
+Search status is `success`, `no-route`, `timeout` or `error`. Normal exhaustion
+without a complete route is `no-route`, not proof of impossibility. Expected
+rejections and mechanism exercise are assessed separately. Keep solver action
+construction and physical feasibility checks active.
+
+Independent whole-route verification is beta evidence. Report `valid`, `invalid`,
+`error` and `not-run` separately from search status. Verification failures and
+exceptions do not change completion, route-cost or timing comparisons, or merge
+acceptance; retain their diagnostics and continue the benchmark.
 
 ## Merge gates
 

@@ -3,6 +3,7 @@ import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 
 import type { StartResolution } from '#@/bench/mechanism-query.ts';
+import { classify } from '#@/bench/outcome.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
 import type { LocomotionOptions } from '#@/src/index.ts';
 import { joinedGeometry, roofContains, shifted } from '#@/src/model/placement.ts';
@@ -225,21 +226,12 @@ export function expectation(c: MechanismCase): 'complete' | 'reject' | 'constrai
     return 'reject';
   return c.group === 'boundary-and-rejection' ? 'constraint' : 'complete';
 }
-export function classify(c: MechanismCase, result: RouteResult) {
-  if (result.route.status === 'complete' && !result.partial)
-    return expectation(c) === 'reject' ? 'unexpected-complete' : 'complete';
-  if (result.reason === 'timeout') return 'timeout';
-  if (result.partial) return 'incomplete';
-  if (result.reason?.startsWith('input-unavailable:')) return 'input-unavailable';
-  if (result.reason?.startsWith('unsupported-setup:')) return 'unsupported-setup';
-  if (result.reason?.startsWith('input-invalid:')) return 'input-invalid';
-  if (result.reason?.startsWith('input-unresolved:')) return 'input-unresolved';
-  if (result.reason?.startsWith('execution-error:')) return 'error';
-  return expectation(c) === 'reject'
-    ? 'correct-rejection'
-    : expectation(c) === 'constraint'
-      ? 'constraint-incomplete'
-      : 'incomplete';
+/** Expected rejection and mechanism constraints do not change the search outcome. */
+export function matchesExpectation(c: MechanismCase, result: RouteResult) {
+  const status = classify(result);
+  if (status === 'timeout' || status === 'error') return false;
+  if (expectation(c) === 'reject') return status === 'no-route' && !result.partial;
+  return expectation(c) === 'constraint' || status === 'success';
 }
 function singleConveyorPose(
   c: MechanismCase,

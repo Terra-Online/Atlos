@@ -5,16 +5,17 @@ import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import {
   checkSetup,
-  classify,
+  matchesExpectation,
   expectation,
   readMechanismSuite,
   resourcePath,
   type MechanismBinding,
   type MechanismResult,
 } from '#@/bench/mechanism-suite.ts';
-import { QUERY_SLO_MS } from '#@/bench/slo.ts';
+import { classify } from '#@/bench/outcome.ts';
 import { sourceHash } from '#@/bench/source.ts';
 import { prepareWorkerSolver, type WorkerResult } from '#@/bench/workers.ts';
 import { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
@@ -45,7 +46,7 @@ if (values.help) {
     'Usage: node bench/mechanism-run.ts --mode physical-diagnostic --exports <source-root> --retained <retained-profile-root> --output <new-report.json> [--suite <manifest>] [--ids id,id] [--rounds 2] [--kernel <frozen-package-root> --kernel-revision <revision>] [--extractor <matching-extractor-root>] [--device-exports <explicitly-rebound-root>] [--scene-data-root <root-with-per-case-directories>] [--prepare-config <private-export-config>] [--config <solver-policy.json>] [--audit]. Each scene case uses <scene-data-root>/<caseId>; input preparation and solver execution follow the cooperative query deadline; a running stage completes before cancellation is observed. Worker bootstrap and queueing are outside the deadline, and no worker is killed or replaced. This diagnostic does not fulfill service training/warmup or publish service speedups.',
   );
   console.log(
-    'GANGLIA_BENCHMARK_QUERY_SLO_MS sets the cooperative deadline in milliseconds (default 300000).',
+    'GANGLIA_BENCHMARK_QUERY_CUTOFF_MS sets the cooperative cutoff in milliseconds (default 60000).',
   );
 } else {
   if (values.mode !== 'physical-diagnostic')
@@ -106,12 +107,13 @@ if (values.help) {
     selectedIds: selected.map((c) => c.id),
     unselectedIds: suite.cases.filter((c) => !selected.includes(c)).map((c) => c.id),
     rounds,
-    deadlineMs: QUERY_SLO_MS,
+    queryCutoffMs: QUERY_CUTOFF_MS,
     cancellation: 'cooperative-checkpoints',
     deadlineScope: 'dispatch-through-solver',
     invalid: false,
     failure: undefined as string | undefined,
     results,
+    inputAudit: [] as object[],
     firstCompleteCandidates,
     firstCompleteCaptureErrors,
     interrupted: false,
@@ -181,10 +183,9 @@ if (values.help) {
           id: item.id,
           scene: item.scene,
           expectation: expectation(item),
-          status: errors.length ? 'input-unavailable' : 'input-audited-unrun',
           errors,
         };
-        results.push(row);
+        report.inputAudit.push(row);
         record(row);
         save();
         continue;
@@ -201,7 +202,7 @@ if (values.help) {
           extractor: binding.extractor,
           scene: item.scene,
           entry: new URL('./mechanism-worker.ts', import.meta.url),
-          timeoutMs: QUERY_SLO_MS,
+          timeoutMs: QUERY_CUTOFF_MS,
           onEvent(_query, event, memory, detail) {
             if (event.type === 'candidate') {
               if (firstComplete || event.result.partial || event.result.route.status !== 'complete')
@@ -277,7 +278,8 @@ if (values.help) {
             round,
             cache: round ? 'same-preparation' : 'application-cold',
             expectation: expectation(item),
-            status: classify(item, result),
+            status: classify(result),
+            matchesExpectation: matchesExpectation(item, result),
             elapsedSinceCaseStartMs: performance.now() - started,
             workerStartupMs: prepared.timings.workerStartupMs,
             resultFile,

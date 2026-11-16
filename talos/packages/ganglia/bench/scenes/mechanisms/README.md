@@ -8,7 +8,8 @@ game assets, profiles and private config local.
 
 Use `pnpm benchmark:mechanisms --adapter ganglia-v1-ts` for service measurements.
 This service runner reads `input-index.json`, trains/freezes/warms scenario workers,
-then scores routes and independently replays complete results. The CLI defaults
+then scores routes and independently replays complete results. The beta replay
+result is reported separately and does not gate search completion or acceptance. The CLI defaults
 to Rust, so select TS explicitly. `--audit` checks the suite/index binding without
 solving.
 
@@ -116,7 +117,7 @@ query array and cannot preserve this manifest's acceptance semantics.
    external obstacles and entry checks. Phase synchronization and waiting are
    outside this model. A static terminal pose does not establish domain coverage.
 
-Completion requires an end-to-end timed route to the original goal. Keep action
+Search success requires an end-to-end timed route to the original goal. Keep action
 construction checks active and report partials, failures, timeouts, physical validity
 and mechanism exercise separately. Separate input preparation and dispatch time
 from solver time. A changed-input result retains its new provenance.

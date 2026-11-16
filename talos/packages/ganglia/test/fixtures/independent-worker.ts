@@ -33,8 +33,10 @@ const world = createPhysicalWorld(input, 'complete');
 const verify = createPhysicalVerifier(() => [world]);
 import type { WorkerRequest, WorkerReply } from '#@/bench/workers.ts';
 const send = (message: WorkerReply) => process.send!(message);
+let verifierError = false;
 process.on('message', (message: WorkerRequest) => {
-  if (message.type === 'setup')
+  if (message.type === 'setup') {
+    verifierError = message.setup.dataRoot === 'verifier-error';
     send({
       type: 'ready',
       config: message.setup.config,
@@ -53,9 +55,11 @@ process.on('message', (message: WorkerRequest) => {
       preparationMs: 0,
       memory: { rssBytes: 0, heapUsedBytes: 0 },
     });
-  else if (message.type === 'verify')
-    send({ type: 'verified', id: message.id, evaluation: verify(message.query, message.route) });
-  else if (message.type === 'solve')
+  } else if (message.type === 'verify') {
+    if (verifierError) send({ type: 'error', id: message.id, error: 'beta replay failed' });
+    else
+      send({ type: 'verified', id: message.id, evaluation: verify(message.query, message.route) });
+  } else if (message.type === 'solve')
     send({
       type: 'result',
       id: message.id,

@@ -7,7 +7,8 @@ import {
   QueryInputError,
   type QuerySource,
 } from '#@/bench/mechanism-query.ts';
-import { classify, type MechanismCase } from '#@/bench/mechanism-suite.ts';
+import { type MechanismCase } from '#@/bench/mechanism-suite.ts';
+import { classify } from '#@/bench/outcome.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
 import { createPhysicalWorld } from '#@/src/model/world.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
@@ -184,13 +185,13 @@ test('missing coverage differs from finite witness exhaustion and cannot authori
     assert.equal(error.status, 'input-unresolved');
     assert.equal(error.receipt.starts[0].witnessCount, 0);
     assert.equal(
-      classify(item, {
+      classify({
         route: { status: 'no-verified-route' },
         connections: [],
         diagnostics: { truncated: false },
         reason: error.status + ':' + error.message,
       }),
-      'input-unresolved',
+      'error',
     );
     return true;
   });

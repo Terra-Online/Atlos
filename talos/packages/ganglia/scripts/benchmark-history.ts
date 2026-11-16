@@ -66,7 +66,6 @@ if (values.help) {
     dataRoot,
     extractor,
     scene: 'map02',
-    timeoutMs: 300000,
     onResult(query, result) {
       appendFileSync(journal, JSON.stringify({ phase, query, result }) + '\n');
       console.error(

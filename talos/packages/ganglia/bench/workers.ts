@@ -10,7 +10,7 @@ import type {
 } from '@opendfieldmap/ganglia';
 
 import { sceneIdentity, type SceneMetadata, type CatalogStats } from '#@/bench/adapter.ts';
-import { QUERY_SLO_MS } from '#@/bench/slo.ts';
+import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { createTimings, mergeTimings, type Timings } from '#@/bench/timings.ts';
 import type { Evaluation } from '#@/src/evaluation/route.ts';
 import { verifyRoute } from '#@/src/evaluation/route.ts';
@@ -25,8 +25,6 @@ export const workerMemory = () => {
   return { rssBytes: memory.rss, heapUsedBytes: memory.heapUsed };
 };
 type Memory = ReturnType<typeof workerMemory>;
-/** A failed request returned by a live worker; process failures use ordinary Error. */
-export class WorkerQueryError extends Error {}
 export type WorkerResult = RouteResult & {
   diagnostics: RouteResult['diagnostics'] & {
     solveWallMs: number;
@@ -124,8 +122,8 @@ export async function prepareWorkerSolver(options: {
   onResult?: (query: RouteQuery, result: WorkerResult) => void;
   onEvent?: (query: RouteQuery, event: RouteEvent, memory?: Memory, detail?: string) => void;
 }) {
-  const timeoutMs = options.timeoutMs ?? QUERY_SLO_MS;
-  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0 || timeoutMs > QUERY_SLO_MS)
+  const timeoutMs = options.timeoutMs ?? QUERY_CUTOFF_MS;
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0 || timeoutMs > QUERY_CUTOFF_MS)
     throw new Error('Invalid query timeout');
   if (!Number.isSafeInteger(options.count) || options.count < 1)
     throw new Error('Invalid worker count');
@@ -338,13 +336,19 @@ export async function prepareWorkerSolver(options: {
             controls.delete(message.id);
             return;
           }
+          if (message.type === 'error' && verifications.has(message.id)) {
+            const pending = verifications.get(message.id)!;
+            verifications.delete(message.id);
+            pending.reject(new Error(message.error));
+            return;
+          }
           if (message.type === 'verified') {
             const pending = verifications.get(message.id);
             if (!pending) throw new Error('Unexpected verifier response');
-            if (message.evaluation.scope !== 'physical')
-              throw new Error('Adapter did not run physical verification');
             verifications.delete(message.id);
-            pending.resolve(message.evaluation);
+            if (message.evaluation.scope !== 'physical')
+              pending.reject(new Error('Adapter did not run physical verification'));
+            else pending.resolve(message.evaluation);
             return;
           }
           if (message.type === 'region') {
@@ -391,7 +395,8 @@ export async function prepareWorkerSolver(options: {
                   reason === 'timeout',
                 ),
               );
-          } else if (message.type === 'error') task.reject(new WorkerQueryError(message.error));
+          } else if (message.type === 'error')
+            publish(task, measured(interrupted('execution-error:' + message.error), task));
           else {
             slot.catalog = message.catalog;
             sample(slot, message.memory);
