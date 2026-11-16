@@ -60,6 +60,8 @@ for baseline and candidate. Reuse reports with matching conditions.
 
 Report source revisions, input bindings, commands, gained/lost cases, cost
 regressions, timing comparisons, physical validity and mechanism exercise.
-Keep raw reports and provenance in `.local/research/`.
+If benchmark reports, provenance notes or other research artifacts are saved,
+place them in `.local/research/` and keep them untracked by Git. A separate
+provenance document is optional.
 
 `benchmark:full` and `mechanism-run.ts --mode physical-diagnostic` are optional.
