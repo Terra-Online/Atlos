@@ -68,24 +68,67 @@ new file mode 100644
 +});
 diff --git a/packages/extractor/src/write-route.ts b/packages/extractor/src/write-route.ts
 new file mode 100644
+index 0000000..555d232
 --- /dev/null
 +++ b/packages/extractor/src/write-route.ts
-@@ -0,0 +1,15 @@
+@@ -0,0 +1,26 @@
++import { randomUUID } from 'node:crypto';
 +import { writeFile, rename, rm } from 'node:fs/promises';
 +import { resolve } from 'node:path';
++
 +export function routeWriter(output: string, inputs: readonly string[]) {
 +	if (inputs.some((path) => resolve(path) === resolve(output)))
 +		throw new Error('route output must not overwrite an input');
++
++	const temporary = `${output}.${process.pid}.${randomUUID()}.tmp`;
++	let pending = Promise.resolve();
 +	return async (value: unknown) => {
-+		const temporary = `${output}.${process.pid}.tmp`;
-+		try {
-+			await writeFile(temporary, JSON.stringify(value));
-+			await rename(temporary, output);
-+		} finally {
-+			await rm(temporary, { force: true });
-+		}
++		// Snapshot the result when emitted. Serialize writes so an earlier
++		// candidate cannot replace the terminal result after it is published.
++		const data = JSON.stringify(value);
++		const written = pending.then(async () => {
++			try {
++				await writeFile(temporary, data);
++				await rename(temporary, output);
++			} finally {
++				await rm(temporary, { force: true });
++			}
++		});
++		pending = written.catch(() => undefined);
++		await written;
 +	};
 +}
+diff --git a/packages/extractor/src/write-route.test.ts b/packages/extractor/src/write-route.test.ts
+new file mode 100644
+index 0000000..d674846
+--- /dev/null
++++ b/packages/extractor/src/write-route.test.ts
+@@ -0,0 +1,25 @@
++import assert from 'node:assert/strict';
++import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
++import { tmpdir } from 'node:os';
++import { join } from 'node:path';
++import { test } from 'node:test';
++import { routeWriter } from './write-route.ts';
++
++test('concurrent candidate writes preserve publication order', async () => {
++	const directory = await mkdtemp(join(tmpdir(), 'noclip-route-writer-'));
++	try {
++		const output = join(directory, 'route.json');
++		const write = routeWriter(output, []);
++		const candidate = {
++			status: 'candidate',
++			optimizing: true,
++			route: { points: Array.from({ length: 2000 }, (_, i) => [i, i + 1, i + 2]) },
++		};
++		const final = { status: 'candidate', optimizing: false, route: { points: [[0, 0, 0]] } };
++		await Promise.all([...Array.from({ length: 8 }, () => write(candidate)), write(final)]);
++		assert.deepEqual(JSON.parse(await readFile(output, 'utf8')), final);
++		assert.deepEqual(await readdir(directory), ['route.json']);
++	} finally {
++		await rm(directory, { recursive: true, force: true });
++	}
++});
 diff --git a/packages/extractor/src/route-cache.ts b/packages/extractor/src/route-cache.ts
 new file mode 100644
 --- /dev/null
