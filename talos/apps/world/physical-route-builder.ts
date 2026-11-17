@@ -1,5 +1,8 @@
 import { preparePhysicalRoute } from '../../.cache/noclip/packages/extractor/src/game/physical-input.ts';
-import type { PhysicalSnapshot } from '@opendfieldmap/ganglia/solver';
+import type {
+    PhysicalSnapshot,
+    SweptSupport,
+} from '@opendfieldmap/ganglia/solver';
 import type { PhysicalTask } from './physical-task.ts';
 import {
     physicalCoverage,
@@ -22,10 +25,16 @@ import {
     writeFile,
 } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
-import type { InteractionGoal, Vec3, Wall } from '@opendfieldmap/ganglia';
+import type {
+    GroundOptions,
+    InteractionGoal,
+    Vec3,
+    Wall,
+} from '@opendfieldmap/ganglia';
 import type { TravelArrival } from './travel-arrivals.ts';
 import type { Corridor } from '@opendfieldmap/ganglia/solver';
 import { createRouteWorker } from './route-worker.ts';
+import { authoredWaterContact } from './water-contact.ts';
 
 type Source = { buildGuid: string; contentHash: string };
 type Options = {
@@ -652,6 +661,42 @@ export function physicalRouteBuilder(options: Options) {
         }
         return pending;
     };
+    const waterSupports = new Map<
+        string,
+        Promise<{ source: Source; byPoint: Map<string, SweptSupport> } | null>
+    >();
+    const waterSupportData = (scene: string) => {
+        let pending = waterSupports.get(scene);
+        if (!pending) {
+            pending = (async () => {
+                const file = await deviceFile(scene);
+                if (!file) return null;
+                const catalog = parseRecord(await readFile(file.path, 'utf8'));
+                if (catalog.scene !== scene || !isRecord(catalog.source))
+                    throw new Error('Invalid moving-support catalog');
+                const source = catalog.source as Source;
+                const byPoint = new Map<string, SweptSupport>();
+                for (const support of (catalog.movingSupports ??
+                    []) as SweptSupport[]) {
+                    if (
+                        support.family !== 'water-floater' ||
+                        support.control?.kind !== 'water-volume'
+                    )
+                        continue;
+                    const point = `${support.level}/${support.id}`;
+                    if (byPoint.has(point))
+                        throw new Error('Ambiguous moving-support contact');
+                    byPoint.set(point, support);
+                }
+                return { source, byPoint };
+            })().catch((error: unknown) => {
+                waterSupports.delete(scene);
+                throw error;
+            });
+            waterSupports.set(scene, pending);
+        }
+        return pending;
+    };
     const solve = async (
         ground: Job,
         request: RouteRequest,
@@ -746,6 +791,27 @@ export function physicalRouteBuilder(options: Options) {
     return {
         query,
         solve,
+        async supportContact(
+            scene: string,
+            source: Source,
+            level: string,
+            point: string,
+            marker: Vec3,
+            options: Pick<GroundOptions, 'maxVertical' | 'profile'>,
+        ) {
+            const catalog = await waterSupportData(scene);
+            const support = catalog?.byPoint.get(`${level}/${point}`);
+            if (!catalog || !support) return undefined;
+            if (
+                catalog.source.buildGuid !== source.buildGuid ||
+                catalog.source.contentHash !== source.contentHash
+            ) {
+                throw new Error(
+                    'Moving-support data does not match the current scene build',
+                );
+            }
+            return authoredWaterContact(support, marker, options);
+        },
         async physical(
             ground: Job,
             request: RouteRequest,
@@ -788,6 +854,7 @@ export function physicalRouteBuilder(options: Options) {
             while (foregroundRunning) await foregroundTask;
             await optimization;
             jobs.clear();
+            waterSupports.clear();
             retainedGround = undefined;
         },
     };
