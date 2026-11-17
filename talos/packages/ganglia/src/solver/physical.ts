@@ -87,16 +87,39 @@ export interface SweptSupport {
   level: string;
   model: string;
   /** local authored control, retained alongside the fully-enabled planning assumption */
-  control?: {
-    kind: 'forklift';
-    logicType: 24;
-    start: Vec3;
-    end: Vec3;
-    speed: number;
-    initialState: number;
-    initiallyOn: boolean;
-    assumption: 'fully-enabled';
-  };
+  control?:
+    | {
+        kind: 'forklift';
+        logicType: 24;
+        start: Vec3;
+        end: Vec3;
+        speed: number;
+        initialState: number;
+        initiallyOn: boolean;
+        assumption: 'fully-enabled';
+      }
+    | {
+        kind: 'water-progress';
+        /** Interactive progress/sync identity, not a WaterVolume identity. */
+        id: string;
+        increaseRatio: number;
+        decreaseRatio: number;
+        assumption: 'phase-free-swept-support';
+      }
+    | {
+        kind: 'water-volume';
+        id: string;
+        initialFill: number;
+        /** Authored floating-root position before any lagged response. */
+        initialPosition: Vec3;
+        /** World Y range of the water surface, before the floating root's offset. */
+        heightRange: [number, number];
+        fills: number[];
+        /** Continuity of the water surface, not the floater's lagged response. */
+        continuous: boolean;
+        surfaceOffset: number;
+        assumption: 'phase-free-swept-support';
+      };
   /** world-axis-aligned endpoint boxes for illustration; separate from navigation support */
   endpoints?: {
     initial: PoseBounds;

@@ -1,0 +1,763 @@
+diff --git a/packages/extractor/src/game/forklift-supports.test.ts b/packages/extractor/src/game/forklift-supports.test.ts
+index 0effb4a8..d1e5846f 100644
+--- a/packages/extractor/src/game/forklift-supports.test.ts
++++ b/packages/extractor/src/game/forklift-supports.test.ts
+@@ -290,6 +290,23 @@ test('ordinary nonconvex colliders use their indexed static source mesh when the
+ });
+ 
+ 
++test('a root-moving platform uses the whole model only when its controller authorizes it', async () => {
++ const source = prefab('unrelatedField');
++ source.objects.set(32, {classId:65,data:{m_Center:{x:0,y:0,z:0},m_Size:{x:2,y:1,z:2}}});
++ const ordinary = await readPrefabSupport(source.resolver, source.root);
++ assert.equal(ordinary.movingPart, false);
++ const moving = await readPrefabSupport(source.resolver, source.root, {rootMotion:true});
++ assert.equal(moving.movingPart, true);
++ assert.deepEqual(moving.movingRoot, identity);
++ assert.deepEqual(moving.bodies, ordinary.bodies);
++ const explicit = prefab('lifted');
++ const preferred = await readPrefabSupport(explicit.resolver, explicit.root, {rootMotion:true});
++ assert.notDeepEqual(preferred.movingRoot, identity);
++ assert.deepEqual(preferred.bodies, (await readPrefabSupport(explicit.resolver, explicit.root)).bodies);
++ const invalid = prefab('unrelatedField');
++ await assert.rejects(readPrefabSupport(invalid.resolver, invalid.root, {rootMotion:true}));
++});
++
+ test('whole-prefab export retains chassis and moving solids with indexed faces', async () => {
+  const source = prefab('lifted');
+  source.objects.set(32, { classId: 65, data: { m_Center: {x:0,y:0,z:0}, m_Size:{x:6,y:1,z:4} } });
+diff --git a/packages/extractor/src/game/forklift-supports.ts b/packages/extractor/src/game/forklift-supports.ts
+index 40061f90..b5945efa 100644
+--- a/packages/extractor/src/game/forklift-supports.ts
++++ b/packages/extractor/src/game/forklift-supports.ts
+@@ -9,7 +9,7 @@ import { atomFloat, entityProperties, entityProperty, entityState } from './inte
+ import type { readPrefabSupport } from './prefab-support.ts';
+ import { supportEndpoints, sweepSupports, type SweptSupport } from './swept-supports.ts';
+ 
+-type Control = NonNullable<SweptSupport['control']>;
++type Control = Extract<NonNullable<SweptSupport['control']>, {kind:'forklift'}>;
+ const LOGIC = {
+ 	suffix: '_InteractiveLogicControllerComponentDataForMemoryPack',
+ 	diffKey: 'Comp_InteractiveLogicController',
+diff --git a/packages/extractor/src/game/ground-tile-cache.ts b/packages/extractor/src/game/ground-tile-cache.ts
+index 7a9e5900..f640591f 100644
+--- a/packages/extractor/src/game/ground-tile-cache.ts
++++ b/packages/extractor/src/game/ground-tile-cache.ts
+@@ -34,6 +34,11 @@ export const groundGeneratorIdentity = async (
+             './circular-rotations.ts',
+ 			'./static-supports.ts',
+ 			'./moving-supports.ts',
++            './water-supports.ts',
++            './water/water-volumes.ts',
++            './water/water-volume-scripts.ts',
++            './interactives/lifters.ts',
++            './interactives/component-params.ts',
+             './following-supports.ts',
+ 			'./floor-supports.ts',
+ 			'./prefabs/pose-paths.ts',
+diff --git a/packages/extractor/src/game/interactives/lifters.test.ts b/packages/extractor/src/game/interactives/lifters.test.ts
+index 0db3614c..12d9a185 100644
+--- a/packages/extractor/src/game/interactives/lifters.test.ts
++++ b/packages/extractor/src/game/interactives/lifters.test.ts
+@@ -85,3 +85,17 @@ test("a lift's door side closes the right door with bit 0 and the left with bit
+ test("a lift whose floor isn't listed can't start", () => {
+ 	assert.ok('reason' in lifterStart(template, entityProperties(template)!, row(2, null)));
+ });
++
++test('box-game lifts use their own component override scope at the same authored world floors', () => {
++	const box = { ...template, componentList: [{
++		...template.componentList[0], $type: 'Beyond_Gameplay_Core_LifterForBoxGameCoreComponentDataForMemoryPack',
++	}] };
++	const placed = row(1, [1n, 2n]);
++	placed.componentProperties.set(155, placed.componentProperties.get(154)!);
++	placed.componentProperties.delete(154);
++	const start = lifterStart(box, entityProperties(box)!, placed);
++	assert.ok(!('reason' in start));
++	assert.equal(start.floor, 1);
++	assert.equal(start.keys.get('left_opened'), 0);
++	assert.equal(start.keys.get('right_opened'), 1);
++});
+diff --git a/packages/extractor/src/game/interactives/lifters.ts b/packages/extractor/src/game/interactives/lifters.ts
+index c6c83f3c..93e7dd5c 100644
+--- a/packages/extractor/src/game/interactives/lifters.ts
++++ b/packages/extractor/src/game/interactives/lifters.ts
+@@ -15,7 +15,7 @@ import type { LocalTransform } from '../effects/particle-mesh.ts';
+ import { walkPrefab } from '../prefabs/prefab-walk.ts';
+ import type { PoseClip } from '../prefabs/prefab.ts';
+ 
+-import { type ComponentKeys, componentParams } from './component-params.ts';
++import { type ComponentKeys, componentOf, componentParams } from './component-params.ts';
+ import { atomFloat, type EntityProperties, entityProperty, entityState } from './template-data.ts';
+ 
+ // lifts: docs/game-data/interactives.md#lifts
+@@ -28,7 +28,16 @@ const LIFTER_CORE: ComponentKeys = {
+ };
+ 
+ /** the template component that makes an interactive a lift */
+-export const LIFTER_CORE_COMPONENTS = [LIFTER_CORE.suffix];
++const BOX_LIFTER_CORE: ComponentKeys = {
++	suffix: '_LifterForBoxGameCoreComponentDataForMemoryPack',
++	diffKey: 'Comp_LifterForBoxGameCore',
++	type: 155,
++};
++export const LIFTER_CORE_COMPONENTS = [LIFTER_CORE.suffix, BOX_LIFTER_CORE.suffix];
++
++/** Resolve the controller's own parameter scope for both authored lift families. */
++export const lifterKeys = (template: MemoryPackValue): ComponentKeys | null =>
++	[LIFTER_CORE, BOX_LIFTER_CORE].find(keys => componentOf(template, keys.suffix)) ?? null;
+ 
+ /** what a lift starts at */
+ export interface LifterStart {
+@@ -57,7 +66,8 @@ export const lifterStart = (
+ 	if (floor < 0 || floats.length < (floor + 1) * 3) {
+ 		return { reason: `lift floor ${floor} isn't in its position_list (${floats.length / 3} floors)` };
+ 	}
+-	const side = componentParams(template, row, LIFTER_CORE)?.get('doorside_list')?.values[floor]?.bits ?? 0n;
++	const component = lifterKeys(template);
++	const side = (component && componentParams(template, row, component)?.get('doorside_list')?.values[floor]?.bits) ?? 0n;
+ 	// a set bit closes that side: bit 0 the right door, bit 1 the left
+ 	const keys = new Map([
+ 		['left_opened', (side & 2n) === 0n ? 1 : 0],
+diff --git a/packages/extractor/src/game/moving-supports.ts b/packages/extractor/src/game/moving-supports.ts
+index 73c95a6c..7334ccc8 100644
+--- a/packages/extractor/src/game/moving-supports.ts
++++ b/packages/extractor/src/game/moving-supports.ts
+@@ -34,16 +34,20 @@ import type { Vec3 } from '@opendfieldmap/ganglia';
+ 
+ import type { Context } from '../context.ts';
+ import { VfsGroup } from '../hg/vfs.ts';
++import { loadLevelScripts } from './script-drivers.ts';
+ 
+ import { followingSupport, isFollowingBox, type FollowingSupport } from './following-supports.ts';
+ import { forkliftOf, forkliftSupports } from './forklift-supports.ts';
+ import { componentOf, componentParams } from './interactives/component-params.ts';
+ import { curveMoveOf } from './interactives/curve-move.ts';
++import { lifterKeys } from './interactives/lifters.ts';
+ import { readPrefabSupport } from './prefab-support.ts';
+ import { floorSupportPoses } from './floor-supports.ts';
+ import { seesawSupports } from './seesaw-supports.ts';
+ import { supportEndpoints, sweepSupports, type SweptSupport } from './swept-supports.ts';
+ import { readWaterVolumes } from './water/water-volumes.ts';
++import { waterCurveOf, waterFloaterOf, waterFloaterPositions, waterProgressGroups, waterLevelDomain } from './water-supports.ts';
++import { scriptWaterLevels } from './water/water-volume-scripts.ts';
+ 
+ const isRecord = (value: MemoryPackValue | undefined): value is { [key: string]: MemoryPackValue } =>
+ 	value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value);
+@@ -197,8 +201,8 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+ 	const templates = new Map<string, MemoryPackValue>();
+ 	const prefabs = new Map<string, Promise<Awaited<ReturnType<typeof readPrefabSupport>>>>();
+ 	const resolver = await ctx.resolver();
+-	const bodyOf = async (path: string) => {
+-		return prefabs.getOrInsertComputed(path, async () => {
++	const bodyOf = async (path: string, rootMotion = false) => {
++		return prefabs.getOrInsertComputed(`${path}:${rootMotion}`, async () => {
+ 			const hashes = await ctx.world.hashesOf(path);
+ 			if (hashes.length !== 1) {
+ 				throw new Error('ambiguous moving support prefab');
+@@ -206,6 +210,7 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+ 			return readPrefabSupport(
+ 				resolver,
+ 				await resolver.findUnique({ hash: hashes[0], path }, UnityClass.GameObject),
++				{ rootMotion },
+ 			);
+ 		});
+ 	};
+@@ -213,6 +218,8 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+ 	const water = await readWaterVolumes(ctx, scene, null, await ctx.world.partition(scene));
+ 	const waterById = new Map(water.volumes.map((v) => [v.id, v]));
+ 	const floaters = new Map(water.floaters.map((f) => [f.id, f.volume]));
++	const waterScripts = water.volumes.length ? await loadLevelScripts(ctx,scene,new Set(waterById.keys())) : null;
++	const waterLevels = waterScripts ? scriptWaterLevels(waterScripts) : {levels:[],computed:0};
+ 	const levels = [...(await ctx.world.levelConfigs()).values()].filter((level) => level.mapId === scene);
+ 	const levelIds = new Map(levels.map((level) => [level.idNum, level.id]));
+ 	const seen = new Set<string>();
+@@ -295,8 +302,10 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+ 					continue;
+ 				}
+ 				const move = curveMoveOf(template, row);
++				const waterCurve = waterCurveOf(template,row);
++				const floater = waterFloaterOf(template,row);
+ 				const params = parameters(template, row);
+-				const lifter = componentOf(template, '_LifterCoreComponentDataForMemoryPack');
++				const lifter = lifterKeys(template);
+ 				const moving = componentOf(template, '_InteractiveMovingPlatformComponentDataForMemoryPack');
+ 				const logic = componentParams(template, row, {
+ 					suffix: '_InteractiveLogicControllerComponentDataForMemoryPack',
+@@ -304,7 +313,10 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+ 					type: 29,
+ 				});
+ 				const seesaw = logic?.get('logic_type')?.values[0]?.bits === 9n;
+-				const volume = waterById.get(floaters.get(id) ?? '');
++				const volume = waterById.get(floater?.volume ?? floaters.get(id) ?? '');
++				if (floater?.volume && !volume) throw new Error(`floater water volume ${floater.volume} unavailable`);
++				if (volume?.infinite && waterLevels.computed) throw new Error('computed water-level targets unresolved');
++				const waterDomain = volume ? waterLevelDomain(volume,waterLevels.levels) : null;
+ 				let positions: Vec3[],
+ 					speed: number | null,
+ 					family: SweptSupport['family'] = 'platform';
+@@ -322,35 +334,38 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+ 					}
+ 					positions = splinePath(spline, move);
+ 					speed = move.speed > 0 ? move.speed : null;
++				} else if (waterCurve) {
++					const spline = splines.get(waterCurve.splineId);
++					if (!spline || spline.knots.length < 2) throw new Error('water-progress spline unavailable');
++					positions = splineCurves(spline,spline.closed).flatMap((curve,i) => sampleCurve(curve).slice(i ? 1 : 0));
++					// Progress ratios and spline parameterization do not prove a
++					// constant ride speed. Retain the source domain without pricing it.
++					speed = null;
+ 				} else if (lifter || moving) {
+ 					// Both components set the moving part to these authored world positions.
+                     positions = vectors(params.get('position_list'));
+-					const suffix = lifter
+-						? '_LifterCoreComponentDataForMemoryPack'
+-						: '_InteractiveMovingPlatformComponentDataForMemoryPack';
+-					const p = componentParams(template, row, {
+-						suffix,
+-						diffKey: lifter ? 'Comp_LifterCore' : 'Comp_MovingPlatform',
+-						type: lifter ? 154 : 178,
++					const p = componentParams(template, row, lifter ?? {
++						suffix: '_InteractiveMovingPlatformComponentDataForMemoryPack',
++						diffKey: 'Comp_MovingPlatform',
++						type: 178,
+ 					});
+ 					speed = scalar(p?.get('speed')) ?? scalar(params.get('speed'));
+ 				} else if (volume) {
+-					const current = volume.pivot[1] + volume.heightMax * volume.fraction;
+-					positions = [volume.pivot[1], volume.pivot[1] + volume.heightMax].map((y) => [
+-						row.position[0],
+-						row.position[1] + y - current,
+-						row.position[2],
+-					]);
+-					speed = volume.fillSpeed > 0 ? volume.fillSpeed : null;
++					positions = waterFloaterPositions(volume,row,floater?.surfaceOffset ?? 0,waterDomain!.fills);
++					speed = null;
+ 					family = 'water-floater';
+ 				} else if (seesaw) {
+ 					positions = [row.position];
+ 					speed = null;
+ 					family = 'seesaw';
++				} else if (floater && floater.volume === null) {
++					// No water-level or other path motion is authored. The static
++					// import owns this model's solid/animated geometry and failures.
++					continue;
+ 				} else {
+ 					throw new Error('no authored moving support path');
+ 				}
+-				if (!seesaw && !follows && positions.length < 2) {
++				if (!seesaw && !follows && !volume && positions.length < 2) {
+ 					throw new Error('moving support path has fewer than two poses');
+ 				}
+ 				const base = componentOf(template, '_InteractiveModelComponentDataForMemoryPack');
+@@ -367,7 +382,7 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+ 				}
+ 				const model = objectField(models, modelId);
+ 				const prefab = stringField(model, 'path').toLowerCase();
+-				const body = await bodyOf(prefab);
++				const body = await bodyOf(prefab, moving !== null);
+ 				if ((lifter || moving) && !body.movingPart) {
+ 					throw new Error('platform moving subtree unresolved');
+ 				}
+@@ -449,6 +464,16 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+ 					level: level.id,
+ 					model: prefab,
+ 					...(forklift ? { control: forklift } : {}),
++					...(waterCurve ? { control: waterCurve.control } : volume ? { control: {
++						kind: 'water-volume' as const, id: volume.id, initialFill: volume.fraction,
++						initialPosition: row.position,
++						heightRange: [
++							volume.pivot[1]+volume.heightMax*waterDomain!.fills[0],
++							volume.pivot[1]+volume.heightMax*waterDomain!.fills.at(-1)!,
++						] as [number,number],
++						fills: waterDomain!.fills, continuous: waterDomain!.continuous,
++						surfaceOffset: floater?.surfaceOffset ?? 0, assumption: 'phase-free-swept-support' as const,
++					} } : {}),
+ 					endpoints,
+ 					...geometry,
+ 					assumption: 'phase-free-swept-support',
+@@ -462,6 +487,17 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+ 			}
+ 		}
+ 	}
++	const waterDriven = supports.filter(s => s.control?.kind === 'water-progress');
++	if (waterDriven.length) {
++		const scripts = waterScripts ?? await loadLevelScripts(ctx,scene,new Set(waterDriven.map(s=>s.id)));
++		const groups = waterProgressGroups(scripts.scripts);
++		for (const support of waterDriven) {
++			const group = groups.get(support.id), control = support.control;
++			if (group && control?.kind === 'water-progress') support.control = {
++				...control, id: group.id, decreaseRatio: group.decreaseRatio,
++			};
++		}
++	}
+ 	// conveyor boxes are dynamic resource placements, not LevelData interactives.
+ 	const grids = new Map<number, ReturnType<typeof readDynamicResources>['grids'][number]>();
+ 	const entities: ReturnType<typeof readDynamicResources>['entities'] = [];
+diff --git a/packages/extractor/src/game/prefab-support.ts b/packages/extractor/src/game/prefab-support.ts
+index 6c260e04..a555193e 100644
+--- a/packages/extractor/src/game/prefab-support.ts
++++ b/packages/extractor/src/game/prefab-support.ts
+@@ -38,7 +38,7 @@ const corners = (center: Vec3, size: Vec3): Vec3[] =>
+  * @throws for malformed references, unsupported nonempty collision cooks or absent solid support
+  */
+ export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef,
+- options: { wholePrefab?: boolean; pose?: PrefabPose | null; circular?: boolean } = {}) => {
++ options: { wholePrefab?: boolean; pose?: PrefabPose | null; circular?: boolean; rootMotion?: boolean } = {}) => {
+  const clips = options.pose?.clips ?? [];
+  const transforms = clips.map(clip => clip.transforms);
+ 	const nodes: {
+@@ -132,6 +132,9 @@ export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef
+ 		}
+ 	};
+ 	await visit(root, null);
++	// MovingPlatform controllers move the model root when the view supplies no
++	// dedicated moving part. Other controllers still require their own binding.
++	if (selected === null && options.rootMotion && !options.wholePrefab) selected = objectKey(root);
+ 	const byKey = new Map(nodes.map((node) => [node.key, node]));
+ 	if (selected !== null && !byKey.has(selected)) {
+ 		throw new FormatError('moving support subtree is outside prefab');
+@@ -169,7 +172,7 @@ export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef
+ 				);
+ 			}
+ 			// the lifted subtree's collider set is audited together with its local-position controller.
+-			if (ref.info.classId === 64 && (translated !== null || options.wholePrefab)) {
++			if (ref.info.classId === 64 && (translated !== null || options.wholePrefab || options.rootMotion)) {
+ 				const mesh = await resolver.resolve(ref, pptrField(data, 'm_Mesh'));
+ 				if (!mesh) {
+ 					throw new FormatError('support collider has no mesh');
+diff --git a/packages/extractor/src/game/static-supports.test.ts b/packages/extractor/src/game/static-supports.test.ts
+index 29964c51..6f7ad19d 100644
+--- a/packages/extractor/src/game/static-supports.test.ts
++++ b/packages/extractor/src/game/static-supports.test.ts
+@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
+ import { test } from 'node:test';
+ 
+ import type { PrefabPose } from './prefabs/prefab.ts';
+-import { supportGeometry, supportMotion, supportObjectKind } from './static-supports.ts';
++import { supportGeometry, supportMotion, supportObjectKind, representedSupport } from './static-supports.ts';
+ 
+ test('support audit keeps persistent barriers and excludes only explicit removed/control families', () => {
+     assert.equal(supportObjectKind('int_bridge_wuling_18m'), 'support');
+@@ -40,3 +40,18 @@ test('looping transform animation survives JSON as authored-rate samples', () =>
+     assert.deepEqual(motion[0].frames.map((frame: { time: number }) => frame.time), [0, 0.5, 1]);
+     assert.deepEqual(motion[0].frames[2].transforms, [[17, [{ kind: 'position', value: [1, 0, 0] }]]]);
+ });
++test('stale owners are represented only by unique matching source geometry, never by nearby scenery', () => {
++    const row={template:'bridge-variant',position:[10,20,30] as [number,number,number],rotation:[0,90,0] as [number,number,number],scale:[1,1,1] as [number,number,number],modelScale:0};
++    const part=(position:number[])=>({path:'source-model',model:{pathHash:'1',position,rotation:[0,90,0],scale:[1,1,1]}});
++    const witness={id:'known-variant',template:row.template,level:'level',parts:[part([100,20,30])]};
++    const actual={id:'actual-owner',template:'dynamic-source',level:'level',parts:[part([10.0004,20,30])]};
++    const placements=new Map([[witness.id,{row:{...row,position:[100,20,30] as [number,number,number]}}]]);
++    const placed={row,level:'level'};
++    assert.equal(representedSupport(placed,[witness,actual],placements),actual.id);
++    assert.equal(representedSupport(placed,[{...witness,level:'other-level'},actual],placements),actual.id);
++    assert.equal(representedSupport(placed,[actual],placements),null,'a source template witness is required');
++    assert.equal(representedSupport(placed,[witness,{...actual,parts:[part([10.01,20,30])]}],placements),null);
++    assert.equal(representedSupport(placed,[witness,actual,{...actual,id:'another-owner'}],placements),null);
++    assert.equal(representedSupport(placed,[witness,{...actual,parts:[{...part([10,20,30]),path:'different-model'}]}],placements),null);
++    assert.equal(representedSupport(placed,[witness,{...actual,level:'another-level'}],placements),null);
++});
+diff --git a/packages/extractor/src/game/static-supports.ts b/packages/extractor/src/game/static-supports.ts
+index 7d12f703..bf6fe068 100644
+--- a/packages/extractor/src/game/static-supports.ts
++++ b/packages/extractor/src/game/static-supports.ts
+@@ -30,7 +30,40 @@ type Support = {
+ };
+ type ObjectRecord = {
+     id: string; level: string; template: string; source: string; owners: string[];
+-    category: string; status: string; reason?: string;
++    category: string; status: string; reason?: string; representedBy?: string;
++};
++
++type Receipt = Pick<Support,'id'|'template'|'level'> & {parts: Pick<Support['parts'][number],'path'|'model'>[]};
++type Placement = Pick<LevelInteractive,'template'|'position'|'rotation'|'scale'|'modelScale'>;
++
++/** Recognize already imported, uniquely placed source geometry for a stale
++ * logical owner reference. This adds an inventory alias, never a guessed model. */
++export const representedSupport = (
++    placed: {row:Placement;level:string},
++    supports: readonly Receipt[],
++    placements: ReadonlyMap<string,{row:Placement}>,
++): string | null => {
++    const {row,level} = placed;
++    const rotation = unityEulerQuaternion(row.rotation);
++    // Templates share a source catalog across levels; only the represented
++    // physical instance, rather than its template witness, must share the level.
++    const witnesses = supports.filter(s=>s.template===row.template).flatMap(s=>{
++        const placed = placements.get(s.id)?.row;
++        if (!placed || (placed.modelScale>0)!==(row.modelScale>0)) return [];
++        const q=unityEulerQuaternion(placed.rotation);
++        return s.parts.filter(p=>p.model.position.every((v,i)=>Math.abs(v-placed.position[i])<=1e-3) &&
++            1-Math.abs(unityEulerQuaternion(p.model.rotation).reduce((sum,v,i)=>sum+v*q[i],0))<1e-10)
++            .map(p=>({path:p.path,scale:p.model.scale.map((v,i)=>v*row.scale[i]/placed.scale[i]*
++                (row.modelScale>0 ? row.modelScale/placed.modelScale : 1))}));
++    });
++    const matches = supports.filter(s=>s.level===level && s.parts.some(p=>{
++        if (![...p.model.position,...p.model.rotation,...p.model.scale,...row.position].every(Number.isFinite)) return false;
++        if (!witnesses.some(w=>w.path===p.path && w.scale.every((v,i)=>Number.isFinite(v)&&Math.abs(v-p.model.scale[i])<=1e-4)) ||
++            p.model.position.some((v,i)=>Math.abs(v-row.position[i])>1e-3)) return false;
++        const q = unityEulerQuaternion(p.model.rotation);
++        return 1-Math.abs(q.reduce((sum,v,i)=>sum+v*rotation[i],0))<1e-10;
++    }));
++    return matches.length===1 ? matches[0].id : null;
+ };
+ 
+ /** Names select an audit scope; they never create support geometry. Controllers
+@@ -266,8 +299,18 @@ export const collectStaticSupports = async (ctx: Context, scene: string, knownId
+     const dynamicOwners = new Set((await ctx.world.dynamicEntities(scene)).flatMap(entity => entity.uid === null ? [] : [String(entity.uid)]));
+     for (const item of objects) {
+         if (item.status === 'pending') {
+-            item.status = 'unresolved';
+             const absentOwners = item.owners.filter(owner => !dynamicOwners.has(owner));
++            if (item.owners.length && absentOwners.length===item.owners.length) {
++                const placed = rows.get(item.id);
++                const represented = placed && representedSupport(placed,[...supports.values()],rows);
++                if (represented) {
++                    item.status = 'represented';
++                    item.representedBy = represented;
++                    item.reason = 'logical owner reference absent; matching source geometry is already imported';
++                    continue;
++                }
++            }
++            item.status = 'unresolved';
+             item.reason = item.owners.length && absentOwners.length === item.owners.length
+                 ? `referenced dynamic owner is absent from scene resources: ${absentOwners.join(', ')}`
+                 : 'no terminal physical model was resolved';
+diff --git a/packages/extractor/src/game/water-supports.test.ts b/packages/extractor/src/game/water-supports.test.ts
+new file mode 100644
+index 00000000..47ad84f2
+--- /dev/null
++++ b/packages/extractor/src/game/water-supports.test.ts
+@@ -0,0 +1,157 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++import { levelInteractiveFromValue } from '@endfield-noclip/formats/endfield/level-interactives';
++import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
++import type { LevelWaterVolume } from './water/water-volumes.ts';
++import {
++	waterCurveOf,
++	waterFloaterOf,
++	waterFloaterPositions,
++	waterProgressGroups,
++	waterLevelDomain,
++} from './water-supports.ts';
++
++const bits = (value: number) => {
++	const b = new DataView(new ArrayBuffer(4));
++	b.setFloat32(0, value);
++	return String(b.getUint32(0));
++};
++const param = (key: string, type: number, value: string): MemoryPackValue => ({
++	key,
++	value: { type, valueArray: [{ valueBit64: value, valueString: null }] },
++});
++const component = (name: string, propertyList: MemoryPackValue[]) => ({
++	$type: `Beyond_Gameplay_Core_${name}ComponentDataForMemoryPack`,
++	propertyList,
++});
++const row = () =>
++	levelInteractiveFromValue(
++		{
++			entityDataIdKey: 'variant',
++			createState: 0,
++			levelLogicId: '1',
++			position: [10, 25.5, 30],
++			rotation: [0, 0, 0],
++			scale: [1, 1, 1],
++			isLocked: false,
++			properties: [],
++			componentProperties: [],
++			modelScale: 0,
++		},
++		1n,
++	);
++
++test('water-driven curves resolve their own component scopes and reject unsupported rotation', () => {
++	const template = {
++		componentList: [
++			component('WaterProgressDriveCurveMovement', [
++				param('spline_id', 3, '0'),
++				param('curve_move_type', 3, '1'),
++				param('is_update_rotation_on_spline', 1, '0'),
++			]),
++			component('WaterProgress', [
++				param('water_progress_increase_ratio', 5, bits(0)),
++				param('water_progress_decrease_ratio', 5, bits(0)),
++			]),
++		],
++		templateVariant: [],
++	};
++	const placed = row();
++	placed.componentProperties.set(125, [
++		{ key: 'spline_id', type: 3, values: [{ bits: 9n, text: null }] },
++	]);
++	placed.componentProperties.set(87, [
++		{
++			key: 'water_progress_increase_ratio',
++			type: 5,
++			values: [{ bits: BigInt(bits(15)), text: null }],
++		},
++	]);
++	const result = waterCurveOf(template, placed)!;
++	assert.equal(result.splineId, 9);
++	assert.equal(result.control.increaseRatio, 15);
++	assert.equal(result.control.kind, 'water-progress');
++	placed.componentProperties
++		.get(125)!
++		.push({ key: 'is_update_rotation_on_spline', type: 1, values: [{ bits: 1n, text: null }] });
++	assert.throws(() => waterCurveOf(template, placed), /rotation/);
++});
++
++test('floaters follow a shared water surface offset rather than retaining their authored height', () => {
++	const template = {
++		componentList: [
++			component('BelongToWaterVolume', [
++				param('water_volume', 56, '123'),
++				param('surface_offset', 5, bits(0.25)),
++			]),
++		],
++	};
++	const first = row(),
++		second = { ...row(), position: [20, 999, 40] as [number, number, number] };
++	const a = waterFloaterOf(template, first)!,
++		b = waterFloaterOf(template, second)!;
++	assert.equal(a.volume, b.volume);
++	const volume: Pick<LevelWaterVolume, 'pivot' | 'heightMax' | 'fraction'> = {
++		pivot: [0, 20, 0],
++		heightMax: 10,
++		fraction: 0.5,
++	};
++	const positions = waterFloaterPositions(volume, first, a.surfaceOffset);
++	const other = waterFloaterPositions(volume, second, b.surfaceOffset);
++	assert.deepEqual(positions, [
++		[10, 25.5, 30],
++		[10, 20.25, 30],
++		[10, 30.25, 30],
++	]);
++	assert.deepEqual(other[0], second.position);
++	assert.deepEqual(
++		other.slice(1).map((p) => p[1]),
++		positions.slice(1).map((p) => p[1]),
++	);
++	assert.deepEqual(waterFloaterPositions(volume, first, a.surfaceOffset, [0.5]), [first.position]);
++	first.componentProperties.set(39, [
++		{ key: 'water_volume', type: 56, values: [{ bits: 0n, text: null }] },
++	]);
++	assert.equal(waterFloaterOf(template, first)!.volume, null);
++	assert.throws(() => waterFloaterPositions({ ...volume, fraction: 2 }, first, 0), /range/);
++});
++
++test('water synchronization shares progress identity without conflating it with a water body', () => {
++	const sync = (id: string) => ({
++		$type: 'Beyond_Gameplay_WaterProgressSyncDataForMemoryPack',
++		id,
++		decreaseRatio: 30,
++		entityPtrList: [
++			{ logicId: '1', useSlotId: false },
++			{ logicId: '2', useSlotId: false },
++		],
++	});
++	const groups = waterProgressGroups([{ data: { modules: [sync('123')] } }]);
++	assert.equal(groups.get('1')!.id, '123');
++	assert.deepEqual(groups.get('1'), groups.get('2'));
++	assert.throws(
++		() => waterProgressGroups([{ data: { modules: [sync('123'), sync('456')] } }]),
++		/ambiguous/,
++	);
++});
++
++test('infinite water retains source states and distinguishes snap changes from continuous motion', () => {
++	const volume = { id: '123', infinite: true, fraction: 1, amountMax: 100 };
++	const action = {
++		volume: '123',
++		script: 'source',
++		node: 1,
++		kind: 'fraction' as const,
++		value: 0.2,
++		smooth: false,
++		speed: null,
++	};
++	assert.deepEqual(waterLevelDomain(volume, []), { fills: [1], continuous: false });
++	assert.deepEqual(waterLevelDomain(volume, [action]), { fills: [0.2, 1], continuous: false });
++	assert.deepEqual(waterLevelDomain(volume, [{ ...action, smooth: true }]), {
++		fills: [0.2, 1],
++		continuous: true,
++	});
++	assert.deepEqual(waterLevelDomain({ ...volume, infinite: false }, [action]).fills, [0, 0.2, 1]);
++	assert.deepEqual(waterLevelDomain(volume, [{ ...action, volume: 'other' }]).fills, [1]);
++});
+diff --git a/packages/extractor/src/game/water-supports.ts b/packages/extractor/src/game/water-supports.ts
+new file mode 100644
+index 00000000..fb7093b1
+--- /dev/null
++++ b/packages/extractor/src/game/water-supports.ts
+@@ -0,0 +1,169 @@
++import type { LevelInteractive } from '@endfield-noclip/formats/endfield/level-interactives';
++import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
++import type { Vec3 } from '@opendfieldmap/ganglia';
++import { componentParams } from './interactives/component-params.ts';
++import { atomFloat } from './interactives/template-data.ts';
++import type { LevelWaterVolume } from './water/water-volumes.ts';
++import type { Script } from './script-drivers.ts';
++import type { ScriptWaterLevel } from './water/water-volume-scripts.ts';
++import { isMemoryPackObject } from '@endfield-noclip/formats/endfield/memory-pack';
++
++const CURVE = {
++	suffix: '_WaterProgressDriveCurveMovementComponentDataForMemoryPack',
++	diffKey: 'Comp_WaterProgressDriveCurveMovement',
++	type: 125,
++};
++const PROGRESS = {
++	suffix: '_WaterProgressComponentDataForMemoryPack',
++	diffKey: 'Comp_WaterProgress',
++	type: 87,
++};
++const FLOATER = {
++	suffix: '_BelongToWaterVolumeComponentDataForMemoryPack',
++	diffKey: 'Comp_BelongToWaterVolume',
++	type: 39,
++};
++const scalar = (value: ReturnType<typeof componentParams>, key: string) => {
++	const p = value?.get(key);
++	if (!p || ![5, 6].includes(p.type) || p.values.length !== 1) return null;
++	const n = atomFloat(p.values[0].bits);
++	return Number.isFinite(n) ? n : null;
++};
++
++/** WaterProgress is an interactive control, independent of WaterVolume IDs.
++ * Its curve supplies a support domain; ratios are not constant travel speeds. */
++export const waterCurveOf = (template: MemoryPackValue, row: LevelInteractive) => {
++	const curve = componentParams(template, row, CURVE);
++	if (!curve) return null;
++	const spline = curve.get('spline_id'),
++		rotation = curve.get('is_update_rotation_on_spline');
++	if (spline?.type !== 3 || spline.values.length !== 1 || spline.values[0].bits <= 0n)
++		throw new Error('water-progress spline unavailable');
++	if (rotation?.type !== 1 || rotation.values.length !== 1 || rotation.values[0].bits !== 0n)
++		throw new Error('water-progress tangent rotation unresolved');
++	const mode = curve.get('curve_move_type');
++	if (mode?.type !== 3 || mode.values.length !== 1 || mode.values[0].bits !== 1n)
++		throw new Error('water-progress curve mode unsupported');
++	const progress = componentParams(template, row, PROGRESS);
++	const increaseRatio = scalar(progress, 'water_progress_increase_ratio');
++	const decreaseRatio = scalar(progress, 'water_progress_decrease_ratio');
++	if (increaseRatio === null || decreaseRatio === null || increaseRatio < 0 || decreaseRatio < 0)
++		throw new Error('water-progress rates unresolved');
++	return {
++		splineId: Number(spline.values[0].bits),
++		control: {
++			kind: 'water-progress' as const,
++			id: String(row.id),
++			increaseRatio,
++			decreaseRatio,
++			assumption: 'phase-free-swept-support' as const,
++		},
++	};
++};
++
++/** A zero source reference is unbound, rather than an invitation to select a
++ * nearby pool. Shared volume IDs retain a common water-level binding. */
++export const waterFloaterOf = (template: MemoryPackValue, row: LevelInteractive) => {
++	const p = componentParams(template, row, FLOATER);
++	if (!p) return null;
++	const volume = p.get('water_volume');
++	if (volume?.type !== 56 || volume.values.length !== 1 || volume.values[0].bits < 0n)
++		throw new Error('floater water-volume reference unresolved');
++	const surfaceOffset = scalar(p, 'surface_offset');
++	if (surfaceOffset === null) throw new Error('floater surface offset unresolved');
++	return {
++		volume: volume.values[0].bits === 0n ? null : String(volume.values[0].bits),
++		surfaceOffset,
++	};
++};
++
++/** Settled floating roots use the source surface_offset, not their authored
++ * height above the initial water. Animation lag does not establish a ride speed. */
++export const waterFloaterPositions = (
++	volume: Pick<LevelWaterVolume, 'pivot' | 'heightMax' | 'fraction'>,
++	row: LevelInteractive,
++	surfaceOffset: number,
++	fills: readonly number[] = [0, 1],
++): Vec3[] => {
++	if (
++		![volume.pivot[1], volume.heightMax, volume.fraction, surfaceOffset].every(Number.isFinite) ||
++		volume.heightMax < 0 ||
++		volume.fraction < 0 ||
++		volume.fraction > 1 ||
++		!fills.length ||
++		fills.some((fill) => !Number.isFinite(fill) || fill < 0 || fill > 1)
++	)
++		throw new Error('invalid water-level range');
++	if (fills.length === 1 && fills[0] === volume.fraction) return [[...row.position]];
++	const settled: Vec3[] = fills.map((fill) => [
++		row.position[0],
++		volume.pivot[1] + volume.heightMax * fill + surfaceOffset,
++		row.position[2],
++	]);
++	// The authored initial pose is distinct from the settled response after a
++	// water-level change. Preserve it without carrying its offset to other fills.
++	return [
++		[...row.position],
++		...settled.filter((p) => Math.hypot(...p.map((v, i) => v - row.position[i])) > 1e-6),
++	];
++};
++
++/** Finite pools retain the full-capacity abstraction. Infinite water follows
++ * its authored initial fill and script targets. Floater lag is a separate motion. */
++export const waterLevelDomain = (
++	volume: Pick<LevelWaterVolume, 'id' | 'infinite' | 'fraction' | 'amountMax'>,
++	levels: readonly ScriptWaterLevel[],
++) => {
++	const targets = levels.filter((level) => level.volume === volume.id);
++	const fills = [
++		volume.fraction,
++		...targets.map((level) =>
++			level.kind === 'fraction' ? level.value : level.value / volume.amountMax,
++		),
++	];
++	if (fills.some((fill) => !Number.isFinite(fill) || fill < 0 || fill > 1))
++		throw new Error('invalid scripted water level');
++	if (!volume.infinite) fills.push(0, 1);
++	return {
++		fills: [...new Set(fills)].sort((a, b) => a - b),
++		continuous: !volume.infinite || targets.some((level) => level.smooth),
++	};
++};
++
++/** Retain source synchronization between platforms without mixing the progress
++ * namespace with actual water bodies, even when their numeric IDs are equal. */
++export const waterProgressGroups = (scripts: readonly Pick<Script, 'data'>[]) => {
++	const groups = new Map<string, { id: string; decreaseRatio: number }>();
++	const visit = (value: MemoryPackValue) => {
++		if (Array.isArray(value)) {
++			for (const entry of value) visit(entry);
++			return;
++		}
++		if (!isMemoryPackObject(value)) return;
++		if (value.$type === 'Beyond_Gameplay_WaterProgressSyncDataForMemoryPack') {
++			if (
++				typeof value.id !== 'string' ||
++				typeof value.decreaseRatio !== 'number' ||
++				!Number.isFinite(value.decreaseRatio) ||
++				value.decreaseRatio < 0 ||
++				!Array.isArray(value.entityPtrList)
++			)
++				throw new Error('water-progress synchronization unresolved');
++			for (const entity of value.entityPtrList) {
++				if (
++					!isMemoryPackObject(entity) ||
++					entity.useSlotId !== false ||
++					typeof entity.logicId !== 'string'
++				)
++					throw new Error('water-progress synchronization reference unresolved');
++				const old = groups.get(entity.logicId);
++				if (old && (old.id !== value.id || old.decreaseRatio !== value.decreaseRatio))
++					throw new Error('ambiguous water-progress synchronization');
++				groups.set(entity.logicId, { id: value.id, decreaseRatio: value.decreaseRatio });
++			}
++		}
++		for (const entry of Object.values(value)) visit(entry);
++	};
++	for (const script of scripts) visit(script.data);
++	return groups;
++};
