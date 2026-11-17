@@ -470,3 +470,38 @@ test('a capsule-sized start attachment keeps its physical proof without a transf
   assert.ok(result.unresolved.some((edge) => edge.points[0] === near.position));
   assert.deepEqual(result.points[0], near.position);
 });
+
+test('multi-arrival discovery charges the selected origin and preserves one-way passages', () => {
+  const data = {
+    surfaces: [square('low', 0, 0), square('high', 30, 0)],
+    options: { speed: 5, maxVertical: 1 },
+  };
+  const start: Vec3 = [1, 0, 1],
+    end: Vec3 = [31, 0, 1];
+  const planner = createCandidatePlanner(data, {
+    radius: 2,
+    endpointRadius: 0.1,
+    connections: [{ from: 'low', to: 'high', points: [start, end], device: 'lift', mode: 'rope' }],
+  });
+  const origins: GroundArrival[] = [
+    { id: 'cheap', position: start, cost: 5, state: 'available' },
+    { id: 'expensive', position: start, cost: 150, state: 'available' },
+    { id: 'at-goal', position: end, cost: 50000, state: 'available' },
+  ];
+  const route = expectStatus(planner.plan(origins, end), 'candidate');
+  assert.equal(route.arrival.id, 'cheap');
+  const lift = route.path.find((edge) => edge.device === 'lift');
+  assert.ok(lift);
+  const fallback = expectStatus(
+    planner.plan(origins, end, { excludedEdges: [lift.key!] }),
+    'candidate',
+  );
+  assert.equal(fallback.arrival.id, 'at-goal');
+  assert.equal(
+    planner.plan(
+      origins.slice(0, 2).map((a) => ({ ...a, position: end })),
+      start,
+    ).status,
+    'no-candidate',
+  );
+});
