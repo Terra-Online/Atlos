@@ -147,6 +147,7 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
   // Keep only the last full attempt in this root query. A completed bounded failure
   // is not a global reachability claim; identical work proceeds to the same fallback.
   let physicalFailure: { key: string; reason?: string; truncated: boolean } | undefined;
+  let widerDeviceTrial = false;
   let truncated = false;
   let cursor = 0,
     end = -1,
@@ -401,7 +402,7 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
             : progress('incomplete', 'route-composition');
         }
         if (evidence.length >= maxWindows) return progress('incomplete', 'window-budget');
-        const margin = settings.margin * (expansion + 1);
+        const margin = settings.margin * (widerDeviceTrial ? 2 : expansion + 1);
         if (end < cursor) {
           end = cursor;
           const bounds = windowBounds(end);
@@ -631,9 +632,28 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
             end = -1;
             stage = 0;
             expansion = 0;
+            widerDeviceTrial = false;
             return progress('pending');
           }
-        } else failures.set(key, result?.reason ?? 'no-verified-route');
+        } else {
+          if (!widerDeviceTrial) failures.set(key, result?.reason ?? 'no-verified-route');
+          // Placement needs the source collider inside the loaded snapshot. Try the
+          // existing expanded window before exploring jumps in a clipped layout.
+          if (
+            !widerDeviceTrial &&
+            stage === 1 &&
+            !expansion &&
+            diagnostics &&
+            typeof diagnostics === 'object' &&
+            'needsFollowingSourceCoverage' in diagnostics &&
+            diagnostics.needsFollowingSourceCoverage === true &&
+            tiles(bounds.min, bounds.max, settings.margin * 2) <= settings.maxTiles
+          ) {
+            widerDeviceTrial = true;
+            return progress('pending');
+          }
+        }
+        widerDeviceTrial = false;
         if (stage < stages.length - 1) {
           stage++;
           return progress('pending');

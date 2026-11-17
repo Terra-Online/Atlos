@@ -3,8 +3,7 @@ import type { BuildOptions } from '#@/src/build.ts';
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { CollisionGeometry, Surface, Vec3 } from '#@/src/geometry.ts';
 import { createCollisionWorld } from '#@/src/model/collision.ts';
-/* oxlint-disable no-await-in-loop -- each bounded layout is baked and queried in isolation */
-import { createGoalProjector } from '#@/src/model/goals.ts';
+import { createGoalProjector, findGoalHit } from '#@/src/model/goals.ts';
 import { supportBounds } from '#@/src/model/supports.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
 import type { GroundArrival, GroundConnection, Route } from '#@/src/route.ts';
@@ -12,12 +11,16 @@ import type { FollowingSupport, PoseBounds } from '#@/src/solver/physical.ts';
 import { buildGroundSurfaces } from '#@/src/v1/geo/build.ts';
 import { verticalProjectionCandidates } from '#@/src/v1/geo/support-projector.ts';
 import { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
+/* oxlint-disable no-await-in-loop -- each bounded layout is baked and queried in isolation */
+import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { planJumpRoute, type JumpRouteOptions } from '#@/src/v1/route/jump-planner.ts';
+import { roofSteps } from '#@/src/v1/solver/physical/following-steps.ts';
 import type { SupportBox } from '#@/src/v1/solver/physical/moving-route.ts';
 
 type Diagnostics = {
   assumption: 'placement-within-activity-range';
   placements: number;
+  stepPlacements: number;
   limits: { placements: number; jumpCandidatesPerPlacement: number };
   truncated: boolean;
   outcomes: { device: string; reason: string; position?: Vec3 }[];
@@ -152,10 +155,14 @@ export const planFollowingRoute = async (
     build,
     jump,
     onProgress,
+    firstFeasible,
+    onCandidate,
   }: {
     surfaces: Surface[];
     build: BuildOptions;
     jump: JumpRouteOptions;
+    firstFeasible?: boolean;
+    onCandidate?: (value: Result) => Promise<void>;
     onProgress?: (value: Record<string, unknown>) => void;
   },
 ): Promise<Result> => {
@@ -167,6 +174,7 @@ export const planFollowingRoute = async (
   const diagnostics: Diagnostics = {
     assumption: 'placement-within-activity-range',
     placements: 0,
+    stepPlacements: 0,
     limits: { placements: maxPlacements, jumpCandidatesPerPlacement: perPlacement },
     truncated: false,
     outcomes: [],
@@ -227,6 +235,7 @@ export const planFollowingRoute = async (
     supportTriangles: Vec3[][];
     sourceCollision: boolean;
     candidates: { position: Vec3; floor: number }[];
+    steps: { position: Vec3; floor: number }[];
   }[] = [];
   for (const { support, bounds: original } of definitions) {
     if (
@@ -377,7 +386,22 @@ export const planFollowingRoute = async (
       }
     }
     const candidates: { position: Vec3; floor: number }[] = [];
-    for (const anchor of anchors) {
+    const steps: typeof candidates = [];
+    const ordinaryCount = anchors.length;
+    if (jump.interaction && original.max[1] - original.min[1] <= jump.model.maxJumpHeight) {
+      // Sample floors around the goal at box-roof height. Goal projection alone
+      // often returns the raised platform and misses the lower approach.
+      const floorHeight = goal[1] - (original.max[1] - original.min[1]);
+      for (let x = -7; x <= 7; x++) {
+        for (let z = -7; z <= 7; z++) {
+          const hits = project([goal[0] + x, floorHeight, goal[2] + z], {
+            maxVertical: jump.model.maxJumpHeight + 2,
+          });
+          for (const hit of hits.slice(0, 2)) anchors.push(hit.position);
+        }
+      }
+    }
+    for (const [index, anchor] of anchors.entries()) {
       if (!insideScope(supportBounds([[anchor]]), world.bounds ?? undefined)) {
         continue;
       }
@@ -450,10 +474,11 @@ export const planFollowingRoute = async (
         outcome(support.id, 'placement-blocks-goal', position);
         continue;
       }
-      if (candidates.some((other) => distance(position, other.position) < build.cellSize)) {
+      const list = index < ordinaryCount ? candidates : steps;
+      if (list.some((other) => distance(position, other.position) < build.cellSize)) {
         continue;
       }
-      candidates.push({ position, floor: ground.position[1] });
+      list.push({ position, floor: ground.position[1] });
     }
     candidates.sort((a, b) => distance(a.position, goal) - distance(b.position, goal));
     const initialIndex = candidates.findIndex(
@@ -462,8 +487,42 @@ export const planFollowingRoute = async (
     if (initialIndex > 0) {
       candidates.unshift(candidates.splice(initialIndex, 1)[0]);
     }
-    if (candidates.length)
-      choices.push({ support, original, supportTriangles, sourceCollision, candidates });
+    if (steps.length) {
+      steps.push(
+        ...candidates.filter(
+          (p) => !steps.some((q) => distance(p.position, q.position) < build.cellSize),
+        ),
+      );
+      const rank = (p: (typeof steps)[number]) => {
+        const roof: Vec3 = [
+          p.position[0],
+          p.floor + original.max[1] - original.min[1],
+          p.position[2],
+        ];
+        const inGoal = findGoalHit([roof, roof], goal, jump.interaction!);
+        return (
+          distance(roof, goal) + (inGoal ? 0 : 10) + 0.015 * distance(roof, arrivals[0].position)
+        );
+      };
+      // A box already standing on the upper floor cannot be the step up to it.
+      // Check the clearance above the proposed roof before spending a layout bake.
+      for (let i = steps.length - 1; i >= 0; i--) {
+        const pose = steps[i];
+        const feet: Vec3 = [
+          pose.position[0],
+          pose.floor + original.max[1] - original.min[1] + 0.01,
+          pose.position[2],
+        ];
+        if (
+          (pose.floor >= goal[1] && !findGoalHit([feet, feet], goal, jump.interaction!)) ||
+          world.sweepCapsule(feet, feet, jump.profile)
+        )
+          steps.splice(i, 1);
+      }
+      steps.sort((a, b) => rank(a) - rank(b));
+    }
+    if (candidates.length || steps.length)
+      choices.push({ support, original, supportTriangles, sourceCollision, candidates, steps });
   }
   type Pick = { choice: (typeof choices)[number]; position: Vec3; floor: number };
   choices.sort(
@@ -471,6 +530,12 @@ export const planFollowingRoute = async (
       distance(a.support.spawn, goal) - distance(b.support.spawn, goal) ||
       a.support.id.localeCompare(b.support.id),
   );
+  const stepChoices = choices
+    .filter((c) => c.steps.length)
+    .sort(
+      (a, b) => a.original.max[1] - a.original.min[1] - (b.original.max[1] - b.original.min[1]),
+    );
+  const ordinary = choices.filter((c) => c.candidates.length);
   function* subsets(
     count: number,
     offset = 0,
@@ -480,8 +545,8 @@ export const planFollowingRoute = async (
       yield prefix;
       return;
     }
-    for (let i = offset; i <= choices.length - count; i++)
-      yield* subsets(count - 1, i + 1, [...prefix, choices[i]]);
+    for (let i = offset; i <= ordinary.length - count; i++)
+      yield* subsets(count - 1, i + 1, [...prefix, ordinary[i]]);
   }
   function* poses(group: typeof choices): Generator<Pick[]> {
     const queue = [group.map(() => 0)],
@@ -532,22 +597,44 @@ export const planFollowingRoute = async (
   const roofCache = new Map<string, Surface[]>();
   // Reserve trials for each layout size: single-box misses must not consume the
   // entire allowance before a joint configuration can be considered.
-  const depth = Math.min(choices.length, maxPlacements);
-  diagnostics.truncated ||= depth < choices.length;
-  for (let count = 1; count <= depth; count++) {
-    const allowance = Math.floor((maxPlacements - diagnostics.placements) / (depth - count + 1));
-    let spent = 0;
-    for (const layout of layouts(count, allowance)) {
-      if (spent >= allowance) {
-        diagnostics.truncated = true;
-        break;
+  const depth = Math.min(ordinary.length, maxPlacements);
+  diagnostics.truncated ||= depth < ordinary.length;
+  function* stepLayouts(): Generator<Pick[]> {
+    const limit = Math.min(32, maxPlacements);
+    for (let index = 0; diagnostics.stepPlacements < limit; index++) {
+      let found = false;
+      for (const choice of stepChoices) {
+        const pose = choice.steps[index];
+        if (!pose) continue;
+        found = true;
+        diagnostics.stepPlacements++;
+        yield [{ choice, ...pose }];
+        if (diagnostics.stepPlacements >= limit || best.route.status === 'complete') return;
       }
-      spent++;
-      diagnostics.placements++;
+      if (!found) break;
+    }
+  }
+  function* ordinaryLayouts(): Generator<Pick[]> {
+    for (let count = 1; count <= depth; count++) {
+      const allowance = Math.floor((maxPlacements - diagnostics.placements) / (depth - count + 1));
+      let spent = 0;
+      for (const layout of layouts(count, allowance)) {
+        if (spent >= allowance) {
+          diagnostics.truncated = true;
+          break;
+        }
+        spent++;
+        diagnostics.placements++;
+        yield layout;
+      }
+    }
+  }
+  for (const stepping of [true, false]) {
+    for (const layout of stepping ? stepLayouts() : ordinaryLayouts()) {
       onProgress?.({
-        phase: 'following-placement',
-        completed: diagnostics.placements,
-        total: maxPlacements,
+        phase: stepping ? 'following-step-placement' : 'following-placement',
+        completed: stepping ? diagnostics.stepPlacements : diagnostics.placements,
+        total: stepping ? Math.min(32, maxPlacements) : maxPlacements,
       });
       const selected = layout.map(({ choice, position, floor }) => {
         const delta = vector((axis) => position[axis] - choice.support.spawn[axis]);
@@ -690,14 +777,39 @@ export const planFollowingRoute = async (
         outcome('', 'placed-roof-unmapped');
         continue;
       }
-      const result = planJumpRoute([...surfaces, ...roofs], placedWorld, usableStarts, goal, {
+      const layoutSurfaces = [...surfaces, ...roofs];
+      const settings = {
         ...jump,
         groundPlanner: undefined,
         connections: compatibleConnections(jump.connections ?? [], bodies, jump),
         walls: placedWalls,
         maxCandidates: perPlacement,
         maxShortcutCandidates: 0,
-      });
+      };
+      const search = () => {
+        if (!stepping)
+          return planJumpRoute(layoutSurfaces, placedWorld, usableStarts, goal, settings);
+        const links = roofSteps(
+          roofs,
+          selected[0].bounds,
+          selected[0].floor,
+          placedWorld,
+          project,
+          createGoalProjector(layoutSurfaces),
+          surfaceById,
+          goal,
+          { ...settings, maxCandidates: jump.maxCandidates },
+        );
+        const connections = [...settings.connections, ...links];
+        const route: Route = links.length
+          ? createGroundPlanner(layoutSurfaces, settings).plan(usableStarts, goal, {
+              interaction: jump.interaction,
+              connections,
+            })
+          : { status: 'no-verified-route' };
+        return { route, connections, diagnostics: { truncated: true } };
+      };
+      const result = search();
       diagnostics.truncated ||= Boolean(
         result.diagnostics.truncated ||
         result.route.search?.truncated ||
@@ -733,7 +845,7 @@ export const planFollowingRoute = async (
           distance(p.position, p.support.spawn) < 1e-5 ? 'accepted-initial-pose' : 'accepted',
           p.position,
         );
-      if (best.route.status !== 'complete' || route.cost < best.route.cost)
+      if (best.route.status !== 'complete' || route.cost < best.route.cost) {
         best = {
           // Every selected pose is part of the joint collision snapshot, even when
           // a moved box clears a path without being used as a stepping surface.
@@ -750,6 +862,11 @@ export const planFollowingRoute = async (
           })),
           diagnostics,
         };
+        if (stepping) {
+          if (firstFeasible) return best;
+          await onCandidate?.(best);
+        }
+      }
     }
   }
   return best;

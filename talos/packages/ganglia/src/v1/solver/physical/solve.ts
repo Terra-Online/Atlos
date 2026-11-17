@@ -810,9 +810,29 @@ export const solvePhysicalRoute = async (
           model,
         },
         onProgress: progress,
+        firstFeasible: context.effort === 'devices',
+        onCandidate: async (candidate) => {
+          if (candidate.route.status === 'complete')
+            await emit(
+              {
+                status: 'candidate',
+                route: candidate.route,
+                connections: candidate.connections,
+                supportBoxes: candidate.supportBoxes,
+                groundedTarget: candidate.route.points.at(-1),
+              },
+              true,
+            );
+        },
       },
     );
     diagnostics.followingSupports = following.diagnostics;
+    if (
+      following.diagnostics.outcomes.some(
+        (entry) => entry.reason === 'original-body-outside-collision-scope',
+      )
+    )
+      diagnostics.needsFollowingSourceCoverage = true;
     diagnostics.truncated = diagnostics.truncated === true || following.diagnostics.truncated;
     timing.following = performance.now() - followingStart;
     return following.route.status === 'complete' ? following : null;
