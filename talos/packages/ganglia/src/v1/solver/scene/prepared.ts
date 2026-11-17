@@ -162,7 +162,10 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         await checkpoint(options.signal);
         progress('search');
         if (cancelled()) return stopped('aborted', true);
-        const proposal = planner.plan(starts, goal, { excludedEdges });
+        const proposal = planner.plan(starts, goal, {
+          excludedEdges,
+          interaction: terminal ? undefined : query.interaction,
+        });
         await checkpoint(options.signal);
         if (cancelled()) return stopped('aborted', true);
         if (proposal.status !== 'candidate') {
