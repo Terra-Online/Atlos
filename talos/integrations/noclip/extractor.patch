@@ -772,10 +772,10 @@ index 00000000..03f8f70e
 +};
 diff --git a/packages/extractor/src/game/coin-motion.ts b/packages/extractor/src/game/coin-motion.ts
 new file mode 100644
-index 00000000..6352b88b
+index 00000000..5cc57fb0
 --- /dev/null
 +++ b/packages/extractor/src/game/coin-motion.ts
-@@ -0,0 +1,77 @@
+@@ -0,0 +1,87 @@
 +import { levelInteractiveFromValue } from '@endfield-noclip/formats/endfield/level-interactives';
 +import { type LevelSpline, splineCurves } from '@endfield-noclip/formats/endfield/level-splines';
 +import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
@@ -787,6 +787,11 @@ index 00000000..6352b88b
 +	suffix: '_InteractiveCollectionCoinComponentDataForMemoryPack',
 +	diffKey: 'Comp_InteractiveCollectionCoin',
 +	type: 142,
++};
++const START_AREA = {
++	suffix: '_InteractiveStartAreaComponentDataForMemoryPack',
++	diffKey: 'Comp_InteractiveLogicStartArea',
++	type: 36,
 +};
 +type Source = { buildGuid: string; contentHash: string; path: string };
 +
@@ -832,7 +837,12 @@ index 00000000..6352b88b
 +		[nearby, waits, smooth].some((list) => list.length !== 0 && list.length !== curves.length) ||
 +		(!useSameSpeed && speeds.length !== curves.length)
 +	) throw new Error('invalid moving coin speed or per-segment gates');
++	// The inactive start area raises its enter event on the loaded
++	// entity's first tick without applying a spatial check.
++	const spatial = componentParams(template, row, START_AREA);
++	const automatic = spatial?.get('active')?.values[0]?.bits === 0n;
 +	return {
++		activation: automatic ? 'loaded-entity-tick' : 'unresolved',
 +		model: 'source-coin-spline-v1' as const,
 +		source,
 +		splineId,

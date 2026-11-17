@@ -24,6 +24,8 @@ import {
     type Surface,
     type Vec3,
 } from '@opendfieldmap/ganglia';
+import { planMovingCoin, readCoinLoop } from './moving-coin.ts';
+import type { MovingContact } from './src/moving-contact.ts';
 import { physicalRouteBuilder } from './physical-route-builder.ts';
 
 import { travelArrivals, type TravelPoint } from './travel-arrivals.ts';
@@ -55,6 +57,8 @@ type InteractionPoint = {
     navigationGoal: { position: Vec3; interaction: InteractionGoal } | null;
     effective: { unresolved: string[] };
     navigationUnresolved?: string[];
+    navigationMotion?: unknown;
+    navigationMotionUnresolved?: string;
 };
 type InteractionCatalog = {
     scene: string;
@@ -67,6 +71,7 @@ type Candidate = {
     status: 'candidate';
     route: Extract<Route, { status: 'complete' }>;
     supportBoxes?: SupportBox[];
+    terminal?: MovingContact;
     partial?: boolean;
     optimizing?: boolean;
     optimizationMessage?: string;
@@ -299,6 +304,9 @@ export function routeServer(
                             navigationGoal: point.navigationGoal,
                             effective: point.effective,
                             navigationUnresolved: point.navigationUnresolved,
+                            navigationMotion: point.navigationMotion,
+                            navigationMotionUnresolved:
+                                point.navigationMotionUnresolved,
                         });
                     }
                     return { scene, source: catalog.source, points };
@@ -714,14 +722,11 @@ export function routeServer(
                         throw new Error(
                             'Movement settings do not match scene build',
                         );
-                    const solver = await sceneSolver(
-                        data,
-                        movement.sustainedSprint,
-                    );
                     const display = (
                         result: RouteResult,
                         optimizing: boolean,
                         message = '',
+                        terminal?: MovingContact,
                     ) => {
                         if (result.route.status !== 'complete') return;
                         const route = result.route,
@@ -734,10 +739,13 @@ export function routeServer(
                             source,
                             route,
                             partial,
+                            ...(terminal ? { terminal } : {}),
                             supportBoxes: supportBoxes(result.supportBoxes),
                             title: partial
                                 ? 'Target approach · Partial route'
-                                : 'Teleport → Target',
+                                : terminal
+                                  ? 'Teleport → Moving coin'
+                                  : 'Teleport → Target',
                             markers: [
                                 {
                                     label: partial
@@ -763,12 +771,87 @@ export function routeServer(
                             optimizationMessage: message,
                             assumptions: [
                                 'All tasks completed; devices enabled and powered',
+                                ...(terminal
+                                    ? [
+                                          'The coin is loaded, uncollected, and its source loop advances in game time.',
+                                      ]
+                                    : []),
                             ],
                         };
                         entry.candidate = candidate;
                         fallback = candidate;
                         reply(candidate);
                     };
+                    const movingPoint =
+                        matchingTransform &&
+                        (pointRules.navigationMotion !== undefined ||
+                            pointRules.navigationMotionUnresolved);
+                    if (movingPoint) {
+                        const loop = readCoinLoop(
+                            pointRules.navigationMotion,
+                            source,
+                            target,
+                        );
+                        if (!loop || !goal) {
+                            reply({
+                                status: 'unavailable',
+                                category: 'moving-interaction',
+                                message:
+                                    'The moving coin requires an activation or motion model.',
+                            });
+                            return;
+                        }
+                        const waiting = {
+                            status: 'building-ground',
+                            message:
+                                'Finding a place to wait for the moving coin…',
+                            retryAfter: 1000,
+                        };
+                        reply(waiting);
+                        const moving = planMovingCoin({
+                            loop,
+                            placed: target,
+                            goal,
+                            scene,
+                            candidates,
+                            coarse: data,
+                            locomotion: movement.sustainedSprint,
+                            builder,
+                            signal: shutdown.signal,
+                            onProgress: () => reply(waiting),
+                        });
+                        running.add(moving);
+                        try {
+                            const result = await moving;
+                            if (result) {
+                                display(
+                                    {
+                                        route: result.route,
+                                        arrival: result.anchor,
+                                        connections: [],
+                                        diagnostics: { truncated: true },
+                                    },
+                                    false,
+                                    '',
+                                    result.terminal,
+                                );
+                            } else {
+                                reply({
+                                    status: 'unavailable',
+                                    category: 'moving-interaction',
+                                    message:
+                                        'No verified standing approach to the coin’s path was found.',
+                                });
+                            }
+                        } finally {
+                            running.delete(moving);
+                        }
+                        return;
+                    }
+                    const solver = await sceneSolver(
+                        data,
+                        movement.sustainedSprint,
+                    );
                     const solving = solver.solve(
                         {
                             starts: candidates,
