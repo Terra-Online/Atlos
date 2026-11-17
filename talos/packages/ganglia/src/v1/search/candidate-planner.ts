@@ -3,12 +3,13 @@ import { createBoundsIndex } from '#@/src/model/bounds.ts';
 import { type GoalProjection, closestOnSurface, findGoalHit } from '#@/src/model/goals.ts';
 import type { InteractionGoal } from '#@/src/movement.ts';
 import type { GroundArrival } from '#@/src/route.ts';
-import type { SceneNavigation } from '#@/src/solver/resources.ts';
+import type { SceneTransfer, SceneNavigation } from '#@/src/solver/resources.ts';
 import { surfaceGraph, surfacePortals } from '#@/src/v1/geo/surfaces.ts';
 import { groundComponents } from '#@/src/v1/reach/connectivity.ts';
 import { createGroundStraightener } from '#@/src/v1/route/straighten.ts';
 import { createTransferQuery } from '#@/src/v1/search/candidate-transfers.ts';
 import { createMinHeap } from '#@/src/v1/search/heap.ts';
+import { createTransportGuide } from '#@/src/v1/search/transport-guide.ts';
 
 export interface CandidateEdge {
   mode?: string;
@@ -361,7 +362,31 @@ export function createCandidatePlanner(
     };
   };
   const rejected = new Set<number | string>();
+  let guide: ReturnType<typeof createTransportGuide> | undefined;
+
   return {
+    moving(
+      starts: GroundArrival[],
+      goal: Vec3,
+      interaction: InteractionGoal,
+      transfers: readonly SceneTransfer[],
+    ) {
+      if (!transfers.length) return;
+      // The candidate planner also owns temporary endpoint nodes. Only immutable
+      // ground nodes and edges belong to this scene-wide transport guide.
+      guide ??= createTransportGuide(
+        data.surfaces,
+        {
+          nodes: graph.nodes.slice(0, data.surfaces.length),
+          edges: graph.edges.slice(0, groundEdgeCount),
+        },
+        topology,
+        data.options.speed,
+        data.options.maxVertical,
+        transfers,
+      );
+      return guide(starts, goal, interaction);
+    },
     reject(indices: (number | string)[]) {
       for (const index of indices) {
         if (

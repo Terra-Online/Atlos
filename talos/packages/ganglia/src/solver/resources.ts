@@ -82,6 +82,12 @@ export interface SceneTerminal {
   supportBoxes?: RouteResult['supportBoxes'];
 }
 
+export interface SceneTransfer {
+  id: string;
+  from: Vec3;
+  to: Vec3;
+}
+
 export interface SceneResources<Source, Job extends WindowJob> extends WindowResources<
   WindowRequest & { source: Source },
   Job
@@ -91,6 +97,7 @@ export interface SceneResources<Source, Job extends WindowJob> extends WindowRes
    * tiles, while omitted tiles remain unknown. This operation performs IO and
    * normalization only, without building navigation or solving a route. */
   physical?(job: Job, request: WindowRequest & { source: Source }): Promise<PhysicalSnapshot>;
+  movingTransfers?(): Promise<readonly SceneTransfer[]>;
   terminals?(query: RouteQuery): Promise<readonly SceneTerminal[]>;
   /** Wait for resource work to change, without requiring another client request. */
   wait(signal?: AbortSignal): Promise<void>;

@@ -166,6 +166,30 @@ export function routeServer(
                 Source,
                 Awaited<ReturnType<typeof builder.query>> & {}
             > = {
+                movingTransfers: async () => {
+                    const catalog = await read(`${scene}-traversal-devices.json`).catch(
+                        (error: unknown) => {
+                            if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return null;
+                            throw error;
+                        },
+                    ) as {
+                        scene: string;
+                        source: Source;
+                        movingSupports?: {
+                            id: string;
+                            transfers: { from: Vec3; to: Vec3; speed: number | null }[];
+                        }[];
+                    } | null;
+                    if (!catalog) return [];
+                    if (catalog.scene !== scene || !sameSource(source, catalog.source))
+                        throw new Error('Moving support data does not match the navigation build');
+                    return (catalog.movingSupports ?? []).flatMap(({ id, transfers }) =>
+                        transfers
+                            .filter(t => typeof t.speed === 'number' && Number.isFinite(t.speed) && t.speed > 0 &&
+                                finiteVector(t.from) && finiteVector(t.to))
+                            .map(t => ({ id, from: t.from, to: t.to })),
+                    );
+                },
                 query: builder.query,
                 physical: builder.physical,
                 solve: builder.solve,
