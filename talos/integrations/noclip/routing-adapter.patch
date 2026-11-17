@@ -2,14 +2,15 @@ diff --git a/packages/extractor/src/route-cache.test.ts b/packages/extractor/src
 new file mode 100644
 --- /dev/null
 +++ b/packages/extractor/src/route-cache.test.ts
-@@ -0,0 +1,63 @@
+@@ -0,0 +1,84 @@
 +import assert from 'node:assert/strict';
 +import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 +import { tmpdir } from 'node:os';
 +import { join } from 'node:path';
 +import { test } from 'node:test';
++import { serialize } from 'node:v8';
 +
-+import { createRouteCache } from './route-cache.ts';
++import { createRouteCache, readRouteInput } from './route-cache.ts';
 +
 +const inputs = async (directory: string, suffix = '') => {
 +	const files = {
@@ -66,6 +67,26 @@ new file mode 100644
 +		await rm(directory, { recursive: true, force: true });
 +	}
 +});
++
++test('preserves binary collision precision through both route input readers', async () => {
++	const directory = await mkdtemp(join(tmpdir(), 'route-cache-binary-'));
++	try {
++		const files = { ...(await inputs(directory)), collision: join(directory, 'collision.bin') };
++		const geometry = {
++			positions: new Float64Array([0.123456789012345, 2, 3, 4, 5, 6, 7, 8, 9]),
++			indices: new Uint32Array([0, 1, 2]),
++		};
++		await writeFile(files.collision, serialize(geometry));
++		assert.deepEqual(await readRouteInput(files.collision), geometry);
++		const cache = createRouteCache();
++		await cache.begin(files);
++		const decoded = await cache.read('collision', files.collision);
++		assert.deepEqual(decoded, geometry);
++		assert.equal(await cache.read('collision', files.collision), decoded);
++	} finally {
++		await rm(directory, { recursive: true, force: true });
++	}
++});
 diff --git a/packages/extractor/src/write-route.ts b/packages/extractor/src/write-route.ts
 new file mode 100644
 --- /dev/null
@@ -90,10 +111,17 @@ diff --git a/packages/extractor/src/route-cache.ts b/packages/extractor/src/rout
 new file mode 100644
 --- /dev/null
 +++ b/packages/extractor/src/route-cache.ts
-@@ -0,0 +1,104 @@
+@@ -0,0 +1,111 @@
 +import { createPhysicalPreparation } from '@opendfieldmap/ganglia/solver/host';
 +import { readFile, stat } from 'node:fs/promises';
 +import { resolve } from 'node:path';
++import { deserialize } from 'node:v8';
++
++/** Collision caches may preserve their numeric buffers in Node's binary format. */
++export const readRouteInput = async <T,>(path: string): Promise<T> =>
++	path.endsWith('.bin')
++		? deserialize(await readFile(path))
++		: JSON.parse(await readFile(path, 'utf8'));
 +
 +type Entry = { key: string; value: unknown };
 +type Files = { ground: string; collision: string; movement: string };
@@ -180,7 +208,7 @@ new file mode 100644
 +			if (enabled && existing?.key === identity.key) {
 +				return existing.value as T;
 +			}
-+			const value: unknown = JSON.parse(await readFile(identity.path, 'utf8'));
++			const value = await readRouteInput<T>(identity.path);
 +			const after = await fileIdentity(identity.path);
 +			if (after.key !== identity.key) {
 +				clear();
@@ -225,7 +253,7 @@ new file mode 100644
 +} from './collision-ground.ts';
 +import { normalizeDevices, deviceConnections } from './traversal-links.ts';
 +import { roundExclusions } from './round-exclusions.ts';
-+import type { RouteCache } from '../route-cache.ts';
++import { readRouteInput, type RouteCache } from '../route-cache.ts';
 +type Source = { buildGuid: string; contentHash: string };
 +type Profile = { radius: number; height: number };
 +type Ground = {
@@ -345,7 +373,7 @@ new file mode 100644
 +			: readFile(values.ground, 'utf8').then(JSON.parse),
 +		context
 +			? context.cache.read<Collision>('collision', values.collision)
-+			: readFile(values.collision, 'utf8').then(JSON.parse),
++			: readRouteInput<Collision>(values.collision),
 +		context
 +			? context.cache.read<Movement>('movement', values.movement)
 +			: readFile(values.movement, 'utf8').then(JSON.parse),
