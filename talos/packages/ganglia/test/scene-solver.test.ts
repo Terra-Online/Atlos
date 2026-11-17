@@ -803,3 +803,96 @@ for (const outcome of ['cheaper', 'failure', 'cancel'] as const) {
     }
   });
 }
+
+test('discovers a source rope approach to a fresh airborne terminal from the scene entry', async () => {
+  const rect = (id: string, left: number, right: number, height: number) => ({
+    id,
+    vertices: [
+      [left, height, -4],
+      [left, height, 4],
+      [right, height, 4],
+      [right, height, -4],
+    ] satisfies Vec3[],
+  });
+  const surfaces = [rect('lower', -10, -0.25, 0), rect('upper', 0.4, 10, 5)];
+  const locomotion = { speed: 5, sprintSpeed: 5, sprintAcceleration: 1 };
+  const profile = { radius: 0.1, height: 1.4 };
+  const rules = { speed: 5, maxVertical: 0.5, walls: [], profile, locomotion };
+  const ropeEnd = (id: string, p: Vec3) => ({
+    id,
+    kind: 'rope',
+    position: p,
+    goal: { position: p, interaction: { radius: 0.25 } },
+    seeds: [p],
+    unitScale: true,
+    resolved: true,
+    speed: 4,
+    overhead: 0.1,
+    duration: 0,
+    fixedLaunch: false,
+    aim: null,
+    height: 0,
+    aimClearance: 0,
+    boostMultiplier: 1,
+  });
+  const input: PhysicalInput = {
+    ground: { surfaces, options: rules },
+    collision: {
+      positions: surfaces.flatMap(({ vertices }) => vertices.flat()),
+      indices: surfaces.flatMap((_, i) => [0, 1, 2, 0, 2, 3].map((v) => v + i * 4)),
+    },
+    locomotion,
+    movement: {
+      maxSlope: 45,
+      runAirSpeed: 4,
+      stepUp: 0.3,
+      stepDown: 0.5,
+      model: {
+        gravity: 10,
+        fallingGravity: 10,
+        maxJumpHeight: 1.8,
+        maxFallingSpeed: 16,
+        apexTime: 0,
+        maxHorizontalSpeed: 4,
+        startHorizontalSpeed: 4,
+        airOverspeedDeceleration: 5,
+        airAcceleration: 60,
+        airDeceleration: 10,
+      },
+    },
+    devices: {
+      devices: [ropeEnd('bottom', [-0.5, 0, 0]), ropeEnd('top', [0.7, 5, 0])],
+      ropes: [{ bottom: 'bottom', top: 'top' }],
+    },
+  };
+  const resources: SceneResources<null, Job> = {
+    query: async () => ({ status: 'ready' }),
+    solve: async () => ({ status: 'ready', route: { status: 'no-verified-route' } }),
+    physical: async () => ({ input, revision: 'rope-fixture', coverage: 'complete' }),
+    key: () => 'rope-fixture',
+    ground: async () => input.ground,
+    route: (job) => ({ route: job.route }),
+    wait: async () => {},
+  };
+  const solver = await prepareRouteSolver(gangliaV1Defaults, {
+    kind: 'scene',
+    scene: { scene: 'fixture', source: null, walls: [], navigation: { surfaces, options: rules } },
+    resources,
+    locomotion,
+  });
+  const query = {
+    starts: [
+      { id: 'original', position: [-3, 0, 0] as Vec3, state: 'available' as const, cost: 0 },
+    ],
+    goal: [5, 6, 0] as Vec3,
+    interaction: { radius: 0.25, airborne: true },
+  };
+  const result = await solver.solve(query);
+  await solver.close();
+  assert.equal(result.route.status, 'complete');
+  if (result.route.status !== 'complete') return;
+  assert.equal(result.partial, false);
+  assert.ok(result.route.segments.some((segment) => segment.connection === 'rope/bottom/top'));
+  assert.equal(result.route.goalHit?.segment, result.route.segments.length - 1);
+  assert.ok(verifyRoute(query, result.route, { maxVertical: 0.5 }).valid);
+});
