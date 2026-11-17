@@ -578,8 +578,35 @@ export function routeServer(
                                 (value, axis) => value - target[axis],
                             ),
                         ) <= 1e-3;
+                    const supportGoal =
+                        matchingTransform && !pointRules.navigationGoal
+                            ? await builder.supportContact(
+                                  scene,
+                                  source,
+                                  level,
+                                  pointRules.id,
+                                  target,
+                                  data.options,
+                              )
+                            : undefined;
+                    const needsAuthoredCap =
+                        matchingTransform &&
+                        !pointRules.navigationGoal &&
+                        pointRules.template === 'int_water_volume_floater';
+                    if (
+                        supportGoal === null ||
+                        (needsAuthoredCap && !supportGoal)
+                    ) {
+                        reply({
+                            status: 'unavailable',
+                            category: 'interaction-unavailable',
+                            message:
+                                'The authored water-floater contact is unavailable',
+                        });
+                        return;
+                    }
                     const normalizedGoal = matchingTransform
-                        ? pointRules.navigationGoal
+                        ? (pointRules.navigationGoal ?? supportGoal)
                         : null;
                     // Collection triggers can be entered during flight. Preserve
                     // their source-derived volume and finish at the collection event.
@@ -605,13 +632,14 @@ export function routeServer(
                         template: pointRules?.template ?? null,
                         templatePath: pointRules?.templatePath ?? null,
                         goal: goal ?? null,
-                        unresolved:
-                            pointRules && !matchingTransform
-                                ? ['point-transform-mismatch']
-                                : (pointRules?.navigationUnresolved ??
-                                  pointRules?.effective.unresolved ?? [
-                                      'interaction-rules-unavailable',
-                                  ]),
+                        unresolved: supportGoal
+                            ? []
+                            : pointRules && !matchingTransform
+                              ? ['point-transform-mismatch']
+                              : (pointRules?.navigationUnresolved ??
+                                pointRules?.effective.unresolved ?? [
+                                    'interaction-rules-unavailable',
+                                ]),
                     };
                     travel ??= read('travel-points.json')
                         .then(
@@ -693,7 +721,10 @@ export function routeServer(
                                         : 'Teleport',
                                     position: route.points[0],
                                 },
-                                { label: 'Target', position: target },
+                                {
+                                    label: 'Target',
+                                    position: supportGoal?.position ?? target,
+                                },
                             ],
                             coverage: partial
                                 ? 'Verified target-side window; teleport approach pending'
