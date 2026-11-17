@@ -577,7 +577,7 @@ diff --git a/packages/extractor/src/game/traversal-links.ts b/packages/extractor
 new file mode 100644
 --- /dev/null
 +++ b/packages/extractor/src/game/traversal-links.ts
-@@ -0,0 +1,310 @@
+@@ -0,0 +1,325 @@
 +import {
 +	trsMatrix,
 +	transformPoint,
@@ -707,16 +707,17 @@ new file mode 100644
 +			}
 +		}
 +	}
++	const componentType = component === 'JumpMachineComponentData' ? 169
++		: component === 'JumpMachineElectricComponentData' ? 150 : undefined;
 +	for (const [key, value] of properties(device.placement.properties)) {
 +		values.set(key, value);
 +	}
 +	// component-scoped/runtime overrides need an explicit resolver before replacing direct fields.
 +	for (const override of device.placement.componentProperties) {
-+		// the versioned interactive schema uses key 169 for the jump-machine component.
++		// Placement overrides use distinct component keys for ordinary and electric pads.
 +		if (
 +			Array.isArray(override) &&
-+			override[0] === 169 &&
-+			component === 'JumpMachineComponentData'
++			componentType !== undefined && override[0] === componentType
 +		) {
 +			for (const [key, value] of properties(override[1])) {
 +				if (forcedState(key)) {
@@ -808,13 +809,27 @@ new file mode 100644
 +		).navigationGoal;
 +	};
 +	const devices = input.devices.map((d) => {
++		const template = input.templates[d.template];
++		const electric =
++			d.kind === 'launch' &&
++			isObject(template) &&
++			Array.isArray(template.components) &&
++			template.components.some((c) =>
++				isObject(c) && typeof c.type === 'string' &&
++				c.type.includes('JumpMachineElectricComponentData'),
++			);
 +		const component =
 +			d.kind === 'accelerate'
 +				? 'TriggerObserverComponentData'
 +				: d.kind === 'launch'
-+					? 'JumpMachineComponentData'
++					? electric
++						? 'JumpMachineElectricComponentData'
++						: 'JumpMachineComponentData'
 +					: 'InteractiveVerticalRopeComponentData';
-+		const p = effective(d, input.templates[d.template], component);
++		const p = effective(d, template, component);
++		// The electric component identifies its power mode directly; its schema
++		// does not contain the ordinary launch component's use_electric field.
++		const useElectric = electric ? true : p?.get('use_electric');
 +		const goal = entry(d);
 +		return {
 +			id: d.id,
@@ -834,12 +849,12 @@ new file mode 100644
 +			fixedLaunch:
 +				!!p &&
 +				p.get('free_jump') === false &&
-+				typeof p.get('use_electric') === 'boolean' &&
++				typeof useElectric === 'boolean' &&
 +				p.get('unlock_height_limit') === false,
 +			freeLaunch:
 +				!!p &&
 +				p.get('free_jump') === true &&
-+				typeof p.get('use_electric') === 'boolean' &&
++				typeof useElectric === 'boolean' &&
 +				p.get('unlock_height_limit') === false,
 +			aim: p?.get('target_position'),
 +			height: Number(p?.get('height')),

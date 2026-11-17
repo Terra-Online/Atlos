@@ -1,5 +1,6 @@
 import { sceneCatalog } from './scene-resources';
 import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 import { hashFiles } from '../../scripts/release-snapshot.mjs';
 import { resolve } from 'node:path';
 import { defineConfig, loadEnv, type UserConfig } from 'vite';
@@ -44,6 +45,12 @@ export default defineConfig(async ({ command, mode }): Promise<UserConfig> => {
                 solver:
                     'workspace:' +
                     createHash('sha256')
+                        // Physical route caches also depend on extractor normalization.
+                        .update(
+                            await readFile(
+                                resolve(root, '.cache/noclip/.generated.json'),
+                            ),
+                        )
                         .update(
                             JSON.stringify(
                                 await hashFiles(
