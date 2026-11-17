@@ -45,6 +45,8 @@ export interface JumpRouteOptions extends GroundOptions {
    * Query connections override its initial connection set. */
   groundPlanner?: GroundPlanner;
   interaction?: InteractionGoal;
+  /** Query-owned terminal launch trajectories, unavailable as transfer edges. */
+  terminalLaunches?: GroundConnection[];
   model: JumpModel;
   runAirSpeed: number;
   maxSlope: number;

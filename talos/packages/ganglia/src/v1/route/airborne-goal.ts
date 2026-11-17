@@ -28,7 +28,8 @@ interface Witness {
 interface Candidate {
   start: Witness;
   end: Witness;
-  arc: Arc & { requiredGait?: 'sprint' };
+  arc: (Arc | (Omit<Arc, 'mode'> & { mode: 'launch' })) & { requiredGait?: 'sprint' };
+  connection?: GroundConnection;
 }
 
 const distance = (a: Vec3, b: Vec3) => Math.hypot(...a.map((value, axis) => value - b[axis]));
@@ -46,7 +47,7 @@ export function findGoalFlights(
   const { profile, model, interaction, maxCandidates, maxLinks } = options;
   const diagnostics = { attempted: 0, nominalHits: 0, hits: 0, approaches: 0, truncated: false };
   const first = starts.find((start) => start.state === 'available');
-  if (!first) return { candidates: [], diagnostics };
+  if (!first || maxCandidates === 0) return { candidates: [], diagnostics };
   validateDiscovery(world, { ...options, from: first.position, to: goal });
   const project = options.groundPlanner?.project ?? createGoalProjector(surfaces);
   const blocked = createWallChecker(options.walls, profile);
@@ -425,6 +426,27 @@ export function planAirborneGoal(
   const { profile, interaction } = options;
   const first = starts.find((start) => start.state === 'available');
   if (!first) return { route: { status: 'unmapped' }, connections: [], diagnostics };
+  for (const action of options.terminalLaunches ?? []) {
+    if (
+      action.mode !== 'launch' ||
+      !action.terminal ||
+      action.state !== 'open' ||
+      !findGoalHit(action.points, goal, interaction)
+    )
+      continue;
+    candidates.push({
+      start: { position: action.points[0] },
+      end: { position: action.points.at(-1)! },
+      arc: {
+        points: action.points,
+        times: action.times,
+        flight: action.flight,
+        mode: 'launch',
+        motionValidation: 'model-based',
+      },
+      connection: action,
+    });
+  }
   candidates.sort(
     (a, b) =>
       distance(first.position, a.start.position) - distance(first.position, b.start.position) ||
@@ -530,10 +552,12 @@ export function planAirborneGoal(
     }
     const prefix: Pick<JumpResult, 'route' | 'connections'> = saved.result;
     if (prefix.route.status !== 'complete') continue;
-    let id;
-    do {
-      id = `airborne-goal/${serial++}`;
-    } while (ids.has(id));
+    let id = candidate.connection?.id;
+    if (!id) {
+      do {
+        id = `airborne-goal/${serial++}`;
+      } while (ids.has(id));
+    }
     ids.add(id);
     const segment = { ...candidate.arc, connection: id };
     let route: Route = {
@@ -571,7 +595,7 @@ export function planAirborneGoal(
     best = route;
     connections = [
       ...prefix.connections,
-      {
+      candidate.connection ?? {
         ...candidate.arc,
         id,
         state: 'open',

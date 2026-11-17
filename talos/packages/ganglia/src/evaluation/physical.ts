@@ -276,8 +276,11 @@ export function createPhysicalVerifier(
               if (!close(model[key], authority[key])) throw new Error(`Invalid flight ${key}`);
             let height = authority.maxJumpHeight;
             if (s.mode === 'launch') {
-              const device = rules.devices?.devices.find((d) => s.connection === `launch/${d.id}`);
-              if (!device?.fixedLaunch || !device.unitScale || !Array.isArray(device.aim))
+              const launch = /^launch\/([^/]+)(?:\/(\d+)|\/terminal\/(\d+))?$/.exec(
+                s.connection ?? '',
+              );
+              const device = rules.devices?.devices.find((d) => launch?.[1] === d.id);
+              if (!device?.unitScale || (!device.fixedLaunch && !device.freeLaunch))
                 throw new Error('Unknown launch device');
               if (
                 !device.goal ||
@@ -297,39 +300,52 @@ export function createPhysicalVerifier(
                 model.airAcceleration !== undefined ||
                 model.airDeceleration !== undefined
               )
-                throw new Error('Fixed launch cannot use character air controls');
-              const aim = device.aim as Vec3;
-              const direct =
-                Math.hypot(aim[0] - witness.end[0], aim[2] - witness.end[2]) <= profile.radius;
-              if (direct && Math.abs(aim[1] - witness.end[1]) > 0.51)
-                throw new Error('Launch landing is outside authored aim support');
-              height = Math.max(
-                device.height,
-                (direct ? witness.end[1] : aim[1]) + device.aimClearance - witness.start[1],
-              );
-              if (!direct) {
-                const aimTime = jumpDuration(witness.start[1], aim[1], {
-                  ...authority,
-                  maxJumpHeight: height,
-                  mode: 'jump',
-                });
-                const endTime = jumpDuration(witness.start[1], witness.end[1], {
-                  ...authority,
-                  maxJumpHeight: height,
-                  mode: 'jump',
-                });
-                if (
-                  !aimTime ||
-                  !endTime ||
-                  [0, 2].some(
-                    (axis) =>
-                      !close(
-                        (witness.end[axis] - witness.start[axis]) / endTime,
-                        (aim[axis] - witness.start[axis]) / aimTime,
-                      ),
+                throw new Error('Launch cannot use character air controls');
+              if (device.fixedLaunch) {
+                if (launch?.[2] || launch?.[3] || !Array.isArray(device.aim))
+                  throw new Error('Unknown fixed launch witness');
+                const aim = device.aim as Vec3;
+                const direct =
+                  Math.hypot(aim[0] - witness.end[0], aim[2] - witness.end[2]) <= profile.radius;
+                if (direct && Math.abs(aim[1] - witness.end[1]) > 0.51)
+                  throw new Error('Launch landing is outside authored aim support');
+                height = Math.max(
+                  device.height,
+                  (direct ? witness.end[1] : aim[1]) + device.aimClearance - witness.start[1],
+                );
+                if (!direct) {
+                  const aimTime = jumpDuration(witness.start[1], aim[1], {
+                    ...authority,
+                    maxJumpHeight: height,
+                    mode: 'jump',
+                  });
+                  const endTime = jumpDuration(witness.start[1], witness.end[1], {
+                    ...authority,
+                    maxJumpHeight: height,
+                    mode: 'jump',
+                  });
+                  if (
+                    !aimTime ||
+                    !endTime ||
+                    [0, 2].some(
+                      (axis) =>
+                        !close(
+                          (witness.end[axis] - witness.start[axis]) / endTime,
+                          (aim[axis] - witness.start[axis]) / aimTime,
+                        ),
+                    )
                   )
+                    throw new Error('Launch trajectory misses authored aim');
+                }
+              } else {
+                if (
+                  !device.resolved ||
+                  (!launch?.[2] && !launch?.[3]) ||
+                  (launch?.[3] !== undefined && !collection) ||
+                  model.maxHorizontalSpeed > rules.movement.runAirSpeed + 1e-6
                 )
-                  throw new Error('Launch trajectory misses authored aim');
+                  throw new Error('Invalid free launch witness');
+                height = device.height;
               }
             }
             if (!close(model.maxJumpHeight, height)) throw new Error('Invalid jump height');
