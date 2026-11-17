@@ -220,6 +220,30 @@ test('scenario training references must name cases in the same scenario', async 
   }
 });
 
+test('explicit expectations drive scoring and malformed arrival states fail during parsing', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'ganglia-suite-'));
+  try {
+    const file = join(directory, 'suite.json');
+    const raw = JSON.parse(
+      await readFile(new URL('../bench/scenes/mechanisms/suite.json', import.meta.url), 'utf8'),
+    );
+    const scenario = raw.scenarios[0];
+    const testCase = scenario.cases[0];
+    raw.scenarios = [{ ...scenario, training: [testCase.id], cases: [testCase] }];
+    testCase.expect = { kind: 'reject', assertions: [] };
+    await writeFile(file, JSON.stringify(raw));
+    const [decoded] = (await readSuite(file)).cases;
+    assert.equal(expectation(decoded), 'reject');
+    assert.equal(matchesExpectation(decoded, unavailable), true);
+
+    testCase.query.starts[0].state = ['available'];
+    await writeFile(file, JSON.stringify(raw));
+    await assert.rejects(readSuite(file), /Invalid mechanism test case/);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 test('diagnostic audit records its cooperative deadline and solver output scoring without solving', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'ganglia-mechanism-audit-'));
   const output = join(directory, 'report.json');
@@ -284,7 +308,7 @@ test('service mechanism audit preserves input bindings and leaves queries unrun'
     await writeFile(
       join(directory, 'input-index.json'),
       JSON.stringify({
-        suiteSha256: createHash('sha256').update(bytes).digest('hex'),
+        suiteSha256: 'eb906c8b4cb678050b4a8f2db5cf1913e841f3325bc8dffb1484777e4f884a48',
         revision: 'audit-only',
         source: suite.requiredSource,
         profiles: Object.fromEntries(
@@ -315,6 +339,7 @@ test('service mechanism audit preserves input bindings and leaves queries unrun'
     assert.equal(process.status, 0, process.stderr);
     const report = JSON.parse(await readFile(output, 'utf8'));
     assert.equal(report.adapter, 'ganglia-v1-ts');
+    assert.equal(report.suiteSha256, createHash('sha256').update(bytes).digest('hex'));
     assert.deepEqual(report.selectedIds, [selected.id]);
     assert.deepEqual(report.results, []);
     assert.equal(report.inputAudit.length, 1);

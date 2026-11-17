@@ -20,6 +20,7 @@ export interface Case {
   scene: string;
   group: string;
   query: RouteQuery;
+  expected?: Expectation['kind'];
   assertions: string[];
   setup: {
     physical?: {
@@ -117,6 +118,19 @@ const finite = (value: unknown): value is number =>
 const vec3 = (value: unknown): value is Vec3 =>
   Array.isArray(value) && value.length === 3 && value.every(finite);
 const optionalNumber = (value: unknown) => value === undefined || finite(value);
+const optionalString = (value: unknown) => value === undefined || typeof value === 'string';
+const expectationKind = (value: unknown): value is Expectation['kind'] =>
+  value === 'complete' || value === 'reject' || value === 'constraint';
+const evidenceValue = (value: unknown): value is Case['evidence'] =>
+  Array.isArray(value) &&
+  value.every(
+    (entry: unknown) =>
+      record(entry) &&
+      typeof entry.file === 'string' &&
+      typeof entry.collection === 'string' &&
+      optionalString(entry.id) &&
+      optionalNumber(entry.index),
+  );
 const queryValue = (value: unknown): value is RouteQuery => {
   if (
     !record(value) ||
@@ -128,7 +142,7 @@ const queryValue = (value: unknown): value is RouteQuery => {
         typeof start.id === 'string' &&
         vec3(start.position) &&
         finite(start.cost) &&
-        ['available', 'locked', 'unknown'].includes(String(start.state)),
+        (start.state === 'available' || start.state === 'locked' || start.state === 'unknown'),
     )
   )
     return false;
@@ -197,6 +211,104 @@ const locomotionValue = (value: unknown): value is LocomotionOptions => {
   return true;
 };
 
+const staminaNumbers = [
+  'capacity',
+  'initial',
+  'recoveryRate',
+  'recoveryDelay',
+  'reserve',
+  'activationCost',
+  'sprintDrain',
+];
+const staminaFlags = ['recoveryDuringSprint', 'recoveryDuringNonWalk'];
+
+function setupValue(value: unknown): value is Case['setup'] {
+  if (!record(value)) return false;
+  const { physical, locomotion, locomotionPatch, followingPlacement, sourceAnimation } = value;
+  return (
+    optionalString(value.requiredDevice) &&
+    optionalString(value.requiredSupport) &&
+    optionalString(value.excludedUnresolvedDevice) &&
+    (value.projectStartToPhysicalSupport === undefined ||
+      value.projectStartToPhysicalSupport === true) &&
+    (value.deviceAvailability === undefined || value.deviceAvailability === 'assumed-enabled') &&
+    (value.assumption === undefined || value.assumption === 'phase-free-swept-support') &&
+    (value.supportModel === undefined || value.supportModel === 'phase-free-circular-surface') &&
+    (physical === undefined ||
+      (record(physical) &&
+        physical.mode === 'frozen-window' &&
+        typeof physical.region === 'string' &&
+        typeof physical.ground === 'string' &&
+        typeof physical.collision === 'string' &&
+        (physical.allowExpansion === undefined || physical.allowExpansion === false))) &&
+    (locomotion === undefined || locomotionValue(locomotion)) &&
+    (locomotionPatch === undefined ||
+      (record(locomotionPatch) &&
+        (locomotionPatch.stamina === undefined ||
+          (record(locomotionPatch.stamina) &&
+            Object.entries(locomotionPatch.stamina).every(
+              ([key, val]) =>
+                (staminaNumbers.includes(key) && finite(val)) ||
+                (staminaFlags.includes(key) && typeof val === 'boolean'),
+            ))))) &&
+    (followingPlacement === undefined ||
+      (record(followingPlacement) &&
+        strings(followingPlacement.movableSourceIds) &&
+        finite(followingPlacement.minimumDistinctUsedBoxes) &&
+        followingPlacement.retainOtherSourceBoxes === true &&
+        followingPlacement.jointSnapshot === true &&
+        Array.isArray(followingPlacement.sourceActivityRanges) &&
+        followingPlacement.sourceActivityRanges.every(
+          (range: unknown) =>
+            record(range) &&
+            typeof range.id === 'string' &&
+            vec3(range.spawn) &&
+            finite(range.radius),
+        ))) &&
+    (sourceAnimation === undefined ||
+      (record(sourceAnimation) &&
+        typeof sourceAnimation.collection === 'string' &&
+        typeof sourceAnimation.id === 'string'))
+  );
+}
+
+function sourcesValue(value: unknown): value is Suite['sources'] {
+  return (
+    record(value) &&
+    Object.entries(value).every(
+      ([scene, source]) =>
+        scene &&
+        record(source) &&
+        record(source.source) &&
+        record(source.profile) &&
+        finite(source.profile.radius) &&
+        finite(source.profile.height) &&
+        locomotionValue(source.locomotion) &&
+        optionalString(source.traversalGenerator) &&
+        optionalString(source.interactives),
+    )
+  );
+}
+
+function regionsValue(
+  value: unknown,
+  sources: Suite['sources'],
+): value is Suite['physicalRegions'] {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (region: unknown) =>
+        record(region) &&
+        typeof region.id === 'string' &&
+        typeof region.scene === 'string' &&
+        Object.hasOwn(sources, region.scene) &&
+        Array.isArray(region.bounds) &&
+        region.bounds.length === 4 &&
+        region.bounds.every(finite),
+    )
+  );
+}
+
 export async function readSuite(file: string): Promise<Suite> {
   const raw: unknown = JSON.parse(await readFile(file, 'utf8'));
   if (!record(raw)) throw new Error('Invalid mechanism manifest');
@@ -206,66 +318,43 @@ export async function readSuite(file: string): Promise<Suite> {
     const suiteFile = resolve(dirname(file), 'suite.json');
     if (suiteFile !== resolve(file)) shared = await readSuite(suiteFile);
   }
-  const sources = record(raw.sources) ? (raw.sources as Suite['sources']) : shared?.sources;
-  const physicalRegions = Array.isArray(raw.physicalRegions)
-    ? (raw.physicalRegions as Suite['physicalRegions'])
-    : shared?.physicalRegions;
-  if (
-    !sources ||
-    !physicalRegions ||
-    Object.entries(sources).some(
-      ([scene, source]) =>
-        !scene ||
-        !record(source) ||
-        !record(source.source) ||
-        !record(source.profile) ||
-        !finite(source.profile.radius) ||
-        !finite(source.profile.height) ||
-        !locomotionValue(source.locomotion) ||
-        (source.traversalGenerator !== undefined &&
-          typeof source.traversalGenerator !== 'string') ||
-        (source.interactives !== undefined && typeof source.interactives !== 'string'),
-    ) ||
-    physicalRegions.some(
-      (region) =>
-        !record(region) ||
-        typeof region.id !== 'string' ||
-        typeof region.scene !== 'string' ||
-        !(region.scene in sources) ||
-        !Array.isArray(region.bounds) ||
-        region.bounds.length !== 4 ||
-        !region.bounds.every(finite),
-    )
-  )
+  const sources = raw.sources ?? shared?.sources;
+  const physicalRegions = raw.physicalRegions ?? shared?.physicalRegions;
+  if (!sourcesValue(sources) || !regionsValue(physicalRegions, sources))
     throw new Error('Invalid mechanism source bindings');
   if (shared && !isDeepStrictEqual(raw.source, shared.source))
     throw new Error('Legacy mechanism source differs from shared suite');
+  const scenes = new Set(Object.keys(sources));
   const ids = new Set<string>();
-  const validateCase = (c: Case) => {
+  function validateCase(c: unknown): asserts c is Case {
     if (
-      !c ||
+      !record(c) ||
+      typeof c.id !== 'string' ||
       !c.id ||
       !/^[a-zA-Z0-9_.-]+$/.test(c.id) ||
       ids.has(c.id) ||
-      !(c.scene in sources) ||
+      typeof c.scene !== 'string' ||
+      !scenes.has(c.scene) ||
       !queryValue(c.query) ||
       !strings(c.assertions) ||
-      !Array.isArray(c.evidence) ||
+      !evidenceValue(c.evidence) ||
       !strings(c.tags) ||
       typeof c.group !== 'string' ||
-      !record(c.setup)
+      !setupValue(c.setup) ||
+      (c.expected !== undefined && !expectationKind(c.expected))
     )
       throw new Error('Invalid or duplicate mechanism case');
     ids.add(c.id);
-    checkSetup(c);
-  };
+    checkSetup({ setup: c.setup });
+  }
   if (raw.schema !== 6) {
     if (!Array.isArray(raw.cases) || !raw.source) throw new Error('Invalid mechanism manifest');
     // Normalize legacy per-case setup into the same world/requirements split.
-    const cases = raw.cases as Case[];
+    const cases: Case[] = [];
     const groups: { setup: WorldSetup; cases: CaseSpec[] }[] = [];
-    for (const c of cases) {
+    for (const c of raw.cases) {
       validateCase(c);
+      cases.push(c);
       const {
         requiredDevice,
         requiredSupport,
@@ -331,12 +420,14 @@ export async function readSuite(file: string): Promise<Suite> {
       scenarioIds.has(value.id) ||
       !record(value.setup) ||
       typeof value.setup.scene !== 'string' ||
+      !Object.hasOwn(sources, value.setup.scene) ||
       !strings(value.training) ||
       !Array.isArray(value.cases)
     )
       throw new Error('Invalid or duplicate mechanism scenario');
     scenarioIds.add(value.id);
     const { scene, ...world } = value.setup;
+    if (!setupValue(world)) throw new Error('Invalid scenario setup');
     if (
       [
         'requiredDevice',
@@ -353,12 +444,13 @@ export async function readSuite(file: string): Promise<Suite> {
         typeof item.id !== 'string' ||
         !queryValue(item.query) ||
         !record(item.expect) ||
-        !['complete', 'reject', 'constraint'].includes(String(item.expect.kind)) ||
+        !expectationKind(item.expect.kind) ||
         !strings(item.expect.assertions) ||
         !record(item.metadata) ||
         typeof item.metadata.group !== 'string' ||
         !strings(item.metadata.tags) ||
-        !Array.isArray(item.metadata.evidence) ||
+        !evidenceValue(item.metadata.evidence) ||
+        !optionalString(item.note) ||
         (item.requirements !== undefined && !record(item.requirements))
       )
         throw new Error('Invalid mechanism test case');
@@ -375,6 +467,7 @@ export async function readSuite(file: string): Promise<Suite> {
         )
       )
         throw new Error('Invalid case requirement');
+      if (!setupValue(requirements)) throw new Error('Invalid case requirement');
       const c: Case = {
         ...item.metadata,
         id: item.id,
@@ -384,12 +477,24 @@ export async function readSuite(file: string): Promise<Suite> {
         evidence: item.metadata.evidence,
         query: item.query,
         setup: { ...world, ...requirements },
+        expected: item.expect.kind,
         assertions: item.expect.assertions,
       };
       validateCase(c);
-      if (expectation(c) !== item.expect.kind) throw new Error('Inconsistent case expectation');
       cases.push(c);
-      tests.push(item as unknown as CaseSpec);
+      tests.push({
+        id: item.id,
+        query: item.query,
+        expect: { kind: item.expect.kind, assertions: item.expect.assertions },
+        metadata: {
+          ...item.metadata,
+          group: item.metadata.group,
+          tags: item.metadata.tags,
+          evidence: item.metadata.evidence,
+        },
+        ...(item.requirements === undefined ? {} : { requirements }),
+        ...(item.note === undefined ? {} : { note: item.note }),
+      });
     }
     const localIds = new Set(tests.map((item) => item.id));
     if (
@@ -399,7 +504,7 @@ export async function readSuite(file: string): Promise<Suite> {
       throw new Error('Invalid scenario training references');
     scenarios.push({
       id: value.id,
-      setup: value.setup as WorldSetup,
+      setup: { ...world, scene },
       training: value.training,
       cases: tests,
       ...(typeof value.note === 'string' ? { note: value.note } : {}),
@@ -430,7 +535,7 @@ export function resourcePath(name: string, roots: Binding['roots']) {
     throw new Error('Mechanism resource escapes its root');
   return result;
 }
-export function checkSetup(c: Case) {
+export function checkSetup(c: Pick<Case, 'setup'>) {
   for (const key of Object.keys(c.setup))
     if (!keys.has(key)) throw new Error('Unsupported setup: ' + key);
   const s = c.setup;

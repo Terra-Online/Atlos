@@ -37,7 +37,7 @@ the service generator below does not create this retained/per-case layout.
 
 ## Generate service inputs
 
-Use Node 26, a game installation matching `suite.json.source`, the pinned extractor
+Use Node 26, a game installation matching `suite.json.requiredSource`, the pinned extractor
 and a validated private config. From repository root:
 
 ```sh
@@ -65,7 +65,11 @@ pnpm --dir talos/packages/ganglia benchmark:mechanisms \
   --audit --output /absolute/path/to/new-service-audit.json
 ```
 
-The service consumes case-to-scenario mappings from the index. The per-case
+The service uses the index to locate each Case's input directory. Existing inputs
+can be reused when their source, profiles and case bindings still match. The
+report records the suite and the input index digests separately.
+
+The per-case
 diagnostic instead consumes manifest paths and `<scene-data-root>/<caseId>`;
 it does not read this index. Converting between layouts needs explicit source
 bindings, including retained request/wall facts, rather than a renamed directory.

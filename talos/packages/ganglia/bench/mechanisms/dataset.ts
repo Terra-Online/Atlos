@@ -1,6 +1,8 @@
 /**
- * A dataset binds static exports and per-case input directories to an exact suite
- * revision. Scenario construction resolves the complete declared training set
+ * A dataset binds static exports to a game build, player profiles and case IDs.
+ * The suite digest identifies the run's manifest in its report. An existing
+ * dataset can serve a revised manifest with compatible input bindings.
+ * Scenario construction resolves the complete declared training set
  * before filtering measured cases, so selecting IDs never changes learned state.
  * A scenario's cases must resolve to one input directory. Different world setups
  * may share that directory, but never a mutable solver kernel. Input indexes
@@ -28,44 +30,43 @@ export interface Dataset extends StaticDataset {
 
 export async function loadDataset(root: string, suiteFile: string, suite: Suite): Promise<Dataset> {
   const bytes = await readFile(join(root, 'input-index.json'));
-  const index = JSON.parse(bytes.toString()) as {
-    suiteSha256: string;
-    revision: string;
-    source: unknown;
-    profiles: Record<string, unknown>;
-    cases: Record<string, { directory: string }>;
-  };
+  const index: unknown = JSON.parse(bytes.toString());
+  const record = (value: unknown): value is Record<string, unknown> =>
+    value !== null && typeof value === 'object' && !Array.isArray(value);
+  if (
+    !record(index) ||
+    typeof index.revision !== 'string' ||
+    !index.revision ||
+    !record(index.profiles) ||
+    !record(index.cases)
+  )
+    throw new Error('Invalid mechanism input index');
+  const profiles = index.profiles;
   const suiteSha256 = createHash('sha256')
     .update(await readFile(suiteFile))
     .digest('hex');
-  if (index.suiteSha256 !== suiteSha256)
-    throw new Error('Candidate input index binds a different mechanism specification');
   if (
     !isDeepStrictEqual(index.source, suite.source) ||
     Object.entries(suite.sources).some(
-      ([scene, source]) => !isDeepStrictEqual(index.profiles?.[scene], source.profile),
+      ([scene, source]) => !isDeepStrictEqual(profiles[scene], source.profile),
     )
   )
     throw new Error(
       'Candidate game build and player profiles must match the mechanism specification',
     );
-  if (
-    typeof index.revision !== 'string' ||
-    !index.revision ||
-    !index.cases ||
-    typeof index.cases !== 'object'
-  )
-    throw new Error('Invalid mechanism input index');
-  for (const binding of Object.values(index.cases)) {
-    if (!binding || typeof binding.directory !== 'string')
-      throw new Error('Invalid input directory binding');
-  }
+  const cases = Object.fromEntries(
+    Object.entries(index.cases).map(([id, binding]) => {
+      if (!record(binding) || typeof binding.directory !== 'string' || !binding.directory)
+        throw new Error(`Invalid input directory binding for case: ${id}`);
+      return [id, { directory: binding.directory }];
+    }),
+  );
   return {
     root: resolve(root),
     revision: index.revision,
     suiteSha256,
     indexSha256: createHash('sha256').update(bytes).digest('hex'),
-    cases: index.cases,
+    cases,
   };
 }
 

@@ -16,6 +16,8 @@ import type { RouteQuery, RouteResult, RouteEvent } from '#@/src/solver/contract
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 
 export function expectation(c: Case): 'complete' | 'reject' | 'constraint' {
+  if (c.expected !== undefined) return c.expected;
+  // Flat manifests encode expectations in assertions and group names.
   if (
     c.assertions.includes('no-complete-route-from-unavailable-arrival') ||
     c.assertions.includes('uncovered-target-cannot-be-complete')
