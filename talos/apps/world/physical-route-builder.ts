@@ -1,6 +1,9 @@
+import { preparePhysicalRoute } from '../../.cache/noclip/packages/extractor/src/game/physical-input.ts';
+import type { PhysicalSnapshot } from '@opendfieldmap/ganglia/solver';
 import type { PhysicalTask } from './physical-task.ts';
 import {
     physicalCoverage,
+    physicalTileSpan,
     physicalMargin,
     physicalWork,
     physicalWorkPlan,
@@ -743,6 +746,41 @@ export function physicalRouteBuilder(options: Options) {
     return {
         query,
         solve,
+        async physical(
+            ground: Job,
+            request: RouteRequest,
+        ): Promise<PhysicalSnapshot> {
+            const settings = await movementFile();
+            const devices = await deviceFile(request.scene);
+            const prepared = await preparePhysicalRoute(
+                {
+                    ground: ground.output,
+                    collision: ground.collision,
+                    movement: settings.path,
+                    devices: devices?.path,
+                },
+                request,
+            );
+            const input = prepared.input;
+            const bounds = input.ground.build?.bounds;
+            if (!bounds || !input.ground.tiles)
+                throw new Error('Missing physical coverage facts');
+            return {
+                input,
+                revision: hash([
+                    ground.output,
+                    ground.collision,
+                    settings.fingerprint,
+                    devices?.fingerprint,
+                    request.walls,
+                ]),
+                coverage: {
+                    bounds,
+                    tiles: input.ground.tiles,
+                    tileSpan: physicalTileSpan,
+                },
+            };
+        },
         async close() {
             closed = true;
             for (const worker of solverWorkers) worker.close();

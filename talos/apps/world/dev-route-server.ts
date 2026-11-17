@@ -167,6 +167,7 @@ export function routeServer(
                 Awaited<ReturnType<typeof builder.query>> & {}
             > = {
                 query: builder.query,
+                physical: builder.physical,
                 solve: builder.solve,
                 key: (job) => job.output,
                 ground: async (job) =>

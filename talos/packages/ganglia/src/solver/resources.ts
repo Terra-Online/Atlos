@@ -55,7 +55,12 @@ export interface WindowResources<Request extends WindowRequest, Job extends Wind
    * alone cannot establish this. Return undefined when equivalence is unknown. */
   physicalRevision?(job: Job): string | undefined;
   ground(job: Job): Promise<{ surfaces: Surface[]; options: GroundOptions }>;
-  route(job: Job): { route?: Route; reason?: string; diagnostics?: unknown };
+  route(job: Job): {
+    route?: Route;
+    reason?: string;
+    diagnostics?: unknown;
+    supportBoxes?: RouteResult['supportBoxes'];
+  };
 }
 
 /** Immutable coarse navigation facts. Proposal strategy belongs to the selected solver. */
