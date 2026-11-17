@@ -2,8 +2,11 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { createCollisionWorld } from '#@/src/collision.ts';
+import { createPhysicalVerifier, createPhysicalWorld } from '#@/src/evaluation/index.ts';
 import type { Surface } from '#@/src/geometry.ts';
-import type { DeviceFacts } from '#@/src/solver/physical.ts';
+import { findGoalHit } from '#@/src/model/goals.ts';
+import type { RouteQuery } from '#@/src/solver/contract.ts';
+import type { DeviceFacts, PhysicalInput } from '#@/src/solver/physical.ts';
 import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { createDeviceConnections } from '#@/src/v1/solver/physical/devices.ts';
 
@@ -106,32 +109,30 @@ test('physical solver returns a complete free-launch route with character resour
   const { gangliaV1Defaults, prepareRouteSolver } = await import('#@/src/solver/index.ts');
   const positions = surfaces.flatMap((s) => s.vertices.flat());
   const indices = surfaces.flatMap((_, i) => [0, 1, 2, 0, 2, 3].map((v) => v + i * 4));
+  const input: PhysicalInput = {
+    ground: { surfaces, options: { speed: 4, maxVertical: 0.5, profile, walls: [] } },
+    collision: { positions, indices },
+    movement: {
+      model: {
+        ...options.model,
+        maxJumpHeight: 0.5,
+        maxHorizontalSpeed: 6,
+        startHorizontalSpeed: 6,
+        airOverspeedDeceleration: 5,
+        airAcceleration: 30,
+        airDeceleration: 30,
+      },
+      maxSlope: 45,
+      runAirSpeed: 6,
+      stepUp: 0.3,
+      stepDown: 0.3,
+    },
+    locomotion: { speed: 4, sprintSpeed: 4, sprintAcceleration: 10 },
+    devices: facts,
+  };
   const solver = await prepareRouteSolver(
     { ...gangliaV1Defaults, maxCandidates: 0, maxShortcutCandidates: 0 },
-    {
-      kind: 'physical',
-      input: {
-        ground: { surfaces, options: { speed: 4, maxVertical: 0.5, profile, walls: [] } },
-        collision: { positions, indices },
-        movement: {
-          model: {
-            ...options.model,
-            maxJumpHeight: 0.5,
-            maxHorizontalSpeed: 6,
-            startHorizontalSpeed: 6,
-            airOverspeedDeceleration: 5,
-            airAcceleration: 30,
-            airDeceleration: 30,
-          },
-          maxSlope: 45,
-          runAirSpeed: 6,
-          stepUp: 0.3,
-          stepDown: 0.3,
-        },
-        locomotion: { speed: 4, sprintSpeed: 4, sprintAcceleration: 10 },
-        devices: facts,
-      },
-    },
+    { kind: 'physical', input },
   );
   try {
     const result = await solver.solve({
@@ -143,6 +144,27 @@ test('physical solver returns a complete free-launch route with character resour
     assert.ok(result.route.segments.some((segment) => segment.mode === 'launch'));
     assert.ok(result.route.cost > 0 && Number.isFinite(result.route.cost));
     assert.deepEqual(result.route.points.at(-1), [6, 0, 0]);
+
+    const query: RouteQuery = {
+      starts: [{ id: 'player', position: [-3, 0, 0], cost: 0, state: 'available' }],
+      goal: [4, 2.5, 1],
+      interaction: { radius: 0.1, airborne: true },
+    };
+    const collected = await solver.solve(query);
+    assert.equal(collected.route.status, 'complete', JSON.stringify(collected));
+    if (collected.route.status !== 'complete') return;
+    const finalAction = collected.route.segments.at(-1)!;
+    assert.equal(finalAction.mode, 'launch');
+    assert.match(finalAction.connection ?? '', /^launch\/pad\/terminal\//);
+    assert.ok(collected.route.goalHit);
+    assert.ok(findGoalHit(finalAction.points, query.goal, query.interaction!));
+    assert.ok(
+      collected.connections.some((edge) => edge.id === finalAction.connection && edge.terminal),
+    );
+    const replay = createPhysicalVerifier(() => [createPhysicalWorld(input, 'complete')], {
+      walkSnap: 0.05,
+    })(query, collected.route);
+    assert.equal(replay.valid, true, JSON.stringify(replay.issues));
   } finally {
     await solver.close();
   }
