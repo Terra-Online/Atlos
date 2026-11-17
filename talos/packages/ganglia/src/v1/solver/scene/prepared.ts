@@ -241,6 +241,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
           {
             ...config,
             locomotion,
+            transportGuide: Boolean(facilities),
             transfers: proposal.path?.filter((edge) => edge.unresolved).map((edge) => edge.points),
           },
           groundCache,

@@ -68,6 +68,8 @@ export type WindowConfig = {
   maxTargetError?: number;
   /** Unknown/action trajectories are indivisible; only ground guide spans may be split. */
   transfers?: Vec3[][];
+  /** Seek a layout-independent prefix when the guide already contains a transport. */
+  transportGuide?: boolean;
 };
 const interpolate = (a: Vec3, b: Vec3, t: number): Vec3 => [
   a[0] + (b[0] - a[0]) * t,
@@ -148,6 +150,7 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
   // is not a global reachability claim; identical work proceeds to the same fallback.
   let physicalFailure: { key: string; reason?: string; truncated: boolean } | undefined;
   let widerDeviceTrial = false;
+  const checkedPlain = new Set<string>();
   let truncated = false;
   let cursor = 0,
     end = -1,
@@ -523,7 +526,38 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
           physicalFailure = undefined;
         const failed = physicalKey === undefined ? undefined : physicalFailure;
         let job: Job | null | undefined;
-        if (!failed) {
+        // An intermediate device-only success can require a moved box even
+        // when an ordinary jump would reach the same lift. Such a layout
+        // cannot be joined to an independently planned suffix. Try bounded
+        // ordinary discovery first and keep the existing device fallback.
+        if (
+          settings.transportGuide &&
+          !final &&
+          stage === 1 &&
+          !failed &&
+          !checkedPlain.has(key) &&
+          local.solverConfig?.algorithm !== 'ganglia-v1-rust' &&
+          local.solverConfig
+        ) {
+          const bounded = {
+            ...local,
+            solverConfig: {
+              ...local.solverConfig,
+              maxCandidates: Math.min(local.solverConfig.maxCandidates, 480),
+              maxLinks: Math.min(local.solverConfig.maxLinks, 48),
+              maxShortcutCandidates: 0,
+            },
+          };
+          const trial = await builder.solve(ground, bounded, true, physicalWork(2), { signal });
+          if (trial && trial.status !== 'ready' && trial.status !== 'failed')
+            return progress('pending');
+          checkedPlain.add(key);
+          if (trial?.status === 'ready') {
+            const candidate = builder.route(trial).route;
+            if (candidate?.status === 'complete' && !candidate.placements?.length) job = trial;
+          }
+        }
+        if (!failed && !job) {
           job = await builder.solve(
             ground,
             local,
