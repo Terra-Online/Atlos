@@ -464,6 +464,35 @@ test('independent joint geometry rejects overlapping or out-of-range box layouts
   );
 });
 
+test('rotated boxes use their real shape at the original and placed poses', () => {
+  const box = support();
+  const cosine = Math.SQRT1_2;
+  box.bodies = [cuboid(0, 0, 0).map(([x, y, z]) => [(x - z) * cosine, y, (x + z) * cosine])];
+  const terrain = floor('support', -6, 8, 0);
+  const placement = [{ device: box.id, position: [4, 0, 0] as Vec3 }];
+  const plate = (id: string, x: number, z: number): Surface => ({
+    id,
+    vertices: [
+      [x, 0.2, z],
+      [x, 1, z],
+      [x, 1, z + 0.1],
+      [x, 0.2, z + 0.1],
+    ],
+  });
+  const corners = [plate('source-corner', 0.95, 0.95), plate('placed-corner', 4.95, 0.95)];
+  const world = (obstacles: Surface[]) => relayWorld([box], [terrain, ...obstacles]);
+
+  assert.deepEqual(world(corners).configured(placement).validatedPlacements, [box.id]);
+  assert.throws(
+    () => world([plate('source-intersection', 0.3, 0.3)]).configured(placement),
+    /Original body collision ownership is unresolved/,
+  );
+  assert.throws(
+    () => world([plate('placed-intersection', 4.3, 0.3)]).configured(placement),
+    /Placed body intersects static geometry/,
+  );
+});
+
 test('joint discovery cannot borrow a remote box or exceed an individual activity sphere', async () => {
   const a = relayBox('a', 0),
     b = relayBox('b', 3.5),

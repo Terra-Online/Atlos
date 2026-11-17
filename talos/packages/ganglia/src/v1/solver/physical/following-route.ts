@@ -323,7 +323,9 @@ export const planFollowingRoute = async (
       continue;
     }
     const supportTriangles = trianglesOf(terrain, world.trianglesInBounds?.(sourceScope));
-    const sourceCollision = blockedBody(original, original.min[1], supportTriangles);
+    const sourceCollision = support.bodies.some((body) =>
+      blockedBody(body, supportBounds([body]).min[1], supportTriangles),
+    );
     const staticWorld = world;
     const anchors: Vec3[] = [[support.spawn[0], original.min[1], support.spawn[2]]];
     // Relay boxes can be useful before the final goal's neighbourhood. Probe
@@ -436,6 +438,9 @@ export const planFollowingRoute = async (
             max: [bounds.max[0], bounds.max[2]],
           }),
         );
+        const obstacles = initial
+          ? local.filter((triangle) => !candidateBodies.some((body) => onBoxFace(triangle, body)))
+          : local;
         let reason: string | undefined;
         if (!insideScope(bounds, world.bounds ?? undefined))
           reason = 'placement-outside-collision-scope';
@@ -449,15 +454,7 @@ export const planFollowingRoute = async (
           )
         )
           reason = 'placement-base-unsupported';
-        else if (
-          blockedBody(
-            bounds,
-            ground.position[1],
-            initial
-              ? local.filter((t) => !candidateBodies.some((body) => onBoxFace(t, body)))
-              : local,
-          )
-        )
+        else if (candidateBodies.some((body) => blockedBody(body, ground.position[1], obstacles)))
           reason = 'placement-collision-blocked';
         if (reason) {
           outcome(support.id, reason, position);
@@ -689,7 +686,8 @@ export const planFollowingRoute = async (
                 (triangle) => !placed.bodies.some((body) => onBoxFace(triangle, body)),
               )
             : placed.supportTriangles;
-          if (blockedBody(bounds, floor, obstacles)) reason = 'placement-collision-blocked';
+          if (placed.bodies.some((body) => blockedBody(body, floor, obstacles)))
+            reason = 'placement-collision-blocked';
         }
         if (reason) {
           outcome(support.id, reason, position);
