@@ -470,3 +470,35 @@ test('a capsule-sized start attachment keeps its physical proof without a transf
   assert.ok(result.unresolved.some((edge) => edge.points[0] === near.position));
   assert.deepEqual(result.points[0], near.position);
 });
+
+test('an authored lift proposes the original approach beyond the direct source-target window', () => {
+  const surfaces = [
+    {
+      id: 'low',
+      vertices: [
+        [0, 0, 0],
+        [32, 0, 0],
+        [32, 0, 5],
+        [0, 0, 5],
+      ] as Vec3[],
+    },
+    {
+      id: 'high',
+      vertices: [
+        [0, 8, 0],
+        [32, 8, 0],
+        [32, 8, 5],
+        [0, 8, 5],
+      ] as Vec3[],
+    },
+  ];
+  const planner = createCandidatePlanner({ surfaces, options: { speed: 5, maxVertical: 0.5 } });
+  const transfers = [{ id: 'lift', from: [28, 0, 2] as Vec3, to: [28, 8, 2] as Vec3 }];
+  const route = planner.moving(startAt([1, 0, 1]), [3, 8, 1], { radius: 1 }, transfers);
+  assert.equal(route?.status, 'candidate');
+  assert.equal(route?.path[0].device, 'lift');
+  assert.ok(route?.unresolved.length);
+  assert.ok(route?.points.some((p) => p[0] >= 28));
+  assert.deepEqual(route?.points[0], [1, 0, 1]);
+  assert.equal(planner.moving(startAt([1, 0, 1]), [3, 0, 1], { radius: 1 }, transfers), undefined);
+});
