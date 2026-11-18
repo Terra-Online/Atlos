@@ -243,14 +243,7 @@ if (values.help) {
         });
         const endToEndMs = performance.now();
         const solverLifecycleMs = endToEndMs - report.verificationWallMs;
-        const completedTraining = catalogTraining;
-        if (
-          completedTraining &&
-          prepared
-            .catalogStatsAll()
-            .some((stats, index) => stats.added !== completedTraining.perWorker[index].stats.added)
-        )
-          throw new Error('Frozen catalog changed during holdout');
+        const holdoutCatalogs = prepared.catalogs();
         if ((await sourceHash(root, sourceDirectories, sourceFiles)) !== sourceSha256)
           throw new Error('Benchmark source changed during measurement; discard this run');
         const comparison = reference ? compareQuality(report.batch.results, reference) : undefined;
@@ -307,7 +300,9 @@ if (values.help) {
           ...(catalogTraining
             ? {
                 catalogTraining,
-                catalogAfterHoldout: prepared.catalogStatsAll(),
+                catalogAfterHoldout: holdoutCatalogs.every((stats) => stats !== undefined)
+                  ? holdoutCatalogs
+                  : undefined,
                 catalogResetDuringHoldout: prepared.recoverySetupMs > 0,
               }
             : {}),

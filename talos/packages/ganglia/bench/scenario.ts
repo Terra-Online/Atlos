@@ -12,7 +12,7 @@ const scenarioBrand: unique symbol = Symbol('Scenario');
 const resources = new WeakMap<Scenario, WorkerInput>();
 type Input = Pick<
   WorkerInput,
-  'metadata' | 'inputLoadMs' | 'timings' | 'recoverySetupMs' | 'catalogStatsAll'
+  'metadata' | 'inputLoadMs' | 'timings' | 'recoverySetupMs' | 'catalogs'
 >;
 
 /** Loaded source inputs and resolved requests, retained for the whole benchmark. */
@@ -49,7 +49,7 @@ export function createScenario<Test extends Case>(
       get recoverySetupMs() {
         return input.recoverySetupMs;
       },
-      catalogStatsAll: () => input.catalogStatsAll(),
+      catalogs: input.catalogs,
     },
     cases: Object.freeze([...cases]),
     training: Object.freeze([...training]),
