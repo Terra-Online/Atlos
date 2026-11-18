@@ -2,9 +2,8 @@
  * A dataset binds static exports to a game build, player profiles and case IDs.
  * The suite digest identifies the run's manifest in its report. An existing
  * dataset can serve a revised manifest with compatible input bindings.
- * Scenario construction resolves the complete declared training set
- * before filtering measured cases, so selecting IDs never changes learned state.
- * A scenario's cases must resolve to one input directory. Different world setups
+ * Before workers start, resolve each selected scenario's full training set and
+ * selected measurement cases against one input directory. Different world setups
  * may share that directory, but never a mutable solver kernel. Input indexes
  * may explicitly bind absolute retained directories as well as root-relative
  * ones. Live geometry and callbacks stay in the owning worker.
@@ -70,48 +69,73 @@ export async function loadDataset(root: string, suiteFile: string, suite: Suite)
   };
 }
 
-export function scenarioBinding(
+export function scenarioBindings(
   dataset: Dataset,
+  suite: Suite,
   suiteFile: string,
-  items: readonly Case[],
+  selected: ReadonlySet<string>,
   prepareConfig?: string,
-): Binding {
-  const directory = dataset.cases[items[0].id]?.directory;
-  if (!directory || items.some((item) => dataset.cases[item.id]?.directory !== directory))
-    throw new Error('Scenario cases must bind the same dataset directory');
-  return {
-    suite: resolve(suiteFile),
-    ids: items.map((item) => item.id),
-    dataRoot: resolve(dataset.root, directory),
-    exports: join(dataset.root, 'routing'),
-    prepareConfig,
-    inputRevision: dataset.revision,
-  };
+): ReadonlyMap<string, Binding> {
+  const bindings = new Map<string, Binding>();
+  const errors: string[] = [];
+  for (const spec of suite.scenarios) {
+    if (!spec.cases.some((item) => selected.has(item.id))) continue;
+    const training = new Set(spec.training);
+    const ids = spec.cases
+      .filter((item) => selected.has(item.id) || training.has(item.id))
+      .map((item) => item.id);
+    const directories = new Map<string, string[]>();
+    const missing: string[] = [];
+    for (const id of ids) {
+      const directory = dataset.cases[id]?.directory;
+      if (!directory) {
+        missing.push(id);
+        continue;
+      }
+      const path = resolve(dataset.root, directory);
+      const cases = directories.get(path);
+      if (cases) cases.push(id);
+      else directories.set(path, [id]);
+    }
+    if (missing.length)
+      errors.push(`${spec.id}: missing dataset directory for ${missing.join(', ')}`);
+    if (directories.size > 1) {
+      const details = [...directories].map(([path, cases]) => `${cases.join(', ')} → ${path}`);
+      errors.push(`${spec.id}: Cases bind different dataset directories: ${details.join('; ')}`);
+    }
+    if (missing.length || directories.size > 1) continue;
+    const [dataRoot] = directories.keys();
+    bindings.set(spec.id, {
+      suite: resolve(suiteFile),
+      ids,
+      dataRoot,
+      exports: join(dataset.root, 'routing'),
+      prepareConfig,
+      inputRevision: dataset.revision,
+    });
+  }
+  if (errors.length) throw new Error('Invalid mechanism input bindings:\n' + errors.join('\n'));
+  return bindings;
 }
 
 export function scenarioBuilder(options: {
   config: SolverSettings;
-  suiteFile: string;
   extractor: string;
-  prepareConfig?: string;
   selected: ReadonlySet<string>;
   writeBinding: (id: string, binding: Binding) => string;
   onInputError: (item: Case, error: { status: string; reason: string }) => void;
   onResult?: Parameters<typeof prepareWorkerSolver>[0]['onResult'];
-}): ScenarioBuilder<Dataset, Suite, Case> {
+}): ScenarioBuilder<ReadonlyMap<string, Binding>, Suite, Case> {
   return {
-    async *build(dataset, suite) {
+    async *build(bindings, suite) {
       const byId = new Map(suite.cases.map((item) => [item.id, item]));
       for (const spec of suite.scenarios) {
         const measured = spec.cases.filter((item) => options.selected.has(item.id));
         if (!measured.length) continue;
-        const needed = new Set([...measured.map((item) => item.id), ...spec.training]);
-        const items = spec.cases
-          .filter((item) => needed.has(item.id))
-          .map((item) => byId.get(item.id)!);
-        const binding = scenarioBinding(dataset, options.suiteFile, items, options.prepareConfig);
+        const binding = bindings.get(spec.id);
+        if (!binding) throw new Error(`Missing prepared input binding for ${spec.id}`);
         const file = options.writeBinding(spec.id, binding);
-        const first = items[0];
+        const first = byId.get(binding.ids[0])!;
         const input = await prepareWorkerSolver({
           count: 1,
           config: options.config,

@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -136,62 +135,76 @@ test('portable roots cannot resolve outside their explicitly supplied directorie
     /escapes/,
   );
 });
-test('service mechanism audit preserves input bindings and leaves queries unrun', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'ganglia-service-audit-'));
+test('service benchmark reports all selected scenario binding errors before starting', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'ganglia-service-bindings-'));
   const output = join(directory, 'report.json');
-  const suiteFile = new URL('../bench/scenes/mechanisms/suite.json', import.meta.url);
-  const bytes = await readFile(suiteFile);
-  const suite = JSON.parse(bytes.toString());
-  const scenario = suite.scenarios[0];
-  const selected = scenario.cases[0];
-  const required = new Set<string>([...scenario.training, selected.id]);
-  const bindingIds = scenario.cases
-    .filter((item: { id: string }) => required.has(item.id))
-    .map((item: { id: string }) => item.id);
+  const suite = join(directory, 'suite.json');
+  const source = { buildGuid: 'test', contentHash: 'test' };
+  const profile = { radius: 0.3, height: 1.6 };
+  const scenarios = ['valid', 'split', 'missing'].map((id) => ({
+    id,
+    setup: { scene: 'map01' },
+    training: [`${id}-training`],
+    cases: ['query', 'training'].map((kind) => ({
+      id: `${id}-${kind}`,
+      query: item().query,
+      expect: { kind: 'complete', assertions: [] },
+    })),
+  }));
   try {
+    await writeFile(
+      suite,
+      JSON.stringify({
+        schema: 6,
+        id: 'bindings',
+        requiredSource: source,
+        sources: {
+          map01: {
+            source,
+            profile,
+            locomotion: { speed: 5, sprintSpeed: 7, sprintAcceleration: 60 },
+          },
+        },
+        physicalRegions: [],
+        scenarios,
+      }),
+    );
     await writeFile(
       join(directory, 'input-index.json'),
       JSON.stringify({
-        suiteSha256: 'eb906c8b4cb678050b4a8f2db5cf1913e841f3325bc8dffb1484777e4f884a48',
-        revision: 'audit-only',
-        source: suite.requiredSource,
-        profiles: Object.fromEntries(
-          Object.entries(suite.sources).map(([scene, value]) => [
-            scene,
-            (value as { profile: unknown }).profile,
-          ]),
-        ),
-        cases: Object.fromEntries(bindingIds.map((id: string) => [id, { directory: selected.id }])),
+        revision: 'test',
+        source,
+        profiles: { map01: profile },
+        cases: {
+          'valid-query': { directory: 'valid' },
+          'valid-training': { directory: 'valid' },
+          'split-query': { directory: 'window-a' },
+          'split-training': { directory: 'window-b' },
+          'missing-query': { directory: 'window-c' },
+        },
       }),
     );
     const process = spawnSync(
       globalThis.process.execPath,
       [
         fileURLToPath(new URL('../bench/mechanism-benchmark.ts', import.meta.url)),
-        '--audit',
         '--adapter',
         'ganglia-v1-ts',
+        '--suite',
+        suite,
         '--data-root',
         directory,
         '--ids',
-        selected.id,
+        'valid-query,split-query,missing-query',
         '--output',
         output,
       ],
       { encoding: 'utf8' },
     );
-    assert.equal(process.status, 0, process.stderr);
-    const report = JSON.parse(await readFile(output, 'utf8'));
-    assert.equal(report.adapter, 'ganglia-v1-ts');
-    assert.equal(report.suiteSha256, createHash('sha256').update(bytes).digest('hex'));
-    assert.deepEqual(report.selectedIds, [selected.id]);
-    assert.deepEqual(report.results, []);
-    assert.equal(report.inputAudit.length, 1);
-    assert.deepEqual(report.preparations, []);
-    assert.equal(report.sourceUnchanged, true);
-    const binding = JSON.parse(await readFile(report.inputAudit[0].binding, 'utf8'));
-    assert.deepEqual(binding.ids, bindingIds);
-    assert.equal(binding.inputRevision, 'audit-only');
+    assert.equal(process.status, 1, process.stderr);
+    assert.match(process.stderr, /split:.*split-query.*window-a.*split-training.*window-b/);
+    assert.match(process.stderr, /missing:.*missing-training/);
+    assert.deepEqual((await readdir(directory)).sort(), ['input-index.json', 'suite.json']);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

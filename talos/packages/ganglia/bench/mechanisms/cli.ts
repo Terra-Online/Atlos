@@ -2,8 +2,8 @@
  * Mechanism CLI and schema-2 report projection. Authored scenarios determine
  * sharing and ordered training; ID selection only filters measurement. Every
  * scenario uses the same run-level solver configuration. The shared runner owns
- * training, frozen queries, verification and cleanup; this module retains audit,
- * artifacts, expectation reporting and the existing explicit worker-count flag.
+ * training, frozen queries, verification and cleanup. The CLI resolves input
+ * bindings before starting workers and owns the report and run artifacts.
  */
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, mkdirSync, renameSync, writeFileSync } from 'node:fs';
@@ -13,7 +13,8 @@ import { parseArgs } from 'node:util';
 
 import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { expectation, matchesExpectation } from '#@/bench/mechanisms/assessment.ts';
-import { loadDataset, scenarioBinding, scenarioBuilder } from '#@/bench/mechanisms/dataset.ts';
+import { loadDataset, scenarioBindings, scenarioBuilder } from '#@/bench/mechanisms/dataset.ts';
+import type { Binding } from '#@/bench/mechanisms/scenario.ts';
 import { checkSetup, readSuite } from '#@/bench/mechanisms/suite.ts';
 import { classify, type Status } from '#@/bench/outcome.ts';
 import { runScenario } from '#@/bench/run.ts';
@@ -34,14 +35,13 @@ const { values } = parseArgs({
     adapter: { type: 'string', default: 'ganglia-v1-rust' },
     ids: { type: 'string' },
     output: { type: 'string' },
-    audit: { type: 'boolean' },
     'scenario-workers': { type: 'string', default: '1' },
     help: { type: 'boolean' },
   },
 });
 if (values.help) {
   console.log(
-    'Usage: node bench/mechanism-benchmark.ts --output <new-report.json> [--data-root <candidate-input-root>] [--prepare-config <private-game-config>] [--adapter ganglia-v1-rust|ganglia-v1-ts] [--ids id,id] [--audit]. Input roots require input-index.json with explicitly rebound per-case directories. Each scenario trains the suite-declared catalog, freezes it, then measures one round without warmup. Independent physical verification runs after solving. Deadlines use GANGLIA_BENCHMARK_QUERY_CUTOFF_MS and cooperative cancellation; workers are never replaced.',
+    'Usage: node bench/mechanism-benchmark.ts --output <new-report.json> [--data-root <candidate-input-root>] [--prepare-config <private-game-config>] [--adapter ganglia-v1-rust|ganglia-v1-ts] [--ids id,id]. Input roots require input-index.json with explicitly rebound per-case directories. Each scenario trains the suite-declared catalog, freezes it, then measures one round without warmup. Independent physical verification runs after solving. Deadlines use GANGLIA_BENCHMARK_QUERY_CUTOFF_MS and cooperative cancellation; workers are never replaced.',
   );
 } else {
   if (!values.output) throw new Error('Provide --output for a new mechanism report');
@@ -57,6 +57,14 @@ if (values.help) {
   const selected = suite.cases.filter((c) => !filter || filter.has(c.id));
   if (!selected.length || (filter && selected.length !== filter.size))
     throw new Error('Unknown case ID');
+  const selectedIds = new Set(selected.map((item) => item.id));
+  const bindings = scenarioBindings(
+    dataset,
+    suite,
+    values.suite,
+    selectedIds,
+    values['prepare-config'] && resolve(values['prepare-config']),
+  );
   const output = resolve(values.output);
   mkdirSync(dirname(output), { recursive: true });
   const artifacts = output + '.artifacts';
@@ -144,7 +152,6 @@ if (values.help) {
     populationTotal: suite.cases.length,
     selectedIds: selected.map((c) => c.id),
     preparations: [] as object[],
-    inputAudit: [] as object[],
     results: [] as Row[],
     interrupted: false,
     executionError: undefined as string | undefined,
@@ -161,12 +168,18 @@ if (values.help) {
   };
   process.once('SIGINT', stop);
   process.once('SIGTERM', stop);
-  const groups: (typeof suite.scenarios)[number][] = [];
+  const byId = new Map(suite.cases.map((item) => [item.id, item]));
+  const groups: {
+    spec: (typeof suite.scenarios)[number];
+    binding: Binding;
+    items: typeof selected;
+  }[] = [];
   for (const spec of suite.scenarios) {
-    const measured = spec.cases.filter((item) => selected.some((test) => test.id === item.id));
-    if (!measured.length) continue;
+    const binding = bindings.get(spec.id);
+    if (!binding) continue;
+    const scenarioIds = new Set(spec.cases.map((item) => item.id));
+    const items = selected.filter((item) => scenarioIds.has(item.id));
     try {
-      const items = measured.map((item) => suite.cases.find((test) => test.id === item.id)!);
       for (const item of items) {
         checkSetup(item);
         if (config.algorithm === 'ganglia-v1-rust' && item.setup.supportModel)
@@ -174,10 +187,9 @@ if (values.help) {
             'Unsupported setup: Rust circular waterwheel domains are not implemented',
           );
       }
-      groups.push(spec);
+      groups.push({ spec, binding, items });
     } catch (error) {
-      for (const test of measured) {
-        const item = suite.cases.find((item) => item.id === test.id)!;
+      for (const item of items) {
         report.results.push({
           id: item.id,
           group: item.group,
@@ -191,39 +203,18 @@ if (values.help) {
   }
   save();
   let ordinal = 0;
-  const runGroup = async (spec: (typeof suite.scenarios)[number]) => {
+  const runGroup = async ({ spec, binding, items }: (typeof groups)[number]) => {
     if (controller.signal.aborted) return;
     const scenario = ++ordinal;
     let servicePhase = 'preparation';
-    const items = selected.filter((item) => spec.cases.some((test) => test.id === item.id));
-    const byId = new Map(suite.cases.map((item) => [item.id, item]));
-    const needed = new Set([...items.map((item) => item.id), ...spec.training]);
-    const bound = spec.cases
-      .filter((item) => needed.has(item.id))
-      .map((item) => byId.get(item.id)!);
     const file = join(artifacts, `scenario-${scenario}.json`);
     try {
-      const binding = scenarioBinding(
-        dataset,
-        values.suite,
-        bound,
-        values['prepare-config'] && resolve(values['prepare-config']),
-      );
-      if (values.audit) {
-        writeFileSync(file, JSON.stringify(binding));
-        for (const item of items)
-          report.inputAudit.push({ id: item.id, group: item.group, binding: file, config });
-        save();
-        return;
-      }
       record({ phase: 'scenario', ordinal: scenario, id: spec.id, ids: binding.ids });
       const startup = performance.now();
       const builder = scenarioBuilder({
         config,
-        suiteFile: values.suite,
         extractor: resolve(values.extractor),
-        prepareConfig: binding.prepareConfig,
-        selected: new Set(items.map((item) => item.id)),
+        selected: selectedIds,
         writeBinding(_id, binding) {
           writeFileSync(file, JSON.stringify(binding));
           return file;
@@ -250,7 +241,7 @@ if (values.help) {
           });
         },
       });
-      for await (const loaded of builder.build(dataset, { ...suite, scenarios: [spec] })) {
+      for await (const loaded of builder.build(bindings, { ...suite, scenarios: [spec] })) {
         await runScenario(loaded, {
           signal: controller.signal,
           onPhase(phase) {
@@ -362,11 +353,8 @@ if (values.help) {
   if (!report.sourceUnchanged) throw new Error('Benchmark source changed during measurement');
   if (
     report.executionError ||
-    (values.audit
-      ? report.inputAudit.length + report.results.length !== selected.length ||
-        report.results.length > 0
-      : report.results.length !== selected.length ||
-        report.results.some((row) => !row.matchesExpectation))
+    report.results.length !== selected.length ||
+    report.results.some((row) => !row.matchesExpectation)
   )
     process.exitCode = 1;
 }

@@ -10,8 +10,9 @@ Use `pnpm benchmark:mechanisms --adapter ganglia-v1-ts` for service measurements
 This service runner reads `input-index.json`, loads explicit scenarios, trains/freezes their kernels,
 then scores routes and independently replays complete results. The beta replay
 result is reported separately and does not gate search completion or acceptance. The CLI defaults
-to Rust, so select TS explicitly. `--audit` checks the suite/index binding without
-solving.
+to Rust, so select TS explicitly. Before starting workers, the runner checks the
+input bindings for the selected measurement cases and their scenarios' training
+cases. It reports all missing or conflicting directory bindings together.
 
 `bench/mechanism-run.ts --mode physical-diagnostic` is an optional older per-case
 TS diagnostic without service training or independent whole-route replay. Its
@@ -67,15 +68,6 @@ publishes `input-index.json` only after exports succeed. Retain failed output fo
 diagnosis and retry at a new destination. Generated inputs have a new revision;
 freeze the same dataset for baseline/candidate runs rather than inheriting historical
 scores. Keep private configuration and raw game content local.
-
-Check the service binding without solving:
-
-```sh
-pnpm --dir talos/packages/ganglia benchmark:mechanisms \
-  --adapter ganglia-v1-ts --data-root "$GANGLIA_INPUT_ROOT" \
-  --extractor "$GANGLIA_EXTRACTOR" --prepare-config "$GANGLIA_CONFIG" \
-  --audit --output /absolute/path/to/new-service-audit.json
-```
 
 The service uses the index to locate each Case's input directory. Existing inputs
 can be reused when their source, profiles and case bindings still match. The
