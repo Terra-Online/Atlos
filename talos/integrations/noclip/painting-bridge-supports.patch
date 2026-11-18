@@ -1,0 +1,311 @@
+diff --git a/packages/extractor/src/game/dynamic/dynamic-structures.ts b/packages/extractor/src/game/dynamic/dynamic-structures.ts
+index 16810f5..96aed55 100644
+--- a/packages/extractor/src/game/dynamic/dynamic-structures.ts
++++ b/packages/extractor/src/game/dynamic/dynamic-structures.ts
+@@ -68,6 +68,11 @@ import { controllerKey, progressionId } from '../state/scenery-variants.ts';
+ 
+ /** `EDynamicSceneEntityType.Tree`: harvestable trees, whose logic state is standing or felled */
+ const TREE_ENTITY = 19;
++/** Painting-scroll completion stores 1 in the related map variables. */
++const RESTORED_PAINTING_STATE = 1;
++
++type PaintingVariables = { mapId: number; keys: ReadonlySet<number> };
++type PaintingPose = { control: string; value: number };
+ 
+ /** a prefab placement and its owning level */
+ export interface StructureModel {
+@@ -84,6 +89,8 @@ export interface StructureModel {
+ 	visibility: Visibility;
+ 	/** the pose to draw the prefab in, `null` for the saved one */
+ 	pose: PrefabPose | null;
++	/** A scroll-driven model's restored pose and its scene-control value. Null marks its other poses. */
++	painting?: PaintingPose | null;
+ 	/** whether the placement starts locked, drawing its model's locked look; absent for placements without locks */
+ 	locked?: boolean;
+ 	/** the `fb_main` grid storing the row, whose level sets its load distance; absent for other placements */
+@@ -140,6 +147,7 @@ export interface DynamicStructures {
+  * @param scene streaming scene id
+  * @param partition level ownership, when available
+  * @param game the scene's game state; the load gates' conditions are noted in it and read its controls
++ * @param painting optional source-linked scroll variables to settle for a repaired routing snapshot
+  * @returns ECS renderers and prefab placements, deduplicated by their stored resource references
+  * @throws {FormatError} if a selected resource has no grid, chunk or group
+  */
+@@ -148,11 +156,12 @@ export const loadDynamicStructures = async (
+ 	scene: string,
+ 	partition: LevelPartition | undefined,
+ 	game: GameState,
++	painting?: PaintingVariables,
+ ): Promise<DynamicStructures> => {
+ 	const files = new DynamicFiles(context.vfs, scene);
+ 	const { grids, owners } = await files.readOwners();
+ 	const blights = claimBlights(owners, game);
+-	const driven = await drivenViewStates(context, owners, blights);
++	const driven = await drivenViewStates(context, owners, blights, painting);
+ 	noteOwnerConditions(game, owners, blights, driven);
+ 
+ 	const pass = new OwnerPass(context, { game, partition, grids, owners: owners.length, blights, driven });
+@@ -270,6 +279,7 @@ interface DrivenViewStates {
+ 	states: ViewStates;
+ 	/** the `state` values the view states tell apart */
+ 	values: number[];
++	painting: boolean;
+ }
+ 
+ /**
+@@ -293,12 +303,14 @@ const variableIs = (variable: DynamicVariable, value: number): GameCondition =>
+  * @param context install readers
+  * @param owners the scene's dynamic entities
+  * @param blights entities whose variable a blight control holds, left out
++ * @param painting source-linked variables with an authored restoration state
+  * @returns by entity, its variable, view states and the `state` values they tell apart
+  */
+ const drivenViewStates = async (
+ 	context: Pick<Context, 'vfs' | 'memoryPack'>,
+ 	owners: readonly DynamicResourceEntity[],
+ 	blights: ReadonlyMap<DynamicSceneEntity, unknown>,
++	painting?: PaintingVariables,
+ ): Promise<Map<DynamicSceneEntity, DrivenViewStates>> => {
+ 	const files = new Map<string, Promise<ViewStates | null>>();
+ 	const driven = new Map<DynamicSceneEntity, DrivenViewStates>();
+@@ -317,10 +329,14 @@ const drivenViewStates = async (
+ 				return null;
+ 			}),
+ 		);
+-		const values = states === null ? [] : testedValues(states, 'state');
+-		if (states !== null && values.length > 0) {
+-			driven.set(entity, { variable, states, values });
+-		}
++		if (states === null) continue;
++		const values = testedValues(states, 'state');
++		const restored = variable.kind === 'mapVar' && variable.mapId === painting?.mapId &&
++			painting.keys.has(variable.key);
++		// Some controllers compare only against 0. Their nonzero branch settles
++		// an activated prefab distinct from the undriven saved pose.
++		if (restored && !values.includes(RESTORED_PAINTING_STATE)) values.push(RESTORED_PAINTING_STATE);
++		if (values.length > 0) driven.set(entity, { variable, states, values, painting: restored });
+ 	}
+ 	return driven;
+ };
+@@ -542,7 +558,7 @@ class OwnerPass {
+ 	/** by grid, how many owners without a global id it has had, which ids the next one */
+ 	readonly #ordinals = new Map<number, number>();
+ 	/** by model and value, the pose the state machine settles in with `state` at that value */
+-	readonly #settled = new Map<string, Promise<PrefabPose | null>>();
++	readonly #settled = new Map<string, Promise<Awaited<ReturnType<typeof settledPose>> | null>>();
+ 
+ 	constructor(context: OwnerContext, scene: OwnerScene) {
+ 		this.#context = context;
+@@ -739,21 +755,29 @@ class OwnerPass {
+ 			this.result.counts.effects += models.length;
+ 		}
+ 		const view = effect ? undefined : this.#scene.driven.get(entity);
+-		const looks: { suffix: string; when: Alternatives; pose: PrefabPose | null }[] = [];
++		const looks: { suffix: string; when: Alternatives; pose: PrefabPose | null; painting?: PaintingPose | null }[] = [];
+ 		if (view === undefined) {
+ 			looks.push({ suffix: '', when: [[]], pose: null });
+ 		} else {
+ 			const { variable, states, values } = view;
+ 			for (const value of values) {
+-				looks.push({
+-					suffix: `@state=${value}`,
+-					when: game.requirements(variableIs(variable, value)),
+-					// oxlint-disable-next-line no-await-in-loop -- poses are cached per model and value
+-					pose: await this.#poseAt(states, value),
+-				});
++				const when = game.requirements(variableIs(variable, value));
++				// oxlint-disable-next-line no-await-in-loop -- poses are cached per model and value
++				const settled = await this.#poseAt(states, value);
++				const pose = settled?.pose ?? null;
++				let painting: PaintingPose | null | undefined;
++				if (view.painting) {
++					const requirement = when.length === 1 && when[0].length === 1 ? when[0][0] : null;
++					const choice = requirement ? Math.log2(requirement.mask >>> 0) : NaN;
++					painting = value === RESTORED_PAINTING_STATE && pose && !pose.hidden &&
++						settled?.states.includes('Enable') && requirement && Number.isInteger(choice)
++						? { control: requirement.control, value: choice } : null;
++				}
++				looks.push({ suffix: `@state=${value}`, when, pose, painting });
+ 			}
+ 			looks.push({
+ 				suffix: '@saved',
++				...(view.painting && { painting: null }),
+ 				when: game.requirements({
+ 					kind: 'any',
+ 					reverse: true,
+@@ -763,7 +787,7 @@ class OwnerPass {
+ 			});
+ 		}
+ 		for (const [index, model] of models.entries()) {
+-			for (const { suffix, when, pose } of looks) {
++			for (const { suffix, when, pose, painting } of looks) {
+ 				const key = `${effect ? 'effect:' : ''}${ref.grid}/${ref.index + index}${suffix}`;
+ 				this.#models
+ 					.getOrInsertComputed(key, () => ({
+@@ -773,6 +797,7 @@ class OwnerPass {
+ 						owner: owned,
+ 						visibility: { alternatives: [] },
+ 						pose,
++						...(painting !== undefined && { painting }),
+ 						grid: ref.grid,
+ 						...('lodGrids' in model && { lodGrids: model.lodGrids }),
+ 					}))
+@@ -782,10 +807,9 @@ class OwnerPass {
+ 	}
+ 
+ 	/** @returns the pose `states` settle in with `state` at `value`, or `null` if they don't settle */
+-	#poseAt(states: ViewStates, value: number): Promise<PrefabPose | null> {
++	#poseAt(states: ViewStates, value: number): Promise<Awaited<ReturnType<typeof settledPose>> | null> {
+ 		return this.#settled.getOrInsertComputed(`${states.model}:${value}`, () =>
+-			settledPose(this.#context, states, `state=${value}`, new Map([['state', value]])).then(
+-				({ pose }) => pose,
++			settledPose(this.#context, states, `state=${value}`, new Map([['state', value]])).catch(
+ 				(error: unknown) => {
+ 					if (!(error instanceof FormatError)) {
+ 						throw error;
+diff --git a/packages/extractor/src/game/ground-tile-cache.test.ts b/packages/extractor/src/game/ground-tile-cache.test.ts
+index e5f68d2..5d821a1 100644
+--- a/packages/extractor/src/game/ground-tile-cache.test.ts
++++ b/packages/extractor/src/game/ground-tile-cache.test.ts
+@@ -16,7 +16,8 @@ test('physical generator identity invalidates changed geometry importers and exc
+ 		read.set(file, bytes);
+ 		return bytes;
+ 	});
+-	for (const name of ['collision-ground.ts', 'prefab-support.ts', 'floor-supports.ts', 'collision-heightfield.ts']) {
++	for (const name of ['collision-ground.ts', 'prefab-support.ts', 'floor-supports.ts', 'collision-heightfield.ts',
++		'dynamic-structures.ts', 'view-state-poses.ts',]) {
+ 		const file = [...read.keys()].find((file) => file.endsWith(`/${name}`));
+ 		assert.ok(file, `missing physical generator dependency ${name}`);
+ 		const changed = await groundGeneratorIdentity(async (source) => source === file
+diff --git a/packages/extractor/src/game/ground-tile-cache.ts b/packages/extractor/src/game/ground-tile-cache.ts
+index f640591..7d355da 100644
+--- a/packages/extractor/src/game/ground-tile-cache.ts
++++ b/packages/extractor/src/game/ground-tile-cache.ts
+@@ -33,6 +33,8 @@ export const groundGeneratorIdentity = async (
+ 			'./prefab-support.ts',
+             './circular-rotations.ts',
+ 			'./static-supports.ts',
++			'./dynamic/dynamic-structures.ts',
++			'./interactives/view-state-poses.ts',
+ 			'./moving-supports.ts',
+             './water-supports.ts',
+             './water/water-volumes.ts',
+diff --git a/packages/extractor/src/game/static-supports.test.ts b/packages/extractor/src/game/static-supports.test.ts
+index 6f7ad19..224e159 100644
+--- a/packages/extractor/src/game/static-supports.test.ts
++++ b/packages/extractor/src/game/static-supports.test.ts
+@@ -1,8 +1,10 @@
++import type { LevelInteractive } from '@endfield-noclip/formats/endfield/level-interactives';
++
+ import assert from 'node:assert/strict';
+ import { test } from 'node:test';
+ 
+ import type { PrefabPose } from './prefabs/prefab.ts';
+-import { supportGeometry, supportMotion, supportObjectKind, representedSupport } from './static-supports.ts';
++import { supportGeometry, supportMotion, supportObjectKind, representedSupport, paintingVariables } from './static-supports.ts';
+ 
+ test('support audit keeps persistent barriers and excludes only explicit removed/control families', () => {
+     assert.equal(supportObjectKind('int_bridge_wuling_18m'), 'support');
+@@ -55,3 +57,18 @@ test('stale owners are represented only by unique matching source geometry, neve
+     assert.equal(representedSupport(placed,[witness,{...actual,parts:[{...part([10,20,30]),path:'different-model'}]}],placements),null);
+     assert.equal(representedSupport(placed,[witness,{...actual,level:'another-level'}],placements),null);
+ });
++
++test('restored painting controls come from numeric owners of the placed scroll variables', () => {
++    const placement = (type: number, names: string[]): LevelInteractive => ({
++        id: 1n, template: 'scroll', createState: 0, position: [0, 0, 0], rotation: [0, 0, 0],
++        scale: [1, 1, 1], modelScale: 1, isLocked: false, properties: [],
++        componentProperties: new Map([[type, [{
++            key: 'related_map_var_list', type: 8, values: names.map(text => ({ bits: 0n, text })),
++        }]]]),
++    });
++    const map = { map: 'map02', mapId: 85, ids: { bridge: 4, other: 9 }, names: { 4: 'bridge', 9: 'other' } };
++    assert.deepEqual(paintingVariables([
++        placement(254, ['bridge', 'bridge', 'unbound', 'constructor']), placement(253, ['other']),
++    ], map), { mapId: 85, keys: new Set([4]) });
++    assert.equal(paintingVariables([placement(253, ['other'])], map), undefined);
++});
+diff --git a/packages/extractor/src/game/static-supports.ts b/packages/extractor/src/game/static-supports.ts
+index bf6fe06..86cf323 100644
+--- a/packages/extractor/src/game/static-supports.ts
++++ b/packages/extractor/src/game/static-supports.ts
+@@ -12,7 +12,7 @@ import { loadDynamicStructures, type StructureModel } from './dynamic/dynamic-st
+ import { loadInteractiveFacilities } from './interactives/interactive-facilities.ts';
+ import { readPrefabSupport } from './prefab-support.ts';
+ import type { PrefabPose } from './prefabs/prefab.ts';
+-import { GameState } from './state/game-state.ts';
++import { GameState, type MapVariables } from './state/game-state.ts';
+ import { loadMapVariables, loadSceneStates, defaultSceneStates } from './state/scene-conditions.ts';
+ import { loadProgressions, progressionId } from './state/scenery-variants.ts';
+ import type { DraftControl, Visibility } from './state/scene-control.ts';
+@@ -132,6 +132,23 @@ const visibility = (condition: Visibility, values: Record<string, number>): 'vis
+     return unresolved ? 'unresolved' : 'hidden';
+ };
+ 
++/** `InteractiveComponentType.PaintingScroll` in LevelData. */
++const PAINTING_SCROLL = 254;
++
++/** LevelData's PaintingScroll component owns the map variables its painting restores. */
++export const paintingVariables = (rows: Iterable<LevelInteractive>, config: MapVariables | null) => {
++    if (!config) return undefined;
++    const keys = new Set<number>();
++    for (const row of rows) {
++        const related = row.componentProperties.get(PAINTING_SCROLL)?.find(param => param.key === 'related_map_var_list');
++        if (related?.type !== 8) continue;
++        for (const { text } of related.values) {
++            if (text && Object.hasOwn(config.ids, text)) keys.add(config.ids[text]);
++        }
++    }
++    return keys.size ? { mapId: config.mapId, keys } : undefined;
++};
++
+ /** Import passable completed-state scenery from the same placements and poses as
+  * the viewer. Geometry with ongoing motion is tagged and retains its motion data;
+  * exporting one pose does not establish time-independent traversal feasibility. */
+@@ -174,15 +191,25 @@ export const collectStaticSupports = async (ctx: Context, scene: string, knownId
+     for (const placed of rows.values()) if (supportObjectKind(placed.row.template)) record(placed);
+     const states = await loadSceneStates(ctx.world, scene);
+     const progressions = await loadProgressions(ctx.world, scene);
+-    const game = new GameState({ variables: await loadMapVariables(ctx.world, scene) });
++    const variables = await loadMapVariables(ctx.world, scene);
++    const game = new GameState({ variables });
+     game.note(states.flatMap(state => state.condition ? [state.condition] : []));
+     const partition = await ctx.world.partition(scene);
+     const levelsByTag = new Map((partition?.levels ?? []).map(level => [level.tag, level.id]));
+-    const dynamic = await loadDynamicStructures(ctx, scene, partition, game);
++    const painting = paintingVariables([...rows.values()].map(({ row }) => row), variables);
++    const dynamic = await loadDynamicStructures(ctx, scene, partition, game, painting);
+     const values: Record<string, number> = { ...game.defaults(), ...Object.fromEntries(dynamic.controls.map(control => [control.id, control.default])),
+         ...Object.fromEntries(progressions.map(progression => [progressionId(progression.kind, progression.key), progression.defaultLevel])) };
+     const enabledStates = defaultSceneStates(states, game);
+-    for (const state of states) values[`sceneState:${state.index}`] = Number(enabledStates.has(state.index));
++    const restored = Object.fromEntries(dynamic.models.flatMap(model =>
++        model.painting ? [[model.painting.control, model.painting.value]] : []));
++    Object.assign(values, restored);
++    const restoredState = Object.keys(restored).length ? { ...game.defaults(), ...restored } : null;
++    for (const state of states) {
++        values[`sceneState:${state.index}`] = Number(restoredState && state.condition
++            ? visibility({ alternatives: game.requirements(state.condition) }, restoredState) === 'visible'
++            : enabledStates.has(state.index));
++    }
+     for (const area of dynamic.areas) values[`area:${area}`] = 1;
+     const resolver = await ctx.resolver();
+     const bodies = new Map<string, Promise<Awaited<ReturnType<typeof readPrefabSupport>>>>();
+@@ -257,7 +284,7 @@ export const collectStaticSupports = async (ctx: Context, scene: string, knownId
+         const placed = matches.find(row => supportObjectKind(row.row.template) === 'support');
+         // A controller may address a separate physical dynamic model. Classify
+         // that model by its own prefab rather than removing its whole owner.
+-        if (!placed && supportObjectKind(path) !== 'support') continue;
++        if (!placed && !model.painting && supportObjectKind(path) !== 'support') continue;
+         const item = placed ? record(placed) : { id: model.owner ?? model.logicId ?? `dynamic/${model.source}`, level: levelsByTag.get(model.levelTag) ?? String(model.levelTag),
+             template: path, source: model.source, owners: model.owner ? [model.owner] : [], category: 'dynamic-support', status: 'pending' };
+         if (!placed && !records.has(item.id)) { records.set(item.id, item); objects.push(item); }
+@@ -268,7 +295,7 @@ export const collectStaticSupports = async (ctx: Context, scene: string, knownId
+         // that its actual completed-state dynamic owner has hidden.
+         claimed.add(target.id);
+         const shown = visibility(model.visibility, values);
+-        if (shown !== 'visible') {
++        if (model.painting === null || shown !== 'visible') {
+             if (shown === 'unresolved') failed(target, new Error(`unresolved dynamic visibility: ${JSON.stringify(model.visibility)}`));
+             else if (target.status === 'pending') target.status = 'terminal-hidden';
+             continue;
