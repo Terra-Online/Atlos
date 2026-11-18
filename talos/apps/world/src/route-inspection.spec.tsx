@@ -121,13 +121,13 @@ it('draws only selected contact boxes in the existing route overlay and releases
     panelRoot.remove();
 });
 
-it('shows a verified prefix without offering playback or a total time', () => {
+it('keeps a verified prefix visible across levels of the same scene', () => {
     let overlay: ((frame: OverlayFrame) => void) | undefined;
     const source = { buildGuid: 'build', contentHash: 'hash' };
     const remove = vi.fn();
     const viewer = {
         scene: { pkg: { manifest: { scene: { id: 'map01' }, source } } },
-        level: 'map01_lv001',
+        level: 'map01_lv002',
         camera: {},
         addOverlay(callback: typeof overlay) {
             overlay = callback;
@@ -143,7 +143,7 @@ it('shows a verified prefix without offering playback or a total time', () => {
             {...props}
             preview={{
                 scene: 'map01',
-                level: viewer.level!,
+                level: 'map01_lv001',
                 source,
                 segments: [
                     { mode: 'walk', points: [[0, 0, 0], [3, 0, 0]], times: [0, 1] },

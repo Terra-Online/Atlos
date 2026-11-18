@@ -13,6 +13,20 @@ export type { Candidate } from './services/routing';
 const dot = (a: number[], b: number[]) =>
     a.reduce((s, v, i) => s + v * b[i], 0);
 
+function matchesRouteScene(
+    viewer: Viewer,
+    route: Pick<Candidate, 'scene' | 'generation' | 'source'>,
+) {
+    const manifest = viewer.scene?.pkg.manifest;
+    return (
+        manifest?.scene.id === route.scene &&
+        (route.generation === undefined ||
+            manifest.generation === route.generation) &&
+        manifest.source.buildGuid === route.source.buildGuid &&
+        manifest.source.contentHash === route.source.contentHash
+    );
+}
+
 /** Display the route returned by World’s development planner. */
 export default function RouteInspection({
     viewer,
@@ -89,16 +103,7 @@ export default function RouteInspection({
             .flatMap(boxSegments);
         const remove = viewer.addOverlay(
             (frame) => {
-                const manifest = viewer.scene?.pkg.manifest;
-                if (
-                    manifest?.scene.id !== displayed.scene ||
-                    (displayed.generation !== undefined &&
-                        manifest.generation !== displayed.generation) ||
-                    viewer.level !== displayed.level ||
-                    manifest.source.buildGuid !== displayed.source.buildGuid ||
-                    manifest.source.contentHash !== displayed.source.contentHash
-                )
-                    return;
+                if (!matchesRouteScene(viewer, displayed)) return;
                 renderers ??= [
                     createRouteLines(
                         frame.device,
@@ -182,15 +187,7 @@ export default function RouteInspection({
             }
             context.setTransform(dpr, 0, 0, dpr, 0, 0);
             context.clearRect(0, 0, w, h);
-            const manifest = viewer.scene?.pkg.manifest;
-            const matches =
-                manifest?.scene.id === data.scene &&
-                (data.generation === undefined ||
-                    manifest.generation === data.generation) &&
-                viewer.level === data.level &&
-                manifest.source.buildGuid === data.source.buildGuid &&
-                manifest.source.contentHash === data.source.contentHash;
-            if (visible && matches) {
+            if (visible && matchesRouteScene(viewer, data)) {
                 const camera = viewer.camera,
                     f = h / (2 * Math.tan(camera.fovY / 2));
                 const space = (p: Vec3) => {
@@ -265,7 +262,7 @@ export default function RouteInspection({
         data?.terminal?.wait.firstContactBySeconds ?? data?.route.cost;
     if (!displayed && !message && !logUrl) return null;
     const pose = (kind: 'side' | 'top') => {
-        if (!data || viewer.scene?.pkg.manifest.scene.id !== data.scene) return;
+        if (!data || !matchesRouteScene(viewer, data)) return;
         const points = data.route.points;
         const min = [0, 1, 2].map((i) => Math.min(...points.map((p) => p[i])));
         const max = [0, 1, 2].map((i) => Math.max(...points.map((p) => p[i])));

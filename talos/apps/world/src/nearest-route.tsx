@@ -1,28 +1,26 @@
-import { sceneReference } from './services/scene';
-import { routing, type RoutePreview, type RouteUpdate } from './services/routing';
+import {
+    routing,
+    type RoutePreview,
+    type RouteRequest,
+    type RouteUpdate,
+} from './services/routing';
 import { useEffect, useState } from 'react';
-import { useViewerState, type Viewer } from '@endfield-noclip/viewer/host';
-import type { Point } from '@endfield-noclip/package-format/oem';
+import type { Viewer } from '@endfield-noclip/viewer/host';
 import type { Vec3 } from '@opendfieldmap/ganglia';
 import RouteInspection, { type Candidate } from './route-inspection';
 
 /** Query the development planner after the normal point view has opened. */
 export default function NearestRoute({
     viewer,
-    point,
+    request,
     panelRoot,
     onRoute,
 }: {
     viewer: Viewer;
-    point: Point;
+    request: RouteRequest;
     panelRoot: HTMLElement | null;
     onRoute: (points: Vec3[] | null) => void;
 }) {
-    useViewerState(viewer);
-    const sceneKey = JSON.stringify([
-        viewer.scene?.pkg.manifest.generation,
-        Object.entries(viewer.scenePicks).sort(),
-    ]);
     const [log, setLog] = useState<string | null>(null);
     const [data, setData] = useState<Candidate | null>(null);
     const [preview, setPreview] = useState<RoutePreview>();
@@ -37,23 +35,10 @@ export default function NearestRoute({
         onRoute(null);
         setMessage('Calculating route from the nearest teleport…');
         void (async () => {
-            const source = viewer.scene?.pkg.manifest.source;
-            if (!source) throw new Error('Scene is not ready');
-            const query = {
-                ...sceneReference(viewer),
-                scene: point.scene,
-                level: point.level,
-                point: point.id,
-                x: String(point.position[0]),
-                y: String(point.position[1]),
-                z: String(point.position[2]),
-                buildGuid: source.buildGuid,
-                contentHash: source.contentHash,
-            };
             let result: RouteUpdate | undefined;
             let routeSignature = '';
             let previewSignature: string | undefined;
-            for await (const update of routing.nearest(query, abort.signal)) {
+            for await (const update of routing.nearest(request, abort.signal)) {
                 result = update;
                 if (abort.signal.aborted) return;
                 if (result.log) setLog(result.log);
@@ -99,7 +84,7 @@ export default function NearestRoute({
             abort.abort();
             onRoute(null);
         };
-    }, [viewer, point, onRoute, sceneKey]);
+    }, [request, onRoute]);
     return (
         <RouteInspection
             viewer={viewer}
