@@ -882,7 +882,7 @@ export function planJumpRoute(
   world: CollisionWorld,
   starts: GroundArrival[],
   goal: Vec3,
-  options: JumpRouteOptions,
+  options: PlannerOptions,
   initial?: InitialGroundProof,
 ): JumpResult {
   const { actions: selected, seeds } = selectCatalogActions(world, surfaces, starts, goal, options);
