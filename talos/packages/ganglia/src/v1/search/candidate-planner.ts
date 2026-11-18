@@ -1,6 +1,7 @@
 import type { Vec3 } from '#@/src/geometry.ts';
 import { createBoundsIndex } from '#@/src/model/bounds.ts';
-import { type GoalProjection, closestOnSurface } from '#@/src/model/goals.ts';
+import { type GoalProjection, closestOnSurface, findGoalHit } from '#@/src/model/goals.ts';
+import type { InteractionGoal } from '#@/src/movement.ts';
 import type { GroundArrival } from '#@/src/route.ts';
 import type { SceneNavigation } from '#@/src/solver/resources.ts';
 import { surfaceGraph, surfacePortals } from '#@/src/v1/geo/surfaces.ts';
@@ -30,6 +31,7 @@ export interface CandidatePlannerOptions {
   connections?: { from: string; to: string; points: Vec3[]; mode?: string; device?: string }[];
 }
 export interface CandidateQueryOptions {
+  interaction?: InteractionGoal;
   excludedEdges?: (number | string)[];
   excludedTransfers?: { from: string; to: string; min: Vec3; max: Vec3 }[];
 }
@@ -52,6 +54,7 @@ type Arc = Omit<CandidateEdge, 'index' | 'unresolved'> & {
   length?: number;
   cost?: number;
   localStart?: boolean;
+  goalFallback?: boolean;
   state?: 'open' | 'closed' | 'unknown';
 };
 
@@ -83,6 +86,18 @@ export function createCandidatePlanner(
   const ids = topology.ids;
   const adjacency = graph.nodes.map((): number[] => []);
   const edges: Arc[] = graph.edges;
+  const edgeCost = (edge: Arc, score = 0) => {
+    const ascent = edge.points.at(-1)![1] - edge.points[0][1];
+    const penalty =
+      edge.unresolved && !edge.localStart
+        ? ascent > 2.1 && !edge.mode
+          ? ascentPenalty
+          : transferPenalty
+        : 0;
+    return (
+      score + penalty + (edge.goalFallback ? transferPenalty : 0) + (edge.length ?? edge.cost!)
+    );
+  };
   const groundEdgeCount = edges.length;
   for (let index = 0; index < edges.length; index++)
     adjacency[ids.get(edges[index].from)!].push(index);
@@ -142,10 +157,15 @@ export function createCandidatePlanner(
   }));
   const endpointIndex = createBoundsIndex(surfaceBounds);
   const endpoints = new Map<string, number>(),
+    attachments = new Map<number, number>(),
     endpointComponents = new Map<number, number>();
   const componentOf = (node: number) => topology.components[node] ?? endpointComponents.get(node);
-  const endpoint = (position: Vec3, direction: 'start' | 'goal'): number => {
-    const key = `${direction}/${JSON.stringify(position)}`;
+  const endpoint = (
+    position: Vec3,
+    direction: 'start' | 'goal',
+    interaction?: InteractionGoal,
+  ): number => {
+    const key = JSON.stringify([direction, position, interaction]);
     if (endpoints.has(key)) return endpoints.get(key)!;
     const supports = new Map<string, GoalProjection>();
     const bounds = {
@@ -174,9 +194,26 @@ export function createCandidatePlanner(
     if (nearest && nearest.distance <= data.options.maxVertical) {
       endpointComponents.set(node, topology.components[ids.get(nearest.surface)!]);
     }
+    const goalContacts =
+      interaction && !interaction.airborne
+        ? new Set(
+            [...supports.values()]
+              .filter((support) =>
+                findGoalHit([support.position, support.position], position, interaction),
+              )
+              .map((support) => support.surface),
+          )
+        : undefined;
+    let attachment = Infinity;
     for (const support of supports.values()) {
       const other = ids.get(support.surface)!;
-      const points = [position, support.position, graph.nodes[other].position];
+      // A source navigation witness inside the real interaction volume is
+      // already a valid coarse contact. The physical window still owns body
+      // support, obstacles, action timing and the original interaction request.
+      const localGoal = goalContacts?.has(support.surface);
+      const points = localGoal
+        ? [support.position, graph.nodes[other].position]
+        : [position, support.position, graph.nodes[other].position];
       const from = direction === 'start' ? node : other,
         to = direction === 'start' ? other : node;
       adjacency[from].push(edges.length);
@@ -193,13 +230,23 @@ export function createCandidatePlanner(
           Math.hypot(position[0] - support.position[0], position[2] - support.position[2]) <=
             (data.options.profile?.radius ?? 0) &&
           Math.abs(position[1] - support.position[1]) <= data.options.maxVertical,
+        // An attachment outside an ordinary interaction volume still has value
+        // when the fine physical mesh supplies better support. Charge it an
+        // additional transfer before favouring it over a mapped goal contact.
+        goalFallback: !!goalContacts?.size && !localGoal,
         unresolved:
-          Math.hypot(position[0] - support.position[0], position[2] - support.position[2]) > 1e-6 ||
-          Math.abs(position[1] - support.position[1]) > data.options.maxVertical,
-        length: support.distance + distance(support.position, graph.nodes[other].position),
+          !localGoal &&
+          (Math.hypot(position[0] - support.position[0], position[2] - support.position[2]) >
+            1e-6 ||
+            Math.abs(position[1] - support.position[1]) > data.options.maxVertical),
+        length:
+          (localGoal ? 0 : support.distance) +
+          distance(support.position, graph.nodes[other].position),
       });
+      attachment = Math.min(attachment, edgeCost(edges.at(-1)!));
     }
     endpoints.set(key, node);
+    attachments.set(node, attachment);
     return node;
   };
   const append = (points: Vec3[], point: Vec3) => {
@@ -316,7 +363,7 @@ export function createCandidatePlanner(
     plan(
       arrivals: GroundArrival[],
       goal: Vec3,
-      { excludedEdges = [], excludedTransfers = [] }: CandidateQueryOptions = {},
+      { excludedEdges = [], excludedTransfers = [], interaction }: CandidateQueryOptions = {},
     ): CandidatePlanResult {
       const finish = (
         arrival: GroundArrival,
@@ -332,7 +379,7 @@ export function createCandidatePlanner(
       });
       const excluded = new Set(excludedEdges);
       const hasKeys = [...excluded, ...rejected].some((value) => typeof value === 'string');
-      const end = endpoint(goal, 'goal');
+      const end = endpoint(goal, 'goal', interaction);
       const starts = arrivals
         .filter((arrival) => arrival.state === 'available')
         .map((arrival) => ({ arrival, node: endpoint(arrival.position, 'start') }));
@@ -359,71 +406,83 @@ export function createCandidatePlanner(
           toComponent: componentOf(ids.get(region.to)!),
         };
       });
-      const scores = new Float64Array(graph.nodes.length).fill(Infinity);
-      const previous = new Int32Array(graph.nodes.length).fill(-1),
-        origins = new Map<number, GroundArrival>(),
-        heap = createMinHeap<{ node: number; cost: number }>();
-      for (const { arrival, node } of starts) {
-        const score = arrival.cost ?? 0;
-        if (score >= scores[node]) continue;
-        scores[node] = score;
-        origins.set(node, arrival);
-        heap.push({ node, cost: score });
-      }
-      while (heap.size) {
-        const current = heap.pop()!;
-        if (current.cost !== scores[current.node]) continue;
-        if (current.node === end) break;
-        expand(topology.components[current.node]);
-        if (dirty.delete(current.node)) adjacency[current.node].sort(compareEdges);
-        for (const index of adjacency[current.node]) {
-          const edge = edges[index],
-            to = ids.get(edge.to)!;
-          if (
-            rejected.has(index) ||
-            excluded.has(index) ||
-            (hasKeys && (rejected.has(edgeKey(edge, index)) || excluded.has(edgeKey(edge, index))))
-          )
-            continue;
-          if (
-            edge.unresolved &&
-            regions.some(
-              (region) =>
-                region.fromComponent === componentOf(current.node) &&
-                region.toComponent === componentOf(to) &&
-                edge.points.every((point) =>
-                  point.every(
-                    (value, axis) => value >= region.min[axis] && value <= region.max[axis],
-                  ),
-                ),
-            )
-          )
-            continue;
-          const ascent = edge.points.at(-1)![1] - edge.points[0][1];
-          const penalty =
-            edge.unresolved && !edge.localStart
-              ? ascent > 2.1 && !edge.mode
-                ? ascentPenalty
-                : transferPenalty
-              : 0;
-          const score = current.cost + penalty + (edge.length ?? edge.cost!);
-          if (score >= scores[to]) continue;
-          scores[to] = score;
-          previous[to] = index;
-          origins.set(to, origins.get(current.node)!);
-          heap.push({ node: to, cost: score });
+      const search = (discover: boolean, limit = Infinity): CandidatePlanResult => {
+        const scores = new Float64Array(graph.nodes.length).fill(Infinity);
+        const previous = new Int32Array(graph.nodes.length).fill(-1),
+          origins = new Map<number, GroundArrival>(),
+          heap = createMinHeap<{ node: number; cost: number }>();
+        for (const { arrival, node } of starts) {
+          const score = arrival.cost ?? 0;
+          if (score >= scores[node]) continue;
+          scores[node] = score;
+          origins.set(node, arrival);
+          heap.push({ node, cost: score });
         }
+        while (heap.size) {
+          const current = heap.pop()!;
+          if (current.cost !== scores[current.node]) continue;
+          if (current.cost >= limit) break;
+          if (current.node === end) break;
+          if (discover) expand(topology.components[current.node]);
+          if (dirty.delete(current.node)) adjacency[current.node].sort(compareEdges);
+          for (const index of adjacency[current.node]) {
+            const edge = edges[index],
+              to = ids.get(edge.to)!;
+            if (
+              rejected.has(index) ||
+              excluded.has(index) ||
+              (hasKeys &&
+                (rejected.has(edgeKey(edge, index)) || excluded.has(edgeKey(edge, index))))
+            )
+              continue;
+            if (
+              edge.unresolved &&
+              regions.some(
+                (region) =>
+                  region.fromComponent === componentOf(current.node) &&
+                  region.toComponent === componentOf(to) &&
+                  edge.points.every((point) =>
+                    point.every(
+                      (value, axis) => value >= region.min[axis] && value <= region.max[axis],
+                    ),
+                  ),
+              )
+            )
+              continue;
+            const score = edgeCost(edge, current.cost);
+            if (score >= scores[to]) continue;
+            scores[to] = score;
+            previous[to] = index;
+            origins.set(to, origins.get(current.node)!);
+            heap.push({ node: to, cost: score });
+          }
+        }
+        if (!Number.isFinite(scores[end]) || scores[end] >= limit)
+          return { status: 'no-candidate' };
+        const path: CandidateEdge[] = [];
+        for (let node = end; previous[node] !== -1;) {
+          const index = previous[node],
+            edge = edges[index];
+          path.push(edgeOutput(index));
+          node = ids.get(edge.from)!;
+        }
+        path.reverse();
+        return finish(origins.get(end)!, path, scores[end]);
+      };
+      // Every new transfer pays at least one exploration penalty, in addition
+      // to the cheapest original-source and goal attachments. A known corridor
+      // below that bound cannot be improved or tied by expanding a component.
+      const bound =
+        Math.min(
+          ...starts.map(({ arrival, node }) => (arrival.cost ?? 0) + attachments.get(node)!),
+        ) +
+        attachments.get(end)! +
+        Math.min(transferPenalty, ascentPenalty);
+      if (Number.isFinite(bound)) {
+        const known = search(false, bound - 8 * Number.EPSILON * Math.max(1, Math.abs(bound)));
+        if (known.status === 'candidate') return known;
       }
-      if (!Number.isFinite(scores[end])) return { status: 'no-candidate' };
-      const path: CandidateEdge[] = [];
-      for (let node = end; previous[node] !== -1;) {
-        const index = previous[node],
-          edge = edges[index];
-        path.push(edgeOutput(index));
-        node = ids.get(edge.from)!;
-      }
-      path.reverse();
-      return finish(origins.get(end)!, path, scores[end]);
+      return search(true);
     },
   };
 }
