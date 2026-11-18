@@ -11,7 +11,6 @@ const directory = z
   .brand<'DatasetPath'>();
 const entry = z.strictObject({ directory });
 const indexSchema = z.strictObject({
-  schema: z.literal(1),
   inputs: z.record(
     z.string(),
     z.strictObject({
@@ -24,7 +23,8 @@ const indexSchema = z.strictObject({
 export type InputIndex = z.infer<typeof indexSchema>;
 
 export function parseInputIndex(value: unknown): InputIndex {
-  const index = indexSchema.parse(value);
+  // Existing local datasets can retain their original metadata.
+  const { inputs } = indexSchema.extend({ schema: z.unknown().optional() }).parse(value);
   const roots = new Map<string, string>([
     ['routing', 'shared routing'],
     ['input-index.json', 'the input index'],
@@ -37,10 +37,10 @@ export function parseInputIndex(value: unknown): InputIndex {
         throw new Error(`Dataset directory ${directory} for ${label} overlaps ${owner}`);
     roots.set(path, label);
   }
-  for (const [scene, { dynamic, regions }] of Object.entries(index.inputs)) {
+  for (const [scene, { dynamic, regions }] of Object.entries(inputs)) {
     if (dynamic) register(dynamic.directory, `${scene} dynamic input`);
     for (const [id, { directory }] of Object.entries(regions))
       register(directory, `${scene} window ${id}`);
   }
-  return index;
+  return { inputs };
 }

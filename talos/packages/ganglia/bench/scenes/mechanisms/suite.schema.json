@@ -5,10 +5,6 @@
     "$schema": {
       "type": "string"
     },
-    "schema": {
-      "type": "number",
-      "const": 8
-    },
     "id": {
       "$ref": "#/$defs/__schema0"
     },
@@ -174,7 +170,7 @@
       "$ref": "#/$defs/__schema16"
     }
   },
-  "required": ["schema", "id", "requiredSource", "sources", "scenarios"],
+  "required": ["id", "requiredSource", "sources", "scenarios"],
   "additionalProperties": false,
   "$defs": {
     "__schema0": {

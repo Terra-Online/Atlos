@@ -155,7 +155,6 @@ test('service benchmark reports all selected scenario binding errors before star
     await writeFile(
       suite,
       JSON.stringify({
-        schema: 8,
         id: 'bindings',
         requiredSource: source,
         sources: Object.fromEntries(
@@ -175,7 +174,6 @@ test('service benchmark reports all selected scenario binding errors before star
     await writeFile(
       join(directory, 'input-index.json'),
       JSON.stringify({
-        schema: 1,
         inputs: {
           valid: { dynamic: { directory: 'scenarios/valid' }, regions: {} },
           split: { dynamic: { directory: 'scenarios/split' }, regions: {} },

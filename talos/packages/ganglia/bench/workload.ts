@@ -68,7 +68,6 @@ export function sceneSuite(
     if (!previous) requests.set(item.id, item);
   }
   return {
-    schema: 1,
     id: scene,
     scenarios: [
       {

@@ -35,7 +35,6 @@ export interface ScenarioSpec<Setup, Test extends Case = Case> {
 }
 
 export interface Suite<Setup, Test extends Case = Case> {
-  readonly schema: number;
   readonly id: string;
   readonly scenarios: readonly ScenarioSpec<Setup, Test>[];
   readonly note?: string;

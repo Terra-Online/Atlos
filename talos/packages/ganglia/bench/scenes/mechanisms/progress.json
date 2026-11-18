@@ -1,5 +1,4 @@
 {
-  "schema": 2,
   "execution": {
     "paused": true,
     "parallelLanes": 3,

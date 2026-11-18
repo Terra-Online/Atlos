@@ -126,7 +126,6 @@ if (values.help) {
       ? compareQuality(report.batch.results, reference.batch.results)
       : undefined;
     const base = {
-      schemaVersion: 8,
       measurement: 'historical-completion-cost-repeatability',
       bindings: {
         restoredSolverFile: { revision: 'd35e4997', path: 'src/v1/solver/physical/prepared.ts' },

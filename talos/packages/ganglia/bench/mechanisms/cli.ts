@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 /**
- * Mechanism CLI and schema-2 report projection. Authored scenarios determine
+ * Mechanism CLI and report projection. Authored scenarios determine
  * sharing and ordered training; ID selection only filters measurement. Every
  * scenario uses the same run-level solver configuration. The shared runner owns
  * training, frozen queries, verification and cleanup. The CLI resolves input
@@ -129,7 +129,6 @@ if (values.help) {
     };
   };
   const report = {
-    schema: 2,
     adapter: config.algorithm,
     revision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
     workingTreeDirty: !!execFileSync('git', ['status', '--porcelain'], {

@@ -24,7 +24,7 @@ export function inputGroups(suite: Suite) {
     if (input.kind === 'dynamic') scene.dynamic = { directory };
     else scene.regions[input.region] = { directory };
   }
-  return { groups, index: parseInputIndex({ schema: 1, inputs }) };
+  return { groups, index: parseInputIndex({ inputs }) };
 }
 
 export async function prepareNavigation(extractor: string, routing: string, scene: string) {

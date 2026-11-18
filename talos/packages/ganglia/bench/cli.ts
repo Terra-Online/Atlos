@@ -1,5 +1,5 @@
 /**
- * Full-scene CLI and schema-11 report projection. Scene construction and typed
+ * Full-scene CLI and report projection. Scene construction and typed
  * training/query execution are shared with mechanism suites. Warmup fields remain
  * empty for report readers; the first query after training is measured. Worker
  * and concurrency flags retain their existing explicit throughput semantics.
@@ -147,7 +147,6 @@ if (values.help) {
     const referenceBytes = values.reference ? await readFile(values.reference) : undefined;
     const referenceReport = referenceBytes
       ? (JSON.parse(referenceBytes.toString()) as {
-          schemaVersion?: number;
           measurement?: unknown;
           batch: { wallMs: number };
           lifecycle?: { solverLifecycleMs: number };
@@ -276,7 +275,6 @@ if (values.help) {
         const referenceBatchMs = referenceReport?.batch.wallMs;
         const referenceSolverLifecycleMs = referenceReport?.lifecycle?.solverLifecycleMs;
         const output = {
-          schemaVersion: 11,
           measurement,
           lifecycle: {
             workerReadyMs,

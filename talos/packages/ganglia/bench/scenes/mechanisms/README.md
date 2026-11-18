@@ -68,8 +68,8 @@ Retain failed output for diagnosis and retry at a new destination. Reuse the
 same dataset for baseline and candidate runs. Keep private configuration and raw
 game content local.
 
-Suite schema 8 lets each scenario select a dynamic input or a fixed window for
-its scene. The Suite defines fixed bounds in `sources[scene].regions`. The
+Each Scenario selects a dynamic input or a fixed window for its scene. The Suite
+defines fixed bounds in `sources[scene].regions`. The
 Dataset index registers the actual input locations under
 `inputs[scene].dynamic` and `inputs[scene].regions[region]`. Each directory is
 relative to `--data-root`. Multiple scenarios can share an entry. The report

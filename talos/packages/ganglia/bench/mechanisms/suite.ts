@@ -68,7 +68,7 @@ export async function readSuite(file: string): Promise<Suite> {
 
 export async function readDiagnosticSuite(file: string): Promise<DiagnosticSuite> {
   return readManifest(file, async (raw) => {
-    if (!(raw && typeof raw === 'object' && 'schema' in raw && raw.schema === 1))
+    if (!(raw && typeof raw === 'object' && 'cases' in raw && !('scenarios' in raw)))
       return decodeSuite(suiteSchema.parse(raw));
 
     const legacy = legacySuiteSchema.parse(raw);
@@ -102,6 +102,11 @@ export async function readDiagnosticSuite(file: string): Promise<DiagnosticSuite
 async function readManifest<T>(file: string, decode: (raw: unknown) => T): Promise<T> {
   try {
     const raw: unknown = JSON.parse(await readFile(file, 'utf8'));
+    // Previously authored suites may still carry an informational schema field.
+    if (raw && typeof raw === 'object' && 'schema' in raw) {
+      const { schema: _schema, ...manifest } = raw;
+      return await decode(manifest);
+    }
     return await decode(raw);
   } catch (error) {
     const message =

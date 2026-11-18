@@ -197,7 +197,6 @@ const scenario = z.strictObject({
 });
 export const suiteSchema = z.strictObject({
   $schema: z.string().optional(),
-  schema: z.literal(8),
   id,
   revision: integer.optional(),
   requiredSource: sourceIdentity,
@@ -209,7 +208,6 @@ export const suiteSchema = z.strictObject({
 /** Standalone diagnostics may still load the flat control and probe manifests.
  * Their historical annotations are carried through to reports. */
 export const legacySuiteSchema = z.looseObject({
-  schema: z.literal(1),
   name: text.optional(),
   source: sourceIdentity,
   sources: z.record(id, source).optional(),

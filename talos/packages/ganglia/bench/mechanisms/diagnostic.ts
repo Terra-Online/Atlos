@@ -92,7 +92,6 @@ if (values.help) {
     encoding: 'utf8',
   }).trim();
   const report = {
-    schema: 1,
     mode: 'physical-diagnostic',
     servicePreparation: 'not performed; not a service-performance report',
     sourceRevision: values['kernel-revision'] ?? workspaceRevision,
