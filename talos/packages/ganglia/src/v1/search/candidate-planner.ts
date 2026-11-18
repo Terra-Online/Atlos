@@ -90,6 +90,8 @@ export function createCandidatePlanner(
   const ids = topology.ids;
   const adjacency = graph.nodes.map((): number[] => []);
   const edges: Arc[] = graph.edges;
+  let incoming: number[][] | undefined;
+  const reverseDirty = new Set<number>();
   const edgeCost = (edge: Arc, score = 0) => {
     const ascent = edge.points.at(-1)![1] - edge.points[0][1];
     const penalty =
@@ -123,6 +125,11 @@ export function createCandidatePlanner(
         { ...forward, from: forward.to, to: forward.from, points: [...forward.points].reverse() },
       ]) {
         adjacency[ids.get(edge.from)!].push(edges.length);
+        if (incoming) {
+          const to = ids.get(edge.to)!;
+          incoming[to].push(edges.length);
+          reverseDirty.add(to);
+        }
         dirty.add(ids.get(edge.from)!);
         edges.push({
           ...edge,
@@ -194,6 +201,7 @@ export function createCandidatePlanner(
     graph.nodes.push({ id, position });
     ids.set(id, node);
     adjacency.push([]);
+    incoming?.push([]);
     const nearest = [...supports.values()].sort((a, b) => a.distance - b.distance)[0];
     if (nearest && nearest.distance <= data.options.maxVertical) {
       endpointComponents.set(node, topology.components[ids.get(nearest.surface)!]);
@@ -221,6 +229,10 @@ export function createCandidatePlanner(
       const from = direction === 'start' ? node : other,
         to = direction === 'start' ? other : node;
       adjacency[from].push(edges.length);
+      if (incoming) {
+        incoming[to].push(edges.length);
+        reverseDirty.add(to);
+      }
       dirty.add(from);
       edges.push({
         key: JSON.stringify(['endpoint', direction, position, support.surface, support.position]),
@@ -541,7 +553,64 @@ export function createCandidatePlanner(
         const known = search(false, bound - 8 * Number.EPSILON * Math.max(1, Math.abs(bound)));
         if (known.status === 'candidate') return known;
       }
-      return search(true);
+      if (starts.length < 2) return search(true);
+      // Search backward from the one destination. Generated transfers are indexed
+      // in both directions, while authored passages retain their original costs
+      // and direction even when enumerated from the receiving component.
+      if (!incoming) {
+        incoming = graph.nodes.map(() => []);
+        for (const [i, edge] of edges.entries()) incoming[ids.get(edge.to)!].push(i);
+        for (let node = 0; node < incoming.length; node++)
+          if (incoming[node].length > 1) reverseDirty.add(node);
+      }
+      const costs = new Float64Array(graph.nodes.length).fill(Infinity);
+      const next = new Int32Array(graph.nodes.length).fill(-1);
+      const heap = createMinHeap<{ node: number; cost: number }>();
+      const entries = new Map<number, { arrival: GroundArrival; node: number; order: number }>();
+      for (const [order, start] of starts.entries()) {
+        const previous = entries.get(start.node);
+        if (!previous || (start.arrival.cost ?? 0) < (previous.arrival.cost ?? 0))
+          entries.set(start.node, { ...start, order });
+      }
+      const minArrival = Math.min(...starts.map((start) => start.arrival.cost ?? 0));
+      let bestCost = Infinity,
+        winner: ReturnType<typeof entries.get>;
+      costs[end] = 0;
+      heap.push({ node: end, cost: 0 });
+      while (heap.size) {
+        const current = heap.pop()!;
+        if (current.cost !== costs[current.node]) continue;
+        if (current.cost + minArrival > bestCost) break;
+        const source = entries.get(current.node);
+        if (source) {
+          const cost = current.cost + (source.arrival.cost ?? 0);
+          if (cost < bestCost || (cost === bestCost && winner && source.order < winner.order)) {
+            bestCost = cost;
+            winner = source;
+          }
+          continue;
+        }
+        expand(topology.components[current.node]);
+        if (reverseDirty.delete(current.node)) incoming[current.node].sort(compareEdges);
+        for (const index of incoming[current.node]) {
+          const edge = edges[index],
+            from = ids.get(edge.from)!;
+          if (skip(edge, index, from, current.node)) continue;
+          const cost = scoreEdge(edge, current.cost);
+          if (cost >= costs[from] || cost + minArrival > bestCost) continue;
+          costs[from] = cost;
+          next[from] = index;
+          heap.push({ node: from, cost });
+        }
+      }
+      if (!winner) return { status: 'no-candidate' };
+      const path: CandidateEdge[] = [];
+      for (let node = winner.node; next[node] !== -1;) {
+        const index = next[node];
+        path.push(edgeOutput(index));
+        node = ids.get(edges[index].to)!;
+      }
+      return finish(winner.arrival, path, bestCost);
     },
   };
 }

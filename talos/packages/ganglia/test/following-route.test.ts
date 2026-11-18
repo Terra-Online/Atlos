@@ -120,6 +120,31 @@ test('one useful assumed placement supports the target without control actions o
   );
 });
 
+test('a placed roof can join a grounded approach to a raised interaction through two swept jumps', async () => {
+  const surfaces = base();
+  const terrain = geometry(surfaces);
+  const target: Vec3 = [11.4, 2.5, 0];
+  const result = await planFollowingRoute(
+    [support()],
+    terrain,
+    createCollisionWorld(terrain),
+    starts,
+    target,
+    {
+      surfaces,
+      build,
+      jump: { ...jump, interaction: { radius: 0.6 } },
+      firstFeasible: true,
+    },
+  );
+  assert.equal(result.route.status, 'complete', JSON.stringify(result.diagnostics));
+  if (result.route.status !== 'complete') return;
+  assert.equal(result.route.start, starts[0].id);
+  assert.ok(Math.hypot(...result.route.points.at(-1)!.map((v, i) => v - target[i])) <= 0.6 + 1e-6);
+  assert.ok(result.route.segments.filter((segment) => segment.mode === 'jump').length >= 2);
+  assert.ok(result.supportBoxes.some((box) => box.device === 'box'));
+});
+
 test('placement may use another ground height without proving a route for moving the box', async () => {
   const result = await solve({
     surfaces: [
@@ -436,6 +461,35 @@ test('independent joint geometry rejects overlapping or out-of-range box layouts
   assert.throws(
     () => world.configured([{ device: 'a', position: [7, -2, 0] }]),
     /Invalid support placement/,
+  );
+});
+
+test('rotated boxes use their real shape at the original and placed poses', () => {
+  const box = support();
+  const cosine = Math.SQRT1_2;
+  box.bodies = [cuboid(0, 0, 0).map(([x, y, z]) => [(x - z) * cosine, y, (x + z) * cosine])];
+  const terrain = floor('support', -6, 8, 0);
+  const placement = [{ device: box.id, position: [4, 0, 0] as Vec3 }];
+  const plate = (id: string, x: number, z: number): Surface => ({
+    id,
+    vertices: [
+      [x, 0.2, z],
+      [x, 1, z],
+      [x, 1, z + 0.1],
+      [x, 0.2, z + 0.1],
+    ],
+  });
+  const corners = [plate('source-corner', 0.95, 0.95), plate('placed-corner', 4.95, 0.95)];
+  const world = (obstacles: Surface[]) => relayWorld([box], [terrain, ...obstacles]);
+
+  assert.deepEqual(world(corners).configured(placement).validatedPlacements, [box.id]);
+  assert.throws(
+    () => world([plate('source-intersection', 0.3, 0.3)]).configured(placement),
+    /Original body collision ownership is unresolved/,
+  );
+  assert.throws(
+    () => world([plate('placed-intersection', 4.3, 0.3)]).configured(placement),
+    /Placed body intersects static geometry/,
   );
 });
 

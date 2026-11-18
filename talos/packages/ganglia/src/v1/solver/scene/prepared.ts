@@ -1,4 +1,5 @@
 import type { Vec3, Wall } from '#@/src/geometry.ts';
+import { createGoalProjector, type GoalProjector } from '#@/src/model/goals.ts';
 import type { JumpModel, LocomotionOptions } from '#@/src/movement.ts';
 import type { GroundArrival, Route } from '#@/src/route.ts';
 import { checkpoint } from '#@/src/solver/checkpoint.ts';
@@ -18,7 +19,13 @@ import type {
 import { validateWaypoints } from '#@/src/v1/route/jump-planner.ts';
 import { createCandidatePlanner } from '#@/src/v1/search/candidate-planner.ts';
 import { composeRoutes, admitAuthoredStart } from '#@/src/v1/solver/route-result.ts';
-import { discoverAirborneEntries, type Entry } from '#@/src/v1/solver/scene/airborne.ts';
+import {
+  discoverAirborneEntries,
+  loadAirborneWindow,
+  type AirborneWindow,
+  type Entry,
+} from '#@/src/v1/solver/scene/airborne.ts';
+import { discoverRopeTerminal } from '#@/src/v1/solver/scene/rope-terminal.ts';
 import { createWindowGroundCache, createWindowRoute } from '#@/src/v1/solver/window-route.ts';
 
 type Complete = Extract<Route, { status: 'complete' }>;
@@ -60,6 +67,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
 ): PreparedRouteSolver<GangliaV1Config> {
   const { navigation, ...scene } = input;
   const planner = createCandidatePlanner(navigation);
+  let projectGoal: GoalProjector | undefined;
   const groundCache = createWindowGroundCache();
   const maxAttempts = config.maxAttempts,
     concurrency = config.batchConcurrency;
@@ -106,6 +114,25 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         query.starts,
         locomotion.sprintSpeed ?? locomotion.speed,
       );
+      let goalWindow: Promise<AirborneWindow<Job> | undefined> | undefined;
+      const loadGoalWindow = () =>
+        (goalWindow ??= loadAirborneWindow(scene, resources, config, query, options));
+      if (!terminal && query.interaction?.airborne && resources.physical) {
+        const found = await discoverRopeTerminal(
+          scene,
+          navigation,
+          (projectGoal ??= createGoalProjector(navigation.surfaces)),
+          resources,
+          config,
+          query,
+          options,
+          loadGoalWindow,
+        );
+        if (found) {
+          options.onEvent?.({ type: 'candidate', result: found, optimizing: false });
+          return found;
+        }
+      }
       let goal = terminal?.route.points[0] ?? query.goal;
       let bind: ((route: Complete) => boolean) | undefined;
       let discoveryTried = false;
@@ -114,7 +141,14 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         if (incumbent || (terminal && !bind) || !query.interaction?.airborne) return false;
         if (!discoveryTried) {
           discoveryTried = true;
-          entries = await discoverAirborneEntries(scene, resources, config, query, options);
+          entries = await discoverAirborneEntries(
+            scene,
+            resources,
+            config,
+            query,
+            options,
+            loadGoalWindow,
+          );
         }
         // Entry proximity alone can favor a roof that the original arrivals
         // cannot approach. Rank current entry proposals through the scene graph;

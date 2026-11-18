@@ -58,6 +58,7 @@ export default function NearestRoute({
                     const signature = JSON.stringify([
                         result.route,
                         result.supportBoxes,
+                        result.terminal,
                     ]);
                     if (signature !== routeSignature) {
                         routeSignature = signature;
