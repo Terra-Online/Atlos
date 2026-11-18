@@ -4,13 +4,6 @@ import type { Viewer, OverlayFrame } from '@endfield-noclip/viewer/host';
 import RouteInspection, { type Candidate } from './route-inspection';
 import { createRouteLines } from './route-lines-renderer';
 
-vi.mock('@endfield-noclip/viewer/host', async () => {
-    const { Panel } = await import(
-        '../../../.cache/noclip/packages/viewer/src/ui/panel'
-    );
-    return { Panel };
-});
-
 vi.mock('./route-lines-renderer', () => ({
     createRouteLines: vi.fn(() => ({ encode: vi.fn(), destroy: vi.fn() })),
 }));
@@ -80,7 +73,6 @@ it('draws only selected contact boxes in the existing route overlay and releases
     const view = render(
         <RouteInspection
             viewer={viewer}
-            source={null}
             panelRoot={panelRoot}
             candidate={candidate}
         />,

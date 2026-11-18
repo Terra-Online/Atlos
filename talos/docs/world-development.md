@@ -155,10 +155,6 @@ nearest teleport**. It opens `http://127.0.0.1:5176/POINT_TOKEN?planRoute=neares
 Use the encoded point token from the detail link. The route assumes an unlocked
 origin.
 
-For a retained candidate, append `?routePreview=/oem/<local-file>.json` to a World
-point URL. This development-only path uses the local OEM mount. Inspect the target,
-minimap route, segment timing and playback.
-
 If packages return 404, check the release ID and 5199 mounts. Missing detail actions
 usually indicate a missing point/catalog binding. For route failures, check routing
 filenames, source-build identities and private config. Restart dev processes after

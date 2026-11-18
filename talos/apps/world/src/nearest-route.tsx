@@ -94,7 +94,6 @@ export default function NearestRoute({
     return (
         <RouteInspection
             viewer={viewer}
-            source={null}
             panelRoot={panelRoot}
             candidate={data}
             message={message}

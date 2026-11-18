@@ -64,11 +64,6 @@ export const Preview = ({
     launch: Launch;
     panelRoot: HTMLElement | null;
 }) => {
-    const routePreview = useRef(
-        import.meta.env.DEV
-            ? new URL(location.href).searchParams.get('routePreview')
-            : null,
-    );
     const planRoute = useRef(
         import.meta.env.DEV &&
             new URL(location.href).searchParams.get('planRoute') === 'nearest',
@@ -463,11 +458,6 @@ export const Preview = ({
                             : new URLSearchParams({
                                   region: target.subregion,
                               }).toString();
-                        if (routePreview.current)
-                            url.searchParams.set(
-                                'routePreview',
-                                routePreview.current,
-                            );
                         if(import.meta.env.DEV && new URL(location.href).searchParams.has('benchmark'))url.searchParams.set('benchmark','1');
                         if (planRoute.current)
                             url.searchParams.set('planRoute', 'nearest');

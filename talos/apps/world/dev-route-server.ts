@@ -422,22 +422,6 @@ export function routeServer(
                 }
                 void serveLog(name, response);
             });
-            server.middlewares.use('/__routes/preview', (request, response) => {
-                if (request.method !== 'GET') {
-                    response.statusCode = 405;
-                    response.end();
-                    return;
-                }
-                void read('route-preview-current.json')
-                    .then((value) => send(response, value))
-                    .catch(() =>
-                        send(
-                            response,
-                            { message: 'Route preview is not ready' },
-                            404,
-                        ),
-                    );
-            });
             server.middlewares.use('/__routes/nearest', (request, response) => {
                 let reply = (value: unknown, status = 200) =>
                     send(response, value, status);

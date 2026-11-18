@@ -1,6 +1,7 @@
-import { routing, type Candidate } from './services/routing';
+import type { Candidate } from './services/routing';
 import { useEffect, useRef, useState } from 'react';
-import { Panel, type Viewer } from '@endfield-noclip/viewer/host';
+import type { Viewer } from '@endfield-noclip/viewer/host';
+import { Panel } from './panel';
 import { createPortal } from 'react-dom';
 import { sampleJourney, type Vec3 } from '@opendfieldmap/ganglia';
 import './route-inspection.css';
@@ -12,17 +13,15 @@ export type { Candidate } from './services/routing';
 const dot = (a: number[], b: number[]) =>
     a.reduce((s, v, i) => s + v * b[i], 0);
 
-/** Development-only inspection of local candidate trajectories, never a verified route result. */
+/** Display the route returned by World’s development planner. */
 export default function RouteInspection({
     viewer,
-    source,
     panelRoot,
     candidate,
     message,
     log,
 }: {
     viewer: Viewer;
-    source: string | null;
     panelRoot: HTMLElement | null;
     candidate?: Candidate | null;
     message?: string;
@@ -30,14 +29,11 @@ export default function RouteInspection({
 }) {
     const canvas = useRef<HTMLCanvasElement>(null);
     const [data, setData] = useState<Candidate | null>(null);
-    const [error, setError] = useState('');
     const [playing, setPlaying] = useState(false);
     const [seconds, setSeconds] = useState(0);
     const time = useRef(0);
     const [visible, setVisible] = useState(true);
     const [hideOccluded, setHideOccluded] = useState(false);
-    const [localSource, setLocalSource] = useState<string | null>(null);
-    const activeSource = localSource ?? source;
     useEffect(() => {
         if (
             !import.meta.env.DEV ||
@@ -61,55 +57,6 @@ export default function RouteInspection({
         }
     }, [candidate]);
     useEffect(() => {
-        if (!activeSource) return;
-        setError('');
-        const abort = new AbortController();
-        void (async () => {
-            const url = new URL(activeSource, location.href);
-            const value = await routing.preview(url, abort.signal);
-            const vector = (p: number[]) =>
-                Array.isArray(p) && p.length === 3 && p.every(Number.isFinite);
-            if (
-                value.version !== 1 ||
-                value.status !== 'candidate' ||
-                !value.source ||
-                !Array.isArray(value.markers) ||
-                value.markers.some((m) => !vector(m.position)) ||
-                value.route?.status !== 'complete' ||
-                !Number.isFinite(value.route.cost) ||
-                value.route.cost <= 0 ||
-                !Array.isArray(value.route.points) ||
-                !value.route.points.length ||
-                value.route.points.some((p) => !vector(p)) ||
-                !Array.isArray(value.route.segments) ||
-                !value.route.segments.length ||
-                value.route.segments.some(
-                    (s) =>
-                        !['walk', 'jump', 'drop', 'rope', 'launch'].includes(
-                            s.mode,
-                        ) ||
-                        !Array.isArray(s.points) ||
-                        s.points.length < 2 ||
-                        s.points.some((p) => !vector(p)) ||
-                        !Array.isArray(s.times) ||
-                        s.times.length !== s.points.length ||
-                        s.times[0] !== 0 ||
-                        s.times.some(
-                            (t, i) =>
-                                !Number.isFinite(t) ||
-                                t < 0 ||
-                                (i > 0 && t < s.times[i - 1]),
-                        ),
-                )
-            )
-                throw new Error('Invalid candidate route format');
-            if (!abort.signal.aborted) setData(value);
-        })().catch((e) => {
-            if (!abort.signal.aborted) setError(String(e));
-        });
-        return () => abort.abort();
-    }, [activeSource]);
-    useEffect(() => {
         if (!data || !visible) return;
         let renderers: ReturnType<typeof createRouteLines>[] | undefined;
         const boxes = supportBoxes(data.supportBoxes);
@@ -126,7 +73,7 @@ export default function RouteInspection({
                     manifest?.scene.id !== data.scene ||
                     (data.generation !== undefined &&
                         manifest.generation !== data.generation) ||
-                    (!data.draft && viewer.level !== data.level) ||
+                    viewer.level !== data.level ||
                     manifest.source.buildGuid !== data.source.buildGuid ||
                     manifest.source.contentHash !== data.source.contentHash
                 )
@@ -213,7 +160,7 @@ export default function RouteInspection({
                 manifest?.scene.id === data.scene &&
                 (data.generation === undefined ||
                     manifest.generation === data.generation) &&
-                (data.draft || viewer.level === data.level) &&
+                viewer.level === data.level &&
                 manifest.source.buildGuid === data.source.buildGuid &&
                 manifest.source.contentHash === data.source.contentHash;
             if (visible && matches) {
@@ -286,24 +233,9 @@ export default function RouteInspection({
         frame = requestAnimationFrame(draw);
         return () => cancelAnimationFrame(frame);
     }, [viewer, data, playing, visible]);
-    if (!source && candidate === null && !message) return null;
+    if (!data && !message) return null;
     const pose = (kind: 'side' | 'top') => {
         if (!data || viewer.scene?.pkg.manifest.scene.id !== data.scene) return;
-        if (kind === 'side' && data.overview) {
-            const v = data.overview;
-            if (
-                v.position.length === 3 &&
-                v.position.every(Number.isFinite) &&
-                [v.yaw, v.pitch, v.fovY].every(Number.isFinite) &&
-                v.fovY > 0.1 &&
-                v.fovY < 3
-            ) {
-                viewer.camera.fovY = v.fovY;
-                viewer.controls.flyTo(v);
-                viewer.setOptions({});
-                return;
-            }
-        }
         const points = data.route.points;
         const min = [0, 1, 2].map((i) => Math.min(...points.map((p) => p[i])));
         const max = [0, 1, 2].map((i) => Math.max(...points.map((p) => p[i])));
@@ -343,21 +275,11 @@ export default function RouteInspection({
             {panelRoot &&
                 createPortal(
                     <Panel
-                        title='Route preview'
-                        label='Route preview'
+                        title='Route'
+                        label='Route'
                         className='route-inspection-panel'
                         actions={
                             <>
-                                {candidate === undefined && (
-                                    <button
-                                        type='button'
-                                        onClick={() =>
-                                            setLocalSource('/__routes/preview')
-                                        }
-                                    >
-                                        South → North
-                                    </button>
-                                )}
                                 {(log ?? data?.log) && (
                                     <a
                                         href={log ?? data?.log}
@@ -379,7 +301,6 @@ export default function RouteInspection({
                     >
                         <p>{data?.title ?? 'Nearest teleport route'}</p>
                         {message && <p role='status'>{message}</p>}
-                        {error && <p role='alert'>{error}</p>}
                         {data && (
                             <>
                                 {data.route.locomotion?.dashes !==
@@ -468,14 +389,12 @@ export default function RouteInspection({
                                         Top view
                                     </button>
                                     <button
-                                        hidden={data.draft}
                                         onClick={() => setPlaying(!playing)}
                                     >
                                         {playing ? 'Pause' : 'Play'}
                                     </button>
                                 </div>
                                 <input
-                                    hidden={data.draft}
                                     aria-label='Route playback position'
                                     type='range'
                                     min='0'
@@ -491,7 +410,7 @@ export default function RouteInspection({
                                         setSeconds(time.current);
                                     }}
                                 />
-                                <small hidden={data.draft}>
+                                <small>
                                     {seconds.toFixed(1)} /{' '}
                                     {(
                                         data.terminal?.wait
