@@ -13,13 +13,20 @@ const session = (() => {
         return crypto.randomUUID();
     }
 })();
-let preview: Window | null = null;
-let ready = false;
-let nonce = '';
-let pending: {
-    type: 'open-point';
-    point: string;
-} | null = null;
+type PreviewMode = 'position' | 'route';
+type Channel = {
+    popup: Window | null;
+    ready: boolean;
+    nonce: string;
+    pending: string | null;
+};
+const createChannel = (): Channel => ({
+    popup: null,
+    ready: false,
+    nonce: '',
+    pending: null,
+});
+const channels = { position: createChannel(), route: createChannel() };
 const expectedOrigin = new URL(viewerUrl, location.href).origin;
 
 const preferences = () => ({
@@ -27,42 +34,48 @@ const preferences = () => ({
     locale: getCurrentLocale(),
 });
 
-const flush = () => {
-    if (!preview || preview.closed || !ready || !pending) return;
-    preview.postMessage(
+const flush = (channel: Channel) => {
+    const { popup, ready, nonce, pending } = channel;
+    if (!popup || popup.closed || !ready || !pending) return;
+    popup.postMessage(
         {
             version: VERSION,
             session,
             nonce,
             preferences: preferences(),
-            ...pending,
+            type: 'open-point',
+            point: pending,
         },
         expectedOrigin,
     );
-    pending = null;
+    channel.pending = null;
 };
 const receive = (event: MessageEvent<unknown>) => {
     const data = event.data;
     if (
         event.origin !== expectedOrigin ||
-        event.source !== preview ||
+        !event.source ||
         !record(data) ||
         data.version !== VERSION
     )
         return;
+    const channel = Object.values(channels).find(
+        ({ popup }) => popup === event.source,
+    );
+    if (!channel) return;
     if (
         data.type === 'world-ready' &&
         typeof data.nonce === 'string' &&
         data.nonce
     ) {
-        ready = false;
-        nonce = data.nonce;
-        preview?.postMessage(
+        channel.ready = false;
+        channel.nonce = data.nonce;
+        channel.popup?.postMessage(
             {
                 version: VERSION,
                 type: 'connect',
                 session,
-                nonce,
+                nonce: channel.nonce,
                 preferences: preferences(),
             },
             expectedOrigin,
@@ -70,10 +83,10 @@ const receive = (event: MessageEvent<unknown>) => {
     } else if (
         data.type === 'connected' &&
         data.session === session &&
-        data.nonce === nonce
+        data.nonce === channel.nonce
     ) {
-        ready = true;
-        flush();
+        channel.ready = true;
+        flush(channel);
     }
 };
 window.addEventListener('message', receive);
@@ -83,14 +96,27 @@ if (import.meta.hot)
     );
 
 /** Open synchronously from the user's click so loading data never consumes popup activation. */
-export const openPreview = (point: string): boolean => {
-    pending = { type: 'open-point', point };
-    if (!preview || preview.closed) {
-        ready = false;
-        preview = window.open(previewLink(point), `oem-world-${session}`);
+export const openPreview = (
+    point: string,
+    mode: PreviewMode = 'position',
+): boolean => {
+    const channel = channels[mode];
+    channel.pending = point;
+    if (!channel.popup || channel.popup.closed) {
+        channel.ready = false;
+        channel.nonce = '';
+        channel.popup = window.open(
+            previewLink(
+                point,
+                mode === 'route' ? { planRoute: 'nearest' } : undefined,
+            ),
+            mode === 'route'
+                ? `oem-world-route-${session}`
+                : `oem-world-${session}`,
+        );
     } else {
-        preview.focus();
-        flush();
+        channel.popup.focus();
+        flush(channel);
     }
-    return preview !== null;
+    return channel.popup !== null;
 };

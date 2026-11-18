@@ -36,7 +36,8 @@
   "detail": {
     "noclip": {
       "title": "场景预览",
-      "open": "在3D场景中查看位置"
+      "open": "3D位置预览",
+      "route": "路线导航"
     },
     "stat": {
       "world": "世界",

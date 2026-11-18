@@ -103,4 +103,53 @@ describe('preview window lifecycle', () => {
         const { openPreview } = await import('./preview');
         expect(openPreview('3')).toBe(false);
     });
+
+    it('opens and reuses independent windows for position and route navigation', async () => {
+        const postRoute = vi.fn<Post>();
+        const routePopup = {
+            closed: false,
+            postMessage: postRoute,
+            focus: vi.fn(),
+        } as unknown as Window;
+        open.mockReturnValueOnce(popup).mockReturnValueOnce(routePopup);
+        const { openPreview } = await import('./preview');
+        openPreview('1');
+        openPreview('2', 'route');
+        expect(open).toHaveBeenCalledTimes(2);
+        expect(open.mock.calls[0][1]).not.toBe(open.mock.calls[1][1]);
+        expect(new URL(String(open.mock.calls[0][0])).search).toBe('');
+        expect(new URL(String(open.mock.calls[1][0])).search).toBe(
+            '?planRoute=nearest',
+        );
+        ready('position-challenge', popup);
+        ready('route-challenge', routePopup);
+        const session = (
+            postMessage.mock.lastCall?.[0] as unknown as { session: string }
+        ).session;
+        const connected = (source: Window, nonce: string) =>
+            window.dispatchEvent(
+                new MessageEvent('message', {
+                    origin,
+                    source,
+                    data: { version: 1, type: 'connected', session, nonce },
+                }),
+            );
+        connected(routePopup, 'position-challenge');
+        expect(postRoute).toHaveBeenCalledTimes(1);
+        connected(popup, 'position-challenge');
+        connected(routePopup, 'route-challenge');
+        openPreview('3', 'route');
+        openPreview('4');
+        expect(open).toHaveBeenCalledTimes(2);
+        expect(postRoute.mock.calls.map(([message]) => message.point)).toEqual([
+            undefined,
+            '2',
+            '3',
+        ]);
+        expect(postMessage.mock.calls.map(([message]) => message.point)).toEqual([
+            undefined,
+            '1',
+            '4',
+        ]);
+    });
 });

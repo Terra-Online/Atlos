@@ -28,8 +28,6 @@ $section:
         scrollbar-width: thin;
     }
     .dock.bottom {
-        // Temporarily hide the camera readout during route validation.
-        display: none;
         width: max-content;
         max-width: calc(100% - 660px);
     }

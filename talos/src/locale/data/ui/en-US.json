@@ -36,7 +36,8 @@
   "detail": {
     "noclip": {
       "title": "Scene preview",
-      "open": "View location in the 3D scene"
+      "open": "3D Location Preview",
+      "route": "Route Navigation"
     },
     "stat": {
       "world": "World",

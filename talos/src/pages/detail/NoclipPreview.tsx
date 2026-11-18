@@ -39,18 +39,23 @@ export default function NoclipPreview({ pointId }: { pointId: string }) {
                 >
                     {t('detail.noclip.open')}
                 </a>
+                {import.meta.env.DEV && (
+                    <>
+                        <span aria-hidden='true'>｜</span>
+                        <a
+                            href={previewLink(pointId, { planRoute: 'nearest' })}
+                            target='_blank'
+                            rel='noreferrer'
+                            onClick={(event) => {
+                                if (openPreview(pointId, 'route'))
+                                    event.preventDefault();
+                            }}
+                        >
+                            {t('detail.noclip.route')}
+                        </a>
+                    </>
+                )}
             </div>
-            {import.meta.env.DEV && (
-                <div className={styles.detailAction} data-act='route'>
-                    <a
-                        href={previewLink(pointId, { planRoute: 'nearest' })}
-                        target='_blank'
-                        rel='noreferrer'
-                    >
-                        Route from nearest teleport
-                    </a>
-                </div>
-            )}
         </>
     );
 }

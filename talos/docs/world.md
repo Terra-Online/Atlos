@@ -31,7 +31,8 @@ validated internally. Share links intentionally resolve against the currently de
 Invalid tokens and missing points produce an error. URLs carry no release, catalog, source origin or
 session identifiers. Main-site detail links use `VITE_WORLD_URL` and the same short point codec.
 
-Each main-site tab reuses one named World window. World sends a fresh challenge to its actual
+Each main-site tab reuses a separate named World window for position preview and route navigation.
+World sends a fresh challenge to its actual
 opener, then accepts a session only from an explicitly allowed OEM origin and that exact opener.
 Commands and acknowledgements check origin, source, protocol version, session and challenge. The handshake also carries the main site’s language and satellite preference; these are
 applied only after sender validation. Pending
