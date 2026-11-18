@@ -71,6 +71,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
   const groundCache = createWindowGroundCache();
   const maxAttempts = config.maxAttempts,
     concurrency = config.batchConcurrency;
+  let transport: ReturnType<NonNullable<typeof resources.movingTransfers>> | undefined;
   let closed = false;
   let closing: Promise<void> | undefined;
   const batches = new Set<Promise<readonly RouteResult[]>>();
@@ -175,6 +176,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
       const estimate = (arrival: GroundArrival) =>
         arrival.cost +
         distance(arrival.position, query.goal) / Math.max(locomotion.speed, locomotion.sprintSpeed);
+      let triedTransport = false;
       candidates: for (; attempts < maxAttempts;) {
         if (cancelled()) return stopped('aborted', true);
         let starts = query.starts.filter(
@@ -196,10 +198,25 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         await checkpoint(options.signal);
         progress('search');
         if (cancelled()) return stopped('aborted', true);
-        const proposal = planner.plan(starts, goal, {
-          excludedEdges,
-          interaction: terminal ? undefined : query.interaction,
-        });
+        const facilities =
+          !triedTransport && !terminal && query.interaction && resources.movingTransfers
+            ? planner.moving(
+                starts,
+                goal,
+                query.interaction,
+                await (transport ??= resources.movingTransfers().catch((error) => {
+                  transport = undefined;
+                  throw error;
+                })),
+              )
+            : undefined;
+        triedTransport = true;
+        const proposal =
+          facilities ??
+          planner.plan(starts, goal, {
+            excludedEdges,
+            interaction: terminal ? undefined : query.interaction,
+          });
         await checkpoint(options.signal);
         if (cancelled()) return stopped('aborted', true);
         if (proposal.status !== 'candidate') {
@@ -224,6 +241,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
           {
             ...config,
             locomotion,
+            transportGuide: Boolean(facilities),
             transfers: proposal.path?.filter((edge) => edge.unresolved).map((edge) => edge.points),
           },
           groundCache,
@@ -323,6 +341,13 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
           }
           if (cancelled()) return stopped('aborted', true);
           lastReason = result.reason;
+          if (facilities) {
+            // Keep every ordinary proposal attempt available on a missed facility guide.
+            attempts--;
+            partial = undefined;
+            break;
+          }
+
           if (await discover()) continue candidates;
           const edge = proposal.path?.find(
             (edge) =>
