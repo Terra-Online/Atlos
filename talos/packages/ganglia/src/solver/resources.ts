@@ -1,5 +1,5 @@
 import type { Vec3, Surface, Wall } from '#@/src/geometry.ts';
-import type { InteractionGoal } from '#@/src/movement.ts';
+import type { InteractionGoal, JumpModel } from '#@/src/movement.ts';
 import type { GroundArrival, GroundOptions, Route } from '#@/src/route.ts';
 import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
 import type { GangliaV1Config as SolverConfig } from '#@/src/solver/ganglia-v1.ts';
@@ -98,6 +98,7 @@ export interface SceneResources<Source, Job extends WindowJob> extends WindowRes
    * normalization only, without building navigation or solving a route. */
   physical?(job: Job, request: WindowRequest & { source: Source }): Promise<PhysicalSnapshot>;
   movingTransfers?(): Promise<readonly SceneTransfer[]>;
+  jumpModel?: JumpModel;
   terminals?(query: RouteQuery): Promise<readonly SceneTerminal[]>;
   /** Wait for resource work to change, without requiring another client request. */
   wait(signal?: AbortSignal): Promise<void>;

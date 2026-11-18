@@ -1,6 +1,6 @@
 import type { Vec3, Wall } from '#@/src/geometry.ts';
 import { createGoalProjector, type GoalProjector } from '#@/src/model/goals.ts';
-import type { LocomotionOptions } from '#@/src/movement.ts';
+import type { JumpModel, LocomotionOptions } from '#@/src/movement.ts';
 import type { GroundArrival, Route } from '#@/src/route.ts';
 import { checkpoint } from '#@/src/solver/checkpoint.ts';
 import type {
@@ -91,6 +91,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
             ...(incumbent ?? partial!),
             reason,
             diagnostics: {
+              ...(incumbent ?? partial)?.diagnostics,
               truncated: truncated || limited || Boolean(incumbent?.diagnostics.truncated),
               candidateAttempts: attempts,
             },
@@ -176,7 +177,8 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
       const estimate = (arrival: GroundArrival) =>
         arrival.cost +
         distance(arrival.position, query.goal) / Math.max(locomotion.speed, locomotion.sprintSpeed);
-      let triedTransport = false;
+      let triedTransport = false,
+        triedBoundaryGuide = false;
       candidates: for (; attempts < maxAttempts;) {
         if (cancelled()) return stopped('aborted', true);
         let starts = query.starts.filter(
@@ -211,20 +213,33 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
               )
             : undefined;
         triedTransport = true;
+        const jumpModel: JumpModel | undefined =
+          !facilities && !terminal && !triedBoundaryGuide && !query.interaction?.airborne
+            ? resources.jumpModel
+            : undefined;
+        triedBoundaryGuide ||= Boolean(jumpModel);
         const proposal =
           facilities ??
           planner.plan(starts, goal, {
             excludedEdges,
             interaction: terminal ? undefined : query.interaction,
+            jumpModel,
           });
         await checkpoint(options.signal);
         if (cancelled()) return stopped('aborted', true);
         if (proposal.status !== 'candidate') {
+          if (jumpModel) {
+            attempts--;
+            continue;
+          }
           if (await discover()) continue;
           if (!incumbent) return stopped('no-global-candidate');
           excludedArrivals.add(starts[0].id);
           continue;
         }
+        const boundaryGuide = Boolean(
+          jumpModel && proposal.unresolved.some((edge) => edge.key?.startsWith('["transfer",')),
+        );
         const arrival = proposal.arrival;
         const window = createWindowRoute(
           resources,
@@ -266,6 +281,9 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
                 truncated ||
                 Boolean(route.search?.truncated || route.locomotion?.search?.truncated),
               candidateAttempts: attempts,
+              ...(boundaryGuide && {
+                candidateGuide: 'source-boundaries',
+              }),
             },
           };
           if (!isPartial) {
@@ -341,8 +359,9 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
           }
           if (cancelled()) return stopped('aborted', true);
           lastReason = result.reason;
-          if (facilities) {
-            // Keep every ordinary proposal attempt available on a missed facility guide.
+          if (facilities || boundaryGuide) {
+            // A directed boundary or authored transport guide does not consume
+            // the ordinary budget when its physical window cannot validate it.
             attempts--;
             partial = undefined;
             break;
