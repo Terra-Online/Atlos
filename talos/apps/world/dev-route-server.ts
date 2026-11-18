@@ -1,4 +1,5 @@
 import { setTimeout as delay } from 'node:timers/promises';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import {
     prepareRouteSolver,
     gangliaV1Defaults,
@@ -11,7 +12,7 @@ import {
     matchingTerminals,
     type Catalog as TerminalCatalog,
 } from './terminal-routes.ts';
-import { resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 import type { ServerResponse } from 'node:http';
 import type { Plugin } from 'vite';
 import { supportBoxes, type SupportBox } from './src/moving-bounds.ts';
@@ -27,7 +28,7 @@ import {
 } from '@opendfieldmap/ganglia';
 import { planMovingCoin, readCoinLoop } from './moving-coin.ts';
 import type { MovingContact } from './src/moving-contact.ts';
-import { physicalRouteBuilder } from './physical-route-builder.ts';
+import { physicalRouteBuilder, type Job } from './physical-route-builder.ts';
 
 import { travelArrivals, type TravelPoint } from './travel-arrivals.ts';
 
@@ -164,7 +165,21 @@ export function routeServer(
     } = {},
 ): Plugin {
     const cache = new Map<string, Promise<IndexedData>>();
-    const builder = physicalRouteBuilder({ ...build, directory });
+    // Prepared scene solvers share the builder across requests.
+    const taskLogs = new AsyncLocalStorage<{ url?: string }>();
+    const physical = physicalRouteBuilder({ ...build, directory });
+    const trackLog = async (pending: Promise<Job | null>) => {
+        const job = await pending;
+        const task = taskLogs.getStore();
+        if (task && job?.log && directory)
+            task.url = `/__routes/log?path=${encodeURIComponent(relative(directory, job.log))}`;
+        return job;
+    };
+    const builder: typeof physical = {
+        ...physical,
+        query: (...args) => trackLog(physical.query(...args)),
+        solve: (...args) => trackLog(physical.solve(...args)),
+    };
     const solvers = new Map<Data, ReturnType<typeof prepareRouteSolver>>();
     let travel: Promise<{ source: Source; points: TravelPoint[] }> | undefined;
     let terminalCatalog: Promise<TerminalCatalog | null> | undefined;
@@ -426,7 +441,8 @@ export function routeServer(
                 let reply = (value: unknown, status = 200) =>
                     send(response, value, status);
                 let fallback: Candidate | undefined;
-                void (async () => {
+                const task: { url?: string } = {};
+                void taskLogs.run(task, async () => {
                     if (!directory) {
                         reply({
                             status: 'unavailable',
@@ -570,6 +586,8 @@ export function routeServer(
                     const deliver = reply;
                     let delivered = false;
                     reply = (value, status = 200) => {
+                        if (task.url && value && typeof value === 'object')
+                            value = { ...value, log: task.url };
                         const progress =
                             value !== null &&
                             typeof value === 'object' &&
@@ -918,7 +936,7 @@ export function routeServer(
                         });
                     }
                     return;
-                })().catch((error: unknown) => {
+                }).catch((error: unknown) => {
                     const missing =
                         error instanceof Error &&
                         'code' in error &&

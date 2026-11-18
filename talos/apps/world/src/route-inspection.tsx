@@ -233,7 +233,10 @@ export default function RouteInspection({
         frame = requestAnimationFrame(draw);
         return () => cancelAnimationFrame(frame);
     }, [viewer, data, playing, visible]);
-    if (!data && !message) return null;
+    const logUrl = log ?? data?.log;
+    const duration =
+        data?.terminal?.wait.firstContactBySeconds ?? data?.route.cost;
+    if (!data && !message && !logUrl) return null;
     const pose = (kind: 'side' | 'top') => {
         if (!data || viewer.scene?.pkg.manifest.scene.id !== data.scene) return;
         const points = data.route.points;
@@ -280,15 +283,14 @@ export default function RouteInspection({
                         className='route-inspection-panel'
                         actions={
                             <>
-                                {(log ?? data?.log) && (
-                                    <a
-                                        href={log ?? data?.log}
-                                        target='_blank'
-                                        rel='noreferrer'
-                                    >
-                                        Task log
-                                    </a>
-                                )}
+                                <button
+                                    type='button'
+                                    aria-pressed={hideOccluded}
+                                    disabled={!data}
+                                    onClick={() => setHideOccluded(!hideOccluded)}
+                                >
+                                    Hide occluded
+                                </button>
                                 <button
                                     type='button'
                                     disabled={!data}
@@ -299,7 +301,7 @@ export default function RouteInspection({
                             </>
                         }
                     >
-                        <p>{data?.title ?? 'Nearest teleport route'}</p>
+                        {data?.partial && <p>{data.title}</p>}
                         {message && <p role='status'>{message}</p>}
                         {data && (
                             <>
@@ -369,26 +371,21 @@ export default function RouteInspection({
                                         collected.
                                     </p>
                                 )}
-                                <div className='world-panel-actions'>
-                                    <label>
-                                        <input
-                                            type='checkbox'
-                                            checked={hideOccluded}
-                                            onChange={(event) =>
-                                                setHideOccluded(
-                                                    event.target.checked,
-                                                )
-                                            }
-                                        />
-                                        Hide occluded
-                                    </label>
-                                    <button onClick={() => pose('side')}>
+                                <div className='world-panel-actions route-playback-actions'>
+                                    <button
+                                        type='button'
+                                        onClick={() => pose('side')}
+                                    >
                                         Side overview
                                     </button>
-                                    <button onClick={() => pose('top')}>
+                                    <button
+                                        type='button'
+                                        onClick={() => pose('top')}
+                                    >
                                         Top view
                                     </button>
                                     <button
+                                        type='button'
                                         onClick={() => setPlaying(!playing)}
                                     >
                                         {playing ? 'Pause' : 'Play'}
@@ -398,11 +395,7 @@ export default function RouteInspection({
                                     aria-label='Route playback position'
                                     type='range'
                                     min='0'
-                                    max={
-                                        data.terminal?.wait
-                                            .firstContactBySeconds ??
-                                        data.route.cost
-                                    }
+                                    max={duration}
                                     step='.01'
                                     value={seconds}
                                     onChange={(e) => {
@@ -410,16 +403,26 @@ export default function RouteInspection({
                                         setSeconds(time.current);
                                     }}
                                 />
-                                <small>
-                                    {seconds.toFixed(1)} /{' '}
-                                    {(
-                                        data.terminal?.wait
-                                            .firstContactBySeconds ??
-                                        data.route.cost
-                                    ).toFixed(1)}{' '}
-                                    s
-                                </small>
                             </>
+                        )}
+                        {(data || logUrl) && (
+                            <div className='route-playback-readout'>
+                                {duration !== undefined && (
+                                    <small>
+                                        {seconds.toFixed(1)} /{' '}
+                                        {duration.toFixed(1)} s
+                                    </small>
+                                )}
+                                {logUrl && (
+                                    <a
+                                        href={logUrl}
+                                        target='_blank'
+                                        rel='noreferrer'
+                                    >
+                                        Task log
+                                    </a>
+                                )}
+                            </div>
                         )}
                     </Panel>,
                     panelRoot,

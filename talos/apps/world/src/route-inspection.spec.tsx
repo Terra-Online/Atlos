@@ -35,6 +35,7 @@ it('draws only selected contact boxes in the existing route overlay and releases
         level: 'map02_lv009',
         source,
         title: 'Teleport → Target',
+        log: '/__routes/log?path=player-routes%2Fmap02-test.json.progress.jsonl',
         status: 'candidate',
         markers: [],
         route: {
@@ -78,6 +79,11 @@ it('draws only selected contact boxes in the existing route overlay and releases
         />,
     );
     expect(screen.queryByText('Moving devices')).toBeNull();
+    expect(screen.queryByText('Teleport → Target')).toBeNull();
+    const time = screen.getByText('0.0 / 1.0 s');
+    const taskLog = screen.getByRole('link', { name: 'Task log' });
+    expect(time.nextElementSibling).toBe(taskLog);
+    expect(taskLog.getAttribute('href')).toBe(candidate.log);
     expect(overlay).toBeDefined();
     expect(addOverlay).toHaveBeenCalledWith(expect.any(Function), {
         animated: true,
@@ -93,7 +99,11 @@ it('draws only selected contact boxes in the existing route overlay and releases
     expect(vi.mocked(createRouteLines).mock.calls[0][3]?.hideOccluded).toBe(
         false,
     );
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Hide occluded' }));
+    const hideOccluded = screen.getByRole('button', { name: 'Hide occluded' });
+    const hide = screen.getByRole('button', { name: 'Hide' });
+    expect(hideOccluded.nextElementSibling).toBe(hide);
+    fireEvent.click(hideOccluded);
+    expect(hideOccluded.getAttribute('aria-pressed')).toBe('true');
     expect(remove).toHaveBeenCalledTimes(1);
     overlay!({ device: {}, format: 'rgba8unorm' } as OverlayFrame);
     expect(createRouteLines).toHaveBeenCalledTimes(4);
@@ -103,7 +113,7 @@ it('draws only selected contact boxes in the existing route overlay and releases
     expect(vi.mocked(createRouteLines).mock.calls[3][3]?.hideOccluded).toBe(
         true,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Hide' }));
+    fireEvent.click(hide);
     expect(remove).toHaveBeenCalledTimes(2);
     for (const renderer of renderers)
         expect(renderer.destroy).toHaveBeenCalledTimes(1);

@@ -18,7 +18,23 @@
     width: 100%;
 }
 .route-inspection-panel .world-panel-actions {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+.route-inspection-panel .world-panel-actions button[aria-pressed='true'] {
+    border-color: var(--accent);
+}
+.route-playback-actions {
+    overflow-x: auto;
+}
+.route-playback-readout {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    font-size: 12px;
+}
+.route-playback-readout small {
+    font-size: inherit;
 }
 .viewer-app:has(.route-inspection-canvas) > .dock { z-index: 2; }
 

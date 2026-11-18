@@ -53,7 +53,7 @@ export default function NearestRoute({
             for await (const update of routing.nearest(query, abort.signal)) {
                 result = update;
                 if (abort.signal.aborted) return;
-                setLog(result.log ?? null);
+                if (result.log) setLog(result.log);
                 if (result.status === 'candidate') {
                     const signature = JSON.stringify([
                         result.route,
