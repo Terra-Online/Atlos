@@ -184,7 +184,7 @@ export function createPhysicalWorld(
           const obstacles = initial
             ? triangles.filter((triangle) => !onBoxFace(triangle, source))
             : triangles;
-          if (blockedBody({ min: minimum, max: maximum }, minimum[1], obstacles))
+          if (blockedBody(body, minimum[1], obstacles))
             throw new Error('Placed body intersects static geometry');
           if (!initial) {
             const original = supportBounds([source]);
@@ -197,7 +197,7 @@ export function createPhysicalWorld(
                 max: [original.max[0], original.max[2]],
               }),
             );
-            if (blockedBody(original, original.min[1], originalTriangles))
+            if (blockedBody(source, original.min[1], originalTriangles))
               throw new Error('Original body collision ownership is unresolved');
           }
           for (const wall of input.roundedWalls ?? input.ground.options.walls) {

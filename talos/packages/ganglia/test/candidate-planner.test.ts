@@ -144,6 +144,81 @@ test('failed transfer regions reject adjacent probes and endpoint bypasses witho
 const startAt = (position: Vec3): GroundArrival[] => [
   { id: 'start', position, state: 'available', cost: 0 },
 ];
+
+test('a mapped ordinary goal prefers a supported landing over a wide endpoint gap', () => {
+  const strip = (id: string, left: number, right: number, height: number): Surface => ({
+    id,
+    vertices: [
+      [left, height, 0],
+      [right, height, 0],
+      [right, height, 2],
+      [left, height, 2],
+    ],
+  });
+  const planner = createCandidatePlanner(
+    {
+      surfaces: [strip('west', 0, 60, 2), strip('upper', 100, 214, 8), square('landing', 100, 0)],
+      options: { speed: 5, maxVertical: 0.5 },
+    },
+    { endpointRadius: 50 },
+  );
+  const starts: GroundArrival[] = [
+    { id: 'west', position: [1, 2, 1], state: 'available', cost: 0 },
+    { id: 'upper', position: [213, 8, 1], state: 'available', cost: 0 },
+  ];
+  const goal: Vec3 = [101, 0.6, 1];
+  const proposal = expectStatus(
+    planner.plan(starts, goal, { interaction: { radius: 1 } }),
+    'candidate',
+  );
+  assert.equal(proposal.arrival.id, 'upper');
+  assert.ok(proposal.unresolved.some((edge) => edge.from === 'upper' && edge.to === 'landing'));
+
+  const fallback = expectStatus(
+    planner.plan(starts.slice(0, 1), goal, { interaction: { radius: 1 } }),
+    'candidate',
+  );
+  assert.equal(fallback.arrival.id, 'west');
+  assert.deepEqual(fallback.unresolved.at(-1)?.points.at(-1), goal);
+});
+
+test('known corridors retain endpoint penalties and guide identity after transfer expansion', () => {
+  const planner = createCandidatePlanner({
+    surfaces: [square('a', 0, 0), square('b', 4, 0)],
+    options: { speed: 5, maxVertical: 0.5 },
+  });
+  const starts = startAt([1, 0, 1]);
+  const goal: Vec3 = [1, 5, 1];
+  const first = expectStatus(planner.plan(starts, goal), 'candidate');
+  assert.ok(first.score >= 1000000, 'the original elevated endpoint still needs physical proof');
+  const transfer = expectStatus(planner.plan(starts, [5, 0, 1]), 'candidate');
+  assert.ok(transfer.path.some((edge) => edge.key?.includes('transfer')));
+  assert.deepEqual(planner.plan(starts, goal), first);
+});
+
+test('a supported point inside the original interaction volume guides a walking corridor', () => {
+  const planner = createCandidatePlanner({
+    surfaces: [square('floor', 0, 0)],
+    options: { speed: 5, maxVertical: 0.5 },
+  });
+  const starts = startAt([1, 0, 1]);
+  const goal: Vec3 = [2.5, 0.3, 1];
+  const normal = expectStatus(planner.plan(starts, goal), 'candidate');
+  assert.ok(normal.unresolved.length > 0);
+  const interaction = { radius: 0.8 };
+  const contact = expectStatus(planner.plan(starts, goal, { interaction }), 'candidate');
+  assert.equal(contact.unresolved.length, 0);
+  assert.deepEqual(contact.points.at(-1), goal);
+  const outOfRange = expectStatus(
+    planner.plan(starts, goal, { interaction: { radius: 0.1 } }),
+    'candidate',
+  );
+  assert.deepEqual(
+    outOfRange.unresolved.map((edge) => edge.points),
+    normal.unresolved.map((edge) => edge.points),
+  );
+});
+
 const length = (points: Vec3[]) =>
   points
     .slice(1)
@@ -394,4 +469,119 @@ test('a capsule-sized start attachment keeps its physical proof without a transf
   assert.equal(result.arrival.id, 'near');
   assert.ok(result.unresolved.some((edge) => edge.points[0] === near.position));
   assert.deepEqual(result.points[0], near.position);
+});
+
+test('multi-arrival discovery charges the selected origin and preserves one-way passages', () => {
+  const data = {
+    surfaces: [square('low', 0, 0), square('high', 30, 0)],
+    options: { speed: 5, maxVertical: 1 },
+  };
+  const start: Vec3 = [1, 0, 1],
+    end: Vec3 = [31, 0, 1];
+  const planner = createCandidatePlanner(data, {
+    radius: 2,
+    endpointRadius: 0.1,
+    connections: [{ from: 'low', to: 'high', points: [start, end], device: 'lift', mode: 'rope' }],
+  });
+  const origins: GroundArrival[] = [
+    { id: 'cheap', position: start, cost: 5, state: 'available' },
+    { id: 'expensive', position: start, cost: 150, state: 'available' },
+    { id: 'at-goal', position: end, cost: 50000, state: 'available' },
+  ];
+  const route = expectStatus(planner.plan(origins, end), 'candidate');
+  assert.equal(route.arrival.id, 'cheap');
+  const lift = route.path.find((edge) => edge.device === 'lift');
+  assert.ok(lift);
+  const fallback = expectStatus(
+    planner.plan(origins, end, { excludedEdges: [lift.key!] }),
+    'candidate',
+  );
+  assert.equal(fallback.arrival.id, 'at-goal');
+  assert.equal(
+    planner.plan(
+      origins.slice(0, 2).map((a) => ({ ...a, position: end })),
+      start,
+    ).status,
+    'no-candidate',
+  );
+});
+test('an authored lift proposes the original approach beyond the direct source-target window', () => {
+  const surfaces = [
+    {
+      id: 'low',
+      vertices: [
+        [0, 0, 0],
+        [32, 0, 0],
+        [32, 0, 5],
+        [0, 0, 5],
+      ] as Vec3[],
+    },
+    {
+      id: 'high',
+      vertices: [
+        [0, 8, 0],
+        [32, 8, 0],
+        [32, 8, 5],
+        [0, 8, 5],
+      ] as Vec3[],
+    },
+  ];
+  const planner = createCandidatePlanner({ surfaces, options: { speed: 5, maxVertical: 0.5 } });
+  const transfers = [{ id: 'lift', from: [28, 0, 2] as Vec3, to: [28, 8, 2] as Vec3 }];
+  const route = planner.moving(startAt([1, 0, 1]), [3, 8, 1], { radius: 1 }, transfers);
+  assert.equal(route?.status, 'candidate');
+  assert.equal(route?.path[0].device, 'lift');
+  assert.ok(route?.unresolved.length);
+  assert.ok(route?.points.some((p) => p[0] >= 28));
+  assert.deepEqual(route?.points[0], [1, 0, 1]);
+  assert.equal(planner.moving(startAt([1, 0, 1]), [3, 0, 1], { radius: 1 }, transfers), undefined);
+});
+
+test('source flight bounds retain the longer corridor with admissible directed gaps', () => {
+  const start: Vec3 = [1, 0, 1];
+  const goal: Vec3 = [13, 2, 1];
+  const elevated = (id: string, x: number, y: number): Surface => ({
+    id,
+    vertices: square(id, x, 0).vertices.map(([a, , b]) => [a, y, b]),
+  });
+  const planner = createCandidatePlanner(
+    {
+      surfaces: [elevated('entry', 0, 0), elevated('step', 6, 1), elevated('goal', 12, 2)],
+      options: { speed: 5, maxVertical: 0.1 },
+    },
+    { endpointRadius: 0.1 },
+  );
+  const model = {
+    gravity: 40,
+    fallingGravity: 38,
+    maxJumpHeight: 2.1,
+    maxFallingSpeed: 80,
+    apexTime: 0.1,
+    maxHorizontalSpeed: 6.5,
+    startHorizontalSpeed: 9,
+    airOverspeedDeceleration: 5,
+  };
+  const ordinary = expectStatus(planner.plan(startAt(start), goal), 'candidate');
+  const direct = ordinary.unresolved.find((edge) => edge.from === 'entry' && edge.to === 'goal');
+  assert.ok(direct);
+  const guided = expectStatus(
+    planner.plan(startAt(start), goal, { jumpModel: model }),
+    'candidate',
+  );
+  assert.deepEqual(
+    guided.unresolved.map(({ from, to }) => [from, to]),
+    [
+      ['entry', 'step'],
+      ['step', 'goal'],
+    ],
+  );
+  assert.deepEqual(guided.points[0], start);
+  assert.deepEqual(guided.points.at(-1), goal);
+  const fallback = createCandidatePlanner({
+    surfaces: [elevated('entry', 0, 0), elevated('goal', 12, 2)],
+    options: { speed: 5, maxVertical: 0.1 },
+  });
+  const detached: Vec3 = [-25, 0, 1];
+  assert.equal(fallback.plan(startAt(detached), goal).status, 'candidate');
+  assert.equal(fallback.plan(startAt(detached), goal, { jumpModel: model }).status, 'no-candidate');
 });

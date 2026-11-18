@@ -45,6 +45,8 @@ export interface JumpRouteOptions extends GroundOptions {
    * Query connections override its initial connection set. */
   groundPlanner?: GroundPlanner;
   interaction?: InteractionGoal;
+  /** Query-owned terminal launch trajectories, unavailable as transfer edges. */
+  terminalLaunches?: GroundConnection[];
   model: JumpModel;
   runAirSpeed: number;
   maxSlope: number;
@@ -880,7 +882,7 @@ export function planJumpRoute(
   world: CollisionWorld,
   starts: GroundArrival[],
   goal: Vec3,
-  options: JumpRouteOptions,
+  options: PlannerOptions,
   initial?: InitialGroundProof,
 ): JumpResult {
   const { actions: selected, seeds } = selectCatalogActions(world, surfaces, starts, goal, options);

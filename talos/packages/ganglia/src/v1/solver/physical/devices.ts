@@ -1,8 +1,8 @@
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { Surface, Vec3, Wall } from '#@/src/geometry.ts';
-import { createGoalProjector } from '#@/src/model/goals.ts';
+import { createGoalProjector, findGoalHit } from '#@/src/model/goals.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
-import type { SpeedBoost } from '#@/src/movement.ts';
+import type { InteractionGoal, SpeedBoost } from '#@/src/movement.ts';
 import type { GroundConnection } from '#@/src/route.ts';
 import type { DeviceFacts } from '#@/src/solver/physical.ts';
 import { jumpConnection, jumpDuration } from '#@/src/v1/motion/jumps.ts';
@@ -136,8 +136,8 @@ const launchLanding = (
   return null;
 };
 
-export const createDeviceConnections = (input: DeviceFacts, options: Options) => {
-  const { surfaces, world, profile } = options;
+export const prepareDeviceConnections = (input: DeviceFacts, options: Options) => {
+  const { surfaces, world, profile, walls } = options;
   const blocked = createWallChecker(options.walls, profile);
   const project = createGoalProjector(surfaces);
   const connections: GroundConnection[] = [];
@@ -388,11 +388,103 @@ export const createDeviceConnections = (input: DeviceFacts, options: Options) =>
     }
     outcomes.push({ id: d.id, mode: 'launch', reason });
   }
+  const terminalLaunches = (target: Vec3, interaction: InteractionGoal): GroundConnection[] => {
+    const speed = options.runAirSpeed;
+    const { gravity, fallingGravity, maxFallingSpeed, apexTime } = options.model;
+    if (!interaction.airborne || speed === undefined || !Number.isFinite(speed) || speed <= 0)
+      return [];
+    const entries: GroundConnection[] = [];
+    for (const device of input.devices) {
+      if (
+        device.kind !== 'launch' ||
+        device.fixedLaunch ||
+        !device.freeLaunch ||
+        !device.resolved ||
+        !device.unitScale ||
+        !inside(device.position) ||
+        !Number.isFinite(device.height) ||
+        device.height <= 0 ||
+        !device.goal ||
+        !inside(target)
+      )
+        continue;
+      const model = {
+        gravity,
+        fallingGravity,
+        maxFallingSpeed,
+        apexTime,
+        maxJumpHeight: device.height,
+        maxHorizontalSpeed: speed,
+        mode: 'jump' as const,
+      };
+      // The latest possible hit occurs as the flight descends below the
+      // source volume. Include the launch trigger extent in the broadphase.
+      const lowest = target[1] - interaction.radius;
+      const source = device.goal;
+      const latestFeet = source.position[1] + source.interaction.radius;
+      const latest = jumpDuration(latestFeet, lowest, model);
+      if (
+        !latest ||
+        Math.hypot(target[0] - source.position[0], target[2] - source.position[2]) >
+          speed * latest + source.interaction.radius + interaction.radius
+      )
+        continue;
+      const ceiling = target[1] + interaction.radius;
+      const feet = new Map(nearby(device).map((start) => [JSON.stringify(start), start]));
+      for (const start of feet.values()) {
+        const dx = target[0] - start[0],
+          dz = target[2] - start[2];
+        const distance = Math.hypot(dx, dz);
+        const upper = Math.min(start[1] + device.height, ceiling);
+        if (upper < lowest) continue;
+        // Each sample is a cross-section of the authored goal volume reached
+        // during descent. Motion still uses the independent capsule sweep.
+        let fastest: GroundConnection | undefined;
+        for (let step = 0; step <= 12; step++) {
+          const y = upper + ((lowest - upper) * step) / 12;
+          const time = jumpDuration(start[1], y, model);
+          if (!time) continue;
+          const displacement = Math.min(distance, speed * time * (1 - 1e-10));
+          const fraction = distance ? displacement / distance : 0;
+          const aim: Vec3 = [start[0] + dx * fraction, y, start[2] + dz * fraction];
+          if (!findGoalHit([aim, aim], target, interaction)) continue;
+          const arc = jumpConnection(start, aim, {
+            ...model,
+            profile,
+            walls,
+            sweep: (a, b, body) => world.sweepCapsule(a, b, body),
+            collection: { target, interaction },
+          });
+          const endpoint = arc?.points.at(-1);
+          if (!arc || !endpoint || !findGoalHit([endpoint, endpoint], target, interaction))
+            continue;
+          if (!fastest || arc.times.at(-1)! < fastest.times.at(-1)!)
+            fastest = {
+              ...arc,
+              id: `launch/${device.id}/terminal/${entries.length}`,
+              mode: 'launch',
+              state: 'open',
+              terminal: true,
+              endpointTolerance: profile.radius,
+            };
+        }
+        if (fastest) entries.push(fastest);
+      }
+    }
+    return entries;
+  };
+
   return {
-    connections,
-    boosts,
-    outcomes,
-    snapshot: 'all-devices-enabled-and-powered',
-    motionValidation: 'model-based',
+    terminalLaunches,
+    facts: {
+      connections,
+      boosts,
+      outcomes,
+      snapshot: 'all-devices-enabled-and-powered',
+      motionValidation: 'model-based',
+    },
   };
 };
+
+export const createDeviceConnections = (input: DeviceFacts, options: Options) =>
+  prepareDeviceConnections(input, options).facts;

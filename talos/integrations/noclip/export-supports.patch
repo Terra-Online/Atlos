@@ -119,7 +119,7 @@ index c6c83f3c..93e7dd5c 100644
  	const keys = new Map([
  		['left_opened', (side & 2n) === 0n ? 1 : 0],
 diff --git a/packages/extractor/src/game/moving-supports.ts b/packages/extractor/src/game/moving-supports.ts
-index 73c95a6c..7334ccc8 100644
+index 73c95a6c..5dfa227 100644
 --- a/packages/extractor/src/game/moving-supports.ts
 +++ b/packages/extractor/src/game/moving-supports.ts
 @@ -34,16 +34,20 @@ import type { Vec3 } from '@opendfieldmap/ganglia';
@@ -183,19 +183,22 @@ index 73c95a6c..7334ccc8 100644
  				const moving = componentOf(template, '_InteractiveMovingPlatformComponentDataForMemoryPack');
  				const logic = componentParams(template, row, {
  					suffix: '_InteractiveLogicControllerComponentDataForMemoryPack',
-@@ -304,7 +313,10 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+@@ -304,7 +313,13 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
  					type: 29,
  				});
  				const seesaw = logic?.get('logic_type')?.values[0]?.bits === 9n;
 -				const volume = waterById.get(floaters.get(id) ?? '');
 +				const volume = waterById.get(floater?.volume ?? floaters.get(id) ?? '');
 +				if (floater?.volume && !volume) throw new Error(`floater water volume ${floater.volume} unavailable`);
-+				if (volume?.infinite && waterLevels.computed) throw new Error('computed water-level targets unresolved');
++				if (volume?.infinite) {
++					if (waterScripts?.undecoded) throw new Error('water-level scripts could not be decoded');
++					if (waterLevels.computed) throw new Error('computed water-level targets unresolved');
++				}
 +				const waterDomain = volume ? waterLevelDomain(volume,waterLevels.levels) : null;
  				let positions: Vec3[],
  					speed: number | null,
  					family: SweptSupport['family'] = 'platform';
-@@ -322,35 +334,38 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+@@ -322,35 +337,38 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
  					}
  					positions = splinePath(spline, move);
  					speed = move.speed > 0 ? move.speed : null;
@@ -249,7 +252,7 @@ index 73c95a6c..7334ccc8 100644
  					throw new Error('moving support path has fewer than two poses');
  				}
  				const base = componentOf(template, '_InteractiveModelComponentDataForMemoryPack');
-@@ -367,7 +382,7 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+@@ -367,7 +385,7 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
  				}
  				const model = objectField(models, modelId);
  				const prefab = stringField(model, 'path').toLowerCase();
@@ -258,7 +261,7 @@ index 73c95a6c..7334ccc8 100644
  				if ((lifter || moving) && !body.movingPart) {
  					throw new Error('platform moving subtree unresolved');
  				}
-@@ -449,6 +464,16 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+@@ -449,6 +467,16 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
  					level: level.id,
  					model: prefab,
  					...(forklift ? { control: forklift } : {}),
@@ -275,7 +278,7 @@ index 73c95a6c..7334ccc8 100644
  					endpoints,
  					...geometry,
  					assumption: 'phase-free-swept-support',
-@@ -462,6 +487,17 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+@@ -462,6 +490,17 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
  			}
  		}
  	}
@@ -358,7 +361,7 @@ index 29964c51..6f7ad19d 100644
 +    assert.equal(representedSupport(placed,[witness,{...actual,level:'another-level'}],placements),null);
 +});
 diff --git a/packages/extractor/src/game/static-supports.ts b/packages/extractor/src/game/static-supports.ts
-index 7d12f703..bf6fe068 100644
+index 7d12f703..958e0fc 100644
 --- a/packages/extractor/src/game/static-supports.ts
 +++ b/packages/extractor/src/game/static-supports.ts
 @@ -30,7 +30,40 @@ type Support = {
@@ -403,15 +406,21 @@ index 7d12f703..bf6fe068 100644
  };
  
  /** Names select an audit scope; they never create support geometry. Controllers
-@@ -266,8 +299,18 @@ export const collectStaticSupports = async (ctx: Context, scene: string, knownId
+@@ -264,10 +297,24 @@ export const collectStaticSupports = async (ctx: Context, scene: string, knownId
+         }
+     }
      const dynamicOwners = new Set((await ctx.world.dynamicEntities(scene)).flatMap(entity => entity.uid === null ? [] : [String(entity.uid)]));
++    const imported = [...supports.values()].filter(support => {
++        const status = records.get(support.id)?.status;
++        return status === 'exported' || status === 'animated';
++    });
      for (const item of objects) {
          if (item.status === 'pending') {
 -            item.status = 'unresolved';
              const absentOwners = item.owners.filter(owner => !dynamicOwners.has(owner));
 +            if (item.owners.length && absentOwners.length===item.owners.length) {
 +                const placed = rows.get(item.id);
-+                const represented = placed && representedSupport(placed,[...supports.values()],rows);
++                const represented = placed && representedSupport(placed, imported, rows);
 +                if (represented) {
 +                    item.status = 'represented';
 +                    item.representedBy = represented;
@@ -425,10 +434,10 @@ index 7d12f703..bf6fe068 100644
                  : 'no terminal physical model was resolved';
 diff --git a/packages/extractor/src/game/water-supports.test.ts b/packages/extractor/src/game/water-supports.test.ts
 new file mode 100644
-index 00000000..47ad84f2
+index 0000000..331ee52
 --- /dev/null
 +++ b/packages/extractor/src/game/water-supports.test.ts
-@@ -0,0 +1,157 @@
+@@ -0,0 +1,170 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +import { levelInteractiveFromValue } from '@endfield-noclip/formats/endfield/level-interactives';
@@ -506,6 +515,19 @@ index 00000000..47ad84f2
 +		.get(125)!
 +		.push({ key: 'is_update_rotation_on_spline', type: 1, values: [{ bits: 1n, text: null }] });
 +	assert.throws(() => waterCurveOf(template, placed), /rotation/);
++});
++
++test('an omitted floater offset defaults to zero while a malformed offset is rejected', () => {
++	const template = (offset: ReturnType<typeof param>[] = []) => ({
++		componentList: [
++			component('BelongToWaterVolume', [param('water_volume', 56, '123'), ...offset]),
++		],
++	});
++	assert.deepEqual(waterFloaterOf(template(), row()), { volume: '123', surfaceOffset: 0 });
++	assert.throws(
++		() => waterFloaterOf(template([param('surface_offset', 3, '1')]), row()),
++		/floater surface offset unresolved/,
++	);
 +});
 +
 +test('floaters follow a shared water surface offset rather than retaining their authored height', () => {
@@ -588,7 +610,7 @@ index 00000000..47ad84f2
 +});
 diff --git a/packages/extractor/src/game/water-supports.ts b/packages/extractor/src/game/water-supports.ts
 new file mode 100644
-index 00000000..fb7093b1
+index 0000000..5b89c24
 --- /dev/null
 +++ b/packages/extractor/src/game/water-supports.ts
 @@ -0,0 +1,169 @@
@@ -663,7 +685,7 @@ index 00000000..fb7093b1
 +	const volume = p.get('water_volume');
 +	if (volume?.type !== 56 || volume.values.length !== 1 || volume.values[0].bits < 0n)
 +		throw new Error('floater water-volume reference unresolved');
-+	const surfaceOffset = scalar(p, 'surface_offset');
++	const surfaceOffset = p.has('surface_offset') ? scalar(p, 'surface_offset') : 0;
 +	if (surfaceOffset === null) throw new Error('floater surface offset unresolved');
 +	return {
 +		volume: volume.values[0].bits === 0n ? null : String(volume.values[0].bits),

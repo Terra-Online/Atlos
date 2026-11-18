@@ -5,7 +5,12 @@ import type { Route } from '#@/src/route.ts';
 import type { RouteQuery, SolveOptions } from '#@/src/solver/contract.ts';
 import type { GangliaV1Config } from '#@/src/solver/ganglia-v1.ts';
 import { physicalCoverage, physicalTileSpan, physicalWork } from '#@/src/solver/host.ts';
-import type { SceneResources, SceneTerminal, WindowJob } from '#@/src/solver/resources.ts';
+import type {
+  PhysicalSnapshot,
+  SceneResources,
+  SceneTerminal,
+  WindowJob,
+} from '#@/src/solver/resources.ts';
 import { standingFoot } from '#@/src/v1/search/traversal.ts';
 
 type Complete = Extract<Route, { status: 'complete' }>;
@@ -14,22 +19,24 @@ export interface Entry extends SceneTerminal {
   bind(route: Complete): boolean;
 }
 
-/** Discover an airborne suffix from current physical/device facts. Its supported
- * entry is only a proposal until the original arrivals connect to it. No route
- * from an earlier query or authored itinerary is used as search input. */
-export async function discoverAirborneEntries<Source, Job extends WindowJob>(
+export interface AirborneWindow<Job> {
+  job: Job;
+  snapshot: PhysicalSnapshot;
+}
+
+export async function loadAirborneWindow<Source, Job extends WindowJob>(
   scene: { scene: string; source: Source; walls: Wall[] },
   resources: SceneResources<Source, Job>,
   config: GangliaV1Config,
   query: RouteQuery,
   options: SolveOptions,
-): Promise<Entry[]> {
-  if (!query.interaction?.airborne || !resources.physical) return [];
+): Promise<AirborneWindow<Job> | undefined> {
+  if (!query.interaction?.airborne || !resources.physical) return;
   const arrival = query.starts.find((a) => a.state === 'available');
-  if (!arrival) return [];
+  if (!arrival) return;
   const margin = config.gridSpan;
   const { bounds: extent, tiles: count } = physicalCoverage(query.goal, query.goal, { margin });
-  if (count > config.maxTiles) return [];
+  if (count > config.maxTiles) return;
   const bounds: { min: [number, number]; max: [number, number] } = {
     min: [extent[0], extent[1]],
     max: [extent[2], extent[3]],
@@ -59,7 +66,7 @@ export async function discoverAirborneEntries<Source, Job extends WindowJob>(
         coarse: { regions: 0, edges: 0, path: [query.goal], halo: margin },
       },
     });
-    if (!job || job.status === 'failed') return [];
+    if (!job || job.status === 'failed') return;
     if (job.status !== 'ready') await resources.wait(options.signal);
   } while (job.status !== 'ready');
   const snapshot = await resources.physical(job, {
@@ -68,6 +75,24 @@ export async function discoverAirborneEntries<Source, Job extends WindowJob>(
     target: query.goal,
     interaction: query.interaction,
   });
+  return { job, snapshot };
+}
+
+/** Discover an airborne suffix from current physical/device facts. Its supported
+ * entry is only a proposal until the original arrivals connect to it. No route
+ * from an earlier query or authored itinerary is used as search input. */
+export async function discoverAirborneEntries<Source, Job extends WindowJob>(
+  scene: { scene: string; source: Source; walls: Wall[] },
+  resources: SceneResources<Source, Job>,
+  config: GangliaV1Config,
+  query: RouteQuery,
+  options: SolveOptions,
+  load: () => Promise<AirborneWindow<Job> | undefined>,
+): Promise<Entry[]> {
+  if (!query.interaction?.airborne || !resources.physical) return [];
+  const window = await load();
+  if (!window) return [];
+  const { job, snapshot } = window;
   const input = snapshot.input;
   const facts = input.devices;
   if (!facts) return [];

@@ -1,3 +1,4 @@
+import type { MovingContact } from '../moving-contact';
 import { transport } from './transport';
 import type { Route, Vec3 } from '@opendfieldmap/ganglia';
 export type SupportBox = {
@@ -24,6 +25,7 @@ export type Candidate = {
     overview?: { position: Vec3; yaw: number; pitch: number; fovY: number };
     route: Extract<Route, { status: 'complete' }>;
     supportBoxes?: SupportBox[];
+    terminal?: MovingContact;
     markers: { label: string; position: Vec3 }[];
 };
 export interface RouteRequest {

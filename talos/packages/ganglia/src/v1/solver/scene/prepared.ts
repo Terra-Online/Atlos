@@ -1,5 +1,6 @@
 import type { Vec3, Wall } from '#@/src/geometry.ts';
-import type { LocomotionOptions } from '#@/src/movement.ts';
+import { createGoalProjector, type GoalProjector } from '#@/src/model/goals.ts';
+import type { JumpModel, LocomotionOptions } from '#@/src/movement.ts';
 import type { GroundArrival, Route } from '#@/src/route.ts';
 import { checkpoint } from '#@/src/solver/checkpoint.ts';
 import type {
@@ -18,7 +19,13 @@ import type {
 import { validateWaypoints } from '#@/src/v1/route/jump-planner.ts';
 import { createCandidatePlanner } from '#@/src/v1/search/candidate-planner.ts';
 import { composeRoutes, admitAuthoredStart } from '#@/src/v1/solver/route-result.ts';
-import { discoverAirborneEntries, type Entry } from '#@/src/v1/solver/scene/airborne.ts';
+import {
+  discoverAirborneEntries,
+  loadAirborneWindow,
+  type AirborneWindow,
+  type Entry,
+} from '#@/src/v1/solver/scene/airborne.ts';
+import { discoverRopeTerminal } from '#@/src/v1/solver/scene/rope-terminal.ts';
 import { createWindowGroundCache, createWindowRoute } from '#@/src/v1/solver/window-route.ts';
 
 type Complete = Extract<Route, { status: 'complete' }>;
@@ -60,9 +67,11 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
 ): PreparedRouteSolver<GangliaV1Config> {
   const { navigation, ...scene } = input;
   const planner = createCandidatePlanner(navigation);
+  let projectGoal: GoalProjector | undefined;
   const groundCache = createWindowGroundCache();
   const maxAttempts = config.maxAttempts,
     concurrency = config.batchConcurrency;
+  let transport: ReturnType<NonNullable<typeof resources.movingTransfers>> | undefined;
   let closed = false;
   let closing: Promise<void> | undefined;
   const batches = new Set<Promise<readonly RouteResult[]>>();
@@ -82,6 +91,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
             ...(incumbent ?? partial!),
             reason,
             diagnostics: {
+              ...(incumbent ?? partial)?.diagnostics,
               truncated: truncated || limited || Boolean(incumbent?.diagnostics.truncated),
               candidateAttempts: attempts,
             },
@@ -104,6 +114,25 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         query.starts,
         locomotion.sprintSpeed ?? locomotion.speed,
       );
+      let goalWindow: Promise<AirborneWindow<Job> | undefined> | undefined;
+      const loadGoalWindow = () =>
+        (goalWindow ??= loadAirborneWindow(scene, resources, config, query, options));
+      if (!terminal && query.interaction?.airborne && resources.physical) {
+        const found = await discoverRopeTerminal(
+          scene,
+          navigation,
+          (projectGoal ??= createGoalProjector(navigation.surfaces)),
+          resources,
+          config,
+          query,
+          options,
+          loadGoalWindow,
+        );
+        if (found) {
+          options.onEvent?.({ type: 'candidate', result: found, optimizing: false });
+          return found;
+        }
+      }
       let goal = terminal?.route.points[0] ?? query.goal;
       let bind: ((route: Complete) => boolean) | undefined;
       let discoveryTried = false;
@@ -112,7 +141,14 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         if (incumbent || (terminal && !bind) || !query.interaction?.airborne) return false;
         if (!discoveryTried) {
           discoveryTried = true;
-          entries = await discoverAirborneEntries(scene, resources, config, query, options);
+          entries = await discoverAirborneEntries(
+            scene,
+            resources,
+            config,
+            query,
+            options,
+            loadGoalWindow,
+          );
         }
         // Entry proximity alone can favor a roof that the original arrivals
         // cannot approach. Rank current entry proposals through the scene graph;
@@ -141,6 +177,8 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
       const estimate = (arrival: GroundArrival) =>
         arrival.cost +
         distance(arrival.position, query.goal) / Math.max(locomotion.speed, locomotion.sprintSpeed);
+      let triedTransport = false,
+        triedBoundaryGuide = false;
       candidates: for (; attempts < maxAttempts;) {
         if (cancelled()) return stopped('aborted', true);
         let starts = query.starts.filter(
@@ -162,15 +200,46 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         await checkpoint(options.signal);
         progress('search');
         if (cancelled()) return stopped('aborted', true);
-        const proposal = planner.plan(starts, goal, { excludedEdges });
+        const facilities =
+          !triedTransport && !terminal && query.interaction && resources.movingTransfers
+            ? planner.moving(
+                starts,
+                goal,
+                query.interaction,
+                await (transport ??= resources.movingTransfers().catch((error) => {
+                  transport = undefined;
+                  throw error;
+                })),
+              )
+            : undefined;
+        triedTransport = true;
+        const jumpModel: JumpModel | undefined =
+          !facilities && !terminal && !triedBoundaryGuide && !query.interaction?.airborne
+            ? resources.jumpModel
+            : undefined;
+        triedBoundaryGuide ||= Boolean(jumpModel);
+        const proposal =
+          facilities ??
+          planner.plan(starts, goal, {
+            excludedEdges,
+            interaction: terminal ? undefined : query.interaction,
+            jumpModel,
+          });
         await checkpoint(options.signal);
         if (cancelled()) return stopped('aborted', true);
         if (proposal.status !== 'candidate') {
+          if (jumpModel) {
+            attempts--;
+            continue;
+          }
           if (await discover()) continue;
           if (!incumbent) return stopped('no-global-candidate');
           excludedArrivals.add(starts[0].id);
           continue;
         }
+        const boundaryGuide = Boolean(
+          jumpModel && proposal.unresolved.some((edge) => edge.key?.startsWith('["transfer",')),
+        );
         const arrival = proposal.arrival;
         const window = createWindowRoute(
           resources,
@@ -187,6 +256,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
           {
             ...config,
             locomotion,
+            transportGuide: Boolean(facilities),
             transfers: proposal.path?.filter((edge) => edge.unresolved).map((edge) => edge.points),
           },
           groundCache,
@@ -211,6 +281,9 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
                 truncated ||
                 Boolean(route.search?.truncated || route.locomotion?.search?.truncated),
               candidateAttempts: attempts,
+              ...(boundaryGuide && {
+                candidateGuide: 'source-boundaries',
+              }),
             },
           };
           if (!isPartial) {
@@ -286,6 +359,14 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
           }
           if (cancelled()) return stopped('aborted', true);
           lastReason = result.reason;
+          if (facilities || boundaryGuide) {
+            // A directed boundary or authored transport guide does not consume
+            // the ordinary budget when its physical window cannot validate it.
+            attempts--;
+            partial = undefined;
+            break;
+          }
+
           if (await discover()) continue candidates;
           const edge = proposal.path?.find(
             (edge) =>

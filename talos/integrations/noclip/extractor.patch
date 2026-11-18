@@ -612,18 +612,20 @@ index 00000000..a3c0c9c2
 +};
 diff --git a/packages/extractor/src/commands/interaction-points.ts b/packages/extractor/src/commands/interaction-points.ts
 new file mode 100644
-index 00000000..a48f42d8
+index 00000000..03f8f70e
 --- /dev/null
 +++ b/packages/extractor/src/commands/interaction-points.ts
-@@ -0,0 +1,138 @@
+@@ -0,0 +1,154 @@
 +/* oxlint-disable no-await-in-loop -- decode one level at a time and cache small template metadata */
 +import { writeFile } from 'node:fs/promises';
 +import { parseArgs } from 'node:util';
 +
++import { readLevelSplines } from '@endfield-noclip/formats/endfield/level-splines';
++import { isMemoryPackObject, type MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
 +import { readInteractiveTable } from '@endfield-noclip/formats/endfield/interactive-model';
-+import { isObject } from '@endfield-noclip/formats/unity/values';
 +
 +import { withContext } from '../context.ts';
++import { coinMotion } from '../game/coin-motion.ts';
 +import { interactionPoint, interactionRules } from '../game/interaction-rules.ts';
 +import { VfsGroup } from '../hg/vfs.ts';
 +
@@ -661,7 +663,7 @@ index 00000000..a48f42d8
 +		if (!levels.length) {
 +			throw new Error(`unknown scene ${scene}`);
 +		}
-+		type Template = { value: unknown; rules: ReturnType<typeof interactionRules>; error: string | null };
++		type Template = { value: MemoryPackValue; rules: ReturnType<typeof interactionRules>; error: string | null };
 +		const templates = new Map<string, Template>(),
 +			points = [],
 +			errors = [];
@@ -673,12 +675,13 @@ index 00000000..a48f42d8
 +					throw new Error('missing level data path');
 +				}
 +				const data = reader.decode(await read(path), 'Beyond_Gameplay_LevelDataForMemoryPack');
-+				if (!isObject(data) || !Array.isArray(data.interactives)) {
++				if (!isMemoryPackObject(data) || !Array.isArray(data.interactives)) {
 +					throw new Error('invalid level interactives');
 +				}
 +				files++;
++				let splines: ReturnType<typeof readLevelSplines> | undefined;
 +				for (const row of data.interactives) {
-+					if (!isObject(row) || typeof row.entityDataIdKey !== 'string') {
++					if (!isMemoryPackObject(row) || typeof row.entityDataIdKey !== 'string') {
 +						throw new Error('invalid interactive identity');
 +					}
 +					const templateId = table.templates.get(row.entityDataIdKey);
@@ -714,10 +717,23 @@ index 00000000..a48f42d8
 +							error: template.error,
 +						});
 +					}
++					const point = interactionPoint(row, level.id, template.value, template.rules);
++					let navigationMotion = null;
++					let navigationMotionUnresolved: string | undefined;
++					try {
++						navigationMotion = coinMotion(template.value, row, point.id, () => (splines ??= readLevelSplines(data)), {
++							...source,
++							path,
++						});
++					} catch (error) {
++						navigationMotionUnresolved = error instanceof Error ? error.message : String(error);
++					}
 +					points.push({
-+						...interactionPoint(row, level.id, template.value, template.rules),
++						...point,
 +						source: path,
 +						templatePath: templatePath ?? null,
++						...(navigationMotion ? { navigationMotion } : {}),
++						...(navigationMotionUnresolved ? { navigationMotionUnresolved } : {}),
 +					});
 +				}
 +			}
@@ -754,6 +770,157 @@ index 00000000..a48f42d8
 +		console.log(counts);
 +	});
 +};
+diff --git a/packages/extractor/src/game/coin-motion.ts b/packages/extractor/src/game/coin-motion.ts
+new file mode 100644
+index 00000000..5cc57fb0
+--- /dev/null
++++ b/packages/extractor/src/game/coin-motion.ts
+@@ -0,0 +1,87 @@
++import { levelInteractiveFromValue } from '@endfield-noclip/formats/endfield/level-interactives';
++import { type LevelSpline, splineCurves } from '@endfield-noclip/formats/endfield/level-splines';
++import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
++
++import { componentOf, componentParams } from './interactives/component-params.ts';
++import { atomFloat } from './interactives/template-data.ts';
++
++const COIN = {
++	suffix: '_InteractiveCollectionCoinComponentDataForMemoryPack',
++	diffKey: 'Comp_InteractiveCollectionCoin',
++	type: 142,
++};
++const START_AREA = {
++	suffix: '_InteractiveStartAreaComponentDataForMemoryPack',
++	diffKey: 'Comp_InteractiveLogicStartArea',
++	type: 36,
++};
++type Source = { buildGuid: string; contentHash: string; path: string };
++
++/** Retain the effective source motion separately from the placed interaction volume.
++ * Runtime logic starts at the authored first knot even when the placed actor
++ * begins elsewhere. A route still needs its own activation and time witness.
++ */
++export const coinMotion = (
++	template: MemoryPackValue,
++	placement: MemoryPackValue,
++	id: string,
++	loadSplines: () => LevelSpline[],
++	source: Source,
++) => {
++	if (!componentOf(template, COIN.suffix)) return null;
++	const row = levelInteractiveFromValue(placement, BigInt(id));
++	const values = componentParams(template, row, COIN)!;
++	const atoms = (key: string) => values.get(key)?.values.map((value) => value.bits) ?? [];
++	const int = (key: string) => Number(BigInt.asIntN(32, atoms(key)[0] ?? 0n));
++	const floats = (key: string) => atoms(key).map(atomFloat);
++	if (int('movable') !== 1) return null;
++	const splineId = int('spline_id');
++	const matches = loadSplines().filter((spline) => spline.id === splineId);
++	if (!Number.isInteger(splineId) || splineId <= 0 || matches.length !== 1 || matches[0].knots.length < 2)
++		throw new Error('moving coin spline is missing or ambiguous in the placement source');
++	const spline = matches[0];
++	const curves = splineCurves(spline, spline.closed);
++	const repeatFrom = spline.closed ? 0 : int('partly_loop') === 1 ? int('partly_loop_index') : null;
++	if (repeatFrom !== null && (repeatFrom < 0 || repeatFrom >= curves.length))
++		throw new Error('moving coin loop begins outside its authored curves');
++	const speed = floats('speed')[0];
++	const radius = floats('radius')[0];
++	const speeds = floats('speed_list');
++	const nearby = atoms('wait_for_nearby_list');
++	const waits = floats('wait_time_list');
++	const smooth = atoms('use_smooth_speed_list');
++	const useSameSpeed = int('use_same_speed') === 1;
++	if (
++		!Number.isFinite(speed) || speed <= 0 ||
++		!Number.isFinite(radius) || radius < 0 ||
++		speeds.some((value) => !Number.isFinite(value) || value <= 0) ||
++		waits.some((value) => !Number.isFinite(value) || value < 0) ||
++		[nearby, waits, smooth].some((list) => list.length !== 0 && list.length !== curves.length) ||
++		(!useSameSpeed && speeds.length !== curves.length)
++	) throw new Error('invalid moving coin speed or per-segment gates');
++	// The inactive start area raises its enter event on the loaded
++	// entity's first tick without applying a spatial check.
++	const spatial = componentParams(template, row, START_AREA);
++	const automatic = spatial?.get('active')?.values[0]?.bits === 0n;
++	return {
++		activation: automatic ? 'loaded-entity-tick' : 'unresolved',
++		model: 'source-coin-spline-v1' as const,
++		source,
++		splineId,
++		closed: spline.closed,
++		repeatFrom,
++		placedPosition: row.position,
++		startPosition: curves[0][0],
++		nearbyWaitRadius: radius,
++		camouflaged: int('camouflage') === 1,
++		timeLimited: int('time_limited') === 1,
++		countdownDuration: floats('countdown_duration')[0] ?? null,
++		segments: curves.map((curve, index) => ({
++			curve,
++			speed: useSameSpeed ? speed : speeds[index],
++			requiresNearby: (nearby[index] ?? 0n) !== 0n,
++			waitSeconds: waits[index] ?? 0,
++			smoothSpeed: (smooth[index] ?? 0n) !== 0n,
++		})),
++	};
++};
+diff --git a/packages/extractor/src/game/coin-motion.test.ts b/packages/extractor/src/game/coin-motion.test.ts
+new file mode 100644
+index 00000000..04097185
+--- /dev/null
++++ b/packages/extractor/src/game/coin-motion.test.ts
+@@ -0,0 +1,52 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++
++import type { LevelSpline } from '@endfield-noclip/formats/endfield/level-splines';
++import { coinMotion } from './coin-motion.ts';
++
++const bits = (value: number): string => {
++	const view = new DataView(new ArrayBuffer(4));
++	view.setFloat32(0, value);
++	return String(view.getUint32(0));
++};
++const param = (key: string, value: string | number) => ({
++	key, value: { type: typeof value === 'string' ? 5 : 3, valueArray: [{ valueBit64: String(value), valueString: null }] },
++});
++const config = [
++	param('spline_id', 0), param('movable', 0), param('radius', bits(10)),
++	param('use_same_speed', 1), param('speed', bits(2)),
++];
++const template = {
++	componentList: [{
++		$type: 'Beyond_Gameplay_Core_InteractiveCollectionCoinComponentDataForMemoryPack',
++		propertyList: config,
++	}],
++	templateVariant: [['coin_variant', { componentDiffProperties: [['Comp_InteractiveCollectionCoin', {
++		value: [param('movable', 1), param('speed', bits(7))],
++	}]] }]],
++};
++const row = {
++	entityDataIdKey: 'coin_variant', createState: 0,
++	position: [99, 2, 99], rotation: [0, 0, 0], scale: [1, 1, 1],
++	componentProperties: [[142, [param('spline_id', 7), param('speed', bits(5)), param('partly_loop', 1)]]],
++};
++const spline: LevelSpline = {
++	id: 7, position: [10, 20, 30], rotation: [0, 0, 0], closed: false,
++	knots: [0, 2].map((x) => ({ position: [x, 0, 0], rotation: [0, 0, 0, 1], tangentIn: [0, 0, 0], tangentOut: [0, 0, 0] })),
++};
++const source = { buildGuid: 'build', contentHash: 'content', path: 'level.json' };
++
++test('motion binds the effective coin parameters and authored spline start', () => {
++	const motion = coinMotion(template, row, '1', () => [spline], source);
++	assert.ok(motion);
++	assert.deepEqual(motion.placedPosition, [99, 2, 99]);
++	assert.deepEqual(motion.startPosition, [10, 20, 30]);
++	assert.equal(motion.segments[0].speed, 5);
++	assert.equal(motion.repeatFrom, 0);
++	assert.deepEqual(motion.source, source);
++});
++
++test('static coins do not demand a spline and moving coins require an exact source match', () => {
++	assert.equal(coinMotion(template, { ...row, entityDataIdKey: 'coin_static' }, '1', () => [], source), null);
++	assert.throws(() => coinMotion(template, row, '1', () => [], source), /missing or ambiguous/);
++});
 diff --git a/packages/extractor/src/commands/movement-settings.ts b/packages/extractor/src/commands/movement-settings.ts
 new file mode 100644
 index 00000000..ac97673c

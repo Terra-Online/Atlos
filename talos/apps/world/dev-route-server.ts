@@ -19,16 +19,54 @@ import {
     type GroundArrival,
     type GroundOptions,
     type InteractionGoal,
+    type JumpModel,
     type LocomotionOptions,
     type Route,
     type Surface,
     type Vec3,
 } from '@opendfieldmap/ganglia';
+import { planMovingCoin, readCoinLoop } from './moving-coin.ts';
+import type { MovingContact } from './src/moving-contact.ts';
 import { physicalRouteBuilder } from './physical-route-builder.ts';
 
 import { travelArrivals, type TravelPoint } from './travel-arrivals.ts';
 
 type Source = { buildGuid: string; contentHash: string };
+type Movement = {
+    source: Source;
+    sustainedSprint: LocomotionOptions;
+    assets?: { path: string; settings: Record<string, unknown> }[];
+};
+
+function sourceJumpModel(movement: Movement): JumpModel | undefined {
+    const settings = movement.assets?.find(({ path }) =>
+        path.endsWith('/MovementSetting_Default.asset'),
+    )?.settings;
+    if (!settings) return;
+    const values = [
+        '_gravity',
+        '_fallingGravity',
+        '_maxJumpHeight',
+        '_maxFallingSpeed',
+        '_apexTime',
+        '_inAirMaxHorizontalSpeedSprint',
+        '_startHorizontalSpeedSprint',
+        '_inAirMaxInitHorizontalSpeed',
+        '_inAirDecelerationWithInputSprint',
+    ].map((name) => settings[name]);
+    if (!values.every((value): value is number =>
+        typeof value === 'number' && Number.isFinite(value) && value >= 0)) return;
+    const [gravity, fallingGravity, maxJumpHeight, maxFallingSpeed, apexTime,
+        maxHorizontalSpeed, start, initialLimit, airOverspeedDeceleration] = values;
+    if (!gravity || !fallingGravity || !maxJumpHeight || !maxFallingSpeed ||
+        !airOverspeedDeceleration) return;
+    return {
+        gravity, fallingGravity, maxJumpHeight, maxFallingSpeed, apexTime,
+        maxHorizontalSpeed, startHorizontalSpeed: Math.min(start, initialLimit),
+        airOverspeedDeceleration,
+    };
+}
+
 type Bounds = { min: [number, number]; max: [number, number] };
 type Data = {
     scene: string;
@@ -55,6 +93,8 @@ type InteractionPoint = {
     navigationGoal: { position: Vec3; interaction: InteractionGoal } | null;
     effective: { unresolved: string[] };
     navigationUnresolved?: string[];
+    navigationMotion?: unknown;
+    navigationMotionUnresolved?: string;
 };
 type InteractionCatalog = {
     scene: string;
@@ -67,6 +107,7 @@ type Candidate = {
     status: 'candidate';
     route: Extract<Route, { status: 'complete' }>;
     supportBoxes?: SupportBox[];
+    terminal?: MovingContact;
     partial?: boolean;
     optimizing?: boolean;
     optimizationMessage?: string;
@@ -158,7 +199,7 @@ export function routeServer(
     const readBytes = (name: string) => readFile(resolve(directory!, name));
     const read = async (name: string): Promise<unknown> =>
         JSON.parse((await readBytes(name)).toString());
-    const sceneSolver = (data: Data, locomotion: LocomotionOptions) => {
+    const sceneSolver = (data: Data, movement: Movement) => {
         let pending = solvers.get(data);
         if (!pending) {
             const { scene, source } = data;
@@ -166,6 +207,31 @@ export function routeServer(
                 Source,
                 Awaited<ReturnType<typeof builder.query>> & {}
             > = {
+                jumpModel: sourceJumpModel(movement),
+                movingTransfers: async () => {
+                    const catalog = await read(`${scene}-traversal-devices.json`).catch(
+                        (error: unknown) => {
+                            if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return null;
+                            throw error;
+                        },
+                    ) as {
+                        scene: string;
+                        source: Source;
+                        movingSupports?: {
+                            id: string;
+                            transfers?: { from: Vec3; to: Vec3; speed: number | null }[];
+                        }[];
+                    } | null;
+                    if (!catalog) return [];
+                    if (catalog.scene !== scene || !sameSource(source, catalog.source))
+                        throw new Error('Moving support data does not match the navigation build');
+                    return (catalog.movingSupports ?? []).flatMap(({ id, transfers = [] }) =>
+                        transfers
+                            .filter(t => typeof t.speed === 'number' && Number.isFinite(t.speed) && t.speed > 0 &&
+                                finiteVector(t.from) && finiteVector(t.to))
+                            .map(t => ({ id, from: t.from, to: t.to })),
+                    );
+                },
                 query: builder.query,
                 physical: builder.physical,
                 solve: builder.solve,
@@ -224,7 +290,7 @@ export function routeServer(
                     navigation: data,
                 },
                 resources,
-                locomotion,
+                locomotion: movement.sustainedSprint,
             });
             solvers.set(data, pending);
             pending.catch(() => solvers.delete(data));
@@ -275,6 +341,9 @@ export function routeServer(
                             navigationGoal: point.navigationGoal,
                             effective: point.effective,
                             navigationUnresolved: point.navigationUnresolved,
+                            navigationMotion: point.navigationMotion,
+                            navigationMotionUnresolved:
+                                point.navigationMotionUnresolved,
                         });
                     }
                     return { scene, source: catalog.source, points };
@@ -578,8 +647,35 @@ export function routeServer(
                                 (value, axis) => value - target[axis],
                             ),
                         ) <= 1e-3;
+                    const supportGoal =
+                        matchingTransform && !pointRules.navigationGoal
+                            ? await builder.supportContact(
+                                  scene,
+                                  source,
+                                  level,
+                                  pointRules.id,
+                                  target,
+                                  data.options,
+                              )
+                            : undefined;
+                    const needsAuthoredCap =
+                        matchingTransform &&
+                        !pointRules.navigationGoal &&
+                        pointRules.template === 'int_water_volume_floater';
+                    if (
+                        supportGoal === null ||
+                        (needsAuthoredCap && !supportGoal)
+                    ) {
+                        reply({
+                            status: 'unavailable',
+                            category: 'interaction-unavailable',
+                            message:
+                                'The authored water-floater contact is unavailable',
+                        });
+                        return;
+                    }
                     const normalizedGoal = matchingTransform
-                        ? pointRules.navigationGoal
+                        ? (pointRules.navigationGoal ?? supportGoal)
                         : null;
                     // Collection triggers can be entered during flight. Preserve
                     // their source-derived volume and finish at the collection event.
@@ -605,13 +701,14 @@ export function routeServer(
                         template: pointRules?.template ?? null,
                         templatePath: pointRules?.templatePath ?? null,
                         goal: goal ?? null,
-                        unresolved:
-                            pointRules && !matchingTransform
-                                ? ['point-transform-mismatch']
-                                : (pointRules?.navigationUnresolved ??
-                                  pointRules?.effective.unresolved ?? [
-                                      'interaction-rules-unavailable',
-                                  ]),
+                        unresolved: supportGoal
+                            ? []
+                            : pointRules && !matchingTransform
+                              ? ['point-transform-mismatch']
+                              : (pointRules?.navigationUnresolved ??
+                                pointRules?.effective.unresolved ?? [
+                                    'interaction-rules-unavailable',
+                                ]),
                     };
                     travel ??= read('travel-points.json')
                         .then(
@@ -654,22 +751,16 @@ export function routeServer(
                     }
                     const movement = (await read(
                         'movement-settings-current.json',
-                    )) as {
-                        source: Source;
-                        sustainedSprint: LocomotionOptions;
-                    };
+                    )) as Movement;
                     if (!sameSource(source, movement.source))
                         throw new Error(
                             'Movement settings do not match scene build',
                         );
-                    const solver = await sceneSolver(
-                        data,
-                        movement.sustainedSprint,
-                    );
                     const display = (
                         result: RouteResult,
                         optimizing: boolean,
                         message = '',
+                        terminal?: MovingContact,
                     ) => {
                         if (result.route.status !== 'complete') return;
                         const route = result.route,
@@ -682,10 +773,13 @@ export function routeServer(
                             source,
                             route,
                             partial,
+                            ...(terminal ? { terminal } : {}),
                             supportBoxes: supportBoxes(result.supportBoxes),
                             title: partial
                                 ? 'Target approach · Partial route'
-                                : 'Teleport → Target',
+                                : terminal
+                                  ? 'Teleport → Moving coin'
+                                  : 'Teleport → Target',
                             markers: [
                                 {
                                     label: partial
@@ -693,7 +787,10 @@ export function routeServer(
                                         : 'Teleport',
                                     position: route.points[0],
                                 },
-                                { label: 'Target', position: target },
+                                {
+                                    label: 'Target',
+                                    position: supportGoal?.position ?? target,
+                                },
                             ],
                             coverage: partial
                                 ? 'Verified target-side window; teleport approach pending'
@@ -708,12 +805,84 @@ export function routeServer(
                             optimizationMessage: message,
                             assumptions: [
                                 'All tasks completed; devices enabled and powered',
+                                ...(terminal
+                                    ? [
+                                          'The coin is loaded, uncollected, and its source loop advances in game time.',
+                                      ]
+                                    : []),
                             ],
                         };
                         entry.candidate = candidate;
                         fallback = candidate;
                         reply(candidate);
                     };
+                    const movingPoint =
+                        matchingTransform &&
+                        (pointRules.navigationMotion !== undefined ||
+                            pointRules.navigationMotionUnresolved);
+                    if (movingPoint) {
+                        const loop = readCoinLoop(
+                            pointRules.navigationMotion,
+                            source,
+                            target,
+                        );
+                        if (!loop || !goal) {
+                            reply({
+                                status: 'unavailable',
+                                category: 'moving-interaction',
+                                message:
+                                    'The moving coin requires an activation or motion model.',
+                            });
+                            return;
+                        }
+                        const waiting = {
+                            status: 'building-ground',
+                            message:
+                                'Finding a place to wait for the moving coin…',
+                            retryAfter: 1000,
+                        };
+                        reply(waiting);
+                        const moving = planMovingCoin({
+                            loop,
+                            placed: target,
+                            goal,
+                            scene,
+                            candidates,
+                            coarse: data,
+                            locomotion: movement.sustainedSprint,
+                            builder,
+                            signal: shutdown.signal,
+                            onProgress: () => reply(waiting),
+                        });
+                        running.add(moving);
+                        try {
+                            const result = await moving;
+                            if (result) {
+                                display(
+                                    {
+                                        route: result.route,
+                                        arrival: result.anchor,
+                                        connections: [],
+                                        diagnostics: { truncated: true },
+                                    },
+                                    false,
+                                    '',
+                                    result.terminal,
+                                );
+                            } else {
+                                reply({
+                                    status: 'unavailable',
+                                    category: 'moving-interaction',
+                                    message:
+                                        'No verified standing approach to the coin’s path was found.',
+                                });
+                            }
+                        } finally {
+                            running.delete(moving);
+                        }
+                        return;
+                    }
+                    const solver = await sceneSolver(data, movement);
                     const solving = solver.solve(
                         {
                             starts: candidates,

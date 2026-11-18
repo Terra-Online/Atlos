@@ -15,6 +15,7 @@
     "resource-metadata.patch",
     "algorithm-supports.patch",
     "export-supports.patch",
+    "ink-road-collision.patch",
     "painting-bridge-supports.patch"
   ],
   "migratedFrom": "c986039f16d9037aefb5c21b10cac971b77ceef9",
