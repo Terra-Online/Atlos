@@ -149,11 +149,56 @@ export const flatSupport = (footprint: Point[], height: number, triangles: Vec3[
 };
 export const overlaps = (a: PoseBounds, b: PoseBounds) =>
   a.min.every((v, axis) => v <= b.max[axis] && a.max[axis] >= b.min[axis]);
-export const blockedBody = (bounds: PoseBounds, floor: number, triangles: Vec3[][]) =>
-  triangles.some((triangle) => {
+const dot = (a: Vec3, b: Vec3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a: Vec3, b: Vec3): Vec3 => [
+  a[1] * b[2] - a[2] * b[1],
+  a[2] * b[0] - a[0] * b[2],
+  a[0] * b[1] - a[1] * b[0],
+];
+
+/** A supported box keeps its authored rotation. Broad AABB overlap alone also
+ * includes empty corners around this box and around slanted world triangles. */
+export const blockedBody = (body: Vec3[], floor: number, triangles: Vec3[][]) => {
+  const bounds = supportBounds([body]);
+  const basis = [1, 2, 4].map((i) => vector((axis) => body[i][axis] - body[0][axis]));
+  const half = vector((i) => Math.hypot(...basis[i]) / 2);
+  const axes = basis.map((axis, i) => vector((j) => axis[j] / (2 * half[i])));
+  const center = vector((i) => (body[0][i] + body[7][i]) / 2);
+  const dimensions: Vec3[] = [
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+  ];
+
+  return triangles.some((triangle) => {
     const other = supportBounds([triangle]);
-    return other.max[1] > floor + 1e-5 && overlaps(bounds, other);
+    if (other.max[1] <= floor + 1e-5 || !overlaps(bounds, other)) return false;
+    const local = triangle.map((p) => {
+      const offset = vector((i) => p[i] - center[i]);
+      return vector((i) => dot(offset, axes[i]));
+    });
+    const edges = local.map((p, i) => vector((j) => local[(i + 1) % 3][j] - p[j]));
+    const separatingAxes = [
+      ...dimensions,
+      cross(edges[0], edges[1]),
+      ...edges.flatMap((edge) => dimensions.map((axis) => cross(edge, axis))),
+    ];
+
+    // In the box frame, these are the face normals and edge-cross-edge axes.
+    return !separatingAxes.some((axis) => {
+      const magnitude = Math.hypot(...axis);
+      if (magnitude <= 1e-12) return false;
+      const radius =
+        dot(
+          half,
+          vector((i) => Math.abs(axis[i])),
+        ) +
+        magnitude * 1e-5;
+      const projected = local.map((p) => dot(p, axis));
+      return Math.min(...projected) > radius || Math.max(...projected) < -radius;
+    });
   });
+};
 export const onBoxFace = (triangle: Vec3[], body: Vec3[]) => {
   const axes = [1, 2, 4].map((index) => vector((axis) => body[index][axis] - body[0][axis]));
   const coordinates = triangle.map((point) =>
