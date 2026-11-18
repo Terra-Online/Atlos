@@ -1,4 +1,5 @@
 {
+  "$schema": "./suite.schema.json",
   "schema": 6,
   "id": "real-scene-validation",
   "requiredSource": {
@@ -7805,6 +7806,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "2100430002"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map01_lv001",
@@ -7826,7 +7828,6 @@
                 "id": "2100430002"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-134",
             "pointToken": "0oCIwR8",
             "tokenSourceId": "2100430015",
@@ -7862,6 +7863,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "300002204"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map01_lv003",
@@ -7883,7 +7885,6 @@
                 "id": "300002204"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-136",
             "pointToken": "09yIS3X",
             "tokenSourceId": "300002218",
@@ -7918,6 +7919,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "3400090616"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map01_lv005",
@@ -7939,7 +7941,6 @@
                 "id": "3400090616"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-138",
             "pointToken": "0l3ZqLu",
             "tokenSourceId": "3400090489",
@@ -7974,6 +7975,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "3500022217"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map01_lv006",
@@ -7995,7 +7997,6 @@
                 "id": "3500022217"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-140",
             "pointToken": "08mrlXq",
             "tokenSourceId": "3500070377",
@@ -8033,6 +8034,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "2800220005"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map01_lv007",
@@ -8054,7 +8056,6 @@
                 "id": "2800220005"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-142",
             "pointToken": "0tSC5oA",
             "tokenSourceId": "2800220065",
@@ -8089,6 +8090,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "2100430009"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map01_lv001",
@@ -8110,7 +8112,6 @@
                 "id": "2100430009"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-147",
             "pointToken": "19ReeBX",
             "tokenSourceId": "2100030998",
@@ -8145,6 +8146,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "300002175"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map01_lv003",
@@ -8166,7 +8168,6 @@
                 "id": "300002175"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-149",
             "pointToken": "0AH1wo4",
             "tokenSourceId": "300001941",
@@ -8532,6 +8533,7 @@
           "requirements": {
             "requiredSupport": "2100390859"
           },
+          "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
           "metadata": {
             "group": "following-box",
             "level": "map01_lv001",
@@ -8559,7 +8561,6 @@
                 "id": "TpForMap_ent_2100000093"
               }
             ],
-            "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
             "legacyCaseId": "v250-196",
             "pointToken": "0s4x24L",
             "tokenSourceId": "2100390860",
@@ -8596,6 +8597,7 @@
           "requirements": {
             "requiredSupport": "300001708"
           },
+          "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
           "metadata": {
             "group": "following-box",
             "level": "map01_lv003",
@@ -8623,7 +8625,6 @@
                 "id": "TpForMap_ent_300001874"
               }
             ],
-            "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
             "legacyCaseId": "v250-198",
             "pointToken": "0yyZ8SK",
             "tokenSourceId": "300002347",
@@ -8658,6 +8659,7 @@
           "requirements": {
             "requiredSupport": "3500030875"
           },
+          "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
           "metadata": {
             "group": "following-box",
             "level": "map01_lv006",
@@ -8685,7 +8687,6 @@
                 "id": "TpForMap_ent_3500031199"
               }
             ],
-            "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
             "legacyCaseId": "v250-200",
             "pointToken": "0z4bAv3",
             "tokenSourceId": "3500030874",
@@ -8722,6 +8723,7 @@
           "requirements": {
             "requiredSupport": "2100010321"
           },
+          "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
           "metadata": {
             "group": "following-box",
             "level": "map01_lv001",
@@ -8749,7 +8751,6 @@
                 "id": "TpForMap_ent_2100000284"
               }
             ],
-            "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
             "legacyCaseId": "v250-201",
             "pointToken": "0OZJcfx",
             "tokenSourceId": "2100010320",
@@ -8786,6 +8787,7 @@
           "requirements": {
             "requiredSupport": "300002548"
           },
+          "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
           "metadata": {
             "group": "following-box",
             "level": "map01_lv003",
@@ -8813,7 +8815,6 @@
                 "id": "TpForMap_ent_300001865"
               }
             ],
-            "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
             "legacyCaseId": "v250-203",
             "pointToken": "08oJZYk",
             "tokenSourceId": "300002545",
@@ -8847,6 +8848,7 @@
           "requirements": {
             "requiredSupport": "2100021142"
           },
+          "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
           "metadata": {
             "group": "following-box",
             "level": "map01_lv001",
@@ -8874,7 +8876,6 @@
                 "id": "TpForMap_ent_2100000093"
               }
             ],
-            "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
             "legacyCaseId": "v250-205",
             "pointToken": "06MbNfb",
             "tokenSourceId": "2100330182",
@@ -8908,6 +8909,7 @@
           "requirements": {
             "requiredSupport": "300001616"
           },
+          "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
           "metadata": {
             "group": "following-box",
             "level": "map01_lv003",
@@ -8935,7 +8937,6 @@
                 "id": "TpForMap_ent_300001874"
               }
             ],
-            "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
             "legacyCaseId": "v250-207",
             "pointToken": "0oi4pkE",
             "tokenSourceId": "300002333",
@@ -9433,6 +9434,7 @@
           "requirements": {
             "excludedUnresolvedDevice": "300001673"
           },
+          "note": "A physically valid alternative is acceptable; unresolved device use is not.",
           "metadata": {
             "group": "boundary-and-rejection",
             "level": "map01_lv003",
@@ -9459,7 +9461,6 @@
                 "id": "TpForMap_ent_300002665"
               }
             ],
-            "note": "A physically valid alternative is acceptable; unresolved device use is not.",
             "legacyCaseId": "v250-230",
             "pointToken": "1cSvWln",
             "tokenSourceId": "300002234",
@@ -9486,6 +9487,7 @@
             "kind": "constraint",
             "assertions": ["active-wall-never-crossed", "capsule-radius-and-height-clearance"]
           },
+          "note": "Detour or unavailable are both legal; a straight-line crossing is not.",
           "metadata": {
             "group": "boundary-and-rejection",
             "level": "map01_lv002",
@@ -9512,7 +9514,6 @@
                 "id": "TpForMap_ent_200001237"
               }
             ],
-            "note": "Detour or unavailable are both legal; a straight-line crossing is not.",
             "legacyCaseId": "v250-232",
             "pointToken": "0NBKrKt",
             "tokenSourceId": "200090026",
@@ -9539,6 +9540,7 @@
             "kind": "constraint",
             "assertions": ["active-wall-never-crossed", "capsule-radius-and-height-clearance"]
           },
+          "note": "Detour or unavailable are both legal; a straight-line crossing is not.",
           "metadata": {
             "group": "boundary-and-rejection",
             "level": "map01_lv005",
@@ -9565,7 +9567,6 @@
                 "id": "TpForMap_ent_3400020746"
               }
             ],
-            "note": "Detour or unavailable are both legal; a straight-line crossing is not.",
             "legacyCaseId": "v250-233",
             "pointToken": "0TCGoU8",
             "tokenSourceId": "3400230001",
@@ -9652,6 +9653,7 @@
               "explicit-goal-hit-at-original-interaction"
             ]
           },
+          "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
           "metadata": {
             "group": "navigation-context",
             "level": "map01_lv001",
@@ -9668,7 +9670,6 @@
                 "id": "2100020950"
               }
             ],
-            "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
             "geometryProbe": {
               "file": "geometry-probes.json",
               "id": "geometry-235"
@@ -9711,6 +9712,7 @@
               "explicit-goal-hit-at-original-interaction"
             ]
           },
+          "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
           "metadata": {
             "group": "navigation-context",
             "level": "map01_lv005",
@@ -9727,7 +9729,6 @@
                 "id": "3400010111"
               }
             ],
-            "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
             "geometryProbe": {
               "file": "geometry-probes.json",
               "id": "geometry-236"
@@ -9770,6 +9771,7 @@
               "explicit-goal-hit-at-original-interaction"
             ]
           },
+          "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
           "metadata": {
             "group": "navigation-context",
             "level": "map01_lv006",
@@ -9798,7 +9800,6 @@
               "relation": "nearby-source-interaction",
               "rule": "Same scene, source navigationGoal, previously unused target; height difference at most 1m. Distance exceptions are explicitly retained."
             },
-            "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
             "legacyCaseId": "v250-237",
             "pointToken": "03q9Bxy",
             "tokenSourceId": "3500022149",
@@ -9828,6 +9829,7 @@
             "kind": "constraint",
             "assertions": ["no-invented-support-or-transport", "report-unsupported-source-reason"]
           },
+          "note": "platform moving subtree unresolved",
           "metadata": {
             "group": "boundary-and-rejection",
             "level": "map01_lv005",
@@ -9854,7 +9856,6 @@
                 "id": "TpForMap_ent_3400020747"
               }
             ],
-            "note": "platform moving subtree unresolved",
             "legacyCaseId": "v250-244",
             "pointToken": "08n80Ny",
             "tokenSourceId": "3400010137",
@@ -9884,6 +9885,7 @@
               "continuous-capsule-support-and-clearance"
             ]
           },
+          "note": "Historical stair-location evidence only. Reinspect collision treads and replay current result before marking stairs exercised.",
           "metadata": {
             "group": "navigation-context",
             "level": "map01_lv001",
@@ -9910,7 +9912,6 @@
                 "id": "TpForMap_ent_2100000284"
               }
             ],
-            "note": "Historical stair-location evidence only. Reinspect collision treads and replay current result before marking stairs exercised.",
             "legacyCaseId": "v250-246",
             "pointToken": "0vtYecw",
             "tokenSourceId": "2100021049",
@@ -9940,6 +9941,7 @@
               "continuous-capsule-support-and-clearance"
             ]
           },
+          "note": "Historical stair-location evidence only. Reinspect collision treads and replay current result before marking stairs exercised.",
           "metadata": {
             "group": "navigation-context",
             "level": "map01_lv001",
@@ -9966,7 +9968,6 @@
                 "id": "TpForMap_ent_2100000284"
               }
             ],
-            "note": "Historical stair-location evidence only. Reinspect collision treads and replay current result before marking stairs exercised.",
             "legacyCaseId": "v250-247",
             "pointToken": "0pFlp1G",
             "tokenSourceId": "2100020749",
@@ -9996,6 +9997,7 @@
               "continuous-capsule-support-and-clearance"
             ]
           },
+          "note": "Historical stair-location evidence only. Reinspect collision treads and replay current result before marking stairs exercised.",
           "metadata": {
             "group": "navigation-context",
             "level": "map01_lv001",
@@ -10022,7 +10024,6 @@
                 "id": "TpForMap_ent_2100000284"
               }
             ],
-            "note": "Historical stair-location evidence only. Reinspect collision treads and replay current result before marking stairs exercised.",
             "legacyCaseId": "v250-248",
             "pointToken": "0SlUkPj",
             "tokenSourceId": "2100020810",
@@ -10121,6 +10122,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "10100033029"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map02_lv001",
@@ -10142,7 +10144,6 @@
                 "id": "10100033029"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-135",
             "pointToken": "0iILRK6",
             "tokenSourceId": "10100033031",
@@ -10177,6 +10178,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "22800580305"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map02_lv002",
@@ -10198,7 +10200,6 @@
                 "id": "22800580305"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-137",
             "pointToken": "0n74y9P",
             "tokenSourceId": "22800580294",
@@ -10233,6 +10234,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "23300000394"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map02_lv003",
@@ -10254,7 +10256,6 @@
                 "id": "23300000394"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-139",
             "pointToken": "0jrAYMx",
             "tokenSourceId": "23300050030",
@@ -10290,6 +10291,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "23400240044"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map02_lv004",
@@ -10311,7 +10313,6 @@
                 "id": "23400240044"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-141",
             "pointToken": "1aJENqk",
             "tokenSourceId": "23400240045",
@@ -10346,6 +10347,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "25000060302"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map02_lv006",
@@ -10367,7 +10369,6 @@
                 "id": "25000060302"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-143",
             "pointToken": "09xDr1Q",
             "tokenSourceId": "25000130007",
@@ -10412,6 +10413,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "10200270050"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map02_lv007",
@@ -10433,7 +10435,6 @@
                 "id": "10200270050"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-144",
             "pointToken": "0db14Cv",
             "tokenSourceId": "10200270048",
@@ -10468,6 +10469,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "36100090042"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map02_lv009",
@@ -10489,7 +10491,6 @@
                 "id": "36100090042"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-145",
             "pointToken": "1azviWu",
             "tokenSourceId": "36100090043",
@@ -10524,6 +10525,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "37900090397"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map02_lv010",
@@ -10545,7 +10547,6 @@
                 "id": "37900090397"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-146",
             "pointToken": "0eIRJ3e",
             "tokenSourceId": "37900090445",
@@ -10580,6 +10581,7 @@
             "projectStartToPhysicalSupport": true,
             "requiredDevice": "10100023281"
           },
+          "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
           "metadata": {
             "group": "launch",
             "level": "map02_lv001",
@@ -10601,7 +10603,6 @@
                 "id": "10100023281"
               }
             ],
-            "note": "Target is an authored interaction goal; launch aim is evidence, not a fabricated landing floor.",
             "legacyCaseId": "v250-148",
             "pointToken": "10g18tw",
             "tokenSourceId": "10100020575",
@@ -11364,6 +11365,7 @@
           "requirements": {
             "requiredSupport": "22800330010"
           },
+          "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
           "metadata": {
             "group": "following-box",
             "level": "map02_lv002",
@@ -11391,7 +11393,6 @@
                 "id": "TpForMap_ent_22801140057"
               }
             ],
-            "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
             "legacyCaseId": "v250-197",
             "pointToken": "0AmLGv5",
             "tokenSourceId": "22800333116",
@@ -11425,6 +11426,7 @@
           "requirements": {
             "requiredSupport": "10200270076"
           },
+          "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
           "metadata": {
             "group": "following-box",
             "level": "map02_lv007",
@@ -11452,7 +11454,6 @@
                 "id": "TpForMap_ent_10200030168"
               }
             ],
-            "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
             "legacyCaseId": "v250-199",
             "pointToken": "0aY6nQ5",
             "tokenSourceId": "10200030326",
@@ -11486,6 +11487,7 @@
           "requirements": {
             "requiredSupport": "22800060525"
           },
+          "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
           "metadata": {
             "group": "following-box",
             "level": "map02_lv002",
@@ -11513,7 +11515,6 @@
                 "id": "TpForMap_ent_22800060089"
               }
             ],
-            "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
             "legacyCaseId": "v250-202",
             "pointToken": "0HFwdHR",
             "tokenSourceId": "22800063192",
@@ -11548,6 +11549,7 @@
           "requirements": {
             "requiredSupport": "10200270059"
           },
+          "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
           "metadata": {
             "group": "following-box",
             "level": "map02_lv007",
@@ -11575,7 +11577,6 @@
                 "id": "TpForMap_ent_10200030168"
               }
             ],
-            "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
             "legacyCaseId": "v250-204",
             "pointToken": "19rt1HH",
             "tokenSourceId": "10200030350",
@@ -11609,6 +11610,7 @@
           "requirements": {
             "requiredSupport": "22800040071"
           },
+          "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
           "metadata": {
             "group": "following-box",
             "level": "map02_lv002",
@@ -11636,7 +11638,6 @@
                 "id": "TpForMap_ent_22800030004"
               }
             ],
-            "note": "A proximity-selected opportunity, not proof that this box is required; unexercised results remain coverage gaps.",
             "legacyCaseId": "v250-206",
             "pointToken": "0Bkr6wP",
             "tokenSourceId": "22800040168",
@@ -12130,6 +12131,7 @@
           "requirements": {
             "excludedUnresolvedDevice": "37900010375"
           },
+          "note": "A physically valid alternative is acceptable; unresolved device use is not.",
           "metadata": {
             "group": "boundary-and-rejection",
             "level": "map02_lv010",
@@ -12156,7 +12158,6 @@
                 "id": "TpForMap_ent_37900000006"
               }
             ],
-            "note": "A physically valid alternative is acceptable; unresolved device use is not.",
             "legacyCaseId": "v250-231",
             "pointToken": "030cHQk",
             "tokenSourceId": "37900010401",
@@ -12183,6 +12184,7 @@
             "kind": "constraint",
             "assertions": ["active-wall-never-crossed", "capsule-radius-and-height-clearance"]
           },
+          "note": "Detour or unavailable are both legal; a straight-line crossing is not.",
           "metadata": {
             "group": "boundary-and-rejection",
             "level": "map02_lv001",
@@ -12209,7 +12211,6 @@
                 "id": "TpForMap_ent_10100030017"
               }
             ],
-            "note": "Detour or unavailable are both legal; a straight-line crossing is not.",
             "legacyCaseId": "v250-238",
             "pointToken": "0Zq9MMX",
             "tokenSourceId": "10100010344",
@@ -12236,6 +12237,7 @@
             "kind": "constraint",
             "assertions": ["active-wall-never-crossed", "capsule-radius-and-height-clearance"]
           },
+          "note": "Detour or unavailable are both legal; a straight-line crossing is not.",
           "metadata": {
             "group": "boundary-and-rejection",
             "level": "map02_lv003",
@@ -12262,7 +12264,6 @@
                 "id": "TpForMap_ent_23300000102"
               }
             ],
-            "note": "Detour or unavailable are both legal; a straight-line crossing is not.",
             "legacyCaseId": "v250-239",
             "pointToken": "0hp34zJ",
             "tokenSourceId": "23300000404",
@@ -12349,6 +12350,7 @@
               "explicit-goal-hit-at-original-interaction"
             ]
           },
+          "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
           "metadata": {
             "group": "navigation-context",
             "level": "map02_lv003",
@@ -12365,7 +12367,6 @@
                 "id": "23300220004"
               }
             ],
-            "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
             "geometryProbe": {
               "file": "geometry-probes.json",
               "id": "geometry-241"
@@ -12408,6 +12409,7 @@
               "explicit-goal-hit-at-original-interaction"
             ]
           },
+          "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
           "metadata": {
             "group": "navigation-context",
             "level": "map02_lv009",
@@ -12436,7 +12438,6 @@
               "relation": "new-navigation-case-not-equivalent-nearby-replacement",
               "rule": "Same scene, source navigationGoal, previously unused target; height difference at most 1m. Distance exceptions are explicitly retained."
             },
-            "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
             "legacyCaseId": "v250-242",
             "pointToken": "0Dbczof",
             "tokenSourceId": "36100210704",
@@ -12470,6 +12471,7 @@
               "explicit-goal-hit-at-original-interaction"
             ]
           },
+          "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
           "metadata": {
             "group": "navigation-context",
             "level": "map02_lv005",
@@ -12498,7 +12500,6 @@
               "relation": "nearby-source-interaction",
               "rule": "Same scene, source navigationGoal, previously unused target; height difference at most 1m. Distance exceptions are explicitly retained."
             },
-            "note": "A real source interaction replaces an unrun navigation-geometry target. Original start is preserved; the complete original geometry query remains a separate probe. This does not establish physical reachability or identical mechanism exercise.",
             "legacyCaseId": "v250-243",
             "pointToken": "07Y4dXk",
             "tokenSourceId": "23200013571",
@@ -12525,6 +12526,7 @@
             "kind": "constraint",
             "assertions": ["no-invented-support-or-transport", "report-unsupported-source-reason"]
           },
+          "note": "platform moving subtree unresolved",
           "metadata": {
             "group": "boundary-and-rejection",
             "level": "map02_lv009",
@@ -12551,7 +12553,6 @@
                 "id": "TpForMap_ent_36100010007"
               }
             ],
-            "note": "platform moving subtree unresolved",
             "legacyCaseId": "v250-245",
             "pointToken": "0s0ynRr",
             "tokenSourceId": "36100190010",
@@ -12681,6 +12682,7 @@
           "requirements": {
             "requiredSupport": "2100010064"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map01_lv001",
@@ -12699,7 +12701,6 @@
                 "toTransferIndex": 0
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "vertical-reachability",
               "maxHorizontalSpan": 0,
@@ -12741,6 +12742,7 @@
           "requirements": {
             "requiredSupport": "200001637"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map01_lv002",
@@ -12759,7 +12761,6 @@
                 "toTransferIndex": 0
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "vertical-reachability",
               "maxHorizontalSpan": 0,
@@ -12801,6 +12802,7 @@
           "requirements": {
             "requiredSupport": "300001604"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map01_lv003",
@@ -12819,7 +12821,6 @@
                 "toTransferIndex": 1
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "vertical-reachability",
               "maxHorizontalSpan": 0,
@@ -12861,6 +12862,7 @@
           "requirements": {
             "requiredSupport": "3400020153"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map01_lv005",
@@ -12879,7 +12881,6 @@
                 "toTransferIndex": 0
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "vertical-reachability",
               "maxHorizontalSpan": 0,
@@ -12927,6 +12928,7 @@
           "requirements": {
             "requiredSupport": "conveyor/2800000050/76574/0"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map01_lv007",
@@ -12947,7 +12949,6 @@
                 "toPose": 13
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "expectedContactPose": {
               "device": "conveyor/2800000050/76574/0",
               "fromPose": 12,
@@ -13012,6 +13013,7 @@
           "requirements": {
             "requiredSupport": "conveyor/2800000049/76574/8"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map01_lv007",
@@ -13032,7 +13034,6 @@
                 "toPose": 22
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "expectedContactPose": {
               "device": "conveyor/2800000049/76574/8",
               "fromPose": 22,
@@ -13108,6 +13109,7 @@
           "requirements": {
             "requiredSupport": "conveyor/2800000052/76317/1"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map01_lv007",
@@ -13128,7 +13130,6 @@
                 "toPose": 7
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "expectedContactPose": {
               "device": "conveyor/2800000052/76317/1",
               "fromPose": 6,
@@ -13193,6 +13194,7 @@
           "requirements": {
             "requiredSupport": "conveyor/2800000048/76318/9"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map01_lv007",
@@ -13213,7 +13215,6 @@
                 "toPose": 1
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "expectedContactPose": {
               "device": "conveyor/2800000048/76318/9",
               "fromPose": 0,
@@ -13272,6 +13273,7 @@
           "requirements": {
             "requiredSupport": "2100010096"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map01_lv001",
@@ -13289,7 +13291,6 @@
                 "surfaceIndex": 5
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "sampled-tilt-support",
               "maxHorizontalSpan": 0,
@@ -13331,6 +13332,7 @@
           "requirements": {
             "requiredSupport": "300002051"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map01_lv003",
@@ -13348,7 +13350,6 @@
                 "surfaceIndex": 5
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "sampled-tilt-support",
               "maxHorizontalSpan": 0,
@@ -13390,6 +13391,7 @@
           "requirements": {
             "requiredSupport": "3400020015"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map01_lv005",
@@ -13407,7 +13409,6 @@
                 "surfaceIndex": 5
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "sampled-tilt-support",
               "maxHorizontalSpan": 0,
@@ -13449,6 +13450,7 @@
           "requirements": {
             "requiredSupport": "2800030018"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map01_lv007",
@@ -13466,7 +13468,6 @@
                 "surfaceIndex": 5
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "sampled-tilt-support",
               "maxHorizontalSpan": 0,
@@ -13508,6 +13509,7 @@
           "requirements": {
             "requiredSupport": "2100010233"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map01_lv001",
@@ -13526,7 +13528,6 @@
                 "toTransferIndex": 0
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "swept-roof-support",
               "maxHorizontalSpan": 0.098048097856313,
@@ -13568,6 +13569,7 @@
           "requirements": {
             "requiredSupport": "300001709"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map01_lv003",
@@ -13586,7 +13588,6 @@
                 "toTransferIndex": 0
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "vertical-reachability",
               "maxHorizontalSpan": 0,
@@ -13649,6 +13650,7 @@
           "requirements": {
             "requiredSupport": "22800060108"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv002",
@@ -13667,7 +13669,6 @@
                 "toTransferIndex": 0
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "vertical-reachability",
               "maxHorizontalSpan": 0,
@@ -13709,6 +13710,7 @@
           "requirements": {
             "requiredSupport": "23400083019"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv004",
@@ -13727,7 +13729,6 @@
                 "toTransferIndex": 0
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "swept-roof-support",
               "maxHorizontalSpan": 5.15301513671875,
@@ -13769,6 +13770,7 @@
           "requirements": {
             "requiredSupport": "10200030070"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv007",
@@ -13787,7 +13789,6 @@
                 "toTransferIndex": 0
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "vertical-reachability",
               "maxHorizontalSpan": 0,
@@ -13829,6 +13830,7 @@
           "requirements": {
             "requiredSupport": "23100030436"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv008",
@@ -13847,7 +13849,6 @@
                 "toTransferIndex": 0
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "swept-roof-support",
               "maxHorizontalSpan": 14,
@@ -13889,6 +13890,7 @@
           "requirements": {
             "requiredSupport": "36100210720"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv009",
@@ -13907,7 +13909,6 @@
                 "toTransferIndex": 27
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "swept-roof-support",
               "maxHorizontalSpan": 1.2320548806565483,
@@ -13949,6 +13950,7 @@
           "requirements": {
             "requiredSupport": "37900070125"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv010",
@@ -13967,7 +13969,6 @@
                 "toTransferIndex": 13
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "swept-roof-support",
               "maxHorizontalSpan": 0.0057903033328278435,
@@ -14009,6 +14010,7 @@
           "requirements": {
             "requiredSupport": "36100010470"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv009",
@@ -14027,7 +14029,6 @@
                 "toTransferIndex": 25
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "swept-roof-support",
               "maxHorizontalSpan": 0.9095131978663896,
@@ -14069,6 +14070,7 @@
           "requirements": {
             "requiredSupport": "37900070003"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv010",
@@ -14087,7 +14089,6 @@
                 "toTransferIndex": 13
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "swept-roof-support",
               "maxHorizontalSpan": 0.004804362464393171,
@@ -14129,6 +14130,7 @@
           "requirements": {
             "requiredSupport": "36100210686"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv009",
@@ -14147,7 +14149,6 @@
                 "toTransferIndex": 21
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "swept-roof-support",
               "maxHorizontalSpan": 0.3636710834577789,
@@ -14189,6 +14190,7 @@
           "requirements": {
             "requiredSupport": "10100023320"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv001",
@@ -14207,7 +14209,6 @@
                 "toTransferIndex": 12
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "swept-roof-support",
               "maxHorizontalSpan": 2.3658599278293453,
@@ -14249,6 +14250,7 @@
           "requirements": {
             "requiredSupport": "23400083309"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv004",
@@ -14267,7 +14269,6 @@
                 "toTransferIndex": 14
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "swept-roof-support",
               "maxHorizontalSpan": 3.3323182254117247,
@@ -14309,6 +14310,7 @@
           "requirements": {
             "requiredSupport": "25000060351"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv006",
@@ -14327,7 +14329,6 @@
                 "toTransferIndex": 13
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "swept-roof-support",
               "maxHorizontalSpan": 2.3357961131548888,
@@ -14369,6 +14370,7 @@
           "requirements": {
             "requiredSupport": "22800040141"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv002",
@@ -14387,7 +14389,6 @@
                 "toTransferIndex": 0
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "vertical-reachability",
               "maxHorizontalSpan": 0,
@@ -14429,6 +14430,7 @@
           "requirements": {
             "requiredSupport": "23400083323"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv004",
@@ -14447,7 +14449,6 @@
                 "toTransferIndex": 0
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "vertical-reachability",
               "maxHorizontalSpan": 0,
@@ -14489,6 +14490,7 @@
           "requirements": {
             "requiredSupport": "22800333036"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv002",
@@ -14507,7 +14509,6 @@
                 "toTransferIndex": 0
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "vertical-reachability",
               "maxHorizontalSpan": 0,
@@ -14549,6 +14550,7 @@
           "requirements": {
             "requiredSupport": "23200100268"
           },
+          "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
           "metadata": {
             "group": "moving-support",
             "level": "map02_lv005",
@@ -14567,7 +14569,6 @@
                 "toTransferIndex": 0
               }
             ],
-            "note": "Phase-free model. A valid alternative passes feasibility but does not satisfy the exercise check.",
             "supportModel": {
               "kind": "vertical-reachability",
               "maxHorizontalSpan": 0,
@@ -15180,6 +15181,7 @@
               "no-union-of-incompatible-single-box-trials"
             ]
           },
+          "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
           "metadata": {
             "group": "multi-box",
             "level": "map01_lv001",
@@ -15211,8 +15213,6 @@
                 "id": "TpForMap_ent_2100000093"
               }
             ],
-            "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-            "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
             "legacyCaseId": "v250-251",
             "pointToken": "0ekRne8",
             "tokenSourceId": "2100330185",
@@ -15277,6 +15277,7 @@
               "no-union-of-incompatible-single-box-trials"
             ]
           },
+          "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
           "metadata": {
             "group": "multi-box",
             "level": "map02_lv002",
@@ -15308,8 +15309,6 @@
                 "id": "TpForMap_ent_22801140057"
               }
             ],
-            "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-            "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
             "legacyCaseId": "v250-252",
             "pointToken": "0AKLjci",
             "tokenSourceId": "22800333007",
@@ -15373,6 +15372,7 @@
               "no-union-of-incompatible-single-box-trials"
             ]
           },
+          "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
           "metadata": {
             "group": "multi-box",
             "level": "map01_lv003",
@@ -15404,8 +15404,6 @@
                 "id": "TpForMap_ent_300001865"
               }
             ],
-            "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-            "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
             "legacyCaseId": "v250-253",
             "pointToken": "0b7WQJc",
             "tokenSourceId": "300070003",
@@ -15469,6 +15467,7 @@
               "no-union-of-incompatible-single-box-trials"
             ]
           },
+          "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
           "metadata": {
             "group": "multi-box",
             "level": "map02_lv007",
@@ -15500,8 +15499,6 @@
                 "id": "TpForMap_ent_10200030168"
               }
             ],
-            "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-            "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
             "legacyCaseId": "v250-254",
             "pointToken": "0UUbKsh",
             "tokenSourceId": "10200030374",
@@ -15565,6 +15562,7 @@
               "no-union-of-incompatible-single-box-trials"
             ]
           },
+          "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
           "metadata": {
             "group": "multi-box",
             "level": "map01_lv001",
@@ -15596,8 +15594,6 @@
                 "id": "TpForMap_ent_2100000093"
               }
             ],
-            "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-            "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
             "legacyCaseId": "v250-255",
             "pointToken": "0zeEJwo",
             "tokenSourceId": "2100130085",
@@ -15664,6 +15660,7 @@
               "no-union-of-incompatible-single-box-trials"
             ]
           },
+          "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
           "metadata": {
             "group": "multi-box",
             "level": "map02_lv002",
@@ -15695,8 +15692,6 @@
                 "id": "TpForMap_ent_22800030004"
               }
             ],
-            "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-            "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
             "legacyCaseId": "v250-256",
             "pointToken": "0YYvlTn",
             "tokenSourceId": "22800040098",
@@ -15761,6 +15756,7 @@
               "no-union-of-incompatible-single-box-trials"
             ]
           },
+          "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
           "metadata": {
             "group": "multi-box",
             "level": "map01_lv003",
@@ -15792,8 +15788,6 @@
                 "id": "TpForMap_ent_300001874"
               }
             ],
-            "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-            "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
             "legacyCaseId": "v250-257",
             "pointToken": "0ihnk8x",
             "tokenSourceId": "300001894",
@@ -15858,6 +15852,7 @@
               "no-union-of-incompatible-single-box-trials"
             ]
           },
+          "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
           "metadata": {
             "group": "multi-box",
             "level": "map01_lv001",
@@ -15889,8 +15884,6 @@
                 "id": "TpForMap_ent_2100000093"
               }
             ],
-            "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-            "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
             "legacyCaseId": "v250-258",
             "pointToken": "191vMgJ",
             "tokenSourceId": "2100021154",
@@ -15959,6 +15952,7 @@
               "no-union-of-incompatible-single-box-trials"
             ]
           },
+          "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
           "metadata": {
             "group": "multi-box",
             "level": "map01_lv001",
@@ -15995,8 +15989,6 @@
                 "id": "TpForMap_ent_2100000093"
               }
             ],
-            "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-            "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
             "legacyCaseId": "v250-259",
             "pointToken": "1asm7dr",
             "tokenSourceId": "2100390570",
@@ -16068,6 +16060,7 @@
               "no-union-of-incompatible-single-box-trials"
             ]
           },
+          "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
           "metadata": {
             "group": "multi-box",
             "level": "map01_lv003",
@@ -16104,8 +16097,6 @@
                 "id": "TpForMap_ent_300001874"
               }
             ],
-            "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-            "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
             "legacyCaseId": "v250-260",
             "pointToken": "06gyJ7F",
             "tokenSourceId": "300002564",
@@ -16174,6 +16165,7 @@
               "no-union-of-incompatible-single-box-trials"
             ]
           },
+          "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
           "metadata": {
             "group": "multi-box",
             "level": "map01_lv001",
@@ -16210,8 +16202,6 @@
                 "id": "TpForMap_ent_2100000093"
               }
             ],
-            "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-            "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
             "legacyCaseId": "v250-261",
             "pointToken": "02u3Zc9",
             "tokenSourceId": "2100390314",
@@ -16280,6 +16270,7 @@
               "no-union-of-incompatible-single-box-trials"
             ]
           },
+          "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
           "metadata": {
             "group": "multi-box",
             "level": "map01_lv001",
@@ -16316,8 +16307,6 @@
                 "id": "TpForMap_ent_2100000093"
               }
             ],
-            "note": "Source-backed joint-range opportunity. Necessity and feasibility remain unverified. A valid single-box/box-free alternative does not exercise multi-box cooperation.",
-            "selectionCapabilityGap": "TS and latest PR Rust automatic placement searches try one box per trial. Rust already supports jointly binding/validating several supplied placements and carrying bindings across windows; automatic joint placement discovery remains missing.",
             "legacyCaseId": "v250-262",
             "pointToken": "0VmDkfU",
             "tokenSourceId": "2100330083",
@@ -16369,6 +16358,7 @@
           "requirements": {
             "requiredSupport": "10100290003"
           },
+          "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
           "metadata": {
             "group": "waterwheel-domain",
             "level": "map02_lv001",
@@ -16400,8 +16390,6 @@
                 "id": "TpForMap_ent_10100030048"
               }
             ],
-            "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
-            "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter.",
             "legacyCaseId": "v250-263",
             "pointToken": "00G72Mp",
             "tokenSourceId": "10100030166",
@@ -16452,6 +16440,7 @@
           "requirements": {
             "requiredSupport": "10100290021"
           },
+          "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
           "metadata": {
             "group": "waterwheel-domain",
             "level": "map02_lv001",
@@ -16483,8 +16472,6 @@
                 "id": "TpForMap_ent_10100030018"
               }
             ],
-            "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
-            "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter.",
             "legacyCaseId": "v250-264",
             "pointToken": "0nUxYU8",
             "tokenSourceId": "10100350025",
@@ -16535,6 +16522,7 @@
           "requirements": {
             "requiredSupport": "10100290024"
           },
+          "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
           "metadata": {
             "group": "waterwheel-domain",
             "level": "map02_lv003",
@@ -16566,8 +16554,6 @@
                 "id": "TpForMap_ent_23300000097"
               }
             ],
-            "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
-            "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter.",
             "legacyCaseId": "v250-265",
             "pointToken": "08CAj73",
             "tokenSourceId": "23300120142",
@@ -16618,6 +16604,7 @@
           "requirements": {
             "requiredSupport": "10100290025"
           },
+          "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
           "metadata": {
             "group": "waterwheel-domain",
             "level": "map02_lv003",
@@ -16649,8 +16636,6 @@
                 "id": "TpForMap_ent_23300000098"
               }
             ],
-            "note": "Previously agreed user model: treat the wheel as a traversable circular surface with player adjustment on blades. Source geometry constrains its axis, pivot and radius. Preserve external obstacles and entry checks; phase and waiting are excluded.",
-            "selectionCapabilityGap": "Source wheel animation is exported, but the current solver input uses terminal-pose static support rather than a waterwheel reachable-domain adapter.",
             "legacyCaseId": "v250-266",
             "pointToken": "0csZhw4",
             "tokenSourceId": "23300050057",

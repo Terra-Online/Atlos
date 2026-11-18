@@ -160,7 +160,7 @@ export async function main() {
         },
         {
           scene: group.scene,
-          source: suite.source as { buildGuid: string; contentHash: string },
+          source: suite.source,
           bounds: group.bounds,
           tiles: [],
         },

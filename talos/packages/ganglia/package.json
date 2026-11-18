@@ -37,6 +37,7 @@
     "rust:integration": "node --test test/rust/*.test.ts",
     "benchmark:markdown": "node bench/report.ts",
     "benchmark:history": "node --max-old-space-size=${GANGLIA_BENCHMARK_HEAP_MB:-6144} scripts/benchmark-history.ts",
+    "benchmark:mechanism-schema": "node scripts/generate-mechanism-schema.ts && oxfmt --write bench/scenes/mechanisms/suite.schema.json",
     "benchmark:prepare-mechanisms": "node --max-old-space-size=${GANGLIA_BENCHMARK_HEAP_MB:-6144} bench/prepare-mechanisms.ts"
   },
   "dependencies": {
@@ -46,7 +47,8 @@
     "@types/node": "24.19.2",
     "oxfmt": "0.78.0",
     "oxlint": "1.93.0",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "zod": "4.3.6"
   },
   "engines": {
     "node": ">=24.12"

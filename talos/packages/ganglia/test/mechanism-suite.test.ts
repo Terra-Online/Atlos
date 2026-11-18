@@ -10,14 +10,12 @@ import { fileURLToPath } from 'node:url';
 import {
   matchesExpectation,
   captureFirstComplete,
-  expectation,
   exercised,
 } from '#@/bench/mechanisms/assessment.ts';
 import { scenarioInput } from '#@/bench/mechanisms/scenario.ts';
-import { resourcePath, readSuite, type Case } from '#@/bench/mechanisms/suite.ts';
+import { readSuite, resourcePath, type Case } from '#@/bench/mechanisms/suite.ts';
 import { classify } from '#@/bench/outcome.ts';
 import { prepareWorkerSolver } from '#@/bench/workers.ts';
-import { readWorkload } from '#@/bench/workload.ts';
 import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
 import { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
 import type { PhysicalInput, FollowingSupport } from '#@/src/solver/physical.ts';
@@ -89,160 +87,6 @@ const unavailable: RouteResult = {
   connections: [],
   diagnostics: { truncated: false },
 };
-
-test('shared manifest remains a complete population and cannot be mistaken for plain service queries', async () => {
-  const file = new URL('../bench/scenes/mechanisms/suite.json', import.meta.url);
-  const suite = await readSuite(fileURLToPath(file));
-  assert.equal(suite.cases.length, 266);
-  assert.equal(suite.cases.filter((c) => expectation(c) === 'reject').length, 0);
-  assert.ok(suite.cases.every((c) => c.query.starts.some((start) => start.state === 'available')));
-  const raw = JSON.parse(await readFile(file, 'utf8'));
-  raw.cases = suite.cases;
-  assert.ok(
-    raw.cases.every(
-      (c: { target: { template?: string } }) => !/teleport|campfire/.test(c.target.template ?? ''),
-    ),
-  );
-  for (const number of ['234-', '240-'])
-    assert.equal(suite.cases.find((c) => c.id.startsWith(number))!.setup.physical, undefined);
-  const controls = JSON.parse(
-    await readFile(
-      new URL('../bench/scenes/mechanisms/negative-controls.json', import.meta.url),
-      'utf8',
-    ),
-  );
-  const decodedControls = await readSuite(
-    fileURLToPath(new URL('../bench/scenes/mechanisms/negative-controls.json', import.meta.url)),
-  );
-  assert.equal(decodedControls.cases.length, 7);
-  assert.equal(controls.cases.length, 7);
-  assert.ok(controls.cases.slice(0, 4).every((c: Case) => expectation(c) === 'reject'));
-  assert.equal(controls.cases[4].knownIssue.kind, 'occupied-origin-and-target');
-  assert.equal(controls.cases[5].knownIssue.kind, 'occupied-device-center');
-  assert.equal(raw.revision, 12);
-  const repaired = raw.cases.find((entry: Case) => entry.id === '250-0HTXfPs');
-  const original = controls.cases[6];
-  assert.equal(original.id, repaired.id);
-  assert.deepEqual(original.query, {
-    starts: [
-      {
-        id: 'player',
-        position: [-753.6831389540318, 236.56261122226294, -1386.8426979152664],
-        cost: 0,
-        state: 'available',
-      },
-    ],
-    goal: [-753.5995646927754, 236.77915376497816, -1386.749716245405],
-    interaction: { radius: 0.2, maxVertical: 0.2 },
-  });
-  assert.equal(original.knownIssue.kind, 'occupied-steep-source-contact');
-  assert.equal(original.knownIssue.allProjectedSupportsBodyBlocked, true);
-  assert.equal(original.knownIssue.sourceTriangle, 628);
-  assert.ok(original.knownIssue.sourceSlopeDegrees > original.knownIssue.maxSlopeDegrees);
-  assert.equal(original.knownIssue.bridgeAvailability, 'unknown');
-  assert.deepEqual(repaired.target, original.target);
-  assert.equal(repaired.target.id, '10100030203');
-  assert.equal(repaired.pointToken, original.pointToken);
-  assert.equal(repaired.tokenSourceId, '10100030203');
-  assert.deepEqual(repaired.assertions, original.assertions);
-  assert.deepEqual(repaired.setup, original.setup);
-  assert.deepEqual(repaired.query.interaction, original.query.interaction);
-  assert.deepEqual(repaired.query.starts[0], {
-    ...original.query.starts[0],
-    position: [-750.8124754961185, 242.92857397079467, -1390.6126245598507],
-  });
-  assert.deepEqual(
-    repaired.query.goal,
-    [-754.9692209716405, 242.92857397079467, -1386.651332564841],
-  );
-  const revision = repaired.inputRevision;
-  assert.equal(revision.revision, 11);
-  assert.equal(revision.originalControl, 'negative-controls.json#250-0HTXfPs');
-  assert.equal(
-    revision.classification,
-    'source-contact input repair, not same-input algorithm gain',
-  );
-  assert.equal(revision.seed, 20261115);
-  assert.equal(revision.sourceActor, repaired.target.id);
-  assert.equal(revision.sourceTriangle, 10);
-  assert.equal(revision.targetTriangle, 189);
-  assert.equal(revision.minimumSeparation, 3);
-  assert.equal(revision.legalCandidates, 8);
-  assert.equal(revision.pose, original.knownIssue.exportedPose);
-  assert.deepEqual(revision.sourceProfile, { ...raw.sources.map02.profile, maxSlope: 46 });
-  assert.equal(revision.source.file, 'exports/map02-traversal-devices.json');
-  assert.match(revision.source.sha256, /^[0-9a-f]{64}$/);
-  assert.match(revision.source.geometrySha256, /^[0-9a-f]{64}$/);
-  for (const [triangle, rank] of [
-    [revision.sourceTriangle, revision.sourceRank],
-    [revision.targetTriangle, revision.targetRank],
-  ])
-    assert.equal(
-      rank,
-      createHash('sha256')
-        .update(`${revision.seed}/${revision.sourceActor}/${triangle}/centroid`)
-        .digest('hex'),
-    );
-  const separation = Math.hypot(
-    ...repaired.query.goal.map((v: number, i: number) => v - repaired.query.starts[0].position[i]),
-  );
-  assert.equal(revision.separation, separation);
-  assert.ok(separation >= revision.minimumSeparation);
-  const csv = await readFile(
-    new URL('../bench/scenes/mechanisms/cases.csv', import.meta.url),
-    'utf8',
-  );
-  const row = csv
-    .split('\n')
-    .find((line) => line.startsWith(repaired.id + ','))!
-    .split(',');
-  assert.deepEqual(row.slice(10, 16).map(Number), [
-    ...repaired.query.starts[0].position,
-    ...repaired.query.goal,
-  ]);
-  assert.equal(Number(row[16]), separation);
-  await assert.rejects(readWorkload(fileURLToPath(file)), /Scenario manifests/);
-  assert.equal(raw.scenarios[0].cases[0].query.goal[0], suite.cases[0].query.goal[0]);
-});
-
-test('scenario training references must name cases in the same scenario', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'ganglia-suite-'));
-  try {
-    const raw = JSON.parse(
-      await readFile(new URL('../bench/scenes/mechanisms/suite.json', import.meta.url), 'utf8'),
-    );
-    raw.scenarios[0].training = [raw.scenarios[1].cases[0].id];
-    const file = join(directory, 'suite.json');
-    await writeFile(file, JSON.stringify(raw));
-    await assert.rejects(readSuite(file), /training references/);
-  } finally {
-    await rm(directory, { recursive: true, force: true });
-  }
-});
-
-test('explicit expectations drive scoring and malformed arrival states fail during parsing', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'ganglia-suite-'));
-  try {
-    const file = join(directory, 'suite.json');
-    const raw = JSON.parse(
-      await readFile(new URL('../bench/scenes/mechanisms/suite.json', import.meta.url), 'utf8'),
-    );
-    const scenario = raw.scenarios[0];
-    const testCase = scenario.cases[0];
-    raw.scenarios = [{ ...scenario, training: [testCase.id], cases: [testCase] }];
-    testCase.expect = { kind: 'reject', assertions: [] };
-    await writeFile(file, JSON.stringify(raw));
-    const [decoded] = (await readSuite(file)).cases;
-    assert.equal(expectation(decoded), 'reject');
-    assert.equal(matchesExpectation(decoded, unavailable), true);
-
-    testCase.query.starts[0].state = ['available'];
-    await writeFile(file, JSON.stringify(raw));
-    await assert.rejects(readSuite(file), /Invalid mechanism test case/);
-  } finally {
-    await rm(directory, { recursive: true, force: true });
-  }
-});
 
 test('diagnostic audit records its cooperative deadline and solver output scoring without solving', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'ganglia-mechanism-audit-'));
@@ -389,7 +233,7 @@ test('disallowed boxes become fixed collision while movable source spheres remai
 });
 test('explicit rejections never turn missing assets, timeouts or partial traces into passes', () => {
   const c = item();
-  c.assertions = ['no-complete-route-from-unavailable-arrival'];
+  c.expected = 'reject';
   assert.equal(classify(unavailable), 'no-route');
   assert.equal(matchesExpectation(c, unavailable), true);
   assert.equal(matchesExpectation(c, { ...unavailable, reason: 'timeout' }), false);

@@ -19,8 +19,20 @@ reports have a different preparation/timing contract and cannot substitute for
 service acceptance.
 
 `progress.json` and `progress.html` contain a mixed-revision historical census.
-`previousObservation` and `selectionCapabilityGap` record selection provenance,
-not expected answers or current capability guarantees.
+
+## Add a sample
+
+Append a case to the scenario that shares its world setup. A case needs a unique
+`id`, a `query`, and `expect` with a `kind` and an `assertions` array. Add
+`requirements` for mechanism witnesses or start projection. Projected rope and
+launch starts may also use `metadata.group`, `metadata.tags` and `metadata.evidence`
+to select their source contact. Suite, scenario and case objects accept an
+optional `note`. List the case ID in `training` only when its request should train
+the scenario's kernel.
+
+The [editor schema](suite.schema.json) is generated from the
+[runtime schema](../../mechanisms/suite-schema.ts). After editing the runtime
+schema, regenerate it with `pnpm benchmark:mechanism-schema`.
 
 ## Optional per-case diagnostic inputs
 
