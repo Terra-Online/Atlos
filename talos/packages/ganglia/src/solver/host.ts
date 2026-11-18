@@ -23,3 +23,5 @@ export { sweepSupports, supportBounds, supportEndpoints } from '#@/src/model/sup
 export type { WindowResources } from '#@/src/solver/resources.ts';
 
 export { refineGoalGround } from '#@/src/v1/solver/ground-refinement.ts';
+
+export { createWindowRoute } from '#@/src/v1/solver/window-route.ts';

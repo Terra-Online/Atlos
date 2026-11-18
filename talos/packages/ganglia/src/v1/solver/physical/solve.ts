@@ -16,7 +16,10 @@ import { pruneGroundDetours } from '#@/src/v1/route/ground-detours.ts';
 import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { planJumpRoute, type InitialGroundProof } from '#@/src/v1/route/jump-planner.ts';
 import { narrowGoalSupports, refineGoalGround } from '#@/src/v1/solver/ground-refinement.ts';
-import { createDeviceConnections as deviceConnections } from '#@/src/v1/solver/physical/devices.ts';
+import {
+  createDeviceConnections,
+  prepareDeviceConnections,
+} from '#@/src/v1/solver/physical/devices.ts';
 import { planFollowingRoute } from '#@/src/v1/solver/physical/following-route.ts';
 import { prepareMovingDirect } from '#@/src/v1/solver/physical/moving-direct.ts';
 import { movingGround } from '#@/src/v1/solver/physical/moving-ground.ts';
@@ -29,7 +32,7 @@ import {
   sourceContact as admitSourceContact,
   proveSourceContact,
 } from '#@/src/v1/solver/physical/source-contact.ts';
-type Devices = ReturnType<typeof deviceConnections> & {
+type Devices = ReturnType<typeof prepareDeviceConnections> & {
   direct?: ReturnType<typeof prepareMovingDirect>;
 };
 
@@ -511,13 +514,14 @@ export const solvePhysicalRoute = async (
   let knownRoute = walking;
   let boosts: SpeedBoost[] = [];
   let knownConnections = options.connections ?? [];
+  let terminalLaunches: GroundConnection[] | undefined;
   if (deviceInput) {
     await context.checkpoint?.();
     progress({ phase: 'device-links' });
     const deviceStart = performance.now();
     const deviceKey = JSON.stringify([groundKey, deviceInput]);
     const preparedDevices = await memo<Devices>('devices', deviceKey, () =>
-      deviceConnections(deviceInput, {
+      prepareDeviceConnections(deviceInput, {
         surfaces: ground.surfaces,
         world,
         model,
@@ -528,13 +532,18 @@ export const solvePhysicalRoute = async (
       }),
     );
     prepareReuse.devices = preparedDevices.reused;
-    const devices = preparedDevices.value;
+    const prepared = preparedDevices.value;
+    const devices = prepared.facts;
+    if (request.interaction?.airborne && (!context.effort || context.effort === 'all')) {
+      terminalLaunches = prepared.terminalLaunches(goal, request.interaction);
+      if (terminalLaunches.length) diagnostics.terminalLaunches = terminalLaunches.length;
+    }
     if (directSources.size && context.effort !== 'walking') {
       await context.checkpoint?.();
       progress({ phase: 'moving-direct' });
       const directStart = performance.now();
-      prepareReuse.direct = Boolean(devices.direct);
-      const direct = (devices.direct ??= prepareMovingDirect(
+      prepareReuse.direct = Boolean(prepared.direct);
+      const direct = (prepared.direct ??= prepareMovingDirect(
         { ...input, collision: geometry },
         preparedCollision.value,
         options.walls,
@@ -612,7 +621,7 @@ export const solvePhysicalRoute = async (
         }
         reserve?.(combined.length);
         const augmented = added.surfaces.length
-          ? deviceConnections(deviceInput, {
+          ? createDeviceConnections(deviceInput, {
               surfaces: combined,
               world: added.world,
               model,
@@ -810,9 +819,29 @@ export const solvePhysicalRoute = async (
           model,
         },
         onProgress: progress,
+        firstFeasible: context.effort === 'devices',
+        onCandidate: async (candidate) => {
+          if (candidate.route.status === 'complete')
+            await emit(
+              {
+                status: 'candidate',
+                route: candidate.route,
+                connections: candidate.connections,
+                supportBoxes: candidate.supportBoxes,
+                groundedTarget: candidate.route.points.at(-1),
+              },
+              true,
+            );
+        },
       },
     );
     diagnostics.followingSupports = following.diagnostics;
+    if (
+      following.diagnostics.outcomes.some(
+        (entry) => entry.reason === 'original-body-outside-collision-scope',
+      )
+    )
+      diagnostics.needsFollowingSourceCoverage = true;
     diagnostics.truncated = diagnostics.truncated === true || following.diagnostics.truncated;
     timing.following = performance.now() - followingStart;
     return following.route.status === 'complete' ? following : null;
@@ -980,6 +1009,7 @@ export const solvePhysicalRoute = async (
       boosts,
       groundPlanner,
       interaction: request.interaction,
+      terminalLaunches,
       runAirSpeed,
       maxSlope,
       maxDrop,

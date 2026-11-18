@@ -1,5 +1,5 @@
 import type { Vec3, Surface, Wall } from '#@/src/geometry.ts';
-import type { InteractionGoal } from '#@/src/movement.ts';
+import type { InteractionGoal, JumpModel } from '#@/src/movement.ts';
 import type { GroundArrival, GroundOptions, Route } from '#@/src/route.ts';
 import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
 import type { GangliaV1Config as SolverConfig } from '#@/src/solver/ganglia-v1.ts';
@@ -55,7 +55,12 @@ export interface WindowResources<Request extends WindowRequest, Job extends Wind
    * alone cannot establish this. Return undefined when equivalence is unknown. */
   physicalRevision?(job: Job): string | undefined;
   ground(job: Job): Promise<{ surfaces: Surface[]; options: GroundOptions }>;
-  route(job: Job): { route?: Route; reason?: string; diagnostics?: unknown };
+  route(job: Job): {
+    route?: Route;
+    reason?: string;
+    diagnostics?: unknown;
+    supportBoxes?: RouteResult['supportBoxes'];
+  };
 }
 
 /** Immutable coarse navigation facts. Proposal strategy belongs to the selected solver. */
@@ -77,6 +82,12 @@ export interface SceneTerminal {
   supportBoxes?: RouteResult['supportBoxes'];
 }
 
+export interface SceneTransfer {
+  id: string;
+  from: Vec3;
+  to: Vec3;
+}
+
 export interface SceneResources<Source, Job extends WindowJob> extends WindowResources<
   WindowRequest & { source: Source },
   Job
@@ -86,6 +97,8 @@ export interface SceneResources<Source, Job extends WindowJob> extends WindowRes
    * tiles, while omitted tiles remain unknown. This operation performs IO and
    * normalization only, without building navigation or solving a route. */
   physical?(job: Job, request: WindowRequest & { source: Source }): Promise<PhysicalSnapshot>;
+  movingTransfers?(): Promise<readonly SceneTransfer[]>;
+  jumpModel?: JumpModel;
   terminals?(query: RouteQuery): Promise<readonly SceneTerminal[]>;
   /** Wait for resource work to change, without requiring another client request. */
   wait(signal?: AbortSignal): Promise<void>;
