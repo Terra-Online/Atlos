@@ -1,7 +1,8 @@
 import type { Vec3 } from '#@/src/geometry.ts';
 import { createBoundsIndex } from '#@/src/model/bounds.ts';
+import { jumpDuration, jumpTravel } from '#@/src/model/flight.ts';
 import { type GoalProjection, closestOnSurface, findGoalHit } from '#@/src/model/goals.ts';
-import type { InteractionGoal } from '#@/src/movement.ts';
+import type { InteractionGoal, JumpModel } from '#@/src/movement.ts';
 import type { GroundArrival } from '#@/src/route.ts';
 import type { SceneTransfer, SceneNavigation } from '#@/src/solver/resources.ts';
 import { surfaceGraph, surfacePortals } from '#@/src/v1/geo/surfaces.ts';
@@ -33,6 +34,7 @@ export interface CandidatePlannerOptions {
 }
 export interface CandidateQueryOptions {
   interaction?: InteractionGoal;
+  jumpModel?: JumpModel;
   excludedEdges?: (number | string)[];
   excludedTransfers?: { from: string; to: string; min: Vec3; max: Vec3 }[];
 }
@@ -56,6 +58,7 @@ type Arc = Omit<CandidateEdge, 'index' | 'unresolved'> & {
   cost?: number;
   localStart?: boolean;
   goalFallback?: boolean;
+  attachment?: 'start' | 'goal';
   state?: 'open' | 'closed' | 'unknown';
 };
 
@@ -226,6 +229,7 @@ export function createCandidatePlanner(
         points: direction === 'start' ? points : points.reverse(),
         // A short authored-start attachment is still physically unresolved, but
         // does not carry the exploration penalty of a generated movement transfer.
+        attachment: direction,
         localStart:
           direction === 'start' &&
           Math.hypot(position[0] - support.position[0], position[2] - support.position[2]) <=
@@ -388,7 +392,12 @@ export function createCandidatePlanner(
     plan(
       arrivals: GroundArrival[],
       goal: Vec3,
-      { excludedEdges = [], excludedTransfers = [], interaction }: CandidateQueryOptions = {},
+      {
+        excludedEdges = [],
+        excludedTransfers = [],
+        interaction,
+        jumpModel,
+      }: CandidateQueryOptions = {},
     ): CandidatePlanResult {
       const finish = (
         arrival: GroundArrival,
@@ -431,6 +440,50 @@ export function createCandidatePlanner(
           toComponent: componentOf(ids.get(region.to)!),
         };
       });
+      const ordinaryJump = jumpModel && { ...jumpModel, mode: 'jump' as const };
+      const snap = Math.min(data.options.maxVertical, data.options.profile?.radius ?? 0);
+      const fitsMovement = (edge: Arc) => {
+        if (!ordinaryJump) return true;
+        if (edge.attachment === 'start') return !edge.unresolved || Boolean(edge.localStart);
+        if (edge.attachment === 'goal') return !edge.unresolved && !edge.goalFallback;
+        if (!edge.order) return true;
+        const [from, to] = edge.points;
+        // Coarse supports can snap by one body radius in the physical window.
+        // Even with that allowance, a reverse or overlong gap cannot guide
+        // an ordinary jump. Max-height flight bounds an ordinary drop too.
+        const duration = jumpDuration(from[1] + snap, to[1] - snap, ordinaryJump);
+        return (
+          duration !== null &&
+          Math.hypot(from[0] - to[0], from[2] - to[2]) - 2 * snap <=
+            jumpTravel(
+              ordinaryJump.startHorizontalSpeed ?? ordinaryJump.maxHorizontalSpeed,
+              duration,
+              ordinaryJump,
+            )
+        );
+      };
+      const skip = (edge: Arc, index: number, from: number, to: number) =>
+        rejected.has(index) ||
+        excluded.has(index) ||
+        !fitsMovement(edge) ||
+        (hasKeys && (rejected.has(edgeKey(edge, index)) || excluded.has(edgeKey(edge, index)))) ||
+        (edge.unresolved &&
+          regions.some(
+            (region) =>
+              region.fromComponent === componentOf(from) &&
+              region.toComponent === componentOf(to) &&
+              edge.points.every((point) =>
+                point.every(
+                  (value, axis) => value >= region.min[axis] && value <= region.max[axis],
+                ),
+              ),
+          ));
+      const scoreEdge = (edge: Arc, score: number) =>
+        ordinaryJump
+          ? score +
+            (edge.length === undefined ? edge.cost! : edge.length / data.options.speed) +
+            (edge.unresolved && !edge.attachment ? 2 : 0)
+          : edgeCost(edge, score);
       const search = (discover: boolean, limit = Infinity): CandidatePlanResult => {
         const scores = new Float64Array(graph.nodes.length).fill(Infinity);
         const previous = new Int32Array(graph.nodes.length).fill(-1),
@@ -453,28 +506,8 @@ export function createCandidatePlanner(
           for (const index of adjacency[current.node]) {
             const edge = edges[index],
               to = ids.get(edge.to)!;
-            if (
-              rejected.has(index) ||
-              excluded.has(index) ||
-              (hasKeys &&
-                (rejected.has(edgeKey(edge, index)) || excluded.has(edgeKey(edge, index))))
-            )
-              continue;
-            if (
-              edge.unresolved &&
-              regions.some(
-                (region) =>
-                  region.fromComponent === componentOf(current.node) &&
-                  region.toComponent === componentOf(to) &&
-                  edge.points.every((point) =>
-                    point.every(
-                      (value, axis) => value >= region.min[axis] && value <= region.max[axis],
-                    ),
-                  ),
-              )
-            )
-              continue;
-            const score = edgeCost(edge, current.cost);
+            if (skip(edge, index, current.node, to)) continue;
+            const score = scoreEdge(edge, current.cost);
             if (score >= scores[to]) continue;
             scores[to] = score;
             previous[to] = index;
@@ -497,12 +530,13 @@ export function createCandidatePlanner(
       // Every new transfer pays at least one exploration penalty, in addition
       // to the cheapest original-source and goal attachments. A known corridor
       // below that bound cannot be improved or tied by expanding a component.
-      const bound =
-        Math.min(
-          ...starts.map(({ arrival, node }) => (arrival.cost ?? 0) + attachments.get(node)!),
-        ) +
-        attachments.get(end)! +
-        Math.min(transferPenalty, ascentPenalty);
+      const bound = ordinaryJump
+        ? Math.min(...starts.map(({ arrival }) => arrival.cost ?? 0)) + 2
+        : Math.min(
+            ...starts.map(({ arrival, node }) => (arrival.cost ?? 0) + attachments.get(node)!),
+          ) +
+          attachments.get(end)! +
+          Math.min(transferPenalty, ascentPenalty);
       if (Number.isFinite(bound)) {
         const known = search(false, bound - 8 * Number.EPSILON * Math.max(1, Math.abs(bound)));
         if (known.status === 'candidate') return known;

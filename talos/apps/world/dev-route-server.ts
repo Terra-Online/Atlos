@@ -19,6 +19,7 @@ import {
     type GroundArrival,
     type GroundOptions,
     type InteractionGoal,
+    type JumpModel,
     type LocomotionOptions,
     type Route,
     type Surface,
@@ -29,6 +30,41 @@ import { physicalRouteBuilder } from './physical-route-builder.ts';
 import { travelArrivals, type TravelPoint } from './travel-arrivals.ts';
 
 type Source = { buildGuid: string; contentHash: string };
+type Movement = {
+    source: Source;
+    sustainedSprint: LocomotionOptions;
+    assets?: { path: string; settings: Record<string, unknown> }[];
+};
+
+function sourceJumpModel(movement: Movement): JumpModel | undefined {
+    const settings = movement.assets?.find(({ path }) =>
+        path.endsWith('/MovementSetting_Default.asset'),
+    )?.settings;
+    if (!settings) return;
+    const values = [
+        '_gravity',
+        '_fallingGravity',
+        '_maxJumpHeight',
+        '_maxFallingSpeed',
+        '_apexTime',
+        '_inAirMaxHorizontalSpeedSprint',
+        '_startHorizontalSpeedSprint',
+        '_inAirMaxInitHorizontalSpeed',
+        '_inAirDecelerationWithInputSprint',
+    ].map((name) => settings[name]);
+    if (!values.every((value): value is number =>
+        typeof value === 'number' && Number.isFinite(value) && value >= 0)) return;
+    const [gravity, fallingGravity, maxJumpHeight, maxFallingSpeed, apexTime,
+        maxHorizontalSpeed, start, initialLimit, airOverspeedDeceleration] = values;
+    if (!gravity || !fallingGravity || !maxJumpHeight || !maxFallingSpeed ||
+        !airOverspeedDeceleration) return;
+    return {
+        gravity, fallingGravity, maxJumpHeight, maxFallingSpeed, apexTime,
+        maxHorizontalSpeed, startHorizontalSpeed: Math.min(start, initialLimit),
+        airOverspeedDeceleration,
+    };
+}
+
 type Bounds = { min: [number, number]; max: [number, number] };
 type Data = {
     scene: string;
@@ -158,7 +194,7 @@ export function routeServer(
     const readBytes = (name: string) => readFile(resolve(directory!, name));
     const read = async (name: string): Promise<unknown> =>
         JSON.parse((await readBytes(name)).toString());
-    const sceneSolver = (data: Data, locomotion: LocomotionOptions) => {
+    const sceneSolver = (data: Data, movement: Movement) => {
         let pending = solvers.get(data);
         if (!pending) {
             const { scene, source } = data;
@@ -166,6 +202,7 @@ export function routeServer(
                 Source,
                 Awaited<ReturnType<typeof builder.query>> & {}
             > = {
+                jumpModel: sourceJumpModel(movement),
                 movingTransfers: async () => {
                     const catalog = await read(`${scene}-traversal-devices.json`).catch(
                         (error: unknown) => {
@@ -248,7 +285,7 @@ export function routeServer(
                     navigation: data,
                 },
                 resources,
-                locomotion,
+                locomotion: movement.sustainedSprint,
             });
             solvers.set(data, pending);
             pending.catch(() => solvers.delete(data));
@@ -678,18 +715,12 @@ export function routeServer(
                     }
                     const movement = (await read(
                         'movement-settings-current.json',
-                    )) as {
-                        source: Source;
-                        sustainedSprint: LocomotionOptions;
-                    };
+                    )) as Movement;
                     if (!sameSource(source, movement.source))
                         throw new Error(
                             'Movement settings do not match scene build',
                         );
-                    const solver = await sceneSolver(
-                        data,
-                        movement.sustainedSprint,
-                    );
+                    const solver = await sceneSolver(data, movement);
                     const display = (
                         result: RouteResult,
                         optimizing: boolean,

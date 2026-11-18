@@ -54,7 +54,11 @@ export interface RouteQuery {
 export interface RouteResult {
   route: Route;
   connections: GroundConnection[];
-  diagnostics: { truncated: boolean; candidateAttempts?: number };
+  diagnostics: {
+    truncated: boolean;
+    candidateAttempts?: number;
+    candidateGuide?: 'source-boundaries';
+  };
   reason?: string;
   /** A verified target approach that does not yet connect to a requested start. */
   partial?: boolean;
