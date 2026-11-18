@@ -1,30 +1,76 @@
 import { spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
-import { createReadStream } from 'node:fs';
-import { mkdir, readFile, readdir, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, symlink, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { isDeepStrictEqual, parseArgs } from 'node:util';
 
-import { readSuite, type Suite } from '#@/bench/mechanisms/suite.ts';
+import { parseInputIndex } from '#@/bench/mechanisms/input-index.ts';
+import { readSuite, type ScenarioInput, type Suite } from '#@/bench/mechanisms/suite.ts';
 import { exportPhysicalRegion } from '#@/bench/prepare-region.ts';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 
 export function inputGroups(suite: Suite) {
-  const cases: Record<string, { directory: string }> = {};
-  const groups = new Map<string, { scene: string; bounds?: number[] }>();
-  for (const item of suite.cases) {
-    const region = item.setup.physical
-      ? suite.physicalRegions.find((r) => r.id === item.setup.physical!.region)
-      : undefined;
-    if (item.setup.physical && (!region || region.scene !== item.scene))
-      throw new Error(`Missing or mismatched frozen region: ${item.id}`);
-    const directory = `scenarios/${item.scene}-${region?.id ?? 'dynamic'}`;
-    cases[item.id] = { directory };
-    groups.set(directory, { scene: item.scene, bounds: region?.bounds });
+  type Entry = { directory: string };
+  const inputs: Record<string, { dynamic?: Entry; regions: Record<string, Entry> }> =
+    Object.create(null);
+  const groups = new Map<string, ScenarioInput>();
+  for (const {
+    setup: { input },
+  } of suite.scenarios) {
+    const scene = (inputs[input.scene] ??= { regions: Object.create(null) });
+    const directory = `scenarios/${input.scene}-${input.kind === 'dynamic' ? 'dynamic' : input.region}`;
+    groups.set(directory, input);
+    if (input.kind === 'dynamic') scene.dynamic = { directory };
+    else scene.regions[input.region] = { directory };
   }
-  return { cases, groups };
+  return { groups, index: parseInputIndex({ schema: 1, inputs }) };
+}
+
+export async function prepareNavigation(extractor: string, routing: string, scene: string) {
+  const read = async (name: string) => JSON.parse(await readFile(resolve(routing, name), 'utf8'));
+  const navigation = await read(`${scene}-navmesh.json`);
+  if (navigation.partial) throw new Error(`Partial navigation: ${scene}`);
+  const movement = await read('movement-settings-current.json');
+  // The accepted terminal snapshots enable map01 states 1, 4, 5, 8, 11 and
+  // map02 states 2, 4, 7, 9, 10. State 0 is the shared base, and each
+  // enabled state's one-based index selects a bit in the navigation mask.
+  const terminalMasks: Record<string, string> = { map01: '1177', map02: '842' };
+  const mask = Object.hasOwn(terminalMasks, scene) ? terminalMasks[scene] : undefined;
+  if (!mask) throw new Error(`No terminal navigation recipe for ${scene}`);
+  const navigationState = Object.fromEntries(
+    Array.from({ length: 8 }, (_, i) => [`bucket${i}`, i === 0 ? mask : '0']),
+  );
+  const request = {
+    release: movement.source.buildGuid,
+    state: `${scene}-terminal-completed`,
+    progression: 'completed',
+    assets: navigation.assets.map((asset: { asset: string }) => asset.asset),
+    navigationState,
+    areas: [0],
+    speed: 5,
+    maxVertical: 0.5,
+    arrivals: [],
+    targets: [],
+  };
+  const { groundData } = (await import(
+    pathToFileURL(resolve(extractor, 'packages/extractor/src/game/ground-data.ts')).href
+  )) as {
+    groundData(
+      nav: unknown,
+      walls: unknown,
+      request: unknown,
+      inputs: { movement: unknown },
+    ): unknown;
+  };
+  const ground = groundData(navigation, await read(`${scene}-air-walls.json`), request, {
+    movement,
+  });
+  await writeFile(resolve(routing, `${scene}-request.json`), JSON.stringify(request));
+  await writeFile(
+    resolve(routing, `${scene}-ground-all.json`),
+    JSON.stringify({ version: 1, ...(ground as object) }),
+  );
 }
 
 export async function main() {
@@ -47,7 +93,7 @@ export async function main() {
   if (!values.config || !values.output)
     throw new Error('Provide --config and a new --output directory');
   const suite = await readSuite(values.suite);
-  const { cases, groups } = inputGroups(suite);
+  const { groups, index } = inputGroups(suite);
   const output = resolve(values.output);
   const extractor = resolve(values.extractor);
   const config = resolve(values.config);
@@ -57,8 +103,9 @@ export async function main() {
       JSON.stringify(
         {
           source: suite.source,
-          cases: Object.keys(cases).length,
+          cases: suite.cases.length,
           groups: [...groups],
+          index,
           exports: [
             'movement-settings',
             'navmesh',
@@ -75,15 +122,12 @@ export async function main() {
     return;
   }
   await readFile(config);
-  const receipt = JSON.parse(await readFile(resolve(extractor, '.generated.json'), 'utf8'));
   await mkdir(dirname(output), { recursive: true });
-  // A failed export remains inspectable, but never publishes a usable input index.
+  // A failed export remains inspectable in its own output directory.
   await mkdir(output);
   const routing = resolve(output, 'routing');
   await mkdir(routing);
-  const commands: string[][] = [];
   const run = (args: string[]) => {
-    commands.push(args);
     const result = spawnSync(process.execPath, [cli, ...args, '--config', config], {
       cwd: extractor,
       stdio: 'inherit',
@@ -100,16 +144,6 @@ export async function main() {
   run(['movement-settings', '-o', resolve(routing, 'movement-settings-current.json')]);
   const movement = await read('movement-settings-current.json');
   checkSource(movement, 'movement');
-  const { groundData } = (await import(
-    pathToFileURL(resolve(extractor, 'packages/extractor/src/game/ground-data.ts')).href
-  )) as {
-    groundData(
-      nav: unknown,
-      walls: unknown,
-      request: unknown,
-      inputs: { movement: unknown },
-    ): unknown;
-  };
   for (const [scene, source] of Object.entries(suite.sources)) {
     if (
       !isDeepStrictEqual(movement.defaultProfile, source.profile) ||
@@ -121,36 +155,13 @@ export async function main() {
       run([command, scene, '-o', resolve(routing, name)]);
       checkSource(await read(name), name);
     }
-    const navigation = await read(`${scene}-navmesh.json`);
-    if (navigation.partial) throw new Error(`Partial navigation: ${scene}`);
-    // This recipe binds a new candidate dataset. It does not claim to recreate
-    // a missing historical export byte-for-byte or reuse its performance score.
-    const request = {
-      release: 'mechanism-service-candidate',
-      state: 'completed-level-tasks-player-ground-v1',
-      progression: 'fully-enabled',
-      assets: navigation.assets.map((a: { asset: string }) => a.asset),
-      areas: scene === 'map01' ? [0] : [0, 10],
-      speed: 5,
-      maxVertical: 0.5,
-      arrivals: [],
-      targets: [],
-    };
-    if (!['map01', 'map02'].includes(scene)) throw new Error(`No navigation recipe for ${scene}`);
-    await writeFile(resolve(routing, `${scene}-request.json`), JSON.stringify(request));
-    const ground = groundData(navigation, await read(`${scene}-air-walls.json`), request, {
-      movement,
-    });
-    await writeFile(
-      resolve(routing, `${scene}-ground-all.json`),
-      JSON.stringify({ version: 1, ...(ground as object) }),
-    );
+    await prepareNavigation(extractor, routing, scene);
   }
   for (const [directory, group] of groups) {
     const dataRoot = resolve(output, directory);
     await mkdir(dataRoot, { recursive: true });
     await symlink(relative(dataRoot, routing), resolve(dataRoot, 'routing'), 'dir');
-    if (group.bounds)
+    if (group.kind === 'frozen-window')
       await exportPhysicalRegion(
         {
           dataRoot,
@@ -166,44 +177,10 @@ export async function main() {
         },
       );
   }
-  const files: Record<string, string> = {};
-  const visit = async (directory: string) => {
-    for (const entry of (await readdir(directory, { withFileTypes: true })).sort((a, b) =>
-      a.name.localeCompare(b.name, 'en'),
-    )) {
-      const file = resolve(directory, entry.name);
-      if (entry.name === 'cache' || entry.isSymbolicLink()) continue;
-      if (entry.isDirectory()) await visit(file);
-      else {
-        const hash = createHash('sha256');
-        for await (const chunk of createReadStream(file)) hash.update(chunk);
-        files[relative(output, file)] = hash.digest('hex');
-      }
-    }
-  };
-  await visit(output);
-  const binding = {
-    schema: 1,
-    recipe: 'mechanism-service-v1',
-    suiteSha256: createHash('sha256')
-      .update(await readFile(values.suite))
-      .digest('hex'),
-    source: suite.source,
-    profiles: Object.fromEntries(
-      Object.entries(suite.sources).map(([scene, source]) => [scene, source.profile]),
-    ),
-    extractor: receipt,
-    commands,
-    files,
-    cases,
-  };
-  const revision = createHash('sha256').update(JSON.stringify(binding)).digest('hex');
-  await writeFile(
-    resolve(output, 'input-index.json'),
-    JSON.stringify({ ...binding, revision }, null, 2),
-    { flag: 'wx' },
-  );
-  console.log(JSON.stringify({ output, revision, cases: Object.keys(cases).length }));
+  // Publish the index only when all declared roots have finished exporting.
+  const pending = resolve(output, 'input-index.json.tmp');
+  await writeFile(pending, JSON.stringify(index, null, 2) + '\n');
+  await rename(pending, resolve(output, 'input-index.json'));
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();

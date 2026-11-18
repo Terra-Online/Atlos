@@ -7,12 +7,11 @@ game assets, profiles and private config local.
 ## Choose the runner
 
 Use `pnpm benchmark:mechanisms --adapter ganglia-v1-ts` for service measurements.
-This service runner reads `input-index.json`, loads explicit scenarios, trains/freezes their kernels,
+The runner looks up scene input directories in the Dataset, loads scenarios, trains/freezes their kernels,
 then scores routes and independently replays complete results. The beta replay
 result is reported separately and does not gate search completion or acceptance. The CLI defaults
 to Rust, so select TS explicitly. Before starting workers, the runner checks the
-input bindings for the selected measurement cases and their scenarios' training
-cases. It reports all missing or conflicting directory bindings together.
+required input paths for all selected scenarios and reports missing paths together.
 
 `bench/mechanism-run.ts --mode physical-diagnostic` is an optional older per-case
 TS diagnostic without service training or independent whole-route replay. Its
@@ -62,21 +61,23 @@ pnpm --dir talos/packages/ganglia benchmark:prepare-mechanisms \
   --output "$GANGLIA_INPUT_ROOT"
 ```
 
-Add `--plan` to inspect the bindings without game reads or output writes. Actual
-preparation requires matching game files/keys, refuses existing destinations and
-publishes `input-index.json` only after exports succeed. Retain failed output for
-diagnosis and retry at a new destination. Generated inputs have a new revision;
-freeze the same dataset for baseline/candidate runs rather than inheriting historical
-scores. Keep private configuration and raw game content local.
+Add `--plan` to inspect the directories without game reads or output writes.
+Preparation requires matching game files and keys and refuses existing destinations.
+It publishes the Dataset’s `input-index.json` after all exports succeed.
+Retain failed output for diagnosis and retry at a new destination. Reuse the
+same dataset for baseline and candidate runs. Keep private configuration and raw
+game content local.
 
-The service uses the index to locate each Case's input directory. Existing inputs
-can be reused when their source, profiles and case bindings still match. The
-report records the suite and the input index digests separately.
+Suite schema 8 lets each scenario select a dynamic input or a fixed window for
+its scene. The Suite defines fixed bounds in `sources[scene].regions`. The
+Dataset index registers the actual input locations under
+`inputs[scene].dynamic` and `inputs[scene].regions[region]`. Each directory is
+relative to `--data-root`. Multiple scenarios can share an entry. The report
+records the suite digest and the scene resources checked by the worker.
 
-The per-case
-diagnostic instead consumes manifest paths and `<scene-data-root>/<caseId>`;
-it does not read this index. Converting between layouts needs explicit source
-bindings, including retained request/wall facts, rather than a renamed directory.
+The per-case diagnostic uses retained paths from the fixed window registration
+or `<scene-data-root>/<caseId>` for dynamic cases. These paths can refer to a
+different export layout than the service runner.
 
 ## Input files
 
@@ -108,8 +109,9 @@ query array and cannot preserve this manifest's acceptance semantics.
 2. Preserve starts, arrival states/costs, original goal, interaction volume and
    facing/airborne rules. Prove support for projected starts. `waypoints` are ordered
    discovery hints; they impose no trace-visit or stopping requirement.
-3. Honor frozen physical windows and `allowExpansion: false`. `physicalRegions`
-   binds source bounds/settings. Report missing snapshots as input-unavailable.
+3. A `frozen-window` scenario uses the bounds declared for its window under
+   `sources[scene].regions`. Dynamic input can export additional physical
+   coverage with `--prepare-config`.
 4. Apply merged `setup.locomotion` before preparation. `locomotionPatch` records
    intent. Preserve device facts, following-box activity ranges and source
    collisions; reject unsupported setup explicitly.

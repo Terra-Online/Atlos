@@ -64,58 +64,54 @@ const query = z.strictObject({
   waypoints: z.array(vec3).optional(),
 });
 
-const sources = z.record(
-  id,
-  z.strictObject({
-    scene: id.optional(),
-    source: sourceIdentity,
-    profile,
-    locomotion,
-    interactives: text.optional(),
-    navigation: text.optional(),
-    navigationExportRevision: integer.optional(),
-    navigationGenerator: text.optional(),
-    traversal: text.optional(),
-    traversalExportRevision: integer.optional(),
-    traversalGenerator: text.optional(),
-  }),
-);
-const physicalRegions = z.array(
-  z.strictObject({
-    id,
-    scene: id,
-    bounds: z.tuple([number, number, number, number]),
-    level: id.optional(),
-    anchor: z
-      .strictObject({
-        id: text,
-        kind: text,
-        level: id,
-        scene: id,
-        position: vec3,
-        availability: text,
-      })
-      .optional(),
-    exportOptions: z
-      .strictObject({
-        sceneState: text,
-        area: text,
-        terminalScene: z.boolean(),
-      })
-      .optional(),
-  }),
-);
-
-const world = z.strictObject({
-  physical: z
+const bounds = z.tuple([number, number, number, number]);
+const diagnostic = z.strictObject({ ground: text, collision: text });
+const region = z.strictObject({
+  bounds,
+  level: id.optional(),
+  anchor: z
     .strictObject({
-      mode: z.literal('frozen-window'),
-      region: id,
-      ground: text,
-      collision: text,
-      allowExpansion: z.literal(false).optional(),
+      id: text,
+      kind: text,
+      level: id,
+      scene: id,
+      position: vec3,
+      availability: text,
     })
     .optional(),
+  exportOptions: z
+    .strictObject({
+      sceneState: text,
+      area: text,
+      terminalScene: z.boolean(),
+    })
+    .optional(),
+});
+const source = z.strictObject({
+  scene: id.optional(),
+  source: sourceIdentity,
+  profile,
+  locomotion,
+  interactives: text.optional(),
+  navigation: text.optional(),
+  navigationExportRevision: integer.optional(),
+  navigationGenerator: text.optional(),
+  traversal: text.optional(),
+  traversalExportRevision: integer.optional(),
+  traversalGenerator: text.optional(),
+});
+const sources = z.record(
+  id,
+  source.extend({
+    regions: z.record(id, region.extend({ diagnostic: diagnostic.optional() })),
+  }),
+);
+const inputSelection = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('dynamic') }),
+  z.strictObject({ kind: z.literal('frozen-window'), region: id }),
+]);
+
+const world = z.strictObject({
   locomotion: locomotion.optional(),
   locomotionPatch: z.strictObject({ stamina: stamina.partial().optional() }).optional(),
   followingPlacement: z
@@ -183,7 +179,7 @@ const metadata = z.strictObject({
 });
 const scenario = z.strictObject({
   id,
-  setup: world.extend({ scene: id }),
+  setup: world.extend({ scene: id, input: inputSelection }),
   training: z.array(id),
   cases: z
     .array(
@@ -201,12 +197,11 @@ const scenario = z.strictObject({
 });
 export const suiteSchema = z.strictObject({
   $schema: z.string().optional(),
-  schema: z.literal(6),
+  schema: z.literal(8),
   id,
   revision: integer.optional(),
   requiredSource: sourceIdentity,
   sources,
-  physicalRegions,
   scenarios: z.array(scenario).min(1),
   note,
 });
@@ -217,8 +212,7 @@ export const legacySuiteSchema = z.looseObject({
   schema: z.literal(1),
   name: text.optional(),
   source: sourceIdentity,
-  sources: sources.optional(),
-  physicalRegions: physicalRegions.optional(),
+  sources: z.record(id, source).optional(),
   cases: z
     .array(
       z.looseObject({
@@ -227,7 +221,16 @@ export const legacySuiteSchema = z.looseObject({
         query,
         expected: expectationKind.optional(),
         assertions,
-        setup: world.extend(requirements.shape),
+        setup: world.extend({
+          ...requirements.shape,
+          physical: diagnostic
+            .extend({
+              mode: z.literal('frozen-window'),
+              region: id,
+              allowExpansion: z.literal(false).optional(),
+            })
+            .optional(),
+        }),
         group: text,
         tags: z.array(text),
         evidence,
@@ -237,4 +240,9 @@ export const legacySuiteSchema = z.looseObject({
 });
 
 export type AuthoredSuite = z.infer<typeof suiteSchema>;
-export type CaseSetup = z.infer<typeof legacySuiteSchema>['cases'][number]['setup'];
+export type CaseSetup = z.infer<typeof world> &
+  z.infer<typeof requirements> & {
+    physical?: { mode: 'frozen-window'; region: string; diagnostic?: z.infer<typeof diagnostic> };
+  };
+export type Source = z.infer<typeof source>;
+export type Bounds = z.infer<typeof bounds>;

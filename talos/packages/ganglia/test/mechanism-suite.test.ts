@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -143,7 +143,7 @@ test('service benchmark reports all selected scenario binding errors before star
   const profile = { radius: 0.3, height: 1.6 };
   const scenarios = ['valid', 'split', 'missing'].map((id) => ({
     id,
-    setup: { scene: 'map01' },
+    setup: { scene: id, input: { kind: 'dynamic' } },
     training: [`${id}-training`],
     cases: ['query', 'training'].map((kind) => ({
       id: `${id}-${kind}`,
@@ -155,35 +155,38 @@ test('service benchmark reports all selected scenario binding errors before star
     await writeFile(
       suite,
       JSON.stringify({
-        schema: 6,
+        schema: 8,
         id: 'bindings',
         requiredSource: source,
-        sources: {
-          map01: {
-            source,
-            profile,
-            locomotion: { speed: 5, sprintSpeed: 7, sprintAcceleration: 60 },
-          },
-        },
-        physicalRegions: [],
+        sources: Object.fromEntries(
+          scenarios.map(({ id }) => [
+            id,
+            {
+              source,
+              profile,
+              locomotion: { speed: 5, sprintSpeed: 7, sprintAcceleration: 60 },
+              regions: {},
+            },
+          ]),
+        ),
         scenarios,
       }),
     );
     await writeFile(
       join(directory, 'input-index.json'),
       JSON.stringify({
-        revision: 'test',
-        source,
-        profiles: { map01: profile },
-        cases: {
-          'valid-query': { directory: 'valid' },
-          'valid-training': { directory: 'valid' },
-          'split-query': { directory: 'window-a' },
-          'split-training': { directory: 'window-b' },
-          'missing-query': { directory: 'window-c' },
+        schema: 1,
+        inputs: {
+          valid: { dynamic: { directory: 'scenarios/valid' }, regions: {} },
+          split: { dynamic: { directory: 'scenarios/split' }, regions: {} },
         },
       }),
     );
+    await mkdir(join(directory, 'scenarios/valid/routing'), { recursive: true });
+    await mkdir(join(directory, 'routing'));
+    await writeFile(join(directory, 'scenarios/valid/routing/valid-ground-all.json'), '');
+    await writeFile(join(directory, 'scenarios/valid/routing/movement-settings-current.json'), '');
+    await writeFile(join(directory, 'routing/valid-traversal-devices.json'), '');
     const process = spawnSync(
       globalThis.process.execPath,
       [
@@ -202,9 +205,14 @@ test('service benchmark reports all selected scenario binding errors before star
       { encoding: 'utf8' },
     );
     assert.equal(process.status, 1, process.stderr);
-    assert.match(process.stderr, /split:.*split-query.*window-a.*split-training.*window-b/);
-    assert.match(process.stderr, /missing:.*missing-training/);
-    assert.deepEqual((await readdir(directory)).sort(), ['input-index.json', 'suite.json']);
+    assert.match(process.stderr, /split:.*missing dataset input.*scenarios\/split/);
+    assert.match(process.stderr, /missing:.*missing Dataset registration/);
+    assert.deepEqual((await readdir(directory)).sort(), [
+      'input-index.json',
+      'routing',
+      'scenarios',
+      'suite.json',
+    ]);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

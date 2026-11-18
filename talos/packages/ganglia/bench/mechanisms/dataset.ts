@@ -1,117 +1,96 @@
 /**
- * A dataset binds static exports to a game build, player profiles and case IDs.
- * The suite digest identifies the run's manifest in its report. An existing
- * dataset can serve a revised manifest with compatible input bindings.
- * Before workers start, resolve each selected scenario's full training set and
- * selected measurement cases against one input directory. Different world setups
- * may share that directory, but never a mutable solver kernel. Input indexes
- * may explicitly bind absolute retained directories as well as root-relative
- * ones. Live geometry and callbacks stay in the owning worker.
+ * Bind each scenario's logical Suite input to a directory in the Dataset index
+ * before starting workers. Selection filters measurement and leaves training
+ * intact. Live geometry stays in the owning worker.
  */
-import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { isDeepStrictEqual } from 'node:util';
 
+import { parseInputIndex, type InputIndex } from '#@/bench/mechanisms/input-index.ts';
 import type { Binding } from '#@/bench/mechanisms/scenario.ts';
 import type { Case, Suite } from '#@/bench/mechanisms/suite.ts';
 import { createScenario, type ScenarioBuilder } from '#@/bench/scenario.ts';
-import type { Dataset as StaticDataset } from '#@/bench/suite.ts';
+import type { Dataset as DatasetRoot } from '#@/bench/suite.ts';
 import { prepareWorkerSolver } from '#@/bench/workers.ts';
 import type { RouteQuery, SolverSettings } from '#@/src/solver/contract.ts';
 
-export interface Dataset extends StaticDataset {
-  readonly revision: string;
-  readonly suiteSha256: string;
-  readonly indexSha256: string;
-  readonly cases: Readonly<Record<string, { directory: string }>>;
+interface Dataset extends DatasetRoot {
+  inputs: InputIndex['inputs'];
 }
 
-export async function loadDataset(root: string, suiteFile: string, suite: Suite): Promise<Dataset> {
-  const bytes = await readFile(join(root, 'input-index.json'));
-  const index: unknown = JSON.parse(bytes.toString());
-  const record = (value: unknown): value is Record<string, unknown> =>
-    value !== null && typeof value === 'object' && !Array.isArray(value);
-  if (
-    !record(index) ||
-    typeof index.revision !== 'string' ||
-    !index.revision ||
-    !record(index.profiles) ||
-    !record(index.cases)
-  )
-    throw new Error('Invalid mechanism input index');
-  const profiles = index.profiles;
-  const suiteSha256 = createHash('sha256')
-    .update(await readFile(suiteFile))
-    .digest('hex');
-  if (
-    !isDeepStrictEqual(index.source, suite.source) ||
-    Object.entries(suite.sources).some(
-      ([scene, source]) => !isDeepStrictEqual(profiles[scene], source.profile),
-    )
-  )
-    throw new Error(
-      'Candidate game build and player profiles must match the mechanism specification',
-    );
-  const cases = Object.fromEntries(
-    Object.entries(index.cases).map(([id, binding]) => {
-      if (!record(binding) || typeof binding.directory !== 'string' || !binding.directory)
-        throw new Error(`Invalid input directory binding for case: ${id}`);
-      return [id, { directory: binding.directory }];
-    }),
-  );
-  return {
-    root: resolve(root),
-    revision: index.revision,
-    suiteSha256,
-    indexSha256: createHash('sha256').update(bytes).digest('hex'),
-    cases,
-  };
+export async function readDataset(root: string): Promise<Dataset> {
+  const file = join(root, 'input-index.json');
+  try {
+    const { inputs } = parseInputIndex(JSON.parse(await readFile(file, 'utf8')));
+    return { root, inputs };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Invalid mechanism Dataset index ${file}: ${message}`, { cause: error });
+  }
 }
 
-export function scenarioBindings(
+export async function scenarioBindings(
   dataset: Dataset,
   suite: Suite,
   suiteFile: string,
   selected: ReadonlySet<string>,
   prepareConfig?: string,
-): ReadonlyMap<string, Binding> {
+): Promise<ReadonlyMap<string, Binding>> {
   const bindings = new Map<string, Binding>();
   const errors: string[] = [];
   for (const spec of suite.scenarios) {
     if (!spec.cases.some((item) => selected.has(item.id))) continue;
     const training = new Set(spec.training);
-    const ids = spec.cases
-      .filter((item) => selected.has(item.id) || training.has(item.id))
-      .map((item) => item.id);
-    const directories = new Map<string, string[]>();
-    const missing: string[] = [];
-    for (const id of ids) {
-      const directory = dataset.cases[id]?.directory;
-      if (!directory) {
-        missing.push(id);
-        continue;
-      }
-      const path = resolve(dataset.root, directory);
-      const cases = directories.get(path);
-      if (cases) cases.push(id);
-      else directories.set(path, [id]);
+    const cases = spec.cases.filter((item) => selected.has(item.id) || training.has(item.id));
+    const input = spec.setup.input;
+    const { scene } = input;
+    const registered = Object.hasOwn(dataset.inputs, scene) ? dataset.inputs[scene] : undefined;
+    const entry =
+      input.kind === 'dynamic'
+        ? registered?.dynamic
+        : registered && Object.hasOwn(registered.regions, input.region)
+          ? registered.regions[input.region]
+          : undefined;
+    if (!entry) {
+      const label = input.kind === 'dynamic' ? 'dynamic input' : `fixed window ${input.region}`;
+      errors.push(`${spec.id}: missing Dataset registration for ${scene} ${label}`);
+      continue;
     }
-    if (missing.length)
-      errors.push(`${spec.id}: missing dataset directory for ${missing.join(', ')}`);
-    if (directories.size > 1) {
-      const details = [...directories].map(([path, cases]) => `${cases.join(', ')} → ${path}`);
-      errors.push(`${spec.id}: Cases bind different dataset directories: ${details.join('; ')}`);
+    const { directory } = entry;
+    const dataRoot = resolve(dataset.root, directory);
+    const exports = join(dataset.root, 'routing');
+    const required = [
+      dataRoot,
+      join(dataRoot, 'routing', `${scene}-ground-all.json`),
+      join(dataRoot, 'routing', 'movement-settings-current.json'),
+      join(exports, `${scene}-traversal-devices.json`),
+    ];
+    if (cases.some((item) => item.requirements?.projectStartToPhysicalSupport))
+      required.push(join(exports, `${scene}-interaction-points.json`));
+    const missing = await Promise.all(
+      required.map(async (path) => {
+        try {
+          const info = await stat(path);
+          return (path === dataRoot ? info.isDirectory() : info.isFile()) ? null : path;
+        } catch (error) {
+          const code = (error as NodeJS.ErrnoException).code;
+          if (code === 'ENOENT' || code === 'ENOTDIR') return path;
+          throw error;
+        }
+      }),
+    );
+    const unavailable = missing.filter((path) => path !== null);
+    if (unavailable.length) {
+      errors.push(`${spec.id}: missing dataset input ${unavailable.join(', ')}`);
+      continue;
     }
-    if (missing.length || directories.size > 1) continue;
-    const [dataRoot] = directories.keys();
     bindings.set(spec.id, {
       suite: resolve(suiteFile),
-      ids,
+      scenarioId: spec.id,
+      ids: cases.map((item) => item.id),
       dataRoot,
-      exports: join(dataset.root, 'routing'),
+      exports,
       prepareConfig,
-      inputRevision: dataset.revision,
     });
   }
   if (errors.length) throw new Error('Invalid mechanism input bindings:\n' + errors.join('\n'));
@@ -135,20 +114,20 @@ export function scenarioBuilder(options: {
         const binding = bindings.get(spec.id);
         if (!binding) throw new Error(`Missing prepared input binding for ${spec.id}`);
         const file = options.writeBinding(spec.id, binding);
-        const first = byId.get(binding.ids[0])!;
+        const source = spec.setup.input;
         const input = await prepareWorkerSolver({
           count: 1,
           config: options.config,
           dataRoot: file,
           extractor: options.extractor,
-          scene: first.scene,
+          scene: source.scene,
           entry: new URL('./worker.ts', import.meta.url),
           deferKernel: true,
           preparation:
-            binding.prepareConfig && !first.setup.physical
+            binding.prepareConfig && source.kind === 'dynamic'
               ? {
                   config: binding.prepareConfig,
-                  devices: resolve(binding.exports, `${first.scene}-traversal-devices.json`),
+                  devices: resolve(binding.exports, `${source.scene}-traversal-devices.json`),
                 }
               : undefined,
           onResult: options.onResult,

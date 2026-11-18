@@ -7,7 +7,12 @@ import { parseArgs } from 'node:util';
 
 import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { matchesExpectation, expectation, type Result } from '#@/bench/mechanisms/assessment.ts';
-import { checkSetup, readSuite, resourcePath, type Binding } from '#@/bench/mechanisms/suite.ts';
+import {
+  checkSetup,
+  readDiagnosticSuite,
+  resourcePath,
+  type Binding,
+} from '#@/bench/mechanisms/suite.ts';
 import { classify } from '#@/bench/outcome.ts';
 import { sourceHash } from '#@/bench/source.ts';
 import { prepareWorkerSolver, type WorkerResult } from '#@/bench/workers.ts';
@@ -48,7 +53,7 @@ if (values.help) {
     );
   if (!values.exports || !values.retained || !values.output)
     throw new Error('Explicit --exports, --retained and --output are required');
-  const suite = await readSuite(values.suite),
+  const suite = await readDiagnosticSuite(values.suite),
     filter = values.ids ? new Set(values.ids.split(',')) : undefined;
   if (filter && [...filter].some((id) => !suite.cases.some((c) => c.id === id)))
     throw new Error('Unknown selected case ID');
@@ -149,17 +154,21 @@ if (values.help) {
         } catch (e) {
           errors.push(e instanceof Error ? e.message : String(e));
         }
-        const paths = item.setup.physical
+        const physical = item.setup.physical;
+        const diagnostic = physical?.diagnostic;
+        if (physical && !diagnostic)
+          errors.push('Missing retained diagnostic files for fixed window');
+        const paths = diagnostic
           ? [
-              resourcePath(item.setup.physical.ground, roots),
-              resourcePath(item.setup.physical.collision, roots),
+              resourcePath(diagnostic.ground, roots),
+              resourcePath(diagnostic.collision, roots),
               resolve(roots.exports, 'movement-settings-current.json'),
               resolve(
                 binding.deviceExports ?? roots.exports,
                 `${item.scene}-traversal-devices.json`,
               ),
             ]
-          : binding.sceneDataRoot
+          : !physical && binding.sceneDataRoot
             ? [
                 resolve(binding.sceneDataRoot, item.id, `routing/${item.scene}-ground-all.json`),
                 resolve(binding.sceneDataRoot, item.id, 'routing/movement-settings-current.json'),

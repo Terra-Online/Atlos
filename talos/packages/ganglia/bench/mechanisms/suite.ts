@@ -9,18 +9,27 @@ import { isDeepStrictEqual } from 'node:util';
 
 import { z } from 'zod';
 
-import { expectation } from '#@/bench/mechanisms/assessment.ts';
 import {
   legacySuiteSchema,
   suiteSchema,
   type AuthoredSuite,
+  type Bounds,
   type CaseSetup,
+  type Source,
 } from '#@/bench/mechanisms/suite-schema.ts';
 import type { Expectation, Suite as SuiteConfig } from '#@/bench/suite.ts';
 import type { RouteQuery } from '#@/src/solver/contract.ts';
 
-type ScenarioSpec = AuthoredSuite['scenarios'][number];
-type CaseSpec = ScenarioSpec['cases'][number];
+type AuthoredScenario = AuthoredSuite['scenarios'][number];
+type CaseSpec = AuthoredScenario['cases'][number];
+
+export type ScenarioInput = { scene: string } & (
+  | { kind: 'dynamic' }
+  | { kind: 'frozen-window'; region: string; bounds: Bounds }
+);
+type ScenarioSetup = Omit<AuthoredScenario['setup'], 'scene' | 'input'> & {
+  input: ScenarioInput;
+};
 type Metadata = NonNullable<CaseSpec['metadata']>;
 
 export interface Case {
@@ -35,15 +44,15 @@ export interface Case {
   tags: string[];
 }
 
-export interface Suite extends SuiteConfig<ScenarioSpec['setup'], CaseSpec> {
+interface DiagnosticSuite {
   source: AuthoredSuite['requiredSource'];
   cases: Case[];
-  physicalRegions: AuthoredSuite['physicalRegions'];
-  sources: AuthoredSuite['sources'];
+  sources: Record<string, Source>;
 }
+export interface Suite extends SuiteConfig<ScenarioSetup, CaseSpec>, DiagnosticSuite {}
 
 export interface Binding {
-  suite: Suite;
+  suite: DiagnosticSuite;
   item: Case;
   roots: { exports: string; retained: string };
   extractor: string;
@@ -54,31 +63,46 @@ export interface Binding {
 }
 
 export async function readSuite(file: string): Promise<Suite> {
+  return readManifest(file, (raw) => decodeSuite(suiteSchema.parse(raw)));
+}
+
+export async function readDiagnosticSuite(file: string): Promise<DiagnosticSuite> {
+  return readManifest(file, async (raw) => {
+    if (!(raw && typeof raw === 'object' && 'schema' in raw && raw.schema === 1))
+      return decodeSuite(suiteSchema.parse(raw));
+
+    const legacy = legacySuiteSchema.parse(raw);
+    const suiteFile = resolve(dirname(file), 'suite.json');
+    const shared =
+      legacy.sources || suiteFile === resolve(file) ? undefined : await readSuite(suiteFile);
+    if (shared && !isDeepStrictEqual(legacy.source, shared.source))
+      throw new Error('Legacy mechanism source differs from shared suite');
+    const sources = legacy.sources ?? shared?.sources;
+    if (!sources) throw new Error('Missing mechanism source bindings');
+    const cases = legacy.cases.map(({ setup: { physical, ...setup }, ...item }): Case => ({
+      ...item,
+      setup: {
+        ...setup,
+        ...(physical
+          ? {
+              physical: {
+                mode: physical.mode,
+                region: physical.region,
+                diagnostic: { ground: physical.ground, collision: physical.collision },
+              },
+            }
+          : {}),
+      },
+    }));
+    checkCases(cases, sources);
+    return { source: legacy.source, cases, sources };
+  });
+}
+
+async function readManifest<T>(file: string, decode: (raw: unknown) => T): Promise<T> {
   try {
     const raw: unknown = JSON.parse(await readFile(file, 'utf8'));
-    if (raw && typeof raw === 'object' && 'schema' in raw && raw.schema === 1)
-      return await readLegacySuite(file, raw);
-
-    const authored = suiteSchema.parse(raw);
-    const cases = authored.scenarios.flatMap(({ setup: { scene, ...world }, cases }) =>
-      cases.map(({ id, query, expect, requirements, metadata, note }): Case => ({
-        ...metadata,
-        ...(note === undefined ? {} : { note }),
-        id,
-        scene,
-        group: metadata?.group ?? 'ungrouped',
-        tags: metadata?.tags ?? [],
-        evidence: metadata?.evidence ?? [],
-        query,
-        setup: { ...world, ...requirements },
-        expected: expect.kind,
-        assertions: expect.assertions,
-      })),
-    );
-    cases.sort((a, b) => a.id.localeCompare(b.id));
-    const suite = { ...authored, source: authored.requiredSource, cases };
-    checkReferences(suite);
-    return suite;
+    return await decode(raw);
   } catch (error) {
     const message =
       error instanceof z.ZodError
@@ -90,76 +114,17 @@ export async function readSuite(file: string): Promise<Suite> {
   }
 }
 
-async function readLegacySuite(file: string, raw: unknown): Promise<Suite> {
-  const legacy = legacySuiteSchema.parse(raw);
-  // Flat diagnostic controls can reuse resource bindings in the adjacent suite.
-  const suiteFile = resolve(dirname(file), 'suite.json');
-  const shared =
-    (!legacy.sources || !legacy.physicalRegions) && suiteFile !== resolve(file)
-      ? await readSuite(suiteFile)
-      : undefined;
-  const sources = legacy.sources ?? shared?.sources;
-  const physicalRegions = legacy.physicalRegions ?? shared?.physicalRegions;
-  if (!sources || !physicalRegions) throw new Error('Missing mechanism source bindings');
-  if (shared && !isDeepStrictEqual(legacy.source, shared.source))
-    throw new Error('Legacy mechanism source differs from shared suite');
-
-  const groups: { setup: ScenarioSpec['setup']; cases: CaseSpec[] }[] = [];
-  for (const c of legacy.cases) {
-    const { scene, query, id, assertions, setup, ...metadata } = c;
-    const {
-      requiredDevice,
-      requiredSupport,
-      excludedUnresolvedDevice,
-      projectStartToPhysicalSupport,
-      ...world
-    } = setup;
-    const scenarioSetup = { scene, ...world };
-    let scenario = groups.find((entry) => isDeepStrictEqual(entry.setup, scenarioSetup));
-    if (!scenario) {
-      scenario = { setup: scenarioSetup, cases: [] };
-      groups.push(scenario);
+function decodeSuite(authored: AuthoredSuite): Suite {
+  for (const [scene, { regions }] of Object.entries(authored.sources))
+    for (const [id, region] of Object.entries(regions)) {
+      const [minX, minZ, maxX, maxZ] = region.bounds;
+      if (minX >= maxX || minZ >= maxZ) throw new Error(`Invalid bounds for ${scene}/${id}`);
     }
-    const requirements = {
-      ...(requiredDevice === undefined ? {} : { requiredDevice }),
-      ...(requiredSupport === undefined ? {} : { requiredSupport }),
-      ...(excludedUnresolvedDevice === undefined ? {} : { excludedUnresolvedDevice }),
-      ...(projectStartToPhysicalSupport === undefined ? {} : { projectStartToPhysicalSupport }),
-    };
-    scenario.cases.push({
-      id,
-      query,
-      expect: { kind: expectation(c), assertions },
-      metadata,
-      ...(Object.keys(requirements).length ? { requirements } : {}),
-    });
-  }
-  const scenarios: ScenarioSpec[] = groups.map(({ setup, cases }, index) => {
-    const count = Math.min(10, cases.length);
-    return {
-      id: `${setup.scene}-${String(index + 1).padStart(3, '0')}`,
-      setup,
-      cases,
-      training: Array.from(
-        { length: count },
-        (_, i) => cases[Math.floor((i * cases.length) / count)].id,
-      ),
-    };
-  });
-  const suite = { ...legacy, id: legacy.name ?? 'legacy', sources, physicalRegions, scenarios };
-  checkReferences(suite);
-  return suite;
-}
 
-function checkReferences(suite: Suite) {
-  const regions = new Map<string, string>();
-  for (const region of suite.physicalRegions) {
-    if (regions.has(region.id) || !Object.hasOwn(suite.sources, region.scene))
-      throw new Error(`Invalid or duplicate physical region: ${region.id}`);
-    regions.set(region.id, region.scene);
-  }
+  const errors: string[] = [];
   const scenarioIds = new Set<string>();
-  for (const scenario of suite.scenarios) {
+  const cases: Case[] = [];
+  const scenarios = authored.scenarios.flatMap((scenario) => {
     if (scenarioIds.has(scenario.id)) throw new Error(`Duplicate scenario: ${scenario.id}`);
     scenarioIds.add(scenario.id);
     const caseIds = new Set(scenario.cases.map(({ id }) => id));
@@ -168,16 +133,59 @@ function checkReferences(suite: Suite) {
       scenario.training.some((id) => !caseIds.has(id))
     )
       throw new Error(`Invalid training references for scenario: ${scenario.id}`);
-  }
-  const caseIds = new Set<string>();
-  for (const c of suite.cases) {
-    if (caseIds.has(c.id)) throw new Error(`Duplicate case: ${c.id}`);
-    caseIds.add(c.id);
-    if (!Object.hasOwn(suite.sources, c.scene)) throw new Error(`Unknown scene for case: ${c.id}`);
-    const { physical } = c.setup;
-    if (physical && regions.get(physical.region) !== c.scene)
-      throw new Error(`Unknown physical region for case: ${c.id}`);
-    checkSetup(c);
+
+    const { scene, input: selection, ...world } = scenario.setup;
+    const source = Object.hasOwn(authored.sources, scene) ? authored.sources[scene] : undefined;
+    if (!source) {
+      errors.push(`${scenario.id}: unknown scene ${scene}`);
+      return [];
+    }
+    let input: ScenarioInput;
+    let physical: CaseSetup['physical'];
+    if (selection.kind === 'dynamic') {
+      input = { kind: 'dynamic', scene };
+    } else {
+      const { region } = selection;
+      const entry = Object.hasOwn(source.regions, region) ? source.regions[region] : undefined;
+      if (!entry) {
+        errors.push(`${scenario.id}: unknown fixed window ${scene}/${region}`);
+        return [];
+      }
+      const { bounds, diagnostic } = entry;
+      input = { kind: 'frozen-window', scene, region, bounds };
+      physical = { mode: 'frozen-window', region, diagnostic };
+    }
+
+    for (const { id, query, expect, requirements, metadata, note } of scenario.cases) {
+      cases.push({
+        ...metadata,
+        ...(note === undefined ? {} : { note }),
+        id,
+        scene,
+        group: metadata?.group ?? 'ungrouped',
+        tags: metadata?.tags ?? [],
+        evidence: metadata?.evidence ?? [],
+        query,
+        setup: { ...world, ...requirements, ...(physical ? { physical } : {}) },
+        expected: expect.kind,
+        assertions: expect.assertions,
+      });
+    }
+    return [{ ...scenario, setup: { ...world, input } }];
+  });
+  if (errors.length) throw new Error('Invalid scenario inputs:\n' + errors.join('\n'));
+  checkCases(cases, authored.sources);
+  cases.sort((a, b) => a.id.localeCompare(b.id));
+  return { ...authored, source: authored.requiredSource, scenarios, cases };
+}
+
+function checkCases(cases: Case[], sources: DiagnosticSuite['sources']) {
+  const ids = new Set<string>();
+  for (const item of cases) {
+    if (ids.has(item.id)) throw new Error(`Duplicate case: ${item.id}`);
+    ids.add(item.id);
+    if (!Object.hasOwn(sources, item.scene)) throw new Error(`Unknown scene for case: ${item.id}`);
+    checkSetup(item);
   }
 }
 

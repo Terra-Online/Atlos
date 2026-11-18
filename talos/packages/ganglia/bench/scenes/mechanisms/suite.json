@@ -1,6 +1,6 @@
 {
   "$schema": "./suite.schema.json",
-  "schema": 6,
+  "schema": 8,
   "id": "real-scene-validation",
   "requiredSource": {
     "buildGuid": "2954fa80-23c1-1579-2b22-4ecfd6d70418",
@@ -46,6 +46,134 @@
           "recoveryDuringSprint": true,
           "recoveryDuringNonWalk": true
         }
+      },
+      "regions": {
+        "map01_lv001": {
+          "level": "map01_lv001",
+          "bounds": [-256, -576, -64, -384],
+          "anchor": {
+            "id": "TpForMap_ent_2100000322",
+            "kind": "teleport",
+            "level": "map01_lv001",
+            "scene": "map01",
+            "position": [-153.86868286132812, 104.7446060180664, -485.57427978515625],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map01_lv001/ground.json",
+            "collision": "retained/inputs/regions/map01_lv001/collision.json"
+          }
+        },
+        "map01_lv002": {
+          "level": "map01_lv002",
+          "bounds": [-896, 32, -704, 224],
+          "anchor": {
+            "id": "TpForMap_ent_200001239",
+            "kind": "teleport",
+            "level": "map01_lv002",
+            "scene": "map01",
+            "position": [-789.2321166992188, 127.69329833984375, 115.57734680175781],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map01_lv002/ground.json",
+            "collision": "retained/inputs/regions/map01_lv002/collision.json"
+          }
+        },
+        "map01_lv003": {
+          "level": "map01_lv003",
+          "bounds": [256, -768, 448, -576],
+          "anchor": {
+            "id": "TpForMap_ent_300001874",
+            "kind": "teleport",
+            "level": "map01_lv003",
+            "scene": "map01",
+            "position": [346.8579406738281, 27.261001586914062, -684.4609375],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map01_lv003/ground.json",
+            "collision": "retained/inputs/regions/map01_lv003/collision.json"
+          }
+        },
+        "map01_lv005": {
+          "level": "map01_lv005",
+          "bounds": [512, -256, 704, -64],
+          "anchor": {
+            "id": "TpForMap_ent_3400020747",
+            "kind": "teleport",
+            "level": "map01_lv005",
+            "scene": "map01",
+            "position": [602.4029541015625, 96.79000091552734, -146.96588134765625],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map01_lv005/ground.json",
+            "collision": "retained/inputs/regions/map01_lv005/collision.json"
+          }
+        },
+        "map01_lv006": {
+          "level": "map01_lv006",
+          "bounds": [448, 160, 640, 352],
+          "anchor": {
+            "id": "TpForMap_ent_3500031060",
+            "kind": "teleport",
+            "level": "map01_lv006",
+            "scene": "map01",
+            "position": [542.8038330078125, 39.41604232788086, 249.09654235839844],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map01_lv006/ground.json",
+            "collision": "retained/inputs/regions/map01_lv006/collision.json"
+          }
+        },
+        "map01_lv007": {
+          "level": "map01_lv007",
+          "bounds": [-160, 480, 32, 672],
+          "anchor": {
+            "id": "TpForMap_ent_2800001509",
+            "kind": "teleport",
+            "level": "map01_lv007",
+            "scene": "map01",
+            "position": [-67.35997772216797, 171.20904541015625, 575.25537109375],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map01_lv007/ground.json",
+            "collision": "retained/inputs/regions/map01_lv007/collision.json"
+          }
+        }
       }
     },
     "map02": {
@@ -87,326 +215,230 @@
           "recoveryDuringSprint": true,
           "recoveryDuringNonWalk": true
         }
+      },
+      "regions": {
+        "map02_lv001": {
+          "level": "map02_lv001",
+          "bounds": [-832, -1632, -640, -1440],
+          "anchor": {
+            "id": "TpForMap_ent_10100020646",
+            "kind": "teleport",
+            "level": "map02_lv001",
+            "scene": "map02",
+            "position": [-740.6195678710938, 232.9345703125, -1548.95654296875],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map02_lv001/ground.json",
+            "collision": "retained/inputs/regions/map02_lv001/collision.json"
+          }
+        },
+        "map02_lv002": {
+          "level": "map02_lv002",
+          "bounds": [-1216, -832, -1024, -640],
+          "anchor": {
+            "id": "TpForMap_ent_22800030008",
+            "kind": "teleport",
+            "level": "map02_lv002",
+            "scene": "map02",
+            "position": [-1106.271484375, 280.4727478027344, -733.9412841796875],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map02_lv002/ground.json",
+            "collision": "retained/inputs/regions/map02_lv002/collision.json"
+          }
+        },
+        "map02_lv003": {
+          "level": "map02_lv003",
+          "bounds": [-480, -1472, -288, -1280],
+          "anchor": {
+            "id": "TpForMap_ent_23300000096",
+            "kind": "teleport",
+            "level": "map02_lv003",
+            "scene": "map02",
+            "position": [-369.3577575683594, 267.2054443359375, -1363.806396484375],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map02_lv003/ground.json",
+            "collision": "retained/inputs/regions/map02_lv003/collision.json"
+          }
+        },
+        "map02_lv004": {
+          "level": "map02_lv004",
+          "bounds": [-1504, -1120, -1312, -928],
+          "anchor": {
+            "id": "TpForMap_ent_23400083018",
+            "kind": "teleport",
+            "level": "map02_lv004",
+            "scene": "map02",
+            "position": [-1392.9803466796875, 280.5799865722656, -1034.339599609375],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map02_lv004/ground.json",
+            "collision": "retained/inputs/regions/map02_lv004/collision.json"
+          }
+        },
+        "map02_lv005": {
+          "level": "map02_lv005",
+          "bounds": [-352, -576, -160, -384],
+          "anchor": {
+            "id": "TpForMap_ent_23200013375",
+            "kind": "teleport",
+            "level": "map02_lv005",
+            "scene": "map02",
+            "position": [-254.09507751464844, 249.7570037841797, -473.289794921875],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map02_lv005/ground.json",
+            "collision": "retained/inputs/regions/map02_lv005/collision.json"
+          }
+        },
+        "map02_lv006": {
+          "level": "map02_lv006",
+          "bounds": [288, -1984, 480, -1792],
+          "anchor": {
+            "id": "TpForMap_ent_25000000345",
+            "kind": "teleport",
+            "level": "map02_lv006",
+            "scene": "map02",
+            "position": [378.2922058105469, 232.3932342529297, -1902.8614501953125],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map02_lv006/ground.json",
+            "collision": "retained/inputs/regions/map02_lv006/collision.json"
+          }
+        },
+        "map02_lv007": {
+          "level": "map02_lv007",
+          "bounds": [-672, 384, -480, 576],
+          "anchor": {
+            "id": "TpForMap_ent_10200030168",
+            "kind": "teleport",
+            "level": "map02_lv007",
+            "scene": "map02",
+            "position": [-564.6541748046875, 247.17999267578125, 491.080322265625],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map02_lv007/ground.json",
+            "collision": "retained/inputs/regions/map02_lv007/collision.json"
+          }
+        },
+        "map02_lv008": {
+          "level": "map02_lv008",
+          "bounds": [-416, 864, -224, 1056],
+          "anchor": {
+            "id": "TpForMap_ent_23100031243",
+            "kind": "teleport",
+            "level": "map02_lv008",
+            "scene": "map02",
+            "position": [-321.51055908203125, 179.281005859375, 975.93115234375],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map02_lv008/ground.json",
+            "collision": "retained/inputs/regions/map02_lv008/collision.bin"
+          }
+        },
+        "map02_lv009": {
+          "level": "map02_lv009",
+          "bounds": [-128, 384, 64, 576],
+          "anchor": {
+            "id": "TpForMap_ent_36100010007",
+            "kind": "teleport",
+            "level": "map02_lv009",
+            "scene": "map02",
+            "position": [-35.88615036010742, 195.87054443359375, 477.6938781738281],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map02_lv009/ground.json",
+            "collision": "retained/inputs/regions/map02_lv009/collision.json"
+          }
+        },
+        "map02_lv010": {
+          "level": "map02_lv010",
+          "bounds": [992, 992, 1184, 1184],
+          "anchor": {
+            "id": "TpForMap_ent_37900000005",
+            "kind": "teleport",
+            "level": "map02_lv010",
+            "scene": "map02",
+            "position": [1099.3671875, 388.5268249511719, 1081.7933349609375],
+            "availability": "unknown"
+          },
+          "exportOptions": {
+            "sceneState": "0",
+            "area": "0",
+            "terminalScene": true
+          },
+          "diagnostic": {
+            "ground": "retained/inputs/regions/map02_lv010/ground.json",
+            "collision": "retained/inputs/regions/map02_lv010/collision.json"
+          }
+        }
       }
     }
   },
-  "physicalRegions": [
-    {
-      "id": "map01_lv001",
-      "scene": "map01",
-      "level": "map01_lv001",
-      "bounds": [-256, -576, -64, -384],
-      "anchor": {
-        "id": "TpForMap_ent_2100000322",
-        "kind": "teleport",
-        "level": "map01_lv001",
-        "scene": "map01",
-        "position": [-153.86868286132812, 104.7446060180664, -485.57427978515625],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map01_lv002",
-      "scene": "map01",
-      "level": "map01_lv002",
-      "bounds": [-896, 32, -704, 224],
-      "anchor": {
-        "id": "TpForMap_ent_200001239",
-        "kind": "teleport",
-        "level": "map01_lv002",
-        "scene": "map01",
-        "position": [-789.2321166992188, 127.69329833984375, 115.57734680175781],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map01_lv003",
-      "scene": "map01",
-      "level": "map01_lv003",
-      "bounds": [256, -768, 448, -576],
-      "anchor": {
-        "id": "TpForMap_ent_300001874",
-        "kind": "teleport",
-        "level": "map01_lv003",
-        "scene": "map01",
-        "position": [346.8579406738281, 27.261001586914062, -684.4609375],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map01_lv005",
-      "scene": "map01",
-      "level": "map01_lv005",
-      "bounds": [512, -256, 704, -64],
-      "anchor": {
-        "id": "TpForMap_ent_3400020747",
-        "kind": "teleport",
-        "level": "map01_lv005",
-        "scene": "map01",
-        "position": [602.4029541015625, 96.79000091552734, -146.96588134765625],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map01_lv006",
-      "scene": "map01",
-      "level": "map01_lv006",
-      "bounds": [448, 160, 640, 352],
-      "anchor": {
-        "id": "TpForMap_ent_3500031060",
-        "kind": "teleport",
-        "level": "map01_lv006",
-        "scene": "map01",
-        "position": [542.8038330078125, 39.41604232788086, 249.09654235839844],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map01_lv007",
-      "scene": "map01",
-      "level": "map01_lv007",
-      "bounds": [-160, 480, 32, 672],
-      "anchor": {
-        "id": "TpForMap_ent_2800001509",
-        "kind": "teleport",
-        "level": "map01_lv007",
-        "scene": "map01",
-        "position": [-67.35997772216797, 171.20904541015625, 575.25537109375],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map02_lv001",
-      "scene": "map02",
-      "level": "map02_lv001",
-      "bounds": [-832, -1632, -640, -1440],
-      "anchor": {
-        "id": "TpForMap_ent_10100020646",
-        "kind": "teleport",
-        "level": "map02_lv001",
-        "scene": "map02",
-        "position": [-740.6195678710938, 232.9345703125, -1548.95654296875],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map02_lv002",
-      "scene": "map02",
-      "level": "map02_lv002",
-      "bounds": [-1216, -832, -1024, -640],
-      "anchor": {
-        "id": "TpForMap_ent_22800030008",
-        "kind": "teleport",
-        "level": "map02_lv002",
-        "scene": "map02",
-        "position": [-1106.271484375, 280.4727478027344, -733.9412841796875],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map02_lv003",
-      "scene": "map02",
-      "level": "map02_lv003",
-      "bounds": [-480, -1472, -288, -1280],
-      "anchor": {
-        "id": "TpForMap_ent_23300000096",
-        "kind": "teleport",
-        "level": "map02_lv003",
-        "scene": "map02",
-        "position": [-369.3577575683594, 267.2054443359375, -1363.806396484375],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map02_lv004",
-      "scene": "map02",
-      "level": "map02_lv004",
-      "bounds": [-1504, -1120, -1312, -928],
-      "anchor": {
-        "id": "TpForMap_ent_23400083018",
-        "kind": "teleport",
-        "level": "map02_lv004",
-        "scene": "map02",
-        "position": [-1392.9803466796875, 280.5799865722656, -1034.339599609375],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map02_lv005",
-      "scene": "map02",
-      "level": "map02_lv005",
-      "bounds": [-352, -576, -160, -384],
-      "anchor": {
-        "id": "TpForMap_ent_23200013375",
-        "kind": "teleport",
-        "level": "map02_lv005",
-        "scene": "map02",
-        "position": [-254.09507751464844, 249.7570037841797, -473.289794921875],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map02_lv006",
-      "scene": "map02",
-      "level": "map02_lv006",
-      "bounds": [288, -1984, 480, -1792],
-      "anchor": {
-        "id": "TpForMap_ent_25000000345",
-        "kind": "teleport",
-        "level": "map02_lv006",
-        "scene": "map02",
-        "position": [378.2922058105469, 232.3932342529297, -1902.8614501953125],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map02_lv007",
-      "scene": "map02",
-      "level": "map02_lv007",
-      "bounds": [-672, 384, -480, 576],
-      "anchor": {
-        "id": "TpForMap_ent_10200030168",
-        "kind": "teleport",
-        "level": "map02_lv007",
-        "scene": "map02",
-        "position": [-564.6541748046875, 247.17999267578125, 491.080322265625],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map02_lv008",
-      "scene": "map02",
-      "level": "map02_lv008",
-      "bounds": [-416, 864, -224, 1056],
-      "anchor": {
-        "id": "TpForMap_ent_23100031243",
-        "kind": "teleport",
-        "level": "map02_lv008",
-        "scene": "map02",
-        "position": [-321.51055908203125, 179.281005859375, 975.93115234375],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map02_lv009",
-      "scene": "map02",
-      "level": "map02_lv009",
-      "bounds": [-128, 384, 64, 576],
-      "anchor": {
-        "id": "TpForMap_ent_36100010007",
-        "kind": "teleport",
-        "level": "map02_lv009",
-        "scene": "map02",
-        "position": [-35.88615036010742, 195.87054443359375, 477.6938781738281],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    },
-    {
-      "id": "map02_lv010",
-      "scene": "map02",
-      "level": "map02_lv010",
-      "bounds": [992, 992, 1184, 1184],
-      "anchor": {
-        "id": "TpForMap_ent_37900000005",
-        "kind": "teleport",
-        "level": "map02_lv010",
-        "scene": "map02",
-        "position": [1099.3671875, 388.5268249511719, 1081.7933349609375],
-        "availability": "unknown"
-      },
-      "exportOptions": {
-        "sceneState": "0",
-        "area": "0",
-        "terminalScene": true
-      }
-    }
-  ],
   "revision": 12,
   "scenarios": [
     {
       "id": "map01-001",
       "setup": {
         "scene": "map01",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map01_lv001",
-          "ground": "retained/inputs/regions/map01_lv001/ground.json",
-          "collision": "retained/inputs/regions/map01_lv001/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map01_lv001"
         }
       },
       "training": [
@@ -849,11 +881,9 @@
       "id": "map01-002",
       "setup": {
         "scene": "map01",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map01_lv002",
-          "ground": "retained/inputs/regions/map01_lv002/ground.json",
-          "collision": "retained/inputs/regions/map01_lv002/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map01_lv002"
         }
       },
       "training": [
@@ -1240,11 +1270,9 @@
       "id": "map01-003",
       "setup": {
         "scene": "map01",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map01_lv003",
-          "ground": "retained/inputs/regions/map01_lv003/ground.json",
-          "collision": "retained/inputs/regions/map01_lv003/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map01_lv003"
         }
       },
       "training": [
@@ -1631,11 +1659,9 @@
       "id": "map01-004",
       "setup": {
         "scene": "map01",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map01_lv005",
-          "ground": "retained/inputs/regions/map01_lv005/ground.json",
-          "collision": "retained/inputs/regions/map01_lv005/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map01_lv005"
         }
       },
       "training": [
@@ -2022,11 +2048,9 @@
       "id": "map01-005",
       "setup": {
         "scene": "map01",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map01_lv006",
-          "ground": "retained/inputs/regions/map01_lv006/ground.json",
-          "collision": "retained/inputs/regions/map01_lv006/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map01_lv006"
         }
       },
       "training": [
@@ -2414,11 +2438,9 @@
       "id": "map01-006",
       "setup": {
         "scene": "map01",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map01_lv007",
-          "ground": "retained/inputs/regions/map01_lv007/ground.json",
-          "collision": "retained/inputs/regions/map01_lv007/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map01_lv007"
         }
       },
       "training": [
@@ -2806,11 +2828,9 @@
       "id": "map02-007",
       "setup": {
         "scene": "map02",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map02_lv001",
-          "ground": "retained/inputs/regions/map02_lv001/ground.json",
-          "collision": "retained/inputs/regions/map02_lv001/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map02_lv001"
         }
       },
       "training": [
@@ -3203,11 +3223,9 @@
       "id": "map02-008",
       "setup": {
         "scene": "map02",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map02_lv002",
-          "ground": "retained/inputs/regions/map02_lv002/ground.json",
-          "collision": "retained/inputs/regions/map02_lv002/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map02_lv002"
         }
       },
       "training": [
@@ -3597,11 +3615,9 @@
       "id": "map02-009",
       "setup": {
         "scene": "map02",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map02_lv003",
-          "ground": "retained/inputs/regions/map02_lv003/ground.json",
-          "collision": "retained/inputs/regions/map02_lv003/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map02_lv003"
         }
       },
       "training": [
@@ -3995,11 +4011,9 @@
       "id": "map02-010",
       "setup": {
         "scene": "map02",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map02_lv004",
-          "ground": "retained/inputs/regions/map02_lv004/ground.json",
-          "collision": "retained/inputs/regions/map02_lv004/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map02_lv004"
         }
       },
       "training": [
@@ -4386,11 +4400,9 @@
       "id": "map02-011",
       "setup": {
         "scene": "map02",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map02_lv005",
-          "ground": "retained/inputs/regions/map02_lv005/ground.json",
-          "collision": "retained/inputs/regions/map02_lv005/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map02_lv005"
         }
       },
       "training": [
@@ -4777,11 +4789,9 @@
       "id": "map02-012",
       "setup": {
         "scene": "map02",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map02_lv006",
-          "ground": "retained/inputs/regions/map02_lv006/ground.json",
-          "collision": "retained/inputs/regions/map02_lv006/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map02_lv006"
         }
       },
       "training": [
@@ -5171,11 +5181,9 @@
       "id": "map02-013",
       "setup": {
         "scene": "map02",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map02_lv007",
-          "ground": "retained/inputs/regions/map02_lv007/ground.json",
-          "collision": "retained/inputs/regions/map02_lv007/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map02_lv007"
         }
       },
       "training": [
@@ -5562,11 +5570,9 @@
       "id": "map02-014",
       "setup": {
         "scene": "map02",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map02_lv008",
-          "ground": "retained/inputs/regions/map02_lv008/ground.json",
-          "collision": "retained/inputs/regions/map02_lv008/collision.bin"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map02_lv008"
         }
       },
       "training": [
@@ -5957,11 +5963,9 @@
       "id": "map02-015",
       "setup": {
         "scene": "map02",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map02_lv009",
-          "ground": "retained/inputs/regions/map02_lv009/ground.json",
-          "collision": "retained/inputs/regions/map02_lv009/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map02_lv009"
         }
       },
       "training": [
@@ -6351,11 +6355,9 @@
       "id": "map02-016",
       "setup": {
         "scene": "map02",
-        "physical": {
-          "mode": "frozen-window",
-          "region": "map02_lv010",
-          "ground": "retained/inputs/regions/map02_lv010/ground.json",
-          "collision": "retained/inputs/regions/map02_lv010/collision.json"
+        "input": {
+          "kind": "frozen-window",
+          "region": "map02_lv010"
         }
       },
       "training": [
@@ -6742,7 +6744,10 @@
       "id": "map01-017",
       "setup": {
         "scene": "map01",
-        "deviceAvailability": "assumed-enabled"
+        "deviceAvailability": "assumed-enabled",
+        "input": {
+          "kind": "dynamic"
+        }
       },
       "training": [
         "114-0HeqZ7W",
@@ -7253,7 +7258,10 @@
       "id": "map02-018",
       "setup": {
         "scene": "map02",
-        "deviceAvailability": "assumed-enabled"
+        "deviceAvailability": "assumed-enabled",
+        "input": {
+          "kind": "dynamic"
+        }
       },
       "training": [
         "116-14wnGaQ",
@@ -7763,7 +7771,10 @@
     {
       "id": "map01-019",
       "setup": {
-        "scene": "map01"
+        "scene": "map01",
+        "input": {
+          "kind": "dynamic"
+        }
       },
       "training": [
         "134-0oCIwR8",
@@ -10079,7 +10090,10 @@
     {
       "id": "map02-020",
       "setup": {
-        "scene": "map02"
+        "scene": "map02",
+        "input": {
+          "kind": "dynamic"
+        }
       },
       "training": [
         "135-0iILRK6",
@@ -12639,7 +12653,10 @@
       "id": "map01-021",
       "setup": {
         "scene": "map01",
-        "assumption": "phase-free-swept-support"
+        "assumption": "phase-free-swept-support",
+        "input": {
+          "kind": "dynamic"
+        }
       },
       "training": [
         "166-0U24Zlh",
@@ -13607,7 +13624,10 @@
       "id": "map02-022",
       "setup": {
         "scene": "map02",
-        "assumption": "phase-free-swept-support"
+        "assumption": "phase-free-swept-support",
+        "input": {
+          "kind": "dynamic"
+        }
       },
       "training": [
         "167-1bT3oSX",
@@ -14615,6 +14635,9 @@
             "recoveryDuringSprint": true,
             "recoveryDuringNonWalk": true
           }
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["208-1craOtr", "210-0qyLBCB"],
@@ -14754,6 +14777,9 @@
             "recoveryDuringSprint": true,
             "recoveryDuringNonWalk": true
           }
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["209-0rH6ayf", "211-0KnP7KD"],
@@ -14894,6 +14920,9 @@
             "recoveryDuringSprint": true,
             "recoveryDuringNonWalk": true
           }
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["212-1bBsm8d", "214-0nuILJY"],
@@ -15026,6 +15055,9 @@
             "recoveryDuringSprint": true,
             "recoveryDuringNonWalk": true
           }
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["213-16YPmLU", "215-0NWOiBC"],
@@ -15147,6 +15179,9 @@
               "radius": 65
             }
           ]
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["251-0ekRne8"],
@@ -15242,6 +15277,9 @@
               "radius": 65
             }
           ]
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["252-0AKLjci"],
@@ -15338,6 +15376,9 @@
               "radius": 65
             }
           ]
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["253-0b7WQJc"],
@@ -15433,6 +15474,9 @@
               "radius": 65
             }
           ]
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["254-0UUbKsh"],
@@ -15528,6 +15572,9 @@
               "radius": 65
             }
           ]
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["255-0zeEJwo"],
@@ -15623,6 +15670,9 @@
               "radius": 65
             }
           ]
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["256-0YYvlTn"],
@@ -15721,6 +15771,9 @@
               "radius": 65
             }
           ]
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["257-0ihnk8x"],
@@ -15817,6 +15870,9 @@
               "radius": 65
             }
           ]
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["258-191vMgJ"],
@@ -15918,6 +15974,9 @@
               "radius": 65
             }
           ]
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["259-1asm7dr"],
@@ -16023,6 +16082,9 @@
               "radius": 65
             }
           ]
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["260-06gyJ7F"],
@@ -16131,6 +16193,9 @@
               "radius": 65
             }
           ]
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["261-02u3Zc9"],
@@ -16236,6 +16301,9 @@
               "radius": 65
             }
           ]
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["262-0VmDkfU"],
@@ -16323,6 +16391,9 @@
         "sourceAnimation": {
           "collection": "staticSupports.parts.motion",
           "id": "10100290003"
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["263-00G72Mp"],
@@ -16406,6 +16477,9 @@
         "sourceAnimation": {
           "collection": "staticSupports.parts.motion",
           "id": "10100290021"
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["264-0nUxYU8"],
@@ -16488,6 +16562,9 @@
         "sourceAnimation": {
           "collection": "staticSupports.parts.motion",
           "id": "10100290024"
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["265-08CAj73"],
@@ -16570,6 +16647,9 @@
         "sourceAnimation": {
           "collection": "staticSupports.parts.motion",
           "id": "10100290025"
+        },
+        "input": {
+          "kind": "dynamic"
         }
       },
       "training": ["266-0csZhw4"],

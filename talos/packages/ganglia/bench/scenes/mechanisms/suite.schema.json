@@ -7,7 +7,7 @@
     },
     "schema": {
       "type": "number",
-      "const": 6
+      "const": 8
     },
     "id": {
       "$ref": "#/$defs/__schema0"
@@ -68,88 +68,98 @@
           },
           "traversalGenerator": {
             "$ref": "#/$defs/__schema3"
+          },
+          "regions": {
+            "type": "object",
+            "propertyNames": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "bounds": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "$ref": "#/$defs/__schema4"
+                    },
+                    {
+                      "$ref": "#/$defs/__schema4"
+                    },
+                    {
+                      "$ref": "#/$defs/__schema4"
+                    },
+                    {
+                      "$ref": "#/$defs/__schema4"
+                    }
+                  ],
+                  "minItems": 4,
+                  "maxItems": 4
+                },
+                "level": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "anchor": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "$ref": "#/$defs/__schema3"
+                    },
+                    "kind": {
+                      "$ref": "#/$defs/__schema3"
+                    },
+                    "level": {
+                      "$ref": "#/$defs/__schema0"
+                    },
+                    "scene": {
+                      "$ref": "#/$defs/__schema0"
+                    },
+                    "position": {
+                      "$ref": "#/$defs/__schema10"
+                    },
+                    "availability": {
+                      "$ref": "#/$defs/__schema3"
+                    }
+                  },
+                  "required": ["id", "kind", "level", "scene", "position", "availability"],
+                  "additionalProperties": false
+                },
+                "exportOptions": {
+                  "type": "object",
+                  "properties": {
+                    "sceneState": {
+                      "$ref": "#/$defs/__schema3"
+                    },
+                    "area": {
+                      "$ref": "#/$defs/__schema3"
+                    },
+                    "terminalScene": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["sceneState", "area", "terminalScene"],
+                  "additionalProperties": false
+                },
+                "diagnostic": {
+                  "type": "object",
+                  "properties": {
+                    "ground": {
+                      "$ref": "#/$defs/__schema3"
+                    },
+                    "collision": {
+                      "$ref": "#/$defs/__schema3"
+                    }
+                  },
+                  "required": ["ground", "collision"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["bounds"],
+              "additionalProperties": false
+            }
           }
         },
-        "required": ["source", "profile", "locomotion"],
-        "additionalProperties": false
-      }
-    },
-    "physicalRegions": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "$ref": "#/$defs/__schema0"
-          },
-          "scene": {
-            "$ref": "#/$defs/__schema0"
-          },
-          "bounds": {
-            "type": "array",
-            "prefixItems": [
-              {
-                "$ref": "#/$defs/__schema4"
-              },
-              {
-                "$ref": "#/$defs/__schema4"
-              },
-              {
-                "$ref": "#/$defs/__schema4"
-              },
-              {
-                "$ref": "#/$defs/__schema4"
-              }
-            ],
-            "minItems": 4,
-            "maxItems": 4
-          },
-          "level": {
-            "$ref": "#/$defs/__schema0"
-          },
-          "anchor": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "$ref": "#/$defs/__schema3"
-              },
-              "kind": {
-                "$ref": "#/$defs/__schema3"
-              },
-              "level": {
-                "$ref": "#/$defs/__schema0"
-              },
-              "scene": {
-                "$ref": "#/$defs/__schema0"
-              },
-              "position": {
-                "$ref": "#/$defs/__schema10"
-              },
-              "availability": {
-                "$ref": "#/$defs/__schema3"
-              }
-            },
-            "required": ["id", "kind", "level", "scene", "position", "availability"],
-            "additionalProperties": false
-          },
-          "exportOptions": {
-            "type": "object",
-            "properties": {
-              "sceneState": {
-                "$ref": "#/$defs/__schema3"
-              },
-              "area": {
-                "$ref": "#/$defs/__schema3"
-              },
-              "terminalScene": {
-                "type": "boolean"
-              }
-            },
-            "required": ["sceneState", "area", "terminalScene"],
-            "additionalProperties": false
-          }
-        },
-        "required": ["id", "scene", "bounds"],
+        "required": ["source", "profile", "locomotion", "regions"],
         "additionalProperties": false
       }
     },
@@ -164,7 +174,7 @@
       "$ref": "#/$defs/__schema16"
     }
   },
-  "required": ["schema", "id", "requiredSource", "sources", "physicalRegions", "scenarios"],
+  "required": ["schema", "id", "requiredSource", "sources", "scenarios"],
   "additionalProperties": false,
   "$defs": {
     "__schema0": {
@@ -321,30 +331,6 @@
         "setup": {
           "type": "object",
           "properties": {
-            "physical": {
-              "type": "object",
-              "properties": {
-                "mode": {
-                  "type": "string",
-                  "const": "frozen-window"
-                },
-                "region": {
-                  "$ref": "#/$defs/__schema0"
-                },
-                "ground": {
-                  "$ref": "#/$defs/__schema3"
-                },
-                "collision": {
-                  "$ref": "#/$defs/__schema3"
-                },
-                "allowExpansion": {
-                  "type": "boolean",
-                  "const": false
-                }
-              },
-              "required": ["mode", "region", "ground", "collision"],
-              "additionalProperties": false
-            },
             "locomotion": {
               "$ref": "#/$defs/__schema5"
             },
@@ -465,9 +451,38 @@
             },
             "scene": {
               "$ref": "#/$defs/__schema0"
+            },
+            "input": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "const": "dynamic"
+                    }
+                  },
+                  "required": ["kind"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "const": "frozen-window"
+                    },
+                    "region": {
+                      "$ref": "#/$defs/__schema0"
+                    }
+                  },
+                  "required": ["kind", "region"],
+                  "additionalProperties": false
+                }
+              ]
             }
           },
-          "required": ["scene"],
+          "required": ["scene", "input"],
           "additionalProperties": false
         },
         "training": {

@@ -60,6 +60,7 @@ export type GameAdapter = {
 
 export interface SceneHooks {
   kernelRoot?: string;
+  requiredPhysicalBounds?: PhysicalRegion['ground']['build']['bounds'];
   transformInput?: (input: PhysicalInput) => PhysicalInput;
   createPreparation?: typeof createPhysicalPreparation;
   onResult?: (report: Report) => void;
@@ -76,6 +77,13 @@ export async function loadScene(
 ) {
   const loadingStarted = performance.now();
   const dataset = await loadSceneData(dataRoot, scene, build);
+  if (
+    hooks.requiredPhysicalBounds &&
+    !dataset.regions.some((region) =>
+      isDeepStrictEqual(region.ground.build.bounds, hooks.requiredPhysicalBounds),
+    )
+  )
+    throw new Error(`Missing fixed physical snapshot for ${scene} in ${dataRoot}`);
   const entry = resolve(extractor, 'packages/extractor/src/game/physical-input.ts');
   const resolvedKernel = createRequire(entry).resolve('@opendfieldmap/ganglia/solver');
   const kernelRoot = resolve(dirname(resolvedKernel), '../..');

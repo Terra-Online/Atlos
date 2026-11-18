@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 /**
  * Mechanism CLI and schema-2 report projection. Authored scenarios determine
  * sharing and ordered training; ID selection only filters measurement. Every
@@ -5,15 +6,16 @@
  * training, frozen queries, verification and cleanup. The CLI resolves input
  * bindings before starting workers and owns the report and run artifacts.
  */
-import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { appendFileSync, mkdirSync, renameSync, writeFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { expectation, matchesExpectation } from '#@/bench/mechanisms/assessment.ts';
-import { loadDataset, scenarioBindings, scenarioBuilder } from '#@/bench/mechanisms/dataset.ts';
+import { readDataset, scenarioBindings, scenarioBuilder } from '#@/bench/mechanisms/dataset.ts';
 import type { Binding } from '#@/bench/mechanisms/scenario.ts';
 import { checkSetup, readSuite } from '#@/bench/mechanisms/suite.ts';
 import { classify, type Status } from '#@/bench/outcome.ts';
@@ -28,7 +30,7 @@ const { values } = parseArgs({
     suite: { type: 'string', default: resolve(root, 'bench/scenes/mechanisms/suite.json') },
     'data-root': {
       type: 'string',
-      default: resolve(root, '../../../.local/data/mechanisms-266-v119'),
+      default: resolve(root, '../../../.local/data/mechanisms-266-generated'),
     },
     extractor: { type: 'string', default: resolve(root, '../../.cache/noclip') },
     'prepare-config': { type: 'string' },
@@ -41,7 +43,7 @@ const { values } = parseArgs({
 });
 if (values.help) {
   console.log(
-    'Usage: node bench/mechanism-benchmark.ts --output <new-report.json> [--data-root <candidate-input-root>] [--prepare-config <private-game-config>] [--adapter ganglia-v1-rust|ganglia-v1-ts] [--ids id,id]. Input roots require input-index.json with explicitly rebound per-case directories. Each scenario trains the suite-declared catalog, freezes it, then measures one round without warmup. Independent physical verification runs after solving. Deadlines use GANGLIA_BENCHMARK_QUERY_CUTOFF_MS and cooperative cancellation; workers are never replaced.',
+    'Usage: node bench/mechanism-benchmark.ts --output <new-report.json> [--data-root <candidate-input-root>] [--prepare-config <private-game-config>] [--adapter ganglia-v1-rust|ganglia-v1-ts] [--ids id,id]. Input roots register dynamic and fixed window directories in input-index.json. Each scenario trains the suite-declared catalog, freezes it, then measures one round without warmup. Independent physical verification runs after solving. Deadlines use GANGLIA_BENCHMARK_QUERY_CUTOFF_MS and cooperative cancellation; workers are never replaced.',
   );
 } else {
   if (!values.output) throw new Error('Provide --output for a new mechanism report');
@@ -52,14 +54,14 @@ if (values.help) {
     throw new Error('Invalid scenario worker count');
   const suite = await readSuite(values.suite);
   const inputRoot = resolve(values['data-root']);
-  const dataset = await loadDataset(inputRoot, values.suite, suite);
+
   const filter = values.ids && new Set(values.ids.split(','));
   const selected = suite.cases.filter((c) => !filter || filter.has(c.id));
   if (!selected.length || (filter && selected.length !== filter.size))
     throw new Error('Unknown case ID');
   const selectedIds = new Set(selected.map((item) => item.id));
-  const bindings = scenarioBindings(
-    dataset,
+  const bindings = await scenarioBindings(
+    await readDataset(inputRoot),
     suite,
     values.suite,
     selectedIds,
@@ -135,9 +137,10 @@ if (values.help) {
       encoding: 'utf8',
     }).trim(),
     sourceSha256: before,
-    suiteSha256: dataset.suiteSha256,
-    inputRevision: dataset.revision,
-    inputIndexSha256: dataset.indexSha256,
+    suiteSha256: createHash('sha256')
+      .update(await readFile(values.suite))
+      .digest('hex'),
+    dataRoot: inputRoot,
     policy: config,
     scenarioPreparation:
       'Each authored scenario supplies ordered training IDs before measurement filtering; one solver config is shared by the run; no warmup.',

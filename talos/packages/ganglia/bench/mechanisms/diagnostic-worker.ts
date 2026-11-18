@@ -141,9 +141,11 @@ process.once('message', async (message: WorkerRequest) => {
       pathToFileURL(resolve(binding.kernel, 'src/solver/host.ts')).href
     )) as { createPhysicalPreparation: typeof createPhysicalPreparation };
     if (item.setup.physical) {
+      const diagnostic = item.setup.physical.diagnostic;
+      if (!diagnostic) throw new Error('Missing retained diagnostic files for fixed window');
       const files = {
-        ground: resourcePath(item.setup.physical.ground, binding.roots),
-        collision: resourcePath(item.setup.physical.collision, binding.roots),
+        ground: resourcePath(diagnostic.ground, binding.roots),
+        collision: resourcePath(diagnostic.collision, binding.roots),
         movement: resolve(binding.roots.exports, 'movement-settings-current.json'),
         devices: resolve(
           binding.deviceExports ?? binding.roots.exports,
