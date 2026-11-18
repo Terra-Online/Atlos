@@ -161,6 +161,71 @@ test(
         `,
             );
             await writePhysicalAdapter(extractor);
+            // The actor position and initial water surface need not agree. The
+            // contact binds to its initial authored pose and records the terminal cap.
+            const actor = [6.25, 0.8, 0.5];
+            const cap = (id, y) => ({
+                id,
+                vertices: floor.vertices.map(([x, _, z]) => [x, y, z]),
+            });
+            await writeFile(
+                join(directory, 'map01-interaction-points.json'),
+                JSON.stringify({
+                    scene: 'map01',
+                    source,
+                    points: [
+                        {
+                            id: 'water-floater',
+                            level: 'map01_lv001',
+                            position: actor,
+                            template: 'int_water_volume_floater',
+                            effective: { unresolved: [] },
+                            navigationGoal: null,
+                        },
+                        {
+                            id: 'missing-cap',
+                            level: 'map01_lv001',
+                            position: actor,
+                            template: 'int_water_volume_floater',
+                            effective: { unresolved: [] },
+                            navigationGoal: null,
+                        },
+                    ],
+                }),
+            );
+            const poseBounds = (y) => ({
+                min: [0, y - 0.2, 0],
+                max: [8, y, 3],
+            });
+            const initial = poseBounds(1);
+            const terminal = poseBounds(2.5);
+            await writeFile(
+                join(directory, 'map01-traversal-devices.json'),
+                JSON.stringify({
+                    scene: 'map01',
+                    source,
+                    movingSupports: [
+                        {
+                            id: 'water-floater',
+                            level: 'map01_lv001',
+                            family: 'water-floater',
+                            assumption: 'phase-free-swept-support',
+                            control: {
+                                kind: 'water-volume',
+                                id: 'water',
+                                initialFill: 1,
+                                initialPosition: actor,
+                            },
+                            endpoints: { initial, terminal },
+                            poses: [initial, terminal],
+                            surfaces: [cap('initial', 1), cap('terminal', 2.5)],
+                            surfacePoses: [0, 1].map((pose) => [
+                                { body: 0, fromPose: pose, toPose: pose },
+                            ]),
+                        },
+                    ],
+                }),
+            );
             let handle;
             routeServer(directory, {
                 sceneBinding: async () => ({
@@ -259,6 +324,36 @@ test(
             assert.equal(missing.body.status, 'unavailable');
             assert.equal(missing.body.category, 'candidate-search');
             assert.deepEqual((await request({ x: '500' })).body, missing.body);
+            const waterRoute = await poll(
+                { point: 'water-floater', x: '6.25', y: '0.8' },
+                true,
+            );
+            assert.equal(waterRoute.body.interaction.status, 'source-derived');
+            assert.equal(
+                waterRoute.body.interaction.goal.model,
+                'moving-support-contact-v1',
+            );
+            assert.deepEqual(
+                waterRoute.body.interaction.goal.position,
+                [6.25, 1, 0.5],
+            );
+            assert.deepEqual(
+                waterRoute.body.interaction.goal.contact.terminalPosition,
+                [6.25, 2.5, 0.5],
+            );
+            assert.equal(waterRoute.body.partial, false);
+            assert.deepEqual(
+                waterRoute.body.route.points.at(-1),
+                [6.25, 1, 0.5],
+            );
+            const missingCap = await request({
+                point: 'missing-cap',
+                x: '6.25',
+                y: '0.8',
+            });
+            assert.equal(missingCap.body.status, 'unavailable');
+            assert.equal(missingCap.body.category, 'interaction-unavailable');
+
             // Preserve a verified tail while retrying another scene anchor after a prefix failure.
             await writeFile(
                 config,
