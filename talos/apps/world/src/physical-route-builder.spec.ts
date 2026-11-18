@@ -1,7 +1,7 @@
 import { physicalWork } from '@opendfieldmap/ganglia/solver/host';
 // @vitest-environment node
 import { writePhysicalAdapter } from '../../../test-support/physical-adapter.mjs';
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -44,6 +44,10 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
             await rename(output + '.tmp', output);
         };
         if (process.argv[2] === 'player-ground') {
+            const collision = process.argv[process.argv.indexOf('--collision-output') + 1];
+            if (process.argv[process.argv.indexOf('--collision-format') + 1] !== 'v8' ||
+                !collision.endsWith('.bin')) throw new Error('Expected a binary collision snapshot');
+            await writeFile(collision, 'fixture collision');
             await save({ source, surfaces: [] });
         } else {
             await save({ source, scene: 'map01', status: 'candidate', optimizing: !process.argv.includes('--ground-only') });
@@ -225,6 +229,8 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
             }).values.tiles,
         ).toBe('-3,-3');
         await builder.close();
+        const legacyCollision = cached.collision.replace(/\.bin$/, '.json');
+        await rename(cached.collision, legacyCollision);
         builder = physicalRouteBuilder({
             ...options,
             solver: 'updated-runtime',
@@ -238,6 +244,7 @@ test('publishes walking progress and resumes an interrupted provisional cache', 
         );
         expect(reused?.status).toBe('ready');
         expect(reused?.output).toBe(cached.output);
+        expect(reused?.collision).toBe(legacyCollision);
 
         await builder.close();
         const cli = join(directory, 'packages/extractor/src/cli.ts');

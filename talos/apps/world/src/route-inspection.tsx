@@ -188,8 +188,10 @@ export default function RouteInspection({
         const draw = (now: number) => {
             const dt = Math.min((now - previous) / 1000, 0.1);
             previous = now;
-            if (playing && data.route.cost > 0)
-                time.current = (time.current + dt) % data.route.cost;
+            const duration =
+                data.terminal?.wait.firstContactBySeconds ?? data.route.cost;
+            if (playing && duration > 0)
+                time.current = (time.current + dt) % duration;
             if (now - lastReadout > 100) {
                 setSeconds(time.current);
                 lastReadout = now;
@@ -252,11 +254,32 @@ export default function RouteInspection({
                 };
                 for (const marker of data.markers)
                     mark(marker.position, marker.label, '#fff');
-                mark(
-                    sampleJourney(data.route, time.current).position,
-                    '',
-                    '#8bd9ff',
-                );
+                let position = sampleJourney(
+                    data.route,
+                    Math.min(time.current, data.route.cost),
+                ).position;
+                if (data.terminal && time.current >= data.route.cost) {
+                    const settle = data.terminal.wait.settleSeconds;
+                    const fraction =
+                        settle > 0
+                            ? Math.min(
+                                  1,
+                                  (time.current - data.route.cost) / settle,
+                              )
+                            : 1;
+                    position = [
+                        position[0] +
+                            fraction *
+                                (data.terminal.position[0] - position[0]),
+                        position[1] +
+                            fraction *
+                                (data.terminal.position[1] - position[1]),
+                        position[2] +
+                            fraction *
+                                (data.terminal.position[2] - position[2]),
+                    ];
+                }
+                mark(position, '', '#8bd9ff');
             }
             frame = requestAnimationFrame(draw);
         };
@@ -363,7 +386,9 @@ export default function RouteInspection({
                                     undefined && (
                                     <p>
                                         Dash × {data.route.locomotion.dashes} ·
-                                        Remaining stamina{' '}
+                                        {data.terminal
+                                            ? 'Arrival stamina'
+                                            : 'Remaining stamina'}{' '}
                                         {data.route.locomotion.final.toFixed(2)}
                                     </p>
                                 )}
@@ -403,6 +428,20 @@ export default function RouteInspection({
                                         jump.
                                     </p>
                                 )}
+                                {data.terminal && (
+                                    <p>
+                                        Wait here for the moving coin. Arrival{' '}
+                                        {(
+                                            data.route.cost +
+                                            data.terminal.wait.settleSeconds
+                                        ).toFixed(1)}{' '}
+                                        s · wait up to{' '}
+                                        {data.terminal.wait.maximumSeconds.toFixed(
+                                            1,
+                                        )}{' '}
+                                        s.
+                                    </p>
+                                )}
                                 {data.route.goalHit && (
                                     <p>
                                         Route ends when the airborne target is
@@ -440,7 +479,11 @@ export default function RouteInspection({
                                     aria-label='Route playback position'
                                     type='range'
                                     min='0'
-                                    max={data.route.cost}
+                                    max={
+                                        data.terminal?.wait
+                                            .firstContactBySeconds ??
+                                        data.route.cost
+                                    }
                                     step='.01'
                                     value={seconds}
                                     onChange={(e) => {
@@ -450,7 +493,12 @@ export default function RouteInspection({
                                 />
                                 <small hidden={data.draft}>
                                     {seconds.toFixed(1)} /{' '}
-                                    {data.route.cost.toFixed(1)} s
+                                    {(
+                                        data.terminal?.wait
+                                            .firstContactBySeconds ??
+                                        data.route.cost
+                                    ).toFixed(1)}{' '}
+                                    s
                                 </small>
                             </>
                         )}

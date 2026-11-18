@@ -120,6 +120,31 @@ test('one useful assumed placement supports the target without control actions o
   );
 });
 
+test('a placed roof can join a grounded approach to a raised interaction through two swept jumps', async () => {
+  const surfaces = base();
+  const terrain = geometry(surfaces);
+  const target: Vec3 = [11.4, 2.5, 0];
+  const result = await planFollowingRoute(
+    [support()],
+    terrain,
+    createCollisionWorld(terrain),
+    starts,
+    target,
+    {
+      surfaces,
+      build,
+      jump: { ...jump, interaction: { radius: 0.6 } },
+      firstFeasible: true,
+    },
+  );
+  assert.equal(result.route.status, 'complete', JSON.stringify(result.diagnostics));
+  if (result.route.status !== 'complete') return;
+  assert.equal(result.route.start, starts[0].id);
+  assert.ok(Math.hypot(...result.route.points.at(-1)!.map((v, i) => v - target[i])) <= 0.6 + 1e-6);
+  assert.ok(result.route.segments.filter((segment) => segment.mode === 'jump').length >= 2);
+  assert.ok(result.supportBoxes.some((box) => box.device === 'box'));
+});
+
 test('placement may use another ground height without proving a route for moving the box', async () => {
   const result = await solve({
     surfaces: [
