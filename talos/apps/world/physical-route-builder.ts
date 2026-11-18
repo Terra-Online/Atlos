@@ -17,6 +17,7 @@ import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createHash, randomUUID } from 'node:crypto';
 import {
+    access,
     appendFile,
     mkdir,
     readFile,
@@ -507,6 +508,10 @@ export function physicalRouteBuilder(options: Options) {
             const output = resolve(directory, `${scene}-${key}.json`);
             const collision = resolve(
                 directory,
+                `${scene}-${key}-collision.bin`,
+            );
+            const legacyCollision = resolve(
+                directory,
                 `${scene}-${key}-collision.json`,
             );
             job = {
@@ -527,6 +532,14 @@ export function physicalRouteBuilder(options: Options) {
                     result.source.contentHash === source.contentHash &&
                     Array.isArray(result.surfaces)
                 ) {
+                    // Encoding changes the route input path, while the terrain
+                    // generator and ground cache key still bind the same geometry.
+                    const retainedCollision = await access(collision).then(
+                        () => collision,
+                        () => legacyCollision,
+                    );
+                    await access(retainedCollision);
+                    job.collision = retainedCollision;
                     await cacheLog(job, {
                         stage: 'ground',
                         scene,
@@ -561,6 +574,8 @@ export function physicalRouteBuilder(options: Options) {
                     output,
                     '--collision-output',
                     collision,
+                    '--collision-format',
+                    'v8',
                     '--input-cache',
                     resolve(options.directory!, 'collision-cache'),
                     '--tile-cache',
