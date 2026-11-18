@@ -1,6 +1,6 @@
 import type { MovingContact } from '../moving-contact';
 import { transport } from './transport';
-import type { Route, Vec3 } from '@opendfieldmap/ganglia';
+import type { Route, Segment, Vec3 } from '@opendfieldmap/ganglia';
 export type SupportBox = {
     min: Vec3;
     max: Vec3;
@@ -38,10 +38,19 @@ export interface RouteRequest {
     buildGuid: string;
     contentHash: string;
 }
+export type RoutePreview = Pick<
+    Candidate,
+    'scene' | 'level' | 'source' | 'generation'
+> & { segments: Segment[] };
 export type RouteUpdate = (
     | Candidate
     | { status: 'building-ground' | 'unavailable' | 'error'; log?: string }
-) & { optimizing?: boolean; message?: string; optimizationMessage?: string };
+) & {
+    optimizing?: boolean;
+    message?: string;
+    optimizationMessage?: string;
+    preview?: RoutePreview;
+};
 const pause = (signal: AbortSignal) =>
     new Promise<void>((resolve, reject) => {
         const stop = () => {

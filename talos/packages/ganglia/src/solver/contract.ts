@@ -1,6 +1,12 @@
 import type { CollisionOptions } from '#@/src/collision.ts';
 import type { Vec3, Surface, CollisionGeometry, Portal, Wall } from '#@/src/geometry.ts';
-import type { InteractionGoal, JumpModel, LocomotionOptions, SpeedBoost } from '#@/src/movement.ts';
+import type {
+  InteractionGoal,
+  JumpModel,
+  LocomotionOptions,
+  Segment,
+  SpeedBoost,
+} from '#@/src/movement.ts';
 import type { GroundArrival, GroundConnection, Route } from '#@/src/route.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 import type { WindowJob, SceneResources, SceneNavigation } from '#@/src/solver/resources.ts';
@@ -85,6 +91,8 @@ export interface SolveOptions {
   /** Cancellation is cooperative at preparation, search-progress and candidate checkpoints. */
   signal?: AbortSignal;
   onEvent?: (event: RouteEvent) => void;
+  /** Accepted window geometry for display. Timing is local to each piece. */
+  onPreview?: (segments: Segment[]) => void;
 }
 
 export interface PreparedRouteSolver<Config extends SolverSettings = SolverSettings> {

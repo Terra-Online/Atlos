@@ -1,4 +1,4 @@
-import type { Candidate } from './services/routing';
+import type { Candidate, RoutePreview } from './services/routing';
 import { useEffect, useRef, useState } from 'react';
 import type { Viewer } from '@endfield-noclip/viewer/host';
 import { Panel } from './panel';
@@ -18,22 +18,38 @@ export default function RouteInspection({
     viewer,
     panelRoot,
     candidate,
+    preview,
+    onRoute,
     message,
     log,
 }: {
     viewer: Viewer;
     panelRoot: HTMLElement | null;
     candidate?: Candidate | null;
+    preview?: RoutePreview;
+    onRoute?: (points: Vec3[] | null) => void;
     message?: string;
     log?: string | null;
 }) {
     const canvas = useRef<HTMLCanvasElement>(null);
-    const [data, setData] = useState<Candidate | null>(null);
+    const [received, setData] = useState<Candidate | null>(null);
     const [playing, setPlaying] = useState(false);
     const [seconds, setSeconds] = useState(0);
     const time = useRef(0);
     const [visible, setVisible] = useState(true);
     const [hideOccluded, setHideOccluded] = useState(false);
+    const draft = !received || received.partial ? preview : undefined;
+    const data = draft ? null : received;
+    const displayed = data ?? draft;
+    useEffect(() => {
+        onRoute?.(
+            draft
+                ? draft.segments.flatMap((segment, index) =>
+                      index ? segment.points.slice(1) : segment.points,
+                  )
+                : data?.route.points ?? null,
+        );
+    }, [data, draft, onRoute]);
     useEffect(() => {
         if (
             !import.meta.env.DEV ||
@@ -49,17 +65,22 @@ export default function RouteInspection({
             window.removeEventListener('world:benchmark-route', receive);
     }, []);
     useEffect(() => {
-        if (candidate !== undefined) {
+        if (
+            candidate !== undefined &&
+            candidate !== received &&
+            (!playing || candidate === null)
+        ) {
             setData(candidate);
             time.current = 0;
             setSeconds(0);
             setPlaying(false);
         }
-    }, [candidate]);
+    }, [candidate, playing, received]);
     useEffect(() => {
-        if (!data || !visible) return;
+        const segments = draft?.segments ?? data?.route.segments;
+        if (!displayed || !segments || !visible) return;
         let renderers: ReturnType<typeof createRouteLines>[] | undefined;
-        const boxes = supportBoxes(data.supportBoxes);
+        const boxes = supportBoxes(data?.supportBoxes);
         const boarding = boxes
             .filter((box) => box.role !== 'leave')
             .flatMap(boxSegments);
@@ -70,20 +91,26 @@ export default function RouteInspection({
             (frame) => {
                 const manifest = viewer.scene?.pkg.manifest;
                 if (
-                    manifest?.scene.id !== data.scene ||
-                    (data.generation !== undefined &&
-                        manifest.generation !== data.generation) ||
-                    viewer.level !== data.level ||
-                    manifest.source.buildGuid !== data.source.buildGuid ||
-                    manifest.source.contentHash !== data.source.contentHash
+                    manifest?.scene.id !== displayed.scene ||
+                    (displayed.generation !== undefined &&
+                        manifest.generation !== displayed.generation) ||
+                    viewer.level !== displayed.level ||
+                    manifest.source.buildGuid !== displayed.source.buildGuid ||
+                    manifest.source.contentHash !== displayed.source.contentHash
                 )
                     return;
                 renderers ??= [
                     createRouteLines(
                         frame.device,
                         frame.format,
-                        data.route.segments,
-                        { halfWidth: 3.5, hideOccluded },
+                        segments,
+                        draft
+                            ? {
+                                  color: [0.75, 0.85, 0.95],
+                                  halfWidth: 2,
+                                  hideOccluded,
+                              }
+                            : { halfWidth: 3.5, hideOccluded },
                     ),
                     ...(boarding.length
                         ? [
@@ -123,7 +150,7 @@ export default function RouteInspection({
             remove();
             renderers?.forEach((renderer) => renderer.destroy());
         };
-    }, [viewer, data, visible, hideOccluded]);
+    }, [viewer, data, draft, displayed, visible, hideOccluded]);
     useEffect(() => {
         if (!data || !canvas.current) return;
         let frame = 0,
@@ -236,7 +263,7 @@ export default function RouteInspection({
     const logUrl = log ?? data?.log;
     const duration =
         data?.terminal?.wait.firstContactBySeconds ?? data?.route.cost;
-    if (!data && !message && !logUrl) return null;
+    if (!displayed && !message && !logUrl) return null;
     const pose = (kind: 'side' | 'top') => {
         if (!data || viewer.scene?.pkg.manifest.scene.id !== data.scene) return;
         const points = data.route.points;
@@ -286,14 +313,14 @@ export default function RouteInspection({
                                 <button
                                     type='button'
                                     aria-pressed={hideOccluded}
-                                    disabled={!data}
+                                    disabled={!displayed}
                                     onClick={() => setHideOccluded(!hideOccluded)}
                                 >
                                     Hide occluded
                                 </button>
                                 <button
                                     type='button'
-                                    disabled={!data}
+                                    disabled={!displayed}
                                     onClick={() => setVisible(!visible)}
                                 >
                                     {visible ? 'Hide' : 'Show'}
@@ -302,7 +329,13 @@ export default function RouteInspection({
                         }
                     >
                         {data?.partial && <p>{data.title}</p>}
-                        {message && <p role='status'>{message}</p>}
+                        {(draft || message) && (
+                            <p role='status'>
+                                {draft
+                                    ? 'Connecting the remaining route…'
+                                    : message}
+                            </p>
+                        )}
                         {data && (
                             <>
                                 {data.route.locomotion?.dashes !==

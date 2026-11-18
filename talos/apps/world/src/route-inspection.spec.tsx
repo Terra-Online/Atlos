@@ -120,3 +120,46 @@ it('draws only selected contact boxes in the existing route overlay and releases
     view.unmount();
     panelRoot.remove();
 });
+
+it('shows a verified prefix without offering playback or a total time', () => {
+    let overlay: ((frame: OverlayFrame) => void) | undefined;
+    const source = { buildGuid: 'build', contentHash: 'hash' };
+    const remove = vi.fn();
+    const viewer = {
+        scene: { pkg: { manifest: { scene: { id: 'map01' }, source } } },
+        level: 'map01_lv001',
+        camera: {},
+        addOverlay(callback: typeof overlay) {
+            overlay = callback;
+            return remove;
+        },
+    } as unknown as Viewer;
+    const panelRoot = document.createElement('div');
+    document.body.append(panelRoot);
+    const onRoute = vi.fn();
+    const props = { viewer, panelRoot, onRoute, message: 'Planning route' };
+    const view = render(
+        <RouteInspection
+            {...props}
+            preview={{
+                scene: 'map01',
+                level: viewer.level!,
+                source,
+                segments: [
+                    { mode: 'walk', points: [[0, 0, 0], [3, 0, 0]], times: [0, 1] },
+                ],
+            }}
+        />,
+    );
+    expect(screen.getByRole('status').textContent).toBe('Connecting the remaining route…');
+    expect(screen.queryByRole('button', { name: 'Play' })).toBeNull();
+    expect(screen.queryByRole('slider')).toBeNull();
+    expect(onRoute).toHaveBeenLastCalledWith([[0, 0, 0], [3, 0, 0]]);
+    overlay!({ device: {}, format: 'rgba8unorm' } as OverlayFrame);
+    expect(vi.mocked(createRouteLines).mock.calls[0][3]?.halfWidth).toBe(2);
+    view.rerender(<RouteInspection {...props} />);
+    expect(remove).toHaveBeenCalledTimes(1);
+    expect(onRoute).toHaveBeenLastCalledWith(null);
+    view.unmount();
+    panelRoot.remove();
+});

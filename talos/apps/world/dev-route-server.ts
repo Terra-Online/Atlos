@@ -28,6 +28,7 @@ import {
 } from '@opendfieldmap/ganglia';
 import { planMovingCoin, readCoinLoop } from './moving-coin.ts';
 import type { MovingContact } from './src/moving-contact.ts';
+import type { RoutePreview } from './src/services/routing.ts';
 import { physicalRouteBuilder, type Job } from './physical-route-builder.ts';
 
 import { travelArrivals, type TravelPoint } from './travel-arrivals.ts';
@@ -885,6 +886,7 @@ export function routeServer(
                         return;
                     }
                     const solver = await sceneSolver(data, movement);
+                    let preview: RoutePreview | undefined;
                     const solving = solver.solve(
                         {
                             starts: candidates,
@@ -893,20 +895,28 @@ export function routeServer(
                         },
                         {
                             signal: shutdown.signal,
+                            onPreview: (segments) => {
+                                preview = { scene, level, source, generation, segments };
+                            },
                             onEvent: (event) => {
-                                if (event.type === 'candidate')
+                                if (event.type === 'candidate') {
+                                    preview = undefined;
                                     display(event.result, event.optimizing);
-                                else if (entry.candidate) {
+                                    return;
+                                }
+                                if (event.phase === 'search') preview = undefined;
+                                if (entry.candidate) {
                                     entry.candidate = {
                                         ...entry.candidate,
                                         optimizing: true,
                                         optimizationMessage:
                                             'Connecting the route…',
                                     };
-                                    reply(entry.candidate);
+                                    reply({ ...entry.candidate, preview });
                                 } else
                                     reply({
                                         status: 'building-ground',
+                                        preview,
                                         message:
                                             'Finding and validating route corridors…',
                                         retryAfter: 1000,
