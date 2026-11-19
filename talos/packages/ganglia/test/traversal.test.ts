@@ -90,6 +90,37 @@ test('discovers directed model-based jumps between supported separated platforms
   assert.deepEqual(findJumpConnections(surfaces, world, options), expected);
 });
 
+test('discovers a supported downhill run-off below an overhead lip', () => {
+  const upper = floor('upper', 0, 3.8, 5);
+  const lower = floor('lower', 4.8, 10, 0);
+  const world = createCollisionWorld(
+    geometry([
+      floor('physical-upper', 0, 4, 5),
+      floor('physical-lower', 4.5, 10, 0),
+      floor('ceiling', 0, 4, 7),
+    ]),
+  );
+  const result = findJumpConnections([upper, lower], world, {
+    ...options,
+    from: [3.2, 5, 0],
+    to: [6, 0, 0],
+    maxCandidates: 64,
+    model: {
+      gravity: 40,
+      fallingGravity: 38,
+      maxJumpHeight: 2.1,
+      maxFallingSpeed: 80,
+      apexTime: 0.1,
+      maxHorizontalSpeed: 6.5,
+      airAcceleration: 60,
+      airDeceleration: 10,
+    },
+  });
+  const crossing = result.connections.find((connection) => connection.toSurface === 'lower');
+  assert.equal(crossing?.flight?.kind, 'run-off');
+  assert.ok(crossing?.points.some((point) => point[0] > crossing.points[0][0] && point[1] >= 3.99));
+});
+
 test('retains supported narrow landing regions whose navigation already includes body clearance', () => {
   const upper: Surface = floor('upper', 0, 4, 4);
   const landing: Surface = floor('landing', 7, 7.3, 0, -0.1, 0.1);
