@@ -12,6 +12,7 @@ it('keeps polling the target request while roaming and aborts on a new target', 
             await new Promise<void>((resolve) =>
                 signal.addEventListener('abort', () => resolve(), { once: true }),
             );
+            yield* [];
         },
     );
     const camera = { level: 'map01_lv001' };
