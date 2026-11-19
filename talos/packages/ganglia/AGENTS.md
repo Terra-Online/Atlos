@@ -53,7 +53,7 @@ Use Node 26. For input preparation, follow the
 Run from this package:
 
 ```sh
-GANGLIA_BENCHMARK_HEAP_MB=6144 GANGLIA_BENCHMARK_QUERY_CUTOFF_MS=60000 \
+GANGLIA_BENCHMARK_QUERY_CUTOFF_MS=60000 \
   pnpm --silent benchmark:mechanisms --adapter ganglia-v1-ts \
   --data-root /absolute/path/to/mechanism-inputs \
   --extractor /absolute/path/to/talos/.cache/noclip \
