@@ -7,12 +7,15 @@
  */
 import { z } from 'zod';
 
+import { routeQuerySchema } from '#@/bench/query-schema.ts';
+
 const text = z.string().min(1);
 const id = z.string().regex(/^[a-zA-Z0-9_.-]+$/);
 const note = z.string().optional();
 const number = z.number();
 const integer = z.int().nonnegative();
 const vec3 = z.tuple([number, number, number]);
+const query = routeQuerySchema.extend({ starts: routeQuerySchema.shape.starts.min(1) });
 const sourceIdentity = z.strictObject({ buildGuid: text, contentHash: text });
 const profile = z.strictObject({ radius: number, height: number });
 
@@ -40,30 +43,6 @@ const locomotion = z.strictObject({
     .strictObject({ maxLabels: integer.optional(), maxExpanded: integer.optional() })
     .optional(),
 });
-const query = z.strictObject({
-  starts: z
-    .array(
-      z.strictObject({
-        id: text,
-        position: vec3,
-        cost: number,
-        state: z.enum(['available', 'locked', 'unknown']),
-      }),
-    )
-    .min(1),
-  goal: vec3,
-  interaction: z
-    .strictObject({
-      radius: number,
-      maxVertical: number.optional(),
-      facing: vec3.optional(),
-      halfAngle: number.optional(),
-      airborne: z.boolean().optional(),
-    })
-    .optional(),
-  waypoints: z.array(vec3).optional(),
-});
-
 const bounds = z.tuple([number, number, number, number]);
 const diagnostic = z.strictObject({ ground: text, collision: text });
 const region = z.strictObject({

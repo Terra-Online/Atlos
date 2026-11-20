@@ -13,6 +13,15 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import { z } from 'zod';
+
+import {
+  captureScenario,
+  finishScenario,
+  measuredAttempt,
+  selectedCase,
+  type BenchmarkRun,
+} from '#@/bench/benchmark-run.ts';
 import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { expectation, matchesExpectation } from '#@/bench/mechanisms/assessment.ts';
 import { readDataset, scenarioBindings, scenarioBuilder } from '#@/bench/mechanisms/dataset.ts';
@@ -85,6 +94,64 @@ if (values.help) {
       ['crates/ganglia-v1/Cargo.toml', 'crates/ganglia-v1/Cargo.lock'],
     );
   const before = await digest();
+  const revision = execFileSync('git', ['rev-parse', 'HEAD'], {
+    cwd: root,
+    encoding: 'utf8',
+  }).trim();
+  const byId = new Map(suite.cases.map((item) => [item.id, item]));
+  const benchmarkRun: BenchmarkRun = {
+    benchmarkId: 'mechanisms',
+    suiteId: suite.id,
+    gitRevision: revision,
+    solverId: config.algorithm,
+    solverSettings: z.record(z.string(), z.json()).parse(config),
+    state: { kind: 'running' },
+    measurement: {
+      cutoffMs: QUERY_CUTOFF_MS,
+      rounds: 1,
+      scenarioWorkers,
+      solverWorkers: 1,
+      queryConcurrency: 1,
+      dispatch: 'serial',
+      timing: 'worker-dispatch-to-result',
+      warmupQueries: [],
+    },
+    scenarios: suite.scenarios.flatMap((spec) => {
+      const cases = spec.cases
+        .filter((item) => selectedIds.has(item.id))
+        .map((item) => ({
+          ...selectedCase(item),
+          requirements: item.requirements,
+          expectation: {
+            kind: expectation(byId.get(item.id)!),
+            assertions: item.expect.assertions,
+          },
+        }));
+      return cases.length
+        ? [
+            {
+              scenarioId: spec.id,
+              setup: {
+                ...spec.setup,
+                onDemandInput: spec.setup.input.kind === 'dynamic' && !!values['prepare-config'],
+              },
+              initialInput: null,
+              inputChanged: false,
+              training: [],
+              cases,
+            },
+          ]
+        : [];
+    }),
+  };
+  const scenarios = new Map(
+    benchmarkRun.scenarios.map((scenario) => [scenario.scenarioId, scenario]),
+  );
+  const cases = new Map(
+    benchmarkRun.scenarios.flatMap((scenario) =>
+      scenario.cases.map((item) => [item.caseId, item] as const),
+    ),
+  );
   type Row = {
     id: string;
     group: string;
@@ -129,8 +196,9 @@ if (values.help) {
     };
   };
   const report = {
+    benchmarkRun,
     adapter: config.algorithm,
-    revision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
+    revision,
     workingTreeDirty: !!execFileSync('git', ['status', '--porcelain'], {
       cwd: root,
       encoding: 'utf8',
@@ -166,11 +234,11 @@ if (values.help) {
   const controller = new AbortController();
   const stop = () => {
     report.interrupted = true;
+    benchmarkRun.state = { kind: 'interrupted' };
     controller.abort();
   };
   process.once('SIGINT', stop);
   process.once('SIGTERM', stop);
-  const byId = new Map(suite.cases.map((item) => [item.id, item]));
   const groups: {
     spec: (typeof suite.scenarios)[number];
     binding: Binding;
@@ -192,6 +260,7 @@ if (values.help) {
       groups.push({ spec, binding, items });
     } catch (error) {
       for (const item of items) {
+        cases.get(item.id)!.preparationError = String(error);
         report.results.push({
           id: item.id,
           group: item.group,
@@ -222,11 +291,13 @@ if (values.help) {
           return file;
         },
         onInputError(item, error) {
+          const reason = `${error.status}: ${error.reason}`;
+          cases.get(item.id)!.preparationError = reason;
           report.results.push({
             id: item.id,
             group: item.group,
             status: 'error',
-            reason: `${error.status}: ${error.reason}`,
+            reason,
             verification: 'not-run',
             matchesExpectation: false,
           });
@@ -244,6 +315,8 @@ if (values.help) {
         },
       });
       for await (const loaded of builder.build(bindings, { ...suite, scenarios: [spec] })) {
+        const scenarioResult = scenarios.get(spec.id)!;
+        captureScenario(scenarioResult, loaded, binding.dataRoot);
         await runScenario(loaded, {
           signal: controller.signal,
           onPhase(phase) {
@@ -307,6 +380,11 @@ if (values.help) {
               diagnostics: result.diagnostics,
               resultFile,
             };
+            cases
+              .get(item.id)!
+              .attempts.push(
+                measuredAttempt(result, verification.verification, row.matchesExpectation),
+              );
             report.results.push(row);
             record({ phase: 'result', ...row });
             save();
@@ -321,6 +399,7 @@ if (values.help) {
             );
           },
         });
+        finishScenario(scenarioResult, loaded, binding.dataRoot);
       }
     } catch (error) {
       report.executionError = String(error);
@@ -350,6 +429,14 @@ if (values.help) {
     }),
   );
   report.sourceUnchanged = before === (await digest());
+  const failure = report.sourceUnchanged
+    ? report.executionError
+    : 'Benchmark source changed during measurement';
+  benchmarkRun.state = report.interrupted
+    ? { kind: 'interrupted' }
+    : failure
+      ? { kind: 'failed', reason: failure }
+      : { kind: 'finished' };
   save();
   console.log(output);
   if (!report.sourceUnchanged) throw new Error('Benchmark source changed during measurement');

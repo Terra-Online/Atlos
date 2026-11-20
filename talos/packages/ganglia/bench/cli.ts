@@ -13,7 +13,17 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, isDeepStrictEqual } from 'node:util';
 
+import { z } from 'zod';
+
 import { loadAdapter } from '#@/bench/adapter.ts';
+import {
+  captureScenario,
+  finishScenario,
+  measuredAttempt,
+  selectedCase,
+  type BenchmarkRun,
+  type ScenarioResult,
+} from '#@/bench/benchmark-run.ts';
 import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { benchmarkMarkdown } from '#@/bench/markdown.ts';
 import { benchmarkTraining } from '#@/bench/preparation.ts';
@@ -70,6 +80,7 @@ if (values.help) {
   };
   let phase = 'setup';
   let completed = 0;
+  let benchmarkRun: BenchmarkRun | undefined;
   console.error(JSON.stringify({ phase: 'artifacts', report: outputPath, events: eventsPath }));
   record({ phase, state: 'started', at: new Date().toISOString(), argv: process.argv.slice(2) });
   try {
@@ -95,7 +106,7 @@ if (values.help) {
         cwd: root,
       }).trim(),
     );
-    const { cases: workload, directory } = await readWorkload(values.workload);
+    const { cases: workload, directory, suiteId } = await readWorkload(values.workload);
     const dataRoot = values['data-root'] ?? resolve(root, '../../../.local/data', directory);
     const offset = Number(values.offset ?? 0),
       count = Number(values.limit ?? workload.length);
@@ -144,6 +155,33 @@ if (values.help) {
       trainingCases: training,
       lifecycle: 'suite-training-no-warmup',
     };
+    const sceneResult: ScenarioResult = {
+      scenarioId: values.scene,
+      setup: { scene: values.scene },
+      initialInput: null,
+      inputChanged: false,
+      training: [],
+      cases: selected.map(selectedCase),
+    };
+    benchmarkRun = {
+      benchmarkId: 'full',
+      suiteId,
+      gitRevision: revision,
+      solverId: fixed.algorithm,
+      solverSettings: z.record(z.string(), z.json()).parse(fixed),
+      state: { kind: 'running' },
+      measurement: {
+        cutoffMs: QUERY_CUTOFF_MS,
+        rounds,
+        scenarioWorkers: 1,
+        solverWorkers: workers,
+        queryConcurrency: Math.min(workers, concurrency),
+        dispatch: 'batch',
+        timing: 'worker-dispatch-to-result',
+        warmupQueries: [],
+      },
+      scenarios: [sceneResult],
+    };
     const referenceBytes = values.reference ? await readFile(values.reference) : undefined;
     const referenceReport = referenceBytes
       ? (JSON.parse(referenceBytes.toString()) as {
@@ -181,6 +219,7 @@ if (values.help) {
       const { inputLoadMs, timings, metadata } = prepared;
       const workerReadyMs = performance.now();
       try {
+        const cases = captureScenario(sceneResult, scenario, dataRoot);
         const reference = referenceBytes
           ? readReference(JSON.parse(referenceBytes.toString()), { ...metadata, cases: selected })
           : undefined;
@@ -240,8 +279,12 @@ if (values.help) {
               };
             }
           },
+          onResult(item, result, verification) {
+            cases.get(item.id)!.attempts.push(measuredAttempt(result, verification.verification));
+          },
         });
         const endToEndMs = performance.now();
+        finishScenario(sceneResult, scenario, dataRoot);
         const solverLifecycleMs = endToEndMs - report.verificationWallMs;
         const holdoutCatalogs = prepared.catalogs();
         if ((await sourceHash(root, sourceDirectories, sourceFiles)) !== sourceSha256)
@@ -267,7 +310,9 @@ if (values.help) {
               : undefined;
         const referenceBatchMs = referenceReport?.batch.wallMs;
         const referenceSolverLifecycleMs = referenceReport?.lifecycle?.solverLifecycleMs;
+        benchmarkRun.state = { kind: 'finished' };
         const output = {
+          benchmarkRun,
           measurement,
           lifecycle: {
             workerReadyMs,
@@ -393,10 +438,13 @@ if (values.help) {
       }
     }
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (benchmarkRun) benchmarkRun.state = { kind: 'failed', reason: message };
     const failure = {
+      benchmarkRun,
       state: 'interrupted',
       phase,
-      error: error instanceof Error ? error.message : String(error),
+      error: message,
       events: eventsPath,
     };
     record(failure);

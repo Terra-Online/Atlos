@@ -43,7 +43,7 @@ process.on('message', (message: WorkerRequest) => {
       metadata: {
         scene: 'test',
         source: {},
-        hashes: {},
+        hashes: { 'ground.json': 'test-geometry' },
         gameAdapterSha256: 'adapter',
         kernelSha256: 'independent',
         resolvedKernel: import.meta.url,
