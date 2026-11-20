@@ -65,20 +65,32 @@ after(() => {
   if (directory) rmSync(directory, { recursive: true, force: true });
 });
 
-test('strict reports pair measured rounds and show lost routes across solver revisions', () => {
+test('strict reports pair rounds and highlight verification failures and lost routes', () => {
   const candidate = structuredClone(baseline);
   const run = candidate.benchmarkRun;
   run.gitRevision = 'candidate-revision';
   run.solverId = 'candidate-solver';
   const testCase = run.scenarios[0].cases[0];
+  testCase.attempts[0].solveMs /= 2;
+  testCase.attempts[0].verification = 'invalid';
   testCase.attempts[1] = { status: 'timeout', solveMs: 20, verification: 'not-run' };
   const file = join(directory, 'candidate.json');
   writeFileSync(file, JSON.stringify(candidate));
 
   const result = cli(file);
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /\| walk \| 1 \| success \| success \| valid \| valid \|/);
-  assert.match(result.stdout, /\| walk \| 2 \| success \| timeout \| valid \| not-run \|/);
+  assert.match(
+    result.stdout,
+    /^\| Case \| Round \| Result \| Solve \(ms\) \| Speedup \| Route cost \(s\) \|/,
+  );
+  assert.match(
+    result.stdout,
+    /\| map02 \/ walk \| 1 \| success · verification: valid → invalid \| [\d.]+ → [\d.]+ \| 2\.0× \| 1 \|/,
+  );
+  assert.match(
+    result.stdout,
+    /\| map02 \/ walk \| 2 \| success → timeout \| [\d.]+ → 20 \|  \| 1\.0 → n\/a \|/,
+  );
 });
 
 test('strict reports reject changed requests and missing rounds, and invalid rows fail in SQL mode too', () => {
