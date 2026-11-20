@@ -194,30 +194,40 @@ const strictProblems = `
 const strictQuery = `
   SELECT b.scenario_id || ' / ' || b.case_id AS "Case",
     b.round AS "Round",
-    (CASE WHEN b.status = c.status THEN b.status ELSE b.status || ' → ' || c.status END) ||
+    b.status || ' → ' || c.status ||
     (CASE WHEN b.verification IN ('invalid', 'error') OR c.verification IN ('invalid', 'error')
         OR (b.status = 'success' AND c.status = 'success' AND b.verification <> c.verification)
-      THEN ' · verification: ' ||
-        CASE WHEN b.verification = c.verification THEN b.verification
-          ELSE b.verification || ' → ' || c.verification END
+      THEN ' · verification: ' || b.verification || ' → ' || c.verification
       ELSE '' END) ||
     (CASE WHEN b.matches_expectation = 0 OR c.matches_expectation = 0
       THEN ' · expectation missed (' ||
         CASE WHEN b.matches_expectation = 0 AND c.matches_expectation = 0 THEN 'both'
           WHEN b.matches_expectation = 0 THEN 'baseline' ELSE 'candidate' END || ')'
       ELSE '' END) AS "Result",
-    printf('%.12g → %.12g', round(b.solve_ms, 3), round(c.solve_ms, 3)) AS "Solve (ms)",
+    metric_pair(round(b.solve_ms, 3), round(c.solve_ms, 3),
+      b.status = 'success' AND c.status = 'success') AS "Solve (ms)",
     CASE WHEN b.status = 'success' AND c.status = 'success'
       THEN round(b.solve_ms / nullif(c.solve_ms, 0), 3) || '×' END AS "Speedup",
-    CASE WHEN b.route_cost_seconds IS c.route_cost_seconds THEN b.route_cost_seconds
-      ELSE coalesce(CAST(b.route_cost_seconds AS TEXT), 'n/a') || ' → ' ||
-        coalesce(CAST(c.route_cost_seconds AS TEXT), 'n/a') END AS "Route cost (s)"
+    metric_pair(b.route_cost_seconds, c.route_cost_seconds, 1) AS "Route cost (s)"
   FROM attempts b JOIN attempts c USING (scenario_id, case_id, round)
   JOIN scenarios s ON s.run_id = b.run_id AND s.scenario_id = b.scenario_id
   JOIN cases t ON t.run_id = b.run_id AND t.scenario_id = b.scenario_id AND t.case_id = b.case_id
   WHERE b.run_id = 'baseline' AND c.run_id = 'candidate'
   ORDER BY s.position, t.position, b.round
 `;
+
+function metricPair(
+  baseline: SQLOutputValue,
+  candidate: SQLOutputValue,
+  comparable: SQLOutputValue,
+) {
+  if (baseline === null && candidate === null) return null;
+  if (comparable === 1 && typeof baseline === 'number' && typeof candidate === 'number') {
+    if (baseline < candidate) return `**${baseline}** → ${candidate}`;
+    if (candidate < baseline) return `${baseline} → **${candidate}**`;
+  }
+  return `${baseline ?? 'n/a'} → ${candidate ?? 'n/a'}`;
+}
 
 function cell(value: SQLOutputValue) {
   const text =
@@ -243,6 +253,7 @@ export function renderBenchmarkReport(baseline: unknown, candidate: unknown, sql
       throw new Error(
         'Reports are incompatible in strict mode:\n' + problems.map((r) => r.problem).join('\n'),
       );
+    db.function('metric_pair', metricPair);
   }
 
   db.setAuthorizer((action) =>

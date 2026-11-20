@@ -71,8 +71,11 @@ test('strict reports pair rounds and highlight verification failures and lost ro
   run.gitRevision = 'candidate-revision';
   run.solverId = 'candidate-solver';
   const testCase = run.scenarios[0].cases[0];
-  testCase.attempts[0].solveMs /= 2;
-  testCase.attempts[0].verification = 'invalid';
+  const firstAttempt = testCase.attempts[0];
+  assert(firstAttempt.status === 'success');
+  firstAttempt.solveMs /= 2;
+  firstAttempt.routeCostSeconds = 2;
+  firstAttempt.verification = 'invalid';
   testCase.attempts[1] = { status: 'timeout', solveMs: 20, verification: 'not-run' };
   const file = join(directory, 'candidate.json');
   writeFileSync(file, JSON.stringify(candidate));
@@ -85,11 +88,11 @@ test('strict reports pair rounds and highlight verification failures and lost ro
   );
   assert.match(
     result.stdout,
-    /\| map02 \/ walk \| 1 \| success · verification: valid → invalid \| [\d.]+ → [\d.]+ \| 2\.0× \| 1 \|/,
+    /\| map02 \/ walk \| 1 \| success → success · verification: valid → invalid \| [\d.]+ → \*\*[\d.]+\*\* \| 2\.0× \| \*\*1\*\* → 2 \|/,
   );
   assert.match(
     result.stdout,
-    /\| map02 \/ walk \| 2 \| success → timeout \| [\d.]+ → 20 \|  \| 1\.0 → n\/a \|/,
+    /\| map02 \/ walk \| 2 \| success → timeout \| [\d.]+ → 20 \|  \| 1 → n\/a \|/,
   );
 });
 
