@@ -7,7 +7,7 @@
  */
 import { constants, DatabaseSync, type SQLOutputValue } from 'node:sqlite';
 
-import { parseBenchmarkRun } from '#@/bench/benchmark-run.ts';
+import { parseBenchmarkRun } from '#@/bench/reporting/run.ts';
 
 const schema = `
   CREATE TABLE runs (

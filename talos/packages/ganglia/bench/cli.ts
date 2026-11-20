@@ -13,21 +13,12 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, isDeepStrictEqual } from 'node:util';
 
-import { z } from 'zod';
-
 import { loadAdapter } from '#@/bench/adapter.ts';
-import {
-  captureScenario,
-  finishScenario,
-  measuredAttempt,
-  selectedCase,
-  type BenchmarkRun,
-  type ScenarioResult,
-} from '#@/bench/benchmark-run.ts';
 import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { benchmarkMarkdown } from '#@/bench/markdown.ts';
 import { benchmarkTraining } from '#@/bench/preparation.ts';
 import { compareQuality, qualityGate, readReference, summarizeQuality } from '#@/bench/quality.ts';
+import { recordRun } from '#@/bench/reporting/recorder.ts';
 import { runScenario } from '#@/bench/run.ts';
 import { sourceHash } from '#@/bench/source.ts';
 import { resetTimings } from '#@/bench/timings.ts';
@@ -80,7 +71,7 @@ if (values.help) {
   };
   let phase = 'setup';
   let completed = 0;
-  let benchmarkRun: BenchmarkRun | undefined;
+  let recording: ReturnType<typeof recordRun> | undefined;
   console.error(JSON.stringify({ phase: 'artifacts', report: outputPath, events: eventsPath }));
   record({ phase, state: 'started', at: new Date().toISOString(), argv: process.argv.slice(2) });
   try {
@@ -155,33 +146,26 @@ if (values.help) {
       trainingCases: training,
       lifecycle: 'suite-training-no-warmup',
     };
-    const sceneResult: ScenarioResult = {
-      scenarioId: values.scene,
-      setup: { scene: values.scene },
-      initialInput: null,
-      inputChanged: false,
-      training: [],
-      cases: selected.map(selectedCase),
-    };
-    benchmarkRun = {
+    recording = recordRun({
       benchmarkId: 'full',
       suiteId,
       gitRevision: revision,
-      solverId: fixed.algorithm,
-      solverSettings: z.record(z.string(), z.json()).parse(fixed),
-      state: { kind: 'running' },
+      solverSettings: fixed,
       measurement: {
-        cutoffMs: QUERY_CUTOFF_MS,
         rounds,
         scenarioWorkers: 1,
         solverWorkers: workers,
         queryConcurrency: Math.min(workers, concurrency),
         dispatch: 'batch',
-        timing: 'worker-dispatch-to-result',
-        warmupQueries: [],
       },
-      scenarios: [sceneResult],
-    };
+      scenarios: [
+        {
+          scenarioId: values.scene,
+          setup: { scene: values.scene },
+          cases: selected.map(({ id }) => ({ caseId: id })),
+        },
+      ],
+    });
     const referenceBytes = values.reference ? await readFile(values.reference) : undefined;
     const referenceReport = referenceBytes
       ? (JSON.parse(referenceBytes.toString()) as {
@@ -219,7 +203,7 @@ if (values.help) {
       const { inputLoadMs, timings, metadata } = prepared;
       const workerReadyMs = performance.now();
       try {
-        const cases = captureScenario(sceneResult, scenario, dataRoot);
+        const recorded = recording.startScenario(scenario, dataRoot);
         const reference = referenceBytes
           ? readReference(JSON.parse(referenceBytes.toString()), { ...metadata, cases: selected })
           : undefined;
@@ -279,12 +263,10 @@ if (values.help) {
               };
             }
           },
-          onResult(item, result, verification) {
-            cases.get(item.id)!.attempts.push(measuredAttempt(result, verification.verification));
-          },
+          onResult: recorded.attempt,
         });
         const endToEndMs = performance.now();
-        finishScenario(sceneResult, scenario, dataRoot);
+        recorded.finish();
         const solverLifecycleMs = endToEndMs - report.verificationWallMs;
         const holdoutCatalogs = prepared.catalogs();
         if ((await sourceHash(root, sourceDirectories, sourceFiles)) !== sourceSha256)
@@ -310,9 +292,9 @@ if (values.help) {
               : undefined;
         const referenceBatchMs = referenceReport?.batch.wallMs;
         const referenceSolverLifecycleMs = referenceReport?.lifecycle?.solverLifecycleMs;
-        benchmarkRun.state = { kind: 'finished' };
+        recording.finish();
         const output = {
-          benchmarkRun,
+          benchmarkRun: recording.report,
           measurement,
           lifecycle: {
             workerReadyMs,
@@ -439,9 +421,9 @@ if (values.help) {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    if (benchmarkRun) benchmarkRun.state = { kind: 'failed', reason: message };
+    recording?.finish(message);
     const failure = {
-      benchmarkRun,
+      benchmarkRun: recording?.report,
       state: 'interrupted',
       phase,
       error: message,

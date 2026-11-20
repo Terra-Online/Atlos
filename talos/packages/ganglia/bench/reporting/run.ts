@@ -2,18 +2,12 @@
  * The common result is embedded as benchmarkRun in both runner reports. The
  * surrounding diagnostics have their own consumers. A run records selected
  * cases even before they resolve, and only records attempts that reached solve.
- * Request and training order carry meaning because a scenario reuses its solver.
+ * Strict reports compare input, request and training order because a Scenario
+ * reuses its solver. Decoding persisted reports is independent of live recording.
  */
-import { isAbsolute, relative, sep } from 'node:path';
-import { isDeepStrictEqual } from 'node:util';
-
 import { z } from 'zod';
 
-import { classify, type Verification } from '#@/bench/outcome.ts';
 import { routeQuerySchema } from '#@/bench/query-schema.ts';
-import type { Scenario } from '#@/bench/scenario.ts';
-import type { Case } from '#@/bench/suite.ts';
-import type { RouteResult } from '#@/src/solver/contract.ts';
 
 const id = z.string().min(1);
 const reason = z.string().min(1);
@@ -82,7 +76,6 @@ const runSchema = z.strictObject({
 });
 
 export type BenchmarkRun = z.infer<typeof runSchema>;
-export type ScenarioResult = z.infer<typeof scenarioSchema>;
 
 export function parseBenchmarkRun(report: unknown): BenchmarkRun {
   const parsed = z.object({ benchmarkRun: runSchema }).safeParse(report);
@@ -99,56 +92,4 @@ export function parseBenchmarkRun(report: unknown): BenchmarkRun {
     }
   }
   return run;
-}
-
-export function selectedCase(item: Case): ScenarioResult['cases'][number] {
-  return { caseId: item.id, query: null, attempts: [] };
-}
-
-export function captureScenario(target: ScenarioResult, scenario: Scenario, dataRoot: string) {
-  const { source, gameAdapterSha256, rules } = scenario.input.metadata;
-  // Paths identify local copies. The initial inputs are sampled before training
-  // can append dynamic windows. Keep solver build identity out of this snapshot.
-  target.initialInput = {
-    source: z.json().parse(source ?? null),
-    fileDigests: inputDigests(scenario, dataRoot),
-    gameAdapterDigest: gameAdapterSha256,
-    rules: { maxVertical: rules.maxVertical },
-  };
-  target.training = scenario.training.map(({ id, query }) => ({ caseId: id, query }));
-  const cases = new Map(target.cases.map((item) => [item.caseId, item]));
-  for (const item of scenario.cases) cases.get(item.id)!.query = item.query;
-  return cases;
-}
-
-// Snapshot names identify input roles and region order across local copies.
-const inputDigests = (scenario: Scenario, dataRoot: string) =>
-  Object.fromEntries(
-    Object.entries(scenario.input.metadata.hashes).map(([path, hash]) => [
-      (isAbsolute(path) ? relative(dataRoot, path) : path).split(sep).join('/'),
-      hash,
-    ]),
-  );
-
-export function finishScenario(target: ScenarioResult, scenario: Scenario, dataRoot: string) {
-  target.inputChanged = !isDeepStrictEqual(
-    target.initialInput?.fileDigests,
-    inputDigests(scenario, dataRoot),
-  );
-}
-
-export function measuredAttempt(
-  result: RouteResult,
-  verification: Verification['verification'],
-  matchesExpectation?: boolean,
-): z.infer<typeof attemptSchema> {
-  const solveMs = 'solveWallMs' in result.diagnostics ? result.diagnostics.solveWallMs : undefined;
-  if (typeof solveMs !== 'number' || !Number.isFinite(solveMs) || solveMs < 0)
-    throw new Error('Worker result is missing a valid solve time');
-  const status = classify(result);
-  const evidence = { solveMs, verification, matchesExpectation };
-  if (status === 'success' && result.route.status === 'complete')
-    return { ...evidence, status, routeCostSeconds: result.route.cost };
-  if (status === 'success') throw new Error('Successful attempt is missing its complete route');
-  return { ...evidence, status, reason: result.reason };
 }

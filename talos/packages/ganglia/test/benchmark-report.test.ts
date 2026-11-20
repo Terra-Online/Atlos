@@ -6,8 +6,8 @@ import { join } from 'node:path';
 import { after, before, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import type { BenchmarkRun } from '#@/bench/benchmark-run.ts';
-import { renderBenchmarkReport } from '#@/bench/report-query.ts';
+import { renderBenchmarkReport } from '#@/bench/reporting/query.ts';
+import type { BenchmarkRun } from '#@/bench/reporting/run.ts';
 
 let directory: string;
 let baselineFile: string;
