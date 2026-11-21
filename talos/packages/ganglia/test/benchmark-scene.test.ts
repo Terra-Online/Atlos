@@ -442,3 +442,88 @@ test('a cancelled local solve does not poison the prepared scene input', async (
     await rm(f.root, { recursive: true, force: true });
   }
 });
+
+test('exportPhysicalRegion reuses deterministic region snapshots and enforces directory disk cap', async () => {
+  const f = await fixture();
+  const prevCap = process.env.GANGLIA_BENCHMARK_MAX_REGION_CACHE_GB;
+  const prevMinFree = process.env.GANGLIA_BENCHMARK_MIN_FREE_DISK_GB;
+  try {
+    const extractor = join(f.root, 'extractor');
+    const config = join(f.root, 'exporter-config.json');
+    await f.json('exporter-config.json', {});
+    const req = {
+      scene: 'testscene',
+      source,
+      bounds: [0, 0, 96, 64] as [number, number, number, number],
+      tiles,
+    };
+    const first = await (async () => {
+      const script = join(extractor, 'packages/extractor/src/cli.ts');
+      await mkdir(join(script, '..'), { recursive: true });
+      await writeFile(
+        script,
+        `
+        import { writeFile } from 'node:fs/promises';
+        import { parseArgs } from 'node:util';
+        const { values } = parseArgs({ args: process.argv.slice(2), allowPositionals: true,
+          options: Object.fromEntries(['bounds','scene-state','area','static-supports','config','tiles','movement-settings','input-cache','tile-cache','output','collision-output','collision-format'].map(name=>[name,{type:'string'}]).concat([['terminal-scene',{type:'boolean'}]])) });
+        await writeFile(values.output, JSON.stringify(${JSON.stringify(f.ground())}));
+        await writeFile(values['collision-output'], Buffer.from([1, 2, 3]));
+      `,
+      );
+      process.env.GANGLIA_BENCHMARK_MIN_FREE_DISK_GB = '0';
+      process.env.GANGLIA_BENCHMARK_MAX_REGION_CACHE_GB = '12';
+      return exportPhysicalRegion({ dataRoot: f.root, extractor, config }, req);
+    })();
+    // Remove extractor so any re-export would fail; deterministic path must reuse.
+    await rm(extractor, { recursive: true, force: true });
+    const reused = await exportPhysicalRegion({ dataRoot: f.root, extractor, config }, req);
+    assert.deepEqual(reused, first);
+    // Cap at 0 GiB must refuse exporting a new uncached region.
+    process.env.GANGLIA_BENCHMARK_MAX_REGION_CACHE_GB = '0';
+    await assert.rejects(
+      exportPhysicalRegion(
+        { dataRoot: f.root, extractor, config },
+        { ...req, bounds: [0, 0, 128, 64] },
+      ),
+      /reached .* cap/i,
+    );
+  } finally {
+    if (prevCap === undefined) delete process.env.GANGLIA_BENCHMARK_MAX_REGION_CACHE_GB;
+    else process.env.GANGLIA_BENCHMARK_MAX_REGION_CACHE_GB = prevCap;
+    if (prevMinFree === undefined) delete process.env.GANGLIA_BENCHMARK_MIN_FREE_DISK_GB;
+    else process.env.GANGLIA_BENCHMARK_MIN_FREE_DISK_GB = prevMinFree;
+    await rm(f.root, { recursive: true, force: true });
+  }
+});
+
+test('loadSceneData bounds region snapshot LRU and verifies SHA-256 on re-read', async () => {
+  const f = await fixture();
+  const prevLru = process.env.GANGLIA_BENCHMARK_INPUT_LRU;
+  try {
+    process.env.GANGLIA_BENCHMARK_INPUT_LRU = '2';
+    await f.region('scene-testscene/regions/r1');
+    await f.region('scene-testscene/regions/r2');
+    const data = await loadSceneData(f.root, 'testscene');
+    const r1Ground = join(f.root, 'scene-testscene/regions/r1.ground.json');
+    const r2Ground = join(f.root, 'scene-testscene/regions/r2.ground.json');
+    // Only 2 region assets can remain resident in inputs Map (r2 ground + r2 collision).
+    assert.equal(data.inputs.has(r1Ground), false);
+    assert.equal(data.inputs.has(r2Ground), true);
+    const bytesBefore = data.inputBytes;
+    const reloaded = await data.readInput(r1Ground);
+    assert.ok(reloaded);
+    assert.equal(data.inputBytes, bytesBefore);
+    assert.equal(data.inputs.has(r1Ground), true);
+    // Evict r1Ground again, tamper on disk, and verify hash check rejects it.
+    await data.readInput(r2Ground);
+    await data.readInput(join(f.root, 'scene-testscene/regions/r2.collision.json'));
+    assert.equal(data.inputs.has(r1Ground), false);
+    await writeFile(r1Ground, JSON.stringify({ ...f.ground(), scene: 'tampered' }));
+    await assert.rejects(data.readInput(r1Ground), /changed after preload/i);
+  } finally {
+    if (prevLru === undefined) delete process.env.GANGLIA_BENCHMARK_INPUT_LRU;
+    else process.env.GANGLIA_BENCHMARK_INPUT_LRU = prevLru;
+    await rm(f.root, { recursive: true, force: true });
+  }
+});

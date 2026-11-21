@@ -194,6 +194,19 @@ export function prepareSceneResources(
       verifier?: ReturnType<typeof createPhysicalWorld>;
     }
   >();
+  const retainPhysicalInput = (
+    key: string,
+    entry: { input: PhysicalInput; region: PhysicalRegion },
+    keep?: ReadonlySet<PhysicalRegion>,
+  ) => {
+    if (physicalInputs.has(key)) physicalInputs.delete(key);
+    physicalInputs.set(key, entry);
+    for (const candidate of physicalInputs.keys()) {
+      if (physicalInputs.size <= 4) break;
+      if (keep?.has(physicalInputs.get(candidate)!.region)) continue;
+      physicalInputs.delete(candidate);
+    }
+  };
   const evaluatePhysical = createPhysicalVerifier(() =>
     [...physicalInputs.values()].map(
       (entry) =>
@@ -205,7 +218,8 @@ export function prepareSceneResources(
     ),
   );
   const verify = async (query: import('#@/src/solver/contract.ts').RouteQuery, route: Route) => {
-    if (route.status === 'complete')
+    if (route.status === 'complete') {
+      const needed = new Set<PhysicalRegion>();
       for (const segment of route.segments) {
         const seeds = [
           ...segment.points,
@@ -220,8 +234,9 @@ export function prepareSceneResources(
               point[2] <= region.ground.build.bounds.max[1],
           ),
         );
-        if (!region || [...physicalInputs.values()].some((entry) => entry.region === region))
-          continue;
+        if (!region) continue;
+        needed.add(region);
+        if ([...physicalInputs.values()].some((entry) => entry.region === region)) continue;
         // Normalization exposes raw facts independently of the chosen solver,
         // including after a timed-out worker was replaced.
         const normalized = await preparePhysicalRoute(
@@ -239,16 +254,17 @@ export function prepareSceneResources(
             cache: {
               begin: async () => region.binding,
               read: async (_slot: string, path: string) => {
-                if (!dataset.inputs.has(path)) throw new Error('Verifier input was not preloaded');
-                return dataset.inputs.get(path);
+                if (!dataset.hashes[path]) throw new Error('Verifier input was not preloaded');
+                return dataset.readInput(path);
               },
             },
           },
         );
         const input = normalized.input && transform(normalized.input);
         if (!input) throw new Error('Exporter did not provide normalized verifier input');
-        physicalInputs.set(region.binding, { input, region });
+        retainPhysicalInput(region.binding, { input, region }, needed);
       }
+    }
     return evaluatePhysical(query, route);
   };
   const preparationStarted = performance.now();
@@ -268,10 +284,7 @@ export function prepareSceneResources(
           throw new Error('Physical preparation region mismatch');
         return this.region.binding;
       },
-      read: async (_slot: string, path: string) => {
-        if (!dataset.inputs.has(path)) throw new Error(`Physical input was not preloaded: ${path}`);
-        return dataset.inputs.get(path);
-      },
+      read: async (_slot: string, path: string) => dataset.readInput(path),
       preparation: {
         ...preparation,
         solve: (...args: Parameters<typeof preparation.solve>) => {
@@ -279,7 +292,7 @@ export function prepareSceneResources(
           const region = thisRegion()!;
           args[0] = transform(args[0]);
           const key = region.binding + JSON.stringify(args[0].ground.options.walls);
-          if (!physicalInputs.has(key)) physicalInputs.set(key, { input: args[0], region });
+          if (!physicalInputs.has(key)) retainPhysicalInput(key, { input: args[0], region });
           return preparation.solve(...args);
         },
       },
@@ -331,17 +344,13 @@ export function prepareSceneResources(
         const normalized = await preparePhysicalRoute(job.region.files, request, {
           cache: {
             begin: async () => job.region.binding,
-            read: async (_slot: string, path: string) => {
-              if (!dataset.inputs.has(path))
-                throw new Error(`Physical input was not preloaded: ${path}`);
-              return dataset.inputs.get(path);
-            },
+            read: async (_slot: string, path: string) => dataset.readInput(path),
           },
         });
         if (!normalized.input)
           throw new Error('Game adapter does not expose normalized physical facts');
         const input = transform(normalized.input);
-        physicalInputs.set(JSON.stringify([job.region.binding, request.walls]), {
+        retainPhysicalInput(JSON.stringify([job.region.binding, request.walls]), {
           input,
           region: job.region,
         });

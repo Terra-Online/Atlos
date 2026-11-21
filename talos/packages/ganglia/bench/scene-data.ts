@@ -61,21 +61,50 @@ export const decodeSnapshot = (name: string, bytes: Buffer): unknown =>
 export async function loadSceneData(dataRoot: string, scene: string, build?: RegionBuild) {
   const hashes: Record<string, string> = {};
   const inputs = new Map<string, unknown>();
+  const rawMaxRegionEntries = Number(process.env.GANGLIA_BENCHMARK_INPUT_LRU ?? 4);
+  const maxRegionEntries =
+    Number.isSafeInteger(rawMaxRegionEntries) && rawMaxRegionEntries >= 1 ? rawMaxRegionEntries : 4;
+  const regionLru: string[] = [];
+  const isRegionAsset = (name: string) =>
+    name.endsWith('.collision.bin') ||
+    name.endsWith('.collision.json') ||
+    name.endsWith('.ground.json');
+  const touchLru = (name: string) => {
+    if (!isRegionAsset(name)) return;
+    const idx = regionLru.indexOf(name);
+    if (idx !== -1) regionLru.splice(idx, 1);
+    regionLru.push(name);
+    while (regionLru.length > maxRegionEntries) {
+      const oldest = regionLru.shift();
+      if (oldest) inputs.delete(oldest);
+    }
+  };
   let inputBytes = 0;
   let inputLoadMs = 0;
   const read = async <T>(name: string): Promise<T> => {
-    if (inputs.has(name)) return inputs.get(name) as T;
+    if (inputs.has(name)) {
+      touchLru(name);
+      return inputs.get(name) as T;
+    }
     const started = performance.now();
     try {
       const bytes = await readFile(name);
+      const digest = createHash('sha256').update(bytes).digest('hex');
+      if (hashes[name] && hashes[name] !== digest)
+        throw new Error(`Input file changed after preload: ${name}`);
       const value = decodeSnapshot(name, bytes);
-      inputBytes += bytes.byteLength;
-      hashes[name] = createHash('sha256').update(bytes).digest('hex');
+      if (!hashes[name]) inputBytes += bytes.byteLength;
+      hashes[name] = digest;
       inputs.set(name, value);
+      touchLru(name);
       return value as T;
     } finally {
       inputLoadMs += performance.now() - started;
     }
+  };
+  const readInput = async (name: string): Promise<unknown> => {
+    if (!hashes[name]) throw new Error(`Physical input was not preloaded: ${name}`);
+    return read(name);
   };
   const navigation = await read<Navigation>(resolve(dataRoot, `routing/${scene}-ground-all.json`));
   const movementFile = resolve(dataRoot, 'routing/movement-settings-current.json');
@@ -237,6 +266,7 @@ export async function loadSceneData(dataRoot: string, scene: string, build?: Reg
     locomotion: movement.sustainedSprint,
     hashes,
     inputs,
+    readInput,
     regions,
     select,
     query,
