@@ -99,18 +99,25 @@ const clip = (polygon: Point[], a: Point, b: Point, inside: boolean): Point[] =>
 };
 export const trianglesOf = (
   geometry: CollisionGeometry,
-  selected = Array.from({ length: geometry.indices.length / 3 }, (_, i) => i),
-) =>
-  selected.map((i) =>
-    [0, 1, 2].map((j): Vec3 => {
-      const vertex = geometry.indices[i * 3 + j];
-      return [
-        geometry.positions[vertex * 3],
-        geometry.positions[vertex * 3 + 1],
-        geometry.positions[vertex * 3 + 2],
-      ];
-    }),
-  );
+  selected?: readonly number[],
+): Vec3[][] => {
+  const { positions, indices } = geometry;
+  const count = selected ? selected.length : (indices.length / 3) | 0;
+  const out: Vec3[][] = new Array<Vec3[]>(count);
+  for (let k = 0; k < count; k++) {
+    const i = selected ? selected[k] : k;
+    const base = i * 3;
+    const v0 = indices[base] * 3;
+    const v1 = indices[base + 1] * 3;
+    const v2 = indices[base + 2] * 3;
+    out[k] = [
+      [positions[v0], positions[v0 + 1], positions[v0 + 2]],
+      [positions[v1], positions[v1 + 1], positions[v1 + 2]],
+      [positions[v2], positions[v2 + 1], positions[v2 + 2]],
+    ];
+  }
+  return out;
+};
 
 // polygon subtraction proves coverage of the complete footprint, including holes smaller
 // than a sampling interval. duplicate and overlapping source triangles cannot add coverage twice.

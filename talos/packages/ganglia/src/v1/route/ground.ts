@@ -357,6 +357,7 @@ function assembleGroundPlanner(parts: PlannerParts): GroundPlanner {
       return { status: 'unmapped' };
     }
     const endpoints = new Map<string, Endpoint[]>();
+    const endpointByExact = new Map<string, string>();
     const currentKeys = new Map<string, string>();
     let serial = 0;
     const unique = () => {
@@ -372,10 +373,16 @@ function assembleGroundPlanner(parts: PlannerParts): GroundPlanner {
         to,
         state: 'open',
         points: [a, b],
-        cost: Math.hypot(...a.map((v, i) => v - b[i])) / searchSpeed,
+        cost: distance(a, b) / searchSpeed,
       });
     const endpoint = (projected: Projection) => {
+      const support = projected.support ?? projected.position;
+      const p = projected.position;
+      const exactKey = `${projected.surface}\0${p[0]},${p[1]},${p[2]}\0${support[0]},${support[1]},${support[2]}`;
+      const existing = endpointByExact.get(exactKey);
+      if (existing !== undefined) return existing;
       const id = unique();
+      endpointByExact.set(exactKey, id);
       graph.nodes.push({ id, position: projected.position });
       const center = centers.get(projected.surface)!;
       connect(projected.surface, id, center, projected.position);
@@ -387,10 +394,9 @@ function assembleGroundPlanner(parts: PlannerParts): GroundPlanner {
         connect(id, peer.id, projected.position, peer.position);
         connect(peer.id, id, peer.position, projected.position);
       }
-      const support = projected.support ?? projected.position;
       // Recheck caller-owned coordinates on every plan, sharing one string per
       // live support point across all directional failure sets and query extensions.
-      const serialized = JSON.stringify(support);
+      const serialized = `${support[0]},${support[1]},${support[2]}`;
       const key = currentKeys.get(serialized) ?? endpointKeys.get(serialized) ?? serialized;
       currentKeys.set(key, key);
       peers.push({ id, position: projected.position, support, key });
@@ -534,38 +540,125 @@ function assembleGroundPlanner(parts: PlannerParts): GroundPlanner {
     // endpoints see each other. Dense triangulation must not make an otherwise
     // cheap walk to a takeoff appear longer than a different jump sequence.
     const groups = [...endpoints.values()];
-    for (let a = 0; a < groups.length; a++)
-      for (let b = a + 1; b < groups.length; b++) {
-        for (const left of groups[a])
-          for (const right of groups[b]) {
-            if (connectionIds.size && !straighten.mayConnect(left.support, right.support)) continue;
-            for (const [from, to] of [
-              [left, right],
-              [right, left],
-            ]) {
-              if (goals.has(from.id) && goals.has(to.id)) continue;
-              if (failedVisibility.get(from.key)?.has(to.key)) continue;
-              const traced =
-                visibility.get(from.key)?.get(to.key) ?? straighten.trace(from.support, to.support);
-              if (!traced) {
-                const failed = failedVisibility.get(from.key) ?? new Set<string>();
-                failed.add(to.key);
-                failedVisibility.set(from.key, failed);
-                continue;
-              }
-              const visible = visibility.get(from.key) ?? new Map<string, Vec3[]>();
-              visible.set(to.key, traced);
-              visibility.set(from.key, visible);
-              const points = [from.position, ...traced.slice(1, -1), to.position];
-              const cost =
-                points
-                  .slice(1)
-                  .reduce((sum, point, index) => sum + distance(points[index], point), 0) /
-                searchSpeed;
-              graph.edges.push({ from: from.id, to: to.id, points, cost, state: 'open' });
+    const tryVisibilityPair = (left: Endpoint, right: Endpoint) => {
+      if (connectionIds.size && !straighten.mayConnect(left.support, right.support)) return;
+      for (let dir = 0; dir < 2; dir++) {
+        const from = dir === 0 ? left : right;
+        const to = dir === 0 ? right : left;
+        if (goals.has(from.id) && goals.has(to.id)) continue;
+        if (failedVisibility.get(from.key)?.has(to.key)) continue;
+        const traced =
+          visibility.get(from.key)?.get(to.key) ?? straighten.trace(from.support, to.support);
+        if (!traced) {
+          let failed = failedVisibility.get(from.key);
+          if (!failed) {
+            failed = new Set<string>();
+            failedVisibility.set(from.key, failed);
+          }
+          failed.add(to.key);
+          continue;
+        }
+        let visible = visibility.get(from.key);
+        if (!visible) {
+          visible = new Map<string, Vec3[]>();
+          visibility.set(from.key, visible);
+        }
+        visible.set(to.key, traced);
+        const points = [from.position, ...traced.slice(1, -1), to.position];
+        let pathLen = 0;
+        for (let i = 1; i < points.length; i++) pathLen += distance(points[i - 1], points[i]);
+        graph.edges.push({
+          from: from.id,
+          to: to.id,
+          points,
+          cost: pathLen / searchSpeed,
+          state: 'open',
+        });
+      }
+    };
+    let totalEndpoints = 0;
+    for (let i = 0; i < groups.length; i++) totalEndpoints += groups[i].length;
+    if (totalEndpoints <= 120) {
+      for (let a = 0; a < groups.length; a++)
+        for (let b = a + 1; b < groups.length; b++)
+          for (const left of groups[a])
+            for (const right of groups[b]) tryVisibilityPair(left, right);
+    } else {
+      // Large moving-support scenes can inject thousands of connection endpoints
+      // into one planRoute call. Spatial hashing caps pairwise visibility checks
+      // to local neighborhoods (16m between device endpoints; 64m from/to starts
+      // and goals, plus direct start<->goal), avoiding an O(K^2) visibility
+      // clique while retaining full routeBase connectivity and post-A* straightening.
+      const cellSpan = 16;
+      const cellSq = cellSpan * cellSpan;
+      const querySq = 64 * 64;
+      const arrivalNodes = new Set<string>(arrivals.map((a) => a.node));
+      const queryItems: { group: number; ep: Endpoint }[] = [];
+      const allItems: { group: number; ep: Endpoint }[] = [];
+      const grid = new Map<string, { group: number; ep: Endpoint }[]>();
+      for (let g = 0; g < groups.length; g++) {
+        for (const ep of groups[g]) {
+          const item = { group: g, ep };
+          allItems.push(item);
+          if (arrivalNodes.has(ep.id) || goals.has(ep.id)) queryItems.push(item);
+          const cx = Math.floor(ep.support[0] / cellSpan);
+          const cz = Math.floor(ep.support[2] / cellSpan);
+          const cellKey = `${cx},${cz}`;
+          let bucket = grid.get(cellKey);
+          if (!bucket) {
+            bucket = [];
+            grid.set(cellKey, bucket);
+          }
+          bucket.push(item);
+        }
+      }
+      const checkedPairs = new Set<string>();
+      const checkOnce = (
+        a: { group: number; ep: Endpoint },
+        b: { group: number; ep: Endpoint },
+      ) => {
+        if (a.group === b.group) return;
+        const k = a.ep.id < b.ep.id ? `${a.ep.id}\0${b.ep.id}` : `${b.ep.id}\0${a.ep.id}`;
+        if (checkedPairs.has(k)) return;
+        checkedPairs.add(k);
+        tryVisibilityPair(a.ep, b.ep);
+      };
+      // 1. Always check query endpoints (starts/goals) against each other and nearby endpoints.
+      for (let i = 0; i < queryItems.length; i++) {
+        const qa = queryItems[i];
+        const qx = qa.ep.support[0],
+          qz = qa.ep.support[2];
+        for (let j = i + 1; j < queryItems.length; j++) checkOnce(qa, queryItems[j]);
+        for (let j = 0; j < allItems.length; j++) {
+          const other = allItems[j];
+          if (other.group === qa.group) continue;
+          const dx = other.ep.support[0] - qx;
+          const dz = other.ep.support[2] - qz;
+          if (dx * dx + dz * dz <= querySq) checkOnce(qa, other);
+        }
+      }
+      // 2. Check device endpoints within local 16m horizontal neighborhoods.
+      for (let i = 0; i < allItems.length; i++) {
+        const item = allItems[i];
+        const ix = item.ep.support[0],
+          iz = item.ep.support[2];
+        const cx = Math.floor(ix / cellSpan);
+        const cz = Math.floor(iz / cellSpan);
+        for (let dx = -1; dx <= 1; dx++) {
+          for (let dz = -1; dz <= 1; dz++) {
+            const bucket = grid.get(`${cx + dx},${cz + dz}`);
+            if (!bucket) continue;
+            for (let k = 0; k < bucket.length; k++) {
+              const other = bucket[k];
+              if (other.group <= item.group) continue;
+              const rx = other.ep.support[0] - ix;
+              const rz = other.ep.support[2] - iz;
+              if (rx * rx + rz * rz <= cellSq) checkOnce(item, other);
             }
           }
+        }
       }
+    }
     // Compare actual continuous lengths and movement times for each available origin.
     // Centre-corridor costs alone can rank nearby teleport arrivals incorrectly.
     let best: Extract<Route, { status: 'complete' }> | null = null,
@@ -1252,7 +1345,7 @@ export function createOverlayGroundPlanner(
     },
   });
 }
-const distance = (a: Vec3, b: Vec3) => Math.hypot(...a.map((v, i) => v - b[i]));
+const distance = (a: Vec3, b: Vec3) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 function straightenRoute(
   route: Extract<Route, { status: 'complete' }>,
   straighten: GroundStraightener,

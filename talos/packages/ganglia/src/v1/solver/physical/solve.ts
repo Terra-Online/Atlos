@@ -529,6 +529,7 @@ export const solvePhysicalRoute = async (
         runAirSpeed,
         profile,
         walls: options.walls,
+        project: groundPlanner?.project,
       }),
     );
     prepareReuse.devices = preparedDevices.reused;
@@ -623,6 +624,24 @@ export const solvePhysicalRoute = async (
           groundPlanner = undefined;
         }
         reserve?.(combined.length);
+        const movingOptions = {
+          ...options,
+          portals,
+          connections: [],
+        };
+        const movingPlanner = added.surfaces.length
+          ? basePlanner
+            ? createOverlayGroundPlanner(
+                basePlanner,
+                combined,
+                added.surfaces,
+                [],
+                movingOptions,
+                undefined,
+                added.portals,
+              )
+            : plannerFor(combined, movingOptions)
+          : basePlanner;
         const augmented = added.surfaces.length
           ? createDeviceConnections(deviceInput, {
               surfaces: combined,
@@ -632,14 +651,10 @@ export const solvePhysicalRoute = async (
               runAirSpeed,
               profile,
               walls: options.walls,
+              project: movingPlanner?.project,
             })
           : devices;
         const knownIds = new Set(devices.connections.map((connection) => connection.id));
-        const movingOptions = {
-          ...options,
-          portals,
-          connections: [],
-        };
         return {
           ...added,
           portals,
@@ -648,19 +663,7 @@ export const solvePhysicalRoute = async (
           ),
           deviceOutcomes: augmented.outcomes,
           surfaces: combined,
-          planner: added.surfaces.length
-            ? basePlanner
-              ? createOverlayGroundPlanner(
-                  basePlanner,
-                  combined,
-                  added.surfaces,
-                  [],
-                  movingOptions,
-                  undefined,
-                  added.portals,
-                )
-              : plannerFor(combined, movingOptions)
-            : basePlanner,
+          planner: movingPlanner,
         };
       });
       if (

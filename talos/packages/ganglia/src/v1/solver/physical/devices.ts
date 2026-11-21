@@ -1,6 +1,6 @@
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { Surface, Vec3, Wall } from '#@/src/geometry.ts';
-import { createGoalProjector, findGoalHit } from '#@/src/model/goals.ts';
+import { createGoalProjector, findGoalHit, type GoalProjector } from '#@/src/model/goals.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
 import type { InteractionGoal, SpeedBoost } from '#@/src/movement.ts';
 import type { GroundConnection } from '#@/src/route.ts';
@@ -14,10 +14,15 @@ interface Options {
   model: { gravity: number; fallingGravity: number; maxFallingSpeed: number; apexTime: number };
   maxSlope: number;
   runAirSpeed?: number;
+  project?: GoalProjector;
 }
 const vector = (v: unknown): v is Vec3 =>
-  Array.isArray(v) && v.length === 3 && v.every(Number.isFinite);
-const distance = (a: Vec3, b: Vec3) => Math.hypot(...a.map((v, i) => v - b[i]));
+  Array.isArray(v) &&
+  v.length === 3 &&
+  Number.isFinite(v[0]) &&
+  Number.isFinite(v[1]) &&
+  Number.isFinite(v[2]);
+const distance = (a: Vec3, b: Vec3) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 // A reference aim may be airborne. Preserve its proposed horizontal velocity
 // while descending to support, then validate the complete swept arc.
 const launchLanding = (
@@ -28,15 +33,10 @@ const launchLanding = (
   options: Options,
   support: (seed: Vec3) => Vec3 | null,
   inside: (seed: Vec3) => boolean,
+  minimum: number,
   freeSpeed?: number,
 ) => {
-  const { world, surfaces, profile, walls } = options;
-  let minimum = Infinity;
-  for (const surface of surfaces) {
-    for (const point of surface.vertices) {
-      minimum = Math.min(minimum, point[1]);
-    }
-  }
+  const { world, profile, walls } = options;
   for (const start of starts) {
     // Fixed pads clear their aim; free steering retains the authored pad height.
     const model = {
@@ -140,7 +140,24 @@ const launchLanding = (
 export const prepareDeviceConnections = (input: DeviceFacts, options: Options) => {
   const { surfaces, world, profile, walls } = options;
   const blocked = createWallChecker(options.walls, profile);
-  const project = createGoalProjector(surfaces);
+  const project = options.project ?? createGoalProjector(surfaces);
+  // Compute minimum surface height lazily once instead of scanning 409k
+  // surfaces inside every launch pad aim probe.
+  let minSurfaceY: number | undefined;
+  const getMinSurfaceY = () => {
+    if (minSurfaceY === undefined) {
+      let min = Infinity;
+      for (let i = 0; i < surfaces.length; i++) {
+        const verts = surfaces[i].vertices;
+        for (let j = 0; j < verts.length; j++) {
+          const y = verts[j][1];
+          if (y < min) min = y;
+        }
+      }
+      minSurfaceY = min;
+    }
+    return minSurfaceY;
+  };
   const connections: GroundConnection[] = [];
   const boosts: SpeedBoost[] = [];
   const outcomes: { id: string; mode: string; reason: string }[] = [];
@@ -328,7 +345,16 @@ export const prepareDeviceConnections = (input: DeviceFacts, options: Options) =
         }
       }
       if (reason !== 'accepted' && vector(aim) && Number.isFinite(height) && height > 0) {
-        const arc = launchLanding(entries, aim, height, d.aimClearance, options, support, inside);
+        const arc = launchLanding(
+          entries,
+          aim,
+          height,
+          d.aimClearance,
+          options,
+          support,
+          inside,
+          getMinSurfaceY(),
+        );
         if (arc) {
           connections.push({
             ...arc,
@@ -374,7 +400,17 @@ export const prepareDeviceConnections = (input: DeviceFacts, options: Options) =
             ]);
           }
           for (const aim of aims) {
-            const arc = launchLanding([start], aim, height, 0, options, support, inside, speed);
+            const arc = launchLanding(
+              [start],
+              aim,
+              height,
+              0,
+              options,
+              support,
+              inside,
+              getMinSurfaceY(),
+              speed,
+            );
             if (!arc) continue;
             connections.push({
               ...arc,
