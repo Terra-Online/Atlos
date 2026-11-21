@@ -78,7 +78,12 @@ interface Connectivity {
 // Edges are directed, clearance-checked corridors supplied by the navigation importer.
 // This module never connects points by proximity or projects between floors.
 const distance = (a: Vec3, b: Vec3) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
-const finitePoint = (p: unknown) => Array.isArray(p) && p.length === 3 && p.every(Number.isFinite);
+const finitePoint = (p: unknown): p is Vec3 =>
+  Array.isArray(p) &&
+  p.length === 3 &&
+  Number.isFinite(p[0]) &&
+  Number.isFinite(p[1]) &&
+  Number.isFinite(p[2]);
 /** Find the least-cost route on a verified graph. Unknown/closed edges are excluded.
  * Endpoint IDs must come from a floor-aware projection by the caller.
  * Cost is supplied in seconds; optimality is on this graph, not continuous space.
@@ -225,7 +230,8 @@ function prepareGraph(
   // Query endpoints and actions overlay the immutable scene. Copying million-node
   // maps on every refinement pass costs memory without changing their contents.
   const nodes = base ? overlay(base.nodes) : new Map<string, Vec3>();
-  for (const node of graph.nodes) {
+  for (let i = 0; i < graph.nodes.length; i++) {
+    const node = graph.nodes[i];
     if (typeof node.id !== 'string' || nodes.has(node.id) || !finitePoint(node.position))
       throw new Error('Invalid node');
     nodes.set(node.id, node.position);
@@ -234,25 +240,37 @@ function prepareGraph(
   let maxSpeed = base?.maxSpeed ?? 0;
   const copied = base ? new Set<string>() : null,
     links: Edge[] | undefined = base ? [] : undefined;
-  for (const edge of graph.edges) {
+  for (let e = 0; e < graph.edges.length; e++) {
+    const edge = graph.edges[e];
+    const fromNode = nodes.get(edge.from);
+    const toNode = nodes.get(edge.to);
+    const pts = edge.points;
     if (
-      !nodes.has(edge.from) ||
-      !nodes.has(edge.to) ||
+      fromNode === undefined ||
+      toNode === undefined ||
       !Number.isFinite(edge.cost) ||
       edge.cost < 0 ||
-      !['open', 'closed', 'unknown'].includes(edge.state) ||
-      !Array.isArray(edge.points) ||
-      edge.points.length < 2 ||
-      !edge.points.every(finitePoint) ||
-      distance(edge.points[0], nodes.get(edge.from)!) > 1e-6 ||
-      distance(edge.points.at(-1)!, nodes.get(edge.to)!) > 1e-6
+      (edge.state !== 'open' && edge.state !== 'closed' && edge.state !== 'unknown') ||
+      !Array.isArray(pts) ||
+      pts.length < 2
+    )
+      throw new Error('Invalid corridor');
+    for (let i = 0; i < pts.length; i++) {
+      if (!finitePoint(pts[i])) throw new Error('Invalid corridor');
+    }
+    const p0 = pts[0],
+      pLast = pts[pts.length - 1];
+    // Reference equality fast-path: surfaceGraph shares node position tuples
+    // directly as edge endpoints, skipping 2x Math.hypot per ground edge.
+    if (
+      (p0 !== fromNode && distance(p0, fromNode) > 1e-6) ||
+      (pLast !== toNode && distance(pLast, toNode) > 1e-6)
     )
       throw new Error('Invalid corridor');
     validateMotion(edge);
     if (edge.state === 'open') {
       let edgeBlocked = false;
       if (blocked) {
-        const pts = edge.points;
         for (let i = 1; i < pts.length; i++) {
           if (blocked(pts[i - 1], pts[i])) {
             edgeBlocked = true;
@@ -261,7 +279,7 @@ function prepareGraph(
         }
       }
       if (!edgeBlocked) {
-        const span = distance(nodes.get(edge.from)!, nodes.get(edge.to)!);
+        const span = distance(fromNode, toNode);
         if (span > 0) maxSpeed = Math.max(maxSpeed, edge.cost === 0 ? Infinity : span / edge.cost);
         let outgoing = edges.get(edge.from);
         if (base && !copied!.has(edge.from)) {

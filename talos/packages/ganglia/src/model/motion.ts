@@ -2,27 +2,32 @@ import type { Vec3 } from '#@/src/geometry.ts';
 import type { BoostUse, MovementMode } from '#@/src/movement.ts';
 
 const modes = new Set<string>(['walk', 'rope', 'jump', 'drop', 'launch']);
-const distance = (a: Vec3, b: Vec3) => Math.hypot(...a.map((v, i) => v - b[i]));
+const distance = (a: Vec3, b: Vec3) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 // Shared by graph and grounded-connection import. Sample times are measured from
 // segment entry, not global time; they preserve acceleration and pauses in a path.
-export function validateMotion({
-  mode = 'walk',
-  points,
-  times,
-  cost,
-  connection,
-  requiredGait,
-  boost,
-}: {
-  points: Vec3[];
-  cost: number;
-  mode?: MovementMode;
-  times?: number[];
-  connection?: string;
-  requiredGait?: 'sprint';
-} & {
-  boost?: BoostUse;
-}) {
+export function validateMotion(
+  segment: {
+    points: Vec3[];
+    cost: number;
+    mode?: MovementMode;
+    times?: number[];
+    connection?: string;
+    requiredGait?: 'sprint';
+  } & {
+    boost?: BoostUse;
+  },
+) {
+  // Plain walking edges carry no optional motion metadata; fast-return to avoid
+  // Set lookups and destructuring across 600k+ ground portal edges in prepareGraph.
+  if (
+    segment.mode === undefined &&
+    segment.times === undefined &&
+    segment.connection === undefined &&
+    segment.requiredGait === undefined &&
+    segment.boost === undefined
+  )
+    return;
+  const { mode = 'walk', points, times, cost, connection, requiredGait, boost } = segment;
   if (
     boost !== undefined &&
     (!boost ||
