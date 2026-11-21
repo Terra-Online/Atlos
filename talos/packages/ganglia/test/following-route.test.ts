@@ -81,12 +81,14 @@ const solve = async ({
   arrivals = starts,
   target = [12, 2.5, 0],
   options = jump,
+  checkpoint,
 }: {
   boxes?: FollowingSupport[];
   surfaces?: Surface[];
   arrivals?: GroundArrival[];
   target?: Vec3;
   options?: JumpRouteOptions;
+  checkpoint?: () => Promise<void>;
 } = {}) => {
   const terrain = geometry(surfaces),
     world = createCollisionWorld(terrain, { bounds: { min: [-8.5, -6.5], max: [18.5, 6.5] } });
@@ -94,6 +96,7 @@ const solve = async ({
     surfaces,
     build,
     jump: options,
+    checkpoint,
   });
 };
 
@@ -571,4 +574,22 @@ test('a complete layout may clear a corridor without stepping on the relocated b
     assert.notDeepEqual(result.route.placements![0].position, box.spawn);
     assert.ok(result.route.segments.every((segment) => segment.mode === 'walk'));
   }
+});
+
+test('planFollowingRoute honors cooperative checkpoint cancellation between layouts', async () => {
+  let checks = 0;
+  await assert.rejects(
+    solve({
+      boxes: [relayBox('a', 0), relayBox('b', 3.5)],
+      surfaces: relaySurfaces(),
+      target: [10, 0, 0],
+      options: { ...relayOptions, maxLinks: 16, maxCandidates: 512 },
+      checkpoint: async () => {
+        checks += 1;
+        if (checks >= 3) throw new Error('route-cancelled');
+      },
+    }),
+    /route-cancelled/,
+  );
+  assert.equal(checks, 3);
 });

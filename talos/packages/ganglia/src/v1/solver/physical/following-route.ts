@@ -3,7 +3,7 @@ import type { BuildOptions } from '#@/src/build.ts';
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { CollisionGeometry, Surface, Vec3 } from '#@/src/geometry.ts';
 import { createCollisionWorld } from '#@/src/model/collision.ts';
-import { createGoalProjector, findGoalHit } from '#@/src/model/goals.ts';
+import { createGoalProjector, findGoalHit, type GoalProjector } from '#@/src/model/goals.ts';
 import { supportBounds } from '#@/src/model/supports.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
 import type { GroundArrival, GroundConnection, Route } from '#@/src/route.ts';
@@ -144,6 +144,36 @@ const compatibleConnections = (
  * pose and the bounds of actually used roofs. Each box keeps its own activity sphere.
  * @throws for invalid player build settings or a failed native bake
  */
+// Combine an already-indexed static projector with a small temporary roof
+// overlay so per-placement queries never re-index the full static surface set.
+const combineGoalProjectors = (base: GoalProjector, overlay: GoalProjector): GoalProjector => {
+  const combined: GoalProjector = (target, options) => {
+    const a = base(target, options);
+    const b = overlay(target, options);
+    if (!b.length) return a;
+    if (!a.length) return b;
+    if (options.interaction === undefined) return a[0].distance <= b[0].distance ? a : b;
+    // Preserve [...surfaces, ...roofs] order on equal distance ties.
+    const merged: typeof a = [];
+    let i = 0,
+      j = 0;
+    while (i < a.length && j < b.length) {
+      merged.push(a[i].distance <= b[j].distance ? a[i++] : b[j++]);
+    }
+    while (i < a.length) merged.push(a[i++]);
+    while (j < b.length) merged.push(b[j++]);
+    return merged;
+  };
+  combined.closest = (target, options) => {
+    const a = base.closest(target, options);
+    const b = overlay.closest(target, options);
+    if (!a) return b;
+    if (!b) return a;
+    return a.distance <= b.distance ? a : b;
+  };
+  return combined;
+};
+
 export const planFollowingRoute = async (
   supports: FollowingSupport[],
   terrain: CollisionGeometry,
@@ -157,6 +187,7 @@ export const planFollowingRoute = async (
     onProgress,
     firstFeasible,
     onCandidate,
+    checkpoint,
   }: {
     surfaces: Surface[];
     build: BuildOptions;
@@ -164,6 +195,7 @@ export const planFollowingRoute = async (
     firstFeasible?: boolean;
     onCandidate?: (value: Result) => Promise<void>;
     onProgress?: (value: Record<string, unknown>) => void;
+    checkpoint?: () => Promise<void>;
   },
 ): Promise<Result> => {
   const validBudget = [jump.maxLinks, jump.maxCandidates].every(
@@ -238,6 +270,7 @@ export const planFollowingRoute = async (
     steps: { position: Vec3; floor: number }[];
   }[] = [];
   for (const { support, bounds: original } of definitions) {
+    await checkpoint?.();
     if (
       !validPoint(support.spawn) ||
       !Number.isFinite(support.maxDistance) ||
@@ -628,6 +661,9 @@ export const planFollowingRoute = async (
   }
   for (const stepping of [true, false]) {
     for (const layout of stepping ? stepLayouts() : ordinaryLayouts()) {
+      // Honor cooperative request deadlines between box layouts so slow multi-box
+      // evaluations cannot run past the query cutoff without yielding.
+      await checkpoint?.();
       onProgress?.({
         phase: stepping ? 'following-step-placement' : 'following-placement',
         completed: stepping ? diagnostics.stepPlacements : diagnostics.placements,
@@ -747,6 +783,7 @@ export const planFollowingRoute = async (
         const key = JSON.stringify([placed.support.id, placed.position, bounds, localBodies]);
         let baked = roofCache.get(key);
         if (!baked) {
+          await checkpoint?.();
           const staticTriangles = trianglesOf(terrain, world.trianglesInBounds?.(bounds));
           baked = await buildGroundSurfaces(
             joinedGeometry(geometryOfTriangles(staticTriangles), localBodies),
@@ -793,7 +830,7 @@ export const planFollowingRoute = async (
           selected[0].floor,
           placedWorld,
           project,
-          createGoalProjector(layoutSurfaces),
+          combineGoalProjectors(project, createGoalProjector(roofs)),
           surfaceById,
           goal,
           { ...settings, maxCandidates: jump.maxCandidates },

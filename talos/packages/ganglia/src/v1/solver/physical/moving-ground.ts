@@ -157,7 +157,14 @@ export const movingGround = async (
     walls,
     surfaces: baseSurfaces,
     speed,
-  }: { build: BuildOptions; walls: Wall[]; surfaces: Surface[]; speed: number },
+    checkpoint,
+  }: {
+    build: BuildOptions;
+    walls: Wall[];
+    surfaces: Surface[];
+    speed: number;
+    checkpoint?: () => Promise<void>;
+  },
 ) => {
   const bounds = build.bounds;
   if (!Number.isFinite(speed) || speed <= 0) {
@@ -214,6 +221,7 @@ export const movingGround = async (
   const padding = build.profile.radius + build.cellSize * 4;
   for (const layer of layers.values()) {
     for (const cluster of clustersOf(layer.roofs, padding, bounds)) {
+      await checkpoint?.();
       // other poses of the same body are support alternatives, never headroom obstacles.
       const geometry = geometryOf(cluster.roofs);
       const positions = Array.from(geometry.positions),

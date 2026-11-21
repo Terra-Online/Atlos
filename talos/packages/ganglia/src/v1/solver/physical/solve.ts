@@ -608,6 +608,7 @@ export const solvePhysicalRoute = async (
           walls: options.walls,
           surfaces,
           speed: options.speed,
+          checkpoint: context.checkpoint,
         });
         const combined = added.surfaces.length ? [...surfaces, ...added.surfaces] : surfaces;
         const portals = added.portals.length
@@ -819,6 +820,7 @@ export const solvePhysicalRoute = async (
           model,
         },
         onProgress: progress,
+        checkpoint: context.checkpoint,
         firstFeasible: context.effort === 'devices',
         onCandidate: async (candidate) => {
           if (candidate.route.status === 'complete')
