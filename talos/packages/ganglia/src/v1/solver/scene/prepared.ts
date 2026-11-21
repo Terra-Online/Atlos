@@ -21,6 +21,7 @@ import { validateWaypoints } from '#@/src/v1/route/jump-planner.ts';
 import { createCandidatePlanner } from '#@/src/v1/search/candidate-planner.ts';
 import { composeRoutes, admitAuthoredStart } from '#@/src/v1/solver/route-result.ts';
 import {
+  createAirbornePrepCache,
   discoverAirborneEntries,
   loadAirborneWindow,
   type AirborneWindow,
@@ -75,6 +76,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
   const planner = createCandidatePlanner(navigation);
   let projectGoal: GoalProjector | undefined;
   const groundCache = createWindowGroundCache();
+  const airbornePrepCache = createAirbornePrepCache();
   const maxAttempts = config.maxAttempts,
     concurrency = config.batchConcurrency;
   let transport: ReturnType<NonNullable<typeof resources.movingTransfers>> | undefined;
@@ -133,6 +135,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
           query,
           options,
           loadGoalWindow,
+          airbornePrepCache,
         );
         if (found) {
           options.onEvent?.({ type: 'candidate', result: found, optimizing: false });
@@ -154,6 +157,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
             query,
             options,
             loadGoalWindow,
+            airbornePrepCache,
           );
         }
         // Entry proximity alone can favor a roof that the original arrivals
@@ -448,6 +452,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         await Promise.allSettled(batches);
         await Promise.allSettled(active);
         groundCache.clear();
+        airbornePrepCache.clear();
         if (--openSceneSolvers === 0) clearActionCatalog();
         await resources.close?.();
       })();

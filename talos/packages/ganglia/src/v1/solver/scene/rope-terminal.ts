@@ -21,7 +21,7 @@ import { planJumpRoute, type JumpRouteOptions } from '#@/src/v1/route/jump-plann
 import { createCandidatePlanner } from '#@/src/v1/search/candidate-planner.ts';
 import { createDeviceConnections } from '#@/src/v1/solver/physical/devices.ts';
 import { composeRoutes } from '#@/src/v1/solver/route-result.ts';
-import type { AirborneWindow } from '#@/src/v1/solver/scene/airborne.ts';
+import type { AirbornePrepCache, AirborneWindow } from '#@/src/v1/solver/scene/airborne.ts';
 
 type Complete = Extract<Route, { status: 'complete' }>;
 type Scene<Source> = { scene: string; source: Source; walls: Wall[] };
@@ -76,28 +76,40 @@ async function physicalWindow<Source, Job extends WindowJob>(
   }
 }
 
-function movement(snapshot: PhysicalSnapshot, config: GangliaV1Config) {
+function movement(
+  snapshot: PhysicalSnapshot,
+  config: GangliaV1Config,
+  prepCache?: AirbornePrepCache,
+) {
   const { input, coverage } = snapshot;
   const { surfaces } = input.ground;
   if (!surfaces.length) return;
   const { model, maxSlope, runAirSpeed } = input.movement;
-  const scope = coverage === 'complete' ? input.ground.build?.bounds : coverage.bounds;
-  const geometry = { positions: input.collision.positions, indices: input.collision.indices };
-  const base = createTypeScriptCollisionWorld(
-    geometry,
-    scope
-      ? {
-          bounds: {
-            min: [scope.min[0] - 0.5, scope.min[1] - 0.5],
-            max: [scope.max[0] + 0.5, scope.max[1] + 0.5],
-          },
-        }
-      : undefined,
-  );
-  const physical = createPhysicalWorld({ ...input, collision: geometry }, coverage, {
-    geometry,
-    world: base,
-  });
+  let base: CollisionWorld;
+  let physical: ReturnType<typeof createPhysicalWorld>;
+  if (prepCache) {
+    const cached = prepCache.getPrepared(snapshot, true);
+    base = cached.baseWorld;
+    physical = cached.physical;
+  } else {
+    const scope = coverage === 'complete' ? input.ground.build?.bounds : coverage.bounds;
+    const geometry = { positions: input.collision.positions, indices: input.collision.indices };
+    base = createTypeScriptCollisionWorld(
+      geometry,
+      scope
+        ? {
+            bounds: {
+              min: [scope.min[0] - 0.5, scope.min[1] - 0.5],
+              max: [scope.max[0] + 0.5, scope.max[1] + 0.5],
+            },
+          }
+        : undefined,
+    );
+    physical = createPhysicalWorld({ ...input, collision: geometry }, coverage, {
+      geometry,
+      world: base,
+    });
+  }
   const configured = physical.configured();
   const { covered } = physical;
   // Discovery probes also sample candidates near a window edge. Unknown
@@ -123,7 +135,9 @@ function movement(snapshot: PhysicalSnapshot, config: GangliaV1Config) {
     locomotion: input.locomotion,
     maxVertical: 0.5,
   };
-  const planner = createGroundPlanner(surfaces, options);
+  const planner = prepCache
+    ? prepCache.getPlanner(snapshot)
+    : createGroundPlanner(surfaces, options);
   let min = Infinity,
     max = -Infinity;
   for (const surface of surfaces)
@@ -167,6 +181,7 @@ export async function discoverRopeTerminal<Source, Job extends WindowJob>(
   query: RouteQuery,
   options: SolveOptions,
   load: () => Promise<AirborneWindow<Job> | undefined>,
+  prepCache?: AirbornePrepCache,
 ): Promise<RouteResult | undefined> {
   const interaction = query.interaction;
   // Starts with a separate projection range belong to the ordinary window
@@ -181,7 +196,21 @@ export async function discoverRopeTerminal<Source, Job extends WindowJob>(
   options.onEvent?.({ type: 'progress', phase: 'validate' });
   const terminal = (await load())?.snapshot;
   if (!terminal?.input.devices?.ropes.length) return;
-  const local = movement(terminal, config);
+  // Filter candidate nearby ropes BEFORE building collision/ground indices and
+  // searching terminal flights (avoids ~10s of dead work when no rope is nearby).
+  const devices = new Map(terminal.input.devices.devices.map((device) => [device.id, device]));
+  const ropes = terminal.input.devices.ropes
+    .flatMap((pair) => {
+      const bottom = devices.get(pair.bottom),
+        top = devices.get(pair.top);
+      return bottom?.goal && top?.goal && distance(top.position, query.goal) <= 3 * config.gridSpan
+        ? [{ pair, bottom: bottom.goal, top: top.goal }]
+        : [];
+    })
+    .sort((a, b) => distance(a.top.position, query.goal) - distance(b.top.position, query.goal))
+    .slice(0, config.maxAttempts);
+  if (!ropes.length) return;
+  const local = movement(terminal, config, prepCache);
   if (!local) return;
   const terminalFlights = findGoalFlights(local.surfaces, local.world, starts, query.goal, {
     ...local.params,
@@ -197,18 +226,6 @@ export async function discoverRopeTerminal<Source, Job extends WindowJob>(
     .sort((a, b) => a.projection!.distance - b.projection!.distance)[0];
   if (!goalContact) return;
   await checkpoint(options.signal);
-  const devices = new Map(terminal.input.devices.devices.map((device) => [device.id, device]));
-  const ropes = terminal.input.devices.ropes
-    .flatMap((pair) => {
-      const bottom = devices.get(pair.bottom),
-        top = devices.get(pair.top);
-      return bottom?.goal && top?.goal && distance(top.position, query.goal) <= 3 * config.gridSpan
-        ? [{ pair, bottom: bottom.goal, top: top.goal }]
-        : [];
-    })
-    .sort((a, b) => distance(a.top.position, query.goal) - distance(b.top.position, query.goal))
-    .slice(0, config.maxAttempts);
-  if (!ropes.length) return;
   // Localize only the proposal graph. Physical windows and proofs are still
   // required for all movement. A full-scene optimistic transfer expansion is
   // unnecessary for this bounded fallback.

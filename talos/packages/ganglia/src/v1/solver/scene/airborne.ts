@@ -1,5 +1,7 @@
-import type { Vec3, Wall } from '#@/src/geometry.ts';
-import { createGoalProjector, findGoalHit } from '#@/src/model/goals.ts';
+import type { CollisionWorld } from '#@/src/collision.ts';
+import type { CollisionGeometry, Vec3, Wall } from '#@/src/geometry.ts';
+import { createTypeScriptCollisionWorld } from '#@/src/model/collision.ts';
+import { createGoalProjector, findGoalHit, type GoalProjector } from '#@/src/model/goals.ts';
 import { createPhysicalWorld } from '#@/src/model/world.ts';
 import type { Route } from '#@/src/route.ts';
 import type { RouteQuery, SolveOptions } from '#@/src/solver/contract.ts';
@@ -11,12 +13,135 @@ import type {
   SceneTerminal,
   WindowJob,
 } from '#@/src/solver/resources.ts';
+import { createGroundPlanner, type GroundPlanner } from '#@/src/v1/route/ground.ts';
 import { standingFoot } from '#@/src/v1/search/traversal.ts';
 
 type Complete = Extract<Route, { status: 'complete' }>;
 export interface Entry extends SceneTerminal {
   /** Bind activation to the first real trigger crossing in the joined route. */
   bind(route: Complete): boolean;
+}
+
+/** Single-entry solver-scoped preparation cache shared between
+ * discoverRopeTerminal and discoverAirborneEntries so the same immutable
+ * PhysicalSnapshot never rebuilds 2M+ triangle collision BVHs or 200k+ surface
+ * GroundPlanners multiple times. Cleared deterministically on solver.close().
+ */
+export interface AirbornePrepCache {
+  getPrepared(
+    snapshot: PhysicalSnapshot,
+    paddedScope: boolean,
+  ): {
+    geometry: CollisionGeometry;
+    baseWorld: CollisionWorld;
+    physical: ReturnType<typeof createPhysicalWorld>;
+  };
+  getPlanner(snapshot: PhysicalSnapshot): GroundPlanner;
+  getProjector(snapshot: PhysicalSnapshot): GoalProjector;
+  clear(): void;
+}
+
+export function createAirbornePrepCache(): AirbornePrepCache {
+  let slot:
+    | {
+        revision: string;
+        positions: PhysicalSnapshot['input']['collision']['positions'];
+        indices: PhysicalSnapshot['input']['collision']['indices'];
+        surfaces: PhysicalSnapshot['input']['ground']['surfaces'];
+        walls: PhysicalSnapshot['input']['ground']['options']['walls'];
+        roundedWalls: PhysicalSnapshot['input']['roundedWalls'];
+        paddedScope: boolean;
+        prepared?: {
+          geometry: CollisionGeometry;
+          baseWorld: CollisionWorld;
+          physical: ReturnType<typeof createPhysicalWorld>;
+        };
+        planner?: GroundPlanner;
+        projector?: GoalProjector;
+      }
+    | undefined;
+
+  const ensureSlot = (snapshot: PhysicalSnapshot, paddedScope: boolean) => {
+    const { input } = snapshot;
+    if (
+      !slot ||
+      slot.revision !== snapshot.revision ||
+      slot.positions !== input.collision.positions ||
+      slot.indices !== input.collision.indices ||
+      slot.surfaces !== input.ground.surfaces ||
+      slot.walls !== input.ground.options.walls ||
+      slot.roundedWalls !== input.roundedWalls ||
+      slot.paddedScope !== paddedScope
+    ) {
+      slot = {
+        revision: snapshot.revision,
+        positions: input.collision.positions,
+        indices: input.collision.indices,
+        surfaces: input.ground.surfaces,
+        walls: input.ground.options.walls,
+        roundedWalls: input.roundedWalls,
+        paddedScope,
+      };
+    }
+    return slot;
+  };
+
+  return {
+    getPrepared(snapshot, paddedScope) {
+      const current = ensureSlot(snapshot, paddedScope);
+      if (!current.prepared) {
+        const { input, coverage } = snapshot;
+        const geometry = { positions: input.collision.positions, indices: input.collision.indices };
+        const scope = paddedScope
+          ? coverage === 'complete'
+            ? input.ground.build?.bounds
+            : coverage.bounds
+          : undefined;
+        const baseWorld = createTypeScriptCollisionWorld(
+          geometry,
+          scope
+            ? {
+                bounds: {
+                  min: [scope.min[0] - 0.5, scope.min[1] - 0.5],
+                  max: [scope.max[0] + 0.5, scope.max[1] + 0.5],
+                },
+              }
+            : undefined,
+        );
+        const physical = createPhysicalWorld({ ...input, collision: geometry }, coverage, {
+          geometry,
+          world: baseWorld,
+        });
+        current.prepared = { geometry, baseWorld, physical };
+      }
+      return current.prepared;
+    },
+    getPlanner(snapshot) {
+      const current = ensureSlot(snapshot, slot?.paddedScope ?? true);
+      if (!current.planner) {
+        const { input } = snapshot;
+        const options = {
+          ...input.ground.options,
+          walls: input.roundedWalls ?? input.ground.options.walls,
+          locomotion: input.locomotion,
+          maxVertical: 0.5,
+        };
+        current.planner = createGroundPlanner(input.ground.surfaces, options);
+        current.projector = current.planner.project;
+      }
+      return current.planner;
+    },
+    getProjector(snapshot) {
+      const current = ensureSlot(snapshot, slot?.paddedScope ?? snapshot.coverage !== 'complete');
+      if (!current.projector) {
+        current.projector = createGoalProjector(snapshot.input.ground.surfaces);
+      }
+      return current.projector;
+    },
+    clear() {
+      slot = undefined;
+    },
+  };
 }
 
 export interface AirborneWindow<Job> {
@@ -88,6 +213,7 @@ export async function discoverAirborneEntries<Source, Job extends WindowJob>(
   query: RouteQuery,
   options: SolveOptions,
   load: () => Promise<AirborneWindow<Job> | undefined>,
+  prepCache?: AirbornePrepCache,
 ): Promise<Entry[]> {
   if (!query.interaction?.airborne || !resources.physical) return [];
   const window = await load();
@@ -96,8 +222,8 @@ export async function discoverAirborneEntries<Source, Job extends WindowJob>(
   const input = snapshot.input;
   const facts = input.devices;
   if (!facts) return [];
-  const world = createPhysicalWorld(input, snapshot.coverage);
-  const boosts = facts.devices.filter(
+  // Filter static boost predicates BEFORE building any 2M+ triangle collision BVH.
+  const candidateBoosts = facts.devices.filter(
     (d) =>
       d.kind === 'accelerate' &&
       d.resolved &&
@@ -107,12 +233,21 @@ export async function discoverAirborneEntries<Source, Job extends WindowJob>(
       Number.isFinite(d.duration) &&
       d.duration > 0 &&
       Number.isFinite(d.boostMultiplier) &&
-      d.boostMultiplier > 1 &&
-      world.covered(d.goal.position, d.goal.position, 0),
+      d.boostMultiplier > 1,
+  );
+  if (!candidateBoosts.length) return [];
+  const paddedScope = snapshot.coverage !== 'complete';
+  const world = prepCache
+    ? prepCache.getPrepared(snapshot, paddedScope).physical
+    : createPhysicalWorld(input, snapshot.coverage);
+  const boosts = candidateBoosts.filter((d) =>
+    world.covered(d.goal!.position, d.goal!.position, 0),
   );
   if (!boosts.length) return [];
   const physical = world.configured();
-  const project = createGoalProjector(input.ground.surfaces);
+  const project = prepCache
+    ? prepCache.getProjector(snapshot)
+    : createGoalProjector(input.ground.surfaces);
   const entries: Entry[] = [];
 
   boosts.sort(
