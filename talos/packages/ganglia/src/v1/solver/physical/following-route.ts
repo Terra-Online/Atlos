@@ -55,6 +55,30 @@ const addBodies = (base: CollisionWorld, bodies: Vec3[][]): CollisionWorld => {
     sweepCapsule(a, b, profile) {
       return base.sweepCapsule(a, b, profile) ?? extra.sweepCapsule(a, b, profile);
     },
+    ...(base.hasTrianglesInAabb && extra.hasTrianglesInAabb
+      ? {
+          hasTrianglesInAabb(
+            minX: number,
+            minY: number,
+            minZ: number,
+            maxX: number,
+            maxY: number,
+            maxZ: number,
+          ) {
+            return (
+              base.hasTrianglesInAabb!(minX, minY, minZ, maxX, maxY, maxZ) ||
+              extra.hasTrianglesInAabb!(minX, minY, minZ, maxX, maxY, maxZ)
+            );
+          },
+        }
+      : {}),
+    ...(base.probeSphere && extra.probeSphere
+      ? {
+          probeSphere(center: Vec3, radius: number) {
+            return base.probeSphere!(center, radius) || extra.probeSphere!(center, radius);
+          },
+        }
+      : {}),
     groundAt(point, options) {
       const a = base.groundAt(point, options),
         b = extra.groundAt(point, options);

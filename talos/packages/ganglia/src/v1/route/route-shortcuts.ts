@@ -293,6 +293,7 @@ export function findRouteShortcuts(
           walls,
           wallCheck: blocked,
           sweep: (a, b, body) => world.sweepCapsule(a, b, body),
+          funnelWorld: world,
         };
         const arc =
           variant.value.mode === 'drop'

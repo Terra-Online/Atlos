@@ -63,6 +63,7 @@ export function roofSteps(
       wallCheck: blocked,
       profile,
       sweep: (a, b, body) => world.sweepCapsule(a, b, body),
+      funnelWorld: world,
     });
     if (!arc) return;
     let peak = arc.peakHorizontalSpeed ?? 0;

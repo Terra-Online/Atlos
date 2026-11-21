@@ -1586,6 +1586,152 @@ export function createTypeScriptCollisionWorld(
       if (key !== null) remember(key, { kind: 'sweep', result: null });
       return null;
     },
+    hasTrianglesInAabb(
+      qMinX: number,
+      qMinY: number,
+      qMinZ: number,
+      qMaxX: number,
+      qMaxY: number,
+      qMaxZ: number,
+    ): boolean {
+      requireScope(qMinX, qMinZ, qMaxX, qMaxZ);
+      if (nodeCount === 0) return false;
+      let top = 0;
+      stack[top++] = 0;
+      while (top > 0) {
+        const node = stack[--top];
+        const nOff = node * 6;
+        if (
+          qMinX > nodeBoxes[nOff + 3] ||
+          qMaxX < nodeBoxes[nOff] ||
+          qMinY > nodeBoxes[nOff + 4] ||
+          qMaxY < nodeBoxes[nOff + 1] ||
+          qMinZ > nodeBoxes[nOff + 5] ||
+          qMaxZ < nodeBoxes[nOff + 2]
+        ) {
+          continue;
+        }
+        const left = nodeLeft[node];
+        if (left >= 0) {
+          ensureStack(top + 2);
+          stack[top++] = left;
+          stack[top++] = nodeRight[node];
+          continue;
+        }
+        const startSlot = ~left;
+        const endSlot = nodeRight[node];
+        for (let slot = startSlot; slot < endSlot; slot++) {
+          const bOff = slot * 6;
+          if (
+            qMinX <= triBounds[bOff + 3] &&
+            qMaxX >= triBounds[bOff] &&
+            qMinY <= triBounds[bOff + 4] &&
+            qMaxY >= triBounds[bOff + 1] &&
+            qMinZ <= triBounds[bOff + 5] &&
+            qMaxZ >= triBounds[bOff + 2]
+          ) {
+            return true;
+          }
+        }
+      }
+      return false;
+    },
+    probeSphere(center: Vec3, radius: number): boolean {
+      const px = center[0],
+        py = center[1],
+        pz = center[2];
+      const qMinX = px - radius,
+        qMinY = py - radius,
+        qMinZ = pz - radius;
+      const qMaxX = px + radius,
+        qMaxY = py + radius,
+        qMaxZ = pz + radius;
+      requireScope(qMinX, qMinZ, qMaxX, qMaxZ);
+      if (nodeCount === 0) return false;
+      const rSq = radius * radius;
+      let top = 0;
+      stack[top++] = 0;
+      while (top > 0) {
+        const node = stack[--top];
+        const nOff = node * 6;
+        if (
+          qMinX > nodeBoxes[nOff + 3] ||
+          qMaxX < nodeBoxes[nOff] ||
+          qMinY > nodeBoxes[nOff + 4] ||
+          qMaxY < nodeBoxes[nOff + 1] ||
+          qMinZ > nodeBoxes[nOff + 5] ||
+          qMaxZ < nodeBoxes[nOff + 2]
+        ) {
+          continue;
+        }
+        const left = nodeLeft[node];
+        if (left >= 0) {
+          ensureStack(top + 2);
+          stack[top++] = left;
+          stack[top++] = nodeRight[node];
+          continue;
+        }
+        const startSlot = ~left;
+        const endSlot = nodeRight[node];
+        for (let slot = startSlot; slot < endSlot; slot++) {
+          const bOff = slot * 6;
+          if (
+            qMinX > triBounds[bOff + 3] ||
+            qMaxX < triBounds[bOff] ||
+            qMinY > triBounds[bOff + 4] ||
+            qMaxY < triBounds[bOff + 1] ||
+            qMinZ > triBounds[bOff + 5] ||
+            qMaxZ < triBounds[bOff + 2]
+          ) {
+            continue;
+          }
+          const vOff = slot * 9;
+          const t0x = triVerts[vOff],
+            t0y = triVerts[vOff + 1],
+            t0z = triVerts[vOff + 2];
+          const t1x = triVerts[vOff + 3],
+            t1y = triVerts[vOff + 4],
+            t1z = triVerts[vOff + 5];
+          const t2x = triVerts[vOff + 6],
+            t2y = triVerts[vOff + 7],
+            t2z = triVerts[vOff + 8];
+          const e1x = t1x - t0x,
+            e1y = t1y - t0y,
+            e1z = t1z - t0z;
+          const e2x = t2x - t0x,
+            e2y = t2y - t0y,
+            e2z = t2z - t0z;
+          const fnx = e1y * e2z - e1z * e2y;
+          const fny = e1z * e2x - e1x * e2z;
+          const fnz = e1x * e2y - e1y * e2x;
+          const fnSq = fnx * fnx + fny * fny + fnz * fnz;
+          const dp = (px - t0x) * fnx + (py - t0y) * fny + (pz - t0z) * fnz;
+          // Exact plane-distance fast-reject before projection/edge checks.
+          if (fnSq > 0 && Number.isFinite(fnSq) && dp * dp > rSq * fnSq) continue;
+          const distSq = pointTriangleSq(
+            px,
+            py,
+            pz,
+            dp,
+            t0x,
+            t0y,
+            t0z,
+            t1x,
+            t1y,
+            t1z,
+            t2x,
+            t2y,
+            t2z,
+            fnx,
+            fny,
+            fnz,
+            fnSq,
+          );
+          if (distSq <= rSq) return true;
+        }
+      }
+      return false;
+    },
   };
 }
 

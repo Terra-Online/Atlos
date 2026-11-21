@@ -472,3 +472,72 @@ test('jump impulse decays above sustained air speed and remains collision checke
     null,
   );
 });
+
+test('3-stage collision funnel fast-accepts empty AABBs, fast-rejects mid-arc blocks, and matches exact sweeps', () => {
+  // Floor far below + mid-air ceiling obstacle at x=2, y=2.5
+  const faces: Vec3[][] = [
+    [
+      [-10, -5, -10],
+      [10, -5, -10],
+      [0, -5, 10],
+    ],
+    [
+      [1.5, 2.5, -2],
+      [2.5, 2.5, -2],
+      [2.5, 2.5, 2],
+    ],
+    [
+      [1.5, 2.5, -2],
+      [2.5, 2.5, 2],
+      [1.5, 2.5, 2],
+    ],
+  ];
+  const collision = world(faces);
+  let sweepCalls = 0;
+  const countingSweep: typeof collision.sweepCapsule = (a, b, body) => {
+    sweepCalls++;
+    return collision.sweepCapsule(a, b, body);
+  };
+
+  // Stage 1: arc high above all geometry -> 0 sweepCapsule calls and identical arc.
+  sweepCalls = 0;
+  const clearFunnel = jumpConnection([0, 10, 0], [4, 10, 0], {
+    ...options,
+    sweep: countingSweep,
+    funnelWorld: collision,
+  });
+  assert.equal(sweepCalls, 0);
+  const clearDirect = jumpConnection([0, 10, 0], [4, 10, 0], {
+    ...options,
+    sweep: collision.sweepCapsule,
+  });
+  assert.deepEqual(clearFunnel, clearDirect);
+
+  // Stage 2: arc colliding with mid-air ceiling -> rejected by probeSphere with 0 sweepCapsule calls.
+  sweepCalls = 0;
+  const blockedFunnel = jumpConnection([0, 0, 0], [4, 0, 0], {
+    ...options,
+    sweep: countingSweep,
+    funnelWorld: collision,
+  });
+  assert.equal(blockedFunnel, null);
+  assert.equal(sweepCalls, 0);
+  assert.equal(
+    jumpConnection([0, 0, 0], [4, 0, 0], { ...options, sweep: collision.sweepCapsule }),
+    null,
+  );
+
+  // Stage 3: grazing arc passing just under/around obstacle -> exact match with direct sweep.
+  for (const z of [-2.4, -2.2, -2.0, 0, 2.2, 2.5]) {
+    const a = jumpConnection([0, 0, z], [4, 0, z], {
+      ...options,
+      sweep: collision.sweepCapsule,
+      funnelWorld: collision,
+    });
+    const b = jumpConnection([0, 0, z], [4, 0, z], {
+      ...options,
+      sweep: collision.sweepCapsule,
+    });
+    assert.deepEqual(a, b);
+  }
+});

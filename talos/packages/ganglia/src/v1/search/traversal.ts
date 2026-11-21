@@ -973,6 +973,7 @@ export function findJumpConnections(
     walls,
     wallCheck: blocked,
     sweep: world.sweepCapsule.bind(world),
+    funnelWorld: world,
   };
   const validate = (entry: Transfer): DiscoveredConnection | null | undefined => {
     const { a, b } = entry;

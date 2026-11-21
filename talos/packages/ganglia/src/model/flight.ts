@@ -16,6 +16,12 @@ export type JumpOptions = JumpModel & {
   profile: { radius: number; height: number };
   mode: 'jump' | 'drop';
   sweep: CollisionWorld['sweepCapsule'];
+  /** Optional collision world backing `sweep` to enable the 3-stage collision
+   * funnel (Stage 1 arc AABB fast-accept, Stage 2 discrete sphere fast-reject,
+   * Stage 3 exact continuous sweep). Supply only when `sweep` delegates directly
+   * to `funnelWorld.sweepCapsule` without custom early-stop side effects.
+   */
+  funnelWorld?: CollisionWorld;
   walls: Wall[];
   clearance?: number;
   collection?: { target: Vec3; interaction: InteractionGoal };
@@ -69,7 +75,10 @@ interface SweepOptions {
   profile: JumpOptions['profile'];
   clearance: number;
   wallCheck: NonNullable<JumpOptions['wallCheck']>;
+  hasCustomWallCheck: boolean;
+  hasWalls: boolean;
   sweep: JumpOptions['sweep'];
+  funnelWorld?: CollisionWorld;
   horizontalAt(time: number): readonly number[];
   horizontalAcceleration: number;
   peakHorizontalSpeed?: number;
@@ -435,7 +444,10 @@ export function jumpConnection(start: Vec3, end: Vec3, options: JumpOptions): Ar
     profile,
     clearance,
     wallCheck,
+    hasCustomWallCheck: options.wallCheck !== undefined,
+    hasWalls: walls.length > 0,
     sweep,
+    funnelWorld: options.funnelWorld,
     horizontalAt,
     horizontalAcceleration,
     peakHorizontalSpeed,
@@ -452,7 +464,10 @@ function sweepTrajectory(
     profile,
     clearance,
     wallCheck,
+    hasCustomWallCheck,
+    hasWalls,
     sweep,
+    funnelWorld,
     horizontalAt,
     horizontalAcceleration,
     peakHorizontalSpeed,
@@ -460,24 +475,183 @@ function sweepTrajectory(
     collection,
   }: SweepOptions,
 ): Arc | null {
-  const points: Vec3[] = [[...start]],
-    times = [0];
-  let elapsed = 0,
-    collected = false;
-  for (let phaseIndex = 0; phaseIndex < phases.length; phaseIndex++) {
-    const phase = phases[phaseIndex],
-      count = Math.ceil(phase.duration / maximumStep);
-    const advance = (previousTime: number, localTime: number, last: boolean): boolean => {
-      if (collected) return true;
-      let time = elapsed + localTime;
-      const horizontal = horizontalAt(time);
-      let point: Vec3 = last
-        ? [...end]
-        : [
+  let terrainClear = false;
+  let coarsePoints: Vec3[] | null = null;
+  let coarseTimes: number[] | null = null;
+
+  // 3-Stage Collision Funnel (when backed directly by CollisionWorld):
+  //   Stage 1 (Arc AABB fast-accept): if zero triangles overlap the conservative
+  //     swept arc AABB, skip all per-chord sweepCapsule calls.
+  //   Stage 2 (Discrete sphere fast-reject): probe critical coarse sample points
+  //     (landing, midpoint, quartiles) with a strict inward-margined sphere test
+  //     to reject obviously blocked arcs before continuous sweeps.
+  //   Stage 3 (Exact continuous sweep): run full sweepCapsule with bisection
+  //     refinement on surviving candidates.
+  if (funnelWorld && (funnelWorld.hasTrianglesInAabb || funnelWorld.probeSphere)) {
+    coarsePoints = [[start[0], start[1], start[2]]];
+    coarseTimes = [0];
+    let arcMinX = start[0],
+      arcMinY = start[1],
+      arcMinZ = start[2];
+    let arcMaxX = start[0],
+      arcMaxY = start[1],
+      arcMaxZ = start[2];
+    let maxInflation = clearance;
+    let sampleElapsed = 0;
+    for (let phaseIndex = 0; phaseIndex < phases.length; phaseIndex++) {
+      const phase = phases[phaseIndex];
+      const count = Math.ceil(phase.duration / maximumStep);
+      const stepDelta = phase.duration / count;
+      const stepInf =
+        clearance +
+        (Math.hypot(phase.acceleration, horizontalAcceleration) * stepDelta * stepDelta) / 8;
+      if (stepInf > maxInflation) maxInflation = stepInf;
+      for (let step = 1; step <= count; step++) {
+        const localTime = (phase.duration * step) / count;
+        const time = sampleElapsed + localTime;
+        const last = phaseIndex === phases.length - 1 && step === count;
+        let pt: Vec3;
+        if (last) {
+          pt = [end[0], end[1], end[2]];
+        } else {
+          const horizontal = horizontalAt(time);
+          pt = [
             horizontal[0],
             phase.y + phase.velocity * localTime + (phase.acceleration * localTime * localTime) / 2,
             horizontal[1],
           ];
+        }
+        coarsePoints.push(pt);
+        coarseTimes.push(time);
+        if (pt[0] < arcMinX) arcMinX = pt[0];
+        if (pt[0] > arcMaxX) arcMaxX = pt[0];
+        if (pt[1] < arcMinY) arcMinY = pt[1];
+        if (pt[1] > arcMaxY) arcMaxY = pt[1];
+        if (pt[2] < arcMinZ) arcMinZ = pt[2];
+        if (pt[2] > arcMaxZ) arcMaxZ = pt[2];
+      }
+      sampleElapsed += phase.duration;
+    }
+
+    const wb = funnelWorld.bounds;
+    // Stage 1: conservative arc AABB fast-accept.
+    if (funnelWorld.hasTrianglesInAabb) {
+      const rMax = profile.radius + maxInflation;
+      const aMinX = arcMinX - rMax;
+      const aMinY = arcMinY - maxInflation;
+      const aMinZ = arcMinZ - rMax;
+      const aMaxX = arcMaxX + rMax;
+      const aMaxY = arcMaxY + profile.height + maxInflation;
+      const aMaxZ = arcMaxZ + rMax;
+      const finiteBox =
+        Number.isFinite(aMinX) &&
+        Number.isFinite(aMinY) &&
+        Number.isFinite(aMinZ) &&
+        Number.isFinite(aMaxX) &&
+        Number.isFinite(aMaxY) &&
+        Number.isFinite(aMaxZ);
+      const inScope =
+        !wb ||
+        (aMinX >= wb.min[0] && aMaxX <= wb.max[0] && aMinZ >= wb.min[1] && aMaxZ <= wb.max[1]);
+      if (
+        finiteBox &&
+        inScope &&
+        !funnelWorld.hasTrianglesInAabb(aMinX, aMinY, aMinZ, aMaxX, aMaxY, aMaxZ)
+      ) {
+        terrainClear = true;
+        if (!collection && !hasWalls && !hasCustomWallCheck) {
+          return {
+            mode,
+            points: coarsePoints,
+            times: coarseTimes,
+            motionValidation: 'model-based',
+            ...(peakHorizontalSpeed === undefined ? {} : { peakHorizontalSpeed }),
+          };
+        }
+      }
+    }
+
+    // Stage 2: discrete sphere fast-reject on exact coarse sample endpoints
+    // (skipped when `collection` is active because the arc may terminate early).
+    if (!terrainClear && !collection && funnelWorld.probeSphere) {
+      const lastIdx = coarsePoints.length - 1;
+      const rRaw = profile.radius + clearance;
+      // 1nm inward margin prevents any float64 false reject on exact tangency.
+      const rProbe = rRaw > 1e-6 ? rRaw - 1e-9 : 0;
+      const hasMidSphere = profile.height > 4 * profile.radius;
+      const midOffset = profile.height * 0.5;
+      const topOffset = profile.height - profile.radius;
+      const probeIndices = [lastIdx, lastIdx >> 1, lastIdx >> 2, (3 * lastIdx) >> 2];
+      const probeCenter: Vec3 = [0, 0, 0];
+      for (let pi = 0; pi < probeIndices.length; pi++) {
+        const idx = probeIndices[pi];
+        if (idx <= 0) continue;
+        // Skip duplicates for very short arcs.
+        let dup = false;
+        for (let pj = 0; pj < pi; pj++) {
+          if (probeIndices[pj] === idx) {
+            dup = true;
+            break;
+          }
+        }
+        if (dup) continue;
+        const p = coarsePoints[idx];
+        if (
+          wb &&
+          (p[0] - rProbe < wb.min[0] ||
+            p[0] + rProbe > wb.max[0] ||
+            p[2] - rProbe < wb.min[1] ||
+            p[2] + rProbe > wb.max[1])
+        ) {
+          continue;
+        }
+        if (wallCheck(p, p, clearance)) return null;
+        probeCenter[0] = p[0];
+        probeCenter[2] = p[2];
+        probeCenter[1] = p[1] + profile.radius;
+        if (funnelWorld.probeSphere(probeCenter, rProbe)) return null;
+        if (topOffset > profile.radius) {
+          probeCenter[1] = p[1] + topOffset;
+          if (funnelWorld.probeSphere(probeCenter, rProbe)) return null;
+        }
+        if (hasMidSphere) {
+          probeCenter[1] = p[1] + midOffset;
+          if (funnelWorld.probeSphere(probeCenter, rProbe)) return null;
+        }
+      }
+    }
+  }
+
+  // Stage 3: exact continuous capsule sweep along each chord (with refinement).
+  const points: Vec3[] = [[start[0], start[1], start[2]]],
+    times = [0];
+  let elapsed = 0,
+    collected = false,
+    coarseCursor = 1;
+  for (let phaseIndex = 0; phaseIndex < phases.length; phaseIndex++) {
+    const phase = phases[phaseIndex],
+      count = Math.ceil(phase.duration / maximumStep);
+    const advance = (
+      previousTime: number,
+      localTime: number,
+      last: boolean,
+      precomputed?: Vec3,
+    ): boolean => {
+      if (collected) return true;
+      let time = elapsed + localTime;
+      let point: Vec3;
+      if (precomputed) {
+        point = precomputed;
+      } else if (last) {
+        point = [...end];
+      } else {
+        const horizontal = horizontalAt(time);
+        point = [
+          horizontal[0],
+          phase.y + phase.velocity * localTime + (phase.acceleration * localTime * localTime) / 2,
+          horizontal[1],
+        ];
+      }
       const delta = localTime - previousTime;
       const inflation =
         clearance + (Math.hypot(phase.acceleration, horizontalAcceleration) * delta * delta) / 8;
@@ -490,7 +664,7 @@ function sweepTrajectory(
       }
       const blocked =
         wallCheck(previous, point, inflation) ||
-        sweep(previous, point, { ...profile, inflation }) !== null;
+        (!terrainClear && sweep(previous, point, { ...profile, inflation }) !== null);
       if (blocked) {
         // Curvature inflation can overlap the supporting ledge while the actual
         // arc clears it. Refine that interval without ignoring any contact.
@@ -504,11 +678,13 @@ function sweepTrajectory(
       return true;
     };
     for (let step = 1; step <= count; step++) {
+      const precomputed = coarsePoints ? coarsePoints[coarseCursor++] : undefined;
       if (
         !advance(
           (phase.duration * (step - 1)) / count,
           (phase.duration * step) / count,
           phaseIndex === phases.length - 1 && step === count,
+          precomputed,
         )
       )
         return null;
@@ -742,7 +918,10 @@ function steerDrop(
     profile: options.profile,
     clearance: 0,
     wallCheck: options.wallCheck,
+    hasCustomWallCheck: true,
+    hasWalls: options.walls.length > 0,
     sweep: options.sweep,
+    funnelWorld: options.funnelWorld,
     horizontalAt,
     horizontalAcceleration,
     peakHorizontalSpeed,

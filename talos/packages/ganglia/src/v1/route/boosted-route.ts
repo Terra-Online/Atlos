@@ -218,6 +218,7 @@ export function planBoostedRoute(
         profile: options.profile,
         walls: options.walls,
         sweep: world.sweepCapsule.bind(world),
+        funnelWorld: world,
       });
       if (options.interaction?.airborne) arc = trimGoalFlight(arc, goal, options.interaction);
       if (!arc) {

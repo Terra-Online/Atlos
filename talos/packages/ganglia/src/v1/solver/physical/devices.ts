@@ -127,6 +127,7 @@ const launchLanding = (
         walls,
         maxHorizontalSpeed: freeSpeed ?? speed + speedTolerance,
         sweep: (a, b, body) => world.sweepCapsule(a, b, body),
+        funnelWorld: world,
       });
       if (arc) {
         return arc;
@@ -312,6 +313,7 @@ export const prepareDeviceConnections = (input: DeviceFacts, options: Options) =
             walls: options.walls,
             maxHorizontalSpeed: distance(start, end) / duration + 1,
             sweep: (a, b, body) => world.sweepCapsule(a, b, body),
+            funnelWorld: world,
           });
           if (arc) {
             connections.push({
@@ -453,6 +455,7 @@ export const prepareDeviceConnections = (input: DeviceFacts, options: Options) =
             profile,
             walls,
             sweep: (a, b, body) => world.sweepCapsule(a, b, body),
+            funnelWorld: world,
             collection: { target, interaction },
           });
           const endpoint = arc?.points.at(-1);

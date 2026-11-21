@@ -1412,6 +1412,7 @@ function findConnections(
         wallCheck: blocked,
         ...variant,
         sweep: (from, to, body) => world.sweepCapsule(from, to, body),
+        funnelWorld: world,
       };
       const motionKey = JSON.stringify([start.position, end.position, variant]);
       let arc = motions.get(motionKey);

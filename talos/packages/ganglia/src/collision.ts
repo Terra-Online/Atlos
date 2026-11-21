@@ -50,7 +50,7 @@ export interface CollisionWorld {
     position: Vec3,
     options: { maxUp: number; maxDown: number; maxSlope: number; radius?: number },
   ): { position: Vec3; triangle: number; normal: Vec3 } | null;
-  /** Feet positions; upright capsule translated continuously along a straight segment.
+  /** Continuous straight translation of an upright capsule, given feet positions.
    * Inflation enlarges the capsule in every direction, e.g. for a bounded curve deviation.
    * Any touching triangle is returned, not necessarily the earliest impact. Distance is
    * from the swept axis to that triangle. Null does not establish landing support, motion
@@ -62,4 +62,19 @@ export interface CollisionWorld {
     end: Vec3,
     profile: Capsule,
   ): { triangle: number; distance: number } | null;
+  /** Broad-phase 3D AABB check: returns true if any indexed triangle AABB overlaps
+   * the given box. False proves every sweep wholly inside the box is collision-free.
+   */
+  hasTrianglesInAabb?(
+    minX: number,
+    minY: number,
+    minZ: number,
+    maxX: number,
+    maxY: number,
+    maxZ: number,
+  ): boolean;
+  /** Discrete sphere-triangle overlap probe (true if any triangle is within `radius`
+   * of `center`). Used as a fast-reject stage before continuous capsule sweeps.
+   */
+  probeSphere?(center: Vec3, radius: number): boolean;
 }
