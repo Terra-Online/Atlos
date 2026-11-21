@@ -139,8 +139,9 @@ export function createGroundStraightener(
   surfaces: Surface[],
   { walls, profile, portals: imported = [] }: Pick<GroundOptions, 'walls' | 'profile' | 'portals'>,
   sharedPortals?: SharedPortal[],
+  preparedBlocked?: ReturnType<typeof createWallChecker>,
 ): GroundStraightener {
-  const blocked = createWallChecker(walls, profile);
+  const blocked = preparedBlocked ?? createWallChecker(walls, profile);
   const portals = sharedPortals ?? surfacePortals(surfaces);
   const triangles: Triangle[] = [],
     boundaryOwners = new Map<string, Owner[]>();

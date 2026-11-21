@@ -65,6 +65,65 @@ const preparations = new WeakMap<GroundPlanner, Preparation>();
 /** Internal immutable preparation shared with action discovery for the same planner. */
 export const groundPreparation = (planner?: GroundPlanner): Preparation | undefined =>
   preparations.get(planner!);
+
+// Wall-independent topology base cached weakly by immutable Surface[] owner.
+// Switching walls (e.g. raw -> roundedWalls in solve.ts) or creating a second
+// planner on the same snapshot reuses portals, surfaceGraph, byId, and
+// projectGoal without recomputing surfacePortals or BoundsIndex from scratch.
+interface GroundTopologyEntry {
+  length: number;
+  portals: SharedPortal[];
+  byId: Map<string, Surface>;
+  projectGoal: GoalProjector;
+  graph?: {
+    searchSpeed: number;
+    importedPortals: GroundOptions['portals'];
+    importedLength: number;
+    base: Graph;
+    baseCenters: Map<string, Vec3>;
+  };
+}
+const topologyCache = new WeakMap<Surface[], GroundTopologyEntry>();
+
+/** Release cached wall-independent topology when a surface array retires. */
+export const releaseGroundTopologyCache = (surfaces: Surface[]) => topologyCache.delete(surfaces);
+
+function groundTopologyFor(
+  surfaces: Surface[],
+  searchSpeed: number,
+  importedPortals: GroundOptions['portals'],
+) {
+  let entry = topologyCache.get(surfaces);
+  if (!entry || entry.length !== surfaces.length) {
+    const portals = surfacePortals(surfaces);
+    const byId = new Map<string, Surface>(surfaces.map((surface) => [surface.id, surface]));
+    const projectGoal = createGoalProjector(surfaces);
+    entry = { length: surfaces.length, portals, byId, projectGoal };
+    topologyCache.set(surfaces, entry);
+  }
+  const importedLength = importedPortals?.length ?? 0;
+  if (
+    !entry.graph ||
+    entry.graph.searchSpeed !== searchSpeed ||
+    entry.graph.importedPortals !== importedPortals ||
+    entry.graph.importedLength !== importedLength
+  ) {
+    const base = surfaceGraph(
+      surfaces,
+      { speed: searchSpeed, portals: importedPortals },
+      entry.portals,
+    );
+    const baseCenters = new Map<string, Vec3>(base.nodes.map((node) => [node.id, node.position]));
+    entry.graph = { searchSpeed, importedPortals, importedLength, base, baseCenters };
+  }
+  return {
+    portals: entry.portals,
+    byId: entry.byId,
+    projectGoal: entry.projectGoal,
+    base: entry.graph.base,
+    baseCenters: entry.graph.baseCenters,
+  };
+}
 /** Ground endpoints retain their projected positions. Each connector lies within its
  * convex source polygon; only the importer may select admissible surfaces/state.
  * Directed connections must already have grounded endpoints and validated trajectories.
@@ -94,17 +153,38 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
     options.locomotion?.sprintSpeed ?? speed,
     options.locomotion?.dash?.speed ?? 0,
   );
-  const portals = surfacePortals(surfaces);
-  const base = surfaceGraph(surfaces, { speed: searchSpeed, portals: options.portals }, portals);
+  const { portals, byId, projectGoal, base, baseCenters } = groundTopologyFor(
+    surfaces,
+    searchSpeed,
+    options.portals,
+  );
   const routeBase = prepareRoutePlanner(base, { walls, profile });
   const blocked = routeBase.blocked!;
   const constraintsSignature = JSON.stringify([walls, profile]);
   let supportRoute: ReturnType<typeof createRoutePlanner> | undefined;
-  const baseCenters = new Map<string, Vec3>(base.nodes.map((node) => [node.id, node.position]));
-  const byId = new Map<string, Surface>(surfaces.map((surface) => [surface.id, surface]));
   const projectSupport = createSupportProjector(surfaces, byId);
-  const straighten = createGroundStraightener(surfaces, options, portals);
-  const projectGoal = createGoalProjector(surfaces);
+  // Build the triangle straightener lazily on first trace/straighten call so
+  // planners that fail walking or only project goals avoid building a 260k-face
+  // BoundsTree eagerly. Snapshot array/portal references for mutation isolation.
+  const surfaceSnapshot = surfaces.slice();
+  const importedPortalsSnapshot = options.portals?.slice();
+  let realStraightener: GroundStraightener | undefined;
+  const getStraightener = () => {
+    realStraightener ??= createGroundStraightener(
+      surfaceSnapshot,
+      { walls, profile, portals: importedPortalsSnapshot },
+      portals,
+      blocked,
+    );
+    return realStraightener;
+  };
+  const straighten: GroundStraightener = Object.assign(
+    (points: Vec3[]) => getStraightener()(points),
+    {
+      trace: (from: Vec3, to: Vec3) => getStraightener().trace(from, to),
+      mayConnect: (start: Vec3, end: Vec3) => getStraightener().mayConnect(start, end),
+    },
+  );
   const visibility = new Map<string, Map<string, Vec3[]>>();
   const failedVisibility = new Map<string, Set<string>>();
   let endpointKeys = new Map<string, string>();
