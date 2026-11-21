@@ -31,10 +31,10 @@ const { values } = parseArgs({
     suite: { type: 'string', default: resolve(root, 'bench/scenes/mechanisms/suite.json') },
     'data-root': {
       type: 'string',
-      default: resolve(root, '../../../.local/data/mechanisms-266-generated'),
+      default: resolve(root, '../../../.local/data/mechanisms-266-pack'),
     },
     extractor: { type: 'string', default: resolve(root, '../../.cache/noclip') },
-    'prepare-config': { type: 'string' },
+    'memory-budget-mib': { type: 'string', default: '2048' },
     adapter: { type: 'string', default: 'ganglia-v1-rust' },
     ids: { type: 'string' },
     output: { type: 'string' },
@@ -44,7 +44,7 @@ const { values } = parseArgs({
 });
 if (values.help) {
   console.log(
-    'Usage: node bench/mechanism-benchmark.ts --output <new-report.json> [--data-root <candidate-input-root>] [--prepare-config <private-game-config>] [--adapter ganglia-v1-rust|ganglia-v1-ts] [--ids id,id]. Input roots register dynamic and fixed window directories in input-index.json. Each scenario trains the suite-declared catalog, freezes it, then measures one round without warmup. Independent physical verification runs after solving. Deadlines use GANGLIA_BENCHMARK_QUERY_CUTOFF_MS and cooperative cancellation; workers are never replaced.',
+    'Usage: node bench/mechanism-benchmark.ts --output <new-report.json> [--data-root <candidate-input-root>] [--memory-budget-mib <total-loader-budget>] [--adapter ganglia-v1-rust|ganglia-v1-ts] [--ids id,id]. Input roots register one physical pack per scene in input-index.json. Each scenario trains the suite-declared catalog, freezes it, then measures one round without warmup. Independent physical verification runs after solving. Deadlines use GANGLIA_BENCHMARK_QUERY_CUTOFF_MS and cooperative cancellation; workers are never replaced.',
   );
 } else {
   if (!values.output) throw new Error('Provide --output for a new mechanism report');
@@ -53,6 +53,14 @@ if (values.help) {
   const scenarioWorkers = Number(values['scenario-workers']);
   if (!Number.isSafeInteger(scenarioWorkers) || scenarioWorkers < 1)
     throw new Error('Invalid scenario worker count');
+  const budgetMiB = Number(values['memory-budget-mib']);
+  if (
+    !Number.isSafeInteger(budgetMiB) ||
+    budgetMiB < scenarioWorkers ||
+    budgetMiB > Number.MAX_SAFE_INTEGER / 1024 ** 2
+  )
+    throw new Error('Invalid physical loader memory budget');
+  const memoryBudget = Math.floor((budgetMiB * 1024 ** 2) / scenarioWorkers);
   const suite = await readSuite(values.suite);
   const inputRoot = resolve(values['data-root']);
 
@@ -66,7 +74,7 @@ if (values.help) {
     suite,
     values.suite,
     selectedIds,
-    values['prepare-config'] && resolve(values['prepare-config']),
+    memoryBudget,
   );
   const output = resolve(values.output);
   mkdirSync(dirname(output), { recursive: true });
@@ -120,7 +128,8 @@ if (values.help) {
               scenarioId: spec.id,
               setup: {
                 ...spec.setup,
-                onDemandInput: spec.setup.input.kind === 'dynamic' && !!values['prepare-config'],
+                physicalInput: 'scene-pack',
+                memoryBudgetBytes: memoryBudget,
               },
               cases,
             },

@@ -175,15 +175,17 @@ test('service benchmark reports all selected scenario binding errors before star
       join(directory, 'input-index.json'),
       JSON.stringify({
         inputs: {
-          valid: { dynamic: { directory: 'scenarios/valid' }, regions: {} },
-          split: { dynamic: { directory: 'scenarios/split' }, regions: {} },
+          valid: { directory: 'scenarios/valid' },
+          split: { directory: 'scenarios/split' },
         },
       }),
     );
-    await mkdir(join(directory, 'scenarios/valid/routing'), { recursive: true });
+    await mkdir(join(directory, 'scenarios/valid'), { recursive: true });
+    for (const file of ['physical.json', 'ground.bin', 'collision.bin'])
+      await writeFile(join(directory, 'scenarios/valid', file), '');
     await mkdir(join(directory, 'routing'));
-    await writeFile(join(directory, 'scenarios/valid/routing/valid-ground-all.json'), '');
-    await writeFile(join(directory, 'scenarios/valid/routing/movement-settings-current.json'), '');
+    await writeFile(join(directory, 'routing/valid-ground-all.json'), '');
+    await writeFile(join(directory, 'routing/movement-settings-current.json'), '');
     await writeFile(join(directory, 'routing/valid-traversal-devices.json'), '');
     const process = spawnSync(
       globalThis.process.execPath,
@@ -204,7 +206,7 @@ test('service benchmark reports all selected scenario binding errors before star
     );
     assert.equal(process.status, 1, process.stderr);
     assert.match(process.stderr, /split:.*missing dataset input.*scenarios\/split/);
-    assert.match(process.stderr, /missing:.*missing Dataset registration/);
+    assert.match(process.stderr, /missing:.*missing physical pack registration/);
     assert.deepEqual((await readdir(directory)).sort(), [
       'input-index.json',
       'routing',

@@ -22,7 +22,7 @@ import {
   type PhysicalFiles,
   type RegionBuild,
 } from '#@/bench/scene-data.ts';
-import { createTimings } from '#@/bench/timings.ts';
+import { createTimings, observePhysicalReport } from '#@/bench/timings.ts';
 import { createPhysicalVerifier } from '#@/src/evaluation/physical.ts';
 import { verificationDefaults } from '#@/src/evaluation/policy.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
@@ -67,27 +67,11 @@ export interface SceneHooks {
   onProgress?: (progress: { phase: string; completed?: number; total?: number }) => void;
 }
 
-export async function loadScene(
-  dataRoot: string,
-  extractor: string,
-  concurrency: number,
-  scene = 'map02',
-  build?: RegionBuild,
-  hooks: SceneHooks = {},
-) {
-  const loadingStarted = performance.now();
-  const dataset = await loadSceneData(dataRoot, scene, build);
-  if (
-    hooks.requiredPhysicalBounds &&
-    !dataset.regions.some((region) =>
-      isDeepStrictEqual(region.ground.build.bounds, hooks.requiredPhysicalBounds),
-    )
-  )
-    throw new Error(`Missing fixed physical snapshot for ${scene} in ${dataRoot}`);
+export async function openGameAdapter(extractor: string, kernelRootOverride?: string) {
   const entry = resolve(extractor, 'packages/extractor/src/game/physical-input.ts');
   const resolvedKernel = createRequire(entry).resolve('@opendfieldmap/ganglia/solver');
   const kernelRoot = resolve(dirname(resolvedKernel), '../..');
-  const sourceRoot = hooks.kernelRoot ?? fileURLToPath(new URL('../../../', import.meta.url));
+  const sourceRoot = kernelRootOverride ?? fileURLToPath(new URL('../../../', import.meta.url));
   const kernelDigest = async (base: string) => {
     const hash = createHash('sha256');
     for (const name of (await readdir(resolve(base, 'src'), { recursive: true })).sort()) {
@@ -114,6 +98,28 @@ export async function loadScene(
     }
   }
   const gameAdapterSha256 = adapterHash.digest('hex');
+  return { preparePhysicalRoute, gameAdapterSha256, kernelSha256, resolvedKernel };
+}
+
+export async function loadScene(
+  dataRoot: string,
+  extractor: string,
+  concurrency: number,
+  scene = 'map02',
+  build?: RegionBuild,
+  hooks: SceneHooks = {},
+) {
+  const loadingStarted = performance.now();
+  const dataset = await loadSceneData(dataRoot, scene, build);
+  if (
+    hooks.requiredPhysicalBounds &&
+    !dataset.regions.some((region) =>
+      isDeepStrictEqual(region.ground.build.bounds, hooks.requiredPhysicalBounds),
+    )
+  )
+    throw new Error(`Missing fixed physical snapshot for ${scene} in ${dataRoot}`);
+  const { preparePhysicalRoute, gameAdapterSha256, kernelSha256, resolvedKernel } =
+    await openGameAdapter(extractor, hooks.kernelRoot);
   const inputLoadMs = dataset.inputLoadMs;
   const prepared = prepareSceneResources(
     dataset,
@@ -297,33 +303,6 @@ export function prepareSceneResources(
       : new Promise<(typeof caches)[number]>((resolve) => waiting.push(resolve));
   };
   const timings = createTimings(performance.now() - preparationStarted);
-  const observe = (report: Report) => {
-    hooks.onResult?.(report);
-    timings.physical.calls++;
-    const diagnostics = report.diagnostics;
-    if (!diagnostics || typeof diagnostics !== 'object') return;
-    // Count final physical reports once; provisional candidate emissions share
-    // the same mutable diagnostics and would otherwise multiply these totals.
-    if (
-      'timingMs' in diagnostics &&
-      diagnostics.timingMs &&
-      typeof diagnostics.timingMs === 'object'
-    )
-      for (const [stage, milliseconds] of Object.entries(diagnostics.timingMs))
-        if (typeof milliseconds === 'number')
-          timings.physical.stagesMs[stage] = (timings.physical.stagesMs[stage] ?? 0) + milliseconds;
-    if (
-      'prepareReuse' in diagnostics &&
-      diagnostics.prepareReuse &&
-      typeof diagnostics.prepareReuse === 'object'
-    )
-      for (const [slot, reused] of Object.entries(diagnostics.prepareReuse)) {
-        if (typeof reused !== 'boolean') continue;
-        const count = (timings.physical.preparation[slot] ??= { hits: 0, misses: 0 });
-        if (reused) count.hits++;
-        else count.misses++;
-      }
-  };
   const resources: SceneResources<Source, Job> = {
     physical: async (job, request) => {
       try {
@@ -386,7 +365,8 @@ export function prepareSceneResources(
           onProgress: hooks.onProgress,
         });
         timings.localSolveMs += performance.now() - started;
-        observe(result);
+        hooks.onResult?.(result);
+        observePhysicalReport(timings, result.diagnostics);
         return { status: 'ready', region: job.region, result };
       } catch (error) {
         if (options?.signal?.aborted) throw error;

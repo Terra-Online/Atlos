@@ -425,6 +425,66 @@ function joinTiles(from: Tile, to: Tile, axis: 0 | 2, options: BuildOptions): Po
   }
   return portals;
 }
+function assembleTiles(tiles: Tile[], options: BuildOptions): TileBuildResult {
+  const surfaces: Surface[] = [];
+  const portals: Portal[] = [];
+  const byPosition = new Map<string, Tile>();
+  for (const tile of tiles) {
+    const { x, z } = tile;
+    surfaces.push(...tile.surfaces);
+    byPosition.set(`${x},${z}`, tile);
+    for (const [neighborX, neighborZ, axis] of [
+      [x - 1, z, 0],
+      [x, z - 1, 2],
+    ] as const) {
+      const neighbor = byPosition.get(`${neighborX},${neighborZ}`);
+      if (neighbor) portals.push(...joinTiles(neighbor, tile, axis, options));
+    }
+  }
+  return {
+    surfaces,
+    portals,
+    tiles: tiles.map((tile) => ({ ...tile, surfaces: tile.surfaces.length })),
+  };
+}
+
+function tileCore(bounds: Rect, span: number, x: number, z: number): Rect {
+  return {
+    min: [Math.max(bounds.min[0], x * span), Math.max(bounds.min[1], z * span)],
+    max: [Math.min(bounds.max[0], (x + 1) * span), Math.min(bounds.max[1], (z + 1) * span)],
+  };
+}
+
+/** Clip the selected immutable tiles and rebuild the portals for this window. */
+export function assembleGroundTiles(
+  tiles: readonly Pick<Tile, 'x' | 'z' | 'surfaces'>[],
+  options: TileBuildOptions,
+): TileBuildResult {
+  const span = options.cellSize * options.tileCells;
+  return assembleTiles(
+    tiles.map(({ x, z, surfaces }) => {
+      const bounds = tileCore(options.bounds, span, x, z);
+      const whole =
+        bounds.min[0] === x * span &&
+        bounds.min[1] === z * span &&
+        bounds.max[0] === (x + 1) * span &&
+        bounds.max[1] === (z + 1) * span;
+      return {
+        x,
+        z,
+        bounds,
+        surfaces: whole
+          ? surfaces
+          : surfaces.flatMap((surface) => {
+              const vertices = clipSurface(surface.vertices, bounds);
+              return vertices ? [{ ...surface, vertices }] : [];
+            }),
+      };
+    }),
+    options,
+  );
+}
+
 /** Offline padded builds on one world-space voxel grid. Core clipping removes
  * artificial clearance erosion at tile boundaries. Only overlapping edges on
  * neighboring core boundaries receive directed, step-limited seam transfers.
@@ -542,17 +602,11 @@ export async function buildGroundTiles(
       tile.triangles.push(vertices);
     }
   }
-  const tiles = [],
-    surfaces: Surface[] = [],
-    portals = [],
-    byPosition = new Map<string, Tile>();
+  const tiles: Tile[] = [];
   for (const { x, z, padded, triangles } of patches) {
     const started = performance.now();
     let cached = false;
-    const core: Rect = {
-      min: [Math.max(bounds.min[0], x * size), Math.max(bounds.min[1], z * size)],
-      max: [Math.min(bounds.max[0], (x + 1) * size), Math.min(bounds.max[1], (z + 1) * size)],
-    };
+    const core = tileCore(bounds, size, x, z);
     const vertices: number[] = [];
     for (const triangle of triangles) vertices.push(...triangle);
     triangles.length = 0;
@@ -590,7 +644,7 @@ export async function buildGroundTiles(
         if (clipped) tile.surfaces.push({ id: `${x},${z}/${surface.id}`, vertices: clipped });
       }
     }
-    tiles.push({ x, z, bounds: core, surfaces: tile.surfaces.length });
+    tiles.push(tile);
     options.onTile?.({
       x,
       z,
@@ -600,15 +654,6 @@ export async function buildGroundTiles(
       cached,
       elapsedMs: performance.now() - started,
     });
-    surfaces.push(...tile.surfaces);
-    byPosition.set(`${x},${z}`, tile);
-    for (const [neighborX, neighborZ, axis] of [
-      [x - 1, z, 0],
-      [x, z - 1, 2],
-    ] as const) {
-      const neighbor = byPosition.get(`${neighborX},${neighborZ}`);
-      if (neighbor) portals.push(...joinTiles(neighbor, tile, axis, options));
-    }
   }
-  return { surfaces, portals, tiles };
+  return assembleTiles(tiles, options);
 }

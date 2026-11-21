@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 
 import { prepareRouteSolver, type PreparedRouteSolver } from '@opendfieldmap/ganglia';
 
+import type { SceneMetadata } from '#@/bench/adapter.ts';
 import type { loadScene } from '#@/bench/adapters/ganglia-v1/scene.ts';
 import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { resetTimings } from '#@/bench/timings.ts';
@@ -16,7 +17,14 @@ import type { RustPreparedSolver } from '#@/src/solver/ganglia-v1-rust.ts';
 import { rustLibraryPath } from '#@/src/solver/ganglia-v1-rust.ts';
 import { actionCatalogStats, setActionCatalogPhase } from '#@/src/v1/route/action-catalog.ts';
 
-type WorkerScene = Awaited<ReturnType<typeof loadScene>> & {
+type WorkerScene = Pick<
+  Awaited<ReturnType<typeof loadScene>>,
+  'inputLoadMs' | 'timings' | 'verifyInputs' | 'verify'
+> & {
+  input: Parameters<typeof prepareRouteSolver>[1];
+  metadata: SceneMetadata;
+  beginRequest?(signal: AbortSignal): void;
+  endRequest?(): void;
   inspectResult?: (
     query: import('#@/src/solver/contract.ts').RouteQuery,
     result: import('#@/src/solver/contract.ts').RouteResult,
@@ -158,6 +166,7 @@ export function serveWorker(
       active = { id, ...control };
       resetTimings(scene.timings);
       try {
+        scene.beginRequest?.(controller.signal);
         if (!solver) throw new Error('Scene worker kernel is not initialized');
         let result = await solver.solve(query, {
           signal: controller.signal,
@@ -180,6 +189,7 @@ export function serveWorker(
       } catch (error) {
         send({ type: 'error', id, error: error instanceof Error ? error.message : String(error) });
       } finally {
+        scene.endRequest?.();
         active = undefined;
       }
     });

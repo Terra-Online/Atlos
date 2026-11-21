@@ -12,6 +12,7 @@ import type { Case, Suite } from '#@/bench/mechanisms/suite.ts';
 import { createScenario, type ScenarioBuilder } from '#@/bench/scenario.ts';
 import type { Dataset as DatasetRoot } from '#@/bench/suite.ts';
 import { prepareWorkerSolver } from '#@/bench/workers.ts';
+import { collisionName, groundName, manifestName } from '#@/src/scene-pack.ts';
 import type { RouteQuery, SolverSettings } from '#@/src/solver/contract.ts';
 
 interface Dataset extends DatasetRoot {
@@ -34,7 +35,7 @@ export async function scenarioBindings(
   suite: Suite,
   suiteFile: string,
   selected: ReadonlySet<string>,
-  prepareConfig?: string,
+  memoryBudget = 1024 ** 3,
 ): Promise<ReadonlyMap<string, Binding>> {
   const bindings = new Map<string, Binding>();
   const errors: string[] = [];
@@ -44,25 +45,19 @@ export async function scenarioBindings(
     const cases = spec.cases.filter((item) => selected.has(item.id) || training.has(item.id));
     const input = spec.setup.input;
     const { scene } = input;
-    const registered = Object.hasOwn(dataset.inputs, scene) ? dataset.inputs[scene] : undefined;
-    const entry =
-      input.kind === 'dynamic'
-        ? registered?.dynamic
-        : registered && Object.hasOwn(registered.regions, input.region)
-          ? registered.regions[input.region]
-          : undefined;
+    const entry = Object.hasOwn(dataset.inputs, scene) ? dataset.inputs[scene] : undefined;
     if (!entry) {
-      const label = input.kind === 'dynamic' ? 'dynamic input' : `fixed window ${input.region}`;
-      errors.push(`${spec.id}: missing Dataset registration for ${scene} ${label}`);
+      errors.push(`${spec.id}: missing physical pack registration for ${scene}`);
       continue;
     }
-    const { directory } = entry;
-    const dataRoot = resolve(dataset.root, directory);
+    const dataRoot = resolve(dataset.root, entry.directory);
     const exports = join(dataset.root, 'routing');
     const required = [
-      dataRoot,
-      join(dataRoot, 'routing', `${scene}-ground-all.json`),
-      join(dataRoot, 'routing', 'movement-settings-current.json'),
+      join(dataRoot, manifestName),
+      join(dataRoot, groundName),
+      join(dataRoot, collisionName),
+      join(exports, `${scene}-ground-all.json`),
+      join(exports, 'movement-settings-current.json'),
       join(exports, `${scene}-traversal-devices.json`),
     ];
     if (cases.some((item) => item.requirements?.projectStartToPhysicalSupport))
@@ -71,7 +66,7 @@ export async function scenarioBindings(
       required.map(async (path) => {
         try {
           const info = await stat(path);
-          return (path === dataRoot ? info.isDirectory() : info.isFile()) ? null : path;
+          return info.isFile() ? null : path;
         } catch (error) {
           const code = (error as NodeJS.ErrnoException).code;
           if (code === 'ENOENT' || code === 'ENOTDIR') return path;
@@ -90,7 +85,7 @@ export async function scenarioBindings(
       ids: cases.map((item) => item.id),
       dataRoot,
       exports,
-      prepareConfig,
+      memoryBudget,
     });
   }
   if (errors.length) throw new Error('Invalid mechanism input bindings:\n' + errors.join('\n'));
@@ -123,13 +118,6 @@ export function scenarioBuilder(options: {
           scene: source.scene,
           entry: new URL('./worker.ts', import.meta.url),
           deferKernel: true,
-          preparation:
-            binding.prepareConfig && source.kind === 'dynamic'
-              ? {
-                  config: binding.prepareConfig,
-                  devices: resolve(binding.exports, `${source.scene}-traversal-devices.json`),
-                }
-              : undefined,
           onResult: options.onResult,
         });
         try {
