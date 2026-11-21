@@ -121,6 +121,53 @@ test('discovers a supported downhill run-off below an overhead lip', () => {
   assert.ok(crossing?.points.some((point) => point[0] > crossing.points[0][0] && point[1] >= 3.99));
 });
 
+test('reaches steered run-off controls when a constant-speed fall hits a hanging lip', () => {
+  const upper = floor('upper', 0, 3.8, 8);
+  const lower = floor('lower', 5.6, 10, 0);
+  const base = geometry([
+    floor('physical-upper', 0, 4, 8),
+    floor('physical-lower', 5.4, 10, 0),
+    floor('ceiling', 0, 4, 10),
+  ]);
+  const hangingLip = [
+    [
+      [5.3, 6.5, -10],
+      [5.3, 10, -10],
+      [5.3, 10, 10],
+    ],
+    [
+      [5.3, 6.5, -10],
+      [5.3, 10, 10],
+      [5.3, 6.5, 10],
+    ],
+  ];
+  const offset = base.positions.length / 3;
+  const world = createCollisionWorld({
+    positions: [...base.positions, ...hangingLip.flat(2)],
+    indices: [...base.indices, ...Array.from({ length: 6 }, (_, i) => offset + i)],
+  });
+  const result = findJumpConnections([upper, lower], world, {
+    ...options,
+    from: [3.2, 8, 0],
+    to: [5.6, 0, 0],
+    maxCandidates: 64,
+    model: {
+      gravity: 40,
+      fallingGravity: 38,
+      maxJumpHeight: 2.1,
+      maxFallingSpeed: 80,
+      apexTime: 0.1,
+      maxHorizontalSpeed: 6.5,
+      airAcceleration: 60,
+      airDeceleration: 10,
+    },
+  });
+  const crossing = result.connections.find((connection) => connection.toSurface === 'lower');
+  assert.equal(crossing?.flight?.kind, 'run-off');
+  assert.ok(crossing?.flight?.control.exit);
+  assert.ok(crossing?.flight?.control.speedFraction !== undefined);
+});
+
 test('retains supported narrow landing regions whose navigation already includes body clearance', () => {
   const upper: Surface = floor('upper', 0, 4, 4);
   const landing: Surface = floor('landing', 7, 7.3, 0, -0.1, 0.1);

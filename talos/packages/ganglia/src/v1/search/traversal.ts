@@ -959,7 +959,14 @@ export function findJumpConnections(
     return nextBatch();
   };
   const approaches: ApproachCache = new Map();
-  const motionVariants = createMotionVariants(model, world, profile, new Map(), approaches);
+  const motionVariants = createMotionVariants(
+    model,
+    world,
+    profile,
+    new Map(),
+    approaches,
+    () => false,
+  );
   const motion = {
     ...model,
     profile,
@@ -1018,8 +1025,7 @@ export function findJumpConnections(
           // The non-steering control can march as far as the opposing contact.
           yield { mode: 'drop' as const, runOff: true };
           for (const control of motionVariants(from, to, exit)) {
-            if (control.mode === 'jump') break;
-            if (control.exit) yield { ...control, runOff: true };
+            if (control.mode === 'drop' && control.exit) yield { ...control, runOff: true };
           }
         }
         if (model.maxJumpHeight > 0) yield { mode: 'jump' as const };

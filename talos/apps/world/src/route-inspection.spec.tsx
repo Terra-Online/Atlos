@@ -163,3 +163,121 @@ it('keeps a verified prefix visible across levels of the same scene', () => {
     view.unmount();
     panelRoot.remove();
 });
+
+it('clears the projection canvas when switching from a partial candidate to a live draft', () => {
+    const context = {
+        setTransform: vi.fn(),
+        clearRect: vi.fn(),
+        beginPath: vi.fn(),
+        moveTo: vi.fn(),
+        lineTo: vi.fn(),
+        closePath: vi.fn(),
+        fill: vi.fn(),
+        stroke: vi.fn(),
+        strokeText: vi.fn(),
+        fillText: vi.fn(),
+        fillStyle: '',
+        strokeStyle: '',
+        lineWidth: 0,
+        font: '',
+    };
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
+        context as never,
+    );
+    let scheduled: FrameRequestCallback | undefined;
+    const cancelAnimationFrame = vi
+        .spyOn(window, 'cancelAnimationFrame')
+        .mockImplementation(() => {});
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
+        scheduled = callback;
+        return 1;
+    });
+    const source = { buildGuid: 'build', contentHash: 'hash' };
+    const viewer = {
+        scene: { pkg: { manifest: { scene: { id: 'map01' }, source } } },
+        level: 'map01_lv001',
+        camera: {
+            position: [0, 0, -5],
+            fovY: Math.PI / 3,
+            right: () => [1, 0, 0],
+            up: () => [0, 1, 0],
+            forward: () => [0, 0, 1],
+        },
+        addOverlay: vi.fn(() => vi.fn()),
+    } as unknown as Viewer;
+    const candidate: Candidate = {
+        version: 1,
+        scene: 'map01',
+        level: 'map01_lv001',
+        source,
+        title: 'Partial route',
+        status: 'candidate',
+        partial: true,
+        markers: [{ label: 'Target', position: [0, 0, 0] }],
+        route: {
+            status: 'complete',
+            start: 'anchor',
+            cost: 1,
+            arrivalCost: 0,
+            length: 1,
+            points: [
+                [0, 0, 0],
+                [1, 0, 0],
+            ],
+            segments: [
+                {
+                    mode: 'walk',
+                    points: [
+                        [0, 0, 0],
+                        [1, 0, 0],
+                    ],
+                    times: [0, 1],
+                },
+            ],
+        },
+    };
+    const panelRoot = document.createElement('div');
+    document.body.append(panelRoot);
+    const view = render(
+        <RouteInspection
+            viewer={viewer}
+            panelRoot={panelRoot}
+            candidate={candidate}
+        />,
+    );
+    scheduled!(16);
+    expect(context.fillText).toHaveBeenCalledWith(
+        'Target',
+        expect.any(Number),
+        expect.any(Number),
+    );
+    context.clearRect.mockClear();
+    context.setTransform.mockClear();
+    view.rerender(
+        <RouteInspection
+            viewer={viewer}
+            panelRoot={panelRoot}
+            candidate={candidate}
+            preview={{
+                scene: 'map01',
+                level: 'map01_lv001',
+                source,
+                segments: [
+                    {
+                        mode: 'walk',
+                        points: [
+                            [0, 0, 0],
+                            [3, 0, 0],
+                        ],
+                        times: [0, 1],
+                    },
+                ],
+            }}
+        />,
+    );
+    expect(cancelAnimationFrame).toHaveBeenCalledWith(1);
+    expect(context.setTransform).toHaveBeenCalledWith(1, 0, 0, 1, 0, 0);
+    expect(context.clearRect).toHaveBeenCalledTimes(1);
+    view.unmount();
+    panelRoot.remove();
+});

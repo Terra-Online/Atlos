@@ -157,13 +157,18 @@ export default function RouteInspection({
         };
     }, [viewer, data, draft, displayed, visible, hideOccluded]);
     useEffect(() => {
-        if (!data || !canvas.current) return;
+        const element = canvas.current;
+        if (!element) return;
+        const context = element.getContext('2d');
+        if (!context) return;
+        if (!data) {
+            context.setTransform(1, 0, 0, 1, 0, 0);
+            context.clearRect(0, 0, element.width, element.height);
+            return;
+        }
         let frame = 0,
             previous = performance.now(),
             lastReadout = 0;
-        const element = canvas.current;
-        const context = element.getContext('2d');
-        if (!context) return;
         const draw = (now: number) => {
             const dt = Math.min((now - previous) / 1000, 0.1);
             previous = now;
