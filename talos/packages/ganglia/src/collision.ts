@@ -1,5 +1,14 @@
 import type { Vec3 } from '#@/src/geometry.ts';
 export { createCollisionWorld } from '#@/src/model/collision.ts';
+export {
+  buildCollisionTile,
+  createMultiTileCollisionWorld,
+  createTileBvhCache,
+  estimateTileCollisionBytes,
+  type CollisionTile,
+  type MultiTileCollisionOptions,
+  type TileBvhCacheOptions,
+} from '#@/src/model/multi-tile-collision.ts';
 
 export interface CollisionOptions {
   /** Inclusive XZ rectangle in world metres, retaining full vertical coverage.
