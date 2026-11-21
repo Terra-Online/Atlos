@@ -8,8 +8,17 @@ import type {
   Route,
   ResourceSearch,
 } from '#@/src/route.ts';
-import { createSupportProjector } from '#@/src/v1/geo/support-projector.ts';
-import { type SharedPortal, surfaceGraph, surfacePortals } from '#@/src/v1/geo/surfaces.ts';
+import {
+  createSupportProjector,
+  verticalProjectionCandidates,
+} from '#@/src/v1/geo/support-projector.ts';
+import {
+  type DirectedPortal,
+  type SharedPortal,
+  directedPortals,
+  surfaceGraph,
+  surfacePortals,
+} from '#@/src/v1/geo/surfaces.ts';
 import { validateMotion } from '#@/src/v1/motion/motion.ts';
 import { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
 import {
@@ -70,6 +79,10 @@ export const groundPreparation = (planner?: GroundPlanner): Preparation | undefi
 // Switching walls (e.g. raw -> roundedWalls in solve.ts) or creating a second
 // planner on the same snapshot reuses portals, surfaceGraph, byId, and
 // projectGoal without recomputing surfacePortals or BoundsIndex from scratch.
+interface SurfaceWeakComponents {
+  indexById: Map<string, number>;
+  parent: Int32Array;
+}
 interface GroundTopologyEntry {
   length: number;
   portals: SharedPortal[];
@@ -79,14 +92,58 @@ interface GroundTopologyEntry {
     searchSpeed: number;
     importedPortals: GroundOptions['portals'];
     importedLength: number;
+    directed: DirectedPortal[];
     base: Graph;
     baseCenters: Map<string, Vec3>;
+    unwalledRoute?: ReturnType<typeof createRoutePlanner>;
+    weakComponents?: SurfaceWeakComponents;
   };
 }
 const topologyCache = new WeakMap<Surface[], GroundTopologyEntry>();
 
 /** Release cached wall-independent topology when a surface array retires. */
 export const releaseGroundTopologyCache = (surfaces: Surface[]) => topologyCache.delete(surfaces);
+
+const findWeakRoot = (parent: Int32Array, index: number): number => {
+  while (parent[index] !== index) {
+    parent[index] = parent[parent[index]];
+    index = parent[index];
+  }
+  return index;
+};
+
+function buildSurfaceWeakComponents(
+  surfaces: Surface[],
+  portals: SharedPortal[],
+  directed: DirectedPortal[],
+): SurfaceWeakComponents {
+  const n = surfaces.length;
+  const indexById = new Map<string, number>();
+  const parent = new Int32Array(n);
+  for (let i = 0; i < n; i++) {
+    indexById.set(surfaces[i].id, i);
+    parent[i] = i;
+  }
+  for (let i = 0; i < portals.length; i++) {
+    const a = indexById.get(portals[i].from);
+    const b = indexById.get(portals[i].to);
+    if (a !== undefined && b !== undefined) {
+      const ra = findWeakRoot(parent, a);
+      const rb = findWeakRoot(parent, b);
+      if (ra !== rb) parent[rb] = ra;
+    }
+  }
+  for (let i = 0; i < directed.length; i++) {
+    const a = indexById.get(directed[i].from);
+    const b = indexById.get(directed[i].to);
+    if (a !== undefined && b !== undefined) {
+      const ra = findWeakRoot(parent, a);
+      const rb = findWeakRoot(parent, b);
+      if (ra !== rb) parent[rb] = ra;
+    }
+  }
+  return { indexById, parent };
+}
 
 function groundTopologyFor(
   surfaces: Surface[],
@@ -96,7 +153,8 @@ function groundTopologyFor(
   let entry = topologyCache.get(surfaces);
   if (!entry || entry.length !== surfaces.length) {
     const portals = surfacePortals(surfaces);
-    const byId = new Map<string, Surface>(surfaces.map((surface) => [surface.id, surface]));
+    const byId = new Map<string, Surface>();
+    for (let i = 0; i < surfaces.length; i++) byId.set(surfaces[i].id, surfaces[i]);
     const projectGoal = createGoalProjector(surfaces);
     entry = { length: surfaces.length, portals, byId, projectGoal };
     topologyCache.set(surfaces, entry);
@@ -108,20 +166,42 @@ function groundTopologyFor(
     entry.graph.importedPortals !== importedPortals ||
     entry.graph.importedLength !== importedLength
   ) {
+    const directed = directedPortals(surfaces, importedPortals, entry.byId);
     const base = surfaceGraph(
       surfaces,
       { speed: searchSpeed, portals: importedPortals },
       entry.portals,
+      directed,
+      entry.byId,
     );
-    const baseCenters = new Map<string, Vec3>(base.nodes.map((node) => [node.id, node.position]));
-    entry.graph = { searchSpeed, importedPortals, importedLength, base, baseCenters };
+    const baseCenters = new Map<string, Vec3>();
+    for (let i = 0; i < base.nodes.length; i++) {
+      const node = base.nodes[i];
+      baseCenters.set(node.id, node.position);
+    }
+    entry.graph = { searchSpeed, importedPortals, importedLength, directed, base, baseCenters };
   }
+  const graphEntry = entry.graph;
   return {
     portals: entry.portals,
     byId: entry.byId,
     projectGoal: entry.projectGoal,
-    base: entry.graph.base,
-    baseCenters: entry.graph.baseCenters,
+    directed: graphEntry.directed,
+    base: graphEntry.base,
+    baseCenters: graphEntry.baseCenters,
+    getUnwalledRoute(profile: GroundOptions['profile']) {
+      return (graphEntry.unwalledRoute ??= createRoutePlanner(graphEntry.base, {
+        walls: [],
+        profile,
+      }));
+    },
+    getWeakComponents() {
+      return (graphEntry.weakComponents ??= buildSurfaceWeakComponents(
+        surfaces,
+        entry!.portals,
+        graphEntry.directed,
+      ));
+    },
   };
 }
 /** Ground endpoints retain their projected positions. Each connector lies within its
@@ -153,21 +233,62 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
     options.locomotion?.sprintSpeed ?? speed,
     options.locomotion?.dash?.speed ?? 0,
   );
-  const { portals, byId, projectGoal, base, baseCenters } = groundTopologyFor(
-    surfaces,
-    searchSpeed,
-    options.portals,
-  );
+  const {
+    portals,
+    byId,
+    projectGoal,
+    directed,
+    base,
+    baseCenters,
+    getUnwalledRoute,
+    getWeakComponents,
+  } = groundTopologyFor(surfaces, searchSpeed, options.portals);
   const routeBase = prepareRoutePlanner(base, { walls, profile });
   const blocked = routeBase.blocked!;
   const constraintsSignature = JSON.stringify([walls, profile]);
-  let supportRoute: ReturnType<typeof createRoutePlanner> | undefined;
   const projectSupport = createSupportProjector(surfaces, byId);
-  // Build the triangle straightener lazily on first trace/straighten call so
-  // planners that fail walking or only project goals avoid building a 260k-face
-  // BoundsTree eagerly. Snapshot array/portal references for mutation isolation.
+  // Build the triangle straightener lazily on first connected trace/straighten
+  // call so planners whose endpoints lie on disconnected walkable components
+  // never spend seconds indexing 260k-409k support triangles.
   const surfaceSnapshot = surfaces.slice();
   const importedPortalsSnapshot = options.portals?.slice();
+  const finitePoint = (point: unknown): point is Vec3 =>
+    Array.isArray(point) &&
+    point.length === 3 &&
+    Number.isFinite(point[0]) &&
+    Number.isFinite(point[1]) &&
+    Number.isFinite(point[2]);
+  // Exact necessary condition for straighten.trace/mayConnect: triangle
+  // adjacency only traverses intra-surface edges, shared portals, and directed
+  // portals. Querying verticalProjectionCandidates within 1e-6 covers every
+  // overlapping triangle admitted by straighten.supporting (1e-7 tolerance).
+  const surfacesMayConnect = (start: Vec3, end: Vec3): boolean => {
+    if (surfaces.length !== surfaceSnapshot.length) return true;
+    if (Math.hypot(end[0] - start[0], end[2] - start[2]) < 1e-10 && distance(start, end) < 1e-7)
+      return true;
+    const { indexById, parent } = getWeakComponents();
+    const fromFaces = verticalProjectionCandidates(surfaces, start, 1e-6, 1e-6);
+    if (!fromFaces.length) return false;
+    const toFaces = verticalProjectionCandidates(surfaces, end, 1e-6, 1e-6);
+    if (!toFaces.length) return false;
+    if (fromFaces.length === 1 && toFaces.length === 1) {
+      const a = indexById.get(fromFaces[0].id);
+      const b = indexById.get(toFaces[0].id);
+      return (
+        a !== undefined && b !== undefined && findWeakRoot(parent, a) === findWeakRoot(parent, b)
+      );
+    }
+    const fromRoots = new Set<number>();
+    for (let i = 0; i < fromFaces.length; i++) {
+      const idx = indexById.get(fromFaces[i].id);
+      if (idx !== undefined) fromRoots.add(findWeakRoot(parent, idx));
+    }
+    for (let i = 0; i < toFaces.length; i++) {
+      const idx = indexById.get(toFaces[i].id);
+      if (idx !== undefined && fromRoots.has(findWeakRoot(parent, idx))) return true;
+    }
+    return false;
+  };
   let realStraightener: GroundStraightener | undefined;
   const getStraightener = () => {
     realStraightener ??= createGroundStraightener(
@@ -175,14 +296,25 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
       { walls, profile, portals: importedPortalsSnapshot },
       portals,
       blocked,
+      directed,
     );
     return realStraightener;
   };
   const straighten: GroundStraightener = Object.assign(
     (points: Vec3[]) => getStraightener()(points),
     {
-      trace: (from: Vec3, to: Vec3) => getStraightener().trace(from, to),
-      mayConnect: (start: Vec3, end: Vec3) => getStraightener().mayConnect(start, end),
+      trace: (start: Vec3, end: Vec3) => {
+        if (!finitePoint(start) || !finitePoint(end))
+          throw new Error('Invalid ground visibility endpoints');
+        if (!realStraightener && !surfacesMayConnect(start, end)) return null;
+        return getStraightener().trace(start, end);
+      },
+      mayConnect: (start: Vec3, end: Vec3) => {
+        if (!finitePoint(start) || !finitePoint(end))
+          throw new Error('Invalid ground visibility endpoints');
+        if (!realStraightener && !surfacesMayConnect(start, end)) return false;
+        return getStraightener().mayConnect(start, end);
+      },
     },
   );
   const visibility = new Map<string, Map<string, Vec3[]>>();
@@ -442,8 +574,7 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
         // A blocked polygon centre can disconnect the representative graph even
         // when its support corridor admits a clear continuous path. Try that
         // corridor, then validate every reconstructed segment against all walls.
-        supportRoute ??= createRoutePlanner(base, { walls: [], profile });
-        candidate = supportRoute(graph, [arrival], targetIds);
+        candidate = getUnwalledRoute(profile)(graph, [arrival], targetIds);
       }
       if (candidate.status !== 'complete') continue;
       const continuous = straightenRoute(candidate, straighten, speed);

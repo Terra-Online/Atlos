@@ -227,6 +227,14 @@ function prepareGraph(
   const blocked =
     base?.blocked ??
     (constraints ? createWallChecker(constraints.walls, constraints.profile) : null);
+  // Skip calling blocked() across 600k edges when no active wall exists while
+  // still validating all walls/profile via createWallChecker above.
+  const checkBlocked =
+    base !== undefined
+      ? blocked
+      : constraints && constraints.walls.some((wall) => wall.state !== 'inactive')
+        ? blocked
+        : null;
   // Query endpoints and actions overlay the immutable scene. Copying million-node
   // maps on every refinement pass costs memory without changing their contents.
   const nodes = base ? overlay(base.nodes) : new Map<string, Vec3>();
@@ -270,9 +278,9 @@ function prepareGraph(
     validateMotion(edge);
     if (edge.state === 'open') {
       let edgeBlocked = false;
-      if (blocked) {
+      if (checkBlocked) {
         for (let i = 1; i < pts.length; i++) {
-          if (blocked(pts[i - 1], pts[i])) {
+          if (checkBlocked(pts[i - 1], pts[i])) {
             edgeBlocked = true;
             break;
           }

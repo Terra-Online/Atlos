@@ -71,11 +71,19 @@ const boundaryEdge = (surface: Surface, point: Vec3, interval: Vec3[] = [point])
  * by graph search, ground tracing and exposed-boundary discovery. Old point-only
  * transfers retain their exact crossing location.
  */
-export function directedPortals(surfaces: Surface[], portals: Portal[] = []): DirectedPortal[] {
+export function directedPortals(
+  surfaces: Surface[],
+  portals: Portal[] = [],
+  surfaceById?: ReadonlyMap<string, Surface>,
+): DirectedPortal[] {
   if (!Array.isArray(portals)) throw new Error('Invalid imported portals');
   if (portals.length === 0) return [];
-  const byId = new Map<string, Surface>();
-  for (let i = 0; i < surfaces.length; i++) byId.set(surfaces[i].id, surfaces[i]);
+  let byId = surfaceById;
+  if (!byId) {
+    const map = new Map<string, Surface>();
+    for (let i = 0; i < surfaces.length; i++) map.set(surfaces[i].id, surfaces[i]);
+    byId = map;
+  }
   const horizontal = (a: readonly number[], b: readonly number[]) =>
     Math.hypot(a[0] - b[0], a[2] - b[2]);
   return portals.map((portal) => {
@@ -330,6 +338,8 @@ export function surfaceGraph(
   surfaces: Surface[],
   { speed, portals: importedPortals = [] }: { speed: number; portals?: Portal[] },
   sharedPortals?: SharedPortal[],
+  preparedDirected?: DirectedPortal[],
+  surfaceById?: ReadonlyMap<string, Surface>,
 ): Graph {
   if (!Number.isFinite(speed) || speed <= 0) throw new Error('Invalid walking speed');
   const portals = sharedPortals ?? surfacePortals(surfaces);
@@ -366,7 +376,8 @@ export function surfaceGraph(
     edges.push({ from: portal.from, to: portal.to, cost, state: 'open', points: [a, midpoint, b] });
     edges.push({ from: portal.to, to: portal.from, cost, state: 'open', points: [b, midpoint, a] });
   }
-  for (const portal of directedPortals(surfaces, importedPortals)) {
+  const directed = preparedDirected ?? directedPortals(surfaces, importedPortals, surfaceById);
+  for (const portal of directed) {
     const points = portal.points;
     // An imported transfer is directed. Its authoring/state and climb authorization
     // belong to the importer; the runtime never supplies the reverse step implicitly.

@@ -7,7 +7,12 @@ import {
 } from '#@/src/model/support-snapshot.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
 import type { GroundOptions } from '#@/src/route.ts';
-import { type SharedPortal, surfacePortals, directedPortals } from '#@/src/v1/geo/surfaces.ts';
+import {
+  type DirectedPortal,
+  type SharedPortal,
+  surfacePortals,
+  directedPortals,
+} from '#@/src/v1/geo/surfaces.ts';
 
 interface Triangle extends Pick<SupportTriangle, 'vertices' | 'min' | 'max' | 'determinant'> {
   id: number;
@@ -140,6 +145,7 @@ export function createGroundStraightener(
   { walls, profile, portals: imported = [] }: Pick<GroundOptions, 'walls' | 'profile' | 'portals'>,
   sharedPortals?: SharedPortal[],
   preparedBlocked?: ReturnType<typeof createWallChecker>,
+  preparedDirected?: DirectedPortal[],
 ): GroundStraightener {
   const blocked = preparedBlocked ?? createWallChecker(walls, profile);
   const portals = sharedPortals ?? surfacePortals(surfaces);
@@ -203,7 +209,7 @@ export function createGroundStraightener(
     a.triangle.neighbours.push({ triangle: b.triangle, opposite: (a.edge + 2) % 3, portal });
     b.triangle.neighbours.push({ triangle: a.triangle, opposite: (b.edge + 2) % 3, portal });
   }
-  for (const portal of directedPortals(surfaces, imported)) {
+  for (const portal of preparedDirected ?? directedPortals(surfaces, imported)) {
     const a = boundaryOwners.get(portal.from)?.[portal.fromEdge];
     const b = boundaryOwners.get(portal.to)?.[portal.toEdge];
     if (a && b)
