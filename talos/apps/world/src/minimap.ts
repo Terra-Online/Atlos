@@ -63,7 +63,7 @@ export function createMinimap(element: HTMLElement) {
         interactive: false,
         smoothFactor: 0,
     });
-    let routePoint: Pick<Point, 'scene' | 'level' | 'region'> | null = null;
+    let routePoint: Pick<Point, 'scene' | 'region'> | null = null;
     let routeBounds: L.LatLngBounds | null = null;
     const showRoute = (point: Point | null) => {
         const visible = !!(
@@ -71,7 +71,6 @@ export function createMinimap(element: HTMLElement) {
             routePoint &&
             routeBounds &&
             point.scene === routePoint.scene &&
-            point.level === routePoint.level &&
             point.region === routePoint.region
         );
         if (visible && !map.hasLayer(routeLine)) routeLine.addTo(map);
@@ -341,7 +340,6 @@ export function createMinimap(element: HTMLElement) {
             routePoint = route
                 ? {
                       scene: route.point.scene,
-                      level: route.point.level,
                       region: route.point.region,
                   }
                 : null;

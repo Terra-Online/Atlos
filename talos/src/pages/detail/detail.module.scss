@@ -446,6 +446,11 @@
         &[data-act='share'] > a {
             cursor: copy;
         }
+        &[data-act='preview'] {
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+        }
     }
 }
 

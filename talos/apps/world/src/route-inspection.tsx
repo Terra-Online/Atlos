@@ -1,6 +1,7 @@
-import { routing, type Candidate } from './services/routing';
+import type { Candidate, RoutePreview } from './services/routing';
 import { useEffect, useRef, useState } from 'react';
-import { Panel, type Viewer } from '@endfield-noclip/viewer/host';
+import type { Viewer } from '@endfield-noclip/viewer/host';
+import { Panel } from './panel';
 import { createPortal } from 'react-dom';
 import { sampleJourney, type Vec3 } from '@opendfieldmap/ganglia';
 import './route-inspection.css';
@@ -12,32 +13,57 @@ export type { Candidate } from './services/routing';
 const dot = (a: number[], b: number[]) =>
     a.reduce((s, v, i) => s + v * b[i], 0);
 
-/** Development-only inspection of local candidate trajectories, never a verified route result. */
+function matchesRouteScene(
+    viewer: Viewer,
+    route: Pick<Candidate, 'scene' | 'generation' | 'source'>,
+) {
+    const manifest = viewer.scene?.pkg.manifest;
+    return (
+        manifest?.scene.id === route.scene &&
+        (route.generation === undefined ||
+            manifest.generation === route.generation) &&
+        manifest.source.buildGuid === route.source.buildGuid &&
+        manifest.source.contentHash === route.source.contentHash
+    );
+}
+
+/** Display the route returned by World’s development planner. */
 export default function RouteInspection({
     viewer,
-    source,
     panelRoot,
     candidate,
+    preview,
+    onRoute,
     message,
     log,
 }: {
     viewer: Viewer;
-    source: string | null;
     panelRoot: HTMLElement | null;
     candidate?: Candidate | null;
+    preview?: RoutePreview;
+    onRoute?: (points: Vec3[] | null) => void;
     message?: string;
     log?: string | null;
 }) {
     const canvas = useRef<HTMLCanvasElement>(null);
-    const [data, setData] = useState<Candidate | null>(null);
-    const [error, setError] = useState('');
+    const [received, setData] = useState<Candidate | null>(null);
     const [playing, setPlaying] = useState(false);
     const [seconds, setSeconds] = useState(0);
     const time = useRef(0);
     const [visible, setVisible] = useState(true);
     const [hideOccluded, setHideOccluded] = useState(false);
-    const [localSource, setLocalSource] = useState<string | null>(null);
-    const activeSource = localSource ?? source;
+    const draft = !received || received.partial ? preview : undefined;
+    const data = draft ? null : received;
+    const displayed = data ?? draft;
+    useEffect(() => {
+        onRoute?.(
+            draft
+                ? draft.segments.flatMap((segment, index) =>
+                      index ? segment.points.slice(1) : segment.points,
+                  )
+                : data?.route.points ?? null,
+        );
+    }, [data, draft, onRoute]);
     useEffect(() => {
         if (
             !import.meta.env.DEV ||
@@ -53,66 +79,22 @@ export default function RouteInspection({
             window.removeEventListener('world:benchmark-route', receive);
     }, []);
     useEffect(() => {
-        if (candidate !== undefined) {
+        if (
+            candidate !== undefined &&
+            candidate !== received &&
+            (!playing || candidate === null)
+        ) {
             setData(candidate);
             time.current = 0;
             setSeconds(0);
             setPlaying(false);
         }
-    }, [candidate]);
+    }, [candidate, playing, received]);
     useEffect(() => {
-        if (!activeSource) return;
-        setError('');
-        const abort = new AbortController();
-        void (async () => {
-            const url = new URL(activeSource, location.href);
-            const value = await routing.preview(url, abort.signal);
-            const vector = (p: number[]) =>
-                Array.isArray(p) && p.length === 3 && p.every(Number.isFinite);
-            if (
-                value.version !== 1 ||
-                value.status !== 'candidate' ||
-                !value.source ||
-                !Array.isArray(value.markers) ||
-                value.markers.some((m) => !vector(m.position)) ||
-                value.route?.status !== 'complete' ||
-                !Number.isFinite(value.route.cost) ||
-                value.route.cost <= 0 ||
-                !Array.isArray(value.route.points) ||
-                !value.route.points.length ||
-                value.route.points.some((p) => !vector(p)) ||
-                !Array.isArray(value.route.segments) ||
-                !value.route.segments.length ||
-                value.route.segments.some(
-                    (s) =>
-                        !['walk', 'jump', 'drop', 'rope', 'launch'].includes(
-                            s.mode,
-                        ) ||
-                        !Array.isArray(s.points) ||
-                        s.points.length < 2 ||
-                        s.points.some((p) => !vector(p)) ||
-                        !Array.isArray(s.times) ||
-                        s.times.length !== s.points.length ||
-                        s.times[0] !== 0 ||
-                        s.times.some(
-                            (t, i) =>
-                                !Number.isFinite(t) ||
-                                t < 0 ||
-                                (i > 0 && t < s.times[i - 1]),
-                        ),
-                )
-            )
-                throw new Error('Invalid candidate route format');
-            if (!abort.signal.aborted) setData(value);
-        })().catch((e) => {
-            if (!abort.signal.aborted) setError(String(e));
-        });
-        return () => abort.abort();
-    }, [activeSource]);
-    useEffect(() => {
-        if (!data || !visible) return;
+        const segments = draft?.segments ?? data?.route.segments;
+        if (!displayed || !segments || !visible) return;
         let renderers: ReturnType<typeof createRouteLines>[] | undefined;
-        const boxes = supportBoxes(data.supportBoxes);
+        const boxes = supportBoxes(data?.supportBoxes);
         const boarding = boxes
             .filter((box) => box.role !== 'leave')
             .flatMap(boxSegments);
@@ -121,22 +103,19 @@ export default function RouteInspection({
             .flatMap(boxSegments);
         const remove = viewer.addOverlay(
             (frame) => {
-                const manifest = viewer.scene?.pkg.manifest;
-                if (
-                    manifest?.scene.id !== data.scene ||
-                    (data.generation !== undefined &&
-                        manifest.generation !== data.generation) ||
-                    (!data.draft && viewer.level !== data.level) ||
-                    manifest.source.buildGuid !== data.source.buildGuid ||
-                    manifest.source.contentHash !== data.source.contentHash
-                )
-                    return;
+                if (!matchesRouteScene(viewer, displayed)) return;
                 renderers ??= [
                     createRouteLines(
                         frame.device,
                         frame.format,
-                        data.route.segments,
-                        { halfWidth: 3.5, hideOccluded },
+                        segments,
+                        draft
+                            ? {
+                                  color: [0.75, 0.85, 0.95],
+                                  halfWidth: 2,
+                                  hideOccluded,
+                              }
+                            : { halfWidth: 3.5, hideOccluded },
                     ),
                     ...(boarding.length
                         ? [
@@ -176,15 +155,20 @@ export default function RouteInspection({
             remove();
             renderers?.forEach((renderer) => renderer.destroy());
         };
-    }, [viewer, data, visible, hideOccluded]);
+    }, [viewer, data, draft, displayed, visible, hideOccluded]);
     useEffect(() => {
-        if (!data || !canvas.current) return;
+        const element = canvas.current;
+        if (!element) return;
+        const context = element.getContext('2d');
+        if (!context) return;
+        if (!data) {
+            context.setTransform(1, 0, 0, 1, 0, 0);
+            context.clearRect(0, 0, element.width, element.height);
+            return;
+        }
         let frame = 0,
             previous = performance.now(),
             lastReadout = 0;
-        const element = canvas.current;
-        const context = element.getContext('2d');
-        if (!context) return;
         const draw = (now: number) => {
             const dt = Math.min((now - previous) / 1000, 0.1);
             previous = now;
@@ -208,15 +192,7 @@ export default function RouteInspection({
             }
             context.setTransform(dpr, 0, 0, dpr, 0, 0);
             context.clearRect(0, 0, w, h);
-            const manifest = viewer.scene?.pkg.manifest;
-            const matches =
-                manifest?.scene.id === data.scene &&
-                (data.generation === undefined ||
-                    manifest.generation === data.generation) &&
-                (data.draft || viewer.level === data.level) &&
-                manifest.source.buildGuid === data.source.buildGuid &&
-                manifest.source.contentHash === data.source.contentHash;
-            if (visible && matches) {
+            if (visible && matchesRouteScene(viewer, data)) {
                 const camera = viewer.camera,
                     f = h / (2 * Math.tan(camera.fovY / 2));
                 const space = (p: Vec3) => {
@@ -286,24 +262,12 @@ export default function RouteInspection({
         frame = requestAnimationFrame(draw);
         return () => cancelAnimationFrame(frame);
     }, [viewer, data, playing, visible]);
-    if (!source && candidate === null && !message) return null;
+    const logUrl = log ?? data?.log;
+    const duration =
+        data?.terminal?.wait.firstContactBySeconds ?? data?.route.cost;
+    if (!displayed && !message && !logUrl) return null;
     const pose = (kind: 'side' | 'top') => {
-        if (!data || viewer.scene?.pkg.manifest.scene.id !== data.scene) return;
-        if (kind === 'side' && data.overview) {
-            const v = data.overview;
-            if (
-                v.position.length === 3 &&
-                v.position.every(Number.isFinite) &&
-                [v.yaw, v.pitch, v.fovY].every(Number.isFinite) &&
-                v.fovY > 0.1 &&
-                v.fovY < 3
-            ) {
-                viewer.camera.fovY = v.fovY;
-                viewer.controls.flyTo(v);
-                viewer.setOptions({});
-                return;
-            }
-        }
+        if (!data || !matchesRouteScene(viewer, data)) return;
         const points = data.route.points;
         const min = [0, 1, 2].map((i) => Math.min(...points.map((p) => p[i])));
         const max = [0, 1, 2].map((i) => Math.max(...points.map((p) => p[i])));
@@ -343,33 +307,22 @@ export default function RouteInspection({
             {panelRoot &&
                 createPortal(
                     <Panel
-                        title='Route preview'
-                        label='Route preview'
+                        title='Route'
+                        label='Route'
                         className='route-inspection-panel'
                         actions={
                             <>
-                                {candidate === undefined && (
-                                    <button
-                                        type='button'
-                                        onClick={() =>
-                                            setLocalSource('/__routes/preview')
-                                        }
-                                    >
-                                        South → North
-                                    </button>
-                                )}
-                                {(log ?? data?.log) && (
-                                    <a
-                                        href={log ?? data?.log}
-                                        target='_blank'
-                                        rel='noreferrer'
-                                    >
-                                        Task log
-                                    </a>
-                                )}
                                 <button
                                     type='button'
-                                    disabled={!data}
+                                    aria-pressed={hideOccluded}
+                                    disabled={!displayed}
+                                    onClick={() => setHideOccluded(!hideOccluded)}
+                                >
+                                    Hide occluded
+                                </button>
+                                <button
+                                    type='button'
+                                    disabled={!displayed}
                                     onClick={() => setVisible(!visible)}
                                 >
                                     {visible ? 'Hide' : 'Show'}
@@ -377,9 +330,14 @@ export default function RouteInspection({
                             </>
                         }
                     >
-                        <p>{data?.title ?? 'Nearest teleport route'}</p>
-                        {message && <p role='status'>{message}</p>}
-                        {error && <p role='alert'>{error}</p>}
+                        {data?.partial && <p>{data.title}</p>}
+                        {(draft || message) && (
+                            <p role='status'>
+                                {draft
+                                    ? 'Connecting the remaining route…'
+                                    : message}
+                            </p>
+                        )}
                         {data && (
                             <>
                                 {data.route.locomotion?.dashes !==
@@ -448,42 +406,31 @@ export default function RouteInspection({
                                         collected.
                                     </p>
                                 )}
-                                <div className='world-panel-actions'>
-                                    <label>
-                                        <input
-                                            type='checkbox'
-                                            checked={hideOccluded}
-                                            onChange={(event) =>
-                                                setHideOccluded(
-                                                    event.target.checked,
-                                                )
-                                            }
-                                        />
-                                        Hide occluded
-                                    </label>
-                                    <button onClick={() => pose('side')}>
+                                <div className='world-panel-actions route-playback-actions'>
+                                    <button
+                                        type='button'
+                                        onClick={() => pose('side')}
+                                    >
                                         Side overview
                                     </button>
-                                    <button onClick={() => pose('top')}>
+                                    <button
+                                        type='button'
+                                        onClick={() => pose('top')}
+                                    >
                                         Top view
                                     </button>
                                     <button
-                                        hidden={data.draft}
+                                        type='button'
                                         onClick={() => setPlaying(!playing)}
                                     >
                                         {playing ? 'Pause' : 'Play'}
                                     </button>
                                 </div>
                                 <input
-                                    hidden={data.draft}
                                     aria-label='Route playback position'
                                     type='range'
                                     min='0'
-                                    max={
-                                        data.terminal?.wait
-                                            .firstContactBySeconds ??
-                                        data.route.cost
-                                    }
+                                    max={duration}
                                     step='.01'
                                     value={seconds}
                                     onChange={(e) => {
@@ -491,16 +438,26 @@ export default function RouteInspection({
                                         setSeconds(time.current);
                                     }}
                                 />
-                                <small hidden={data.draft}>
-                                    {seconds.toFixed(1)} /{' '}
-                                    {(
-                                        data.terminal?.wait
-                                            .firstContactBySeconds ??
-                                        data.route.cost
-                                    ).toFixed(1)}{' '}
-                                    s
-                                </small>
                             </>
+                        )}
+                        {(data || logUrl) && (
+                            <div className='route-playback-readout'>
+                                {duration !== undefined && (
+                                    <small>
+                                        {seconds.toFixed(1)} /{' '}
+                                        {duration.toFixed(1)} s
+                                    </small>
+                                )}
+                                {logUrl && (
+                                    <a
+                                        href={logUrl}
+                                        target='_blank'
+                                        rel='noreferrer'
+                                    >
+                                        Task log
+                                    </a>
+                                )}
+                            </div>
                         )}
                     </Panel>,
                     panelRoot,

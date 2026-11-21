@@ -331,6 +331,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
             }
           }
         }
+        let lastPreviewPiece: Complete | undefined;
         while (!cancelled()) {
           const result = await window.advance({ signal: options.signal });
           truncated ||= result.diagnostics.truncated;
@@ -353,6 +354,11 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
             continue candidates;
           }
           if (result.status === 'pending') {
+            const piece = result.pieces.at(-1);
+            if (options.onPreview && !incumbent && piece && piece !== lastPreviewPiece) {
+              lastPreviewPiece = piece;
+              options.onPreview(result.pieces.flatMap((part) => part.segments));
+            }
             progress('validate');
             await resources.wait(options.signal);
             continue;

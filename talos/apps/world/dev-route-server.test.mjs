@@ -312,6 +312,17 @@ test(
             assert.equal(result.body.title, 'Teleport → Target');
             assert.equal(result.body.markers[0].label, 'Teleport');
             assert.equal(result.body.route.points.at(-1)[0], 5.5);
+            const log = new URL(result.body.log, 'http://localhost');
+            assert.equal(log.pathname, '/__routes/log');
+            const logPath = log.searchParams.get('path');
+            assert.match(
+                logPath,
+                /^player-routes\/map01-[a-zA-Z0-9_-]+\.json\.progress\.jsonl$/,
+            );
+            assert.match(
+                await readFile(join(directory, logPath), 'utf8'),
+                /"event":"queued"/,
+            );
             const runs = await readFile(config + '.route-runs', 'utf8');
             assert.deepEqual((await request()).body, result.body);
             assert.equal(await readFile(config + '.route-runs', 'utf8'), runs);
@@ -342,6 +353,7 @@ test(
                 [6.25, 2.5, 0.5],
             );
             assert.equal(waterRoute.body.partial, false);
+            assert.notEqual(waterRoute.body.log, result.body.log);
             assert.deepEqual(
                 waterRoute.body.route.points.at(-1),
                 [6.25, 1, 0.5],

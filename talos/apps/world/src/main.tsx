@@ -6,14 +6,16 @@ import '@/styles/global.scss';
 import './style.scss';
 import './preview.css';
 import { i18nInitPromise } from '@/locale';
-import { Panel } from './panel';
 import { Preview } from './preview';
 import { readLaunch } from './route';
 
-const routePreview = new URL(location.href).searchParams.get('routePreview');
-const RouteInspection = import.meta.env.DEV
-    ? lazy(() => import('./route-inspection'))
-    : null;
+const BenchmarkRoute =
+    import.meta.env.DEV && new URL(location.href).searchParams.has('benchmark')
+        ? lazy(() => import('./route-inspection'))
+        : null;
+
+// Temporarily hide the viewer and point panels during route validation.
+const HiddenPanel = () => null;
 
 const root = createRoot(document.getElementById('root')!);
 void i18nInitPromise.then(() => {
@@ -24,7 +26,7 @@ void i18nInitPromise.then(() => {
         );
         root.render(
             <StrictMode>
-                <PanelProvider component={Panel}>
+                <PanelProvider component={HiddenPanel}>
                     <ViewerApp
                         filtersUrl={
                             import.meta.env.VITE_WORLD_FILTERS_URL as
@@ -38,11 +40,10 @@ void i18nInitPromise.then(() => {
                                     launch={launch}
                                     panelRoot={panelRoot}
                                 />
-                                {RouteInspection && (
+                                {BenchmarkRoute && (
                                     <Suspense fallback={null}>
-                                        <RouteInspection
+                                        <BenchmarkRoute
                                             viewer={viewer}
-                                            source={routePreview}
                                             panelRoot={panelRoot}
                                         />
                                     </Suspense>

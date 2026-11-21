@@ -1,6 +1,6 @@
 import type { MovingContact } from '../moving-contact';
 import { transport } from './transport';
-import type { Route, Vec3 } from '@opendfieldmap/ganglia';
+import type { Route, Segment, Vec3 } from '@opendfieldmap/ganglia';
 export type SupportBox = {
     min: Vec3;
     max: Vec3;
@@ -17,12 +17,10 @@ export type Candidate = {
     state?: 'fully-enabled';
     title: string;
     status: 'candidate';
-    draft?: boolean;
     partial?: boolean;
     log?: string;
     coverage?: string;
     assumptions?: string[];
-    overview?: { position: Vec3; yaw: number; pitch: number; fovY: number };
     route: Extract<Route, { status: 'complete' }>;
     supportBoxes?: SupportBox[];
     terminal?: MovingContact;
@@ -40,10 +38,19 @@ export interface RouteRequest {
     buildGuid: string;
     contentHash: string;
 }
+export type RoutePreview = Pick<
+    Candidate,
+    'scene' | 'level' | 'source' | 'generation'
+> & { segments: Segment[] };
 export type RouteUpdate = (
     | Candidate
     | { status: 'building-ground' | 'unavailable' | 'error'; log?: string }
-) & { optimizing?: boolean; message?: string; optimizationMessage?: string };
+) & {
+    optimizing?: boolean;
+    message?: string;
+    optimizationMessage?: string;
+    preview?: RoutePreview;
+};
 const pause = (signal: AbortSignal) =>
     new Promise<void>((resolve, reject) => {
         const stop = () => {
@@ -96,18 +103,5 @@ export const routing = {
                 return;
             await pause(signal);
         }
-    },
-    async preview(url: URL, signal: AbortSignal): Promise<Candidate> {
-        if (
-            url.origin !== location.origin ||
-            !(
-                url.pathname.startsWith('/oem/') ||
-                url.pathname === '/__routes/preview'
-            )
-        )
-            throw new Error('Route preview only reads local route data');
-        const response = await transport.fetch('routing', url, { signal });
-        if (!response.ok) throw new Error('Unable to load candidate route');
-        return (await response.json()) as Candidate;
     },
 };

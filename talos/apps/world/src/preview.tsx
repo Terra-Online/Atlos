@@ -1,4 +1,5 @@
-import { scenes } from "./services/scene";
+import { scenes, sceneReference } from './services/scene';
+import type { RouteRequest } from './services/routing';
 import { installWorkload } from "./services/workload";
 import { useLayerStore } from '@/store/layer';
 import { getCurrentLocale, setLocale } from '@/locale';
@@ -64,11 +65,6 @@ export const Preview = ({
     launch: Launch;
     panelRoot: HTMLElement | null;
 }) => {
-    const routePreview = useRef(
-        import.meta.env.DEV
-            ? new URL(location.href).searchParams.get('routePreview')
-            : null,
-    );
     const planRoute = useRef(
         import.meta.env.DEV &&
             new URL(location.href).searchParams.get('planRoute') === 'nearest',
@@ -80,6 +76,7 @@ export const Preview = ({
     const channel = useRef<ReturnType<typeof connectWorld> | null>(null);
     const [view, setView] = useState<PointView | null>(null);
     const [point, setPoint] = useState<Point | null>(null);
+    const [routeRequest, setRouteRequest] = useState<RouteRequest | null>(null);
     const [metadata, setMetadata] = useState<Companion | null>(null);
     const [preset, setPreset] = useState('');
     const [loading, setLoading] = useState(true);
@@ -298,6 +295,7 @@ export const Preview = ({
                         const previous = selected;
                         const streaming = 'stream' in request;
                         if (!streaming) {
+                            setRouteRequest(null);
                             selected = null;
                             goal = 'point' in request ? target : null;
                             pointTarget = 'point' in request;
@@ -455,6 +453,19 @@ export const Preview = ({
                         if (!streaming) {
                             setPoint(goal);
                             setMetadata(companion);
+                            // A roaming camera must not rebind the destination's query.
+                            if (planRoute.current && goal) {
+                                setRouteRequest({
+                                    ...sceneReference(viewer),
+                                    scene: goal.scene,
+                                    level: goal.level,
+                                    point: goal.id,
+                                    x: String(goal.position[0]),
+                                    y: String(goal.position[1]),
+                                    z: String(goal.position[2]),
+                                    ...manifest.source,
+                                });
+                            }
                         }
                         const url = new URL(location.href);
                         url.pathname = goal ? pointPath(goal.id) : '/';
@@ -463,11 +474,6 @@ export const Preview = ({
                             : new URLSearchParams({
                                   region: target.subregion,
                               }).toString();
-                        if (routePreview.current)
-                            url.searchParams.set(
-                                'routePreview',
-                                routePreview.current,
-                            );
                         if(import.meta.env.DEV && new URL(location.href).searchParams.has('benchmark'))url.searchParams.set('benchmark','1');
                         if (planRoute.current)
                             url.searchParams.set('planRoute', 'nearest');
@@ -499,6 +505,7 @@ export const Preview = ({
                             } else {
                                 selected = null;
                                 setPoint(null);
+                                setRouteRequest(null);
                                 goal = null;
                             }
                             preparing = null;
@@ -675,11 +682,11 @@ export const Preview = ({
                     />,
                     panelRoot,
                 )}
-            {NearestRoute && planRoute.current && point && !loading && (
+            {NearestRoute && routeRequest && (
                 <Suspense fallback={null}>
                     <NearestRoute
                         viewer={viewer}
-                        point={point}
+                        request={routeRequest}
                         panelRoot={panelRoot}
                         onRoute={applyRoute}
                     />

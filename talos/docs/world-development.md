@@ -150,14 +150,10 @@ For standalone World development, use `pnpm --filter @atlos/world dev` with the
 same environment. Map assets proxy through the main development server on 5173.
 The [environment example](../.env.world.example) lists the frontend variables.
 
-Open `http://localhost:5173/`, select a point in the catalog and choose **Route from
-nearest teleport**. It opens `http://127.0.0.1:5176/POINT_TOKEN?planRoute=nearest`.
+Open `http://localhost:5173/`, select a point in the catalog and choose **Route
+Navigation**. It opens `http://127.0.0.1:5176/POINT_TOKEN?planRoute=nearest`.
 Use the encoded point token from the detail link. The route assumes an unlocked
 origin.
-
-For a retained candidate, append `?routePreview=/oem/<local-file>.json` to a World
-point URL. This development-only path uses the local OEM mount. Inspect the target,
-minimap route, segment timing and playback.
 
 If packages return 404, check the release ID and 5199 mounts. Missing detail actions
 usually indicate a missing point/catalog binding. For route failures, check routing

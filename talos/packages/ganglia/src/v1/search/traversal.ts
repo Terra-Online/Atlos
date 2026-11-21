@@ -6,7 +6,14 @@ import type { InteractionGoal, JumpModel } from '#@/src/movement.ts';
 import type { GroundConnection } from '#@/src/route.ts';
 import { type SharedPortal, surfacePortals, directedPortals } from '#@/src/v1/geo/surfaces.ts';
 import { discoveryEvidence } from '#@/src/v1/motion/evidence.ts';
-import { jumpConnection, jumpDuration, jumpTravel } from '#@/src/v1/motion/jumps.ts';
+import {
+  createMotionVariants,
+  jumpConnection,
+  jumpDuration,
+  jumpTravel,
+  runOffConnection,
+  type ApproachCache,
+} from '#@/src/v1/motion/jumps.ts';
 import { landingCandidates } from '#@/src/v1/motion/landings.ts';
 import type { GroundPlanner } from '#@/src/v1/route/ground.ts';
 import { movementGeometry } from '#@/src/v1/route/movement-geometry.ts';
@@ -951,6 +958,22 @@ export function findJumpConnections(
     if (!generation.done) diagnostics.truncated = true;
     return nextBatch();
   };
+  const approaches: ApproachCache = new Map();
+  const motionVariants = createMotionVariants(
+    model,
+    world,
+    profile,
+    new Map(),
+    approaches,
+    () => false,
+  );
+  const motion = {
+    ...model,
+    profile,
+    walls,
+    wallCheck: blocked,
+    sweep: world.sweepCapsule.bind(world),
+  };
   const validate = (entry: Transfer): DiscoveredConnection | null | undefined => {
     const { a, b } = entry;
     if (!entry.search) {
@@ -987,22 +1010,43 @@ export function findJumpConnections(
         diagnostics.rejected.range++;
         continue;
       }
-      for (const mode of ['jump', 'drop'] as const) {
-        if (mode === 'jump' && model.maxJumpHeight === 0) continue;
-        if (mode === 'drop' && end.position[1] > start.position[1]) continue;
+      function* controls(from: Vec3, to: Vec3) {
+        const drop = from[1] - to[1];
+        const span = horizontal(from, to);
+        if (drop > profile.height && span > 0 && model.airAcceleration !== undefined) {
+          // A steep ledge can admit a supported run followed by a braked fall.
+          // Aim through the boundary towards the landing, allowing motion to
+          // verify the real support loss independently of the baked edge.
+          const approach = Math.min(span, 2 * profile.radius) / span;
+          const exit: [number, number] = [
+            from[0] + (to[0] - from[0]) * approach,
+            from[2] + (to[2] - from[2]) * approach,
+          ];
+          // The non-steering control can march as far as the opposing contact.
+          yield { mode: 'drop' as const, runOff: true };
+          for (const control of motionVariants(from, to, exit)) {
+            if (control.mode === 'drop' && control.exit) yield { ...control, runOff: true };
+          }
+        }
+        if (model.maxJumpHeight > 0) yield { mode: 'jump' as const };
+        if (drop >= 0) yield { mode: 'drop' as const };
+      }
+      for (const control of controls(start.position, end.position)) {
         if (diagnostics.attempted >= diagnostics.limits.arcAttempts) {
           diagnostics.truncated = true;
           return null;
         }
         diagnostics.attempted++;
-        const arc = evidence.arc(JSON.stringify([start.position, end.position, { mode }]), () =>
-          jumpConnection(start.position, end.position, {
-            ...model,
-            profile,
-            walls,
-            mode,
-            sweep: (from, to, body) => world.sweepCapsule(from, to, body),
-          }),
+        const arc = evidence.arc(JSON.stringify([start.position, end.position, control]), () =>
+          'runOff' in control
+            ? runOffConnection(
+                start.position,
+                end.position,
+                { ...motion, ...control, world, maxSlope },
+                approaches,
+                evidence.approach,
+              )
+            : jumpConnection(start.position, end.position, { ...motion, mode: control.mode }),
         );
         if (!arc) {
           diagnostics.rejected.motion++;

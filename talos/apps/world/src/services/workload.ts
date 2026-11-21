@@ -2,7 +2,7 @@ import { sceneReference } from './scene';
 import type { Viewer } from '@endfield-noclip/viewer/host';
 import type { Point } from '@endfield-noclip/package-format/oem';
 import { sampleJourney, type Vec3 } from '@opendfieldmap/ganglia';
-import { routing } from './routing';
+import { routing, type Candidate } from './routing';
 import { transport } from './transport';
 
 export interface Workload {
@@ -120,7 +120,7 @@ export function installWorkload(
                     durationMs: performance.now() - started,
                 });
             };
-            let route: Awaited<ReturnType<typeof routing.preview>> | undefined;
+            let route: Candidate | undefined;
             const query = async () => {
                 const point = current(),
                     source = viewer.scene?.pkg.manifest.source;

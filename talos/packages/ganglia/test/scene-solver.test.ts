@@ -522,6 +522,36 @@ test('synthetic target approaches yield to the original source before action dis
   ]);
 });
 
+test('publishes accepted windows before a complete scene route', async () => {
+  const { starts, resources, scene, config, locomotion } = waypointFixture();
+  const solver = await prepareRouteSolver(
+    { ...config, tileSpan: 8, gridSpan: 8, maxTiles: 6, margin: 1 },
+    { kind: 'scene', scene, resources, locomotion },
+  );
+  const query = {
+    starts: [{ ...starts[1], cost: 0, position: [0, 0, 0] as Vec3 }],
+    goal: [20, 0, 0] as Vec3,
+  };
+  const events: ('prefix' | 'complete')[] = [];
+  try {
+    const result = await solver.solve(query, {
+      onPreview(segments) {
+        const end = segments.at(-1)?.points.at(-1);
+        if (segments[0]?.points[0][0] === 0 && end && end[0] < query.goal[0]) events.push('prefix');
+      },
+      onEvent(event) {
+        if (event.type === 'candidate' && !event.result.partial) events.push('complete');
+      },
+    });
+    assert.equal(result.route.status, 'complete');
+    const prefix = events.indexOf('prefix');
+    assert.ok(prefix >= 0 && events.indexOf('complete') > prefix, events.join(', '));
+    assert.deepEqual((await solver.solve(query)).route, result.route);
+  } finally {
+    await solver.close();
+  }
+});
+
 test('a failed anchor does not discard a verified target approach or poison later queries', async () => {
   const { starts, resources, scene, config, locomotion } = fixture();
   const solver = await prepareRouteSolver(config, { kind: 'scene', scene, resources, locomotion });
