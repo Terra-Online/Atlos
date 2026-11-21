@@ -961,3 +961,133 @@ test('a ground-reachable airborne interaction records its exact completion event
     assert.ok(Math.hypot(event.position[0] - 18, event.position[1], event.position[2]) <= 1);
   }
 });
+
+test('deviceApproaches skips topologically unreachable device probes without losing reachable entries', () => {
+  const surfaces: Surface[] = [
+    floor('origin', 0, 4, 0),
+    floor('step', 7, 11, 1.5),
+    floor('entry', 14, 18, 3),
+    floor('goal', 100, 104, 20),
+    ...Array.from({ length: 20 }, (_, i) => floor(`island-a/${i}`, 40 + i * 6, 43 + i * 6, 40)),
+    ...Array.from({ length: 20 }, (_, i) => floor(`island-b/${i}`, 40 + i * 6, 43 + i * 6, 55)),
+    ...Array.from({ length: 8 }, (_, index) =>
+      floor(
+        `decoy/${index}`,
+        100 + (index % 2) * 8,
+        104 + (index % 2) * 8,
+        23 + Math.floor(index / 2) * 3,
+      ),
+    ),
+  ];
+  // 20 disconnected island connections + 1 real launch to goal.
+  const connections: GroundConnection[] = [
+    ...Array.from({ length: 20 }, (_, i): GroundConnection => ({
+      id: `dead/${i}`,
+      mode: 'launch',
+      state: 'open',
+      points: [
+        [41.5 + i * 6, 40, 0],
+        [41.5 + i * 6, 55, 0],
+      ],
+      times: [0, 1],
+    })),
+    {
+      id: 'launch-real',
+      mode: 'launch',
+      state: 'open',
+      points: [
+        [16, 3, 0],
+        [102, 20, 0],
+      ],
+      times: [0, 1],
+    },
+  ];
+  const settings: JumpRouteOptions = {
+    ...options,
+    speed: 4,
+    profile: { radius: 0.2, height: 1.6 },
+    maxDrop: 40,
+    maxCandidates: 4,
+    maxShortcutCandidates: 0,
+    connections,
+  };
+  const planner = createGroundPlanner(surfaces, settings),
+    plan = planner.plan;
+  let probes = 0;
+  planner.plan = (...args) => {
+    if (args[0][0].id === '@device-entry') probes++;
+    return plan(...args);
+  };
+  const result = planJumpRoute(
+    surfaces,
+    createCollisionWorld(geometry(surfaces)),
+    arrival([2, 0, 0]),
+    [102, 20, 0],
+    { ...settings, groundPlanner: planner },
+  );
+  assert.equal(result.route.status, 'complete');
+  assert.ok(result.route.segments.some((segment) => segment.connection === 'launch-real'));
+  // Every disconnected island entry is pruned by the unwalled condensed reachability
+  // gate before invoking planner.plan; only the genuinely reachable launch is probed.
+  assert.equal(probes, 1);
+});
+
+test('unwalled reachability gate preserves device routes finishing via non-airborne interaction hit', () => {
+  const surfaces: Surface[] = [
+    floor('origin', 0, 4, 0),
+    floor('step', 7, 11, 1.5),
+    floor('entry', 14, 18, 3),
+    floor('goal-pad', 100, 104, 20),
+    floor('dead-a', 50, 54, 40),
+    floor('dead-b', 60, 64, 40),
+    ...Array.from({ length: 8 }, (_, index) =>
+      floor(
+        `decoy/${index}`,
+        100 + (index % 2) * 8,
+        104 + (index % 2) * 8,
+        23 + Math.floor(index / 2) * 3,
+      ),
+    ),
+  ];
+  const connections: GroundConnection[] = [
+    {
+      id: 'dead',
+      mode: 'launch',
+      state: 'open',
+      points: [
+        [52, 40, 0],
+        [62, 40, 0],
+      ],
+      times: [0, 1],
+    },
+    {
+      id: 'launch-interact',
+      mode: 'launch',
+      state: 'open',
+      points: [
+        [16, 3, 0],
+        [102, 20, 0],
+      ],
+      times: [0, 1],
+    },
+  ];
+  const settings: JumpRouteOptions = {
+    ...options,
+    speed: 4,
+    profile: { radius: 0.2, height: 1.6 },
+    maxDrop: 40,
+    maxCandidates: 4,
+    maxShortcutCandidates: 0,
+    interaction: { radius: 1.2 },
+    connections,
+  };
+  const result = planJumpRoute(
+    surfaces,
+    createCollisionWorld(geometry(surfaces)),
+    arrival([2, 0, 0]),
+    [102, 20.8, 0],
+    settings,
+  );
+  assert.equal(result.route.status, 'complete');
+  assert.ok(result.route.segments.some((segment) => segment.connection === 'launch-interact'));
+});

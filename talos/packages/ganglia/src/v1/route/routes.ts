@@ -163,12 +163,14 @@ export function prepareRoutePlanner(graph: Graph, constraints?: RouteConstraints
     edges: accepted.length === graph.edges.length ? graph.edges : accepted,
   };
   let topology: GroundTopology | undefined;
+  let condensed: CondensedTopology | undefined;
   const preparedBase: {
     graph: Graph;
     forward: Index<Edge[]>;
     blocked: RouteBase['blocked'];
     maxSpeed: number;
     topology: GroundTopology;
+    condensed: CondensedTopology;
     plan: ReturnType<typeof preparedSearch>;
   } = {
     graph: graphSnapshot,
@@ -178,7 +180,10 @@ export function prepareRoutePlanner(graph: Graph, constraints?: RouteConstraints
     get topology() {
       return (topology ??= groundComponents(graphSnapshot));
     },
-    plan: preparedSearch(base, () => condenseComponents(preparedBase.topology)),
+    get condensed() {
+      return (condensed ??= condenseComponents(preparedBase.topology));
+    },
+    plan: preparedSearch(base, () => preparedBase.condensed),
   };
   return preparedBase;
 }
@@ -318,6 +323,10 @@ export function prepareOverlayRoutePlanner(
 
   let graphSnapshot: Graph | undefined;
   let topology: GroundTopology | undefined;
+  let condensed: CondensedTopology | undefined;
+  const extraDisjoint =
+    removedEdges.size === 0 &&
+    acceptedExtra.every((edge) => ownNodes.has(edge.from) && ownNodes.has(edge.to));
   const getGraphSnapshot = (): Graph => {
     if (!graphSnapshot) {
       const baseEdges = baseRouteBase.graph.edges;
@@ -349,9 +358,51 @@ export function prepareOverlayRoutePlanner(
     blocked: combinedBlocked,
     maxSpeed,
     get topology() {
-      return (topology ??= groundComponents(getGraphSnapshot()));
+      if (!topology) {
+        if (extraDisjoint && extraGraph.nodes.length === 0) {
+          topology = baseRouteBase.topology;
+        } else {
+          topology = groundComponents(getGraphSnapshot());
+        }
+      }
+      return topology;
     },
-    plan: preparedSearch(basePrepared, () => condenseComponents(preparedBase.topology)),
+    get condensed() {
+      if (!condensed) {
+        if (extraDisjoint) {
+          const baseCond = baseRouteBase.condensed;
+          if (extraGraph.nodes.length === 0) {
+            condensed = baseCond;
+          } else {
+            // Extend base condensed DAG in O(|extraGraph|) without running
+            // Kosaraju DFS over 409k static surfaces.
+            const baseCount = baseCond.forward.length;
+            const extraCond = condenseComponents(
+              groundComponents({ nodes: extraGraph.nodes, edges: acceptedExtra }),
+            );
+            const extraCompMap = new Map<string, number>();
+            for (const [id, comp] of extraCond.components) extraCompMap.set(id, baseCount + comp);
+            const overlayForward = baseCond.forward.slice();
+            for (let i = 0; i < extraCond.forward.length; i++) {
+              const shifted = new Set<number>();
+              for (const target of extraCond.forward[i]) shifted.add(baseCount + target);
+              overlayForward.push(shifted);
+            }
+            const baseCompMap = baseCond.components;
+            // Lightweight Map-compatible lookup wrapper (canReach only calls .get()).
+            const components = {
+              get: (key: string) => extraCompMap.get(key) ?? baseCompMap.get(key),
+              has: (key: string) => extraCompMap.has(key) || baseCompMap.has(key),
+            } as Map<string, number>;
+            condensed = { components, forward: overlayForward };
+          }
+        } else {
+          condensed = condenseComponents(preparedBase.topology);
+        }
+      }
+      return condensed;
+    },
+    plan: preparedSearch(basePrepared, () => preparedBase.condensed),
   };
   return preparedBase;
 }

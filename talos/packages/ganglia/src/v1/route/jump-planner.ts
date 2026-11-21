@@ -3,6 +3,8 @@ import type { Vec3, Surface } from '#@/src/geometry.ts';
 import { createGoalProjector, findGoalHit, markTerminalGoal } from '#@/src/model/goals.ts';
 import type { InteractionGoal, JumpModel, SpeedBoost } from '#@/src/movement.ts';
 import type { GroundOptions, GroundArrival, GroundConnection, Route } from '#@/src/route.ts';
+import { verticalProjectionCandidates } from '#@/src/v1/geo/support-projector.ts';
+import type { CondensedTopology } from '#@/src/v1/reach/connectivity.ts';
 import {
   rememberCatalogAction,
   selectCatalogActions,
@@ -136,6 +138,253 @@ export interface InitialGroundProof {
 }
 type Stage = 'direction' | 'relations' | 'entry' | 'final' | 'catalog';
 
+interface UnwalledReachability {
+  addConnections(connections: readonly GroundConnection[]): void;
+  canStartReachGoal(position: Vec3): boolean;
+}
+
+const reverseCondensedCache = new WeakMap<CondensedTopology, number[][]>();
+
+const reverseCondensedGraph = (condensed: CondensedTopology): number[][] => {
+  let reverse = reverseCondensedCache.get(condensed);
+  if (!reverse) {
+    const count = condensed.forward.length;
+    reverse = Array.from({ length: count }, () => []);
+    for (let from = 0; from < count; from++) {
+      for (const to of condensed.forward[from]) {
+        reverse[to].push(from);
+      }
+    }
+    reverseCondensedCache.set(condensed, reverse);
+  }
+  return reverse;
+};
+
+const overlappingSurfaces = (
+  prepared: NonNullable<ReturnType<typeof groundPreparation>>,
+  position: Vec3,
+): Surface[] => {
+  if (prepared.overlay) {
+    const baseHits = verticalProjectionCandidates(
+      prepared.overlay.basePrep.surfaces,
+      position,
+      1e-6,
+      1e-6,
+    );
+    const extraHits = prepared.overlay.extraSurfaces.length
+      ? verticalProjectionCandidates(prepared.overlay.extraSurfaces, position, 1e-6, 1e-6)
+      : [];
+    return extraHits.length ? [...baseHits, ...extraHits] : baseHits;
+  }
+  return verticalProjectionCandidates(prepared.surfaces, position, 1e-6, 1e-6);
+};
+
+/**
+ * Lossless reachability gate over the planner's unwalled condensed surface DAG
+ * plus open non-terminal connections and overlapping-face equivalences.
+ *
+ * Theorem: Any route accepted by planner.plan([start], goal, { connections })
+ * traverses only walls-filtered base edges, visibility traces within unwalled
+ * surface components (plus 1e-6 overlapping faces), and admitted open
+ * non-terminal connections — all of which are a subset of this supergraph.
+ * Therefore `canStartReachGoal(pos) === false` guarantees `planner.plan` cannot
+ * return `status: 'complete'`, with zero false negatives.
+ */
+function createUnwalledReachability(
+  planner: GroundPlanner,
+  options: Pick<
+    PlannerOptions,
+    'maxVertical' | 'profile' | 'activeBoost' | 'locomotion' | 'endpointTolerance' | 'interaction'
+  >,
+  goal: Vec3,
+): UnwalledReachability | null {
+  const prepared = groundPreparation(planner);
+  if (!prepared) return null;
+  if (options.endpointTolerance !== undefined) {
+    const tol = options.endpointTolerance;
+    if (
+      !Number.isFinite(tol) ||
+      tol < 0 ||
+      tol > Math.min(options.maxVertical, options.profile.radius) ||
+      options.interaction
+    ) {
+      return null;
+    }
+  }
+  const condensed = prepared.getUnwalledRouteBase().condensed;
+  const baseReverse = reverseCondensedGraph(condensed);
+  const reachable = new Uint8Array(baseReverse.length);
+  const extraReverse = new Map<number, number[]>();
+  let disabled = false;
+
+  const addReverseEdge = (to: number, from: number, seeds: number[]) => {
+    if (from === to) return;
+    let list = extraReverse.get(to);
+    if (!list) {
+      list = [];
+      extraReverse.set(to, list);
+    }
+    list.push(from);
+    if (reachable[to] && !reachable[from]) seeds.push(from);
+  };
+
+  const linkGroup = (comps: number[], seeds: number[]) => {
+    if (comps.length <= 1) return;
+    const hub = comps[0];
+    for (let i = 1; i < comps.length; i++) {
+      addReverseEdge(hub, comps[i], seeds);
+      addReverseEdge(comps[i], hub, seeds);
+    }
+  };
+
+  const compsAt = (surfaceId: string, supportPos: Vec3): number[] | null => {
+    const main = condensed.components.get(surfaceId);
+    if (main === undefined) return null;
+    const result = [main];
+    const overlaps = overlappingSurfaces(prepared, supportPos);
+    for (let i = 0; i < overlaps.length; i++) {
+      const face = overlaps[i];
+      if (face.id === surfaceId) continue;
+      const comp = condensed.components.get(face.id);
+      if (comp === undefined) return null;
+      if (!result.includes(comp)) result.push(comp);
+    }
+    return result;
+  };
+
+  const expandFrom = (seeds: number[]) => {
+    if (!seeds.length) return;
+    const queue: number[] = [];
+    for (let i = 0; i < seeds.length; i++) {
+      const c = seeds[i];
+      if (!reachable[c]) {
+        reachable[c] = 1;
+        queue.push(c);
+      }
+    }
+    for (let head = 0; head < queue.length; head++) {
+      const v = queue[head];
+      const basePrev = baseReverse[v];
+      for (let i = 0; i < basePrev.length; i++) {
+        const u = basePrev[i];
+        if (!reachable[u]) {
+          reachable[u] = 1;
+          queue.push(u);
+        }
+      }
+      const extraPrev = extraReverse.get(v);
+      if (extraPrev) {
+        for (let i = 0; i < extraPrev.length; i++) {
+          const u = extraPrev[i];
+          if (!reachable[u]) {
+            reachable[u] = 1;
+            queue.push(u);
+          }
+        }
+      }
+    }
+  };
+
+  const baseTargets =
+    options.endpointTolerance !== undefined
+      ? (() => {
+          const support = prepared.projectSupport(goal, options.endpointTolerance);
+          return support ? [support] : [];
+        })()
+      : prepared.projectGoal(goal, {
+          maxVertical: options.maxVertical,
+          interaction: options.interaction,
+        });
+  const goalSeeds: number[] = [];
+  for (let i = 0; i < baseTargets.length; i++) {
+    const target = baseTargets[i];
+    const comps = compsAt(target.surface, target.position);
+    if (!comps) return null;
+    linkGroup(comps, goalSeeds);
+    for (let j = 0; j < comps.length; j++) goalSeeds.push(comps[j]);
+  }
+  expandFrom(goalSeeds);
+
+  const maxTol = Math.max(1e-6, Math.min(options.maxVertical, options.profile.radius));
+
+  return {
+    addConnections(connections: readonly GroundConnection[]) {
+      if (disabled || !connections.length) return;
+      const seeds: number[] = [];
+      for (let i = 0; i < connections.length; i++) {
+        const connection = connections[i];
+        if (
+          connection.state !== 'open' ||
+          connection.terminal ||
+          (connection.requiredBoost !== undefined &&
+            connection.requiredBoost !== options.activeBoost) ||
+          (connection.requiredGait !== undefined && !options.locomotion)
+        ) {
+          continue;
+        }
+        if (!Array.isArray(connection.points) || connection.points.length < 2) {
+          disabled = true;
+          return;
+        }
+        const tolerance = connection.endpointTolerance ?? 1e-6;
+        if (!Number.isFinite(tolerance) || tolerance < 0 || tolerance > maxTol) {
+          disabled = true;
+          return;
+        }
+        if (
+          (connection.fromSurface !== undefined && !prepared.byId.has(connection.fromSurface)) ||
+          (connection.toSurface !== undefined && !prepared.byId.has(connection.toSurface))
+        ) {
+          disabled = true;
+          return;
+        }
+        const fromProj = prepared.projectSupport(
+          connection.points[0],
+          tolerance,
+          connection.fromSurface,
+        );
+        const endPoint = connection.points[connection.points.length - 1];
+        const toProj = prepared.projectSupport(endPoint, tolerance, connection.toSurface);
+        if (!fromProj || !toProj) continue;
+        const fromComps = compsAt(fromProj.surface, fromProj.position);
+        const toComps = compsAt(toProj.surface, toProj.position);
+        if (!fromComps || !toComps) {
+          disabled = true;
+          return;
+        }
+        linkGroup(fromComps, seeds);
+        linkGroup(toComps, seeds);
+        if (
+          options.interaction &&
+          !options.interaction.airborne &&
+          findGoalHit([endPoint, endPoint], goal, options.interaction)
+        ) {
+          for (let j = 0; j < toComps.length; j++) {
+            const c = toComps[j];
+            if (!reachable[c]) seeds.push(c);
+          }
+        }
+        addReverseEdge(toComps[0], fromComps[0], seeds);
+      }
+      expandFrom(seeds);
+    },
+    canStartReachGoal(position: Vec3): boolean {
+      if (disabled) return true;
+      const projected = prepared.projectGoal(position, { maxVertical: options.maxVertical })[0];
+      if (!projected) return false;
+      const main = condensed.components.get(projected.surface);
+      if (main === undefined) return true;
+      if (reachable[main]) return true;
+      const overlaps = overlappingSurfaces(prepared, projected.position);
+      for (let i = 0; i < overlaps.length; i++) {
+        const comp = condensed.components.get(overlaps[i].id);
+        if (comp === undefined || reachable[comp]) return true;
+      }
+      return false;
+    },
+  };
+}
+
 /** Solve directed ground/jump/drop action combinations for arbitrary arrivals.
  * Geometry, collision, state, walls and body must belong to one immutable snapshot.
  * Discovery supplies supported, swept motion edges. The ground planner jointly
@@ -257,6 +506,22 @@ function solveJumpRoute(
         : {}),
     };
     let remaining = options.maxCandidates;
+    let reach: UnwalledReachability | null | undefined;
+    let reachFed = 0;
+    let planChecks = 0;
+    const canReachNow = (): boolean => {
+      if (reach === undefined) {
+        if (planChecks === 0 && connections.length < 32) return true;
+        reach = createUnwalledReachability(planner, options, goal);
+        reachFed = 0;
+      }
+      if (!reach) return true;
+      if (reachFed < connections.length) {
+        reach.addConnections(connections.slice(reachFed));
+        reachFed = connections.length;
+      }
+      return reach.canStartReachGoal(arrival.position);
+    };
     // Cheap region-chain proposals cover simple transfers before broad frontiers.
     // The same bounded stage runs for every unresolved query.
     const proposalBudget =
@@ -268,12 +533,14 @@ function solveJumpRoute(
       });
       connections.push(...search(proposal));
       remaining = stage === 'relations' ? 0 : remaining - proposalBudget;
-      if (proposal.connections.length)
+      if (proposal.connections.length && canReachNow()) {
+        planChecks++;
         incumbent = planner.plan([arrival], goal, {
           interaction,
           endpointTolerance: options.endpointTolerance,
           connections,
         });
+      }
     }
     const batches = [Math.min(128, remaining), Math.min(128, remaining)],
       spent = [0, 0];
@@ -332,11 +599,14 @@ function solveJumpRoute(
       exhausted.clear();
       batches[side] = Math.min(128, remaining);
       connections.push(...additions);
-      incumbent = planner.plan([arrival], goal, {
-        interaction,
-        endpointTolerance: options.endpointTolerance,
-        connections,
-      });
+      if (canReachNow()) {
+        planChecks++;
+        incumbent = planner.plan([arrival], goal, {
+          interaction,
+          endpointTolerance: options.endpointTolerance,
+          connections,
+        });
+      }
     }
     if (incumbent.status !== 'complete') {
       unspent = 0;
@@ -758,13 +1028,31 @@ function planBaseRoute(
     searches: [],
   };
   const searchedRegions = new Set<string | number>();
+  const reach = sources.length >= 2 ? createUnwalledReachability(planner, options, goal) : null;
+  const fedConnections = new Set<GroundConnection>();
+  const syncReach = (conns: readonly GroundConnection[]) => {
+    if (!reach) return;
+    const fresh: GroundConnection[] = [];
+    for (let i = 0; i < conns.length; i++) {
+      const conn = conns[i];
+      if (!fedConnections.has(conn)) {
+        fedConnections.add(conn);
+        fresh.push(conn);
+      }
+    }
+    if (fresh.length) reach.addConnections(fresh);
+  };
+  syncReach(known);
   for (const [index, edge] of sources.entries()) {
     const region = regions.get(edge);
     // One entry discovery covers a mutually walk-reachable ground region. This
     // reuses the existing directed ground proof without solving every entry pair.
     if (region !== undefined && region !== null && searchedRegions.has(region)) continue;
     options.onProgress?.({ phase: 'device-entry-search', completed: index, total: sources.length });
-    if (!probe(edge.points[0], goal, options.interaction)) {
+    if (
+      (reach && !reach.canStartReachGoal(edge.points[0])) ||
+      !probe(edge.points[0], goal, options.interaction)
+    ) {
       options.onProgress?.({
         phase: 'device-entry-search',
         completed: index + 1,
@@ -800,6 +1088,7 @@ function planBaseRoute(
     entryRemaining -= budget;
     result.diagnostics.truncated ||= trial.diagnostics.truncated;
     known = trial.connections;
+    syncReach(known);
     const route = planner.plan(starts, goal, {
       interaction: options.interaction,
       connections: trial.connections,
