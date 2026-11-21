@@ -398,3 +398,100 @@ test('indexed sweeps retain every collision across mixed faces and source permut
     }
   }
 });
+
+test('parallelogram and degenerate capsule sweeps match reference distance across oblique faces', () => {
+  const sub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const dot = (a: Vec3, b: Vec3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const cross = (a: Vec3, b: Vec3): Vec3 => [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ];
+  const mix = (a: Vec3, b: Vec3, t: number): Vec3 => [
+    a[0] + (b[0] - a[0]) * t,
+    a[1] + (b[1] - a[1]) * t,
+    a[2] + (b[2] - a[2]) * t,
+  ];
+  const sq = (a: Vec3, b: Vec3) => dot(sub(a, b), sub(a, b));
+  const ptSeg = (p: Vec3, a: Vec3, b: Vec3) => {
+    const d = sub(b, a),
+      l = dot(d, d);
+    return sq(p, mix(a, b, l ? Math.max(0, Math.min(1, dot(sub(p, a), d) / l)) : 0));
+  };
+  const segSeg = (a: Vec3, b: Vec3, c: Vec3, d: Vec3) => {
+    let best = Math.min(ptSeg(a, c, d), ptSeg(b, c, d), ptSeg(c, a, b), ptSeg(d, a, b));
+    const u = sub(b, a),
+      v = sub(d, c),
+      w = sub(c, a),
+      n = cross(u, v),
+      denom = dot(n, n);
+    if (denom > 0) {
+      const s = dot(cross(w, v), n) / denom,
+        t = dot(cross(w, u), n) / denom;
+      if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+        best = Math.min(best, sq(mix(a, b, s), mix(c, d, t)));
+    }
+    return best;
+  };
+  const inside = (p: Vec3, tri: Vec3[], n: Vec3) =>
+    [0, 1, 2].every((i) => dot(cross(sub(tri[(i + 1) % 3], tri[i]), sub(p, tri[i])), n) >= 0);
+  const ptTri = (p: Vec3, tri: Vec3[], n: Vec3) => {
+    const area = dot(n, n);
+    if (area > 0) {
+      const dist = dot(sub(p, tri[0]), n) / area;
+      const q: Vec3 = [p[0] - n[0] * dist, p[1] - n[1] * dist, p[2] - n[2] * dist];
+      if (inside(q, tri, n)) return sq(p, q);
+    }
+    return Math.min(ptSeg(p, tri[0], tri[1]), ptSeg(p, tri[1], tri[2]), ptSeg(p, tri[2], tri[0]));
+  };
+  const segTri = (a: Vec3, b: Vec3, tri: Vec3[]) => {
+    const n = cross(sub(tri[1], tri[0]), sub(tri[2], tri[0]));
+    const da = dot(sub(a, tri[0]), n),
+      db = dot(sub(b, tri[0]), n);
+    if (da !== db) {
+      const t = da / (da - db);
+      if (t >= 0 && t <= 1 && inside(mix(a, b, t), tri, n)) return 0;
+    }
+    return Math.min(
+      ptTri(a, tri, n),
+      ptTri(b, tri, n),
+      segSeg(a, b, tri[0], tri[1]),
+      segSeg(a, b, tri[1], tri[2]),
+      segSeg(a, b, tri[2], tri[0]),
+    );
+  };
+  const triTri = (a: Vec3[], b: Vec3[]) =>
+    Math.min(
+      segTri(a[0], a[1], b),
+      segTri(a[1], a[2], b),
+      segTri(a[2], a[0], b),
+      segTri(b[0], b[1], a),
+      segTri(b[1], b[2], a),
+      segTri(b[2], b[0], a),
+    );
+  let seed = 1337;
+  const rand = () => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return seed / 2 ** 32;
+  };
+  const p = (): Vec3 => [(rand() - 0.5) * 4, (rand() - 0.5) * 4, (rand() - 0.5) * 4];
+  for (let i = 0; i < 200; i++) {
+    const face: Vec3[] = [p(), p(), p()];
+    const w = world([face]);
+    const s = p();
+    const e: Vec3 =
+      i % 5 === 0 ? [...s] : i % 5 === 1 ? [s[0], s[1] + (rand() - 0.5) * 3, s[2]] : p();
+    const cap = i % 5 === 2 ? { radius: 0.35, height: 0.7 } : profile;
+    const a: Vec3 = [s[0], s[1] + cap.radius, s[2]];
+    const b: Vec3 = [s[0], s[1] + cap.height - cap.radius, s[2]];
+    const c: Vec3 = [e[0], e[1] + cap.radius, e[2]];
+    const d: Vec3 = [e[0], e[1] + cap.height - cap.radius, e[2]];
+    const refSq = Math.min(triTri([a, b, d], face), triTri([a, d, c], face));
+    const hit = w.sweepCapsule(s, e, cap);
+    const refDist = Math.sqrt(refSq);
+    if (Math.abs(refDist - cap.radius) > 1e-11) {
+      assert.equal(hit !== null, refSq <= cap.radius * cap.radius);
+      if (hit) assert.ok(Math.abs(hit.distance - refDist) < 1e-11);
+    }
+  }
+});
