@@ -1,7 +1,15 @@
 import { physicalWork } from '@opendfieldmap/ganglia/solver/host';
 // @vitest-environment node
 import { writePhysicalAdapter } from '../../../test-support/physical-adapter.mjs';
-import { mkdtemp, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import {
+    access,
+    mkdtemp,
+    mkdir,
+    readFile,
+    rename,
+    rm,
+    writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -351,6 +359,91 @@ test('runs a queued known-device query before further ground construction', asyn
             optimizing: false,
         });
         expect(queued.status).not.toBe('ready');
+    } finally {
+        await builder.close();
+        await rm(directory, { recursive: true, force: true });
+    }
+});
+
+test('bounds merged window artifacts under player-ground while protecting active windows', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'world-window-lru-'));
+    const dataDir = join(directory, 'data');
+    await mkdir(dataDir, { recursive: true });
+    await mkdir(join(directory, 'packages/extractor/src'), { recursive: true });
+    await writeFile(join(dataDir, 'movement-settings-current.json'), '{}');
+    await writeFile(
+        join(directory, 'packages/extractor/src/cli.ts'),
+        `
+        import { writeFile } from 'node:fs/promises';
+        if (process.argv.includes('--identity')) {
+            console.log(JSON.stringify({ generator: 'fixture-generator' }));
+            process.exit(0);
+        }
+        const output = process.argv[process.argv.indexOf('-o') + 1];
+        const collision = process.argv[process.argv.indexOf('--collision-output') + 1];
+        const source = { buildGuid: 'build', contentHash: 'content' };
+        await writeFile(collision, 'x'.repeat(256));
+        await writeFile(output, JSON.stringify({ source, surfaces: [], pad: 'y'.repeat(256) }));
+    `,
+    );
+    await writePhysicalAdapter(directory);
+    // Budget fits ~1 window (~600B) but not 2+ windows, forcing LRU eviction of inactive windows.
+    const builder = physicalRouteBuilder({
+        directory: dataDir,
+        extractor: directory,
+        config: 'fixture',
+        node: process.execPath,
+        maxWindowCacheBytes: 700,
+    });
+    const source = { buildGuid: 'build', contentHash: 'content' };
+    try {
+        const first = await builder.query(
+            'map01',
+            source,
+            [0, 0, 0],
+            [1, 0, 1],
+            { startBuild: true },
+        );
+        if (!first) throw new Error('missing first window');
+        await expect.poll(() => first.status).toBe('ready');
+
+        const second = await builder.query(
+            'map01',
+            source,
+            [100, 0, 100],
+            [101, 0, 101],
+            { startBuild: true },
+        );
+        if (!second) throw new Error('missing second window');
+        await expect.poll(() => second.status).toBe('ready');
+
+        // Wait for LRU eviction of the first inactive window once the second completes.
+        await expect
+            .poll(async () => {
+                try {
+                    await access(first.output);
+                    return 'present';
+                } catch {
+                    return 'evicted';
+                }
+            })
+            .toBe('evicted');
+        await expect(access(first.collision)).rejects.toThrow();
+        // The currently retained second window remains intact on disk.
+        await expect(access(second.output)).resolves.toBeUndefined();
+        await expect(access(second.collision)).resolves.toBeUndefined();
+
+        // Requesting the evicted window again cleanly rebuilds it from scratch.
+        const rebuilt = await builder.query(
+            'map01',
+            source,
+            [0, 0, 0],
+            [1, 0, 1],
+            { startBuild: true },
+        );
+        if (!rebuilt) throw new Error('missing rebuilt window');
+        await expect.poll(() => rebuilt.status).toBe('ready');
+        await expect(access(rebuilt.output)).resolves.toBeUndefined();
     } finally {
         await builder.close();
         await rm(directory, { recursive: true, force: true });

@@ -20,8 +20,10 @@ import {
     access,
     appendFile,
     mkdir,
+    readdir,
     readFile,
     rename,
+    stat,
     unlink,
     writeFile,
 } from 'node:fs/promises';
@@ -44,7 +46,13 @@ type Options = {
     config?: string;
     node?: string;
     solver?: string;
+    /** Byte budget for merged window artifacts under `player-ground/` (default 256 MiB).
+     * Per-tile builds in `ground-tile-cache/` remain untouched as O(unique tiles) storage;
+     * oldest inactive merged window blobs are evicted once this budget is exceeded.
+     */
+    maxWindowCacheBytes?: number;
 };
+const DEFAULT_MAX_WINDOW_CACHE_BYTES = 256 * 1024 * 1024;
 export type Job = {
     status: 'queued' | 'building' | 'ready' | 'failed';
     message: string;
@@ -81,6 +89,101 @@ const hash = (value: unknown) =>
  */
 export function physicalRouteBuilder(options: Options) {
     const jobs = new Map<string, Job>();
+    const maxWindowCacheBytes =
+        options.maxWindowCacheBytes ?? DEFAULT_MAX_WINDOW_CACHE_BYTES;
+    if (!Number.isFinite(maxWindowCacheBytes) || maxWindowCacheBytes <= 0) {
+        throw new Error('Invalid maxWindowCacheBytes');
+    }
+    // Reference-counted pins protect in-flight ground builds and active/queued
+    // route solves from window-cache eviction.
+    const pinnedOutputs = new Map<string, number>();
+    const pinOutput = (output: string) => {
+        pinnedOutputs.set(output, (pinnedOutputs.get(output) ?? 0) + 1);
+    };
+    const unpinOutput = (output: string) => {
+        const next = (pinnedOutputs.get(output) ?? 0) - 1;
+        if (next <= 0) pinnedOutputs.delete(output);
+        else pinnedOutputs.set(output, next);
+    };
+    let pruneQueue = Promise.resolve();
+    const pruneWindowCache = (directory: string) => {
+        pruneQueue = pruneQueue
+            .then(async () => {
+                const names = await readdir(directory).catch(
+                    () => [] as string[],
+                );
+                // Group window files by merged ground JSON output path so each
+                // window's JSON + collision binary are accounted and evicted together.
+                const groups = new Map<
+                    string,
+                    {
+                        output: string;
+                        files: string[];
+                        bytes: number;
+                        mtimeMs: number;
+                    }
+                >();
+                for (const name of names) {
+                    let stem: string | null = null;
+                    if (name.endsWith('-collision.bin')) {
+                        stem = name.slice(0, -'-collision.bin'.length);
+                    } else if (name.endsWith('-collision.json')) {
+                        stem = name.slice(0, -'-collision.json'.length);
+                    } else if (
+                        name.endsWith('.json') &&
+                        !name.endsWith('.progress.jsonl')
+                    ) {
+                        stem = name.slice(0, -'.json'.length);
+                    }
+                    if (!stem) continue;
+                    const filePath = resolve(directory, name);
+                    const info = await stat(filePath).catch(() => null);
+                    if (!info?.isFile()) continue;
+                    const outputPath = resolve(directory, `${stem}.json`);
+                    let group = groups.get(outputPath);
+                    if (!group) {
+                        group = {
+                            output: outputPath,
+                            files: [],
+                            bytes: 0,
+                            mtimeMs: 0,
+                        };
+                        groups.set(outputPath, group);
+                    }
+                    group.files.push(filePath);
+                    group.bytes += info.size;
+                    if (info.mtimeMs > group.mtimeMs)
+                        group.mtimeMs = info.mtimeMs;
+                }
+                let totalBytes = 0;
+                for (const group of groups.values()) totalBytes += group.bytes;
+                if (totalBytes <= maxWindowCacheBytes) return;
+                // Evict oldest unpinned merged window artifacts until within budget.
+                const candidates = [...groups.values()]
+                    .filter(
+                        (group) =>
+                            !pinnedOutputs.has(group.output) &&
+                            retainedGround?.output !== group.output,
+                    )
+                    .sort((a, b) => a.mtimeMs - b.mtimeMs);
+                for (const group of candidates) {
+                    if (totalBytes <= maxWindowCacheBytes) break;
+                    // Drop evicted job records so subsequent queries rebuild cleanly
+                    // from per-tile ground-tile-cache instead of reading deleted files.
+                    for (const [key, entry] of jobs.entries()) {
+                        if (entry.output === group.output && !entry.child) {
+                            jobs.delete(key);
+                        }
+                    }
+                    for (const filePath of group.files) {
+                        await unlink(filePath).catch(() => {});
+                    }
+                    totalBytes -= group.bytes;
+                }
+            })
+            .catch(() => {});
+        return pruneQueue;
+    };
     let retainedGround: Job | undefined;
     const groundLoads = new WeakMap<Job, Promise<unknown>>();
     const retainGround = (job: Job, result: unknown) => {
@@ -278,8 +381,17 @@ export function physicalRouteBuilder(options: Options) {
             .catch((failure) =>
                 console.error('Unable to index route progress', failure),
             );
+        const isGroundBuild =
+            Array.isArray(args) && args[0] === 'player-ground';
+        const pinnedGroundPath = isGroundBuild
+            ? current.output
+            : !Array.isArray(args)
+              ? args.resources.ground
+              : null;
+        if (pinnedGroundPath) pinOutput(pinnedGroundPath);
         const run = async () => {
-            await writes;
+            try {
+                await writes;
             await new Promise<void>((done) => {
                 if (closed) {
                     current.status = 'failed';
@@ -452,6 +564,18 @@ export function physicalRouteBuilder(options: Options) {
                 serverMemory: process.memoryUsage(),
             });
             await writes;
+            } finally {
+                if (pinnedGroundPath) unpinOutput(pinnedGroundPath);
+                if (
+                    isGroundBuild &&
+                    current.status === 'ready' &&
+                    options.directory
+                ) {
+                    await pruneWindowCache(
+                        resolve(options.directory, 'player-ground'),
+                    );
+                }
+            }
         };
         if (background) optimization = optimization.then(run);
         else {
@@ -868,7 +992,9 @@ export function physicalRouteBuilder(options: Options) {
             for (const job of jobs.values()) job.child?.kill('SIGTERM');
             while (foregroundRunning) await foregroundTask;
             await optimization;
+            await pruneQueue;
             jobs.clear();
+            pinnedOutputs.clear();
             waterSupports.clear();
             retainedGround = undefined;
         },
