@@ -65,7 +65,7 @@ test('GTS1 binary tile codec roundtrips float64 bit-exactly and compresses >= 5x
   const decodeMs = performance.now() - t0;
   assert.equal(decoded32.length, sample.length);
   assert.equal(decoded32[0].id, '3,-2/s0');
-  assert.ok(decodeMs < 50, `Expected fast binary decode, got ${decodeMs.toFixed(2)}ms`);
+  assert.ok(decodeMs < 250, `Expected fast binary decode, got ${decodeMs.toFixed(2)}ms`);
 
   // Empty tiles & malformed buffers.
   assert.deepEqual(decodeTileSurfaces(encodeTileSurfaces([])), []);

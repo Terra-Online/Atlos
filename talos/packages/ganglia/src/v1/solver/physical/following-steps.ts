@@ -6,6 +6,7 @@ import { vector } from '#@/src/model/placement.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
 import type { GroundConnection } from '#@/src/route.ts';
 import type { PoseBounds } from '#@/src/solver/physical.ts';
+import type { LookupMap } from '#@/src/v1/route/ground.ts';
 import type { JumpRouteOptions } from '#@/src/v1/route/jump-planner.ts';
 import { standingFoot } from '#@/src/v1/search/traversal.ts';
 
@@ -21,12 +22,13 @@ export function roofSteps(
   world: CollisionWorld,
   projectFloor: Projector,
   projectLayout: Projector,
-  surfaceById: ReadonlyMap<string, Surface>,
+  surfaceById: LookupMap<string, Surface>,
   goal: Vec3,
   options: JumpRouteOptions,
+  preparedBlocked?: ReturnType<typeof createWallChecker>,
 ) {
   const { profile, model, walls, maxVertical, maxSlope } = options;
-  const blocked = createWallChecker(walls, profile);
+  const blocked = preparedBlocked ?? createWallChecker(walls, profile);
   const foot = (hit: { position: Vec3; surface: string }) =>
     standingFoot(hit, world, { profile, maxVertical, maxSlope, blocked, project: projectLayout });
   const deck = roofs
@@ -52,7 +54,9 @@ export function roofSteps(
       to.position[1] - from.position[1] > model.maxJumpHeight
     )
       return;
-    const key = JSON.stringify([from.position, to.position]);
+    const fp = from.position,
+      tp = to.position;
+    const key = `${fp[0]},${fp[1]},${fp[2]}|${tp[0]},${tp[1]},${tp[2]}`;
     if (tested.has(key) || remaining === 0) return;
     remaining--;
     tested.add(key);

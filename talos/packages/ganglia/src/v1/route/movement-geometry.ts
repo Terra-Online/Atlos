@@ -5,7 +5,7 @@ import { createWallChecker } from '#@/src/model/walls.ts';
 import { createSupportProjector } from '#@/src/v1/geo/support-projector.ts';
 import { surfaceGraph, surfacePortals } from '#@/src/v1/geo/surfaces.ts';
 import { type GroundTopology, groundComponents } from '#@/src/v1/reach/connectivity.ts';
-import { groundPreparation } from '#@/src/v1/route/ground.ts';
+import { type LookupMap, groundPreparation } from '#@/src/v1/route/ground.ts';
 import type { Graph } from '#@/src/v1/route/routes.ts';
 import {
   type DiscoveryOptions,
@@ -19,9 +19,9 @@ interface Geometry {
   forward?: NonNullable<ReturnType<typeof groundPreparation>>['routeBase']['forward'];
   blocked: ReturnType<typeof createWallChecker>;
   portals: ReturnType<typeof surfacePortals>;
-  byId: Map<string, Surface>;
+  byId: LookupMap<string, Surface>;
   lengthScale: number;
-  centers: Map<string, Vec3>;
+  centers: LookupMap<string, Vec3>;
   project: ReturnType<typeof createGoalProjector>;
   projectSupport: ReturnType<typeof createSupportProjector>;
   visibility?: NonNullable<ReturnType<typeof groundPreparation>>['straighten'];
@@ -77,7 +77,27 @@ export const movementGeometry = (
       return normalized?.topology ?? (topology ??= groundComponents(graph));
     },
     get boundaries() {
-      return (boundaries ??= exposedBoundaries(surfaces, options.portals ?? [], portals));
+      if (!boundaries) {
+        if (prepared?.overlay) {
+          // Reuse cached static exposed boundaries and append only the tiny
+          // overlay roof boundaries instead of scanning 409k static faces.
+          const baseGeo = movementGeometry(prepared.overlay.basePrep.surfaces, {
+            walls: prepared.overlay.basePrep.walls,
+            profile: prepared.overlay.basePrep.profile,
+            portals: prepared.overlay.basePrep.importedPortals,
+            groundPlanner: prepared.overlay.basePlanner,
+          });
+          const extra = exposedBoundaries(
+            prepared.overlay.extraSurfaces,
+            [],
+            prepared.overlay.extraPortals,
+          );
+          boundaries = extra.length ? [...baseGeo.boundaries, ...extra] : baseGeo.boundaries;
+        } else {
+          boundaries = exposedBoundaries(surfaces, options.portals ?? [], portals);
+        }
+      }
+      return boundaries;
     },
   };
   if (prepared) snapshots.set(prepared, { signature, portals: options.portals, value });

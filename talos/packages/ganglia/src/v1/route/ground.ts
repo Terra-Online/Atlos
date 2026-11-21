@@ -1,5 +1,6 @@
-import type { Vec3, Surface } from '#@/src/geometry.ts';
+import type { Vec3, Surface, Wall } from '#@/src/geometry.ts';
 import { type GoalProjector, createGoalProjector, findGoalHit } from '#@/src/model/goals.ts';
+import { createWallChecker } from '#@/src/model/walls.ts';
 import type { InteractionGoal, Segment } from '#@/src/movement.ts';
 import type {
   GroundArrival,
@@ -16,6 +17,7 @@ import {
   type DirectedPortal,
   type SharedPortal,
   directedPortals,
+  projectPoint,
   surfaceGraph,
   surfacePortals,
 } from '#@/src/v1/geo/surfaces.ts';
@@ -24,10 +26,12 @@ import { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
 import {
   type Graph,
   type Arrival,
-  createRoutePlanner,
+  prepareOverlayRoutePlanner,
   prepareRoutePlanner,
 } from '#@/src/v1/route/routes.ts';
 import { type GroundStraightener, createGroundStraightener } from '#@/src/v1/route/straighten.ts';
+
+export type LookupMap<K, V> = Pick<ReadonlyMap<K, V>, 'get' | 'has'>;
 
 export interface GroundQueryOptions {
   interaction?: InteractionGoal;
@@ -42,21 +46,33 @@ export interface GroundPlanner {
   plan(starts: GroundArrival[], goal: Vec3, query?: GroundQueryOptions): Route;
 }
 
+interface OverlayMeta {
+  basePlanner: GroundPlanner;
+  basePrep: Preparation;
+  extraSurfaces: Surface[];
+  extraPortals: SharedPortal[];
+}
+
 interface Preparation {
   surfaces: Surface[];
   planWalkingGeometry(from: Vec3, to: Vec3): Route;
   portals: SharedPortal[];
+  directed: DirectedPortal[];
   straighten: GroundStraightener;
   projectGoal: GoalProjector;
   projectSupport: ReturnType<typeof createSupportProjector>;
-  byId: Map<string, Surface>;
-  centers: Map<string, Vec3>;
+  byId: LookupMap<string, Surface>;
+  centers: LookupMap<string, Vec3>;
   graph: Graph;
   routeBase: ReturnType<typeof prepareRoutePlanner>;
+  getUnwalledRouteBase(): ReturnType<typeof prepareRoutePlanner>;
+  walls: Wall[];
+  profile: GroundOptions['profile'];
   constraintsSignature: string;
   searchSpeed: number;
   peakSpeed: number;
   importedPortals?: GroundOptions['portals'];
+  overlay?: OverlayMeta;
 }
 interface Projection {
   surface: string;
@@ -95,7 +111,7 @@ interface GroundTopologyEntry {
     directed: DirectedPortal[];
     base: Graph;
     baseCenters: Map<string, Vec3>;
-    unwalledRoute?: ReturnType<typeof createRoutePlanner>;
+    unwalledRouteBase?: ReturnType<typeof prepareRoutePlanner>;
     weakComponents?: SurfaceWeakComponents;
   };
 }
@@ -189,8 +205,8 @@ function groundTopologyFor(
     directed: graphEntry.directed,
     base: graphEntry.base,
     baseCenters: graphEntry.baseCenters,
-    getUnwalledRoute(profile: GroundOptions['profile']) {
-      return (graphEntry.unwalledRoute ??= createRoutePlanner(graphEntry.base, {
+    getUnwalledRouteBase(profile: GroundOptions['profile']) {
+      return (graphEntry.unwalledRouteBase ??= prepareRoutePlanner(graphEntry.base, {
         walls: [],
         profile,
       }));
@@ -217,106 +233,93 @@ export function planGroundRoute(
 ): Route {
   return createGroundPlanner(surfaces, options).plan(starts, goal);
 }
-/** Prepare shared topology and ground visibility once for repeated, independent queries.
- * A caller must rebuild the planner when scene state, geometry or constraints change.
- * Search selects a corridor; continuous ground tracing removes unnecessary graph turns.
- * This does not establish a globally shortest path across every possible corridor.
+/**
+ * Combine an already-indexed static GoalProjector with a small temporary surface
+ * overlay so per-layout queries never re-index the full static surface set.
  */
-export function createGroundPlanner(surfaces: Surface[], options: GroundOptions): GroundPlanner {
-  const { speed, maxVertical, walls, profile, connections = [] } = options;
-  // Compare action times at the fastest permitted ground gait. The existing
-  // resource scheduler verifies the complete selected motion sequence afterwards.
-  const searchSpeed = options.locomotion?.sprintSpeed ?? speed;
-  const peakSpeed = Math.max(
-    speed,
-    options.locomotion?.speed ?? speed,
-    options.locomotion?.sprintSpeed ?? speed,
-    options.locomotion?.dash?.speed ?? 0,
-  );
+export const combineGoalProjectors = (
+  base: GoalProjector,
+  overlay: GoalProjector,
+): GoalProjector => {
+  const combined: GoalProjector = (target, options) => {
+    const a = base(target, options);
+    const b = overlay(target, options);
+    if (!b.length) return a;
+    if (!a.length) return b;
+    if (options.interaction === undefined) return a[0].distance <= b[0].distance ? a : b;
+    // Preserve [...base, ...overlay] order on equal distance ties.
+    const merged: typeof a = [];
+    let i = 0,
+      j = 0;
+    while (i < a.length && j < b.length) {
+      merged.push(a[i].distance <= b[j].distance ? a[i++] : b[j++]);
+    }
+    while (i < a.length) merged.push(a[i++]);
+    while (j < b.length) merged.push(b[j++]);
+    return merged;
+  };
+  combined.closest = (target, options) => {
+    const a = base.closest(target, options);
+    const b = overlay.closest(target, options);
+    if (!a) return b;
+    if (!b) return a;
+    return a.distance <= b.distance ? a : b;
+  };
+  return combined;
+};
+
+const overlayLookup = <K, V>(base: LookupMap<K, V>, own: ReadonlyMap<K, V>): LookupMap<K, V> => ({
+  has: (key: K) => own.has(key) || base.has(key),
+  get: (key: K) => own.get(key) ?? base.get(key),
+});
+
+const finiteVec3 = (point: unknown): point is Vec3 =>
+  Array.isArray(point) &&
+  point.length === 3 &&
+  Number.isFinite(point[0]) &&
+  Number.isFinite(point[1]) &&
+  Number.isFinite(point[2]);
+
+interface PlannerParts {
+  surfaces: Surface[];
+  options: GroundOptions;
+  searchSpeed: number;
+  peakSpeed: number;
+  portals: SharedPortal[];
+  directed: DirectedPortal[];
+  byId: LookupMap<string, Surface>;
+  centers: LookupMap<string, Vec3>;
+  projectGoal: GoalProjector;
+  projectSupport: ReturnType<typeof createSupportProjector>;
+  graph: Graph;
+  routeBase: ReturnType<typeof prepareRoutePlanner>;
+  getUnwalledRouteBase: () => ReturnType<typeof prepareRoutePlanner>;
+  straighten: GroundStraightener;
+  constraintsSignature: string;
+  overlay?: OverlayMeta;
+}
+
+function assembleGroundPlanner(parts: PlannerParts): GroundPlanner {
   const {
+    surfaces,
+    options,
+    searchSpeed,
+    peakSpeed,
     portals,
-    byId,
-    projectGoal,
     directed,
-    base,
-    baseCenters,
-    getUnwalledRoute,
-    getWeakComponents,
-  } = groundTopologyFor(surfaces, searchSpeed, options.portals);
-  const routeBase = prepareRoutePlanner(base, { walls, profile });
+    byId,
+    centers,
+    projectGoal,
+    projectSupport,
+    graph: baseGraph,
+    routeBase,
+    getUnwalledRouteBase,
+    straighten,
+    constraintsSignature,
+    overlay,
+  } = parts;
+  const { speed, maxVertical, walls, profile, connections = [] } = options;
   const blocked = routeBase.blocked!;
-  const constraintsSignature = JSON.stringify([walls, profile]);
-  const projectSupport = createSupportProjector(surfaces, byId);
-  // Build the triangle straightener lazily on first connected trace/straighten
-  // call so planners whose endpoints lie on disconnected walkable components
-  // never spend seconds indexing 260k-409k support triangles.
-  const surfaceSnapshot = surfaces.slice();
-  const importedPortalsSnapshot = options.portals?.slice();
-  const finitePoint = (point: unknown): point is Vec3 =>
-    Array.isArray(point) &&
-    point.length === 3 &&
-    Number.isFinite(point[0]) &&
-    Number.isFinite(point[1]) &&
-    Number.isFinite(point[2]);
-  // Exact necessary condition for straighten.trace/mayConnect: triangle
-  // adjacency only traverses intra-surface edges, shared portals, and directed
-  // portals. Querying verticalProjectionCandidates within 1e-6 covers every
-  // overlapping triangle admitted by straighten.supporting (1e-7 tolerance).
-  const surfacesMayConnect = (start: Vec3, end: Vec3): boolean => {
-    if (surfaces.length !== surfaceSnapshot.length) return true;
-    if (Math.hypot(end[0] - start[0], end[2] - start[2]) < 1e-10 && distance(start, end) < 1e-7)
-      return true;
-    const { indexById, parent } = getWeakComponents();
-    const fromFaces = verticalProjectionCandidates(surfaces, start, 1e-6, 1e-6);
-    if (!fromFaces.length) return false;
-    const toFaces = verticalProjectionCandidates(surfaces, end, 1e-6, 1e-6);
-    if (!toFaces.length) return false;
-    if (fromFaces.length === 1 && toFaces.length === 1) {
-      const a = indexById.get(fromFaces[0].id);
-      const b = indexById.get(toFaces[0].id);
-      return (
-        a !== undefined && b !== undefined && findWeakRoot(parent, a) === findWeakRoot(parent, b)
-      );
-    }
-    const fromRoots = new Set<number>();
-    for (let i = 0; i < fromFaces.length; i++) {
-      const idx = indexById.get(fromFaces[i].id);
-      if (idx !== undefined) fromRoots.add(findWeakRoot(parent, idx));
-    }
-    for (let i = 0; i < toFaces.length; i++) {
-      const idx = indexById.get(toFaces[i].id);
-      if (idx !== undefined && fromRoots.has(findWeakRoot(parent, idx))) return true;
-    }
-    return false;
-  };
-  let realStraightener: GroundStraightener | undefined;
-  const getStraightener = () => {
-    realStraightener ??= createGroundStraightener(
-      surfaceSnapshot,
-      { walls, profile, portals: importedPortalsSnapshot },
-      portals,
-      blocked,
-      directed,
-    );
-    return realStraightener;
-  };
-  const straighten: GroundStraightener = Object.assign(
-    (points: Vec3[]) => getStraightener()(points),
-    {
-      trace: (start: Vec3, end: Vec3) => {
-        if (!finitePoint(start) || !finitePoint(end))
-          throw new Error('Invalid ground visibility endpoints');
-        if (!realStraightener && !surfacesMayConnect(start, end)) return null;
-        return getStraightener().trace(start, end);
-      },
-      mayConnect: (start: Vec3, end: Vec3) => {
-        if (!finitePoint(start) || !finitePoint(end))
-          throw new Error('Invalid ground visibility endpoints');
-        if (!realStraightener && !surfacesMayConnect(start, end)) return false;
-        return getStraightener().mayConnect(start, end);
-      },
-    },
-  );
   const visibility = new Map<string, Map<string, Vec3[]>>();
   const failedVisibility = new Map<string, Set<string>>();
   let endpointKeys = new Map<string, string>();
@@ -352,7 +355,6 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
       endpointKeys.clear();
       return { status: 'unmapped' };
     }
-    const centers = baseCenters;
     const endpoints = new Map<string, Endpoint[]>();
     const currentKeys = new Map<string, string>();
     let serial = 0;
@@ -574,7 +576,7 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
         // A blocked polygon centre can disconnect the representative graph even
         // when its support corridor admits a clear continuous path. Try that
         // corridor, then validate every reconstructed segment against all walls.
-        candidate = getUnwalledRoute(profile)(graph, [arrival], targetIds);
+        candidate = getUnwalledRouteBase().plan(graph, [arrival], targetIds);
       }
       if (candidate.status !== 'complete') continue;
       const continuous = straightenRoute(candidate, straighten, speed);
@@ -626,19 +628,554 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
       ),
     surfaces,
     portals,
+    directed,
     straighten,
     projectGoal,
     projectSupport,
     byId,
-    centers: baseCenters,
-    graph: base,
+    centers,
+    graph: baseGraph,
     routeBase,
+    getUnwalledRouteBase,
+    walls,
+    profile,
     constraintsSignature,
     searchSpeed,
     peakSpeed,
     importedPortals: options.portals,
+    overlay,
   });
   return planner;
+}
+
+/** Prepare shared topology and ground visibility once for repeated, independent queries.
+ * A caller must rebuild the planner when scene state, geometry or constraints change.
+ * Search selects a corridor; continuous ground tracing removes unnecessary graph turns.
+ * This does not establish a globally shortest path across every possible corridor.
+ */
+export function createGroundPlanner(surfaces: Surface[], options: GroundOptions): GroundPlanner {
+  const { speed, walls, profile } = options;
+  // Compare action times at the fastest permitted ground gait. The existing
+  // resource scheduler verifies the complete selected motion sequence afterwards.
+  const searchSpeed = options.locomotion?.sprintSpeed ?? speed;
+  const peakSpeed = Math.max(
+    speed,
+    options.locomotion?.speed ?? speed,
+    options.locomotion?.sprintSpeed ?? speed,
+    options.locomotion?.dash?.speed ?? 0,
+  );
+  const {
+    portals,
+    byId,
+    projectGoal,
+    directed,
+    base,
+    baseCenters,
+    getUnwalledRouteBase,
+    getWeakComponents,
+  } = groundTopologyFor(surfaces, searchSpeed, options.portals);
+  const routeBase = prepareRoutePlanner(base, { walls, profile });
+  const blocked = routeBase.blocked!;
+  const constraintsSignature = JSON.stringify([walls, profile]);
+  const projectSupport = createSupportProjector(surfaces, byId);
+  // Build the triangle straightener lazily on first connected trace/straighten
+  // call so planners whose endpoints lie on disconnected walkable components
+  // never spend seconds indexing 260k-409k support triangles.
+  const surfaceSnapshot = surfaces.slice();
+  const importedPortalsSnapshot = options.portals?.slice();
+  // Exact necessary condition for straighten.trace/mayConnect: triangle
+  // adjacency only traverses intra-surface edges, shared portals, and directed
+  // portals. Querying verticalProjectionCandidates within 1e-6 covers every
+  // overlapping triangle admitted by straighten.supporting (1e-7 tolerance).
+  const surfacesMayConnect = (start: Vec3, end: Vec3): boolean => {
+    if (surfaces.length !== surfaceSnapshot.length) return true;
+    if (Math.hypot(end[0] - start[0], end[2] - start[2]) < 1e-10 && distance(start, end) < 1e-7)
+      return true;
+    const { indexById, parent } = getWeakComponents();
+    const fromFaces = verticalProjectionCandidates(surfaces, start, 1e-6, 1e-6);
+    if (!fromFaces.length) return false;
+    const toFaces = verticalProjectionCandidates(surfaces, end, 1e-6, 1e-6);
+    if (!toFaces.length) return false;
+    if (fromFaces.length === 1 && toFaces.length === 1) {
+      const a = indexById.get(fromFaces[0].id);
+      const b = indexById.get(toFaces[0].id);
+      return (
+        a !== undefined && b !== undefined && findWeakRoot(parent, a) === findWeakRoot(parent, b)
+      );
+    }
+    const fromRoots = new Set<number>();
+    for (let i = 0; i < fromFaces.length; i++) {
+      const idx = indexById.get(fromFaces[i].id);
+      if (idx !== undefined) fromRoots.add(findWeakRoot(parent, idx));
+    }
+    for (let i = 0; i < toFaces.length; i++) {
+      const idx = indexById.get(toFaces[i].id);
+      if (idx !== undefined && fromRoots.has(findWeakRoot(parent, idx))) return true;
+    }
+    return false;
+  };
+  let realStraightener: GroundStraightener | undefined;
+  const getStraightener = () => {
+    realStraightener ??= createGroundStraightener(
+      surfaceSnapshot,
+      { walls, profile, portals: importedPortalsSnapshot },
+      portals,
+      blocked,
+      directed,
+    );
+    return realStraightener;
+  };
+  const straighten: GroundStraightener = Object.assign(
+    (points: Vec3[]) => getStraightener()(points),
+    {
+      trace: (start: Vec3, end: Vec3) => {
+        if (!finiteVec3(start) || !finiteVec3(end))
+          throw new Error('Invalid ground visibility endpoints');
+        if (!realStraightener && !surfacesMayConnect(start, end)) return null;
+        return getStraightener().trace(start, end);
+      },
+      mayConnect: (start: Vec3, end: Vec3) => {
+        if (!finiteVec3(start) || !finiteVec3(end))
+          throw new Error('Invalid ground visibility endpoints');
+        if (!realStraightener && !surfacesMayConnect(start, end)) return false;
+        return getStraightener().mayConnect(start, end);
+      },
+    },
+  );
+  return assembleGroundPlanner({
+    surfaces,
+    options,
+    searchSpeed,
+    peakSpeed,
+    portals,
+    directed,
+    byId,
+    centers: baseCenters,
+    projectGoal,
+    projectSupport,
+    graph: base,
+    routeBase,
+    getUnwalledRouteBase: () => getUnwalledRouteBase(profile),
+    straighten,
+    constraintsSignature,
+  });
+}
+
+/**
+ * Zero-rebuild overlay GroundPlanner for temporary box layouts (Phase 3 / B1).
+ * Layers a tiny set of roof surfaces + box walls onto an existing static
+ * GroundPlanner in O(|extraSurfaces| + |affectedStaticSurfaces|) instead of
+ * rebuilding surfacePortals, surfaceGraph, GoalProjector, SupportProjector,
+ * and 600k-edge wall filtering from scratch per candidate layout.
+ *
+ * Automatically falls back to full createGroundPlanner if any roof edge shares
+ * or blocks a static portal within portalTolerance (e.g. a box placed flush
+ * against a static ledge).
+ */
+export function createOverlayGroundPlanner(
+  basePlanner: GroundPlanner,
+  layoutSurfaces: Surface[],
+  extraSurfaces: Surface[],
+  extraWalls: Wall[],
+  options: GroundOptions,
+  preparedExtraBlocked?: ReturnType<typeof createWallChecker>,
+): GroundPlanner {
+  const basePrep = groundPreparation(basePlanner);
+  const searchSpeed = options.locomotion?.sprintSpeed ?? options.speed;
+  const peakSpeed = Math.max(
+    options.speed,
+    options.locomotion?.speed ?? options.speed,
+    options.locomotion?.sprintSpeed ?? options.speed,
+    options.locomotion?.dash?.speed ?? 0,
+  );
+  if (
+    !basePrep ||
+    basePrep.surfaces.length + extraSurfaces.length !== layoutSurfaces.length ||
+    basePrep.searchSpeed !== searchSpeed ||
+    basePrep.importedPortals !== options.portals ||
+    basePrep.profile.radius !== options.profile.radius ||
+    basePrep.profile.height !== options.profile.height
+  ) {
+    return createGroundPlanner(layoutSurfaces, options);
+  }
+  const extraById = new Map<string, Surface>();
+  for (let i = 0; i < extraSurfaces.length; i++) {
+    const s = extraSurfaces[i];
+    if (basePrep.byId.has(s.id) || extraById.has(s.id)) {
+      return createGroundPlanner(layoutSurfaces, options);
+    }
+    extraById.set(s.id, s);
+  }
+
+  // Validate extraSurfaces and build roof-to-roof portals in O(|extraSurfaces|).
+  const roofPortals = surfacePortals(extraSurfaces);
+
+  // Verify no roof edge can join or block any static portal within 1e-4.
+  const nearbyStatic = new Set<Surface>();
+  for (let i = 0; i < extraSurfaces.length; i++) {
+    const verts = extraSurfaces[i].vertices;
+    let minX = Infinity,
+      minY = Infinity,
+      minZ = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity,
+      maxZ = -Infinity;
+    for (let j = 0; j < verts.length; j++) {
+      const p = verts[j];
+      if (p[0] < minX) minX = p[0];
+      if (p[1] < minY) minY = p[1];
+      if (p[2] < minZ) minZ = p[2];
+      if (p[0] > maxX) maxX = p[0];
+      if (p[1] > maxY) maxY = p[1];
+      if (p[2] > maxZ) maxZ = p[2];
+    }
+    const center: Vec3 = [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2];
+    const halfY = (maxY - minY) / 2 + 1e-3;
+    const halfXZ = Math.max(maxX - minX, maxZ - minZ) / 2 + 1e-3;
+    const candidates = verticalProjectionCandidates(basePrep.surfaces, center, halfY, halfXZ);
+    for (let j = 0; j < candidates.length; j++) {
+      const face = candidates[j];
+      const fv = face.vertices;
+      let fMinX = Infinity,
+        fMinY = Infinity,
+        fMinZ = Infinity,
+        fMaxX = -Infinity,
+        fMaxY = -Infinity,
+        fMaxZ = -Infinity;
+      for (let k = 0; k < fv.length; k++) {
+        const p = fv[k];
+        if (p[0] < fMinX) fMinX = p[0];
+        if (p[1] < fMinY) fMinY = p[1];
+        if (p[2] < fMinZ) fMinZ = p[2];
+        if (p[0] > fMaxX) fMaxX = p[0];
+        if (p[1] > fMaxY) fMaxY = p[1];
+        if (p[2] > fMaxZ) fMaxZ = p[2];
+      }
+      if (
+        fMaxX >= minX - 2e-4 &&
+        fMinX <= maxX + 2e-4 &&
+        fMaxY >= minY - 2e-4 &&
+        fMinY <= maxY + 2e-4 &&
+        fMaxZ >= minZ - 2e-4 &&
+        fMinZ <= maxZ + 2e-4
+      ) {
+        nearbyStatic.add(face);
+      }
+    }
+  }
+  if (nearbyStatic.size > 0) {
+    const localStatic = [...nearbyStatic];
+    const staticPortals = surfacePortals(localStatic);
+    const mergedPortals = surfacePortals([...localStatic, ...extraSurfaces]);
+    if (mergedPortals.length !== staticPortals.length + roofPortals.length) {
+      // Rare flush-contact case where a roof edge joins or splits a static portal.
+      return createGroundPlanner(layoutSurfaces, options);
+    }
+  }
+
+  const extraGraph = surfaceGraph(
+    extraSurfaces,
+    { speed: searchSpeed },
+    roofPortals,
+    [],
+    extraById,
+  );
+  const extraCenters = new Map<string, Vec3>();
+  for (let i = 0; i < extraGraph.nodes.length; i++) {
+    extraCenters.set(extraGraph.nodes[i].id, extraGraph.nodes[i].position);
+  }
+  const byId = overlayLookup(basePrep.byId, extraById);
+  const centers = overlayLookup(basePrep.centers, extraCenters);
+  const extraBlocked = preparedExtraBlocked ?? createWallChecker(extraWalls, options.profile);
+
+  // Collect every static surface whose outgoing edges could possibly touch extraWalls.
+  const affectedFromIds = new Set<string>();
+  const { profile } = options;
+  const pad = 1e-3;
+  for (let i = 0; i < extraWalls.length; i++) {
+    const wall = extraWalls[i];
+    if (wall.state === 'inactive') continue;
+    const margin = profile.radius + (wall.padding ?? 0);
+    let minX = wall.min[0] - margin;
+    let minY = wall.min[1] - profile.height;
+    let minZ = wall.min[2] - margin;
+    let maxX = wall.max[0] + margin;
+    let maxY = wall.max[1];
+    let maxZ = wall.max[2] + margin;
+    const ring = wall.polygon ?? wall.points;
+    if (ring) {
+      for (let j = 0; j < ring.length; j++) {
+        const p = ring[j];
+        if (p[0] - margin < minX) minX = p[0] - margin;
+        if (p[0] + margin > maxX) maxX = p[0] + margin;
+        if (p[1] - margin < minZ) minZ = p[1] - margin;
+        if (p[1] + margin > maxZ) maxZ = p[1] + margin;
+      }
+    }
+    if (wall.sphere) {
+      const c = wall.sphere.center;
+      const r = wall.sphere.radius;
+      const lower = profile.height >= profile.radius * 2 ? profile.radius : 0;
+      const upper =
+        profile.height >= profile.radius * 2 ? profile.height - profile.radius : profile.height;
+      minX = Math.min(minX, c[0] - r - margin);
+      maxX = Math.max(maxX, c[0] + r + margin);
+      minY = Math.min(minY, c[1] - r - margin - upper);
+      maxY = Math.max(maxY, c[1] + r + margin - lower);
+      minZ = Math.min(minZ, c[2] - r - margin);
+      maxZ = Math.max(maxZ, c[2] + r + margin);
+    }
+    const center: Vec3 = [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2];
+    const halfY = (maxY - minY) / 2 + pad;
+    const halfXZ = Math.max(maxX - minX, maxZ - minZ) / 2 + pad;
+    const near = verticalProjectionCandidates(basePrep.surfaces, center, halfY, halfXZ);
+    for (let j = 0; j < near.length; j++) {
+      const id = near[j].id;
+      affectedFromIds.add(id);
+      const out = basePrep.routeBase.forward.get(id);
+      if (out) {
+        for (let k = 0; k < out.length; k++) affectedFromIds.add(out[k].to);
+      }
+    }
+  }
+  if (basePrep.directed.length && affectedFromIds.size) {
+    for (let i = 0; i < basePrep.directed.length; i++) {
+      if (affectedFromIds.has(basePrep.directed[i].to)) {
+        affectedFromIds.add(basePrep.directed[i].from);
+      }
+    }
+  }
+
+  const routeBase = prepareOverlayRoutePlanner(
+    basePrep.routeBase,
+    basePrep.centers,
+    extraGraph,
+    affectedFromIds,
+    extraBlocked,
+  );
+  const combinedBlocked = routeBase.blocked!;
+
+  const roofGoalProjector = createGoalProjector(extraSurfaces);
+  const projectGoal = combineGoalProjectors(basePrep.projectGoal, roofGoalProjector);
+
+  // Overlay support projector: preserves [...baseSurfaces, ...extraSurfaces] input order.
+  const supportMemo = new Map<string, ReturnType<typeof projectPoint>>();
+  const projectSupport = (
+    position: Vec3,
+    maxVertical: number,
+    surface?: string,
+  ): ReturnType<typeof projectPoint> => {
+    const key = `${Object.is(position[0], -0) ? '-0' : position[0]},${Object.is(position[1], -0) ? '-0' : position[1]},${Object.is(position[2], -0) ? '-0' : position[2]}|${maxVertical}|${surface ?? ''}`;
+    if (supportMemo.has(key)) return supportMemo.get(key)!;
+    let result: ReturnType<typeof projectPoint>;
+    if (surface !== undefined) {
+      const face = byId.get(surface);
+      result = face ? projectPoint([face], position, { maxVertical }) : null;
+    } else {
+      const baseCandidates = verticalProjectionCandidates(basePrep.surfaces, position, maxVertical);
+      result = projectPoint(
+        extraSurfaces.length ? [...baseCandidates, ...extraSurfaces] : baseCandidates,
+        position,
+        { maxVertical },
+      );
+    }
+    if (supportMemo.size >= 2048) supportMemo.delete(supportMemo.keys().next().value!);
+    supportMemo.set(key, result);
+    return result;
+  };
+
+  // Overlay straightener: static traces delegate to basePrep.straighten and
+  // verify extraBlocked on every segment; roof traces use a tiny O(|roofs|)
+  // straightener; cross static<->roof traces are impossible (no bridge portals).
+  let roofStraightener: GroundStraightener | undefined;
+  const getRoofStraightener = () =>
+    (roofStraightener ??= createGroundStraightener(
+      extraSurfaces,
+      { walls: options.walls, profile },
+      roofPortals,
+      combinedBlocked,
+      [],
+    ));
+  const onRoof = (point: Vec3) =>
+    extraSurfaces.length > 0 && projectPoint(extraSurfaces, point, { maxVertical: 1e-6 }) !== null;
+  const segmentClearExtra = (pts: Vec3[]) => {
+    for (let i = 1; i < pts.length; i++) {
+      if (extraBlocked(pts[i - 1], pts[i])) return false;
+    }
+    return true;
+  };
+  const overlayTrace = (start: Vec3, end: Vec3): Vec3[] | null => {
+    if (!finiteVec3(start) || !finiteVec3(end))
+      throw new Error('Invalid ground visibility endpoints');
+    const sRoof = onRoof(start);
+    const eRoof = onRoof(end);
+    if (sRoof && eRoof) return getRoofStraightener().trace(start, end);
+    if (sRoof !== eRoof) return null;
+    const traced = basePrep.straighten.trace(start, end);
+    if (!traced) return null;
+    return segmentClearExtra(traced) ? traced : null;
+  };
+  const overlayMayConnect = (start: Vec3, end: Vec3): boolean => {
+    if (!finiteVec3(start) || !finiteVec3(end))
+      throw new Error('Invalid ground visibility endpoints');
+    const sRoof = onRoof(start);
+    const eRoof = onRoof(end);
+    if (sRoof && eRoof) return getRoofStraightener().mayConnect(start, end);
+    if (sRoof !== eRoof) return false;
+    return basePrep.straighten.mayConnect(start, end);
+  };
+  const straighten: GroundStraightener = Object.assign(
+    (points: Vec3[]): Vec3[] => {
+      if (!Array.isArray(points) || !points.length || !points.every(finiteVec3))
+        throw new Error('Invalid ground path');
+      if (onRoof(points[0])) return getRoofStraightener()(points);
+      const baseOut = basePrep.straighten(points);
+      if (segmentClearExtra(baseOut)) return baseOut;
+      // Straightening on the static mesh cut through an overlaid box wall;
+      // greedily shortcut using overlayTrace which enforces extraBlocked.
+      const output: Vec3[] = [[...points[0]]];
+      const lengths = [0];
+      for (let i = 1; i < points.length; i++) {
+        lengths.push(lengths[i - 1] + distance(points[i - 1], points[i]));
+      }
+      let anchor = 0;
+      while (anchor + 1 < points.length) {
+        let chosen = anchor + 1;
+        let shortcut: Vec3[] | null = null;
+        for (let end = points.length - 1; end > anchor + 1; end--) {
+          const path = overlayTrace(points[anchor], points[end]);
+          if (path) {
+            let len = 0;
+            for (let k = 1; k < path.length; k++) len += distance(path[k - 1], path[k]);
+            if (len > lengths[end] - lengths[anchor] + 1e-6) continue;
+            chosen = end;
+            shortcut = path;
+            break;
+          }
+        }
+        if (shortcut) {
+          for (let k = 1; k < shortcut.length; k++) output.push(shortcut[k]);
+        } else {
+          output.push([...points[chosen]]);
+        }
+        anchor = chosen;
+      }
+      // Match createGroundStraightener's 2-pass planar corner tightening so
+      // detours hugging an overlaid box wall achieve identical continuous cost.
+      const tol = 1e-7;
+      for (let pass = 0; pass < 2; pass++) {
+        for (let index = 1; index + 1 < output.length; index++) {
+          const a = output[index - 1],
+            corner = output[index],
+            b = output[index + 1];
+          if (Math.abs(a[1] - corner[1]) > tol || Math.abs(b[1] - corner[1]) > tol) continue;
+          if (!overlayTrace(a, corner) || !overlayTrace(corner, b)) continue;
+          const midX = (a[0] + b[0]) / 2,
+            midY = (a[1] + b[1]) / 2,
+            midZ = (a[2] + b[2]) / 2;
+          let low = 0,
+            high = 1,
+            chosen = corner;
+          for (let step = 0; step < 10; step++) {
+            const fraction = (low + high) / 2;
+            const point: Vec3 = [
+              corner[0] + fraction * (midX - corner[0]),
+              corner[1] + fraction * (midY - corner[1]),
+              corner[2] + fraction * (midZ - corner[2]),
+            ];
+            const left = overlayTrace(a, point),
+              right = overlayTrace(point, b);
+            if (left?.length === 2 && right?.length === 2) {
+              low = fraction;
+              chosen = point;
+            } else high = fraction;
+          }
+          output[index] = chosen;
+        }
+      }
+      const simplified: Vec3[] = [];
+      for (let i = 0; i < output.length; i++) {
+        const pt = output[i];
+        if (simplified.length && distance(simplified[simplified.length - 1], pt) < 1e-9) continue;
+        while (simplified.length > 1) {
+          const a = simplified[simplified.length - 2],
+            b = simplified[simplified.length - 1];
+          const dx = pt[0] - a[0],
+            dy = pt[1] - a[1],
+            dz = pt[2] - a[2];
+          const lenSq = dx * dx + dy * dy + dz * dz;
+          if (lenSq === 0) break;
+          const frac = ((b[0] - a[0]) * dx + (b[1] - a[1]) * dy + (b[2] - a[2]) * dz) / lenSq;
+          if (
+            frac < 0 ||
+            frac > 1 ||
+            Math.hypot(
+              b[0] - (a[0] + frac * dx),
+              b[1] - (a[1] + frac * dy),
+              b[2] - (a[2] + frac * dz),
+            ) > tol
+          )
+            break;
+          simplified.pop();
+        }
+        simplified.push([...pt]);
+      }
+      return simplified;
+    },
+    { trace: overlayTrace, mayConnect: overlayMayConnect },
+  );
+
+  let unwalledOverlay: ReturnType<typeof prepareRoutePlanner> | undefined;
+  const getUnwalledRouteBase = () =>
+    (unwalledOverlay ??= prepareOverlayRoutePlanner(
+      basePrep.getUnwalledRouteBase(),
+      basePrep.centers,
+      extraGraph,
+      [],
+      null,
+    ));
+
+  let lazyNodes: Graph['nodes'] | undefined;
+  let lazyEdges: Graph['edges'] | undefined;
+  const overlayBaseGraph: Graph = {
+    get nodes() {
+      return (lazyNodes ??= extraGraph.nodes.length
+        ? [...basePrep.graph.nodes, ...extraGraph.nodes]
+        : basePrep.graph.nodes);
+    },
+    get edges() {
+      return (lazyEdges ??= extraGraph.edges.length
+        ? [...basePrep.graph.edges, ...extraGraph.edges]
+        : basePrep.graph.edges);
+    },
+  };
+
+  const portals = roofPortals.length ? [...basePrep.portals, ...roofPortals] : basePrep.portals;
+  const constraintsSignature = JSON.stringify([options.walls, profile]);
+
+  return assembleGroundPlanner({
+    surfaces: layoutSurfaces,
+    options,
+    searchSpeed,
+    peakSpeed,
+    portals,
+    directed: basePrep.directed,
+    byId,
+    centers,
+    projectGoal,
+    projectSupport,
+    graph: overlayBaseGraph,
+    routeBase,
+    getUnwalledRouteBase,
+    straighten,
+    constraintsSignature,
+    overlay: {
+      basePlanner,
+      basePrep,
+      extraSurfaces,
+      extraPortals: roofPortals,
+    },
+  });
 }
 const distance = (a: Vec3, b: Vec3) => Math.hypot(...a.map((v, i) => v - b[i]));
 function straightenRoute(

@@ -167,16 +167,191 @@ export function prepareRoutePlanner(graph: Graph, constraints?: RouteConstraints
     graph: Graph;
     forward: Index<Edge[]>;
     blocked: RouteBase['blocked'];
+    maxSpeed: number;
     topology: GroundTopology;
     plan: ReturnType<typeof preparedSearch>;
   } = {
     graph: graphSnapshot,
     forward: base.edges,
     blocked: base.blocked,
+    maxSpeed: base.maxSpeed,
     get topology() {
       return (topology ??= groundComponents(graphSnapshot));
     },
     plan: preparedSearch(base, () => condenseComponents(preparedBase.topology)),
+  };
+  return preparedBase;
+}
+
+/**
+ * Lightweight route planner overlaid on an immutable static preparedBase.
+ * Filters ONLY static outgoing adjacency lists in affectedFromIds against
+ * extraBlocked and appends extraGraph nodes/edges in O(|affected| + |extra|),
+ * avoiding rescanning 600k+ static ground edges per box placement layout.
+ */
+export function prepareOverlayRoutePlanner(
+  baseRouteBase: ReturnType<typeof prepareRoutePlanner>,
+  baseNodes: Pick<ReadonlyMap<string, Vec3>, 'get' | 'has'>,
+  extraGraph: Graph,
+  affectedFromIds: Iterable<string>,
+  extraBlocked: RouteBase['blocked'],
+): ReturnType<typeof prepareRoutePlanner> {
+  const baseBlocked = baseRouteBase.blocked;
+  const combinedBlocked: RouteBase['blocked'] =
+    baseBlocked && extraBlocked
+      ? (start, end, inflation = 0) =>
+          baseBlocked(start, end, inflation) || extraBlocked(start, end, inflation)
+      : (baseBlocked ?? extraBlocked);
+
+  const ownNodes = new Map<string, Vec3>();
+  for (let i = 0; i < extraGraph.nodes.length; i++) {
+    const node = extraGraph.nodes[i];
+    if (
+      typeof node.id !== 'string' ||
+      ownNodes.has(node.id) ||
+      baseNodes.has(node.id) ||
+      !finitePoint(node.position)
+    )
+      throw new Error('Invalid node');
+    ownNodes.set(node.id, node.position);
+  }
+  const nodes: Index<Vec3> = {
+    has: (key: string) => ownNodes.has(key) || baseNodes.has(key),
+    get: (key: string) => ownNodes.get(key) ?? baseNodes.get(key),
+    set: (key: string, value: Vec3) => ownNodes.set(key, value),
+  };
+
+  const ownEdges = new Map<string, Edge[]>();
+  const removedEdges = new Set<Edge>();
+  if (extraBlocked) {
+    for (const fromId of affectedFromIds) {
+      if (ownEdges.has(fromId)) continue;
+      const baseList = baseRouteBase.forward.get(fromId);
+      if (!baseList || !baseList.length) continue;
+      let kept: Edge[] | undefined;
+      for (let i = 0; i < baseList.length; i++) {
+        const edge = baseList[i];
+        const pts = edge.points;
+        let hit = false;
+        for (let j = 1; j < pts.length; j++) {
+          if (extraBlocked(pts[j - 1], pts[j])) {
+            hit = true;
+            break;
+          }
+        }
+        if (hit) {
+          if (!kept) kept = baseList.slice(0, i);
+          removedEdges.add(edge);
+        } else if (kept) {
+          kept.push(edge);
+        }
+      }
+      if (kept) ownEdges.set(fromId, kept);
+    }
+  }
+
+  let maxSpeed = baseRouteBase.maxSpeed;
+  const acceptedExtra: Edge[] = [];
+  for (let e = 0; e < extraGraph.edges.length; e++) {
+    const edge = extraGraph.edges[e];
+    const fromNode = nodes.get(edge.from);
+    const toNode = nodes.get(edge.to);
+    const pts = edge.points;
+    if (
+      fromNode === undefined ||
+      toNode === undefined ||
+      !Number.isFinite(edge.cost) ||
+      edge.cost < 0 ||
+      (edge.state !== 'open' && edge.state !== 'closed' && edge.state !== 'unknown') ||
+      !Array.isArray(pts) ||
+      pts.length < 2
+    )
+      throw new Error('Invalid corridor');
+    for (let i = 0; i < pts.length; i++) {
+      if (!finitePoint(pts[i])) throw new Error('Invalid corridor');
+    }
+    const p0 = pts[0],
+      pLast = pts[pts.length - 1];
+    if (
+      (p0 !== fromNode && distance(p0, fromNode) > 1e-6) ||
+      (pLast !== toNode && distance(pLast, toNode) > 1e-6)
+    )
+      throw new Error('Invalid corridor');
+    validateMotion(edge);
+    if (edge.state === 'open') {
+      let edgeBlocked = false;
+      if (combinedBlocked) {
+        for (let i = 1; i < pts.length; i++) {
+          if (combinedBlocked(pts[i - 1], pts[i])) {
+            edgeBlocked = true;
+            break;
+          }
+        }
+      }
+      if (!edgeBlocked) {
+        const span = distance(fromNode, toNode);
+        if (span > 0) maxSpeed = Math.max(maxSpeed, edge.cost === 0 ? Infinity : span / edge.cost);
+        let outgoing = ownEdges.get(edge.from);
+        if (!outgoing) {
+          const prev = baseRouteBase.forward.get(edge.from);
+          outgoing = prev ? prev.slice() : [];
+          ownEdges.set(edge.from, outgoing);
+        }
+        outgoing.push(edge);
+        acceptedExtra.push(edge);
+      }
+    }
+  }
+
+  const forward: Index<Edge[]> = {
+    has: (key: string) => ownEdges.has(key) || baseRouteBase.forward.has(key),
+    get: (key: string) => (ownEdges.has(key) ? ownEdges.get(key) : baseRouteBase.forward.get(key)),
+    set: (key: string, value: Edge[]) => ownEdges.set(key, value),
+  };
+
+  const basePrepared: PreparedGraph = {
+    nodes,
+    edges: forward,
+    blocked: combinedBlocked,
+    maxSpeed,
+  };
+
+  let graphSnapshot: Graph | undefined;
+  let topology: GroundTopology | undefined;
+  const getGraphSnapshot = (): Graph => {
+    if (!graphSnapshot) {
+      const baseEdges = baseRouteBase.graph.edges;
+      let edges: Edge[];
+      if (removedEdges.size === 0) {
+        edges = acceptedExtra.length ? [...baseEdges, ...acceptedExtra] : baseEdges;
+      } else {
+        edges = [];
+        for (let i = 0; i < baseEdges.length; i++) {
+          const edge = baseEdges[i];
+          if (!removedEdges.has(edge)) edges.push(edge);
+        }
+        for (let i = 0; i < acceptedExtra.length; i++) edges.push(acceptedExtra[i]);
+      }
+      graphSnapshot = {
+        nodes: extraGraph.nodes.length
+          ? [...baseRouteBase.graph.nodes, ...extraGraph.nodes]
+          : baseRouteBase.graph.nodes,
+        edges,
+      };
+    }
+    return graphSnapshot;
+  };
+  const preparedBase: ReturnType<typeof prepareRoutePlanner> = {
+    get graph() {
+      return getGraphSnapshot();
+    },
+    forward,
+    blocked: combinedBlocked,
+    maxSpeed,
+    get topology() {
+      return (topology ??= groundComponents(getGraphSnapshot()));
+    },
+    plan: preparedSearch(basePrepared, () => condenseComponents(preparedBase.topology)),
   };
   return preparedBase;
 }

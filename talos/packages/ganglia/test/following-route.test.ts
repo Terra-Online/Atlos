@@ -5,6 +5,7 @@ import { createCollisionWorld } from '#@/src/collision.ts';
 import type { GroundArrival, Surface, Vec3 } from '#@/src/index.ts';
 import { createPhysicalWorld } from '#@/src/model/world.ts';
 import type { FollowingSupport } from '#@/src/solver/physical.ts';
+import { createGroundPlanner, createOverlayGroundPlanner } from '#@/src/v1/route/ground.ts';
 import type { JumpRouteOptions } from '#@/src/v1/route/jump-planner.ts';
 import { planFollowingRoute } from '#@/src/v1/solver/physical/following-route.ts';
 
@@ -592,4 +593,86 @@ test('planFollowingRoute honors cooperative checkpoint cancellation between layo
     /route-cancelled/,
   );
   assert.equal(checks, 3);
+});
+
+test('createOverlayGroundPlanner matches full createGroundPlanner for box walls, roofs, and flush edges', () => {
+  // Multi-polygon grid floor so walking around an overlaid box wall tests
+  // affectedFromIds edge filtering + overlayStraighten wall clearance.
+  const grid: Surface[] = [];
+  for (let ix = -2; ix < 4; ix++) {
+    for (let iz = -2; iz < 2; iz++) {
+      grid.push(floor(`cell_${ix}_${iz}`, ix * 2, (ix + 1) * 2, 0, iz * 2, (iz + 1) * 2));
+    }
+  }
+  const baseOptions = {
+    profile: build.profile,
+    speed: 3,
+    maxVertical: 0.5,
+    walls: [],
+  };
+  const basePlanner = createGroundPlanner(grid, baseOptions);
+  const boxWall = {
+    min: [1.2, 0, -1.2] as Vec3,
+    max: [2.8, 1.199, 1.2] as Vec3,
+    state: 'active' as const,
+  };
+  const roof = floor('following/box/0', 1.2, 2.8, 1.2, -1.2, 1.2);
+  const layoutSurfaces = [...grid, roof];
+  const layoutOptions = { ...baseOptions, walls: [boxWall] };
+
+  const full = createGroundPlanner(layoutSurfaces, layoutOptions);
+  const overlay = createOverlayGroundPlanner(
+    basePlanner,
+    layoutSurfaces,
+    [roof],
+    [boxWall],
+    layoutOptions,
+  );
+
+  const origin: GroundArrival[] = [{ id: 'p', state: 'available', position: [-3, 0, 0], cost: 0 }];
+  const fullDetour = full.plan(origin, [7, 0, 0]);
+  const overlayDetour = overlay.plan(origin, [7, 0, 0]);
+  assert.equal(fullDetour.status, 'complete');
+  assert.equal(overlayDetour.status, 'complete');
+  if (fullDetour.status === 'complete' && overlayDetour.status === 'complete') {
+    assert.ok(
+      Math.abs(overlayDetour.cost - fullDetour.cost) < 1e-6,
+      `overlay=${overlayDetour.cost} full=${fullDetour.cost}`,
+    );
+    // Must detour around the box wall rather than cutting through [1.2..2.8, -1.2..1.2].
+    assert.ok(overlayDetour.points.some((p) => Math.abs(p[2]) > 1.2));
+  }
+
+  // Blocking wall across entire corridor must disconnect both planners equally.
+  const blocker = {
+    min: [1.5, 0, -5] as Vec3,
+    max: [2.5, 2, 5] as Vec3,
+    state: 'active' as const,
+  };
+  const blockedOptions = { ...baseOptions, walls: [blocker] };
+  assert.equal(
+    createGroundPlanner(layoutSurfaces, blockedOptions).plan(origin, [7, 0, 0]).status,
+    'no-verified-route',
+  );
+  assert.equal(
+    createOverlayGroundPlanner(basePlanner, layoutSurfaces, [roof], [blocker], blockedOptions).plan(
+      origin,
+      [7, 0, 0],
+    ).status,
+    'no-verified-route',
+  );
+
+  // Flush roof sharing a collinear edge with static terrain must fall back cleanly
+  // and connect via walking.
+  const flushRoof = floor('following/flush/0', 8, 10, 0, -2, 2);
+  const flushSurfaces = [...grid, flushRoof];
+  const flushOverlay = createOverlayGroundPlanner(
+    basePlanner,
+    flushSurfaces,
+    [flushRoof],
+    [],
+    baseOptions,
+  );
+  const flushRoute = flushOverlay.plan(origin, [9, 0, 0]);
+  assert.equal(flushRoute.status, 'complete');
 });

@@ -69,7 +69,7 @@ export function createCandidateBounds({
   diversity: number;
   speed: number;
   to: Vec3;
-  centers: Map<string, Vec3>;
+  centers: Pick<ReadonlyMap<string, Vec3>, 'get' | 'has'>;
   departure: Map<string, number>;
   pairs: Map<string, { uncertain: boolean; score: number }[]>;
   limit: number;

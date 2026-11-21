@@ -3,7 +3,7 @@ import type { BuildOptions } from '#@/src/build.ts';
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { CollisionGeometry, Surface, Vec3 } from '#@/src/geometry.ts';
 import { createCollisionWorld } from '#@/src/model/collision.ts';
-import { createGoalProjector, findGoalHit, type GoalProjector } from '#@/src/model/goals.ts';
+import { createGoalProjector, findGoalHit } from '#@/src/model/goals.ts';
 import { supportBounds } from '#@/src/model/supports.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
 import type { GroundArrival, GroundConnection, Route } from '#@/src/route.ts';
@@ -12,7 +12,11 @@ import { buildGroundSurfaces } from '#@/src/v1/geo/build.ts';
 import { verticalProjectionCandidates } from '#@/src/v1/geo/support-projector.ts';
 import { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
 /* oxlint-disable no-await-in-loop -- each bounded layout is baked and queried in isolation */
-import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
+import {
+  createGroundPlanner,
+  createOverlayGroundPlanner,
+  groundPreparation,
+} from '#@/src/v1/route/ground.ts';
 import { planJumpRoute, type JumpRouteOptions } from '#@/src/v1/route/jump-planner.ts';
 import { roofSteps } from '#@/src/v1/solver/physical/following-steps.ts';
 import type { SupportBox } from '#@/src/v1/solver/physical/moving-route.ts';
@@ -47,57 +51,54 @@ import {
   onBoxFace,
   joinedGeometry,
 } from '#@/src/model/placement.ts';
-const addBodies = (base: CollisionWorld, bodies: Vec3[][]): CollisionWorld => {
-  const extra = createCollisionWorld(joinedGeometry({ positions: [], indices: [] }, bodies));
-  return {
-    bounds: base.bounds,
-    trianglesInBounds: base.trianglesInBounds?.bind(base),
-    sweepCapsule(a, b, profile) {
-      return base.sweepCapsule(a, b, profile) ?? extra.sweepCapsule(a, b, profile);
-    },
-    ...(base.hasTrianglesInAabb && extra.hasTrianglesInAabb
-      ? {
-          hasTrianglesInAabb(
-            minX: number,
-            minY: number,
-            minZ: number,
-            maxX: number,
-            maxY: number,
-            maxZ: number,
-          ) {
-            return (
-              base.hasTrianglesInAabb!(minX, minY, minZ, maxX, maxY, maxZ) ||
-              extra.hasTrianglesInAabb!(minX, minY, minZ, maxX, maxY, maxZ)
-            );
-          },
-        }
-      : {}),
-    ...(base.probeSphere && extra.probeSphere
-      ? {
-          probeSphere(center: Vec3, radius: number) {
-            return base.probeSphere!(center, radius) || extra.probeSphere!(center, radius);
-          },
-        }
-      : {}),
-    groundAt(point, options) {
-      const a = base.groundAt(point, options),
-        b = extra.groundAt(point, options);
-      if (!a) {
-        return b;
+const addBodies = (base: CollisionWorld, extra: CollisionWorld): CollisionWorld => ({
+  bounds: base.bounds,
+  trianglesInBounds: base.trianglesInBounds?.bind(base),
+  sweepCapsule(a, b, profile) {
+    return base.sweepCapsule(a, b, profile) ?? extra.sweepCapsule(a, b, profile);
+  },
+  ...(base.hasTrianglesInAabb && extra.hasTrianglesInAabb
+    ? {
+        hasTrianglesInAabb(
+          minX: number,
+          minY: number,
+          minZ: number,
+          maxX: number,
+          maxY: number,
+          maxZ: number,
+        ) {
+          return (
+            base.hasTrianglesInAabb!(minX, minY, minZ, maxX, maxY, maxZ) ||
+            extra.hasTrianglesInAabb!(minX, minY, minZ, maxX, maxY, maxZ)
+          );
+        },
       }
-      if (!b) {
-        return a;
+    : {}),
+  ...(base.probeSphere && extra.probeSphere
+    ? {
+        probeSphere(center: Vec3, radius: number) {
+          return base.probeSphere!(center, radius) || extra.probeSphere!(center, radius);
+        },
       }
-      return (options.radius ?? 0) > 0
-        ? a.position[1] > b.position[1]
-          ? a
-          : b
-        : Math.abs(a.position[1] - point[1]) <= Math.abs(b.position[1] - point[1])
-          ? a
-          : b;
-    },
-  };
-};
+    : {}),
+  groundAt(point, options) {
+    const a = base.groundAt(point, options),
+      b = extra.groundAt(point, options);
+    if (!a) {
+      return b;
+    }
+    if (!b) {
+      return a;
+    }
+    return (options.radius ?? 0) > 0
+      ? a.position[1] > b.position[1]
+        ? a
+        : b
+      : Math.abs(a.position[1] - point[1]) <= Math.abs(b.position[1] - point[1])
+        ? a
+        : b;
+  },
+});
 const geometryOfTriangles = (triangles: Vec3[][]): CollisionGeometry => ({
   positions: triangles.flat(2),
   indices: Array.from({ length: triangles.length * 3 }, (_, i) => i),
@@ -119,14 +120,11 @@ const validPoint = (point: Vec3) =>
 // another sweep; the same gravity/air-acceleration bound covers their arc chords.
 const compatibleConnections = (
   connections: GroundConnection[],
-  bodies: Vec3[][],
+  added: CollisionWorld,
+  blocked: ReturnType<typeof createWallChecker>,
   jump: JumpRouteOptions,
 ) => {
-  const added = createCollisionWorld(joinedGeometry({ positions: [], indices: [] }, bodies));
-  const blocked = createWallChecker(
-    bodies.map((body) => bodyWall(supportBounds([body]))),
-    jump.profile,
-  );
+  if (!connections.length) return [];
   return connections.filter((connection) => {
     if (
       connection.points.length < 2 ||
@@ -168,36 +166,6 @@ const compatibleConnections = (
  * pose and the bounds of actually used roofs. Each box keeps its own activity sphere.
  * @throws for invalid player build settings or a failed native bake
  */
-// Combine an already-indexed static projector with a small temporary roof
-// overlay so per-placement queries never re-index the full static surface set.
-const combineGoalProjectors = (base: GoalProjector, overlay: GoalProjector): GoalProjector => {
-  const combined: GoalProjector = (target, options) => {
-    const a = base(target, options);
-    const b = overlay(target, options);
-    if (!b.length) return a;
-    if (!a.length) return b;
-    if (options.interaction === undefined) return a[0].distance <= b[0].distance ? a : b;
-    // Preserve [...surfaces, ...roofs] order on equal distance ties.
-    const merged: typeof a = [];
-    let i = 0,
-      j = 0;
-    while (i < a.length && j < b.length) {
-      merged.push(a[i].distance <= b[j].distance ? a[i++] : b[j++]);
-    }
-    while (i < a.length) merged.push(a[i++]);
-    while (j < b.length) merged.push(b[j++]);
-    return merged;
-  };
-  combined.closest = (target, options) => {
-    const a = base.closest(target, options);
-    const b = overlay.closest(target, options);
-    if (!a) return b;
-    if (!b) return a;
-    return a.distance <= b.distance ? a : b;
-  };
-  return combined;
-};
-
 export const planFollowingRoute = async (
   supports: FollowingSupport[],
   terrain: CollisionGeometry,
@@ -271,7 +239,16 @@ export const planFollowingRoute = async (
       return best;
     }
   }
-  const project = createGoalProjector(surfaces);
+  // Reuse caller's prepared static GroundPlanner (or prepare once for this query)
+  // so every candidate box layout overlays roofs/walls in O(|roofs| + |affected|)
+  // instead of rebuilding surfacePortals/surfaceGraph/GoalProjector over 409k faces.
+  const basePlanner =
+    jump.groundPlanner && groundPreparation(jump.groundPlanner)?.surfaces === surfaces
+      ? jump.groundPlanner
+      : createGroundPlanner(surfaces, { ...jump, connections: [] });
+  const basePrep = groundPreparation(basePlanner)!;
+  const baseBlocked = basePrep.routeBase.blocked!;
+  const project = basePrep.projectGoal;
   const bounded = <T>(values: T[]) => {
     diagnostics.truncated ||= values.length > maxPlacements;
     return values.slice(0, maxPlacements);
@@ -284,11 +261,10 @@ export const planFollowingRoute = async (
       (hit) =>
         Math.hypot(hit.position[0] - position[0], hit.position[2] - position[2]) <= horizontal,
     );
-  const surfaceById = new Map(surfaces.map((s) => [s.id, s]));
+  const surfaceById = basePrep.byId;
   const choices: {
     support: FollowingSupport;
     original: PoseBounds;
-    supportTriangles: Vec3[][];
     sourceCollision: boolean;
     candidates: { position: Vec3; floor: number }[];
     steps: { position: Vec3; floor: number }[];
@@ -379,9 +355,17 @@ export const planFollowingRoute = async (
       diagnostics.truncated = true;
       continue;
     }
-    const supportTriangles = trianglesOf(terrain, world.trianglesInBounds?.(sourceScope));
+    // Query only the original body's tight XZ footprint instead of extracting
+    // every terrain triangle inside the full 130m x 130m activity sphere.
+    const originalTriangles = trianglesOf(
+      terrain,
+      world.trianglesInBounds?.({
+        min: [original.min[0], original.min[2]],
+        max: [original.max[0], original.max[2]],
+      }),
+    );
     const sourceCollision = support.bodies.some((body) =>
-      blockedBody(body, supportBounds([body]).min[1], supportTriangles),
+      blockedBody(body, supportBounds([body]).min[1], originalTriangles),
     );
     const staticWorld = world;
     const anchors: Vec3[] = [[support.spawn[0], original.min[1], support.spawn[2]]];
@@ -576,7 +560,7 @@ export const planFollowingRoute = async (
       steps.sort((a, b) => rank(a) - rank(b));
     }
     if (candidates.length || steps.length)
-      choices.push({ support, original, supportTriangles, sourceCollision, candidates, steps });
+      choices.push({ support, original, sourceCollision, candidates, steps });
   }
   type Pick = { choice: (typeof choices)[number]; position: Vec3; floor: number };
   choices.sort(
@@ -708,26 +692,14 @@ export const planFollowingRoute = async (
         ...fixed.map((d) => ({ id: d.support.id, bounds: d.bounds })),
         ...selected.map((p) => ({ id: p.support.id, bounds: p.bounds })),
       ];
+      // Every candidate pose already passed individual static validation
+      // (activity range, sourceCollision, scope, jump.walls, flatSupport,
+      // blockedBody) during candidate generation. Only joint inter-box overlap
+      // depends on the multi-box layout.
       let rejected = false;
       for (const placed of selected) {
-        const { support, position, floor, bounds } = placed;
-        const initial = distance(position, support.spawn) < 1e-5;
-        let reason: string | undefined;
-        if (distance(position, support.spawn) > support.maxDistance)
-          reason = 'placement-outside-activity-range';
-        else if (!initial && placed.sourceCollision)
-          reason = 'source-collision-ownership-unresolved';
-        else if (!insideScope(bounds, world.bounds ?? undefined))
-          reason = 'placement-outside-collision-scope';
-        else if (jump.walls.some((w) => w.state !== 'inactive' && overlaps(bounds, w)))
-          reason = 'placement-intersects-exclusion';
-        else if (
-          placed.bodies.some(
-            (body) => !flatSupport(footprintOf(body, floor), floor, placed.supportTriangles),
-          )
-        )
-          reason = 'placement-base-unsupported';
-        else if (
+        const { support, position, bounds } = placed;
+        if (
           allBounds.some(
             (other) =>
               other.id !== support.id &&
@@ -738,27 +710,22 @@ export const planFollowingRoute = async (
                   1e-5,
               ),
           )
-        )
-          reason = 'placement-collision-blocked';
-        else {
-          const obstacles = initial
-            ? placed.supportTriangles.filter(
-                (triangle) => !placed.bodies.some((body) => onBoxFace(triangle, body)),
-              )
-            : placed.supportTriangles;
-          if (placed.bodies.some((body) => blockedBody(body, floor, obstacles)))
-            reason = 'placement-collision-blocked';
-        }
-        if (reason) {
-          outcome(support.id, reason, position);
+        ) {
+          outcome(support.id, 'placement-collision-blocked', position);
           rejected = true;
           break;
         }
       }
       if (rejected) continue;
-      const placedWorld = addBodies(world, bodies);
-      const placedWalls = [...jump.walls, ...bodies.map((body) => bodyWall(supportBounds([body])))];
-      const blocked = createWallChecker(placedWalls, jump.profile);
+      const extraCollision = createCollisionWorld(
+        joinedGeometry({ positions: [], indices: [] }, bodies),
+      );
+      const placedWorld = addBodies(world, extraCollision);
+      const extraWalls = bodies.map((body) => bodyWall(supportBounds([body])));
+      const placedWalls = [...jump.walls, ...extraWalls];
+      const extraBlocked = createWallChecker(extraWalls, jump.profile);
+      const blocked: ReturnType<typeof createWallChecker> = (start, end, inflation = 0) =>
+        baseBlocked(start, end, inflation) || extraBlocked(start, end, inflation);
       if (!jump.interaction && blocked(goal, goal)) {
         outcome('', 'placement-blocks-goal');
         continue;
@@ -837,13 +804,29 @@ export const planFollowingRoute = async (
         continue;
       }
       const layoutSurfaces = [...surfaces, ...roofs];
-      const settings = {
+      const baseSettings = {
         ...jump,
-        groundPlanner: undefined,
-        connections: compatibleConnections(jump.connections ?? [], bodies, jump),
+        connections: compatibleConnections(
+          jump.connections ?? [],
+          extraCollision,
+          extraBlocked,
+          jump,
+        ),
         walls: placedWalls,
         maxCandidates: perPlacement,
         maxShortcutCandidates: 0,
+      };
+      const overlayPlanner = createOverlayGroundPlanner(
+        basePlanner,
+        layoutSurfaces,
+        roofs,
+        extraWalls,
+        { ...baseSettings, connections: [] },
+        extraBlocked,
+      );
+      const settings = {
+        ...baseSettings,
+        groundPlanner: overlayPlanner,
       };
       const search = () => {
         if (!stepping)
@@ -854,14 +837,15 @@ export const planFollowingRoute = async (
           selected[0].floor,
           placedWorld,
           project,
-          combineGoalProjectors(project, createGoalProjector(roofs)),
+          overlayPlanner.project,
           surfaceById,
           goal,
           { ...settings, maxCandidates: jump.maxCandidates },
+          blocked,
         );
         const connections = [...settings.connections, ...links];
         const route: Route = links.length
-          ? createGroundPlanner(layoutSurfaces, settings).plan(usableStarts, goal, {
+          ? overlayPlanner.plan(usableStarts, goal, {
               interaction: jump.interaction,
               connections,
             })

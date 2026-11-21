@@ -115,8 +115,8 @@ interface PreparedGeometry {
   boundaryIndex: BoundsIndex<IndexedBoundary, number>;
   landingIndex: BoundsIndex<LandingFace, number>;
   representatives: string[];
-  byId: Map<string, Surface>;
-  centers: Map<string, Vec3>;
+  byId: Pick<ReadonlyMap<string, Surface>, 'get' | 'has'>;
+  centers: Pick<ReadonlyMap<string, Vec3>, 'get' | 'has'>;
   projectSupport: ReturnType<typeof movementGeometry>['projectSupport'];
   project: ReturnType<typeof movementGeometry>['project'];
   visibility?: GroundStraightener;

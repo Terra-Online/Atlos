@@ -76,14 +76,13 @@ export function verticalProjectionCandidates(
 // Device endpoints recur throughout action discovery. This cache belongs to one
 // immutable support mesh; all projection inputs, including an explicit support
 // identity, remain part of the key. Retain a bounded number of local projections.
-export const createSupportProjector = (surfaces: Surface[], byId: Map<string, Surface>) => {
+export const createSupportProjector = (
+  surfaces: Surface[],
+  byId: Pick<ReadonlyMap<string, Surface>, 'get' | 'has'>,
+) => {
   const projections = new Map<string, Projection>();
   return (position: Vec3, maxVertical: number, surface?: string): Projection => {
-    const key = JSON.stringify([
-      position.map((value) => (Object.is(value, -0) ? '-0' : value)),
-      maxVertical,
-      surface,
-    ]);
+    const key = `${Object.is(position[0], -0) ? '-0' : position[0]},${Object.is(position[1], -0) ? '-0' : position[1]},${Object.is(position[2], -0) ? '-0' : position[2]}|${maxVertical}|${surface ?? ''}`;
     if (projections.has(key)) return projections.get(key)!;
     const candidates =
       surface === undefined

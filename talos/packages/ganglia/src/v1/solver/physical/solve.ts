@@ -811,6 +811,7 @@ export const solvePhysicalRoute = async (
         },
         jump: {
           ...options,
+          groundPlanner,
           interaction: request.interaction,
           runAirSpeed,
           maxSlope,
