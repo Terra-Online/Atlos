@@ -1,5 +1,18 @@
 import type { Surface, Portal, CollisionGeometry } from '#@/src/geometry.ts';
-export { assembleGroundTiles, buildGroundSurfaces, buildGroundTiles } from '#@/src/v1/geo/build.ts';
+export {
+  assembleGroundTiles,
+  buildGroundSurfaces,
+  buildGroundTiles,
+  stitchGroundTiles,
+  type StitchTileInput,
+} from '#@/src/v1/geo/build.ts';
+export {
+  encodeTileSurfaces,
+  decodeTileSurfaces,
+  createTileSurfaceCache,
+  estimateTileSurfaceBytes,
+  type EncodeTileSurfacesOptions,
+} from '#@/src/v1/geo/tile-binary.ts';
 export { groundBuildIdentity } from '#@/src/v1/geo/build-identity.ts';
 export type { CollisionGeometry } from '#@/src/geometry.ts';
 

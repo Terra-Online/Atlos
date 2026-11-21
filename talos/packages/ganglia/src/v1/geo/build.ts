@@ -369,7 +369,12 @@ function boundaryEdges(surfaces: Surface[], axis: 0 | 2, boundary: number): Boun
   }
   return edges.sort((a, b) => a.min - b.min);
 }
-function joinTiles(from: Tile, to: Tile, axis: 0 | 2, options: BuildOptions): Portal[] {
+function joinTiles(
+  from: Tile,
+  to: Tile,
+  axis: 0 | 2,
+  options: Pick<BuildOptions, 'stepUp' | 'stepDown'>,
+): Portal[] {
   const boundary = from.bounds.max[axis === 0 ? 0 : 1],
     other = axis === 0 ? 2 : 0;
   const a = boundaryEdges(from.surfaces, axis, boundary),
@@ -425,7 +430,10 @@ function joinTiles(from: Tile, to: Tile, axis: 0 | 2, options: BuildOptions): Po
   }
   return portals;
 }
-function assembleTiles(tiles: Tile[], options: BuildOptions): TileBuildResult {
+function assembleTiles(
+  tiles: Tile[],
+  options: Pick<BuildOptions, 'stepUp' | 'stepDown'>,
+): TileBuildResult {
   const surfaces: Surface[] = [];
   const portals: Portal[] = [];
   const byPosition = new Map<string, Tile>();
@@ -654,6 +662,60 @@ export async function buildGroundTiles(
       cached,
       elapsedMs: performance.now() - started,
     });
+  }
+  return assembleTiles(tiles, options);
+}
+
+export interface StitchTileInput {
+  x: number;
+  z: number;
+  /** Padded per-tile surfaces as returned by buildGroundSurfaces (before core clipping). */
+  surfaces: readonly Surface[];
+}
+
+/** Assemble a window from already-built (or binary-cached) per-tile surfaces
+ * in memory by clipping each tile to its window core rectangle and stitching
+ * only inter-tile seam portals. Avoids Recast rebaking and merged-window JSON
+ * persistence across sliding, expanded, and bisected windows.
+ */
+export function stitchGroundTiles(
+  tileInputs: readonly StitchTileInput[],
+  options: Pick<TileBuildOptions, 'bounds' | 'cellSize' | 'tileCells' | 'stepUp' | 'stepDown'>,
+): TileBuildResult {
+  validateBounds(options.bounds);
+  const { bounds, cellSize, tileCells } = options;
+  if (
+    !Number.isSafeInteger(tileCells) ||
+    tileCells < 1 ||
+    !Number.isFinite(cellSize) ||
+    cellSize <= 0
+  ) {
+    throw new Error('Invalid ground tile stitch settings');
+  }
+  const size = tileCells * cellSize;
+  const sorted = [...tileInputs].sort((a, b) => a.z - b.z || a.x - b.x);
+  const seen = new Set<string>();
+  const tiles: Tile[] = [];
+
+  for (const input of sorted) {
+    const { x, z } = input;
+    const key = `${x},${z}`;
+    if (seen.has(key)) throw new Error(`Duplicate ground tile (${x}, ${z})`);
+    seen.add(key);
+    const core = tileCore(bounds, size, x, z);
+    const tile: Tile = { x, z, bounds: core, surfaces: [] };
+    if (core.min[0] < core.max[0] && core.min[1] < core.max[1]) {
+      for (const surface of input.surfaces) {
+        const clipped = clipSurface(surface.vertices, core);
+        if (clipped) {
+          tile.surfaces.push({
+            id: `${x},${z}/${surface.id}`,
+            vertices: clipped,
+          });
+        }
+      }
+    }
+    tiles.push(tile);
   }
   return assembleTiles(tiles, options);
 }
