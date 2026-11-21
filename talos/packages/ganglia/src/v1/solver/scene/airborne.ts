@@ -13,7 +13,6 @@ import type {
   SceneTerminal,
   WindowJob,
 } from '#@/src/solver/resources.ts';
-import { createGroundPlanner, type GroundPlanner } from '#@/src/v1/route/ground.ts';
 import { standingFoot } from '#@/src/v1/search/traversal.ts';
 
 type Complete = Extract<Route, { status: 'complete' }>;
@@ -22,10 +21,11 @@ export interface Entry extends SceneTerminal {
   bind(route: Complete): boolean;
 }
 
-/** Single-entry solver-scoped preparation cache shared between
- * discoverRopeTerminal and discoverAirborneEntries so the same immutable
- * PhysicalSnapshot never rebuilds 2M+ triangle collision BVHs or 200k+ surface
- * GroundPlanners multiple times. Cleared deterministically on solver.close().
+/** Query-scoped preparation cache shared between discoverRopeTerminal and
+ * discoverAirborneEntries so the same immutable PhysicalSnapshot never
+ * rebuilds 2M+ triangle collision BVHs or GoalProjectors twice in one query.
+ * Deliberately excludes GroundPlanner (which can consume >1.5 GiB on 400k-surface
+ * regions) and is cleared in runLeg's finally block to keep V8 heap bounded.
  */
 export interface AirbornePrepCache {
   getPrepared(
@@ -36,7 +36,6 @@ export interface AirbornePrepCache {
     baseWorld: CollisionWorld;
     physical: ReturnType<typeof createPhysicalWorld>;
   };
-  getPlanner(snapshot: PhysicalSnapshot): GroundPlanner;
   getProjector(snapshot: PhysicalSnapshot): GoalProjector;
   clear(): void;
 }
@@ -56,7 +55,6 @@ export function createAirbornePrepCache(): AirbornePrepCache {
           baseWorld: CollisionWorld;
           physical: ReturnType<typeof createPhysicalWorld>;
         };
-        planner?: GroundPlanner;
         projector?: GoalProjector;
       }
     | undefined;
@@ -115,21 +113,6 @@ export function createAirbornePrepCache(): AirbornePrepCache {
         current.prepared = { geometry, baseWorld, physical };
       }
       return current.prepared;
-    },
-    getPlanner(snapshot) {
-      const current = ensureSlot(snapshot, slot?.paddedScope ?? true);
-      if (!current.planner) {
-        const { input } = snapshot;
-        const options = {
-          ...input.ground.options,
-          walls: input.roundedWalls ?? input.ground.options.walls,
-          locomotion: input.locomotion,
-          maxVertical: 0.5,
-        };
-        current.planner = createGroundPlanner(input.ground.surfaces, options);
-        current.projector = current.planner.project;
-      }
-      return current.planner;
     },
     getProjector(snapshot) {
       const current = ensureSlot(snapshot, slot?.paddedScope ?? snapshot.coverage !== 'complete');

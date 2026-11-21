@@ -76,7 +76,6 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
   const planner = createCandidatePlanner(navigation);
   let projectGoal: GoalProjector | undefined;
   const groundCache = createWindowGroundCache();
-  const airbornePrepCache = createAirbornePrepCache();
   const maxAttempts = config.maxAttempts,
     concurrency = config.batchConcurrency;
   let transport: ReturnType<NonNullable<typeof resources.movingTransfers>> | undefined;
@@ -113,6 +112,9 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
     const cancelled = () => options.signal?.aborted;
     const progress = (phase: 'search' | 'validate') =>
       options.onEvent?.({ type: 'progress', phase });
+    // Query-scoped cache prevents retaining a second copy of large snapshot
+    // indices across queries or while solvePhysicalRoute holds its own cache.
+    const airbornePrepCache = createAirbornePrepCache();
     try {
       const terminals = query.interaction?.airborne
         ? await resources.terminals?.(query)
@@ -405,6 +407,8 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
       if (incumbent || partial)
         return stopped(error instanceof Error ? error.message : String(error), true);
       throw error;
+    } finally {
+      airbornePrepCache.clear();
     }
   };
   const submit = (query: RouteQuery, options: SolveOptions = {}) => {
@@ -452,7 +456,6 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         await Promise.allSettled(batches);
         await Promise.allSettled(active);
         groundCache.clear();
-        airbornePrepCache.clear();
         if (--openSceneSolvers === 0) clearActionCatalog();
         await resources.close?.();
       })();

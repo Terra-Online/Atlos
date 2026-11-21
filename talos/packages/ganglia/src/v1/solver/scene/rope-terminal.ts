@@ -135,9 +135,7 @@ function movement(
     locomotion: input.locomotion,
     maxVertical: 0.5,
   };
-  const planner = prepCache
-    ? prepCache.getPlanner(snapshot)
-    : createGroundPlanner(surfaces, options);
+  const planner = createGroundPlanner(surfaces, options);
   let min = Infinity,
     max = -Infinity;
   for (const surface of surfaces)
