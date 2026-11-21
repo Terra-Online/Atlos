@@ -74,6 +74,13 @@ for baseline and candidate. Reuse reports with matching conditions.
   regressions to five pairs with same-version noise controls. Fix confirmed
   per-case slowdowns or obtain explicit human acceptance.
 
+When sharing a baseline/candidate comparison in Markdown, generate the per-case
+table from this package with `pnpm --silent benchmark:report baseline.json candidate.json`.
+Use the JSON files written with `--output` by `benchmark:mechanisms` or
+`benchmark:full`. Resolve any strict comparison mismatch before presenting a
+like-for-like comparison. For exploratory comparisons with custom pairings,
+see the SQL options in `pnpm benchmark:report --help`.
+
 Report source revisions, input bindings, commands, gained/lost cases, cost
 regressions, timing comparisons, physical validity and mechanism exercise.
 If benchmark reports, provenance notes or other research artifacts are saved,

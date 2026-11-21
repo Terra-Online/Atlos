@@ -19,6 +19,7 @@ import { readDataset, scenarioBindings, scenarioBuilder } from '#@/bench/mechani
 import type { Binding } from '#@/bench/mechanisms/scenario.ts';
 import { checkSetup, readSuite } from '#@/bench/mechanisms/suite.ts';
 import { classify, type Status } from '#@/bench/outcome.ts';
+import { recordRun } from '#@/bench/reporting/recorder.ts';
 import { runScenario } from '#@/bench/run.ts';
 import { sourceHash } from '#@/bench/source.ts';
 import type { WorkerResult } from '#@/bench/workers.ts';
@@ -85,6 +86,48 @@ if (values.help) {
       ['crates/ganglia-v1/Cargo.toml', 'crates/ganglia-v1/Cargo.lock'],
     );
   const before = await digest();
+  const revision = execFileSync('git', ['rev-parse', 'HEAD'], {
+    cwd: root,
+    encoding: 'utf8',
+  }).trim();
+  const byId = new Map(suite.cases.map((item) => [item.id, item]));
+  const recording = recordRun({
+    benchmarkId: 'mechanisms',
+    suiteId: suite.id,
+    gitRevision: revision,
+    solverSettings: config,
+    measurement: {
+      rounds: 1,
+      scenarioWorkers,
+      solverWorkers: 1,
+      queryConcurrency: 1,
+      dispatch: 'serial',
+    },
+    scenarios: suite.scenarios.flatMap((spec) => {
+      const cases = spec.cases
+        .filter((item) => selectedIds.has(item.id))
+        .map((item) => ({
+          caseId: item.id,
+          requirements: item.requirements,
+          expectation: {
+            kind: expectation(byId.get(item.id)!),
+            assertions: item.expect.assertions,
+          },
+        }));
+      return cases.length
+        ? [
+            {
+              scenarioId: spec.id,
+              setup: {
+                ...spec.setup,
+                onDemandInput: spec.setup.input.kind === 'dynamic' && !!values['prepare-config'],
+              },
+              cases,
+            },
+          ]
+        : [];
+    }),
+  });
   type Row = {
     id: string;
     group: string;
@@ -129,8 +172,9 @@ if (values.help) {
     };
   };
   const report = {
+    benchmarkRun: recording.report,
     adapter: config.algorithm,
-    revision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
+    revision,
     workingTreeDirty: !!execFileSync('git', ['status', '--porcelain'], {
       cwd: root,
       encoding: 'utf8',
@@ -166,11 +210,11 @@ if (values.help) {
   const controller = new AbortController();
   const stop = () => {
     report.interrupted = true;
+    recording.interrupt();
     controller.abort();
   };
   process.once('SIGINT', stop);
   process.once('SIGTERM', stop);
-  const byId = new Map(suite.cases.map((item) => [item.id, item]));
   const groups: {
     spec: (typeof suite.scenarios)[number];
     binding: Binding;
@@ -192,6 +236,7 @@ if (values.help) {
       groups.push({ spec, binding, items });
     } catch (error) {
       for (const item of items) {
+        recording.preparationError(spec.id, item.id, String(error));
         report.results.push({
           id: item.id,
           group: item.group,
@@ -222,11 +267,13 @@ if (values.help) {
           return file;
         },
         onInputError(item, error) {
+          const reason = `${error.status}: ${error.reason}`;
+          recording.preparationError(spec.id, item.id, reason);
           report.results.push({
             id: item.id,
             group: item.group,
             status: 'error',
-            reason: `${error.status}: ${error.reason}`,
+            reason,
             verification: 'not-run',
             matchesExpectation: false,
           });
@@ -244,6 +291,7 @@ if (values.help) {
         },
       });
       for await (const loaded of builder.build(bindings, { ...suite, scenarios: [spec] })) {
+        const recorded = recording.startScenario(loaded, binding.dataRoot);
         await runScenario(loaded, {
           signal: controller.signal,
           onPhase(phase) {
@@ -307,6 +355,7 @@ if (values.help) {
               diagnostics: result.diagnostics,
               resultFile,
             };
+            recorded.attempt(item, result, verification, row.matchesExpectation);
             report.results.push(row);
             record({ phase: 'result', ...row });
             save();
@@ -321,6 +370,7 @@ if (values.help) {
             );
           },
         });
+        recorded.finish();
       }
     } catch (error) {
       report.executionError = String(error);
@@ -350,6 +400,10 @@ if (values.help) {
     }),
   );
   report.sourceUnchanged = before === (await digest());
+  const failure = report.sourceUnchanged
+    ? report.executionError
+    : 'Benchmark source changed during measurement';
+  recording.finish(failure || undefined);
   save();
   console.log(output);
   if (!report.sourceUnchanged) throw new Error('Benchmark source changed during measurement');

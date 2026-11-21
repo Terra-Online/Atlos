@@ -167,7 +167,7 @@
       }
     },
     "note": {
-      "$ref": "#/$defs/__schema16"
+      "$ref": "#/$defs/__schema17"
     }
   },
   "required": ["id", "requiredSource", "sources", "scenarios"],
@@ -495,7 +495,7 @@
           }
         },
         "note": {
-          "$ref": "#/$defs/__schema16"
+          "$ref": "#/$defs/__schema17"
         }
       },
       "required": ["id", "setup", "training", "cases"],
@@ -518,22 +518,22 @@
               }
             },
             "goal": {
-              "$ref": "#/$defs/__schema10"
+              "$ref": "#/$defs/__schema14"
             },
             "interaction": {
               "type": "object",
               "properties": {
                 "radius": {
-                  "$ref": "#/$defs/__schema4"
+                  "type": "number"
                 },
                 "maxVertical": {
-                  "$ref": "#/$defs/__schema4"
+                  "type": "number"
                 },
                 "facing": {
-                  "$ref": "#/$defs/__schema10"
+                  "$ref": "#/$defs/__schema14"
                 },
                 "halfAngle": {
-                  "$ref": "#/$defs/__schema4"
+                  "type": "number"
                 },
                 "airborne": {
                   "type": "boolean"
@@ -545,7 +545,7 @@
             "waypoints": {
               "type": "array",
               "items": {
-                "$ref": "#/$defs/__schema10"
+                "$ref": "#/$defs/__schema14"
               }
             }
           },
@@ -694,28 +694,28 @@
               "additionalProperties": false
             },
             "acceptanceRevision": {
-              "$ref": "#/$defs/__schema14"
+              "$ref": "#/$defs/__schema15"
             },
             "expectedContactPose": {
-              "$ref": "#/$defs/__schema14"
+              "$ref": "#/$defs/__schema15"
             },
             "inputRevision": {
-              "$ref": "#/$defs/__schema14"
+              "$ref": "#/$defs/__schema15"
             },
             "replacement": {
-              "$ref": "#/$defs/__schema14"
+              "$ref": "#/$defs/__schema15"
             },
             "selection": {
-              "$ref": "#/$defs/__schema14"
+              "$ref": "#/$defs/__schema15"
             },
             "supportModel": {
-              "$ref": "#/$defs/__schema14"
+              "$ref": "#/$defs/__schema15"
             }
           },
           "additionalProperties": false
         },
         "note": {
-          "$ref": "#/$defs/__schema16"
+          "$ref": "#/$defs/__schema17"
         }
       },
       "required": ["id", "query", "expect"],
@@ -725,13 +725,14 @@
       "type": "object",
       "properties": {
         "id": {
-          "$ref": "#/$defs/__schema3"
+          "type": "string",
+          "minLength": 1
         },
         "position": {
-          "$ref": "#/$defs/__schema10"
+          "$ref": "#/$defs/__schema14"
         },
         "cost": {
-          "$ref": "#/$defs/__schema4"
+          "type": "number"
         },
         "state": {
           "type": "string",
@@ -742,15 +743,31 @@
       "additionalProperties": false
     },
     "__schema14": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "__schema15": {
       "type": "object",
       "propertyNames": {
         "type": "string"
       },
       "additionalProperties": {
-        "$ref": "#/$defs/__schema15"
+        "$ref": "#/$defs/__schema16"
       }
     },
-    "__schema15": {
+    "__schema16": {
       "anyOf": [
         {
           "type": "string"
@@ -767,7 +784,7 @@
         {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/__schema15"
+            "$ref": "#/$defs/__schema16"
           }
         },
         {
@@ -776,12 +793,12 @@
             "type": "string"
           },
           "additionalProperties": {
-            "$ref": "#/$defs/__schema15"
+            "$ref": "#/$defs/__schema16"
           }
         }
       ]
     },
-    "__schema16": {
+    "__schema17": {
       "type": "string"
     }
   }

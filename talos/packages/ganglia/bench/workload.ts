@@ -31,12 +31,12 @@ const presets: Record<string, Workload> = {
   'map02-stress': { cases: stressCases, directory: 'long-range-map02-packed' },
 };
 
-export async function readWorkload(name = 'map02'): Promise<Workload> {
+export async function readWorkload(name = 'map02'): Promise<Workload & { suiteId: string }> {
   if (name === 'mechanisms')
     throw new Error(
       'Scenario manifests require benchmark:mechanisms for service scoring or bench/mechanism-run.ts for native route diagnostics',
     );
-  if (presets[name]) return presets[name];
+  if (Object.hasOwn(presets, name)) return { ...presets[name], suiteId: name };
   const cases: unknown = JSON.parse(await readFile(name, 'utf8'));
   if (
     !Array.isArray(cases) ||
@@ -50,7 +50,7 @@ export async function readWorkload(name = 'map02'): Promise<Workload> {
     throw new Error(
       'Scenario manifests require bench/mechanism-run.ts; do not discard scene/setup to score them as query arrays',
     );
-  return { cases, directory: '' };
+  return { cases, directory: '', suiteId: 'custom' };
 }
 
 type SceneSuite = Suite<{ readonly scene: string }>;

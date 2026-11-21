@@ -18,6 +18,7 @@ import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { benchmarkMarkdown } from '#@/bench/markdown.ts';
 import { benchmarkTraining } from '#@/bench/preparation.ts';
 import { compareQuality, qualityGate, readReference, summarizeQuality } from '#@/bench/quality.ts';
+import { recordRun } from '#@/bench/reporting/recorder.ts';
 import { runScenario } from '#@/bench/run.ts';
 import { sourceHash } from '#@/bench/source.ts';
 import { resetTimings } from '#@/bench/timings.ts';
@@ -70,6 +71,7 @@ if (values.help) {
   };
   let phase = 'setup';
   let completed = 0;
+  let recording: ReturnType<typeof recordRun> | undefined;
   console.error(JSON.stringify({ phase: 'artifacts', report: outputPath, events: eventsPath }));
   record({ phase, state: 'started', at: new Date().toISOString(), argv: process.argv.slice(2) });
   try {
@@ -95,7 +97,7 @@ if (values.help) {
         cwd: root,
       }).trim(),
     );
-    const { cases: workload, directory } = await readWorkload(values.workload);
+    const { cases: workload, directory, suiteId } = await readWorkload(values.workload);
     const dataRoot = values['data-root'] ?? resolve(root, '../../../.local/data', directory);
     const offset = Number(values.offset ?? 0),
       count = Number(values.limit ?? workload.length);
@@ -144,6 +146,26 @@ if (values.help) {
       trainingCases: training,
       lifecycle: 'suite-training-no-warmup',
     };
+    recording = recordRun({
+      benchmarkId: 'full',
+      suiteId,
+      gitRevision: revision,
+      solverSettings: fixed,
+      measurement: {
+        rounds,
+        scenarioWorkers: 1,
+        solverWorkers: workers,
+        queryConcurrency: Math.min(workers, concurrency),
+        dispatch: 'batch',
+      },
+      scenarios: [
+        {
+          scenarioId: values.scene,
+          setup: { scene: values.scene },
+          cases: selected.map(({ id }) => ({ caseId: id })),
+        },
+      ],
+    });
     const referenceBytes = values.reference ? await readFile(values.reference) : undefined;
     const referenceReport = referenceBytes
       ? (JSON.parse(referenceBytes.toString()) as {
@@ -181,6 +203,7 @@ if (values.help) {
       const { inputLoadMs, timings, metadata } = prepared;
       const workerReadyMs = performance.now();
       try {
+        const recorded = recording.startScenario(scenario, dataRoot);
         const reference = referenceBytes
           ? readReference(JSON.parse(referenceBytes.toString()), { ...metadata, cases: selected })
           : undefined;
@@ -240,8 +263,10 @@ if (values.help) {
               };
             }
           },
+          onResult: recorded.attempt,
         });
         const endToEndMs = performance.now();
+        recorded.finish();
         const solverLifecycleMs = endToEndMs - report.verificationWallMs;
         const holdoutCatalogs = prepared.catalogs();
         if ((await sourceHash(root, sourceDirectories, sourceFiles)) !== sourceSha256)
@@ -267,7 +292,9 @@ if (values.help) {
               : undefined;
         const referenceBatchMs = referenceReport?.batch.wallMs;
         const referenceSolverLifecycleMs = referenceReport?.lifecycle?.solverLifecycleMs;
+        recording.finish();
         const output = {
+          benchmarkRun: recording.report,
           measurement,
           lifecycle: {
             workerReadyMs,
@@ -393,10 +420,13 @@ if (values.help) {
       }
     }
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    recording?.finish(message);
     const failure = {
+      benchmarkRun: recording?.report,
       state: 'interrupted',
       phase,
-      error: error instanceof Error ? error.message : String(error),
+      error: message,
       events: eventsPath,
     };
     record(failure);
