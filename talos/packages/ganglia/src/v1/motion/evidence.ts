@@ -1,10 +1,24 @@
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { Surface, Vec3 } from '#@/src/geometry.ts';
-import type { Approach, Arc } from '#@/src/v1/motion/jumps.ts';
+import type { Approach, Arc, MotionControl } from '#@/src/v1/motion/jumps.ts';
 import { groundPreparation } from '#@/src/v1/route/ground.ts';
 import type { DiscoveryOptions, standingFoot } from '#@/src/v1/search/traversal.ts';
 
 type Foot = ReturnType<typeof standingFoot>;
+
+/** Fast deterministic cache keys shared across traversal, shortcuts, and route-shortcuts
+ * without hot-loop JSON.stringify allocations. */
+export const vec3Key = (p: readonly number[]) => `${p[0]},${p[1]},${p[2]}`;
+export const vec3PairKey = (a: readonly number[], b: readonly number[]) =>
+  `${a[0]},${a[1]},${a[2]}|${b[0]},${b[1]},${b[2]}`;
+export const standingEvidenceKey = (position: Vec3, surface: string) =>
+  `${surface}\0${position[0]},${position[1]},${position[2]}`;
+export const arcEvidenceKey = (
+  start: Vec3,
+  end: Vec3,
+  control: MotionControl & { runOff?: boolean },
+) =>
+  `${start[0]},${start[1]},${start[2]}|${end[0]},${end[1]},${end[2]}|${control.mode}|${control.runOff ? 1 : 0}|${control.exit ? `${control.exit[0]},${control.exit[1]}` : ''}|${control.speedFraction ?? ''}|${control.terminal ?? ''}|${control.horizontalSplit ?? ''}|${control.horizontalWaypoint ? `${control.horizontalWaypoint[0]},${control.horizontalWaypoint[1]}` : ''}|${control.expireAfter ?? ''}|${control.expiredHorizontalSpeed ?? ''}`;
 
 const copyPoints = (points: Vec3[]) => points.map((point): Vec3 => [...point]);
 const copyArc = (arc: Arc | null): Arc | null =>

@@ -5,7 +5,13 @@ import { createWallChecker } from '#@/src/model/walls.ts';
 import type { InteractionGoal, JumpModel } from '#@/src/movement.ts';
 import type { GroundConnection } from '#@/src/route.ts';
 import { type SharedPortal, surfacePortals, directedPortals } from '#@/src/v1/geo/surfaces.ts';
-import { discoveryEvidence } from '#@/src/v1/motion/evidence.ts';
+import {
+  arcEvidenceKey,
+  discoveryEvidence,
+  standingEvidenceKey,
+  vec3Key,
+  vec3PairKey,
+} from '#@/src/v1/motion/evidence.ts';
 import {
   createMotionVariants,
   jumpConnection,
@@ -143,7 +149,7 @@ const distance = (a: readonly number[], b: readonly number[]) =>
   Math.hypot(...a.map((value, axis) => value - b[axis]));
 const horizontal = (a: readonly number[], b: readonly number[]) =>
   Math.hypot(a[0] - b[0], a[2] - b[2]);
-const boundaryKey = (surface: string, edge: number) => JSON.stringify([surface, edge]);
+const boundaryKey = (surface: string, edge: number) => `${surface}\0${edge}`;
 export const exposedBoundaries = (
   surfaces: Surface[],
   portals: Portal[],
@@ -638,7 +644,7 @@ export function findJumpConnections(
   };
   const cachedStanding = new Map<string, Standing | null>();
   const standing = (seed: Vec3, component: number): Standing | null => {
-    const key = JSON.stringify([component, seed]);
+    const key = `${component}\0${vec3Key(seed)}`;
     if (cachedStanding.has(key)) return cachedStanding.get(key)!;
     if (diagnostics.endpointChecks >= diagnostics.limits.endpointChecks) {
       diagnostics.truncated = true;
@@ -649,7 +655,7 @@ export function findJumpConnections(
     const nav = project(seed, { maxVertical })[0];
     if (!nav || componentOf(nav.surface) !== component) diagnostics.rejected.projection++;
     else {
-      const sampled = evidence.standing(JSON.stringify([nav.position, nav.surface]), () =>
+      const sampled = evidence.standing(standingEvidenceKey(nav.position, nav.surface), () =>
         standingFoot(nav, world, { profile, maxVertical, maxSlope, blocked, project }),
       );
       if (sampled.reason) diagnostics.rejected[sampled.reason]++;
@@ -755,7 +761,7 @@ export function findJumpConnections(
         generated++;
         diagnostics.seedChecks++;
         const point = next.value,
-          key = JSON.stringify(point);
+          key = vec3Key(point);
         if (seen.has(key)) continue;
         seen.add(key);
         const nav = project(point, { maxVertical })[0];
@@ -994,7 +1000,7 @@ export function findJumpConnections(
       const start = standing(candidate.start, a.component),
         end = standing(candidate.end, b.component);
       if (!start || !end) continue;
-      const key = JSON.stringify([start.position, end.position]);
+      const key = vec3PairKey(start.position, end.position);
       if (search.tried.has(key)) continue;
       search.tried.add(key);
       // Support correction may change heights enough to invalidate a raw pair.
@@ -1038,7 +1044,7 @@ export function findJumpConnections(
           return null;
         }
         diagnostics.attempted++;
-        const arc = evidence.arc(JSON.stringify([start.position, end.position, control]), () =>
+        const arc = evidence.arc(arcEvidenceKey(start.position, end.position, control), () =>
           'runOff' in control
             ? runOffConnection(
                 start.position,

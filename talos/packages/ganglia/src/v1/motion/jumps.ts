@@ -1,6 +1,7 @@
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
 import {
+  approachCacheKey,
   horizontalLeg,
   maximumStep,
   jumpDuration,
@@ -28,7 +29,7 @@ export function createMotionVariants(
     yield { mode: 'drop' };
     if (jumping) yield { mode: 'jump' };
     if (exit && model.airAcceleration !== undefined) {
-      const key = JSON.stringify([start, exit]);
+      const key = approachCacheKey(start, exit);
       steering: for (const speedFraction of [0.5, 0.25, 1, 0.125]) {
         for (const terminal of ['average', 'balanced', 'fast'] as const) {
           if (approaches.has(key) && approaches.get(key) === null) break steering;
@@ -65,7 +66,7 @@ export function createMotionVariants(
         maximumStep ** 2) /
         8;
     if (exit) {
-      const key = JSON.stringify([start, exit]);
+      const key = approachCacheKey(start, exit);
       if (!exits.has(key)) {
         let waypoint: [number, number] | null = null;
         const length = Math.hypot(exit[0] - start[0], exit[1] - start[2]);

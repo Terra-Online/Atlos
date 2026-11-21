@@ -3,8 +3,15 @@ import type { Vec3, Surface } from '#@/src/geometry.ts';
 import { type Bounds, type BoundsIndex, createBoundsIndex } from '#@/src/model/bounds.ts';
 import type { GoalProjection } from '#@/src/model/goals.ts';
 import type { GroundConnection, GroundOptions, Route } from '#@/src/route.ts';
-import { discoveryEvidence } from '#@/src/v1/motion/evidence.ts';
 import {
+  arcEvidenceKey,
+  discoveryEvidence,
+  standingEvidenceKey,
+  vec3Key,
+  vec3PairKey,
+} from '#@/src/v1/motion/evidence.ts';
+import {
+  approachCacheKey,
   type Arc,
   type ApproachCache,
   type ExitCache,
@@ -430,7 +437,7 @@ function findConnections(
   const traces = cache?.traces ?? new Map<string, Vec3[] | null>();
   if (cache) cache.traces = traces;
   const groundTrace = (start: Vec3, end: Vec3): Vec3[] | null => {
-    const key = JSON.stringify([start, end]);
+    const key = vec3PairKey(start, end);
     if (!traces.has(key)) {
       traces.set(
         key,
@@ -932,7 +939,7 @@ function findConnections(
     diagnostics.seedProjections++;
     const nav = project(next.value.seed, { maxVertical })[0];
     if (!nav) continue;
-    const key = JSON.stringify(nav.position);
+    const key = vec3Key(nav.position);
     if (seen.has(key)) continue;
     seen.add(key);
     // Reverse frontiers can land only in the goal-reachable ground set. Its
@@ -990,10 +997,11 @@ function findConnections(
   const pairKey = (start: Takeoff, end: Witness) => {
     let prefix = startKeys.get(start);
     if (prefix === undefined) {
-      prefix = JSON.stringify([start.surface, start.position, start.exit]).slice(0, -1);
+      const ex = start.exit;
+      prefix = `${start.surface}\0${start.position[0]},${start.position[1]},${start.position[2]}\0${ex ? `${ex[0]},${ex[1]}` : ''}`;
       startKeys.set(start, prefix);
     }
-    return `${prefix},${JSON.stringify([end.surface, end.position]).slice(1)}`;
+    return `${prefix}|${end.surface}\0${end.position[0]},${end.position[1]},${end.position[2]}`;
   };
   const pairs = cursor?.pairs ?? new Map<string, Candidate[]>();
   const fullSources = new Set<string>();
@@ -1269,7 +1277,7 @@ function findConnections(
   let serial = cursor?.serial ?? 0;
   const ids = new Set<string>(existing.map((connection: GroundConnection) => connection.id));
   const standing = (seed: Witness): Witness | null => {
-    const key = JSON.stringify([seed.position, seed.surface]);
+    const key = standingEvidenceKey(seed.position, seed.surface);
     if (cached.has(key)) return cached.get(key)!;
     if (diagnostics.endpointChecks >= diagnostics.limits.endpointChecks) {
       diagnostics.truncated = true;
@@ -1313,7 +1321,7 @@ function findConnections(
       if (!entry.variants) {
         const start = standing(candidate.start);
         if (!start) {
-          if (cached.has(JSON.stringify([candidate.start.position, candidate.start.surface])))
+          if (cached.has(standingEvidenceKey(candidate.start.position, candidate.start.surface)))
             rejectedPairs.add(pairKey(candidate.start, candidate.end));
           continue;
         }
@@ -1328,7 +1336,7 @@ function findConnections(
         }
         const end = standing(candidate.end);
         if (!end) {
-          if (cached.has(JSON.stringify([candidate.end.position, candidate.end.surface])))
+          if (cached.has(standingEvidenceKey(candidate.end.position, candidate.end.surface)))
             rejectedPairs.add(pairKey(candidate.start, candidate.end));
           continue;
         }
@@ -1345,7 +1353,8 @@ function findConnections(
           rejectedPairs.add(pairKey(candidate.start, candidate.end));
           continue;
         }
-        const key = JSON.stringify([start.position, end.position, candidate.start.exit]);
+        const exit = candidate.start.exit;
+        const key = `${vec3PairKey(start.position, end.position)}|${exit ? `${exit[0]},${exit[1]}` : ''}`;
         if (tried.has(key)) continue;
         tried.add(key);
         const ground = frontier
@@ -1391,7 +1400,7 @@ function findConnections(
       }
       if (mode === 'drop' && motionBounds) {
         const prefix = variant.exit
-          ? approaches.get(JSON.stringify([start.position, variant.exit]))
+          ? approaches.get(approachCacheKey(start.position, variant.exit))
           : undefined;
         const minimum = motionBounds.runOff(
           { min: start.position, max: start.position },
@@ -1414,7 +1423,7 @@ function findConnections(
         sweep: (from, to, body) => world.sweepCapsule(from, to, body),
         funnelWorld: world,
       };
-      const motionKey = JSON.stringify([start.position, end.position, variant]);
+      const motionKey = arcEvidenceKey(start.position, end.position, variant);
       let arc = motions.get(motionKey);
       if (arc === undefined) {
         diagnostics.attempted++;

@@ -16,6 +16,7 @@ import type {
   SceneNavigation,
   WindowJob,
 } from '#@/src/solver/resources.ts';
+import { clearActionCatalog } from '#@/src/v1/route/action-catalog.ts';
 import { validateWaypoints } from '#@/src/v1/route/jump-planner.ts';
 import { createCandidatePlanner } from '#@/src/v1/search/candidate-planner.ts';
 import { composeRoutes, admitAuthoredStart } from '#@/src/v1/solver/route-result.ts';
@@ -58,6 +59,10 @@ const contacts = (evidence: unknown[]): NonNullable<RouteResult['supportBoxes']>
     return item.supportBoxes as NonNullable<RouteResult['supportBoxes']>;
   });
 
+// Track open scene solvers so closing the last solver deterministically
+// releases action-catalog proof banks without clobbering concurrent solvers.
+let openSceneSolvers = 0;
+
 /** Full query orchestration. Only immutable input preparation may be shared between solves. */
 export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
   input: { scene: string; source: Source; walls: Wall[]; navigation: SceneNavigation },
@@ -65,6 +70,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
   config: GangliaV1Config,
   locomotion: LocomotionOptions,
 ): PreparedRouteSolver<GangliaV1Config> {
+  openSceneSolvers++;
   const { navigation, ...scene } = input;
   const planner = createCandidatePlanner(navigation);
   let projectGoal: GoalProjector | undefined;
@@ -442,6 +448,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         await Promise.allSettled(batches);
         await Promise.allSettled(active);
         groundCache.clear();
+        if (--openSceneSolvers === 0) clearActionCatalog();
         await resources.close?.();
       })();
       return closing;

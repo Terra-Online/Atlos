@@ -68,6 +68,13 @@ export type ApproachCache = Map<string, Approach | null>;
 export type ApproachProof = (key: string, compute: () => Approach | null) => Approach | null;
 export type ExitCache = Map<string, [number, number] | null>;
 
+/** Deterministic hot-path cache key for (start, exit) approach proofs (avoids JSON.stringify). */
+export const approachCacheKey = (start: Vec3, exit: readonly [number, number]) =>
+  `${start[0]},${start[1]},${start[2]}|${exit[0]},${exit[1]}`;
+
+const approachProofKey = (start: Vec3, exit: readonly [number, number], limit: number) =>
+  `${start[0]},${start[1]},${start[2]}|${exit[0]},${exit[1]}|${limit}`;
+
 export type RunOffOptions = Omit<JumpOptions, 'mode'> &
   Partial<MotionControl> & { world: CollisionWorld; maxSlope: number };
 interface SweepOptions {
@@ -722,7 +729,7 @@ function executeRunOff(
   if (exitDistance === 0) return null;
   const direction = [(exit[0] - start[0]) / exitDistance, (exit[1] - start[2]) / exitDistance];
   const limit = options.exit ? exitDistance + profile.radius : span;
-  const cacheKey = options.exit ? JSON.stringify([start, options.exit]) : null;
+  const cacheKey = options.exit ? approachCacheKey(start, options.exit) : null;
   if (cacheKey && cache?.has(cacheKey)) {
     const prefix = cache.get(cacheKey);
     return prefix
@@ -735,7 +742,7 @@ function executeRunOff(
   if (cacheKey) cache?.set(cacheKey, null);
   const compute = () =>
     marchToLedge(start, direction, limit, { world, maxSlope, profile, wallCheck });
-  const prefix = proof ? proof(JSON.stringify([start, exit, limit]), compute) : compute();
+  const prefix = proof ? proof(approachProofKey(start, exit, limit), compute) : compute();
   if (!prefix) return null;
   if (options.exit) {
     // Publish the proof only when this logical attempt reaches the supported

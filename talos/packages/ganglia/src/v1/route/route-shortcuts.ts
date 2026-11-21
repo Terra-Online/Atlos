@@ -4,7 +4,11 @@ import { createBoundsIndex } from '#@/src/model/bounds.ts';
 import { createGoalProjector } from '#@/src/model/goals.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
 import type { GroundConnection, Route } from '#@/src/route.ts';
-import { discoveryEvidence } from '#@/src/v1/motion/evidence.ts';
+import {
+  arcEvidenceKey,
+  discoveryEvidence,
+  standingEvidenceKey,
+} from '#@/src/v1/motion/evidence.ts';
 import {
   type MotionControl,
   type JumpOptions,
@@ -216,7 +220,7 @@ export function findRouteShortcuts(
       diagnostics.rejected.projection++;
       return null;
     }
-    const key = JSON.stringify([nav.position, nav.surface]);
+    const key = standingEvidenceKey(nav.position, nav.surface);
     if (cached.has(key)) return cached.get(key)!;
     if (diagnostics.endpointChecks >= diagnostics.limits.endpointChecks) {
       diagnostics.truncated = true;
@@ -304,7 +308,7 @@ export function findRouteShortcuts(
                 approaches,
                 evidence.approach,
               )
-            : evidence.arc(JSON.stringify([start.position, end.position, variant.value]), () =>
+            : evidence.arc(arcEvidenceKey(start.position, end.position, variant.value), () =>
                 jumpConnection(start.position, end.position, motion),
               );
         if (arc && arc.times.at(-1)! < entry.candidate.end.time - entry.candidate.start.time) {

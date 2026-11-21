@@ -211,15 +211,15 @@ export function createGoalProjector(surfaces: Surface[]): GoalProjector {
     position: [...value.position] satisfies Vec3,
   });
   const copy = (values: GoalProjection[]) => values.map(copyValue);
-  const projectionKey = (target: Vec3, { maxVertical, interaction }: GoalProjectionOptions) =>
-    JSON.stringify([
-      target.map((value) => (Object.is(value, -0) ? '-0' : value)),
-      maxVertical,
-      interaction?.radius,
-      interaction?.maxVertical,
-      interaction?.facing,
-      interaction?.halfAngle,
-    ]);
+  const fmtCoord = (value: number) => (Object.is(value, -0) ? '-0' : String(value));
+  const projectionKey = (target: Vec3, { maxVertical, interaction }: GoalProjectionOptions) => {
+    const base = `${fmtCoord(target[0])},${fmtCoord(target[1])},${fmtCoord(target[2])}|${maxVertical ?? ''}`;
+    if (!interaction) return base;
+    const facing = interaction.facing
+      ? `${interaction.facing[0]},${interaction.facing[1]},${interaction.facing[2]}`
+      : '';
+    return `${base}|${interaction.radius}|${interaction.maxVertical ?? ''}|${facing}|${interaction.halfAngle ?? ''}`;
+  };
   const remember = (key: string, values: GoalProjection[]) => {
     // A broad interaction can return thousands of surfaces. Retaining those
     // results evicts frequently reused point proofs and makes entry count a

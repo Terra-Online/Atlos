@@ -7,44 +7,6 @@ import type { JumpRouteOptions } from '#@/src/v1/route/jump-planner.ts';
 import { createMinHeap } from '#@/src/v1/search/heap.ts';
 
 type Phase = 'disabled' | 'training' | 'frozen';
-let phase: Phase = 'disabled';
-const counts = {
-  scopes: 0,
-  scopeResets: 0,
-  missingSupport: 0,
-  frozenScopeMisses: 0,
-  added: 0,
-  duplicates: 0,
-  evicted: 0,
-  frozenCalls: 0,
-  selections: 0,
-  selectedEdges: 0,
-  seedSelections: 0,
-  seededEdges: 0,
-  seededComponents: 0,
-  candidateChains: 0,
-  rankedStates: 0,
-  hits: 0,
-  misses: 0,
-};
-export const setActionCatalogPhase = (next: Phase) => {
-  phase = next;
-};
-export const isActionCatalogFrozen = () => phase === 'frozen';
-// Only semantic bank changes invalidate failure proofs; query counters do not.
-export const catalogEvidenceRevision = () =>
-  phase === 'training'
-    ? undefined
-    : ([phase, counts.added, counts.evicted, counts.scopeResets, counts.scopes] as const);
-export const actionCatalogStats = () => ({
-  phase,
-  ...counts,
-  fallbacks: counts.frozenCalls - counts.hits,
-});
-export const noteActionCatalogResult = (complete: boolean) => {
-  if (complete) counts.hits++;
-  else counts.misses++;
-};
 
 const copy = (action: GroundConnection): GroundConnection => ({
   ...action,
@@ -65,7 +27,6 @@ interface LocalBank extends Bank {
   id: number;
   serial: number;
 }
-let nextLocalId = 0;
 interface Scope {
   signature: string;
   portals: Portal[] | undefined;
@@ -80,16 +41,243 @@ interface Scope {
     }
   >;
 }
-const worlds = new WeakMap<CollisionWorld, WeakMap<Surface[], Scope>>();
 interface SupportLineage {
   owner: Surface[];
   byId: Map<string, Surface>;
 }
-const owners = new WeakMap<Surface[], SupportLineage>();
-const snapshots = new WeakMap<
-  Surface[],
-  { lineage: SupportLineage; portals: Portal[] | undefined }
->();
+interface CatalogSelection {
+  actions: GroundConnection[];
+  seeds: GroundConnection[];
+}
+
+/** Encapsulated action catalog state so callers (or solver lifecycles) can
+ * deterministically release all retained lineage/proof maps via `clear()`. */
+export function createActionCatalog() {
+  let phase: Phase = 'disabled';
+  const counts = {
+    scopes: 0,
+    scopeResets: 0,
+    missingSupport: 0,
+    frozenScopeMisses: 0,
+    added: 0,
+    duplicates: 0,
+    evicted: 0,
+    frozenCalls: 0,
+    selections: 0,
+    selectedEdges: 0,
+    seedSelections: 0,
+    seededEdges: 0,
+    seededComponents: 0,
+    candidateChains: 0,
+    rankedStates: 0,
+    hits: 0,
+    misses: 0,
+  };
+  let nextLocalId = 0;
+  let worlds = new WeakMap<CollisionWorld, WeakMap<Surface[], Scope>>();
+  let owners = new WeakMap<Surface[], SupportLineage>();
+  let snapshots = new WeakMap<
+    Surface[],
+    { lineage: SupportLineage; portals: Portal[] | undefined }
+  >();
+
+  const retain = (bank: Bank, key: string, proof: Proof) => {
+    if (bank.actions.size >= 2048) {
+      bank.actions.delete(bank.actions.keys().next().value!);
+      counts.evicted++;
+    }
+    bank.actions.set(key, proof);
+  };
+
+  const scopeFor = (
+    world: CollisionWorld,
+    surfaces: Surface[],
+    options: JumpRouteOptions,
+  ): Scope | undefined => {
+    if (
+      phase === 'disabled' ||
+      options.activeBoost !== undefined ||
+      options.boosts?.length ||
+      options.interaction?.airborne ||
+      options.connections?.some(
+        (action) =>
+          action.traversal ||
+          action.requiredBoost ||
+          action.terminal ||
+          !['jump', 'drop'].includes(action.mode),
+      )
+    )
+      return undefined;
+    const snapshot = snapshots.get(surfaces);
+    const prepared = groundPreparation(options.groundPlanner);
+    if (!snapshot || !prepared || prepared.surfaces !== surfaces) {
+      counts.missingSupport++;
+      return undefined;
+    }
+    const { lineage, portals } = snapshot;
+    const signature = JSON.stringify([
+      options.model,
+      options.profile,
+      options.walls,
+      options.maxSlope,
+      options.maxVertical,
+      options.maxDrop,
+      options.maxHorizontalDistance,
+      options.runAirSpeed,
+      options.speed,
+      options.locomotion,
+    ]);
+    let supports = worlds.get(world);
+    if (!supports) {
+      supports = new WeakMap();
+      worlds.set(world, supports);
+    }
+    let scope = supports.get(lineage.owner);
+    if (!scope || scope.signature !== signature || scope.portals !== portals) {
+      if (phase === 'frozen') {
+        counts.frozenScopeMisses++;
+        return undefined;
+      }
+      if (scope) counts.scopeResets++;
+      counts.scopes++;
+      scope = {
+        signature,
+        portals,
+        shared: { actions: new Map() },
+        local: new WeakMap(),
+        graphs: new WeakMap(),
+      };
+      supports.set(lineage.owner, scope);
+    }
+    return scope;
+  };
+
+  return {
+    setPhase(next: Phase) {
+      phase = next;
+    },
+    isFrozen: () => phase === 'frozen',
+    evidenceRevision: () =>
+      phase === 'training'
+        ? undefined
+        : ([phase, counts.added, counts.evicted, counts.scopeResets, counts.scopes] as const),
+    stats: () => ({
+      phase,
+      ...counts,
+      fallbacks: counts.frozenCalls - counts.hits,
+    }),
+    noteResult(complete: boolean) {
+      if (complete) counts.hits++;
+      else counts.misses++;
+    },
+    /** Release lineage/snapshot maps for a specific retired surface array. */
+    releaseSurfaces(surfaces: Surface[]) {
+      owners.delete(surfaces);
+      snapshots.delete(surfaces);
+    },
+    /** Deterministically drop all retained scopes, lineages, and proof banks. */
+    clear() {
+      worlds = new WeakMap();
+      owners = new WeakMap();
+      snapshots = new WeakMap();
+      nextLocalId = 0;
+    },
+    registerSurfaces(current: Surface[], coarseOwner: Surface[] | null, portals?: Portal[]) {
+      if (phase === 'disabled') return;
+      if (!coarseOwner) {
+        snapshots.delete(current);
+        return;
+      }
+      let lineage = owners.get(coarseOwner);
+      if (!lineage) {
+        lineage = { owner: coarseOwner, byId: new Map(coarseOwner.map((face) => [face.id, face])) };
+        owners.set(coarseOwner, lineage);
+      }
+      snapshots.set(current, { lineage, portals });
+    },
+    rememberAction(
+      world: CollisionWorld,
+      surfaces: Surface[],
+      options: JumpRouteOptions,
+      action: GroundConnection,
+    ) {
+      if (
+        phase !== 'training' ||
+        action.state !== 'open' ||
+        !['jump', 'drop'].includes(action.mode) ||
+        action.terminal ||
+        action.requiredBoost !== undefined ||
+        action.traversal !== undefined ||
+        action.fromSurface === undefined ||
+        action.toSurface === undefined
+      )
+        return;
+      const scope = scopeFor(world, surfaces, options);
+      if (!scope) return;
+      const lineage = snapshots.get(surfaces)!.lineage;
+      const prepared = groundPreparation(options.groundPlanner)!;
+      const from = prepared.byId.get(action.fromSurface),
+        to = prepared.byId.get(action.toSurface);
+      if (!from || !to) return;
+      let local = scope.local.get(surfaces);
+      if (!local) {
+        local = { id: nextLocalId++, serial: 0, actions: new Map() };
+        scope.local.set(surfaces, local);
+      }
+      const { id: _id, ...motion } = action;
+      const key = JSON.stringify(motion);
+      let stored = local.actions.get(key);
+      if (stored) counts.duplicates++;
+      else {
+        stored = {
+          action: copy({ ...action, id: `@catalog/${local.id}/${local.serial++}` }),
+          from,
+          to,
+        };
+        retain(local, key, stored);
+        counts.added++;
+      }
+      // Preserve the exact snapshot's insertion order and IDs before publishing its
+      // coarse-only subset. Extra shared edges must not displace local candidates.
+      if (
+        lineage.byId.get(from.id) === from &&
+        lineage.byId.get(to.id) === to &&
+        !scope.shared.actions.has(key)
+      )
+        retain(scope.shared, key, { action: copy(stored.action), from, to });
+      scope.graphs = new WeakMap();
+    },
+    selectActions(
+      world: CollisionWorld,
+      surfaces: Surface[],
+      starts: GroundArrival[],
+      goal: Vec3,
+      options: JumpRouteOptions,
+    ): CatalogSelection {
+      if (phase !== 'frozen') return { actions: [], seeds: [] };
+      counts.frozenCalls++;
+      const scope = scopeFor(world, surfaces, options);
+      if (!scope) return { actions: [], seeds: [] };
+      const local = scope.local.get(surfaces);
+      const selected = local && rankActions(scope, local, starts, goal, options, counts);
+      return selected?.actions.length
+        ? selected
+        : rankActions(scope, scope.shared, starts, goal, options, counts, true);
+    },
+  };
+}
+
+const defaultCatalog = createActionCatalog();
+
+export const setActionCatalogPhase = (next: Phase) => defaultCatalog.setPhase(next);
+export const isActionCatalogFrozen = () => defaultCatalog.isFrozen();
+// Only semantic bank changes invalidate failure proofs; query counters do not.
+export const catalogEvidenceRevision = () => defaultCatalog.evidenceRevision();
+export const actionCatalogStats = () => defaultCatalog.stats();
+export const noteActionCatalogResult = (complete: boolean) => defaultCatalog.noteResult(complete);
+export const releaseCatalogSurfaces = (surfaces: Surface[]) =>
+  defaultCatalog.releaseSurfaces(surfaces);
+export const clearActionCatalog = () => defaultCatalog.clear();
 
 /** Register immutable coarse support ancestry. Goal refinements may append faces,
  * but only unchanged coarse endpoints can carry physical proofs between snapshots.
@@ -101,80 +289,7 @@ export function registerCatalogSurfaces(
   coarseOwner: Surface[] | null,
   portals?: Portal[],
 ) {
-  if (phase === 'disabled') return;
-  if (!coarseOwner) {
-    snapshots.delete(current);
-    return;
-  }
-  let lineage = owners.get(coarseOwner);
-  if (!lineage) {
-    lineage = { owner: coarseOwner, byId: new Map(coarseOwner.map((face) => [face.id, face])) };
-    owners.set(coarseOwner, lineage);
-  }
-  snapshots.set(current, { lineage, portals });
-}
-
-function scopeFor(
-  world: CollisionWorld,
-  surfaces: Surface[],
-  options: JumpRouteOptions,
-): Scope | undefined {
-  if (
-    phase === 'disabled' ||
-    options.activeBoost !== undefined ||
-    options.boosts?.length ||
-    options.interaction?.airborne ||
-    options.connections?.some(
-      (action) =>
-        action.traversal ||
-        action.requiredBoost ||
-        action.terminal ||
-        !['jump', 'drop'].includes(action.mode),
-    )
-  )
-    return undefined;
-  const snapshot = snapshots.get(surfaces);
-  const prepared = groundPreparation(options.groundPlanner);
-  if (!snapshot || !prepared || prepared.surfaces !== surfaces) {
-    counts.missingSupport++;
-    return undefined;
-  }
-  const { lineage, portals } = snapshot;
-  const signature = JSON.stringify([
-    options.model,
-    options.profile,
-    options.walls,
-    options.maxSlope,
-    options.maxVertical,
-    options.maxDrop,
-    options.maxHorizontalDistance,
-    options.runAirSpeed,
-    options.speed,
-    options.locomotion,
-  ]);
-  let supports = worlds.get(world);
-  if (!supports) {
-    supports = new WeakMap();
-    worlds.set(world, supports);
-  }
-  let scope = supports.get(lineage.owner);
-  if (!scope || scope.signature !== signature || scope.portals !== portals) {
-    if (phase === 'frozen') {
-      counts.frozenScopeMisses++;
-      return undefined;
-    }
-    if (scope) counts.scopeResets++;
-    counts.scopes++;
-    scope = {
-      signature,
-      portals,
-      shared: { actions: new Map() },
-      local: new WeakMap(),
-      graphs: new WeakMap(),
-    };
-    supports.set(lineage.owner, scope);
-  }
-  return scope;
+  defaultCatalog.registerSurfaces(current, coarseOwner, portals);
 }
 
 /** Store motion proofs, including ones not used by a selected route. Training
@@ -188,64 +303,7 @@ export function rememberCatalogAction(
   options: JumpRouteOptions,
   action: GroundConnection,
 ) {
-  if (
-    phase !== 'training' ||
-    action.state !== 'open' ||
-    !['jump', 'drop'].includes(action.mode) ||
-    action.terminal ||
-    action.requiredBoost !== undefined ||
-    action.traversal !== undefined ||
-    action.fromSurface === undefined ||
-    action.toSurface === undefined
-  )
-    return;
-  const scope = scopeFor(world, surfaces, options);
-  if (!scope) return;
-  const lineage = snapshots.get(surfaces)!.lineage;
-  const prepared = groundPreparation(options.groundPlanner)!;
-  const from = prepared.byId.get(action.fromSurface),
-    to = prepared.byId.get(action.toSurface);
-  if (!from || !to) return;
-  let local = scope.local.get(surfaces);
-  if (!local) {
-    local = { id: nextLocalId++, serial: 0, actions: new Map() };
-    scope.local.set(surfaces, local);
-  }
-  const { id: _id, ...motion } = action;
-  const key = JSON.stringify(motion);
-  let stored = local.actions.get(key);
-  if (stored) counts.duplicates++;
-  else {
-    stored = {
-      action: copy({ ...action, id: `@catalog/${local.id}/${local.serial++}` }),
-      from,
-      to,
-    };
-    retain(local, key, stored);
-    counts.added++;
-  }
-  // Preserve the exact snapshot's insertion order and IDs before publishing its
-  // coarse-only subset. Extra shared edges must not displace local candidates.
-  if (
-    lineage.byId.get(from.id) === from &&
-    lineage.byId.get(to.id) === to &&
-    !scope.shared.actions.has(key)
-  )
-    retain(scope.shared, key, { action: copy(stored.action), from, to });
-  scope.graphs = new WeakMap();
-}
-
-function retain(bank: Bank, key: string, proof: Proof) {
-  if (bank.actions.size >= 2048) {
-    bank.actions.delete(bank.actions.keys().next().value!);
-    counts.evicted++;
-  }
-  bank.actions.set(key, proof);
-}
-
-interface CatalogSelection {
-  actions: GroundConnection[];
-  seeds: GroundConnection[];
+  defaultCatalog.rememberAction(world, surfaces, options, action);
 }
 
 /** Select several positive chains by estimated travel time, retaining at most
@@ -260,15 +318,7 @@ export function selectCatalogActions(
   goal: Vec3,
   options: JumpRouteOptions,
 ): CatalogSelection {
-  if (phase !== 'frozen') return { actions: [], seeds: [] };
-  counts.frozenCalls++;
-  const scope = scopeFor(world, surfaces, options);
-  if (!scope) return { actions: [], seeds: [] };
-  const local = scope.local.get(surfaces);
-  const selected = local && rankActions(scope, local, starts, goal, options);
-  return selected?.actions.length
-    ? selected
-    : rankActions(scope, scope.shared, starts, goal, options, true);
+  return defaultCatalog.selectActions(world, surfaces, starts, goal, options);
 }
 
 function rankActions(
@@ -277,6 +327,15 @@ function rankActions(
   starts: GroundArrival[],
   goal: Vec3,
   options: JumpRouteOptions,
+  counts: {
+    selections: number;
+    selectedEdges: number;
+    seedSelections: number;
+    seededEdges: number;
+    seededComponents: number;
+    candidateChains: number;
+    rankedStates: number;
+  },
   collectSeeds = false,
 ): CatalogSelection {
   if (!bank.actions.size) return { actions: [], seeds: [] };

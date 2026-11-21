@@ -7,6 +7,7 @@ import type {
 } from '#@/src/solver/contract.ts';
 import type { GangliaV1Config as SolverConfig } from '#@/src/solver/ganglia-v1.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
+import { releaseCatalogSurfaces } from '#@/src/v1/route/action-catalog.ts';
 import { validateWaypoints } from '#@/src/v1/route/jump-planner.ts';
 import { createPhysicalCache } from '#@/src/v1/solver/physical/preparation.ts';
 import {
@@ -139,6 +140,7 @@ export async function preparePhysicalSolver(
       if (ownedCache && scene) {
         ownedCache.clear();
         releaseSupportCaches(scene.ground.surfaces);
+        releaseCatalogSurfaces(scene.ground.surfaces);
       }
       scene = null;
       cache = null;
