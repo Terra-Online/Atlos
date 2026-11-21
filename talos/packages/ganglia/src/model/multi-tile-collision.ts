@@ -339,17 +339,24 @@ export function createMultiTileCollisionWorld(
         if (!hit) continue;
         const height = hit.position[1];
         const offset = Math.abs(height - py);
+        const triId = hit.triangle + tileOffsets[i];
         if (
-          (radius > 0 && (!best || height > best.position[1])) ||
+          (radius > 0 &&
+            (!best ||
+              height > best.position[1] ||
+              (height === best.position[1] && triId < best.triangle))) ||
           (radius === 0 &&
-            (offset < bestOffset || (offset === bestOffset && height > best!.position[1])))
+            (offset < bestOffset ||
+              (offset === bestOffset &&
+                (height > best!.position[1] ||
+                  (height === best!.position[1] && triId < best!.triangle)))))
         ) {
           bestOffset = offset;
           best =
             tileOffsets[i] !== 0
               ? {
                   position: hit.position,
-                  triangle: hit.triangle + tileOffsets[i],
+                  triangle: triId,
                   normal: hit.normal,
                 }
               : hit;

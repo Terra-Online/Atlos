@@ -806,6 +806,11 @@ export function createTypeScriptCollisionWorld(
   const order = new Uint32Array(count);
   const srcBounds = new Float64Array(count * 6);
   const srcVerts = new Float64Array(count * 9);
+  // Precomputed doubled-center columns avoid strided srcBounds reads and
+  // arithmetic inside the partition hot loop.
+  const center0 = new Float64Array(count);
+  const center1 = new Float64Array(count);
+  const center2 = new Float64Array(count);
   for (let id = 0; id < count; id++) {
     order[id] = id;
     const srcOff = (originalIds ? originalIds[id] : id) * 3;
@@ -832,12 +837,21 @@ export function createTypeScriptCollisionWorld(
     srcVerts[vOff + 7] = cy;
     srcVerts[vOff + 8] = cz;
     const bOff = id * 6;
-    srcBounds[bOff] = ax < bx ? (ax < cx ? ax : cx) : bx < cx ? bx : cx;
-    srcBounds[bOff + 1] = ay < by ? (ay < cy ? ay : cy) : by < cy ? by : cy;
-    srcBounds[bOff + 2] = az < bz ? (az < cz ? az : cz) : bz < cz ? bz : cz;
-    srcBounds[bOff + 3] = ax > bx ? (ax > cx ? ax : cx) : bx > cx ? bx : cx;
-    srcBounds[bOff + 4] = ay > by ? (ay > cy ? ay : cy) : by > cy ? by : cy;
-    srcBounds[bOff + 5] = az > bz ? (az > cz ? az : cz) : bz > cz ? bz : cz;
+    const x0 = ax < bx ? (ax < cx ? ax : cx) : bx < cx ? bx : cx;
+    const y0 = ay < by ? (ay < cy ? ay : cy) : by < cy ? by : cy;
+    const z0 = az < bz ? (az < cz ? az : cz) : bz < cz ? bz : cz;
+    const x1 = ax > bx ? (ax > cx ? ax : cx) : bx > cx ? bx : cx;
+    const y1 = ay > by ? (ay > cy ? ay : cy) : by > cy ? by : cy;
+    const z1 = az > bz ? (az > cz ? az : cz) : bz > cz ? bz : cz;
+    srcBounds[bOff] = x0;
+    srcBounds[bOff + 1] = y0;
+    srcBounds[bOff + 2] = z0;
+    srcBounds[bOff + 3] = x1;
+    srcBounds[bOff + 4] = y1;
+    srcBounds[bOff + 5] = z1;
+    center0[id] = x0 + x1;
+    center1[id] = y0 + y1;
+    center2[id] = z0 + z1;
   }
 
   // Flat data-oriented BVH layout:
@@ -851,15 +865,15 @@ export function createTypeScriptCollisionWorld(
   let nodeRight = new Int32Array(maxNodes);
   let nodeCount = 0;
 
-  const sortRange = (start: number, end: number, axis: number) => {
+  const sortRange = (start: number, end: number, centers: Float64Array) => {
     // Insertion sort for small leaves (<= 16), avoiding TypedArray.sort closure overhead.
     for (let i = start + 1; i < end; i++) {
       const key = order[i];
-      const keyCenter = srcBounds[key * 6 + axis] + srcBounds[key * 6 + axis + 3];
+      const keyCenter = centers[key];
       let j = i - 1;
       while (j >= start) {
         const cur = order[j];
-        const curCenter = srcBounds[cur * 6 + axis] + srcBounds[cur * 6 + axis + 3];
+        const curCenter = centers[cur];
         if (curCenter < keyCenter || (curCenter === keyCenter && cur < key)) break;
         order[j + 1] = cur;
         j--;
@@ -868,74 +882,48 @@ export function createTypeScriptCollisionWorld(
     }
   };
 
-  const selectAxis = (start: number, end: number, middle: number, axis: number) => {
-    // Bound partition work on adversarial layouts. The fallback sorts only the
-    // remaining selection interval, whose outside members are already decided.
-    let budget = 2 * (end - start);
+  // 3-way Dutch National Flag median selection handles coplanar meshes with
+  // thousands of equal centers in O(N) without degrading into TypedArray.sort.
+  const selectAxis = (start: number, end: number, middle: number, centers: Float64Array) => {
+    let budget = 8 * (end - start);
     while (end - start > 16) {
       if ((budget -= end - start) < 0) {
-        order.subarray(start, end).sort((a, b) => {
-          const diff =
-            srcBounds[a * 6 + axis] +
-            srcBounds[a * 6 + axis + 3] -
-            (srcBounds[b * 6 + axis] + srcBounds[b * 6 + axis + 3]);
-          return diff || a - b;
-        });
+        order.subarray(start, end).sort((a, b) => centers[a] - centers[b] || a - b);
         return;
       }
-      let a = order[start];
-      let b = order[(start + end) >>> 1];
-      let c = order[end - 1];
-      let ac = srcBounds[a * 6 + axis] + srcBounds[a * 6 + axis + 3];
-      let bc = srcBounds[b * 6 + axis] + srcBounds[b * 6 + axis + 3];
-      let cc = srcBounds[c * 6 + axis] + srcBounds[c * 6 + axis + 3];
-      if (ac > bc || (ac === bc && a > b)) {
-        const tv = a;
-        a = b;
-        b = tv;
-        const tc = ac;
-        ac = bc;
-        bc = tc;
-      }
-      if (bc > cc || (bc === cc && b > c)) {
-        const tv = b;
-        b = c;
-        c = tv;
-        const tc = bc;
-        bc = cc;
-        cc = tc;
-      }
-      const pivot = ac > bc || (ac === bc && a > b) ? a : b;
-      const pivotCenter = srcBounds[pivot * 6 + axis] + srcBounds[pivot * 6 + axis + 3];
+      const first = centers[order[start]];
+      const mid = centers[order[(start + end) >>> 1]];
+      const last = centers[order[end - 1]];
+      const lo = first < last ? first : last;
+      const hi = first > last ? first : last;
+      const pivot = lo > (hi < mid ? hi : mid) ? lo : hi < mid ? hi : mid;
       let lower = start;
-      let upper = end - 1;
-      while (lower <= upper) {
-        while (true) {
-          const v = order[lower];
-          const vc = srcBounds[v * 6 + axis] + srcBounds[v * 6 + axis + 3];
-          if (!(vc < pivotCenter || (vc === pivotCenter && v < pivot))) break;
+      let current = start;
+      let upper = end;
+      while (current < upper) {
+        const id = order[current];
+        const value = centers[id];
+        if (value < pivot) {
+          order[current] = order[lower];
+          order[lower] = id;
           lower++;
-        }
-        while (true) {
-          const v = order[upper];
-          const vc = srcBounds[v * 6 + axis] + srcBounds[v * 6 + axis + 3];
-          if (!(vc > pivotCenter || (vc === pivotCenter && v > pivot))) break;
+          current++;
+        } else if (value > pivot) {
           upper--;
-        }
-        if (lower <= upper) {
-          const tmp = order[lower];
-          order[lower++] = order[upper];
-          order[upper--] = tmp;
+          order[current] = order[upper];
+          order[upper] = id;
+        } else {
+          current++;
         }
       }
-      if (middle <= upper) end = upper + 1;
-      else if (middle >= lower) start = lower;
+      if (middle < lower) end = lower;
+      else if (middle >= upper) start = upper;
       else return;
     }
-    sortRange(start, end, axis);
+    sortRange(start, end, centers);
   };
 
-  const buildNode = (start: number, end: number, parentAxis: number): number => {
+  const buildNode = (start: number, end: number, parentCenters: Float64Array | null): number => {
     const node = nodeCount++;
     let minX = Infinity,
       minY = Infinity,
@@ -969,7 +957,7 @@ export function createTypeScriptCollisionWorld(
     if (end - start <= 8) {
       // Internal nodes need only exact median membership. Leaves restore their
       // parent's sorted order so tied supports and first collision IDs stay exact.
-      if (parentAxis >= 0) sortRange(start, end, parentAxis);
+      if (parentCenters) sortRange(start, end, parentCenters);
       nodeLeft[node] = ~start;
       nodeRight[node] = end;
       return node;
@@ -977,17 +965,15 @@ export function createTypeScriptCollisionWorld(
     const sx = maxX - minX;
     const sy = maxY - minY;
     const sz = maxZ - minZ;
-    let axis = 0;
-    if (sy > sx) axis = 1;
-    if (sz > (axis === 0 ? sx : sy)) axis = 2;
+    const centers = sx >= sy && sx >= sz ? center0 : sy >= sz ? center1 : center2;
     const middle = (start + end) >>> 1;
-    selectAxis(start, end, middle, axis);
-    nodeLeft[node] = buildNode(start, middle, axis);
-    nodeRight[node] = buildNode(middle, end, axis);
+    selectAxis(start, end, middle, centers);
+    nodeLeft[node] = buildNode(start, middle, centers);
+    nodeRight[node] = buildNode(middle, end, centers);
     return node;
   };
 
-  if (count > 0) buildNode(0, count, -1);
+  if (count > 0) buildNode(0, count, null);
 
   // Trim flat node arrays to exact nodeCount when over-allocated.
   if (nodeCount < maxNodes) {
@@ -1171,6 +1157,7 @@ export function createTypeScriptCollisionWorld(
       const minHeight = py - maxDown;
       const maxHeight = py + maxUp;
       let bestSlot = -1;
+      let bestTriId = 0xffffffff;
       let bestHeight = -Infinity;
       let bestOffset = Infinity;
       let bestNx = 0,
@@ -1284,12 +1271,19 @@ export function createTypeScriptCollisionWorld(
           if (!Number.isFinite(height)) throw new Error('Non-finite ground support height');
           if (height < minHeight || height > maxHeight) continue;
           const offset = Math.abs(height - py);
+          const triId = triIds[slot];
           if (
-            (radius > 0 && (bestSlot < 0 || height > bestHeight)) ||
+            (radius > 0 &&
+              (bestSlot < 0 ||
+                height > bestHeight ||
+                (height === bestHeight && triId < bestTriId))) ||
             (radius === 0 &&
-              (offset < bestOffset || (offset === bestOffset && height > bestHeight)))
+              (offset < bestOffset ||
+                (offset === bestOffset &&
+                  (height > bestHeight || (height === bestHeight && triId < bestTriId)))))
           ) {
             bestSlot = slot;
+            bestTriId = triId;
             bestHeight = height;
             bestOffset = offset;
             bestNx = unx;
