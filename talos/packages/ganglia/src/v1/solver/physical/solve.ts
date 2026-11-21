@@ -13,7 +13,7 @@ import { jumpDuration } from '#@/src/v1/motion/jumps.ts';
 import { actionCatalogStats } from '#@/src/v1/route/action-catalog.ts';
 import { registerCatalogSurfaces } from '#@/src/v1/route/action-catalog.ts';
 import { pruneGroundDetours } from '#@/src/v1/route/ground-detours.ts';
-import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
+import { createGroundPlanner, createOverlayGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { planJumpRoute, type InitialGroundProof } from '#@/src/v1/route/jump-planner.ts';
 import { narrowGoalSupports, refineGoalGround } from '#@/src/v1/solver/ground-refinement.ts';
 import {
@@ -607,6 +607,7 @@ export const solvePhysicalRoute = async (
           },
           walls: options.walls,
           surfaces,
+          baseProject,
           speed: options.speed,
           checkpoint: context.checkpoint,
         });
@@ -614,6 +615,7 @@ export const solvePhysicalRoute = async (
         const portals = added.portals.length
           ? [...(options.portals ?? []), ...added.portals]
           : options.portals;
+        const basePlanner = groundPlanner;
         if (added.surfaces.length) {
           // The seed proof is reusable only with this exact planner and mesh.
           // Do not retain its replaced heavy graph through the full search.
@@ -633,6 +635,11 @@ export const solvePhysicalRoute = async (
             })
           : devices;
         const knownIds = new Set(devices.connections.map((connection) => connection.id));
+        const movingOptions = {
+          ...options,
+          portals,
+          connections: [],
+        };
         return {
           ...added,
           portals,
@@ -642,12 +649,18 @@ export const solvePhysicalRoute = async (
           deviceOutcomes: augmented.outcomes,
           surfaces: combined,
           planner: added.surfaces.length
-            ? plannerFor(combined, {
-                ...options,
-                portals,
-                connections: [],
-              })
-            : groundPlanner,
+            ? basePlanner
+              ? createOverlayGroundPlanner(
+                  basePlanner,
+                  combined,
+                  added.surfaces,
+                  [],
+                  movingOptions,
+                  undefined,
+                  added.portals,
+                )
+              : plannerFor(combined, movingOptions)
+            : basePlanner,
         };
       });
       if (

@@ -3,7 +3,7 @@ import type { CollisionWorld } from '#@/src/collision.ts';
 import type { CollisionGeometry, Portal, Surface, Vec3, Wall } from '#@/src/geometry.ts';
 import { createCollisionWorld } from '#@/src/model/collision.ts';
 /* oxlint-disable no-await-in-loop -- each bounded native build is completed before allocating the next */
-import { createGoalProjector } from '#@/src/model/goals.ts';
+import { createGoalProjector, type GoalProjector } from '#@/src/model/goals.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
 import type { GroundConnection } from '#@/src/route.ts';
 import type { SweptSupport } from '#@/src/solver/physical.ts';
@@ -156,12 +156,14 @@ export const movingGround = async (
     build,
     walls,
     surfaces: baseSurfaces,
+    baseProject: preparedBaseProject,
     speed,
     checkpoint,
   }: {
     build: BuildOptions;
     walls: Wall[];
     surfaces: Surface[];
+    baseProject?: GoalProjector;
     speed: number;
     checkpoint?: () => Promise<void>;
   },
@@ -401,7 +403,7 @@ export const movingGround = async (
   }
   const project = createGoalProjector(surfaces),
     blocked = createWallChecker(walls, build.profile);
-  const baseProject = createGoalProjector(baseSurfaces);
+  const baseProject = preparedBaseProject ?? createGoalProjector(baseSurfaces);
   for (const surface of surfaces) {
     const center = centerOf(surface.vertices);
     const destination = baseProject(center, { maxVertical: tolerance })[0];
@@ -519,6 +521,8 @@ export const movingGround = async (
     },
     trianglesInBounds: world.trianglesInBounds?.bind(world),
     sweepCapsule: world.sweepCapsule.bind(world),
+    hasTrianglesInAabb: world.hasTrianglesInAabb?.bind(world),
+    probeSphere: world.probeSphere?.bind(world),
     groundAt(point, options) {
       const base = world.groundAt(point, options),
         hit = supportWorld.groundAt(point, options);

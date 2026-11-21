@@ -89,7 +89,7 @@ export const movementGeometry = (
           });
           const extra = exposedBoundaries(
             prepared.overlay.extraSurfaces,
-            [],
+            prepared.overlay.extraImportedPortals,
             prepared.overlay.extraPortals,
           );
           boundaries = extra.length ? [...baseGeo.boundaries, ...extra] : baseGeo.boundaries;

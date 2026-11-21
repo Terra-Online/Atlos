@@ -1,4 +1,4 @@
-import type { Vec3, Surface, Wall } from '#@/src/geometry.ts';
+import type { Portal, Vec3, Surface, Wall } from '#@/src/geometry.ts';
 import { type GoalProjector, createGoalProjector, findGoalHit } from '#@/src/model/goals.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
 import type { InteractionGoal, Segment } from '#@/src/movement.ts';
@@ -51,6 +51,7 @@ interface OverlayMeta {
   basePrep: Preparation;
   extraSurfaces: Surface[];
   extraPortals: SharedPortal[];
+  extraImportedPortals: Portal[];
 }
 
 interface Preparation {
@@ -779,6 +780,7 @@ export function createOverlayGroundPlanner(
   extraWalls: Wall[],
   options: GroundOptions,
   preparedExtraBlocked?: ReturnType<typeof createWallChecker>,
+  extraImportedPortals: Portal[] = [],
 ): GroundPlanner {
   const basePrep = groundPreparation(basePlanner);
   const searchSpeed = options.locomotion?.sprintSpeed ?? options.speed;
@@ -788,11 +790,17 @@ export function createOverlayGroundPlanner(
     options.locomotion?.sprintSpeed ?? options.speed,
     options.locomotion?.dash?.speed ?? 0,
   );
+  const baseImportedLen = basePrep?.importedPortals?.length ?? 0;
+  const expectedImportedLen = baseImportedLen + extraImportedPortals.length;
+  const portalsCompatible =
+    extraImportedPortals.length === 0
+      ? basePrep?.importedPortals === options.portals
+      : (options.portals?.length ?? 0) === expectedImportedLen;
   if (
     !basePrep ||
     basePrep.surfaces.length + extraSurfaces.length !== layoutSurfaces.length ||
     basePrep.searchSpeed !== searchSpeed ||
-    basePrep.importedPortals !== options.portals ||
+    !portalsCompatible ||
     basePrep.profile.radius !== options.profile.radius ||
     basePrep.profile.height !== options.profile.height
   ) {
@@ -806,60 +814,75 @@ export function createOverlayGroundPlanner(
     }
     extraById.set(s.id, s);
   }
+  for (let i = 0; i < extraImportedPortals.length; i++) {
+    const p = extraImportedPortals[i];
+    if (!extraById.has(p.from) || !extraById.has(p.to)) {
+      return createGroundPlanner(layoutSurfaces, options);
+    }
+  }
 
   // Validate extraSurfaces and build roof-to-roof portals in O(|extraSurfaces|).
   const roofPortals = surfacePortals(extraSurfaces);
 
-  // Verify no roof edge can join or block any static portal within 1e-4.
+  // Surfaces with explicit empty portal masks (e.g. movingGround) cannot join
+  // or split any static portal edge; skip the nearbyStatic scan for them.
+  const hasOpenExtraEdges = extraSurfaces.some(
+    (s) => s.portals === undefined || s.portals.length > 0,
+  );
+  // Verify no open extra edge can join or block any static portal within 1e-4.
   const nearbyStatic = new Set<Surface>();
-  for (let i = 0; i < extraSurfaces.length; i++) {
-    const verts = extraSurfaces[i].vertices;
-    let minX = Infinity,
-      minY = Infinity,
-      minZ = Infinity,
-      maxX = -Infinity,
-      maxY = -Infinity,
-      maxZ = -Infinity;
-    for (let j = 0; j < verts.length; j++) {
-      const p = verts[j];
-      if (p[0] < minX) minX = p[0];
-      if (p[1] < minY) minY = p[1];
-      if (p[2] < minZ) minZ = p[2];
-      if (p[0] > maxX) maxX = p[0];
-      if (p[1] > maxY) maxY = p[1];
-      if (p[2] > maxZ) maxZ = p[2];
-    }
-    const center: Vec3 = [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2];
-    const halfY = (maxY - minY) / 2 + 1e-3;
-    const halfXZ = Math.max(maxX - minX, maxZ - minZ) / 2 + 1e-3;
-    const candidates = verticalProjectionCandidates(basePrep.surfaces, center, halfY, halfXZ);
-    for (let j = 0; j < candidates.length; j++) {
-      const face = candidates[j];
-      const fv = face.vertices;
-      let fMinX = Infinity,
-        fMinY = Infinity,
-        fMinZ = Infinity,
-        fMaxX = -Infinity,
-        fMaxY = -Infinity,
-        fMaxZ = -Infinity;
-      for (let k = 0; k < fv.length; k++) {
-        const p = fv[k];
-        if (p[0] < fMinX) fMinX = p[0];
-        if (p[1] < fMinY) fMinY = p[1];
-        if (p[2] < fMinZ) fMinZ = p[2];
-        if (p[0] > fMaxX) fMaxX = p[0];
-        if (p[1] > fMaxY) fMaxY = p[1];
-        if (p[2] > fMaxZ) fMaxZ = p[2];
+  if (hasOpenExtraEdges) {
+    for (let i = 0; i < extraSurfaces.length; i++) {
+      const s = extraSurfaces[i];
+      if (s.portals !== undefined && s.portals.length === 0) continue;
+      const verts = s.vertices;
+      let minX = Infinity,
+        minY = Infinity,
+        minZ = Infinity,
+        maxX = -Infinity,
+        maxY = -Infinity,
+        maxZ = -Infinity;
+      for (let j = 0; j < verts.length; j++) {
+        const p = verts[j];
+        if (p[0] < minX) minX = p[0];
+        if (p[1] < minY) minY = p[1];
+        if (p[2] < minZ) minZ = p[2];
+        if (p[0] > maxX) maxX = p[0];
+        if (p[1] > maxY) maxY = p[1];
+        if (p[2] > maxZ) maxZ = p[2];
       }
-      if (
-        fMaxX >= minX - 2e-4 &&
-        fMinX <= maxX + 2e-4 &&
-        fMaxY >= minY - 2e-4 &&
-        fMinY <= maxY + 2e-4 &&
-        fMaxZ >= minZ - 2e-4 &&
-        fMinZ <= maxZ + 2e-4
-      ) {
-        nearbyStatic.add(face);
+      const center: Vec3 = [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2];
+      const halfY = (maxY - minY) / 2 + 1e-3;
+      const halfXZ = Math.max(maxX - minX, maxZ - minZ) / 2 + 1e-3;
+      const candidates = verticalProjectionCandidates(basePrep.surfaces, center, halfY, halfXZ);
+      for (let j = 0; j < candidates.length; j++) {
+        const face = candidates[j];
+        const fv = face.vertices;
+        let fMinX = Infinity,
+          fMinY = Infinity,
+          fMinZ = Infinity,
+          fMaxX = -Infinity,
+          fMaxY = -Infinity,
+          fMaxZ = -Infinity;
+        for (let k = 0; k < fv.length; k++) {
+          const p = fv[k];
+          if (p[0] < fMinX) fMinX = p[0];
+          if (p[1] < fMinY) fMinY = p[1];
+          if (p[2] < fMinZ) fMinZ = p[2];
+          if (p[0] > fMaxX) fMaxX = p[0];
+          if (p[1] > fMaxY) fMaxY = p[1];
+          if (p[2] > fMaxZ) fMaxZ = p[2];
+        }
+        if (
+          fMaxX >= minX - 2e-4 &&
+          fMinX <= maxX + 2e-4 &&
+          fMaxY >= minY - 2e-4 &&
+          fMinY <= maxY + 2e-4 &&
+          fMaxZ >= minZ - 2e-4 &&
+          fMinZ <= maxZ + 2e-4
+        ) {
+          nearbyStatic.add(face);
+        }
       }
     }
   }
@@ -873,11 +896,12 @@ export function createOverlayGroundPlanner(
     }
   }
 
+  const extraDirected = directedPortals(extraSurfaces, extraImportedPortals, extraById);
   const extraGraph = surfaceGraph(
     extraSurfaces,
-    { speed: searchSpeed },
+    { speed: searchSpeed, portals: extraImportedPortals },
     roofPortals,
-    [],
+    extraDirected,
     extraById,
   );
   const extraCenters = new Map<string, Vec3>();
@@ -886,7 +910,9 @@ export function createOverlayGroundPlanner(
   }
   const byId = overlayLookup(basePrep.byId, extraById);
   const centers = overlayLookup(basePrep.centers, extraCenters);
-  const extraBlocked = preparedExtraBlocked ?? createWallChecker(extraWalls, options.profile);
+  const extraBlocked =
+    preparedExtraBlocked ??
+    (extraWalls.length ? createWallChecker(extraWalls, options.profile) : null);
 
   // Collect every static surface whose outgoing edges could possibly touch extraWalls.
   const affectedFromIds = new Set<string>();
@@ -985,20 +1011,21 @@ export function createOverlayGroundPlanner(
   };
 
   // Overlay straightener: static traces delegate to basePrep.straighten and
-  // verify extraBlocked on every segment; roof traces use a tiny O(|roofs|)
-  // straightener; cross static<->roof traces are impossible (no bridge portals).
+  // verify extraBlocked on every segment; extra surface traces use a tiny
+  // O(|extra|) straightener; cross static<->extra traces are impossible.
   let roofStraightener: GroundStraightener | undefined;
   const getRoofStraightener = () =>
     (roofStraightener ??= createGroundStraightener(
       extraSurfaces,
-      { walls: options.walls, profile },
+      { walls: options.walls, profile, portals: extraImportedPortals },
       roofPortals,
       combinedBlocked,
-      [],
+      extraDirected,
     ));
   const onRoof = (point: Vec3) =>
     extraSurfaces.length > 0 && projectPoint(extraSurfaces, point, { maxVertical: 1e-6 }) !== null;
   const segmentClearExtra = (pts: Vec3[]) => {
+    if (!extraBlocked) return true;
     for (let i = 1; i < pts.length; i++) {
       if (extraBlocked(pts[i - 1], pts[i])) return false;
     }
@@ -1151,6 +1178,9 @@ export function createOverlayGroundPlanner(
   };
 
   const portals = roofPortals.length ? [...basePrep.portals, ...roofPortals] : basePrep.portals;
+  const directed = extraDirected.length
+    ? [...basePrep.directed, ...extraDirected]
+    : basePrep.directed;
   const constraintsSignature = JSON.stringify([options.walls, profile]);
 
   return assembleGroundPlanner({
@@ -1159,7 +1189,7 @@ export function createOverlayGroundPlanner(
     searchSpeed,
     peakSpeed,
     portals,
-    directed: basePrep.directed,
+    directed,
     byId,
     centers,
     projectGoal,
@@ -1174,6 +1204,7 @@ export function createOverlayGroundPlanner(
       basePrep,
       extraSurfaces,
       extraPortals: roofPortals,
+      extraImportedPortals,
     },
   });
 }
