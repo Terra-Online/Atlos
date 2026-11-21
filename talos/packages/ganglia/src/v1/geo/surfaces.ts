@@ -142,14 +142,6 @@ export function directedPortals(surfaces: Surface[], portals: Portal[] = []): Di
     };
   });
 }
-const portalIndex = (entries: Group[]) => {
-  const query = createBoundsIndex(entries);
-  return (bounds: Bounds) =>
-    query({
-      min: bounds.min.map((value) => value - portalTolerance),
-      max: bounds.max.map((value) => value + portalTolerance),
-    });
-};
 const sharedInterval = (a: Group, b: Group): Interval | null => {
   const dx = a.b[0] - a.a[0],
     dy = a.b[1] - a.a[1],
@@ -240,21 +232,29 @@ export function surfacePortals(surfaces: Surface[]): SharedPortal[] {
   // Full shared edges already have exact partners. Only unmatched boundaries need
   // spatial queries, including checks against full edges for ambiguous overlap.
   if (singles.length) {
-    const query = portalIndex(entries);
+    const query = createBoundsIndex(entries);
     for (const a of singles) {
-      const overlaps = [];
-      for (const b of query(a)) {
-        if (a === b || a.owners[0].surface === b.owners[0].surface) continue;
-        const interval = sharedInterval(a, b);
-        if (!interval) continue;
-        overlaps.push({ ...interval, other: b });
-        if (b.owners.length > 1) {
-          a.blocked = true;
-          b.blocked = true;
-        } else if (a.id < b.id && interval.opposite) {
-          candidates.push({ a, b, ...interval });
-        }
-      }
+      const overlaps: (Interval & { other: Group })[] = [];
+      query.forEachBox(
+        a.min[0] - portalTolerance,
+        a.min[1] - portalTolerance,
+        a.min[2] - portalTolerance,
+        a.max[0] + portalTolerance,
+        a.max[1] + portalTolerance,
+        a.max[2] + portalTolerance,
+        (b) => {
+          if (a === b || a.owners[0].surface === b.owners[0].surface) return;
+          const interval = sharedInterval(a, b);
+          if (!interval) return;
+          overlaps.push({ ...interval, other: b });
+          if (b.owners.length > 1) {
+            a.blocked = true;
+            b.blocked = true;
+          } else if (a.id < b.id && interval.opposite) {
+            candidates.push({ a, b, ...interval });
+          }
+        },
+      );
       intervals.set(a.id, overlaps);
     }
     for (const a of singles) {
