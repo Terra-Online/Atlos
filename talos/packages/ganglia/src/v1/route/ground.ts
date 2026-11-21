@@ -984,6 +984,37 @@ export function createOverlayGroundPlanner(
   const roofGoalProjector = createGoalProjector(extraSurfaces);
   const projectGoal = combineGoalProjectors(basePrep.projectGoal, roofGoalProjector);
 
+  // Precompute global 3D AABB of extraSurfaces so queries outside the overlay
+  // footprint skip extraSurfaces in O(1), and use verticalProjectionCandidates
+  // (BoundsIndex) inside it instead of linear scans when movingGround adds
+  // hundreds or thousands of extra surfaces.
+  let extraMinX = Infinity,
+    extraMinY = Infinity,
+    extraMinZ = Infinity,
+    extraMaxX = -Infinity,
+    extraMaxY = -Infinity,
+    extraMaxZ = -Infinity;
+  for (let i = 0; i < extraSurfaces.length; i++) {
+    const verts = extraSurfaces[i].vertices;
+    for (let j = 0; j < verts.length; j++) {
+      const p = verts[j];
+      if (p[0] < extraMinX) extraMinX = p[0];
+      if (p[1] < extraMinY) extraMinY = p[1];
+      if (p[2] < extraMinZ) extraMinZ = p[2];
+      if (p[0] > extraMaxX) extraMaxX = p[0];
+      if (p[1] > extraMaxY) extraMaxY = p[1];
+      if (p[2] > extraMaxZ) extraMaxZ = p[2];
+    }
+  }
+  const insideExtraBounds = (point: Vec3, verticalPad: number, horizPad = 1e-4) =>
+    extraSurfaces.length > 0 &&
+    point[0] >= extraMinX - horizPad &&
+    point[0] <= extraMaxX + horizPad &&
+    point[1] >= extraMinY - verticalPad &&
+    point[1] <= extraMaxY + verticalPad &&
+    point[2] >= extraMinZ - horizPad &&
+    point[2] <= extraMaxZ + horizPad;
+
   // Overlay support projector: preserves [...baseSurfaces, ...extraSurfaces] input order.
   const supportMemo = new Map<string, ReturnType<typeof projectPoint>>();
   const projectSupport = (
@@ -999,8 +1030,11 @@ export function createOverlayGroundPlanner(
       result = face ? projectPoint([face], position, { maxVertical }) : null;
     } else {
       const baseCandidates = verticalProjectionCandidates(basePrep.surfaces, position, maxVertical);
+      const extraCandidates = insideExtraBounds(position, maxVertical + 1e-4)
+        ? verticalProjectionCandidates(extraSurfaces, position, maxVertical)
+        : [];
       result = projectPoint(
-        extraSurfaces.length ? [...baseCandidates, ...extraSurfaces] : baseCandidates,
+        extraCandidates.length ? [...baseCandidates, ...extraCandidates] : baseCandidates,
         position,
         { maxVertical },
       );
@@ -1022,8 +1056,18 @@ export function createOverlayGroundPlanner(
       combinedBlocked,
       extraDirected,
     ));
-  const onRoof = (point: Vec3) =>
-    extraSurfaces.length > 0 && projectPoint(extraSurfaces, point, { maxVertical: 1e-6 }) !== null;
+  const onRoofCache = new WeakMap<Vec3, { x: number; y: number; z: number; hit: boolean }>();
+  const onRoof = (point: Vec3): boolean => {
+    if (!insideExtraBounds(point, 1e-4, 1e-4)) return false;
+    const cached = onRoofCache.get(point);
+    if (cached && cached.x === point[0] && cached.y === point[1] && cached.z === point[2])
+      return cached.hit;
+    const candidates = verticalProjectionCandidates(extraSurfaces, point, 1e-6);
+    const hit =
+      candidates.length > 0 && projectPoint(candidates, point, { maxVertical: 1e-6 }) !== null;
+    onRoofCache.set(point, { x: point[0], y: point[1], z: point[2], hit });
+    return hit;
+  };
   const segmentClearExtra = (pts: Vec3[]) => {
     if (!extraBlocked) return true;
     for (let i = 1; i < pts.length; i++) {
