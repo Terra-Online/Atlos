@@ -10,6 +10,8 @@ Make the smallest reasonable change that fully addresses the task. Refactoring m
 
 Prefer direct, clear, maintainable implementations. Introduce abstractions to address actual duplication or a concrete responsibility boundary, not hypothetical future needs. Avoid unnecessary layers, configuration options, wrappers, and compatibility branches. Remove dead code and obsolete branches created by the current change without turning the task into a broader cleanup.
 
+Reserve JSON schema version numbers for cross-system transfer protocols. Validate local development files by their actual structure to avoid version maintenance overhead.
+
 ## Reuse Existing Utilities
 
 Before implementing asset references, resource URL construction, path handling, device detection, browser capability checks, or similar logic, inspect the project's `/utils` directory for existing utilities. If the repository uses `src/utils`, a shared package, or another location, inspect that location and its existing call sites instead. Do not duplicate resource URL construction, hardcode resource prefixes in components or hooks, or introduce another device detection implementation.

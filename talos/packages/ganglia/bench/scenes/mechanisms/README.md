@@ -1,17 +1,17 @@
 # Mechanism acceptance inputs
 
 Use this contract when preparing mechanism inputs or changing the runner.
-`suite.json` owns queries, setup, source bindings and exercise assertions. Keep raw
+`suite.json` declares scenarios with shared world setup, ordered training case IDs, queries, source bindings and exercise assertions. Training selection is independent of measured ID filters; no runtime warmup precedes the first measured query. Keep raw
 game assets, profiles and private config local.
 
 ## Choose the runner
 
 Use `pnpm benchmark:mechanisms --adapter ganglia-v1-ts` for service measurements.
-This service runner reads `input-index.json`, trains/freezes/warms scenario workers,
+The runner looks up scene input directories in the Dataset, loads scenarios, trains/freezes their kernels,
 then scores routes and independently replays complete results. The beta replay
 result is reported separately and does not gate search completion or acceptance. The CLI defaults
-to Rust, so select TS explicitly. `--audit` checks the suite/index binding without
-solving.
+to Rust, so select TS explicitly. Before starting workers, the runner checks the
+required input paths for all selected scenarios and reports missing paths together.
 
 `bench/mechanism-run.ts --mode physical-diagnostic` is an optional older per-case
 TS diagnostic without service training or independent whole-route replay. Its
@@ -19,8 +19,20 @@ reports have a different preparation/timing contract and cannot substitute for
 service acceptance.
 
 `progress.json` and `progress.html` contain a mixed-revision historical census.
-`previousObservation` and `selectionCapabilityGap` record selection provenance,
-not expected answers or current capability guarantees.
+
+## Add a sample
+
+Append a case to the scenario that shares its world setup. A case needs a unique
+`id`, a `query`, and `expect` with a `kind` and an `assertions` array. Add
+`requirements` for mechanism witnesses or start projection. Projected rope and
+launch starts may also use `metadata.group`, `metadata.tags` and `metadata.evidence`
+to select their source contact. Suite, scenario and case objects accept an
+optional `note`. List the case ID in `training` only when its request should train
+the scenario's kernel.
+
+The [editor schema](suite.schema.json) is generated from the
+[runtime schema](../../mechanisms/suite-schema.ts). After editing the runtime
+schema, regenerate it with `pnpm benchmark:mechanism-schema`.
 
 ## Optional per-case diagnostic inputs
 
@@ -37,7 +49,7 @@ the service generator below does not create this retained/per-case layout.
 
 ## Generate service inputs
 
-Use Node 26, a game installation matching `suite.json.source`, the pinned extractor
+Use Node 26, a game installation matching `suite.json.requiredSource`, the pinned extractor
 and a validated private config. From repository root:
 
 ```sh
@@ -49,26 +61,23 @@ pnpm --dir talos/packages/ganglia benchmark:prepare-mechanisms \
   --output "$GANGLIA_INPUT_ROOT"
 ```
 
-Add `--plan` to inspect the bindings without game reads or output writes. Actual
-preparation requires matching game files/keys, refuses existing destinations and
-publishes `input-index.json` only after exports succeed. Retain failed output for
-diagnosis and retry at a new destination. Generated inputs have a new revision;
-freeze the same dataset for baseline/candidate runs rather than inheriting historical
-scores. Keep private configuration and raw game content local.
+Add `--plan` to inspect the directories without game reads or output writes.
+Preparation requires matching game files and keys and refuses existing destinations.
+It publishes the Dataset’s `input-index.json` after all exports succeed.
+Retain failed output for diagnosis and retry at a new destination. Reuse the
+same dataset for baseline and candidate runs. Keep private configuration and raw
+game content local.
 
-Check the service binding without solving:
+Each Scenario selects a dynamic input or a fixed window for its scene. The Suite
+defines fixed bounds in `sources[scene].regions`. The
+Dataset index registers the actual input locations under
+`inputs[scene].dynamic` and `inputs[scene].regions[region]`. Each directory is
+relative to `--data-root`. Multiple scenarios can share an entry. The report
+records the suite digest and the scene resources checked by the worker.
 
-```sh
-pnpm --dir talos/packages/ganglia benchmark:mechanisms \
-  --adapter ganglia-v1-ts --data-root "$GANGLIA_INPUT_ROOT" \
-  --extractor "$GANGLIA_EXTRACTOR" --prepare-config "$GANGLIA_CONFIG" \
-  --audit --output /absolute/path/to/new-service-audit.json
-```
-
-The service consumes case-to-scenario mappings from the index. The per-case
-diagnostic instead consumes manifest paths and `<scene-data-root>/<caseId>`;
-it does not read this index. Converting between layouts needs explicit source
-bindings, including retained request/wall facts, rather than a renamed directory.
+The per-case diagnostic uses retained paths from the fixed window registration
+or `<scene-data-root>/<caseId>` for dynamic cases. These paths can refer to a
+different export layout than the service runner.
 
 ## Input files
 
@@ -100,8 +109,9 @@ query array and cannot preserve this manifest's acceptance semantics.
 2. Preserve starts, arrival states/costs, original goal, interaction volume and
    facing/airborne rules. Prove support for projected starts. `waypoints` are ordered
    discovery hints; they impose no trace-visit or stopping requirement.
-3. Honor frozen physical windows and `allowExpansion: false`. `physicalRegions`
-   binds source bounds/settings. Report missing snapshots as input-unavailable.
+3. A `frozen-window` scenario uses the bounds declared for its window under
+   `sources[scene].regions`. Dynamic input can export additional physical
+   coverage with `--prepare-config`.
 4. Apply merged `setup.locomotion` before preparation. `locomotionPatch` records
    intent. Preserve device facts, following-box activity ranges and source
    collisions; reject unsupported setup explicitly.

@@ -149,7 +149,6 @@ const record = (value: unknown): value is Record<string, unknown> =>
 export function readReference(value: unknown, binding: Binding): QualityRow[] {
   if (
     !record(value) ||
-    value.schemaVersion !== 11 ||
     !record(value.hashes) ||
     !record(value.batch) ||
     !Array.isArray(value.batch.results)

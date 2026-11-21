@@ -1,224 +1,23 @@
-import { readFile } from 'node:fs/promises';
-import { isAbsolute, relative, resolve, sep } from 'node:path';
+/**
+ * Mechanism assessment observes routes and source geometry without changing
+ * solver outcomes. Expected rejection is independent from search completion;
+ * exercise evidence cannot reject a valid alternative route. Facility receipts
+ * certify imported geometry only, and first-complete capture is observational.
+ */
 import { isDeepStrictEqual } from 'node:util';
 
-import type { StartResolution } from '#@/bench/mechanism-query.ts';
+import type { StartResolution } from '#@/bench/mechanisms/query.ts';
+import type { Case } from '#@/bench/mechanisms/suite.ts';
 import { classify } from '#@/bench/outcome.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
-import type { LocomotionOptions } from '#@/src/index.ts';
-import { joinedGeometry, roofContains, shifted } from '#@/src/model/placement.ts';
+import { roofContains, shifted } from '#@/src/model/placement.ts';
 import { projectPoint } from '#@/src/model/support.ts';
 import type { RouteQuery, RouteResult, RouteEvent } from '#@/src/solver/contract.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 
-export interface MechanismCase {
-  id: string;
-  scene: string;
-  group: string;
-  query: RouteQuery;
-  assertions: string[];
-  setup: {
-    physical?: {
-      mode: 'frozen-window';
-      region: string;
-      ground: string;
-      collision: string;
-      allowExpansion?: boolean;
-    };
-    locomotion?: LocomotionOptions;
-    locomotionPatch?: { stamina?: Partial<NonNullable<LocomotionOptions['stamina']>> };
-    followingPlacement?: {
-      movableSourceIds: string[];
-      minimumDistinctUsedBoxes: number;
-      retainOtherSourceBoxes: true;
-      jointSnapshot: true;
-      sourceActivityRanges: { id: string; spawn: number[]; radius: number }[];
-    };
-    requiredDevice?: string;
-    requiredSupport?: string;
-    excludedUnresolvedDevice?: string;
-    projectStartToPhysicalSupport?: boolean;
-    deviceAvailability?: 'assumed-enabled';
-    assumption?: 'phase-free-swept-support';
-    supportModel?: 'phase-free-circular-surface';
-    sourceAnimation?: { collection: string; id: string };
-  };
-  evidence: { file: string; collection: string; id?: string; index?: number }[];
-  tags: string[];
-}
-export interface MechanismSuite {
-  schema: number;
-  source: unknown;
-  cases: MechanismCase[];
-  physicalRegions: { id: string; scene: string; bounds: number[] }[];
-  sources: Record<
-    string,
-    {
-      source: unknown;
-      profile: unknown;
-      locomotion: LocomotionOptions;
-      traversalGenerator?: string;
-      interactives?: string;
-    }
-  >;
-}
-export interface MechanismBinding {
-  suite: MechanismSuite;
-  item: MechanismCase;
-  roots: { exports: string; retained: string };
-  extractor: string;
-  kernel: string;
-  sceneDataRoot?: string;
-  prepareConfig?: string;
-  deviceExports?: string;
-}
-const keys = new Set([
-  'physical',
-  'locomotion',
-  'locomotionPatch',
-  'followingPlacement',
-  'requiredDevice',
-  'requiredSupport',
-  'excludedUnresolvedDevice',
-  'projectStartToPhysicalSupport',
-  'deviceAvailability',
-  'assumption',
-  'supportModel',
-  'sourceAnimation',
-]);
-export async function readMechanismSuite(file: string): Promise<MechanismSuite> {
-  const suite = JSON.parse(await readFile(file, 'utf8')) as MechanismSuite;
-  if (!suite || !Array.isArray(suite.cases) || !suite.sources || !suite.source)
-    throw new Error('Invalid mechanism manifest');
-  const ids = new Set<string>();
-  for (const c of suite.cases) {
-    if (
-      !c.id ||
-      !/^[a-zA-Z0-9_.-]+$/.test(c.id) ||
-      ids.has(c.id) ||
-      !suite.sources[c.scene] ||
-      !Array.isArray(c.query?.starts) ||
-      !Array.isArray(c.query.goal) ||
-      c.query.goal.length !== 3 ||
-      !c.query.goal.every(Number.isFinite) ||
-      !Array.isArray(c.assertions) ||
-      !Array.isArray(c.evidence) ||
-      !c.setup
-    )
-      throw new Error('Invalid or duplicate mechanism case');
-    ids.add(c.id);
-  }
-  return suite;
-}
-export function resourcePath(name: string, roots: MechanismBinding['roots']) {
-  const slash = name.indexOf('/'),
-    key = name.slice(0, slash);
-  if (slash < 0 || (key !== 'exports' && key !== 'retained'))
-    throw new Error('Unknown mechanism resource root');
-  const base = resolve(roots[key]),
-    result = resolve(base, name.slice(slash + 1)),
-    rel = relative(base, result);
-  if (isAbsolute(rel) || rel === '..' || rel.startsWith('..' + sep))
-    throw new Error('Mechanism resource escapes its root');
-  return result;
-}
-export function checkSetup(c: MechanismCase) {
-  for (const key of Object.keys(c.setup))
-    if (!keys.has(key)) throw new Error('Unsupported setup: ' + key);
-  const s = c.setup;
-  if (
-    s.sourceAnimation &&
-    (s.sourceAnimation.collection !== 'staticSupports.parts.motion' ||
-      s.sourceAnimation.id !== s.requiredSupport)
-  )
-    throw new Error('Unsupported source animation binding');
-  if (s.locomotionPatch && Object.keys(s.locomotionPatch).some((k) => k !== 'stamina'))
-    throw new Error('Unsupported locomotion patch');
-  if (s.physical && (s.physical.mode !== 'frozen-window' || s.physical.allowExpansion === true))
-    throw new Error('Unsupported frozen-window expansion');
-  if (s.projectStartToPhysicalSupport !== undefined && s.projectStartToPhysicalSupport !== true)
-    throw new Error('Unsupported start projection policy');
-  if (s.assumption !== undefined && s.assumption !== 'phase-free-swept-support')
-    throw new Error('Unsupported support assumption');
-  if (s.deviceAvailability !== undefined && s.deviceAvailability !== 'assumed-enabled')
-    throw new Error('Unsupported device availability');
-  if (s.supportModel !== undefined && s.supportModel !== 'phase-free-circular-surface')
-    throw new Error('Unsupported support model');
-  if (s.locomotionPatch && !s.locomotion)
-    throw new Error('locomotionPatch requires its resolved policy');
-  if (
-    s.followingPlacement &&
-    (!s.followingPlacement.retainOtherSourceBoxes ||
-      !s.followingPlacement.jointSnapshot ||
-      !s.followingPlacement.movableSourceIds.length ||
-      new Set(s.followingPlacement.movableSourceIds).size !==
-        s.followingPlacement.movableSourceIds.length)
-  )
-    throw new Error('Unsupported following placement policy');
-}
-/** Scenario conditions are applied before preparation and shared by search and
- * the independent verifier. Assertion targets do not manufacture solver edges. */
-export function scenarioInput(input: PhysicalInput, c: MechanismCase): PhysicalInput {
-  checkSetup(c);
-  const s = c.setup;
-  let result = {
-    ...input,
-    locomotion: s.locomotion ?? input.locomotion,
-    ground: {
-      ...input.ground,
-      options: { ...input.ground.options, locomotion: s.locomotion ?? input.locomotion },
-    },
-  };
-  if (s.locomotionPatch?.stamina)
-    for (const [key, value] of Object.entries(s.locomotionPatch.stamina))
-      if (
-        !isDeepStrictEqual(
-          result.locomotion.stamina?.[key as keyof NonNullable<LocomotionOptions['stamina']>],
-          value,
-        )
-      )
-        throw new Error('Resolved locomotion differs from scenario patch');
-  const required = s.requiredDevice;
-  if (required && !input.devices?.devices.some((d) => d.id === required))
-    throw new Error('Missing required source device: ' + required);
-  if (s.requiredSupport) {
-    const moving = input.devices?.movingSupports?.find((d) => d.id === s.requiredSupport);
-    const following = input.devices?.followingSupports?.find((d) => d.id === s.requiredSupport);
-    if (!moving && !following)
-      throw new Error('Missing required source support: ' + s.requiredSupport);
-    if (s.supportModel && !moving?.circular) throw new Error('Missing circular support facts');
-    if (s.assumption && moving?.assumption !== s.assumption)
-      throw new Error('Support assumption mismatch');
-  }
-  if (s.excludedUnresolvedDevice) {
-    const device = input.devices?.devices.find((d) => d.id === s.excludedUnresolvedDevice);
-    if (!device || device.resolved)
-      throw new Error('Unresolved-device scenario no longer matches its source');
-  }
-  const policy = s.followingPlacement;
-  if (policy) {
-    const all = input.devices?.followingSupports ?? [],
-      ids = new Set(policy.movableSourceIds);
-    if (policy.movableSourceIds.some((id) => !all.some((b) => b.id === id)))
-      throw new Error('Missing movable box facts');
-    for (const source of policy.sourceActivityRanges) {
-      const b = all.find((b) => b.id === source.id);
-      if (!b || !isDeepStrictEqual(b.spawn, source.spawn) || b.maxDistance !== source.radius)
-        throw new Error('Following source activity sphere mismatch');
-    }
-    const fixed = all.filter((b) => !ids.has(b.id));
-    result = {
-      ...result,
-      collision: joinedGeometry(
-        input.collision,
-        fixed.flatMap((b) => b.bodies),
-      ),
-      devices: { ...input.devices!, followingSupports: all.filter((b) => ids.has(b.id)) },
-    };
-  }
-  return result;
-}
-export function expectation(c: MechanismCase): 'complete' | 'reject' | 'constraint' {
+export function expectation(c: Case): 'complete' | 'reject' | 'constraint' {
+  if (c.expected !== undefined) return c.expected;
+  // Flat manifests encode expectations in assertions and group names.
   if (
     c.assertions.includes('no-complete-route-from-unavailable-arrival') ||
     c.assertions.includes('uncovered-target-cannot-be-complete')
@@ -227,14 +26,14 @@ export function expectation(c: MechanismCase): 'complete' | 'reject' | 'constrai
   return c.group === 'boundary-and-rejection' ? 'constraint' : 'complete';
 }
 /** Expected rejection and mechanism constraints do not change the search outcome. */
-export function matchesExpectation(c: MechanismCase, result: RouteResult) {
+export function matchesExpectation(c: Case, result: RouteResult) {
   const status = classify(result);
   if (status === 'timeout' || status === 'error') return false;
   if (expectation(c) === 'reject') return status === 'no-route' && !result.partial;
   return expectation(c) === 'constraint' || status === 'success';
 }
 function singleConveyorPose(
-  c: MechanismCase,
+  c: Case,
   result: RouteResult,
   input?: PhysicalInput,
 ): boolean | undefined {
@@ -290,7 +89,7 @@ function singleConveyorPose(
   return false;
 }
 
-export function exercised(c: MechanismCase, result: RouteResult, input?: PhysicalInput) {
+export function exercised(c: Case, result: RouteResult, input?: PhysicalInput) {
   const route = result.route;
   const used = new Set<string>();
   if (route.status === 'complete' && input)
@@ -388,7 +187,7 @@ export type PhysicalOutcome = {
   effectiveStart?: number[];
   mode: 'physical-diagnostic';
 };
-export type MechanismResult = RouteResult & {
+export type Result = RouteResult & {
   diagnostics: RouteResult['diagnostics'] & { mechanism: PhysicalOutcome };
 };
 

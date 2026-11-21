@@ -50,3 +50,24 @@ export function requirePreparedCatalog(
   )
     throw new Error('Benchmark requires trained, frozen catalogs and configured warmup requests');
 }
+
+/** Training requests are dataset-bound, but runtime warmup is not part of the
+ * benchmark lifecycle. Production service preparation remains a separate policy. */
+export function benchmarkTraining(
+  config: SolverSettings,
+  adapter: BenchmarkAdapter,
+  scene: string,
+): readonly Case[] {
+  if (!config.preparation) {
+    if (['ganglia-v1', 'ganglia-v1-ts', 'ganglia-v1-rust'].includes(config.algorithm))
+      validateServicePreparation(config.preparation);
+    return [];
+  }
+  validateServicePreparation(config.preparation);
+  const requests = adapter.preparation;
+  if (!adapter.catalogTraining || !requests || requests.scene !== scene)
+    throw new Error('Benchmark adapter must supply training requests for this scene');
+  if (requests.training.length < config.preparation.trainingQueries)
+    throw new Error('Benchmark does not supply the configured training request count');
+  return requests.training.slice(0, config.preparation.trainingQueries);
+}

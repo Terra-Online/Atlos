@@ -1,13 +1,24 @@
+/**
+ * Ordinary suites describe queries in one source scene. The builder keeps loaded
+ * worker resources alive across training and all measured rounds. Dataset paths
+ * are static bindings; solver configuration and worker options are fixed when
+ * the builder is created and cannot be overridden by individual cases.
+ */
 import { readFile } from 'node:fs/promises';
+import { isDeepStrictEqual } from 'node:util';
 
 import type { RouteQuery } from '@opendfieldmap/ganglia';
 
+import type { BenchmarkAdapter } from '#@/bench/adapter.ts';
+import { createScenario, type ScenarioBuilder } from '#@/bench/scenario.ts';
 import {
   cases as stressCases,
   maximumSpanCases,
   connectedLongCases,
 } from '#@/bench/scenes/map02-long-range.ts';
 import { cases as localCases } from '#@/bench/scenes/map02.ts';
+import type { Case, Dataset, Suite } from '#@/bench/suite.ts';
+import { prepareWorkerSolver } from '#@/bench/workers.ts';
 
 type Workload = {
   cases: { id: string; query: RouteQuery; horizontalDistance?: number }[];
@@ -40,4 +51,68 @@ export async function readWorkload(name = 'map02'): Promise<Workload> {
       'Scenario manifests require bench/mechanism-run.ts; do not discard scene/setup to score them as query arrays',
     );
   return { cases, directory: '' };
+}
+
+type SceneSuite = Suite<{ readonly scene: string }>;
+
+export function sceneSuite(
+  scene: string,
+  cases: readonly Case[],
+  training: readonly Case[],
+): SceneSuite {
+  const requests = new Map<string, Case>();
+  for (const item of [...cases, ...training]) {
+    const previous = requests.get(item.id);
+    if (previous && !isDeepStrictEqual(previous.query, item.query))
+      throw new Error(`Conflicting training and measured case ID: ${item.id}`);
+    if (!previous) requests.set(item.id, item);
+  }
+  return {
+    id: scene,
+    scenarios: [
+      {
+        id: scene,
+        setup: { scene },
+        cases: [...requests.values()],
+        training: training.map((item) => item.id),
+      },
+    ],
+  };
+}
+
+export function sceneBuilder(options: {
+  adapter: BenchmarkAdapter;
+  config: import('#@/src/solver/contract.ts').SolverSettings;
+  extractor: string;
+  workers: number;
+  measured: ReadonlySet<string>;
+  onResult?: Parameters<typeof prepareWorkerSolver>[0]['onResult'];
+}): ScenarioBuilder<Dataset, SceneSuite> {
+  return {
+    async *build(dataset, suite) {
+      for (const spec of suite.scenarios) {
+        const byId = new Map(spec.cases.map((item) => [item.id, item]));
+        const training = spec.training.map((id) => {
+          const item = byId.get(id);
+          if (!item) throw new Error(`Unknown training case: ${id}`);
+          return item;
+        });
+        const cases = spec.cases.filter((item) => options.measured.has(item.id));
+        if (!cases.length) continue;
+        const input = await prepareWorkerSolver({
+          count: options.workers,
+          config: options.config,
+          entry: options.adapter.entry,
+          dataRoot: dataset.root,
+          extractor: options.extractor,
+          scene: spec.setup.scene,
+          onResult: options.onResult,
+          deferKernel:
+            options.adapter.entry.href ===
+            new URL('./adapters/ganglia-v1/worker.ts', import.meta.url).href,
+        });
+        yield createScenario(spec.id, input, cases, training);
+      }
+    },
+  };
 }

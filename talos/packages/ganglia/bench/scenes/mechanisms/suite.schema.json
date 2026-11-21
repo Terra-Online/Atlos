@@ -1,0 +1,788 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "$ref": "#/$defs/__schema0"
+    },
+    "revision": {
+      "$ref": "#/$defs/__schema1"
+    },
+    "requiredSource": {
+      "$ref": "#/$defs/__schema2"
+    },
+    "sources": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/__schema0"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "scene": {
+            "$ref": "#/$defs/__schema0"
+          },
+          "source": {
+            "$ref": "#/$defs/__schema2"
+          },
+          "profile": {
+            "type": "object",
+            "properties": {
+              "radius": {
+                "$ref": "#/$defs/__schema4"
+              },
+              "height": {
+                "$ref": "#/$defs/__schema4"
+              }
+            },
+            "required": ["radius", "height"],
+            "additionalProperties": false
+          },
+          "locomotion": {
+            "$ref": "#/$defs/__schema5"
+          },
+          "interactives": {
+            "$ref": "#/$defs/__schema3"
+          },
+          "navigation": {
+            "$ref": "#/$defs/__schema3"
+          },
+          "navigationExportRevision": {
+            "$ref": "#/$defs/__schema1"
+          },
+          "navigationGenerator": {
+            "$ref": "#/$defs/__schema3"
+          },
+          "traversal": {
+            "$ref": "#/$defs/__schema3"
+          },
+          "traversalExportRevision": {
+            "$ref": "#/$defs/__schema1"
+          },
+          "traversalGenerator": {
+            "$ref": "#/$defs/__schema3"
+          },
+          "regions": {
+            "type": "object",
+            "propertyNames": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "bounds": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "$ref": "#/$defs/__schema4"
+                    },
+                    {
+                      "$ref": "#/$defs/__schema4"
+                    },
+                    {
+                      "$ref": "#/$defs/__schema4"
+                    },
+                    {
+                      "$ref": "#/$defs/__schema4"
+                    }
+                  ],
+                  "minItems": 4,
+                  "maxItems": 4
+                },
+                "level": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "anchor": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "$ref": "#/$defs/__schema3"
+                    },
+                    "kind": {
+                      "$ref": "#/$defs/__schema3"
+                    },
+                    "level": {
+                      "$ref": "#/$defs/__schema0"
+                    },
+                    "scene": {
+                      "$ref": "#/$defs/__schema0"
+                    },
+                    "position": {
+                      "$ref": "#/$defs/__schema10"
+                    },
+                    "availability": {
+                      "$ref": "#/$defs/__schema3"
+                    }
+                  },
+                  "required": ["id", "kind", "level", "scene", "position", "availability"],
+                  "additionalProperties": false
+                },
+                "exportOptions": {
+                  "type": "object",
+                  "properties": {
+                    "sceneState": {
+                      "$ref": "#/$defs/__schema3"
+                    },
+                    "area": {
+                      "$ref": "#/$defs/__schema3"
+                    },
+                    "terminalScene": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["sceneState", "area", "terminalScene"],
+                  "additionalProperties": false
+                },
+                "diagnostic": {
+                  "type": "object",
+                  "properties": {
+                    "ground": {
+                      "$ref": "#/$defs/__schema3"
+                    },
+                    "collision": {
+                      "$ref": "#/$defs/__schema3"
+                    }
+                  },
+                  "required": ["ground", "collision"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["bounds"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["source", "profile", "locomotion", "regions"],
+        "additionalProperties": false
+      }
+    },
+    "scenarios": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema11"
+      }
+    },
+    "note": {
+      "$ref": "#/$defs/__schema16"
+    }
+  },
+  "required": ["id", "requiredSource", "sources", "scenarios"],
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_.-]+$"
+    },
+    "__schema1": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "__schema2": {
+      "type": "object",
+      "properties": {
+        "buildGuid": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "contentHash": {
+          "$ref": "#/$defs/__schema3"
+        }
+      },
+      "required": ["buildGuid", "contentHash"],
+      "additionalProperties": false
+    },
+    "__schema3": {
+      "type": "string",
+      "minLength": 1
+    },
+    "__schema4": {
+      "type": "number"
+    },
+    "__schema5": {
+      "type": "object",
+      "properties": {
+        "speed": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "sprintSpeed": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "sprintAcceleration": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "dash": {
+          "type": "object",
+          "properties": {
+            "speed": {
+              "$ref": "#/$defs/__schema4"
+            },
+            "duration": {
+              "$ref": "#/$defs/__schema4"
+            },
+            "cooldown": {
+              "$ref": "#/$defs/__schema4"
+            },
+            "cost": {
+              "$ref": "#/$defs/__schema4"
+            }
+          },
+          "required": ["speed", "duration", "cooldown", "cost"],
+          "additionalProperties": false
+        },
+        "stamina": {
+          "type": "object",
+          "properties": {
+            "capacity": {
+              "$ref": "#/$defs/__schema4"
+            },
+            "initial": {
+              "$ref": "#/$defs/__schema4"
+            },
+            "reserve": {
+              "$ref": "#/$defs/__schema4"
+            },
+            "recoveryRate": {
+              "$ref": "#/$defs/__schema4"
+            },
+            "recoveryDelay": {
+              "$ref": "#/$defs/__schema4"
+            },
+            "activationCost": {
+              "$ref": "#/$defs/__schema6"
+            },
+            "sprintDrain": {
+              "$ref": "#/$defs/__schema7"
+            },
+            "recoveryDuringSprint": {
+              "$ref": "#/$defs/__schema8"
+            },
+            "recoveryDuringNonWalk": {
+              "$ref": "#/$defs/__schema9"
+            }
+          },
+          "required": ["capacity", "initial", "reserve", "recoveryRate", "recoveryDelay"],
+          "additionalProperties": false
+        },
+        "sprintThrough": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["jump", "drop", "rope", "launch"]
+          }
+        },
+        "search": {
+          "type": "object",
+          "properties": {
+            "maxLabels": {
+              "$ref": "#/$defs/__schema1"
+            },
+            "maxExpanded": {
+              "$ref": "#/$defs/__schema1"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["speed", "sprintSpeed", "sprintAcceleration"],
+      "additionalProperties": false
+    },
+    "__schema6": {
+      "$ref": "#/$defs/__schema4"
+    },
+    "__schema7": {
+      "$ref": "#/$defs/__schema4"
+    },
+    "__schema8": {
+      "type": "boolean"
+    },
+    "__schema9": {
+      "type": "boolean"
+    },
+    "__schema10": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/__schema4"
+        },
+        {
+          "$ref": "#/$defs/__schema4"
+        },
+        {
+          "$ref": "#/$defs/__schema4"
+        }
+      ],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "__schema11": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "setup": {
+          "type": "object",
+          "properties": {
+            "locomotion": {
+              "$ref": "#/$defs/__schema5"
+            },
+            "locomotionPatch": {
+              "type": "object",
+              "properties": {
+                "stamina": {
+                  "type": "object",
+                  "properties": {
+                    "capacity": {
+                      "$ref": "#/$defs/__schema4"
+                    },
+                    "initial": {
+                      "$ref": "#/$defs/__schema4"
+                    },
+                    "reserve": {
+                      "$ref": "#/$defs/__schema4"
+                    },
+                    "recoveryRate": {
+                      "$ref": "#/$defs/__schema4"
+                    },
+                    "recoveryDelay": {
+                      "$ref": "#/$defs/__schema4"
+                    },
+                    "activationCost": {
+                      "$ref": "#/$defs/__schema6"
+                    },
+                    "sprintDrain": {
+                      "$ref": "#/$defs/__schema7"
+                    },
+                    "recoveryDuringSprint": {
+                      "$ref": "#/$defs/__schema8"
+                    },
+                    "recoveryDuringNonWalk": {
+                      "$ref": "#/$defs/__schema9"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            "followingPlacement": {
+              "type": "object",
+              "properties": {
+                "movableSourceIds": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/__schema3"
+                  }
+                },
+                "minimumDistinctUsedBoxes": {
+                  "$ref": "#/$defs/__schema1"
+                },
+                "retainOtherSourceBoxes": {
+                  "type": "boolean",
+                  "const": true
+                },
+                "jointSnapshot": {
+                  "type": "boolean",
+                  "const": true
+                },
+                "sourceActivityRanges": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "$ref": "#/$defs/__schema3"
+                      },
+                      "spawn": {
+                        "$ref": "#/$defs/__schema10"
+                      },
+                      "radius": {
+                        "$ref": "#/$defs/__schema4"
+                      }
+                    },
+                    "required": ["id", "spawn", "radius"],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "movableSourceIds",
+                "minimumDistinctUsedBoxes",
+                "retainOtherSourceBoxes",
+                "jointSnapshot",
+                "sourceActivityRanges"
+              ],
+              "additionalProperties": false
+            },
+            "deviceAvailability": {
+              "type": "string",
+              "const": "assumed-enabled"
+            },
+            "assumption": {
+              "type": "string",
+              "const": "phase-free-swept-support"
+            },
+            "supportModel": {
+              "type": "string",
+              "const": "phase-free-circular-surface"
+            },
+            "sourceAnimation": {
+              "type": "object",
+              "properties": {
+                "collection": {
+                  "type": "string",
+                  "const": "staticSupports.parts.motion"
+                },
+                "id": {
+                  "$ref": "#/$defs/__schema3"
+                }
+              },
+              "required": ["collection", "id"],
+              "additionalProperties": false
+            },
+            "scene": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "input": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "const": "dynamic"
+                    }
+                  },
+                  "required": ["kind"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "const": "frozen-window"
+                    },
+                    "region": {
+                      "$ref": "#/$defs/__schema0"
+                    }
+                  },
+                  "required": ["kind", "region"],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["scene", "input"],
+          "additionalProperties": false
+        },
+        "training": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "cases": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema12"
+          }
+        },
+        "note": {
+          "$ref": "#/$defs/__schema16"
+        }
+      },
+      "required": ["id", "setup", "training", "cases"],
+      "additionalProperties": false
+    },
+    "__schema12": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "query": {
+          "type": "object",
+          "properties": {
+            "starts": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema13"
+              }
+            },
+            "goal": {
+              "$ref": "#/$defs/__schema10"
+            },
+            "interaction": {
+              "type": "object",
+              "properties": {
+                "radius": {
+                  "$ref": "#/$defs/__schema4"
+                },
+                "maxVertical": {
+                  "$ref": "#/$defs/__schema4"
+                },
+                "facing": {
+                  "$ref": "#/$defs/__schema10"
+                },
+                "halfAngle": {
+                  "$ref": "#/$defs/__schema4"
+                },
+                "airborne": {
+                  "type": "boolean"
+                }
+              },
+              "required": ["radius"],
+              "additionalProperties": false
+            },
+            "waypoints": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema10"
+              }
+            }
+          },
+          "required": ["starts", "goal"],
+          "additionalProperties": false
+        },
+        "expect": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["complete", "reject", "constraint"]
+            },
+            "assertions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema3"
+              }
+            }
+          },
+          "required": ["kind", "assertions"],
+          "additionalProperties": false
+        },
+        "requirements": {
+          "type": "object",
+          "properties": {
+            "requiredDevice": {
+              "$ref": "#/$defs/__schema3"
+            },
+            "requiredSupport": {
+              "$ref": "#/$defs/__schema3"
+            },
+            "excludedUnresolvedDevice": {
+              "$ref": "#/$defs/__schema3"
+            },
+            "projectStartToPhysicalSupport": {
+              "type": "boolean",
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "group": {
+              "$ref": "#/$defs/__schema3"
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema3"
+              }
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/$defs/__schema3"
+                  },
+                  "collection": {
+                    "$ref": "#/$defs/__schema3"
+                  },
+                  "id": {
+                    "$ref": "#/$defs/__schema3"
+                  },
+                  "index": {
+                    "$ref": "#/$defs/__schema1"
+                  },
+                  "capSurfaceIndex": {
+                    "$ref": "#/$defs/__schema1"
+                  },
+                  "fromPose": {
+                    "$ref": "#/$defs/__schema1"
+                  },
+                  "fromTransferIndex": {
+                    "$ref": "#/$defs/__schema1"
+                  },
+                  "sourceTriangleIndex": {
+                    "$ref": "#/$defs/__schema1"
+                  },
+                  "surfaceIndex": {
+                    "$ref": "#/$defs/__schema1"
+                  },
+                  "toPose": {
+                    "$ref": "#/$defs/__schema1"
+                  },
+                  "toTransferIndex": {
+                    "$ref": "#/$defs/__schema1"
+                  },
+                  "triangleIndex": {
+                    "$ref": "#/$defs/__schema1"
+                  }
+                },
+                "required": ["file", "collection"],
+                "additionalProperties": false
+              }
+            },
+            "level": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "target": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "$ref": "#/$defs/__schema3"
+                },
+                "kind": {
+                  "$ref": "#/$defs/__schema3"
+                },
+                "template": {
+                  "$ref": "#/$defs/__schema3"
+                }
+              },
+              "required": ["id", "kind"],
+              "additionalProperties": false
+            },
+            "pointToken": {
+              "$ref": "#/$defs/__schema3"
+            },
+            "tokenRole": {
+              "$ref": "#/$defs/__schema3"
+            },
+            "tokenSourceId": {
+              "$ref": "#/$defs/__schema3"
+            },
+            "legacyCaseId": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "legacyToken": {
+              "$ref": "#/$defs/__schema3"
+            },
+            "geometryProbe": {
+              "type": "object",
+              "properties": {
+                "file": {
+                  "$ref": "#/$defs/__schema3"
+                },
+                "id": {
+                  "$ref": "#/$defs/__schema0"
+                }
+              },
+              "required": ["file", "id"],
+              "additionalProperties": false
+            },
+            "acceptanceRevision": {
+              "$ref": "#/$defs/__schema14"
+            },
+            "expectedContactPose": {
+              "$ref": "#/$defs/__schema14"
+            },
+            "inputRevision": {
+              "$ref": "#/$defs/__schema14"
+            },
+            "replacement": {
+              "$ref": "#/$defs/__schema14"
+            },
+            "selection": {
+              "$ref": "#/$defs/__schema14"
+            },
+            "supportModel": {
+              "$ref": "#/$defs/__schema14"
+            }
+          },
+          "additionalProperties": false
+        },
+        "note": {
+          "$ref": "#/$defs/__schema16"
+        }
+      },
+      "required": ["id", "query", "expect"],
+      "additionalProperties": false
+    },
+    "__schema13": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "position": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "cost": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "state": {
+          "type": "string",
+          "enum": ["available", "locked", "unknown"]
+        }
+      },
+      "required": ["id", "position", "cost", "state"],
+      "additionalProperties": false
+    },
+    "__schema14": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/__schema15"
+      }
+    },
+    "__schema15": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema15"
+          }
+        },
+        {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/__schema15"
+          }
+        }
+      ]
+    },
+    "__schema16": {
+      "type": "string"
+    }
+  }
+}

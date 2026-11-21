@@ -1,3 +1,9 @@
+/**
+ * Full-scene CLI and report projection. Scene construction and typed
+ * training/query execution are shared with mechanism suites. Warmup fields remain
+ * empty for report readers; the first query after training is measured. Worker
+ * and concurrency flags retain their existing explicit throughput semantics.
+ */
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { appendFileSync, mkdirSync, mkdtempSync, renameSync, writeFileSync } from 'node:fs';
@@ -10,13 +16,12 @@ import { parseArgs, isDeepStrictEqual } from 'node:util';
 import { loadAdapter } from '#@/bench/adapter.ts';
 import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { benchmarkMarkdown } from '#@/bench/markdown.ts';
-import { benchmarkPreparation } from '#@/bench/preparation.ts';
+import { benchmarkTraining } from '#@/bench/preparation.ts';
 import { compareQuality, qualityGate, readReference, summarizeQuality } from '#@/bench/quality.ts';
-import { runBenchmark, validateWarmup } from '#@/bench/run.ts';
+import { runScenario } from '#@/bench/run.ts';
 import { sourceHash } from '#@/bench/source.ts';
 import { resetTimings } from '#@/bench/timings.ts';
-import { prepareWorkerSolver } from '#@/bench/workers.ts';
-import { readWorkload } from '#@/bench/workload.ts';
+import { readWorkload, sceneBuilder, sceneSuite } from '#@/bench/workload.ts';
 import type { SolverSettings } from '#@/src/solver/contract.ts';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -116,9 +121,8 @@ if (values.help) {
         ? { algorithm: values.adapter }
         : {}),
     };
-    const { training, warmup: warmupCases } = benchmarkPreparation(config, adapter, values.scene);
-    const trainingCount = training.length;
-    validateWarmup(selected, warmupCases);
+    const training = benchmarkTraining(config, adapter, values.scene);
+    const warmupCases: readonly import('#@/bench/suite.ts').Case[] = [];
     const workers = Number(values.workers);
     if (!Number.isSafeInteger(workers) || workers < 1) throw new Error('Invalid worker count');
     const concurrency =
@@ -138,24 +142,23 @@ if (values.help) {
       workers,
       concurrency,
       trainingCases: training,
+      lifecycle: 'suite-training-no-warmup',
     };
     const referenceBytes = values.reference ? await readFile(values.reference) : undefined;
     const referenceReport = referenceBytes
       ? (JSON.parse(referenceBytes.toString()) as {
-          schemaVersion?: number;
           measurement?: unknown;
           batch: { wallMs: number };
           lifecycle?: { solverLifecycleMs: number };
         })
       : undefined;
     const started = performance.now();
-    const prepared = await prepareWorkerSolver({
-      count: workers,
-      entry: adapter.entry,
+    const builder = sceneBuilder({
+      adapter,
       config: fixed,
-      dataRoot,
       extractor: values.extractor,
-      scene: values.scene,
+      workers,
+      measured: new Set(selected.map((item) => item.id)),
       onResult(query, result) {
         record({ phase, query, result });
         console.error(
@@ -169,248 +172,225 @@ if (values.help) {
         );
       },
     });
-    const { solver, inputLoadMs, timings, metadata } = prepared;
-    const workerReadyMs = performance.now();
-    try {
-      const reference = referenceBytes
-        ? readReference(JSON.parse(referenceBytes.toString()), { ...metadata, cases: selected })
-        : undefined;
-      // Reject incompatible references before spending time on prewarm and search.
-      let catalogTraining;
-      if (trainingCount) {
-        if (!adapter.catalogTraining) throw new Error('Adapter does not support catalog training');
-        console.error(JSON.stringify({ phase: 'catalog-training', queries: training.length }));
-        phase = 'catalog-training';
-        completed = 0;
-        await prepared.setCatalogPhase('training');
-        const trainingStarted = performance.now();
-        const results: Awaited<ReturnType<typeof prepared.train>> = Array.from(
-          { length: workers },
-          () => [],
-        );
-        for (const [index, item] of training.entries()) {
-          const rows = await prepared.train([item.query]);
-          rows.forEach((batch, worker) => results[worker].push(...batch));
-          console.error(
-            JSON.stringify({
+    const scenarios = builder.build(
+      { root: dataRoot },
+      sceneSuite(values.scene, selected, training),
+    );
+    for await (const scenario of scenarios) {
+      const prepared = scenario.input;
+      const { inputLoadMs, timings, metadata } = prepared;
+      const workerReadyMs = performance.now();
+      try {
+        const reference = referenceBytes
+          ? readReference(JSON.parse(referenceBytes.toString()), { ...metadata, cases: selected })
+          : undefined;
+        // Reject incompatible references before training and search.
+        let catalogTraining:
+          | {
+              algorithm: 'approximate-static-actions';
+              ids: string[];
+              processed: number;
+              wallMs: number;
+              completed: number;
+              perWorker: { completed: number; stats: import('#@/bench/adapter.ts').CatalogStats }[];
+              stats: import('#@/bench/adapter.ts').CatalogStats;
+            }
+          | undefined;
+        let readyMs = 0;
+        let setupMs = 0;
+        const report = await runScenario(scenario, {
+          rounds,
+          serial: false,
+          onPhase: async (nextPhase) => {
+            phase = nextPhase === 'training' ? 'catalog-training' : nextPhase;
+            completed = 0;
+            if (nextPhase === 'batch') {
+              readyMs = performance.now();
+              setupMs = readyMs - started;
+              resetTimings(timings);
+            }
+          },
+          onTrainingResult(item, index, results) {
+            record({
               phase: 'catalog-training-progress',
+              id: item.id,
               completed: index + 1,
               total: training.length,
-              id: item.id,
-              outcomes: rows.map((batch) => batch[0].reason ?? batch[0].route.status),
-              catalogs: prepared.catalogStatsAll(),
-            }),
-          );
-          // Cancelled training leaves a partial catalog. Require completed service
-          // preparation before dispatching the scored population.
-          if (rows.some((batch) => batch.some((result) => result.reason === 'timeout')))
-            throw new Error('Catalog training timed out; prepared service is not ready');
-        }
-        await prepared.setCatalogPhase('frozen');
-        const trained = {
-          algorithm: 'approximate-static-actions' as const,
-          ids: training.map((item) => item.id),
-          processed: training.length,
-          wallMs: performance.now() - trainingStarted,
-          completed: Math.min(
-            ...results.map(
-              (rows) =>
-                rows.filter((result) => result.route.status === 'complete' && !result.partial)
+              outcomes: results.map((result) => result.reason ?? result.route.status),
+            });
+            if (results.some((result) => result.reason === 'timeout'))
+              throw new Error('Catalog training timed out; prepared service is not ready');
+          },
+          onReady(kernel) {
+            const trained = kernel.training;
+            if (training.length && trained.perWorker.every((worker) => worker.stats)) {
+              const perWorker = trained.perWorker.map((worker) => ({
+                completed: worker.results.filter((r) => r.route.status === 'complete' && !r.partial)
                   .length,
-            ),
-          ),
-          perWorker: results.map((rows, index) => ({
-            completed: rows.filter(
-              (result) => result.route.status === 'complete' && !result.partial,
-            ).length,
-            stats: prepared.catalogStatsAll()[index],
-          })),
-          stats: prepared.catalogStats(),
+                stats: worker.stats!,
+              }));
+              catalogTraining = {
+                algorithm: 'approximate-static-actions',
+                ids: [...trained.ids],
+                processed: trained.ids.length,
+                wallMs: trained.wallMs,
+                completed: Math.min(...perWorker.map((worker) => worker.completed)),
+                perWorker,
+                stats: perWorker[0].stats,
+              };
+            }
+          },
+        });
+        const endToEndMs = performance.now();
+        const solverLifecycleMs = endToEndMs - report.verificationWallMs;
+        const holdoutCatalogs = prepared.catalogs();
+        if ((await sourceHash(root, sourceDirectories, sourceFiles)) !== sourceSha256)
+          throw new Error('Benchmark source changed during measurement; discard this run');
+        const comparison = reference ? compareQuality(report.batch.results, reference) : undefined;
+        const gate = qualityGate(report.batch.results, comparison, limits);
+        const comparableSpeed =
+          comparison &&
+          !comparison.lostSolutions.length &&
+          !comparison.gainedSolutions.length &&
+          summarizeQuality(reference ?? []).completed === selected.length &&
+          report.batch.quality.completed === selected.length;
+        const comparablePolicy =
+          gate.passed &&
+          comparableSpeed &&
+          isDeepStrictEqual(referenceReport?.measurement, measurement);
+        const timingUnavailableReason = !gate.passed
+          ? 'Quality gate failed'
+          : !comparableSpeed
+            ? 'The set of complete routes changed'
+            : !isDeepStrictEqual(referenceReport?.measurement, measurement)
+              ? 'Preparation, warmup or execution settings differ from the reference'
+              : undefined;
+        const referenceBatchMs = referenceReport?.batch.wallMs;
+        const referenceSolverLifecycleMs = referenceReport?.lifecycle?.solverLifecycleMs;
+        const output = {
+          measurement,
+          lifecycle: {
+            workerReadyMs,
+            readyMs,
+            workerStartupMs: timings.workerStartupMs,
+            workers: metadata.execution.preparation,
+            runtimeWarmupMs: report.warmup.wallMs,
+            catalogTrainingMs: catalogTraining?.wallMs ?? 0,
+            endToEndMs,
+            solverLifecycleMs,
+            successfulQueries: report.batch.successfulQueries,
+            solverLifecycleSuccessfulQueriesPerSecond:
+              report.batch.successfulQueries / (solverLifecycleMs / 1000),
+            endToEndSuccessfulQueriesPerSecond:
+              report.batch.successfulQueries / (endToEndMs / 1000),
+            browserArtifacts: null,
+          },
+          adapter: 'scene-files',
+          node: process.version,
+          execArgv: process.execArgv,
+          revision,
+          sourceSha256,
+          workingTreeDirty,
+          ...metadata,
+          concurrency,
+          cases: selected,
+          inputLoadMs,
+          setupMs,
+          timings,
+          ...(catalogTraining
+            ? {
+                catalogTraining,
+                catalogAfterHoldout: holdoutCatalogs.every((stats) => stats !== undefined)
+                  ? holdoutCatalogs
+                  : undefined,
+                catalogResetDuringHoldout: prepared.recoverySetupMs > 0,
+              }
+            : {}),
+          policy:
+            'One run-level configuration is reused. Suite-declared catalog training runs identically in every worker and freezes before measurement. There is no runtime warmup; the first post-training query and every measured round count. Decoded input loading is separate from adapter/source validation, resource indexing and factory preparation. Repeatability compares measured rounds. Existing immutable preparation, geometry proofs and frozen catalog data are reused by the same solver; lazy work remains inside query time. Every dispatched query, including training, receives a cooperative cancellation request at the configured benchmark cutoff. The worker exits the query at its next checkpoint; no grace-period kill or replacement occurs. Cancellation tail time remains measured. Queueing and initial worker setup are outside that deadline; service, queue and response times are separate. Workers retain their trained state across query cancellation. End-to-end time starts at Node process time origin and ends after solver shutdown, including loading, preparation, training, all measured rounds and cooperative shutdown. Observed end-to-end time includes beta verification; solver lifecycle timing subtracts its non-overlapping wall intervals for comparisons. Final source re-verification and report formatting are excluded. Per-worker phase timers overlap and must not be summed into wall time. Memory peaks are sampled. Browser index transfer, restoration and browser execution are unmeasured. OS scheduling/JIT/GC uncontrolled.',
+          ...report,
+          ...(comparison && referenceBytes
+            ? {
+                comparison: {
+                  referenceSha256: createHash('sha256').update(referenceBytes).digest('hex'),
+                  referenceBatchWallMs: referenceBatchMs,
+                  referenceSolverLifecycleMs,
+                  ...(comparablePolicy &&
+                  referenceBatchMs !== undefined &&
+                  Number.isFinite(referenceBatchMs) &&
+                  referenceBatchMs > 0
+                    ? { batchSpeedup: referenceBatchMs / report.batch.wallMs }
+                    : {
+                        batchSpeedupUnavailableReason:
+                          timingUnavailableReason ?? 'Reference has no valid batch timing',
+                      }),
+                  ...(comparablePolicy &&
+                  referenceSolverLifecycleMs !== undefined &&
+                  Number.isFinite(referenceSolverLifecycleMs) &&
+                  referenceSolverLifecycleMs > 0
+                    ? { solverLifecycleSpeedup: referenceSolverLifecycleMs / solverLifecycleMs }
+                    : {
+                        solverLifecycleSpeedupUnavailableReason:
+                          timingUnavailableReason ??
+                          'Reference has no valid process-start-to-shutdown timing',
+                      }),
+                  ...comparison,
+                },
+              }
+            : {}),
         };
-        catalogTraining = trained;
-      }
-      let readyMs = 0;
-      let setupMs = 0;
-      const report = await runBenchmark(
-        solver,
-        selected,
-        metadata.rules,
-        async (nextPhase) => {
-          phase = nextPhase;
-          completed = 0;
-          console.error(
-            JSON.stringify({
-              phase,
-              queries: phase === 'prewarm' ? warmupCases.length : selected.length,
-              rounds,
-            }),
+        const validated = { ...output, qualityGate: gate };
+        save(validated);
+        record({ phase: 'finished', qualityGate: gate });
+        if (values.json) console.log(JSON.stringify(validated, null, 2));
+        else if (values.markdown) console.log(benchmarkMarkdown(validated));
+        else {
+          console.log(
+            `${metadata.scene}: ${selected.length} full-scene queries; local files, no Atlos server`,
           );
-          await prepared.setBenchmarkPhase(nextPhase);
-          if (phase === 'batch') {
-            readyMs = performance.now();
-            setupMs = readyMs - started;
-            resetTimings(timings);
+          console.table(report.batch.results);
+          if (catalogTraining)
+            console.log(
+              `Approximate static-action training: ${catalogTraining.ids.length} queries, ${(catalogTraining.wallMs / 1000).toFixed(2)} s included in end-to-end time, ${catalogTraining.stats.added} actions`,
+            );
+          console.log(
+            `Independent runtime warmup: ${report.warmup.ids.length} queries, ${(report.warmup.wallMs / 1000).toFixed(2)} s`,
+          );
+          console.log(
+            `Ready at ${(readyMs / 1000).toFixed(2)} s; end-to-end ${(endToEndMs / 1000).toFixed(2)} s; ${output.lifecycle.endToEndSuccessfulQueriesPerSecond.toFixed(3)} end-to-end complete routes/s`,
+          );
+          console.log(
+            `Per-query benchmark cutoff: ${QUERY_CUTOFF_MS / 1000} s; ${report.batch.quality.completed}/${selected.length} complete, ${report.batch.timedOutAttempts} measured timeouts; ${report.batch.successfulQueriesPerSecond.toFixed(3)} complete routes/s`,
+          );
+          console.log(
+            `Recovery input loading: ${(report.batch.recoverySetupMs / 1000).toFixed(2)} s; included in batch wall time`,
+          );
+          console.log(
+            `Batch (${rounds} rounds, average ${report.batch.wallMs.toFixed(3)} ms, total ${report.batch.totalWallMs.toFixed(3)} ms): ${report.batch.queriesPerSecond.toFixed(3)} queries/s; ${report.batch.results.filter((r) => r.sameOutcomeAcrossRounds && r.sameTruncationAcrossRounds).length}/${selected.length} matching outcomes; repeatability ${report.batch.repeatability}`,
+          );
+          console.log(`Complete batch samples (ms): ${report.batch.wallSamplesMs.join(', ')}`);
+          if (report.batch.meanSerialQueryMs !== undefined)
+            console.log(
+              `Mean serial attempt wall time: ${report.batch.meanSerialQueryMs.toFixed(3)} ms (mean dispatch-to-result)`,
+            );
+          console.log(
+            `Quality: ${report.batch.quality.completed}/${selected.length} complete; total modeled travel time: ${report.batch.quality.totalCostSeconds ?? 'incomplete'} s`,
+          );
+          if (output.comparison) {
+            console.log(
+              `Reference: ${output.comparison.pairedCompleted} paired completions; lost ${output.comparison.lostSolutions.length}; gained ${output.comparison.gainedSolutions.length}; geometric mean cost ratio ${output.comparison.geometricMeanCostRatio ?? 'unavailable'}; worst ${output.comparison.worstCostRatio ?? 'unavailable'} (lower is better)`,
+            );
+            console.table(output.comparison.pairs);
           }
-        },
-        rounds,
-        () => prepared.recoverySetupMs,
-        warmupCases,
-        prepared.verify,
-        catalogTraining,
-      );
-      const endToEndMs = performance.now();
-      const solverLifecycleMs = endToEndMs - report.verificationWallMs;
-      if (
-        catalogTraining &&
-        prepared
-          .catalogStatsAll()
-          .some((stats, index) => stats.added !== catalogTraining.perWorker[index].stats.added)
-      )
-        throw new Error('Frozen catalog changed during holdout');
-      if ((await sourceHash(root, sourceDirectories, sourceFiles)) !== sourceSha256)
-        throw new Error('Benchmark source changed during measurement; discard this run');
-      const comparison = reference ? compareQuality(report.batch.results, reference) : undefined;
-      const gate = qualityGate(report.batch.results, comparison, limits);
-      const comparableSpeed =
-        comparison &&
-        !comparison.lostSolutions.length &&
-        !comparison.gainedSolutions.length &&
-        summarizeQuality(reference ?? []).completed === selected.length &&
-        report.batch.quality.completed === selected.length;
-      const comparablePolicy =
-        gate.passed &&
-        comparableSpeed &&
-        isDeepStrictEqual(referenceReport?.measurement, measurement);
-      const timingUnavailableReason = !gate.passed
-        ? 'Quality gate failed'
-        : !comparableSpeed
-          ? 'The set of complete routes changed'
-          : !isDeepStrictEqual(referenceReport?.measurement, measurement)
-            ? 'Preparation, warmup or execution settings differ from the reference'
-            : undefined;
-      const referenceBatchMs = referenceReport?.batch.wallMs;
-      const referenceSolverLifecycleMs = referenceReport?.lifecycle?.solverLifecycleMs;
-      const output = {
-        schemaVersion: 11,
-        measurement,
-        lifecycle: {
-          workerReadyMs,
-          readyMs,
-          workerStartupMs: timings.workerStartupMs,
-          workers: metadata.execution.preparation,
-          runtimeWarmupMs: report.warmup.wallMs,
-          catalogTrainingMs: catalogTraining?.wallMs ?? 0,
-          endToEndMs,
-          solverLifecycleMs,
-          successfulQueries: report.batch.successfulQueries,
-          solverLifecycleSuccessfulQueriesPerSecond:
-            report.batch.successfulQueries / (solverLifecycleMs / 1000),
-          endToEndSuccessfulQueriesPerSecond: report.batch.successfulQueries / (endToEndMs / 1000),
-          browserArtifacts: null,
-        },
-        adapter: 'scene-files',
-        node: process.version,
-        execArgv: process.execArgv,
-        revision,
-        sourceSha256,
-        workingTreeDirty,
-        ...metadata,
-        concurrency,
-        cases: selected,
-        inputLoadMs,
-        setupMs,
-        timings,
-        ...(catalogTraining
-          ? {
-              catalogTraining,
-              catalogAfterHoldout: prepared.catalogStatsAll(),
-              catalogResetDuringHoldout: prepared.recoverySetupMs > 0,
-            }
-          : {}),
-        policy:
-          'One algorithm and preparation lifecycle serve every interpretation of this report. Decoded input loading is separate from adapter/source validation, resource indexing and factory preparation. Algorithm-configured catalog training runs identically in every worker, freezes before service readiness, and belongs to service preparation. Algorithm-configured runtime warmup uses separate declared requests. No scored query is prewarmed; every measured round counts and repeatability compares measured rounds. Existing immutable preparation, geometry proofs and frozen catalog data are reused by the same solver; lazy work remains inside query time. Every dispatched query, including training and warmup, receives a cooperative cancellation request at the configured benchmark cutoff. The worker exits the query at its next checkpoint; no grace-period kill or replacement occurs. Cancellation tail time remains measured. Queueing and initial worker setup are outside that deadline; service, queue and response times are separate. Workers retain their trained state across query cancellation. End-to-end time starts at Node process time origin and ends after solver shutdown, including loading, preparation, training, runtime warmup, all measured rounds and cooperative shutdown. Observed end-to-end time includes beta verification; solver lifecycle timing subtracts its non-overlapping wall intervals for comparisons. Final source re-verification and report formatting are excluded. Per-worker phase timers overlap and must not be summed into wall time. Memory peaks are sampled. Browser index transfer, restoration and browser execution are unmeasured. OS scheduling/JIT/GC uncontrolled.',
-        ...report,
-        ...(comparison && referenceBytes
-          ? {
-              comparison: {
-                referenceSha256: createHash('sha256').update(referenceBytes).digest('hex'),
-                referenceBatchWallMs: referenceBatchMs,
-                referenceSolverLifecycleMs,
-                ...(comparablePolicy &&
-                referenceBatchMs !== undefined &&
-                Number.isFinite(referenceBatchMs) &&
-                referenceBatchMs > 0
-                  ? { batchSpeedup: referenceBatchMs / report.batch.wallMs }
-                  : {
-                      batchSpeedupUnavailableReason:
-                        timingUnavailableReason ?? 'Reference has no valid batch timing',
-                    }),
-                ...(comparablePolicy &&
-                referenceSolverLifecycleMs !== undefined &&
-                Number.isFinite(referenceSolverLifecycleMs) &&
-                referenceSolverLifecycleMs > 0
-                  ? { solverLifecycleSpeedup: referenceSolverLifecycleMs / solverLifecycleMs }
-                  : {
-                      solverLifecycleSpeedupUnavailableReason:
-                        timingUnavailableReason ??
-                        'Reference has no valid process-start-to-shutdown timing',
-                    }),
-                ...comparison,
-              },
-            }
-          : {}),
-      };
-      const validated = { ...output, qualityGate: gate };
-      save(validated);
-      record({ phase: 'finished', qualityGate: gate });
-      if (values.json) console.log(JSON.stringify(validated, null, 2));
-      else if (values.markdown) console.log(benchmarkMarkdown(validated));
-      else {
-        console.log(
-          `${metadata.scene}: ${selected.length} full-scene queries; local files, no Atlos server`,
-        );
-        console.table(report.batch.results);
-        if (catalogTraining)
-          console.log(
-            `Approximate static-action training: ${catalogTraining.ids.length} queries, ${(catalogTraining.wallMs / 1000).toFixed(2)} s included in end-to-end time, ${catalogTraining.stats.added} actions`,
-          );
-        console.log(
-          `Independent runtime warmup: ${report.warmup.ids.length} queries, ${(report.warmup.wallMs / 1000).toFixed(2)} s`,
-        );
-        console.log(
-          `Ready at ${(readyMs / 1000).toFixed(2)} s; end-to-end ${(endToEndMs / 1000).toFixed(2)} s; ${output.lifecycle.endToEndSuccessfulQueriesPerSecond.toFixed(3)} end-to-end complete routes/s`,
-        );
-        console.log(
-          `Per-query benchmark cutoff: ${QUERY_CUTOFF_MS / 1000} s; ${report.batch.quality.completed}/${selected.length} complete, ${report.batch.timedOutAttempts} measured timeouts; ${report.batch.successfulQueriesPerSecond.toFixed(3)} complete routes/s`,
-        );
-        console.log(
-          `Recovery input loading: ${(report.batch.recoverySetupMs / 1000).toFixed(2)} s; included in batch wall time`,
-        );
-        console.log(
-          `Batch (${rounds} rounds, average ${report.batch.wallMs.toFixed(3)} ms, total ${report.batch.totalWallMs.toFixed(3)} ms): ${report.batch.queriesPerSecond.toFixed(3)} queries/s; ${report.batch.results.filter((r) => r.sameOutcomeAcrossRounds && r.sameTruncationAcrossRounds).length}/${selected.length} matching outcomes; repeatability ${report.batch.repeatability}`,
-        );
-        console.log(`Complete batch samples (ms): ${report.batch.wallSamplesMs.join(', ')}`);
-        if (report.batch.meanSerialQueryMs !== undefined)
-          console.log(
-            `Mean serial attempt wall time: ${report.batch.meanSerialQueryMs.toFixed(3)} ms (mean dispatch-to-result)`,
-          );
-        console.log(
-          `Quality: ${report.batch.quality.completed}/${selected.length} complete; total modeled travel time: ${report.batch.quality.totalCostSeconds ?? 'incomplete'} s`,
-        );
-        if (output.comparison) {
-          console.log(
-            `Reference: ${output.comparison.pairedCompleted} paired completions; lost ${output.comparison.lostSolutions.length}; gained ${output.comparison.gainedSolutions.length}; geometric mean cost ratio ${output.comparison.geometricMeanCostRatio ?? 'unavailable'}; worst ${output.comparison.worstCostRatio ?? 'unavailable'} (lower is better)`,
-          );
-          console.table(output.comparison.pairs);
+          console.log(output.policy);
         }
-        console.log(output.policy);
+        if (!gate.passed) {
+          console.error(`Benchmark quality gate failed: ${gate.failures.join('; ')}`);
+          process.exitCode = 1;
+        }
+      } finally {
+        await scenario.close();
       }
-      if (!gate.passed) {
-        console.error(`Benchmark quality gate failed: ${gate.failures.join('; ')}`);
-        process.exitCode = 1;
-      }
-    } finally {
-      await solver.close();
     }
   } catch (error) {
     const failure = {

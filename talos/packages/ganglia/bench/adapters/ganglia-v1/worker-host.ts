@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
-import { prepareRouteSolver } from '@opendfieldmap/ganglia';
+import { prepareRouteSolver, type PreparedRouteSolver } from '@opendfieldmap/ganglia';
 
 import type { loadScene } from '#@/bench/adapters/ganglia-v1/scene.ts';
 import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
@@ -55,12 +55,26 @@ export function serveWorker(
     let active: ({ id: number } & ReturnType<typeof requestControl>) | undefined;
     const checkpoint = () => active?.checkpoint();
     const scene = await load(setup, (files) => send({ type: 'region', files }), checkpoint);
-    const preparationStarted = performance.now();
-    const solver = await prepareRouteSolver(
-      setup.config as import('#@/src/solver/ganglia-v1.ts').GangliaV1Config,
-      scene.input,
-    );
-    const rustSolver = native ? (solver as RustPreparedSolver) : undefined;
+    let solver: PreparedRouteSolver | undefined;
+    let rustSolver: RustPreparedSolver | undefined;
+    let initialization: Promise<void> | undefined;
+    let preparationMs = scene.timings.preparationMs;
+    const initialize = () => {
+      if (!initialization)
+        initialization = (async () => {
+          const started = performance.now();
+          solver = await prepareRouteSolver(
+            setup.config as import('#@/src/solver/ganglia-v1.ts').GangliaV1Config,
+            scene.input,
+          );
+          rustSolver = native ? (solver as RustPreparedSolver) : undefined;
+          if (rustSolver) rustSolver.setCatalogPhase(catalogPhase);
+          else setActionCatalogPhase(catalogPhase);
+          preparationMs += performance.now() - started;
+        })();
+      return initialization;
+    };
+    if (!setup.deferKernel) await initialize();
     const nativeBinary = native
       ? {
           path: rustLibraryPath(),
@@ -80,18 +94,32 @@ export function serveWorker(
         added: Number(stats.actions),
       };
     };
-    if (rustSolver) rustSolver.setCatalogPhase(catalogPhase);
-    else setActionCatalogPhase(catalogPhase);
-    const preparationMs = scene.timings.preparationMs + performance.now() - preparationStarted;
     process.on('message', async (message: WorkerRequest) => {
       if (message.type === 'cancel') {
         if (active?.id === message.id) active.controller.abort();
         return;
       }
       if (message.type === 'close') {
-        await solver.close();
+        await initialization?.catch(() => {});
+        await solver?.close();
         send({ type: 'closed' });
         process.disconnect();
+        return;
+      }
+      if (message.type === 'initialize') {
+        try {
+          const before = preparationMs;
+          await initialize();
+          send({
+            type: 'control',
+            id: message.id,
+            catalog: catalogStats(),
+            memory: workerMemory(),
+            preparationMs: preparationMs - before,
+          });
+        } catch (error) {
+          send({ type: 'error', id: message.id, error: String(error) });
+        }
         return;
       }
       if (message.type === 'verify') {
@@ -130,6 +158,7 @@ export function serveWorker(
       active = { id, ...control };
       resetTimings(scene.timings);
       try {
+        if (!solver) throw new Error('Scene worker kernel is not initialized');
         let result = await solver.solve(query, {
           signal: controller.signal,
           onEvent(event) {
@@ -156,7 +185,7 @@ export function serveWorker(
     });
     send({
       type: 'ready',
-      config: solver.config,
+      config: solver?.config ?? setup.config,
       metadata: { ...scene.metadata, ...(nativeBinary ? { native: nativeBinary } : {}) },
       inputLoadMs: scene.inputLoadMs,
       preparationMs,

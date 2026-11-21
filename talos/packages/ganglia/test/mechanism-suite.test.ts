@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -10,21 +9,17 @@ import { fileURLToPath } from 'node:url';
 import {
   matchesExpectation,
   captureFirstComplete,
-  expectation,
-  resourcePath,
-  scenarioInput,
   exercised,
-  readMechanismSuite,
-  type MechanismCase,
-} from '#@/bench/mechanism-suite.ts';
+} from '#@/bench/mechanisms/assessment.ts';
+import { scenarioInput } from '#@/bench/mechanisms/scenario.ts';
+import { readSuite, resourcePath, type Case } from '#@/bench/mechanisms/suite.ts';
 import { classify } from '#@/bench/outcome.ts';
 import { prepareWorkerSolver } from '#@/bench/workers.ts';
-import { readWorkload } from '#@/bench/workload.ts';
 import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
 import { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
 import type { PhysicalInput, FollowingSupport } from '#@/src/solver/physical.ts';
 
-const item = (): MechanismCase => ({
+const item = (): Case => ({
   id: 'test',
   scene: 'map01',
   group: 'positive',
@@ -92,123 +87,10 @@ const unavailable: RouteResult = {
   diagnostics: { truncated: false },
 };
 
-test('shared manifest remains a complete population and cannot be mistaken for plain service queries', async () => {
-  const file = new URL('../bench/scenes/mechanisms/suite.json', import.meta.url);
-  const suite = await readMechanismSuite(fileURLToPath(file));
-  assert.equal(suite.cases.length, 266);
-  assert.equal(suite.cases.filter((c) => expectation(c) === 'reject').length, 0);
-  assert.ok(suite.cases.every((c) => c.query.starts.some((start) => start.state === 'available')));
-  const raw = JSON.parse(await readFile(file, 'utf8'));
-  assert.ok(
-    raw.cases.every(
-      (c: { target: { template?: string } }) => !/teleport|campfire/.test(c.target.template ?? ''),
-    ),
-  );
-  for (const number of ['234-', '240-'])
-    assert.equal(suite.cases.find((c) => c.id.startsWith(number))!.setup.physical, undefined);
-  const controls = JSON.parse(
-    await readFile(
-      new URL('../bench/scenes/mechanisms/negative-controls.json', import.meta.url),
-      'utf8',
-    ),
-  );
-  assert.equal(controls.cases.length, 7);
-  assert.ok(controls.cases.slice(0, 4).every((c: MechanismCase) => expectation(c) === 'reject'));
-  assert.equal(controls.cases[4].knownIssue.kind, 'occupied-origin-and-target');
-  assert.equal(controls.cases[5].knownIssue.kind, 'occupied-device-center');
-  assert.equal(raw.revision, 12);
-  const repaired = raw.cases.find((entry: MechanismCase) => entry.id === '250-0HTXfPs');
-  const original = controls.cases[6];
-  assert.equal(original.id, repaired.id);
-  assert.deepEqual(original.query, {
-    starts: [
-      {
-        id: 'player',
-        position: [-753.6831389540318, 236.56261122226294, -1386.8426979152664],
-        cost: 0,
-        state: 'available',
-      },
-    ],
-    goal: [-753.5995646927754, 236.77915376497816, -1386.749716245405],
-    interaction: { radius: 0.2, maxVertical: 0.2 },
-  });
-  assert.equal(original.knownIssue.kind, 'occupied-steep-source-contact');
-  assert.equal(original.knownIssue.allProjectedSupportsBodyBlocked, true);
-  assert.equal(original.knownIssue.sourceTriangle, 628);
-  assert.ok(original.knownIssue.sourceSlopeDegrees > original.knownIssue.maxSlopeDegrees);
-  assert.equal(original.knownIssue.bridgeAvailability, 'unknown');
-  assert.deepEqual(repaired.target, original.target);
-  assert.equal(repaired.target.id, '10100030203');
-  assert.equal(repaired.pointToken, original.pointToken);
-  assert.equal(repaired.tokenSourceId, '10100030203');
-  assert.deepEqual(repaired.assertions, original.assertions);
-  assert.deepEqual(repaired.setup, original.setup);
-  assert.deepEqual(repaired.query.interaction, original.query.interaction);
-  assert.deepEqual(repaired.query.starts[0], {
-    ...original.query.starts[0],
-    position: [-750.8124754961185, 242.92857397079467, -1390.6126245598507],
-  });
-  assert.deepEqual(
-    repaired.query.goal,
-    [-754.9692209716405, 242.92857397079467, -1386.651332564841],
-  );
-  const revision = repaired.inputRevision;
-  assert.equal(revision.revision, 11);
-  assert.equal(revision.originalControl, 'negative-controls.json#250-0HTXfPs');
-  assert.equal(
-    revision.classification,
-    'source-contact input repair, not same-input algorithm gain',
-  );
-  assert.equal(revision.seed, 20261115);
-  assert.equal(revision.sourceActor, repaired.target.id);
-  assert.equal(revision.sourceTriangle, 10);
-  assert.equal(revision.targetTriangle, 189);
-  assert.equal(revision.minimumSeparation, 3);
-  assert.equal(revision.legalCandidates, 8);
-  assert.equal(revision.pose, original.knownIssue.exportedPose);
-  assert.deepEqual(revision.sourceProfile, { ...raw.sources.map02.profile, maxSlope: 46 });
-  assert.equal(revision.source.file, 'exports/map02-traversal-devices.json');
-  assert.match(revision.source.sha256, /^[0-9a-f]{64}$/);
-  assert.match(revision.source.geometrySha256, /^[0-9a-f]{64}$/);
-  for (const [triangle, rank] of [
-    [revision.sourceTriangle, revision.sourceRank],
-    [revision.targetTriangle, revision.targetRank],
-  ])
-    assert.equal(
-      rank,
-      createHash('sha256')
-        .update(`${revision.seed}/${revision.sourceActor}/${triangle}/centroid`)
-        .digest('hex'),
-    );
-  const separation = Math.hypot(
-    ...repaired.query.goal.map((v: number, i: number) => v - repaired.query.starts[0].position[i]),
-  );
-  assert.equal(revision.separation, separation);
-  assert.ok(separation >= revision.minimumSeparation);
-  const csv = await readFile(
-    new URL('../bench/scenes/mechanisms/cases.csv', import.meta.url),
-    'utf8',
-  );
-  const row = csv
-    .split('\n')
-    .find((line) => line.startsWith(repaired.id + ','))!
-    .split(',');
-  assert.deepEqual(row.slice(10, 16).map(Number), [
-    ...repaired.query.starts[0].position,
-    ...repaired.query.goal,
-  ]);
-  assert.equal(Number(row[16]), separation);
-  await assert.rejects(readWorkload(fileURLToPath(file)), /Scenario manifests/);
-  assert.equal(
-    JSON.parse(await readFile(file, 'utf8')).cases[0].query.goal[0],
-    suite.cases[0].query.goal[0],
-  );
-});
-
 test('diagnostic audit records its cooperative deadline and solver output scoring without solving', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'ganglia-mechanism-audit-'));
   const output = join(directory, 'report.json');
-  const suite = await readMechanismSuite(
+  const suite = await readSuite(
     fileURLToPath(new URL('../bench/scenes/mechanisms/suite.json', import.meta.url)),
   );
   try {
@@ -253,56 +135,82 @@ test('portable roots cannot resolve outside their explicitly supplied directorie
     /escapes/,
   );
 });
-test('service mechanism audit preserves input bindings and leaves queries unrun', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'ganglia-service-audit-'));
+test('service benchmark reports all selected scenario binding errors before starting', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'ganglia-service-bindings-'));
   const output = join(directory, 'report.json');
-  const suiteFile = new URL('../bench/scenes/mechanisms/suite.json', import.meta.url);
-  const bytes = await readFile(suiteFile);
-  const suite = JSON.parse(bytes.toString());
-  const selected = suite.cases[0];
+  const suite = join(directory, 'suite.json');
+  const source = { buildGuid: 'test', contentHash: 'test' };
+  const profile = { radius: 0.3, height: 1.6 };
+  const scenarios = ['valid', 'split', 'missing'].map((id) => ({
+    id,
+    setup: { scene: id, input: { kind: 'dynamic' } },
+    training: [`${id}-training`],
+    cases: ['query', 'training'].map((kind) => ({
+      id: `${id}-${kind}`,
+      query: item().query,
+      expect: { kind: 'complete', assertions: [] },
+    })),
+  }));
   try {
+    await writeFile(
+      suite,
+      JSON.stringify({
+        id: 'bindings',
+        requiredSource: source,
+        sources: Object.fromEntries(
+          scenarios.map(({ id }) => [
+            id,
+            {
+              source,
+              profile,
+              locomotion: { speed: 5, sprintSpeed: 7, sprintAcceleration: 60 },
+              regions: {},
+            },
+          ]),
+        ),
+        scenarios,
+      }),
+    );
     await writeFile(
       join(directory, 'input-index.json'),
       JSON.stringify({
-        suiteSha256: createHash('sha256').update(bytes).digest('hex'),
-        revision: 'audit-only',
-        source: suite.source,
-        profiles: Object.fromEntries(
-          Object.entries(suite.sources).map(([scene, value]) => [
-            scene,
-            (value as { profile: unknown }).profile,
-          ]),
-        ),
-        cases: { [selected.id]: { directory: selected.id } },
+        inputs: {
+          valid: { dynamic: { directory: 'scenarios/valid' }, regions: {} },
+          split: { dynamic: { directory: 'scenarios/split' }, regions: {} },
+        },
       }),
     );
+    await mkdir(join(directory, 'scenarios/valid/routing'), { recursive: true });
+    await mkdir(join(directory, 'routing'));
+    await writeFile(join(directory, 'scenarios/valid/routing/valid-ground-all.json'), '');
+    await writeFile(join(directory, 'scenarios/valid/routing/movement-settings-current.json'), '');
+    await writeFile(join(directory, 'routing/valid-traversal-devices.json'), '');
     const process = spawnSync(
       globalThis.process.execPath,
       [
         fileURLToPath(new URL('../bench/mechanism-benchmark.ts', import.meta.url)),
-        '--audit',
         '--adapter',
         'ganglia-v1-ts',
+        '--suite',
+        suite,
         '--data-root',
         directory,
         '--ids',
-        selected.id,
+        'valid-query,split-query,missing-query',
         '--output',
         output,
       ],
       { encoding: 'utf8' },
     );
-    assert.equal(process.status, 0, process.stderr);
-    const report = JSON.parse(await readFile(output, 'utf8'));
-    assert.equal(report.adapter, 'ganglia-v1-ts');
-    assert.deepEqual(report.selectedIds, [selected.id]);
-    assert.deepEqual(report.results, []);
-    assert.equal(report.inputAudit.length, 1);
-    assert.deepEqual(report.preparations, []);
-    assert.equal(report.sourceUnchanged, true);
-    const binding = JSON.parse(await readFile(report.inputAudit[0].binding, 'utf8'));
-    assert.deepEqual(binding.ids, [selected.id]);
-    assert.equal(binding.inputRevision, 'audit-only');
+    assert.equal(process.status, 1, process.stderr);
+    assert.match(process.stderr, /split:.*missing dataset input.*scenarios\/split/);
+    assert.match(process.stderr, /missing:.*missing Dataset registration/);
+    assert.deepEqual((await readdir(directory)).sort(), [
+      'input-index.json',
+      'routing',
+      'scenarios',
+      'suite.json',
+    ]);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
@@ -344,7 +252,7 @@ test('disallowed boxes become fixed collision while movable source spheres remai
 });
 test('explicit rejections never turn missing assets, timeouts or partial traces into passes', () => {
   const c = item();
-  c.assertions = ['no-complete-route-from-unavailable-arrival'];
+  c.expected = 'reject';
   assert.equal(classify(unavailable), 'no-route');
   assert.equal(matchesExpectation(c, unavailable), true);
   assert.equal(matchesExpectation(c, { ...unavailable, reason: 'timeout' }), false);

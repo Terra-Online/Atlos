@@ -17,6 +17,7 @@ import { verifyRoute } from '#@/src/evaluation/route.ts';
 import type { SolverSettings } from '#@/src/solver/contract.ts';
 
 type Control =
+  | { type: 'initialize' }
   | { type: 'catalog-phase'; phase: CatalogStats['phase'] }
   | { type: 'benchmark-phase'; phase: 'prewarm' | 'batch' };
 
@@ -44,6 +45,8 @@ export interface WorkerSetup {
   index: number;
   preparation?: { config: string; devices?: string };
   catalogPhase?: CatalogStats['phase'];
+  /** Load the scene now and construct its solver on an explicit initialize request. */
+  deferKernel?: boolean;
 }
 export type WorkerRequest =
   | { type: 'setup'; setup: WorkerSetup }
@@ -74,7 +77,13 @@ export type WorkerReply =
   | { type: 'verified'; id: number; evaluation: Evaluation }
   | { type: 'event'; id: number; event: RouteEvent; memory?: Memory; detail?: string }
   | { type: 'region'; files: RegionFiles }
-  | { type: 'control'; id: number; catalog?: CatalogStats; memory?: Memory }
+  | {
+      type: 'control';
+      id: number;
+      catalog?: CatalogStats;
+      memory?: Memory;
+      preparationMs?: number;
+    }
   | { type: 'error'; id: number; error: string }
   | { type: 'closed' };
 type Task = {
@@ -118,6 +127,7 @@ export async function prepareWorkerSolver(options: {
   entry?: URL;
   timeoutMs?: number;
   preparation?: WorkerSetup['preparation'];
+  deferKernel?: boolean;
   onRegion?: (files: RegionFiles) => void;
   onResult?: (query: RouteQuery, result: WorkerResult) => void;
   onEvent?: (query: RouteQuery, event: RouteEvent, memory?: Memory, detail?: string) => void;
@@ -162,6 +172,8 @@ export async function prepareWorkerSolver(options: {
   >();
   const controls = new Map<number, { resolve: () => void; reject: (error: Error) => void }>();
   let catalogPhase: CatalogStats['phase'] = 'disabled';
+  let initialized = !options.deferKernel;
+  let initialization: Promise<void> | undefined;
   const activeCount = () => slots.filter((slot) => slot.active).length;
   const drained = () => {
     if (!queued.length && !activeCount()) notifyDrained?.();
@@ -328,11 +340,20 @@ export async function prepareWorkerSolver(options: {
           if (message.type === 'closed') return;
           if (message.type === 'control') {
             slot.catalog = message.catalog;
+            if (message.preparationMs !== undefined) {
+              slot.preparationMs = (slot.preparationMs ?? 0) + message.preparationMs;
+              timings.preparationMs += message.preparationMs;
+            }
             if (message.memory) {
               slot.preparedMemory = message.memory;
               sample(slot, message.memory);
             }
             controls.get(message.id)?.resolve();
+            controls.delete(message.id);
+            return;
+          }
+          if (message.type === 'error' && controls.has(message.id)) {
+            controls.get(message.id)!.reject(new Error(message.error));
             controls.delete(message.id);
             return;
           }
@@ -451,6 +472,7 @@ export async function prepareWorkerSolver(options: {
             index: slot.index,
             preparation: options.preparation,
             catalogPhase,
+            deferKernel: options.deferKernel,
           },
         } satisfies WorkerRequest,
         (error) => {
@@ -503,6 +525,7 @@ export async function prepareWorkerSolver(options: {
   const submit = (query: RouteQuery, solveOptions: SolveOptions = {}, workerIndex?: number) => {
     if (failure) return Promise.reject(failure);
     if (closed) return Promise.reject(new Error('Scene worker solver is closed'));
+    if (!initialized) return Promise.reject(new Error('Scene worker kernel is not initialized'));
     return new Promise<RouteResult>((resolve, reject) => {
       const task: Task = {
         message: {
@@ -584,6 +607,15 @@ export async function prepareWorkerSolver(options: {
   };
   return {
     solver,
+    initialize() {
+      if (!initialization)
+        initialization = initialized
+          ? Promise.resolve()
+          : control({ type: 'initialize' }).then(() => {
+              initialized = true;
+            });
+      return initialization;
+    },
     async verify(query: RouteQuery, result: RouteResult): Promise<Evaluation> {
       const contract = verifyRoute(query, result.route, prepared!.metadata.rules);
       if (!contract.valid || result.partial) return contract;
@@ -605,10 +637,13 @@ export async function prepareWorkerSolver(options: {
     },
     // Every prepared process sees the same declared training set in the same
     // order. Splitting training across lanes would benchmark different catalogs.
-    async train(queries: readonly RouteQuery[]) {
+    async train(queries: readonly RouteQuery[], solveOptions: SolveOptions = {}) {
       const results: RouteResult[][] = slots.map(() => []);
       for (const query of queries) {
-        const batch = await Promise.all(slots.map((slot) => submit(query, {}, slot.index)));
+        solveOptions.signal?.throwIfAborted();
+        const batch = await Promise.all(
+          slots.map((slot) => submit(query, solveOptions, slot.index)),
+        );
         batch.forEach((result, index) => results[index].push(result));
       }
       if (failure) throw failure;
@@ -628,6 +663,7 @@ export async function prepareWorkerSolver(options: {
         if (!slot.catalog) throw new Error('Adapter does not provide catalog statistics');
         return slot.catalog;
       }),
+    catalogs: () => slots.map((slot) => slot.catalog),
     inputLoadMs,
     timings,
     get recoverySetupMs() {
@@ -675,3 +711,6 @@ export async function prepareWorkerSolver(options: {
     },
   };
 }
+
+/** The loaded scene and its owning processes remain local to this handle. */
+export type WorkerInput = Awaited<ReturnType<typeof prepareWorkerSolver>>;

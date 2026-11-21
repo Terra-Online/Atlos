@@ -231,7 +231,6 @@ test('references bind the same problem and data while allowing algorithm/config 
   };
   const reference = {
     ...binding,
-    schemaVersion: 11,
     queryCutoffMs: 60_000,
     hashes: { '/old/ground.json': 'abc' },
     config: { algorithm: 'other' },

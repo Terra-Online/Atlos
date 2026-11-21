@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from 'node:util';
 
-import type { MechanismCase } from '#@/bench/mechanism-suite.ts';
+import type { Case } from '#@/bench/mechanisms/suite.ts';
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
 import { createTypeScriptCollisionWorld } from '#@/src/model/collision.ts';
@@ -114,8 +114,8 @@ export class QueryInputError extends Error {
  * answer. Failed finite witnesses remain an unresolved input setup, not proof
  * that the requested destination is unreachable.
  */
-export async function resolveMechanismQuery(
-  item: MechanismCase,
+export async function resolveQuery(
+  item: Case,
   source: QuerySource,
   snapshot: (start: GroundArrival, volume: Volume) => Promise<SourceSnapshot | null>,
 ): Promise<{ query: RouteQuery; receipt: StartResolution }> {

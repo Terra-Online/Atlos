@@ -8,23 +8,21 @@ import { isDeepStrictEqual } from 'node:util';
 import { loadScene, type GameAdapter } from '#@/bench/adapters/ganglia-v1/scene.ts';
 import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import {
-  resolveMechanismQuery,
+  captureFirstComplete,
+  facilityAudit,
+  type FacilityCatalog,
+  exercised,
+  type Result,
+} from '#@/bench/mechanisms/assessment.ts';
+import {
+  resolveQuery,
   sourceSupportWorld,
   QueryInputError,
   witnessLimit,
   type StartResolution,
-} from '#@/bench/mechanism-query.ts';
-import {
-  checkSetup,
-  captureFirstComplete,
-  facilityAudit,
-  type FacilityCatalog,
-  resourcePath,
-  scenarioInput,
-  exercised,
-  type MechanismBinding,
-  type MechanismResult,
-} from '#@/bench/mechanism-suite.ts';
+} from '#@/bench/mechanisms/query.ts';
+import { scenarioInput } from '#@/bench/mechanisms/scenario.ts';
+import { checkSetup, resourcePath, type Binding } from '#@/bench/mechanisms/suite.ts';
 import { exportPhysicalRegion } from '#@/bench/prepare-region.ts';
 import { decodeSnapshot } from '#@/bench/scene-data.ts';
 import { createTimings } from '#@/bench/timings.ts';
@@ -44,7 +42,7 @@ const send = (message: WorkerReply) => process.send!(message);
 process.once('message', async (message: WorkerRequest) => {
   if (message.type !== 'setup') throw new Error('Mechanism worker requires setup');
   const setup = message.setup,
-    binding = JSON.parse(await readFile(setup.dataRoot, 'utf8')) as MechanismBinding;
+    binding = JSON.parse(await readFile(setup.dataRoot, 'utf8')) as Binding;
   const item = binding.item;
   let solver: PreparedRouteSolver | undefined, input: PhysicalInput | undefined;
   let resolvedQuery = item.query;
@@ -86,16 +84,13 @@ process.once('message', async (message: WorkerRequest) => {
       phase === 'source-admission' ? JSON.stringify(detail) : phase,
     );
   };
-  const resolveStarts = async (
-    catalog: unknown,
-    snapshot: Parameters<typeof resolveMechanismQuery>[2],
-  ) => {
+  const resolveStarts = async (catalog: unknown, snapshot: Parameters<typeof resolveQuery>[2]) => {
     if (!item.setup.projectStartToPhysicalSupport) return;
     progress({ type: 'progress', phase: 'prepare' }, 'source-start-resolution');
     const facts = binding.suite.sources[item.scene];
     const file = facts.interactives ? resourcePath(facts.interactives, binding.roots) : '';
     try {
-      const prepared = await resolveMechanismQuery(
+      const prepared = await resolveQuery(
         item,
         {
           file,
@@ -146,9 +141,11 @@ process.once('message', async (message: WorkerRequest) => {
       pathToFileURL(resolve(binding.kernel, 'src/solver/host.ts')).href
     )) as { createPhysicalPreparation: typeof createPhysicalPreparation };
     if (item.setup.physical) {
+      const diagnostic = item.setup.physical.diagnostic;
+      if (!diagnostic) throw new Error('Missing retained diagnostic files for fixed window');
       const files = {
-        ground: resourcePath(item.setup.physical.ground, binding.roots),
-        collision: resourcePath(item.setup.physical.collision, binding.roots),
+        ground: resourcePath(diagnostic.ground, binding.roots),
+        collision: resourcePath(diagnostic.collision, binding.roots),
         movement: resolve(binding.roots.exports, 'movement-settings-current.json'),
         devices: resolve(
           binding.deviceExports ?? binding.roots.exports,
@@ -382,7 +379,7 @@ process.once('message', async (message: WorkerRequest) => {
     let preparationMs = 0;
     let result: RouteResult;
     let solverMs: number | undefined;
-    const describe = (result: RouteResult, solverMs?: number): MechanismResult => ({
+    const describe = (result: RouteResult, solverMs?: number): Result => ({
       ...result,
       diagnostics: {
         ...result.diagnostics,
