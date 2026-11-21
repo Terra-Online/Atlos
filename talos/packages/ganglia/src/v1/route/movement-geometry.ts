@@ -94,7 +94,12 @@ export const movementGeometry = (
           );
           boundaries = extra.length ? [...baseGeo.boundaries, ...extra] : baseGeo.boundaries;
         } else {
-          boundaries = exposedBoundaries(surfaces, options.portals ?? [], portals);
+          boundaries = exposedBoundaries(
+            surfaces,
+            options.portals ?? [],
+            portals,
+            reused ? prepared.directed : undefined,
+          );
         }
       }
       return boundaries;

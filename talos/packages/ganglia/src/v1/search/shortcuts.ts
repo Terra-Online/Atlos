@@ -237,17 +237,43 @@ function prepareGeometry(surfaces: Surface[], options: DiscoveryOptions): Prepar
   const representatives: string[] = [];
   const componentOf = (id: string) => topology.components[topology.ids.get(id)!];
   for (const node of graph.nodes) representatives[componentOf(node.id)] ??= node.id;
-  const boundaries = shared.boundaries.map((boundary, ordinal) => ({
-    ...boundary,
-    ordinal,
-    min: [0, 1, 2].map((axis) => Math.min(boundary.a[axis], boundary.b[axis])),
-    max: [0, 1, 2].map((axis) => Math.max(boundary.a[axis], boundary.b[axis])),
-  }));
-  const landingSurfaces = surfaces.map((surface) => ({
-    ...surface,
-    min: [0, 1, 2].map((axis) => Math.min(...surface.vertices.map((point) => point[axis]))),
-    max: [0, 1, 2].map((axis) => Math.max(...surface.vertices.map((point) => point[axis]))),
-  }));
+  const boundaries = new Array<IndexedBoundary>(shared.boundaries.length);
+  for (let i = 0; i < shared.boundaries.length; i++) {
+    const boundary = shared.boundaries[i];
+    const a = boundary.a,
+      b = boundary.b;
+    boundaries[i] = {
+      ...boundary,
+      ordinal: i,
+      min: [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.min(a[2], b[2])],
+      max: [Math.max(a[0], b[0]), Math.max(a[1], b[1]), Math.max(a[2], b[2])],
+    };
+  }
+  const landingSurfaces = new Array<LandingFace>(surfaces.length);
+  for (let i = 0; i < surfaces.length; i++) {
+    const surface = surfaces[i];
+    const verts = surface.vertices;
+    let minX = Infinity,
+      minY = Infinity,
+      minZ = Infinity;
+    let maxX = -Infinity,
+      maxY = -Infinity,
+      maxZ = -Infinity;
+    for (let j = 0; j < verts.length; j++) {
+      const p = verts[j];
+      if (p[0] < minX) minX = p[0];
+      if (p[1] < minY) minY = p[1];
+      if (p[2] < minZ) minZ = p[2];
+      if (p[0] > maxX) maxX = p[0];
+      if (p[1] > maxY) maxY = p[1];
+      if (p[2] > maxZ) maxZ = p[2];
+    }
+    landingSurfaces[i] = {
+      ...surface,
+      min: [minX, minY, minZ],
+      max: [maxX, maxY, maxZ],
+    };
+  }
   const geometry: PreparedGeometry = {
     ...adjacency(graph.edges, shared.forward),
     lengthScale: shared.lengthScale,

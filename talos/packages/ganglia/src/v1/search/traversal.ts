@@ -4,7 +4,12 @@ import { type Bounds, createBoundsIndex } from '#@/src/model/bounds.ts';
 import { createWallChecker } from '#@/src/model/walls.ts';
 import type { InteractionGoal, JumpModel } from '#@/src/movement.ts';
 import type { GroundConnection } from '#@/src/route.ts';
-import { type SharedPortal, surfacePortals, directedPortals } from '#@/src/v1/geo/surfaces.ts';
+import {
+  type DirectedPortal,
+  type SharedPortal,
+  surfacePortals,
+  directedPortals,
+} from '#@/src/v1/geo/surfaces.ts';
 import {
   arcEvidenceKey,
   discoveryEvidence,
@@ -146,103 +151,173 @@ export { groundComponents } from '#@/src/v1/reach/connectivity.ts';
 const finitePoint = (point: unknown) =>
   Array.isArray(point) && point.length === 3 && point.every(Number.isFinite);
 const distance = (a: readonly number[], b: readonly number[]) =>
-  Math.hypot(...a.map((value, axis) => value - b[axis]));
+  Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 const horizontal = (a: readonly number[], b: readonly number[]) =>
   Math.hypot(a[0] - b[0], a[2] - b[2]);
-const boundaryKey = (surface: string, edge: number) => `${surface}\0${edge}`;
 export const exposedBoundaries = (
   surfaces: Surface[],
   portals: Portal[],
   sharedPortals?: SharedPortal[],
+  preparedDirected?: DirectedPortal[],
 ): Boundary[] => {
-  const covered = new Map<string, [number, number][]>();
-  const byId = new Map<string, Surface>(surfaces.map((surface) => [surface.id, surface]));
+  const surfaceCount = surfaces.length;
+  const surfaceIndex = new Map<string, number>();
+  const edgeOffset = new Int32Array(surfaceCount);
+  let totalEdges = 0;
+  for (let i = 0; i < surfaceCount; i++) {
+    const surface = surfaces[i];
+    surfaceIndex.set(surface.id, i);
+    edgeOffset[i] = totalEdges;
+    totalEdges += surface.vertices.length;
+  }
+  // ~90% of mesh edges are fully covered [0, 1] by shared portals. Track full
+  // coverage in a compact bit-byte array and allocate range tuples only for
+  // partially covered edges, avoiding millions of string keys and closures.
+  const fullCovered = new Uint8Array(totalEdges);
+  const partialCovered = new Map<number, [number, number][]>();
   const cover = (id: string, edge: number, start: Vec3, end: Vec3) => {
-    const surface = byId.get(id)!,
-      a = surface.vertices[edge],
-      b = surface.vertices[(edge + 1) % surface.vertices.length];
-    const direction = b.map((value, axis) => value - a[axis]);
-    const squared = direction.reduce((sum, value) => sum + value * value, 0);
-    const fraction = (point: Vec3) =>
-      point.reduce((sum, value, axis) => sum + (value - a[axis]) * direction[axis], 0) / squared;
-    const first = fraction(start),
-      last = fraction(end),
-      key = boundaryKey(id, edge);
-    const ranges = covered.get(key) ?? [];
-    ranges.push([Math.max(0, Math.min(first, last)), Math.min(1, Math.max(first, last))]);
-    covered.set(key, ranges);
+    const sIdx = surfaceIndex.get(id)!;
+    const slot = edgeOffset[sIdx] + edge;
+    if (fullCovered[slot]) return;
+    const verts = surfaces[sIdx].vertices;
+    const a = verts[edge];
+    const b = verts[(edge + 1) % verts.length];
+    const dx = b[0] - a[0],
+      dy = b[1] - a[1],
+      dz = b[2] - a[2];
+    const squared = dx * dx + dy * dy + dz * dz;
+    const first =
+      ((start[0] - a[0]) * dx + (start[1] - a[1]) * dy + (start[2] - a[2]) * dz) / squared;
+    const last = ((end[0] - a[0]) * dx + (end[1] - a[1]) * dy + (end[2] - a[2]) * dz) / squared;
+    const lo = Math.max(0, Math.min(first, last));
+    const hi = Math.min(1, Math.max(first, last));
+    if (lo === 0 && hi === 1) {
+      fullCovered[slot] = 1;
+      partialCovered.delete(slot);
+      return;
+    }
+    let ranges = partialCovered.get(slot);
+    if (!ranges) {
+      ranges = [];
+      partialCovered.set(slot, ranges);
+    }
+    ranges.push([lo, hi]);
   };
-  for (const portal of sharedPortals ?? surfacePortals(surfaces)) {
+  const shared = sharedPortals ?? surfacePortals(surfaces);
+  for (let i = 0; i < shared.length; i++) {
+    const portal = shared[i];
     cover(portal.from, portal.fromEdge, portal.start, portal.end);
     cover(portal.to, portal.toEdge, portal.start, portal.end);
   }
-  for (const portal of directedPortals(surfaces, portals)) {
+  const directed = preparedDirected ?? directedPortals(surfaces, portals);
+  for (let i = 0; i < directed.length; i++) {
+    const portal = directed[i];
     cover(portal.from, portal.fromEdge, portal.start, portal.end);
   }
   const boundaries: Boundary[] = [];
-  for (const surface of surfaces) {
-    const center = [0, 1, 2].map(
-      (axis) =>
-        surface.vertices.reduce((sum, point) => sum + point[axis], 0) / surface.vertices.length,
-    );
-    for (let edge = 0; edge < surface.vertices.length; edge++) {
-      const from = surface.vertices[edge],
-        to = surface.vertices[(edge + 1) % surface.vertices.length];
-      const ranges = (covered.get(boundaryKey(surface.id, edge)) ?? []).sort((a, b) => a[0] - b[0]);
-      const gaps = [];
-      let cursor = 0;
-      for (const [near, far] of ranges) {
-        if (near > cursor) gaps.push([cursor, near]);
-        cursor = Math.max(cursor, far);
-      }
-      if (cursor < 1) gaps.push([cursor, 1]);
-      for (const [near, far] of gaps) {
-        const a: Vec3 = [
-          from[0] + near * (to[0] - from[0]),
-          from[1] + near * (to[1] - from[1]),
-          from[2] + near * (to[2] - from[2]),
-        ];
-        const b: Vec3 = [
-          from[0] + far * (to[0] - from[0]),
-          from[1] + far * (to[1] - from[1]),
-          from[2] + far * (to[2] - from[2]),
-        ];
-        const midpoint: Vec3 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
-        const length = horizontal(a, b);
-        if (length <= 1e-4) continue;
-        const inward = [-(b[2] - a[2]) / length, (b[0] - a[0]) / length];
-        if (inward[0] * (center[0] - midpoint[0]) + inward[1] * (center[2] - midpoint[2]) < 0) {
-          inward[0] *= -1;
-          inward[1] *= -1;
+  for (let i = 0; i < surfaceCount; i++) {
+    const surface = surfaces[i];
+    const verts = surface.vertices;
+    const n = verts.length;
+    const baseSlot = edgeOffset[i];
+    // Defer centroid computation until at least one edge is not fully covered.
+    let hasCenter = false;
+    let cx = 0,
+      cy = 0,
+      cz = 0;
+    const emitGap = (edge: number, from: Vec3, to: Vec3, near: number, far: number) => {
+      const a: Vec3 = [
+        from[0] + near * (to[0] - from[0]),
+        from[1] + near * (to[1] - from[1]),
+        from[2] + near * (to[2] - from[2]),
+      ];
+      const b: Vec3 = [
+        from[0] + far * (to[0] - from[0]),
+        from[1] + far * (to[1] - from[1]),
+        from[2] + far * (to[2] - from[2]),
+      ];
+      const midpoint: Vec3 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
+      const length = horizontal(a, b);
+      if (length <= 1e-4) return;
+      if (!hasCenter) {
+        hasCenter = true;
+        for (let k = 0; k < n; k++) {
+          const p = verts[k];
+          cx += p[0];
+          cy += p[1];
+          cz += p[2];
         }
-        const interiorX = center[0] - midpoint[0],
-          interiorZ = center[2] - midpoint[2];
-        const interiorLength = Math.hypot(interiorX, interiorZ);
-        boundaries.push({
-          surface: surface.id,
-          edge,
-          a,
-          b,
-          midpoint,
-          length,
-          inward,
-          // The centroid direction also samples diagonal pullbacks on narrow
-          // triangles. The perpendicular normal remains the physical exit axis.
-          interior: [interiorX / interiorLength, interiorZ / interiorLength],
-        });
+        cx /= n;
+        cy /= n;
+        cz /= n;
       }
+      const inward: [number, number] = [-(b[2] - a[2]) / length, (b[0] - a[0]) / length];
+      if (inward[0] * (cx - midpoint[0]) + inward[1] * (cz - midpoint[2]) < 0) {
+        inward[0] *= -1;
+        inward[1] *= -1;
+      }
+      const interiorX = cx - midpoint[0],
+        interiorZ = cz - midpoint[2];
+      const interiorLength = Math.hypot(interiorX, interiorZ);
+      boundaries.push({
+        surface: surface.id,
+        edge,
+        a,
+        b,
+        midpoint,
+        length,
+        inward,
+        // The centroid direction also samples diagonal pullbacks on narrow
+        // triangles. The perpendicular normal remains the physical exit axis.
+        interior: [interiorX / interiorLength, interiorZ / interiorLength],
+      });
+    };
+    for (let edge = 0; edge < n; edge++) {
+      const slot = baseSlot + edge;
+      if (fullCovered[slot]) continue;
+      const from = verts[edge];
+      const to = verts[(edge + 1) % n];
+      const ranges = partialCovered.get(slot);
+      if (!ranges) {
+        emitGap(edge, from, to, 0, 1);
+        continue;
+      }
+      if (ranges.length > 1) ranges.sort((a, b) => a[0] - b[0]);
+      let cursor = 0;
+      for (let r = 0; r < ranges.length; r++) {
+        const near = ranges[r][0],
+          far = ranges[r][1];
+        if (near > cursor) emitGap(edge, from, to, cursor, near);
+        if (far > cursor) cursor = far;
+      }
+      if (cursor < 1) emitGap(edge, from, to, cursor, 1);
     }
   }
   return boundaries;
 };
 const horizontalGap = (a: Bounds, b: Bounds) =>
   Math.hypot(
-    ...[0, 2].map((axis) => Math.max(a.min[axis] - b.max[axis], b.min[axis] - a.max[axis], 0)),
+    Math.max(a.min[0] - b.max[0], b.min[0] - a.max[0], 0),
+    Math.max(a.min[2] - b.max[2], b.min[2] - a.max[2], 0),
   );
-const boundsOf = (vertices: Vec3[]): Bounds => ({
-  min: [0, 1, 2].map((axis) => Math.min(...vertices.map((point) => point[axis]))),
-  max: [0, 1, 2].map((axis) => Math.max(...vertices.map((point) => point[axis]))),
-});
+const boundsOf = (vertices: Vec3[]): Bounds => {
+  let minX = Infinity,
+    minY = Infinity,
+    minZ = Infinity;
+  let maxX = -Infinity,
+    maxY = -Infinity,
+    maxZ = -Infinity;
+  for (let i = 0; i < vertices.length; i++) {
+    const p = vertices[i];
+    if (p[0] < minX) minX = p[0];
+    if (p[1] < minY) minY = p[1];
+    if (p[2] < minZ) minZ = p[2];
+    if (p[0] > maxX) maxX = p[0];
+    if (p[1] > maxY) maxY = p[1];
+    if (p[2] > maxZ) maxZ = p[2];
+  }
+  return { min: [minX, minY, minZ], max: [maxX, maxY, maxZ] };
+};
 export const interleave = <T>(lists: T[][], limit: number): T[] => {
   const result: T[] = [];
   let active = lists.map((entries) => ({ entries, cursor: 0 }));
