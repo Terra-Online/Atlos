@@ -16,11 +16,6 @@ interface WallRecord extends Bounds {
   filled: boolean;
   ring?: Point2[];
 }
-type WallTree = Bounds &
-  (
-    | { entries: WallRecord[]; left?: never; right?: never }
-    | { entries?: never; left: WallTree; right: WallTree }
-  );
 const segmentDistance = (a: Point2, b: Point2, c: Point2, d: Point2) => {
   const cross = (p: Point2, q: Point2, r: Point2) =>
     (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]);
@@ -56,8 +51,12 @@ const insidePolygon = (point: Point2, ring: Point2[]) => {
   }
   return inside;
 };
-const finitePoint = (point: unknown) =>
-  Array.isArray(point) && point.length === 3 && point.every(Number.isFinite);
+const finitePoint = (point: unknown): point is Vec3 =>
+  Array.isArray(point) &&
+  point.length === 3 &&
+  Number.isFinite(point[0]) &&
+  Number.isFinite(point[1]) &&
+  Number.isFinite(point[2]);
 const validateProfile = (profile: Profile) => {
   if (
     !profile ||
@@ -178,36 +177,70 @@ const wallRecord = (
     ring: snapshot && points ? points.map((p) => [...p]) : points,
   };
 };
-const segmentTouchesBounds = (
-  start: Vec3,
-  end: Vec3,
-  min: readonly number[],
-  max: readonly number[],
-  inflation = 0,
-) => {
-  let near = 0,
-    far = 1;
-  for (let axis = 0; axis < 3; axis++) {
-    const delta = end[axis] - start[axis];
-    if (Math.abs(delta) < 1e-12) {
-      if (start[axis] < min[axis] - inflation || start[axis] > max[axis] + inflation) return false;
-    } else {
-      const a = (min[axis] - inflation - start[axis]) / delta,
-        b = (max[axis] + inflation - start[axis]) / delta;
-      near = Math.max(near, Math.min(a, b));
-      far = Math.min(far, Math.max(a, b));
-      if (near > far) return false;
-    }
+const segmentTouchesBoundsScalar = (
+  sx: number,
+  sy: number,
+  sz: number,
+  dx: number,
+  dy: number,
+  dz: number,
+  minX: number,
+  minY: number,
+  minZ: number,
+  maxX: number,
+  maxY: number,
+  maxZ: number,
+  inflation: number,
+): boolean => {
+  let near = 0;
+  let far = 1;
+  // X axis
+  if (Math.abs(dx) < 1e-12) {
+    if (sx < minX - inflation || sx > maxX + inflation) return false;
+  } else {
+    const inv = 1 / dx;
+    const a = (minX - inflation - sx) * inv;
+    const b = (maxX + inflation - sx) * inv;
+    const lo = a < b ? a : b;
+    const hi = a > b ? a : b;
+    if (lo > near) near = lo;
+    if (hi < far) far = hi;
+    if (near > far) return false;
+  }
+  // Y axis
+  if (Math.abs(dy) < 1e-12) {
+    if (sy < minY - inflation || sy > maxY + inflation) return false;
+  } else {
+    const inv = 1 / dy;
+    const a = (minY - inflation - sy) * inv;
+    const b = (maxY + inflation - sy) * inv;
+    const lo = a < b ? a : b;
+    const hi = a > b ? a : b;
+    if (lo > near) near = lo;
+    if (hi < far) far = hi;
+    if (near > far) return false;
+  }
+  // Z axis
+  if (Math.abs(dz) < 1e-12) {
+    if (sz < minZ - inflation || sz > maxZ + inflation) return false;
+  } else {
+    const inv = 1 / dz;
+    const a = (minZ - inflation - sz) * inv;
+    const b = (maxZ + inflation - sz) * inv;
+    const lo = a < b ? a : b;
+    const hi = a > b ? a : b;
+    if (lo > near) near = lo;
+    if (hi < far) far = hi;
+    if (near > far) return false;
   }
   return near <= far;
 };
-const touchesWall = (
+const touchesWallAfterBounds = (
   start: Vec3,
   end: Vec3,
   { min, max, margin, ring, filled, sphere }: WallRecord,
   inflation = 0,
 ) => {
-  if (!segmentTouchesBounds(start, end, min, max, inflation)) return false;
   if (sphere) return touchesSphere(start, end, sphere, inflation);
   if (!ring) return true;
   // Clip to vertical overlap before comparing XZ distances. A lower/upper walkway
@@ -229,6 +262,27 @@ const touchesWall = (
   }
   return filled && segmentDistance(a, b, ring.at(-1)!, ring[0]) <= margin + inflation + 1e-9;
 };
+const touchesWall = (start: Vec3, end: Vec3, record: WallRecord, inflation = 0) => {
+  if (
+    !segmentTouchesBoundsScalar(
+      start[0],
+      start[1],
+      start[2],
+      end[0] - start[0],
+      end[1] - start[1],
+      end[2] - start[2],
+      record.min[0],
+      record.min[1],
+      record.min[2],
+      record.max[0],
+      record.max[1],
+      record.max[2],
+      inflation,
+    )
+  )
+    return false;
+  return touchesWallAfterBounds(start, end, record, inflation);
+};
 /** Snapshot and validate exclusions for repeated feet-segment queries with one body.
  * Expanded 3D bounds include padding and all authored polyline/polygon vertices.
  * Optional spheres retain their round occupied volume, including initial overlap.
@@ -243,33 +297,195 @@ export function createWallChecker(walls: Wall[], profile: Profile) {
     const record = wallRecord(wall, profile.radius, profile.height, true);
     if (record) records.push(record);
   }
-  const build = (entries: WallRecord[]): WallTree => {
-    const min = [Infinity, Infinity, Infinity],
-      max = [-Infinity, -Infinity, -Infinity];
-    for (const entry of entries)
-      for (let axis = 0; axis < 3; axis++) {
-        min[axis] = Math.min(min[axis], entry.min[axis]);
-        max[axis] = Math.max(max[axis], entry.max[axis]);
-      }
-    if (entries.length <= 8) return { min, max, entries };
-    const spans = max.map((value, axis) => value - min[axis]);
-    const axis = spans.indexOf(Math.max(...spans));
-    entries.sort((a, b) => a.min[axis] + a.max[axis] - b.min[axis] - b.max[axis]);
-    const middle = Math.floor(entries.length / 2);
-    return { min, max, left: build(entries.slice(0, middle)), right: build(entries.slice(middle)) };
+  const count = records.length;
+  if (count === 0) {
+    return (start: Vec3, end: Vec3, inflation = 0) => {
+      if (!finitePoint(start) || !finitePoint(end) || !Number.isFinite(inflation) || inflation < 0)
+        throw new Error('Invalid wall query');
+      return false;
+    };
+  }
+
+  // Flat TypedArray BVH over active wall records for zero-allocation queries
+  // (prepareGraph invokes wall checks ~1M+ times across scene portals).
+  const maxNodes = Math.max(1, Math.ceil(count / 2) + 2);
+  let nodeBoxes = new Float64Array(maxNodes * 6);
+  let nodeLeft = new Int32Array(maxNodes);
+  let nodeRight = new Int32Array(maxNodes);
+  let nodeCount = 0;
+
+  const order = records.slice();
+  const build = (start: number, end: number): number => {
+    const node = nodeCount++;
+    let minX = Infinity,
+      minY = Infinity,
+      minZ = Infinity;
+    let maxX = -Infinity,
+      maxY = -Infinity,
+      maxZ = -Infinity;
+    for (let i = start; i < end; i++) {
+      const r = order[i];
+      if (r.min[0] < minX) minX = r.min[0];
+      if (r.min[1] < minY) minY = r.min[1];
+      if (r.min[2] < minZ) minZ = r.min[2];
+      if (r.max[0] > maxX) maxX = r.max[0];
+      if (r.max[1] > maxY) maxY = r.max[1];
+      if (r.max[2] > maxZ) maxZ = r.max[2];
+    }
+    const nOff = node * 6;
+    nodeBoxes[nOff] = minX;
+    nodeBoxes[nOff + 1] = minY;
+    nodeBoxes[nOff + 2] = minZ;
+    nodeBoxes[nOff + 3] = maxX;
+    nodeBoxes[nOff + 4] = maxY;
+    nodeBoxes[nOff + 5] = maxZ;
+    if (end - start <= 8) {
+      nodeLeft[node] = ~start;
+      nodeRight[node] = end;
+      return node;
+    }
+    const sx = maxX - minX,
+      sy = maxY - minY,
+      sz = maxZ - minZ;
+    const axis = sx >= sy && sx >= sz ? 0 : sy >= sz ? 1 : 2;
+    const slice = order
+      .slice(start, end)
+      .sort((a, b) => a.min[axis] + a.max[axis] - (b.min[axis] + b.max[axis]));
+    for (let i = 0; i < slice.length; i++) order[start + i] = slice[i];
+    const middle = (start + end) >>> 1;
+    nodeLeft[node] = build(start, middle);
+    nodeRight[node] = build(middle, end);
+    return node;
   };
-  const root = records.length ? build(records) : null;
+  build(0, count);
+
+  if (nodeCount < maxNodes) {
+    nodeBoxes = nodeBoxes.slice(0, nodeCount * 6);
+    nodeLeft = nodeLeft.slice(0, nodeCount);
+    nodeRight = nodeRight.slice(0, nodeCount);
+  }
+  const recBoxes = new Float64Array(count * 6);
+  for (let i = 0; i < count; i++) {
+    const r = order[i];
+    const rOff = i * 6;
+    recBoxes[rOff] = r.min[0];
+    recBoxes[rOff + 1] = r.min[1];
+    recBoxes[rOff + 2] = r.min[2];
+    recBoxes[rOff + 3] = r.max[0];
+    recBoxes[rOff + 4] = r.max[1];
+    recBoxes[rOff + 5] = r.max[2];
+  }
+
+  let stack = new Int32Array(128);
   return (start: Vec3, end: Vec3, inflation = 0) => {
     if (!finitePoint(start) || !finitePoint(end) || !Number.isFinite(inflation) || inflation < 0)
       throw new Error('Invalid wall query');
-    const stack = root ? [root] : [];
-    while (stack.length) {
-      const node = stack.pop()!;
-      if (!segmentTouchesBounds(start, end, node.min, node.max, inflation)) continue;
-      if (node.entries) {
-        for (const record of node.entries)
-          if (touchesWall(start, end, record, inflation)) return true;
-      } else stack.push(node.left, node.right);
+    const sx = start[0],
+      sy = start[1],
+      sz = start[2];
+    const ex = end[0],
+      ey = end[1],
+      ez = end[2];
+    const dx = ex - sx,
+      dy = ey - sy,
+      dz = ez - sz;
+    // Fast 6-comparison segment AABB pre-reject before ray-slab divisions.
+    const segMinX = (sx < ex ? sx : ex) - inflation;
+    const segMinY = (sy < ey ? sy : ey) - inflation;
+    const segMinZ = (sz < ez ? sz : ez) - inflation;
+    const segMaxX = (sx > ex ? sx : ex) + inflation;
+    const segMaxY = (sy > ey ? sy : ey) + inflation;
+    const segMaxZ = (sz > ez ? sz : ez) + inflation;
+
+    let top = 0;
+    stack[top++] = 0;
+    while (top > 0) {
+      const node = stack[--top];
+      const nOff = node * 6;
+      const bMinX = nodeBoxes[nOff],
+        bMinY = nodeBoxes[nOff + 1],
+        bMinZ = nodeBoxes[nOff + 2];
+      const bMaxX = nodeBoxes[nOff + 3],
+        bMaxY = nodeBoxes[nOff + 4],
+        bMaxZ = nodeBoxes[nOff + 5];
+      if (
+        segMinX > bMaxX ||
+        segMaxX < bMinX ||
+        segMinY > bMaxY ||
+        segMaxY < bMinY ||
+        segMinZ > bMaxZ ||
+        segMaxZ < bMinZ
+      )
+        continue;
+      if (
+        !segmentTouchesBoundsScalar(
+          sx,
+          sy,
+          sz,
+          dx,
+          dy,
+          dz,
+          bMinX,
+          bMinY,
+          bMinZ,
+          bMaxX,
+          bMaxY,
+          bMaxZ,
+          inflation,
+        )
+      )
+        continue;
+      const left = nodeLeft[node];
+      if (left >= 0) {
+        if (top + 2 > stack.length) {
+          const grown = new Int32Array(stack.length * 2);
+          grown.set(stack);
+          stack = grown;
+        }
+        stack[top++] = left;
+        stack[top++] = nodeRight[node];
+        continue;
+      }
+      const leafStart = ~left;
+      const leafEnd = nodeRight[node];
+      for (let i = leafStart; i < leafEnd; i++) {
+        const rOff = i * 6;
+        const rMinX = recBoxes[rOff],
+          rMinY = recBoxes[rOff + 1],
+          rMinZ = recBoxes[rOff + 2];
+        const rMaxX = recBoxes[rOff + 3],
+          rMaxY = recBoxes[rOff + 4],
+          rMaxZ = recBoxes[rOff + 5];
+        if (
+          segMinX > rMaxX ||
+          segMaxX < rMinX ||
+          segMinY > rMaxY ||
+          segMaxY < rMinY ||
+          segMinZ > rMaxZ ||
+          segMaxZ < rMinZ
+        )
+          continue;
+        if (
+          segmentTouchesBoundsScalar(
+            sx,
+            sy,
+            sz,
+            dx,
+            dy,
+            dz,
+            rMinX,
+            rMinY,
+            rMinZ,
+            rMaxX,
+            rMaxY,
+            rMaxZ,
+            inflation,
+          ) &&
+          touchesWallAfterBounds(start, end, order[i], inflation)
+        ) {
+          return true;
+        }
+      }
     }
     return false;
   };

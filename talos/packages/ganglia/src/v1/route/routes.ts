@@ -249,24 +249,33 @@ function prepareGraph(
     )
       throw new Error('Invalid corridor');
     validateMotion(edge);
-    if (
-      edge.state === 'open' &&
-      (!blocked || !edge.points.slice(1).some((p, i) => blocked(edge.points[i], p)))
-    ) {
-      const span = distance(nodes.get(edge.from)!, nodes.get(edge.to)!);
-      if (span > 0) maxSpeed = Math.max(maxSpeed, edge.cost === 0 ? Infinity : span / edge.cost);
-      let outgoing = edges.get(edge.from);
-      if (base && !copied!.has(edge.from)) {
-        outgoing = outgoing ? [...outgoing] : [];
-        edges.set(edge.from, outgoing);
-        copied!.add(edge.from);
-      } else if (!outgoing) {
-        outgoing = [];
-        edges.set(edge.from, outgoing);
+    if (edge.state === 'open') {
+      let edgeBlocked = false;
+      if (blocked) {
+        const pts = edge.points;
+        for (let i = 1; i < pts.length; i++) {
+          if (blocked(pts[i - 1], pts[i])) {
+            edgeBlocked = true;
+            break;
+          }
+        }
       }
-      outgoing.push(edge);
-      links?.push(edge);
-      accepted?.push(edge);
+      if (!edgeBlocked) {
+        const span = distance(nodes.get(edge.from)!, nodes.get(edge.to)!);
+        if (span > 0) maxSpeed = Math.max(maxSpeed, edge.cost === 0 ? Infinity : span / edge.cost);
+        let outgoing = edges.get(edge.from);
+        if (base && !copied!.has(edge.from)) {
+          outgoing = outgoing ? [...outgoing] : [];
+          edges.set(edge.from, outgoing);
+          copied!.add(edge.from);
+        } else if (!outgoing) {
+          outgoing = [];
+          edges.set(edge.from, outgoing);
+        }
+        outgoing.push(edge);
+        links?.push(edge);
+        accepted?.push(edge);
+      }
     }
   }
   return { nodes, edges, blocked, maxSpeed, links };
