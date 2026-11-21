@@ -926,3 +926,31 @@ test('discovers a source rope approach to a fresh airborne terminal from the sce
   assert.equal(result.route.goalHit?.segment, result.route.segments.length - 1);
   assert.ok(verifyRoute(query, result.route, { maxVertical: 0.5 }).valid);
 });
+
+test('failing single-window advanceTail covering start does not duplicate window.advance solving', async () => {
+  const { starts, resources, scene, config, locomotion } = fixture();
+  const steps: number[] = [];
+  resources.solve = async (_job, _request, _start, work) => {
+    steps.push(work.step);
+    return { status: 'ready', route: { status: 'no-verified-route' } };
+  };
+  resources.physicalRevision = () => 'rev-1';
+  const solver = await prepareRouteSolver(
+    { ...config, maxAttempts: 1 },
+    { kind: 'scene', scene, resources, locomotion },
+  );
+  try {
+    // Arrival [10,0,0] -> goal [20,0,0] fits inside one window (tailCoversStart=true).
+    const arrival = { ...starts[1], position: [10, 0, 0] as Vec3, cost: 0 };
+    const result = await solver.solve({ starts: [arrival], goal: [20, 0, 0] });
+    assert.equal(result.route.status, 'no-verified-route');
+    assert.equal(result.diagnostics.candidateAttempts, 1);
+    // Stage 2 must execute only ONCE (no duplicate solve after advanceTail fails
+    // and no duplicate stage-2 solve on expansion with identical physicalRevision).
+    assert.equal(steps.filter((step) => step === 2).length, 1);
+    // Walking stage should run at most twice (expansion=0 and expansion=1), NOT 4x.
+    assert.ok(steps.filter((step) => step === 0).length <= 2, `steps=${steps.join(',')}`);
+  } finally {
+    await solver.close();
+  }
+});

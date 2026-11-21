@@ -15,6 +15,10 @@ import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { releaseSupportCaches } from '#@/src/v1/solver/physical/support-cache.ts';
 import { physicalWork } from '#@/src/v1/solver/physical/work.ts';
 import { composeRoutes } from '#@/src/v1/solver/route-result.ts';
+import {
+  createPhysicalNogoodCache,
+  type PhysicalNogoodCache,
+} from '#@/src/v1/solver/scene/budget.ts';
 type Complete = Extract<Route, { status: 'complete' }>;
 type PreparedGround = {
   surfaces: Surface[];
@@ -86,6 +90,7 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
   points: Vec3[],
   settings: WindowConfig,
   groundCache = createWindowGroundCache(),
+  nogoods: PhysicalNogoodCache = createPhysicalNogoodCache(),
 ) {
   const physicalTileSpan = settings.tileSpan;
   const gridSpan = settings.gridSpan;
@@ -146,9 +151,10 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
   const pieces: Complete[] = [];
   const evidence: unknown[] = [];
   const failures = new Map<string, string>();
-  // Keep only the last full attempt in this root query. A completed bounded failure
-  // is not a global reachability claim; identical work proceeds to the same fallback.
-  let physicalFailure: { key: string; reason?: string; truncated: boolean } | undefined;
+  // Track the last stage-2 nogood key stored by this window so pending/aborted
+  // ground transitions invalidate only that uncertain entry while preserving
+  // certified cross-attempt/cross-expansion nogoods in the query-scoped cache.
+  let lastPhysicalKey: string | undefined;
   let widerDeviceTrial = false;
   const checkedPlain = new Set<string>();
   let truncated = false;
@@ -195,8 +201,8 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
   let compact: ReturnType<typeof createWindowRoute<Request, Job>> | undefined;
   return {
     async advanceTail(options: { signal?: AbortSignal } = {}): Promise<
-      | ReturnType<typeof progress>
-      | { status: 'incomplete'; reason: string }
+      | (ReturnType<typeof progress> & { coversStart?: boolean })
+      | { status: 'incomplete'; reason: string; coversStart?: boolean }
       | {
           status: 'partial';
           route: Complete;
@@ -246,6 +252,7 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
           candidates.slice(first + 1),
           settings,
           groundCache,
+          nogoods,
         );
       }
       const result = await tail.advance(options);
@@ -267,7 +274,9 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
                 (value, axis) => value === request.arrival.position[axis],
               ),
           }
-        : result;
+        : result.status === 'incomplete'
+          ? { ...result, coversStart: tailCoversStart }
+          : result;
     },
     async advance({
       maxWindows = Infinity,
@@ -378,6 +387,7 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
               [request.target],
               settings,
               groundCache,
+              nogoods,
             );
           }
         }
@@ -460,7 +470,10 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
           corridor,
         });
         if (!ground || ground.status !== 'ready') {
-          if (stage === 2) physicalFailure = undefined;
+          if (stage === 2 && lastPhysicalKey !== undefined) {
+            nogoods.delete(lastPhysicalKey);
+            lastPhysicalKey = undefined;
+          }
           if (!ground) return progress('incomplete', 'builder-unavailable');
           return ground.status === 'failed'
             ? progress('incomplete', ground.message)
@@ -522,9 +535,7 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
                 local.walls,
                 local.solverConfig,
               ]);
-        if (stage === 2 && (physicalKey === undefined || physicalFailure?.key !== physicalKey))
-          physicalFailure = undefined;
-        const failed = physicalKey === undefined ? undefined : physicalFailure;
+        const failed = physicalKey === undefined ? undefined : nogoods.get(physicalKey);
         let job: Job | null | undefined;
         // An intermediate device-only success can require a moved box even
         // when an ordinary jump would reach the same lift. Such a layout
@@ -566,7 +577,10 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
             { signal },
           );
           if (!job || job.status !== 'ready') {
-            if (stage === 2) physicalFailure = undefined;
+            if (stage === 2 && lastPhysicalKey !== undefined) {
+              nogoods.delete(lastPhysicalKey);
+              lastPhysicalKey = undefined;
+            }
             if (!job) return progress('incomplete', 'solver-unavailable');
             return job.status === 'failed'
               ? progress('incomplete', job.message)
@@ -595,12 +609,19 @@ export function createWindowRoute<Request extends WindowRequest, Job extends Win
             (route?.status === 'complete' && route.locomotion?.search?.truncated),
           );
         truncated ||= attemptTruncated;
-        if (!failed && stage === 2)
-          physicalFailure =
-            physicalKey !== undefined && route && route.status !== 'complete'
-              ? { key: physicalKey, reason: result.reason, truncated: attemptTruncated }
-              : undefined;
-        if (route?.status === 'complete') physicalFailure = undefined;
+        if (!failed && stage === 2) {
+          if (physicalKey !== undefined && route && route.status !== 'complete') {
+            nogoods.set(physicalKey, { reason: result.reason, truncated: attemptTruncated });
+            lastPhysicalKey = physicalKey;
+          } else if (lastPhysicalKey !== undefined) {
+            nogoods.delete(lastPhysicalKey);
+            lastPhysicalKey = undefined;
+          }
+        }
+        if (route?.status === 'complete') {
+          if (physicalKey !== undefined) nogoods.delete(physicalKey);
+          lastPhysicalKey = undefined;
+        }
         if (route?.status === 'complete') {
           const exit = route.points.at(-1)!;
           if (pieces.length && distance(position, route.points[0]) > 1e-4)

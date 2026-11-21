@@ -27,6 +27,7 @@ import {
   type AirborneWindow,
   type Entry,
 } from '#@/src/v1/solver/scene/airborne.ts';
+import { createQueryBudget } from '#@/src/v1/solver/scene/budget.ts';
 import { discoverRopeTerminal } from '#@/src/v1/solver/scene/rope-terminal.ts';
 import { createWindowGroundCache, createWindowRoute } from '#@/src/v1/solver/window-route.ts';
 
@@ -89,8 +90,8 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
       excludedArrivals = new Set<string>();
     let lastReason: string | undefined;
     let incumbent: RouteResult | undefined;
-    let partial: RouteResult | undefined,
-      attempts = 0;
+    let partial: RouteResult | undefined;
+    const budget = createQueryBudget(maxAttempts);
     let truncated = false;
     const stopped = (reason: string, limited = false): RouteResult =>
       incumbent || partial
@@ -100,14 +101,17 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
             diagnostics: {
               ...(incumbent ?? partial)?.diagnostics,
               truncated: truncated || limited || Boolean(incumbent?.diagnostics.truncated),
-              candidateAttempts: attempts,
+              candidateAttempts: budget.reportedAttempts,
             },
           }
         : {
             route: { status: 'no-verified-route' },
             connections: [],
             reason,
-            diagnostics: { truncated: truncated || limited, candidateAttempts: attempts },
+            diagnostics: {
+              truncated: truncated || limited,
+              candidateAttempts: budget.reportedAttempts,
+            },
           };
     const cancelled = () => options.signal?.aborted;
     const progress = (phase: 'search' | 'validate') =>
@@ -191,7 +195,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         distance(arrival.position, query.goal) / Math.max(locomotion.speed, locomotion.sprintSpeed);
       let triedTransport = false,
         triedBoundaryGuide = false;
-      candidates: for (; attempts < maxAttempts;) {
+      candidates: while (budget.canAttemptOrdinary()) {
         if (cancelled()) return stopped('aborted', true);
         let starts = query.starts.filter(
           (a) => a.state === 'available' && !excludedArrivals.has(a.id),
@@ -208,12 +212,15 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
           return stopped(
             incumbent ? 'anchor-comparison-complete' : (lastReason ?? 'no-available-arrival'),
           );
-        attempts++;
         await checkpoint(options.signal);
         progress('search');
         if (cancelled()) return stopped('aborted', true);
         const facilities =
-          !triedTransport && !terminal && query.interaction && resources.movingTransfers
+          !triedTransport &&
+          budget.canAttemptGuide() &&
+          !terminal &&
+          query.interaction &&
+          resources.movingTransfers
             ? planner.moving(
                 starts,
                 goal,
@@ -226,7 +233,11 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
             : undefined;
         triedTransport = true;
         const jumpModel: JumpModel | undefined =
-          !facilities && !terminal && !triedBoundaryGuide && !query.interaction?.airborne
+          !facilities &&
+          !terminal &&
+          !triedBoundaryGuide &&
+          budget.canAttemptGuide() &&
+          !query.interaction?.airborne
             ? resources.jumpModel
             : undefined;
         triedBoundaryGuide ||= Boolean(jumpModel);
@@ -240,19 +251,68 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         await checkpoint(options.signal);
         if (cancelled()) return stopped('aborted', true);
         if (proposal.status !== 'candidate') {
-          if (jumpModel) {
-            attempts--;
+          if (jumpModel) continue;
+          if (await discover()) {
+            budget.recordAttempt('ordinary');
             continue;
           }
-          if (await discover()) continue;
           if (!incumbent) return stopped('no-global-candidate');
+          budget.recordAttempt('ordinary');
           excludedArrivals.add(starts[0].id);
           continue;
         }
         const boundaryGuide = Boolean(
           jumpModel && proposal.unresolved.some((edge) => edge.key?.startsWith('["transfer",')),
         );
+        const isGuide = Boolean(facilities || boundaryGuide);
+        budget.recordAttempt(isGuide ? 'guide' : 'ordinary');
         const arrival = proposal.arrival;
+        const transfers = proposal.path
+          ?.filter((edge) => edge.unresolved)
+          .map((edge) => edge.points);
+        const proposalKey = JSON.stringify([
+          terminal?.id ?? null,
+          arrival.id,
+          Boolean(facilities),
+          proposal.points,
+          transfers ?? null,
+        ]);
+        const handleWindowFailure = async (
+          reason: string | undefined,
+          windowPoints: Vec3[],
+        ): Promise<'continue' | 'break' | RouteResult> => {
+          if (cancelled()) return stopped('aborted', true);
+          budget.recordFailedProposal(proposalKey, windowPoints);
+          lastReason = reason;
+          if (isGuide) {
+            // Guide attempts use their own bounded budget slot and do not
+            // consume ordinary candidate attempts when their window misses.
+            partial = undefined;
+            return 'break';
+          }
+          if (await discover()) return 'continue';
+          const edge = proposal.path?.find(
+            (edge) =>
+              edge.unresolved &&
+              !excludedEdges.includes(edge.key ?? edge.index) &&
+              edge.points.some((point) =>
+                windowPoints.some((candidate) => distance(point, candidate) < 1e-5),
+              ),
+          );
+          if (edge) excludedEdges.push(edge.key ?? edge.index);
+          else excludedArrivals.add(arrival.id);
+          if (!budget.canAttemptOrdinary()) return stopped(reason ?? 'candidate-budget', true);
+          return 'break';
+        };
+        if (budget.hasFailedProposal(proposalKey)) {
+          const action = await handleWindowFailure(
+            lastReason,
+            budget.failedProposalPoints(proposalKey) as Vec3[],
+          );
+          if (action === 'continue') continue candidates;
+          if (action === 'break') continue candidates;
+          return action;
+        }
         const window = createWindowRoute(
           resources,
           {
@@ -269,9 +329,10 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
             ...config,
             locomotion,
             transportGuide: Boolean(facilities),
-            transfers: proposal.path?.filter((edge) => edge.unresolved).map((edge) => edge.points),
+            transfers,
           },
           groundCache,
+          budget.nogoods,
         );
         const publish = (route: Complete, evidence: unknown[], isPartial: boolean): RouteResult => {
           if (!isPartial)
@@ -292,7 +353,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
               truncated:
                 truncated ||
                 Boolean(route.search?.truncated || route.locomotion?.search?.truncated),
-              candidateAttempts: attempts,
+              candidateAttempts: budget.reportedAttempts,
               ...(boundaryGuide && {
                 candidateGuide: 'source-boundaries',
               }),
@@ -311,6 +372,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
             });
           return result;
         };
+        let tailExhaustedRoot: { reason?: string; window: { points: Vec3[] } } | undefined;
         if (!partial && !incumbent) {
           if (terminal)
             partial = publish(terminal.route, [{ supportBoxes: terminal.supportBoxes }], true);
@@ -336,12 +398,32 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
               }
               if (tail.status !== 'pending') {
                 if (await discover()) continue candidates;
+                // When advanceTail covered the entire start->goal single window
+                // and exhausted every stage/expansion/split, reuse that failure
+                // directly instead of running window.advance() a second time.
+                if (
+                  tail.status === 'incomplete' &&
+                  tail.coversStart &&
+                  'window' in tail &&
+                  tail.window
+                ) {
+                  tailExhaustedRoot = tail;
+                }
                 break;
               }
               progress('validate');
               await resources.wait(options.signal);
             }
           }
+        }
+        if (tailExhaustedRoot) {
+          const action = await handleWindowFailure(
+            tailExhaustedRoot.reason,
+            tailExhaustedRoot.window.points,
+          );
+          if (action === 'continue') continue candidates;
+          if (action === 'break') continue candidates;
+          return action;
         }
         let lastPreviewPiece: Complete | undefined;
         while (!cancelled()) {
@@ -375,29 +457,10 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
             await resources.wait(options.signal);
             continue;
           }
-          if (cancelled()) return stopped('aborted', true);
-          lastReason = result.reason;
-          if (facilities || boundaryGuide) {
-            // A directed boundary or authored transport guide does not consume
-            // the ordinary budget when its physical window cannot validate it.
-            attempts--;
-            partial = undefined;
-            break;
-          }
-
-          if (await discover()) continue candidates;
-          const edge = proposal.path?.find(
-            (edge) =>
-              edge.unresolved &&
-              !excludedEdges.includes(edge.key ?? edge.index) &&
-              edge.points.some((point) =>
-                result.window.points.some((candidate) => distance(point, candidate) < 1e-5),
-              ),
-          );
-          if (edge) excludedEdges.push(edge.key ?? edge.index);
-          else excludedArrivals.add(arrival.id);
-          if (attempts >= maxAttempts) return stopped(result.reason ?? 'candidate-budget', true);
-          break;
+          const action = await handleWindowFailure(result.reason, result.window.points);
+          if (action === 'continue') continue candidates;
+          if (action === 'break') break;
+          return action;
         }
         if (cancelled()) return stopped('aborted', true);
       }

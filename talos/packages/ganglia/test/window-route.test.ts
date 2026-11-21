@@ -7,6 +7,7 @@ import type { WindowResources, WindowRequest, WindowJob } from '#@/src/solver/re
 import { setActionCatalogPhase } from '#@/src/v1/route/action-catalog.ts';
 import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { validateWaypoints } from '#@/src/v1/route/jump-planner.ts';
+import { createPhysicalNogoodCache } from '#@/src/v1/solver/scene/budget.ts';
 import {
   createWindowGroundCache,
   createWindowRoute,
@@ -751,3 +752,32 @@ for (const scenario of [
     }
   });
 }
+
+test('a shared query-scoped PhysicalNogoodCache reuses certified stage-2 failures across window instances', async () => {
+  const fixture = attemptFixture({ certified: true });
+  const nogoods = createPhysicalNogoodCache();
+  const makeWindow = () =>
+    createWindowRoute(
+      fixture.builder,
+      { ...request, target: [10, 0, 0] },
+      [
+        [0, 0, 0],
+        [10, 0, 0],
+      ],
+      settings,
+      createWindowGroundCache(),
+      nogoods,
+    );
+  const first = await finishWindow(makeWindow());
+  assert.equal(first.status, 'incomplete');
+  assert.equal(fixture.full.length, 1);
+  const hitsAfterFirst = nogoods.hits;
+  assert.ok(hitsAfterFirst >= 1);
+
+  const second = await finishWindow(makeWindow());
+  assert.deepEqual(second, first);
+  // Second window instance must hit the shared query nogood cache without a
+  // second stage-2 solve.
+  assert.equal(fixture.full.length, 1);
+  assert.ok(nogoods.hits > hitsAfterFirst);
+});
