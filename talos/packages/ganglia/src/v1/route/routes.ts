@@ -172,6 +172,8 @@ export function prepareRoutePlanner(graph: Graph, constraints?: RouteConstraints
     topology: GroundTopology;
     condensed: CondensedTopology;
     plan: ReturnType<typeof preparedSearch>;
+    removedEdges?: ReadonlySet<Edge>;
+    extraEdges?: readonly Edge[];
   } = {
     graph: graphSnapshot,
     forward: base.edges,
@@ -359,6 +361,8 @@ export function prepareOverlayRoutePlanner(
     forward,
     blocked: combinedBlocked,
     maxSpeed,
+    removedEdges,
+    extraEdges: acceptedExtra,
     get topology() {
       if (!topology) {
         if (extraDisjoint && extraGraph.nodes.length === 0) {

@@ -111,7 +111,7 @@ interface PreparedGeometry {
   boundaryComponents: Int32Array;
   landingComponents: Int32Array;
   forward: { get(id: string): WeightedEdge[] | undefined };
-  reverse: Map<string, WeightedEdge[]>;
+  reverse: { get(id: string): WeightedEdge[] | undefined };
   lengthScale: number;
   blocked: ReturnType<typeof movementGeometry>['blocked'];
   boundaries: IndexedBoundary[];
@@ -273,28 +273,75 @@ const adjacency = (edges: Edge[], sharedForward: PreparedGeometry['forward'] | u
   }
   return { forward, reverse };
 };
-function prepareGeometry(surfaces: Surface[], options: DiscoveryOptions): PreparedGeometry {
+const incrementalReverse = (
+  baseReverse: PreparedGeometry['reverse'],
+  removedEdges: ReadonlySet<Edge>,
+  extraEdges: readonly Edge[],
+): PreparedGeometry['reverse'] => {
+  if (removedEdges.size === 0 && extraEdges.length === 0) return baseReverse;
+  const affectedTo = new Set<string>();
+  for (const edge of removedEdges) affectedTo.add(edge.to);
+  for (let i = 0; i < extraEdges.length; i++) affectedTo.add(extraEdges[i].to);
+  const ownReverse = new Map<string, WeightedEdge[] | undefined>();
+  for (const toId of affectedTo) {
+    const baseList = baseReverse.get(toId);
+    if (!baseList) {
+      ownReverse.set(toId, undefined);
+      continue;
+    }
+    if (removedEdges.size === 0) {
+      ownReverse.set(toId, baseList.slice());
+    } else {
+      const filtered: WeightedEdge[] = [];
+      for (let i = 0; i < baseList.length; i++) {
+        const edge = baseList[i];
+        if (!removedEdges.has(edge as Edge)) filtered.push(edge);
+      }
+      ownReverse.set(toId, filtered.length ? filtered : undefined);
+    }
+  }
+  for (let i = 0; i < extraEdges.length; i++) {
+    const edge = extraEdges[i];
+    let list = ownReverse.get(edge.to);
+    if (!list) {
+      list = [];
+      ownReverse.set(edge.to, list);
+    }
+    list.push(edge);
+  }
+  return {
+    get: (id: string) => (ownReverse.has(id) ? ownReverse.get(id) : baseReverse.get(id)),
+  };
+};
+function prepareGeometry(
+  surfaces: Surface[],
+  options: Pick<DiscoveryOptions, 'walls' | 'profile' | 'portals' | 'groundPlanner'>,
+): PreparedGeometry {
   const shared = movementGeometry(surfaces, options);
   const cached = geometries.get(shared);
   if (cached) return cached;
   const { blocked, byId, centers, project, projectSupport, visibility, topology } = shared;
-  const graph = { nodes: shared.graph.nodes, edges: shared.graph.edges };
   const representatives: string[] = [];
   const componentOf = (id: string) => topology.components[topology.ids.get(id)!];
-  for (const node of graph.nodes) representatives[componentOf(node.id)] ??= node.id;
+  for (const [id, index] of topology.ids) {
+    representatives[topology.components[index]] ??= id;
+  }
   const candidate = groundPreparation(options.groundPlanner);
   const overlay = candidate?.surfaces === surfaces ? candidate.overlay : undefined;
+  const baseOptions = overlay && {
+    walls: overlay.basePrep.walls,
+    profile: overlay.basePrep.profile,
+    portals: overlay.basePrep.importedPortals,
+    groundPlanner: overlay.basePlanner,
+  };
+  const basePrepared = overlay
+    ? prepareGeometry(overlay.basePrep.surfaces, baseOptions!)
+    : undefined;
   let boundaries: IndexedBoundary[];
   let boundaryOverlay: PreparedGeometry['boundaryOverlay'];
-  if (overlay) {
-    const baseGeo = movementGeometry(overlay.basePrep.surfaces, {
-      walls: overlay.basePrep.walls,
-      profile: overlay.basePrep.profile,
-      portals: overlay.basePrep.importedPortals,
-      groundPlanner: overlay.basePlanner,
-    });
-    const baseRaw = baseGeo.boundaries;
-    const baseIndexed = getIndexedBoundaries(baseRaw);
+  if (overlay && basePrepared) {
+    const baseRaw = movementGeometry(overlay.basePrep.surfaces, baseOptions!).boundaries;
+    const baseIndexed = basePrepared.boundaries;
     if (shared.boundaries === baseRaw) {
       boundaries = baseIndexed;
     } else if (
@@ -320,9 +367,29 @@ function prepareGeometry(surfaces: Surface[], options: DiscoveryOptions): Prepar
   for (let i = 0; i < boundaries.length; i++) {
     boundaryComponents[i] = componentOf(boundaries[i].surface);
   }
-  const landingSurfaces = new Array<LandingFace>(surfaces.length);
-  const landingComponents = new Int32Array(surfaces.length);
-  for (let i = 0; i < surfaces.length; i++) {
+  let prefixCount = 0;
+  if (overlay && basePrepared) {
+    const baseSurfaces = overlay.basePrep.surfaces;
+    const baseCount = baseSurfaces.length;
+    if (surfaces.length >= baseCount) {
+      let matches = true;
+      for (let i = 0; i < baseCount; i++) {
+        if (surfaces[i] !== baseSurfaces[i]) {
+          matches = false;
+          break;
+        }
+      }
+      if (matches) prefixCount = baseCount;
+    }
+  }
+  const landingSurfaces =
+    prefixCount > 0 && prefixCount === surfaces.length
+      ? basePrepared!.landingSurfaces
+      : prefixCount > 0
+        ? basePrepared!.landingSurfaces.slice()
+        : new Array<LandingFace>(surfaces.length);
+  if (landingSurfaces.length < surfaces.length) landingSurfaces.length = surfaces.length;
+  for (let i = prefixCount; i < surfaces.length; i++) {
     const surface = surfaces[i];
     const verts = surface.vertices;
     let minX = Infinity,
@@ -346,10 +413,32 @@ function prepareGeometry(surfaces: Surface[], options: DiscoveryOptions): Prepar
       min: [minX, minY, minZ],
       max: [maxX, maxY, maxZ],
     };
-    landingComponents[i] = componentOf(surface.id);
   }
+  const landingComponents = new Int32Array(surfaces.length);
+  for (let i = 0; i < surfaces.length; i++) {
+    landingComponents[i] = componentOf(surfaces[i].id);
+  }
+  const routeBase = candidate?.routeBase;
+  const { forward, reverse } =
+    overlay &&
+    basePrepared &&
+    prefixCount === overlay.basePrep.surfaces.length &&
+    shared.forward !== undefined &&
+    basePrepared.forward === overlay.basePrep.routeBase.forward &&
+    routeBase?.removedEdges !== undefined &&
+    routeBase?.extraEdges !== undefined
+      ? {
+          forward: shared.forward,
+          reverse: incrementalReverse(
+            basePrepared.reverse,
+            routeBase.removedEdges,
+            routeBase.extraEdges,
+          ),
+        }
+      : adjacency(shared.graph.edges, shared.forward);
   const geometry: PreparedGeometry = {
-    ...adjacency(graph.edges, shared.forward),
+    forward,
+    reverse,
     lengthScale: shared.lengthScale,
     blocked,
     boundaries,

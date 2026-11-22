@@ -5,6 +5,7 @@ import { createCollisionWorld } from '#@/src/collision.ts';
 import type { Surface, Vec3, Wall } from '#@/src/geometry.ts';
 import type { GroundArrival, GroundConnection } from '#@/src/route.ts';
 import { jumpConnection } from '#@/src/v1/motion/jumps.ts';
+import { advanceDistanceField } from '#@/src/v1/reach/distance-field.ts';
 import {
   createGroundPlanner,
   createOverlayGroundPlanner,
@@ -910,4 +911,173 @@ test('overlay geometries sharing IndexedBoundary objects preserve differing comp
       groundPlanner: createGroundPlanner(layoutSurfaces, { ...groundOpts, walls: [idleWall] }),
     }),
   );
+});
+
+test('single-level and nested overlays reuse base reverse adjacency and landing AABBs with exact parity', () => {
+  // Static corridor with parallel detour (s0-s1-s2-s3 and b1-b2) plus disconnected goal ledge.
+  const staticSurfaces: Surface[] = [
+    floor('s0', 0, 4, 0, -2, 2),
+    floor('s1', 4, 8, 0, -2, 2),
+    floor('s2', 8, 12, 0, -2, 2),
+    floor('s3', 12, 16, 0, -2, 2),
+    floor('b1', 0, 4, 0, 2, 6),
+    floor('b2', 4, 12, 0, 2, 6),
+    floor('b3', 12, 16, 0, 2, 6),
+    floor('ledge', 18, 22, 0, -2, 2),
+  ];
+  const roof1a = floor('roof1a', 2, 4, 1.5, -8, -5);
+  const roof1b = floor('roof1b', 4, 6, 1.5, -8, -5);
+  const roof2a = floor('roof2a', 12, 14, 1.5, -8, -5);
+  const roof2b = floor('roof2b', 14, 16, 1.5, -8, -5);
+
+  const wall1: Wall = { min: [7.5, -1, -2.5], max: [8.5, 3, 2.5], state: 'active' };
+  const wall2: Wall = { min: [3.5, -1, -2.5], max: [4.5, 3, 2.5], state: 'active' };
+  const idleWall: Wall = { min: [100, -1, 100], max: [101, 3, 101], state: 'active' };
+
+  const layout1 = [...staticSurfaces, roof1a, roof1b];
+  const layout2 = [...layout1, roof2a, roof2b];
+  const allWorld = createCollisionWorld(geometry(layout2));
+  const groundOpts = { speed: options.speed, maxVertical: options.maxVertical, walls: [], profile };
+
+  const basePlanner = createGroundPlanner(staticSurfaces, groundOpts);
+  const overlay1 = createOverlayGroundPlanner(basePlanner, layout1, [roof1a, roof1b], [wall1], {
+    ...groundOpts,
+    walls: [wall1],
+  });
+  const overlay2 = createOverlayGroundPlanner(overlay1, layout2, [roof2a, roof2b], [wall2], {
+    ...groundOpts,
+    walls: [wall1, wall2],
+  });
+  const noopOverlay = createOverlayGroundPlanner(basePlanner, staticSurfaces, [], [idleWall], {
+    ...groundOpts,
+    walls: [idleWall],
+  });
+
+  const from: Vec3 = [2, 0, 0];
+  const to: Vec3 = [20, 0, 0];
+  const shortcutGoal: Vec3 = [14, 0, 0];
+  const arrivals: GroundArrival[] = [{ id: 'player', position: from, cost: 0, state: 'available' }];
+
+  const baseCache: ShortcutCache = {};
+  const noopCache: ShortcutCache = {};
+  const cache1: ShortcutCache = {};
+  const cache2: ShortcutCache = {};
+
+  findJumpFrontier(
+    staticSurfaces,
+    allWorld,
+    {
+      ...options,
+      walls: [],
+      from,
+      to,
+      groundPlanner: basePlanner,
+    },
+    baseCache,
+  );
+  findJumpFrontier(
+    staticSurfaces,
+    allWorld,
+    {
+      ...options,
+      walls: [idleWall],
+      from,
+      to,
+      groundPlanner: noopOverlay,
+    },
+    noopCache,
+  );
+
+  // No-op overlay reuses base landingSurfaces and reverse reference directly.
+  assert.equal(noopCache.geometry!.landingSurfaces, baseCache.geometry!.landingSurfaces);
+  assert.equal(noopCache.geometry!.reverse, baseCache.geometry!.reverse);
+
+  const checkParity = (
+    surfaces: Surface[],
+    walls: Wall[],
+    overlayPlanner: ReturnType<typeof createGroundPlanner>,
+    overlayCache: ShortcutCache,
+    expectedPrefixLen: number,
+    prevLanding: ShortcutCache['geometry'],
+  ) => {
+    const query: ShortcutOptions = {
+      ...options,
+      walls,
+      from,
+      to,
+      groundPlanner: overlayPlanner,
+    };
+    const freshPlanner = createGroundPlanner(surfaces, { ...groundOpts, walls });
+    const freshCache: ShortcutCache = {};
+
+    const actualFrontier = findJumpFrontier(surfaces, allWorld, query, overlayCache);
+    const freshFrontier = findJumpFrontier(
+      surfaces,
+      allWorld,
+      { ...query, groundPlanner: freshPlanner },
+      freshCache,
+    );
+    assert.deepEqual(actualFrontier, freshFrontier);
+
+    // Reverse frontier parity.
+    assert.deepEqual(
+      findJumpFrontier(surfaces, allWorld, query, {}, true),
+      findJumpFrontier(surfaces, allWorld, { ...query, groundPlanner: freshPlanner }, {}, true),
+    );
+
+    // Shortcut search parity (goal reachable via b1-b2-b3 detour).
+    const baseline = overlayPlanner.plan(arrivals, shortcutGoal);
+    assert.ok(baseline.status === 'complete');
+    const shortcutQuery: ShortcutOptions & {
+      baseline: Extract<typeof baseline, { status: 'complete' }>;
+    } = {
+      ...query,
+      to: shortcutGoal,
+      baseline,
+    };
+    const freshShortcuts = findJumpShortcuts(surfaces, allWorld, {
+      ...shortcutQuery,
+      groundPlanner: freshPlanner,
+    });
+    assert.deepEqual(findJumpShortcuts(surfaces, allWorld, shortcutQuery, {}), freshShortcuts);
+    assert.deepEqual(
+      findJumpShortcuts(surfaces, allWorld, shortcutQuery, overlayCache).connections,
+      freshShortcuts.connections,
+    );
+
+    // LandingFace prefix reuse + ordinal integrity.
+    const actualGeo = overlayCache.geometry!;
+    const freshGeo = freshCache.geometry!;
+    for (let i = 0; i < expectedPrefixLen; i++) {
+      assert.equal(actualGeo.landingSurfaces[i], prevLanding!.landingSurfaces[i]);
+    }
+    for (let i = 0; i < surfaces.length; i++) {
+      assert.equal(actualGeo.landingSurfaces[i].ordinal, i);
+    }
+
+    // Reverse adjacency and reverse distance field parity across every surface node.
+    for (const s of surfaces) {
+      assert.deepEqual(actualGeo.reverse.get(s.id), freshGeo.reverse.get(s.id));
+    }
+    const actualDist = advanceDistanceField(
+      actualGeo.reverse,
+      [],
+      [{ id: 's3', cost: 0 }],
+      true,
+      undefined,
+      actualGeo.lengthScale,
+    );
+    const freshDist = advanceDistanceField(
+      freshGeo.reverse,
+      [],
+      [{ id: 's3', cost: 0 }],
+      true,
+      undefined,
+      freshGeo.lengthScale,
+    );
+    assert.deepEqual(actualDist.costs, freshDist.costs);
+  };
+
+  checkParity(layout1, [wall1], overlay1, cache1, staticSurfaces.length, baseCache.geometry);
+  checkParity(layout2, [wall1, wall2], overlay2, cache2, layout1.length, cache1.geometry);
 });

@@ -56,17 +56,22 @@ export const movementGeometry = (
     reused && prepared.constraintsSignature === signature ? prepared.routeBase : undefined;
   const blocked = normalized?.blocked ?? createWallChecker(options.walls, options.profile);
   const base = reused || surfaceGraph(surfaces, { speed: 1, portals: options.portals }, portals);
-  const graph = normalized?.graph ?? {
-    nodes: base.nodes,
-    edges: base.edges.filter(
-      (edge) => !edge.points.slice(1).some((point, index) => blocked(edge.points[index], point)),
-    ),
-  };
   const byId =
     prepared?.byId ?? new Map<string, Surface>(surfaces.map((surface) => [surface.id, surface]));
-  let topology: GroundTopology | undefined, boundaries: Boundary[] | undefined;
+  let resolvedGraph: Graph | undefined,
+    topology: GroundTopology | undefined,
+    boundaries: Boundary[] | undefined;
+  const resolveGraph = () =>
+    (resolvedGraph ??= normalized?.graph ?? {
+      nodes: base.nodes,
+      edges: base.edges.filter(
+        (edge) => !edge.points.slice(1).some((point, index) => blocked(edge.points[index], point)),
+      ),
+    });
   const value: Geometry = {
-    graph,
+    get graph() {
+      return resolveGraph();
+    },
     forward: normalized?.forward,
     blocked,
     portals,
@@ -74,12 +79,12 @@ export const movementGeometry = (
     lengthScale: reused ? prepared.searchSpeed : 1,
     centers:
       prepared?.centers ??
-      new Map<string, Vec3>(graph.nodes.map((node) => [node.id, node.position])),
+      new Map<string, Vec3>(resolveGraph().nodes.map((node) => [node.id, node.position])),
     project: prepared?.projectGoal ?? createGoalProjector(surfaces),
     projectSupport: prepared?.projectSupport ?? createSupportProjector(surfaces, byId),
     visibility: prepared?.straighten,
     get topology() {
-      return normalized?.topology ?? (topology ??= groundComponents(graph));
+      return normalized?.topology ?? (topology ??= groundComponents(resolveGraph()));
     },
     get boundaries() {
       if (!boundaries) {
