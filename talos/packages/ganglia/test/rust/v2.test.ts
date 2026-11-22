@@ -9,6 +9,73 @@ import { prepareGangliaV2 } from '#@/src/solver/ganglia-v2-rust.ts';
 import { gangliaV2Defaults } from '#@/src/solver/ganglia-v2.ts';
 import { physical } from '#@/test/fixtures/v2-scene.ts';
 
+test('v2 prepares a floor after a large set of unsupported navigation faces', async () => {
+  const input = {
+    ...physical,
+    ground: {
+      ...physical.ground,
+      surfaces: [
+        ...Array.from({ length: 2050 }, (_, index) => ({
+          id: `unsupported/${index}`,
+          vertices: [
+            [100, 100, 100],
+            [101, 100, 100],
+            [101, 100, 101],
+          ] as Vec3[],
+        })),
+        ...physical.ground.surfaces,
+      ],
+    },
+  };
+  const solver = await prepareGangliaV2(gangliaV2Defaults, input, []);
+  try {
+    const result = await solver.solve({
+      starts: [{ id: 'player', position: [-2, 0, 0], cost: 0, state: 'available' }],
+      goal: [2, 0, 0],
+    });
+    assert.equal(result.route.status, 'complete');
+  } finally {
+    await solver.close();
+  }
+});
+
+test('v2 preserves collision typed-array views and rejects invalid numeric geometry', async () => {
+  const positions = new Float64Array(physical.collision.positions.length + 6);
+  positions.fill(Number.NaN);
+  positions.set(physical.collision.positions, 3);
+  const indices = new Uint32Array(physical.collision.indices.length + 2);
+  indices.fill(2 ** 32 - 1);
+  indices.set(physical.collision.indices, 1);
+  const collision = {
+    positions: positions.subarray(3, -3),
+    indices: indices.subarray(1, -1),
+  };
+  const solver = await prepareGangliaV2(gangliaV2Defaults, { ...physical, collision }, []);
+  try {
+    const result = await solver.solve({
+      starts: [{ id: 'player', position: [-2, 0, 0], cost: 0, state: 'available' }],
+      goal: [2, 0, 0],
+    });
+    assert.equal(result.route.status, 'complete');
+  } finally {
+    await solver.close();
+  }
+  for (const invalid of [Number.NaN, Infinity, -Infinity]) {
+    const malformed = { ...collision, positions: Float64Array.from(collision.positions) };
+    malformed.positions[0] = invalid;
+    await assert.rejects(
+      prepareGangliaV2(gangliaV2Defaults, { ...physical, collision: malformed }, []),
+    );
+  }
+  for (const invalid of [0.5, -1, Number.NaN, Infinity, 2 ** 32]) {
+    const malformed = { ...collision, indices: Array.from(collision.indices) };
+    malformed.indices[0] = invalid;
+    await assert.rejects(
+      prepareGangliaV2(gangliaV2Defaults, { ...physical, collision: malformed }, []),
+    );
+  }
+});
+
 test('v2 returns independently verifiable routes, measures optimization, and keeps its backbone frozen', async () => {
   const solver = await prepareGangliaV2(gangliaV2Defaults, physical, []);
   const query = {

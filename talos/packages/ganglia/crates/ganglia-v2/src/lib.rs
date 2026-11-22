@@ -93,6 +93,9 @@ impl Engine {
     pub fn new(input: &str) -> Result<Self, String> {
         let started = Instant::now();
         let input: Input = serde_json::from_str(input).map_err(|e| e.to_string())?;
+        Self::from_input(input, started)
+    }
+    fn from_input(input: Input, started: Instant) -> Result<Self, String> {
         let config = input.config;
         if config.population_size == 0
             || config.attempts_per_round == 0

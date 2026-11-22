@@ -55,11 +55,36 @@ export async function prepareGangliaV2(
   layouts: readonly (readonly { device: string; position: Vec3 }[])[] = [],
 ): Promise<V2PreparedSolver> {
   const { NativeEngine } = createRequire(import.meta.url)(gangliaV2LibraryPath()) as {
-    NativeEngine: new (input: string) => NativeEngine;
+    NativeEngine: new (
+      input: string,
+      surfaces: string[],
+      positions: Float64Array,
+      indices: Float64Array,
+    ) => NativeEngine;
   };
   const settings = Object.freeze({ ...config });
+  // A physical snapshot can exceed V8's single-string limit. Keep mesh buffers
+  // binary and bound each navigation JSON allocation independently of map size.
+  const surfaces: string[] = [];
+  for (let start = 0; start < physical.ground.surfaces.length; start += 1024) {
+    surfaces.push(encode(physical.ground.surfaces.slice(start, start + 1024)));
+  }
+  const { positions, indices } = physical.collision;
   let engine: NativeEngine | undefined = new NativeEngine(
-    encode({ physical, marks, anchors, layouts, config: settings }),
+    encode({
+      physical: {
+        ...physical,
+        ground: { ...physical.ground, surfaces: [] },
+        collision: { positions: [], indices: [] },
+      },
+      marks,
+      anchors,
+      layouts,
+      config: settings,
+    }),
+    surfaces,
+    positions instanceof Float64Array ? positions : Float64Array.from(positions),
+    Float64Array.from(indices),
   );
   const stats = JSON.parse(engine.stats()) as Record<string, unknown>;
   let closing = false;
