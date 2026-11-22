@@ -235,3 +235,27 @@ test('ordinary solver recovers a narrow takeoff from the original arrival only a
   assert.ok(cache.stats().resident.refinement <= 2);
   cache.clear();
 });
+
+test('narrowGoalSupports clips large collision triangles to build.bounds so vertices never exceed collision scope', () => {
+  const input = structuredClone(scene);
+  // Large narrow strip extending far outside build.bounds [-4, 4] in X.
+  input.collision = {
+    positions: [-20, 0, -0.07, -20, 0, 0.07, 20, 0, 0.07, 20, 0, -0.07],
+    indices: [0, 1, 2, 0, 2, 3],
+  };
+  const opts = options(input);
+  const charts = narrowGoalSupports(input.collision, [], opts);
+  assert.ok(charts.surfaces.length > 0);
+  const bounds = input.ground.build!.bounds!;
+  for (const surface of charts.surfaces) {
+    for (const vertex of surface.vertices) {
+      assert.ok(
+        vertex[0] >= bounds.min[0] - 1e-6 &&
+          vertex[0] <= bounds.max[0] + 1e-6 &&
+          vertex[2] >= bounds.min[1] - 1e-6 &&
+          vertex[2] <= bounds.max[1] + 1e-6,
+        `narrow vertex ${JSON.stringify(vertex)} must stay within build bounds`,
+      );
+    }
+  }
+});

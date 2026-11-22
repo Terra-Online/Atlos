@@ -3,6 +3,7 @@ import type { CollisionGeometry, Surface, Vec3 } from '#@/src/geometry.ts';
 import { type GoalProjector, createGoalProjector } from '#@/src/model/goals.ts';
 import type { InteractionGoal, JumpModel } from '#@/src/movement.ts';
 import { buildGroundSurfaces } from '#@/src/v1/geo/build.ts';
+import { clipSurface } from '#@/src/v1/geo/clip-surface.ts';
 import { surfaceGraph } from '#@/src/v1/geo/surfaces.ts';
 import { jumpDuration } from '#@/src/v1/motion/jumps.ts';
 type Options = {
@@ -236,7 +237,20 @@ export function narrowGoalSupports(
       normal[1] / Math.hypot(...normal) < Math.cos((build.maxSlope * Math.PI) / 180)
     )
       continue;
-    const surface = { id: `narrow/${index}`, vertices };
+    let clippedVertices = vertices;
+    const outOfBuildBounds = vertices.some(
+      (pt) =>
+        pt[0] < build.bounds!.min[0] ||
+        pt[0] > build.bounds!.max[0] ||
+        pt[2] < build.bounds!.min[1] ||
+        pt[2] > build.bounds!.max[1],
+    );
+    if (outOfBuildBounds) {
+      const clipped = clipSurface(vertices, build.bounds);
+      if (!clipped) continue;
+      clippedVertices = clipped;
+    }
+    const surface = { id: `narrow/${index}`, vertices: clippedVertices };
     const nearest = createGoalProjector([surface]).closest(goal, {
       maxVertical: reach,
       interaction: { radius: reach },

@@ -183,6 +183,7 @@ export const prepareDeviceConnections = (input: DeviceFacts, options: Options) =
     }
     const foot: Vec3 = [hit.position[0], hit.position[1] + 0.01, hit.position[2]];
     if (
+      !inside(foot) ||
       !project(foot, { maxVertical: profile.radius }).length ||
       blocked(foot, foot) ||
       world.sweepCapsule(foot, foot, profile)

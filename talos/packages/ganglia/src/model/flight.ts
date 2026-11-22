@@ -669,7 +669,20 @@ function sweepTrajectory(
         point = hit.position;
         time = times.at(-1)! + hit.fraction * (time - times.at(-1)!);
       }
+      const sweepExceedsScope =
+        !terrainClear &&
+        funnelWorld?.bounds !== null &&
+        funnelWorld?.bounds !== undefined &&
+        (Math.min(previous[0], point[0]) - (profile.radius + inflation) <
+          funnelWorld.bounds.min[0] ||
+          Math.max(previous[0], point[0]) + (profile.radius + inflation) >
+            funnelWorld.bounds.max[0] ||
+          Math.min(previous[2], point[2]) - (profile.radius + inflation) <
+            funnelWorld.bounds.min[1] ||
+          Math.max(previous[2], point[2]) + (profile.radius + inflation) >
+            funnelWorld.bounds.max[1]);
       const blocked =
+        sweepExceedsScope ||
         wallCheck(previous, point, inflation) ||
         (!terrainClear && sweep(previous, point, { ...profile, inflation }) !== null);
       if (blocked) {
@@ -811,6 +824,14 @@ function marchToLedge(
     if (!support) return null;
     const position: Vec3 = [...support.position];
     position[1] += 0.005;
+    if (
+      world.bounds &&
+      (position[0] - profile.radius < world.bounds.min[0] ||
+        position[0] + profile.radius > world.bounds.max[0] ||
+        position[2] - profile.radius < world.bounds.min[1] ||
+        position[2] + profile.radius > world.bounds.max[1])
+    )
+      return null;
     return position;
   };
   const appendSupport = (distance: number, position: Vec3): boolean => {

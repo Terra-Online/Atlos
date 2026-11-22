@@ -988,3 +988,46 @@ test('repeated findJumpConnections queries reuse cached cross-component groundTr
   );
   assert.equal(reverse.diagnostics.targetReached, false);
 });
+
+test('standingFoot rejects endpoints whose support or shifted clearance exceeds indexed XZ bounds', async () => {
+  const { standingFoot } = await import('#@/src/v1/search/traversal.ts');
+  const { createWallChecker } = await import('#@/src/model/walls.ts');
+  const { movementGeometry } = await import('#@/src/v1/route/movement-geometry.ts');
+  const surfaces = [floor('slab', -2, 6, 0, -2, 2)];
+  const world = createCollisionWorld(geometry(surfaces), {
+    bounds: { min: [-1, -1], max: [1, 1] },
+  });
+  const blocked = createWallChecker([], options.profile);
+  const project = movementGeometry(surfaces, {
+    walls: [],
+    profile: options.profile,
+  }).project;
+
+  // nav.position + radius > world.bounds.max[0] (1) -> rejected cleanly as support, never throws.
+  assert.deepEqual(
+    standingFoot({ position: [0.9, 0, 0] }, world, {
+      profile: options.profile,
+      maxVertical: options.maxVertical,
+      maxSlope: options.maxSlope,
+      blocked,
+      project,
+    }),
+    { reason: 'support' },
+  );
+
+  // Shifted support.position + radius > world.bounds.max[0] -> rejected cleanly as clearance.
+  const shiftedWorld = {
+    ...world,
+    groundAt: () => ({ position: [0.85, 0, 0] as Vec3, triangle: 0, normal: [0, 1, 0] as Vec3 }),
+  };
+  assert.deepEqual(
+    standingFoot({ position: [0.55, 0, 0] }, shiftedWorld, {
+      profile: options.profile,
+      maxVertical: options.maxVertical,
+      maxSlope: options.maxSlope,
+      blocked,
+      project,
+    }),
+    { reason: 'clearance' },
+  );
+});

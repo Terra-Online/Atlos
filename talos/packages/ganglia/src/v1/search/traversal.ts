@@ -416,6 +416,15 @@ export const standingFoot = (
     project: ReturnType<typeof movementGeometry>['project'];
   },
 ): Standing | Rejection => {
+  const wb = world.bounds;
+  if (
+    wb &&
+    (nav.position[0] - profile.radius < wb.min[0] ||
+      nav.position[0] + profile.radius > wb.max[0] ||
+      nav.position[2] - profile.radius < wb.min[1] ||
+      nav.position[2] + profile.radius > wb.max[1])
+  )
+    return { reason: 'support' };
   const support = world.groundAt(nav.position, {
     maxUp: profile.radius,
     maxDown: profile.radius,
@@ -431,6 +440,14 @@ export const standingFoot = (
   // closest eligible navigation support, matching subsequent ground queries.
   if (Math.abs(position[1] - nav.position[1]) > Math.min(maxVertical, profile.radius))
     return { reason: 'projection' };
+  if (
+    wb &&
+    (position[0] - profile.radius < wb.min[0] ||
+      position[0] + profile.radius > wb.max[0] ||
+      position[2] - profile.radius < wb.min[1] ||
+      position[2] + profile.radius > wb.max[1])
+  )
+    return { reason: 'clearance' };
   if (blocked(position, position) || world.sweepCapsule(position, position, profile) !== null)
     return { reason: 'clearance' };
   const mapped = project(position, { maxVertical: Math.min(maxVertical, profile.radius) })[0];
