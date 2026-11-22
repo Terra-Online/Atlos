@@ -72,6 +72,7 @@ impl Engine {
     }
     fn reconnect(
         &self,
+        layout: usize,
         start: Point,
         end: Point,
         terminal: bool,
@@ -82,9 +83,10 @@ impl Engine {
             .as_ref()
             .filter(|i| terminal && i.airborne)
         {
-            self.world.collect(start, query.goal, interaction)
+            self.world_for(layout)
+                .collect(start, query.goal, interaction)
         } else {
-            self.world.action(start, end)
+            self.world_for(layout).action(start, end)
         }
     }
     fn shortcut(&self, base: &Candidate, query: &Query, rng: &mut Random) -> Option<Candidate> {
@@ -95,6 +97,7 @@ impl Engine {
         let left = rng.index(len - 1);
         let right = left + 2 + rng.index(len - left - 1);
         let action = self.reconnect(
+            base.layout,
             base.segments[left].start(),
             base.segments[right - 1].end(),
             right == len,
@@ -102,7 +105,7 @@ impl Engine {
         )?;
         let mut segments = base.segments.clone();
         segments.splice(left..right, [action]);
-        self.candidate(base.arrival.clone(), segments)
+        self.candidate(base.layout, base.arrival.clone(), segments)
     }
     fn move_join(&self, base: &Candidate, query: &Query, rng: &mut Random) -> Option<Candidate> {
         let len = base.segments.len();
@@ -113,9 +116,12 @@ impl Engine {
         let mut point = base.segments[index].end();
         point[0] += rng.offset();
         point[2] += rng.offset();
-        let point = self.world.project(point, 0.5)?;
-        let first = self.world.action(base.segments[index].start(), point)?;
+        let point = self.world_for(base.layout).project(point, 0.5)?;
+        let first = self
+            .world_for(base.layout)
+            .action(base.segments[index].start(), point)?;
         let second = self.reconnect(
+            base.layout,
             point,
             base.segments[index + 1].end(),
             index + 2 == len,
@@ -123,7 +129,7 @@ impl Engine {
         )?;
         let mut segments = base.segments.clone();
         segments.splice(index..index + 2, [first, second]);
-        self.candidate(base.arrival.clone(), segments)
+        self.candidate(base.layout, base.arrival.clone(), segments)
     }
     fn splice(
         &self,
@@ -132,9 +138,13 @@ impl Engine {
         query: &Query,
         rng: &mut Random,
     ) -> Option<Candidate> {
+        if base.layout != donor.layout {
+            return None;
+        }
         let left = rng.index(base.segments.len());
         let right = rng.index(donor.segments.len());
         let bridge = self.reconnect(
+            base.layout,
             base.segments[left].start(),
             donor.segments[right].end(),
             right + 1 == donor.segments.len(),
@@ -143,7 +153,7 @@ impl Engine {
         let mut segments = base.segments[..left].to_vec();
         segments.push(bridge);
         segments.extend_from_slice(&donor.segments[right + 1..]);
-        self.candidate(base.arrival.clone(), segments)
+        self.candidate(base.layout, base.arrival.clone(), segments)
     }
 }
 // This local policy is replaceable independently of route generation. Keep the

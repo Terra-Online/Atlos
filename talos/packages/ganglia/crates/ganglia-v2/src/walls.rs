@@ -31,6 +31,10 @@ impl Walls {
         Ok(Self { records, index })
     }
 
+    pub(super) fn overlaps(&self, bounds: Bounds) -> bool {
+        self.index
+            .query(bounds, |i| self.records[i].bounds.overlaps(bounds))
+    }
     pub(super) fn blocked(&self, axis: [Point; 4], capsule_bounds: Bounds, radius: f64) -> bool {
         self.index.query(capsule_bounds, |i| {
             let record = &self.records[i];

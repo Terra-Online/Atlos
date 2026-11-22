@@ -9,6 +9,8 @@ pub struct Input {
     #[serde(default)]
     pub anchors: Vec<Point>,
     #[serde(default)]
+    pub layouts: Vec<Vec<Placement>>,
+    #[serde(default)]
     pub config: Config,
 }
 #[derive(Clone, Deserialize)]
@@ -48,6 +50,23 @@ pub struct DeviceFacts {
     pub ropes: Vec<Rope>,
     #[serde(default)]
     pub moving_supports: Vec<MovingSupport>,
+    #[serde(default)]
+    pub following_supports: Vec<FollowingSupport>,
+}
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FollowingSupport {
+    pub id: String,
+    pub spawn: Point,
+    pub bodies: Vec<Vec<Point>>,
+    pub geometry_kind: String,
+    pub max_distance: f64,
+    pub assumption: String,
+}
+#[derive(Clone, Deserialize, Serialize)]
+pub struct Placement {
+    pub device: String,
+    pub position: Point,
 }
 #[derive(Clone, Deserialize)]
 pub struct MovingSupport {

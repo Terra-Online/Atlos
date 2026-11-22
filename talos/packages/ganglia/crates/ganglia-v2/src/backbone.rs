@@ -29,7 +29,13 @@ impl Backbone {
         let mut interior = BTreeMap::new();
         let mut boundaries: BTreeMap<([i64; 3], [i64; 3]), (usize, Point, Point, Point)> =
             BTreeMap::new();
-        for surface in &world.physical.ground.surfaces {
+        for surface in world
+            .physical
+            .ground
+            .surfaces
+            .iter()
+            .chain(world.roofs.iter())
+        {
             if surface.vertices.len() < 3 {
                 continue;
             }
@@ -65,6 +71,7 @@ impl Backbone {
             .into_values()
             .chain(ledges.into_values())
             .chain(anchors)
+            .chain(world.box_contacts())
             .filter_map(|p| world.standing(p))
             .filter(|p| !world.blocked(*p, *p, 0.))
             .collect();

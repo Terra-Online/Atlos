@@ -7,6 +7,7 @@ mod locomotion;
 #[cfg(feature = "napi")]
 mod native;
 mod optimize;
+mod placement;
 mod search;
 mod types;
 mod walls;
@@ -22,14 +23,19 @@ use types::*;
 use world::World;
 
 pub struct Engine {
-    world: World,
-    backbone: backbone::Backbone,
+    layouts: Vec<PreparedLayout>,
     config: Config,
     stats: Value,
     cancelled: AtomicBool,
 }
+struct PreparedLayout {
+    world: World,
+    backbone: backbone::Backbone,
+    placements: Vec<Placement>,
+}
 #[derive(Clone)]
 struct Candidate {
+    layout: usize,
     arrival: Arrival,
     segments: Vec<Segment>,
     scheduled: locomotion::Scheduled,
@@ -64,9 +70,21 @@ impl Candidate {
     }
 }
 impl Engine {
-    fn candidate(&self, arrival: Arrival, segments: Vec<Segment>) -> Option<Candidate> {
-        let scheduled = locomotion::best(&segments, &self.world.physical)?;
+    fn world_for(&self, layout: usize) -> &World {
+        &self.layouts[layout].world
+    }
+    fn backbone_for(&self, layout: usize) -> &backbone::Backbone {
+        &self.layouts[layout].backbone
+    }
+    fn candidate(
+        &self,
+        layout: usize,
+        arrival: Arrival,
+        segments: Vec<Segment>,
+    ) -> Option<Candidate> {
+        let scheduled = locomotion::best(&segments, &self.world_for(layout).physical)?;
         Some(Candidate {
+            layout,
             arrival,
             segments,
             scheduled,
@@ -84,7 +102,9 @@ impl Engine {
             return Err("Invalid optimization policy".into());
         }
         locomotion::validate(&input.physical.locomotion)?;
-        let world = World::new(input.physical)?;
+        let base = World::new(input.physical)?;
+        let placements = placement::prepare(&base, input.layouts)?;
+        let world = base.layout(&[]);
         let anchor_supports: Vec<_> = input
             .anchors
             .iter()
@@ -95,9 +115,31 @@ impl Engine {
                 json!({"position":position,"feet":feet})
             })
             .collect();
-        let backbone = backbone::Backbone::build(&world, input.marks, input.anchors);
+        let backbone =
+            backbone::Backbone::build(&world, input.marks.clone(), input.anchors.clone());
+        let mut layout_stats = vec![
+            json!({"layout":0,"placements":[],"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),"buildMs":started.elapsed().as_secs_f64()*1000.}),
+        ];
+        let mut layouts = vec![PreparedLayout {
+            world,
+            backbone,
+            placements: Vec::new(),
+        }];
+        for picks in placements.into_iter().skip(1) {
+            let layout_started = Instant::now();
+            let world = base.layout(&picks);
+            let backbone =
+                backbone::Backbone::build(&world, input.marks.clone(), input.anchors.clone());
+            layout_stats.push(json!({"layout":layouts.len(),"placements":picks,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),"buildMs":layout_started.elapsed().as_secs_f64()*1000.}));
+            layouts.push(PreparedLayout {
+                world,
+                backbone,
+                placements: picks,
+            });
+        }
+        let backbone = &layouts[0].backbone;
         let bounds = (!backbone.nodes.is_empty()).then(|| Bounds::points(&backbone.nodes));
-        let stats = json!({"backboneBuildMs":started.elapsed().as_secs_f64()*1000.,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),
+        let stats = json!({"layouts":layout_stats,"totalNodeCount":layouts.iter().map(|l|l.backbone.nodes.len()).sum::<usize>(),"totalEdgeCount":layouts.iter().flat_map(|l|&l.backbone.edges).map(Vec::len).sum::<usize>(),"backboneBuildMs":started.elapsed().as_secs_f64()*1000.,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),
             "anchorSupports":anchor_supports,
             "nodeBounds":bounds.map(|b|json!({"min":b.min,"max":b.max})),
             "markedTargets":backbone.terminals.iter().map(|(mark,edges)|json!({"position":mark.position,"connections":edges.len()})).collect::<Vec<_>>(),
@@ -105,8 +147,7 @@ impl Engine {
             "movingConnections":backbone.edges.iter().flatten().filter(|edge|edge.action.traversal.is_some()).filter_map(|edge|edge.action.connection.as_ref()).collect::<Vec<_>>(),
             "launchConnections":backbone.edges.iter().flatten().filter(|edge|edge.action.mode=="launch").filter_map(|edge|edge.action.connection.as_ref()).collect::<Vec<_>>()});
         Ok(Self {
-            world,
-            backbone,
+            layouts,
             config,
             stats,
             cancelled: AtomicBool::new(false),
@@ -127,7 +168,7 @@ impl Engine {
         optimize::select(&mut population, self.config.population_size);
         let initial_cost = population.first().map(Candidate::cost);
         let rounds = self.optimize(&mut population, &query);
-        let diagnostics = json!({"truncated":self.cancelled.load(Ordering::Relaxed),"v2":{"backboneBuildMs":self.stats["backboneBuildMs"],"nodeCount":self.backbone.nodes.len(),"edgeCount":self.stats["edgeCount"],"initializationMs":initialization_ms,"initialization":initialization,"initialCost":initial_cost,"rounds":rounds,"seed":self.config.seed}});
+        let diagnostics = json!({"truncated":self.cancelled.load(Ordering::Relaxed),"v2":{"backboneBuildMs":self.stats["backboneBuildMs"],"nodeCount":self.stats["totalNodeCount"],"edgeCount":self.stats["totalEdgeCount"],"initializationMs":initialization_ms,"initialization":initialization,"initialCost":initial_cost,"rounds":rounds,"seed":self.config.seed}});
         let Some(best) = population.first() else {
             return Ok(
                 json!({"route":{"status":"no-verified-route"},"connections":[],"diagnostics":diagnostics,"reason":"No feasible route in the prepared backbone"}),
@@ -141,7 +182,8 @@ impl Engine {
             .collect();
         let length: f64 = points.windows(2).map(|p| distance(p[0], p[1])).sum();
         let last = segments.last().unwrap();
-        let policy = &self.world.physical.locomotion;
+        let policy = &self.world_for(best.layout).physical.locomotion;
+        let placements = &self.layouts[best.layout].placements;
         let state = &best.scheduled.state;
         let schedule = if best.scheduled.boosts.is_empty() {
             &best.segments
@@ -149,7 +191,7 @@ impl Engine {
             segments
         };
         Ok(
-            json!({"route":{"status":"complete","start":best.arrival.id,"arrivalCost":best.arrival.cost,"cost":best.cost(),"length":length,"points":points,"segments":segments,"schedule":[{"segments":schedule,"allowSprint":best.scheduled.controls.allow_sprint,"allowDash":best.scheduled.controls.allow_dash}],"boosts":best.scheduled.boosts,"locomotion":{"initial":policy.stamina.as_ref().map_or(0.,|s|s.initial),"final":state.energy,"minimum":state.minimum,"dashes":state.dashes,"dash":policy.dash},"goalHit":{"segment":segments.len()-1,"time":last.cost(),"position":last.end()}},"arrival":best.arrival,"supportBoxes":devices::used_supports(&self.world,segments),"connections":[],"diagnostics":diagnostics}),
+            json!({"route":{"status":"complete","placements":placements,"start":best.arrival.id,"arrivalCost":best.arrival.cost,"cost":best.cost(),"length":length,"points":points,"segments":segments,"schedule":[{"segments":schedule,"allowSprint":best.scheduled.controls.allow_sprint,"allowDash":best.scheduled.controls.allow_dash}],"boosts":best.scheduled.boosts,"locomotion":{"initial":policy.stamina.as_ref().map_or(0.,|s|s.initial),"final":state.energy,"minimum":state.minimum,"dashes":state.dashes,"dash":policy.dash},"goalHit":{"segment":segments.len()-1,"time":last.cost(),"position":last.end()}},"arrival":best.arrival,"supportBoxes":devices::used_supports(self.world_for(best.layout),segments),"connections":[],"diagnostics":diagnostics}),
         )
     }
 }

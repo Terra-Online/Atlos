@@ -3,23 +3,45 @@ use serde_json::{Value, json};
 use std::sync::atomic::Ordering;
 impl Engine {
     pub(super) fn initialize(&self, query: &Query, diagnostics: &mut Value) -> Vec<Candidate> {
-        let goals = self.world.goals(&query);
+        let mut result = Vec::new();
+        let mut reports = Vec::new();
+        for layout in 0..self.layouts.len() {
+            if self.cancelled.load(Ordering::Relaxed) {
+                break;
+            }
+            let mut report = json!({});
+            result.extend(self.initialize_layout(layout, query, &mut report));
+            reports.push(report);
+        }
+        *diagnostics = reports.first().cloned().unwrap_or_else(|| json!({}));
+        diagnostics["layouts"] = json!(reports);
+        result
+    }
+    fn initialize_layout(
+        &self,
+        layout: usize,
+        query: &Query,
+        diagnostics: &mut Value,
+    ) -> Vec<Candidate> {
+        let world = self.world_for(layout);
+        let backbone = self.backbone_for(layout);
+        let goals = world.goals(&query);
         let mut endings: Vec<Vec<Segment>> =
-            (0..self.backbone.nodes.len()).map(|_| Vec::new()).collect();
-        for (i, &point) in self.backbone.nodes.iter().enumerate() {
+            (0..backbone.nodes.len()).map(|_| Vec::new()).collect();
+        for (i, &point) in backbone.nodes.iter().enumerate() {
             if self.cancelled.load(Ordering::Relaxed) {
                 break;
             }
             for &goal in &goals {
                 if distance(point, goal) < 12. {
-                    if let Some(action) = self.world.walk(point, goal) {
+                    if let Some(action) = world.walk(point, goal) {
                         endings[i].push(action);
                     }
                 }
             }
         }
         if let Some(interaction) = query.interaction.as_ref().filter(|x| x.airborne) {
-            for (mark, connections) in &self.backbone.terminals {
+            for (mark, connections) in &backbone.terminals {
                 if distance(mark.position, query.goal) < 1e-6 && mark.interaction == *interaction {
                     for (node, action) in connections {
                         if flight::hit(action.end(), action.end(), query.goal, interaction)
@@ -34,11 +56,11 @@ impl Engine {
         // Device contacts are prepared independently of requests. A reverse
         // shortest-path tree supplies feasible suffixes for optional boost
         // detours; complete resource replay decides whether they are useful.
-        let count = self.backbone.nodes.len();
+        let count = backbone.nodes.len();
         let mut suffix: Vec<Option<(usize, Segment)>> = vec![None; count];
-        if !self.backbone.boosts.is_empty() {
+        if !backbone.boosts.is_empty() {
             let mut reverse = vec![Vec::new(); count];
-            for (from, edges) in self.backbone.edges.iter().enumerate() {
+            for (from, edges) in backbone.edges.iter().enumerate() {
                 for edge in edges {
                     reverse[edge.to].push((from, &edge.action));
                 }
@@ -79,33 +101,32 @@ impl Engine {
         }
         let mut population = Vec::new();
         let mut origins = Vec::new();
-        let mut reached = vec![false; self.backbone.nodes.len()];
+        let mut reached = vec![false; backbone.nodes.len()];
         for arrival in &query.starts {
             if arrival.state != "available" || self.cancelled.load(Ordering::Relaxed) {
                 continue;
             }
-            let Some(start) = self.world.project(
-                arrival.position,
-                self.world.physical.ground.options.max_vertical,
-            ) else {
+            let Some(start) =
+                world.project(arrival.position, world.physical.ground.options.max_vertical)
+            else {
                 origins.push(json!({"id":arrival.id,"projected":null,"attachments":0}));
                 continue;
             };
             for &goal in &goals {
-                if let Some(action) = self.world.walk(start, goal) {
-                    if let Some(candidate) = self.candidate(arrival.clone(), vec![action]) {
+                if let Some(action) = world.walk(start, goal) {
+                    if let Some(candidate) = self.candidate(layout, arrival.clone(), vec![action]) {
                         population.push(candidate);
                     }
                 }
             }
-            let count = self.backbone.nodes.len();
+            let count = backbone.nodes.len();
             let mut costs = vec![f64::INFINITY; count];
             let mut previous: Vec<Option<(usize, Segment)>> = vec![None; count];
             let mut done = vec![false; count];
             let mut queue = std::collections::BinaryHeap::new();
-            for (i, &point) in self.backbone.nodes.iter().enumerate() {
+            for (i, &point) in backbone.nodes.iter().enumerate() {
                 if distance(start, point) < 12. {
-                    if let Some(action) = self.world.walk(start, point) {
+                    if let Some(action) = world.walk(start, point) {
                         costs[i] = action.cost();
                         queue.push(Label {
                             cost: costs[i],
@@ -117,8 +138,7 @@ impl Engine {
             }
             origins.push(json!({"id":arrival.id,"projected":start,"attachments":queue.len()}));
             let mut found = 0;
-            let mut pending_boosts: std::collections::BTreeSet<_> = self
-                .backbone
+            let mut pending_boosts: std::collections::BTreeSet<_> = backbone
                 .boosts
                 .iter()
                 .copied()
@@ -153,7 +173,7 @@ impl Engine {
                         }
                         cursor = *to;
                     }
-                    if let Some(candidate) = self.candidate(arrival.clone(), segments) {
+                    if let Some(candidate) = self.candidate(layout, arrival.clone(), segments) {
                         if candidate.finishes_at_first_goal(query) {
                             population.push(candidate);
                         }
@@ -173,7 +193,7 @@ impl Engine {
                         cursor = *from;
                     }
                     segments.reverse();
-                    let Some(candidate) = self.candidate(arrival.clone(), segments) else {
+                    let Some(candidate) = self.candidate(layout, arrival.clone(), segments) else {
                         continue;
                     };
                     if candidate.finishes_at_first_goal(query) {
@@ -184,7 +204,7 @@ impl Engine {
                 if found >= self.config.population_size && pending_boosts.is_empty() {
                     break;
                 }
-                for edge in &self.backbone.edges[node] {
+                for edge in &backbone.edges[node] {
                     let cost = costs[node] + edge.action.cost();
                     if cost < costs[edge.to] {
                         costs[edge.to] = cost;
@@ -204,8 +224,8 @@ impl Engine {
         {
             // Explain which prepared connection is missing without exporting
             // the physical snapshot or a complete graph dump.
-            let mut reverse = vec![Vec::new(); self.backbone.nodes.len()];
-            for (from, edges) in self.backbone.edges.iter().enumerate() {
+            let mut reverse = vec![Vec::new(); backbone.nodes.len()];
+            for (from, edges) in backbone.edges.iter().enumerate() {
                 if self.cancelled.load(Ordering::Relaxed) {
                     break;
                 }
@@ -232,21 +252,21 @@ impl Engine {
             diagnostics["nodesReachingGoal"] = json!(to_goal.iter().filter(|&&v| v).count());
             let mut nearby: Vec<_> = (0..reached.len()).filter(|&i| reached[i]).collect();
             nearby.sort_by(|&a, &b| {
-                distance(self.backbone.nodes[a], query.goal)
-                    .total_cmp(&distance(self.backbone.nodes[b], query.goal))
+                distance(backbone.nodes[a], query.goal)
+                    .total_cmp(&distance(backbone.nodes[b], query.goal))
             });
             diagnostics["nearestReached"] = json!(
                 nearby
                     .into_iter()
                     .take(8)
-                    .map(|i| self.backbone.nodes[i])
+                    .map(|i| backbone.nodes[i])
                     .collect::<Vec<_>>()
             );
             let targets: Vec<_> = (0..to_goal.len()).filter(|&i| to_goal[i]).collect();
             let index = Index::new(
                 &targets
                     .iter()
-                    .map(|&i| Bounds::points(&[self.backbone.nodes[i]]))
+                    .map(|&i| Bounds::points(&[backbone.nodes[i]]))
                     .collect::<Vec<_>>(),
             );
             let mut gaps = Vec::new();
@@ -257,16 +277,12 @@ impl Engine {
                 if !yes {
                     continue;
                 }
-                index.query(Bounds::points(&[self.backbone.nodes[i]]).expand(12.), |j| {
+                index.query(Bounds::points(&[backbone.nodes[i]]).expand(12.), |j| {
                     if self.cancelled.load(Ordering::Relaxed) {
                         return true;
                     }
                     let to = targets[j];
-                    gaps.push((
-                        distance(self.backbone.nodes[i], self.backbone.nodes[to]),
-                        i,
-                        to,
-                    ));
+                    gaps.push((distance(backbone.nodes[i], backbone.nodes[to]), i, to));
                     gaps.sort_by(|a, b| a.0.total_cmp(&b.0));
                     gaps.truncate(8);
                     false
@@ -274,8 +290,8 @@ impl Engine {
             }
             gaps.sort_by(|a, b| a.0.total_cmp(&b.0));
             diagnostics["nearestGaps"] = json!(gaps.into_iter().take(8).map(|(span,a,b)|{
-                let from=self.backbone.nodes[a];let to=self.backbone.nodes[b];
-                json!({"from":from,"to":to,"distance":span,"action":self.world.action(from,to).map(|a|a.mode)})
+                let from=backbone.nodes[a];let to=backbone.nodes[b];
+                json!({"from":from,"to":to,"distance":span,"action":world.action(from,to).map(|a|a.mode)})
             }).collect::<Vec<_>>());
         }
         population

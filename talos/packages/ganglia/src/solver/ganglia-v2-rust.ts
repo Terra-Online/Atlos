@@ -45,20 +45,21 @@ const encode = (value: unknown) =>
       : item,
   );
 
-/** Builds one immutable backbone. Native query work runs off the JS thread so
+/** Builds immutable backbones for a bounded set of complete source-box layouts. Native query work runs off the JS thread so
  * benchmark cancellation remains observable while optimization is in progress. */
 export async function prepareGangliaV2(
   config: GangliaV2Config,
   physical: PhysicalInput,
   marks: readonly NavigationMark[],
   anchors: readonly Vec3[] = [],
+  layouts: readonly (readonly { device: string; position: Vec3 }[])[] = [],
 ): Promise<V2PreparedSolver> {
   const { NativeEngine } = createRequire(import.meta.url)(gangliaV2LibraryPath()) as {
     NativeEngine: new (input: string) => NativeEngine;
   };
   const settings = Object.freeze({ ...config });
   let engine: NativeEngine | undefined = new NativeEngine(
-    encode({ physical, marks, anchors, config: settings }),
+    encode({ physical, marks, anchors, layouts, config: settings }),
   );
   const stats = JSON.parse(engine.stats()) as Record<string, unknown>;
   let closing = false;

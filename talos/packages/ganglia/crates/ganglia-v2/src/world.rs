@@ -1,23 +1,31 @@
 use crate::{geometry::*, types::*, walls::Walls};
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
 const STANDING_OFFSET: f64 = 0.005;
 const WALK_CLEARANCE: f64 = 0.01;
 const WALK_TRACE_TOLERANCE: f64 = 0.025;
 const WALK_SAMPLE_MIN: f64 = 0.025;
 
+#[derive(Clone)]
 pub struct World {
-    pub physical: Physical,
-    ground: Vec<[Point; 3]>,
-    ground_index: Index,
-    collision: Vec<[Point; 3]>,
-    collision_index: Index,
-    moving: Vec<[Point; 3]>,
-    moving_index: Index,
-    circular: Vec<[Point; 3]>,
-    circular_index: Index,
-    coverage: Option<TileCoverage>,
-    walls: Walls,
+    pub physical: Arc<Physical>,
+    ground: Arc<Vec<[Point; 3]>>,
+    ground_index: Arc<Index>,
+    collision: Arc<Vec<[Point; 3]>>,
+    collision_index: Arc<Index>,
+    moving: Arc<Vec<[Point; 3]>>,
+    moving_index: Arc<Index>,
+    circular: Arc<Vec<[Point; 3]>>,
+    circular_index: Arc<Index>,
+    coverage: Option<Arc<TileCoverage>>,
+    walls: Arc<Walls>,
+    boxes: Arc<Vec<[Point; 3]>>,
+    box_index: Arc<Index>,
+    pub roofs: Arc<Vec<Surface>>,
+    box_support: Arc<Vec<[Point; 3]>>,
+    box_support_index: Arc<Index>,
+    box_bodies: Arc<Vec<[Point; 8]>>,
+    box_body_index: Arc<Index>,
 }
 
 struct TileCoverage {
@@ -175,18 +183,109 @@ impl World {
                 .collect::<Vec<_>>(),
         );
         Ok(Self {
-            physical,
-            ground,
-            ground_index,
-            collision,
-            collision_index,
-            moving,
-            moving_index,
-            circular,
-            circular_index,
-            coverage,
-            walls,
+            physical: Arc::new(physical),
+            ground: Arc::new(ground),
+            ground_index: Arc::new(ground_index),
+            collision: Arc::new(collision),
+            collision_index: Arc::new(collision_index),
+            moving: Arc::new(moving),
+            moving_index: Arc::new(moving_index),
+            circular: Arc::new(circular),
+            circular_index: Arc::new(circular_index),
+            coverage: coverage.map(Arc::new),
+            boxes: Arc::new(Vec::new()),
+            box_index: Arc::new(Index::new(&[])),
+            roofs: Arc::new(Vec::new()),
+            box_support: Arc::new(Vec::new()),
+            box_support_index: Arc::new(Index::new(&[])),
+            box_bodies: Arc::new(Vec::new()),
+            box_body_index: Arc::new(Index::new(&[])),
+            walls: Arc::new(walls),
         })
+    }
+    pub fn layout(&self, placements: &[Placement]) -> Self {
+        let (boxes, roofs, bodies) = crate::placement::geometry(&self.physical, placements);
+        let mut result = self.clone();
+        result.box_index = Arc::new(Index::new(
+            &boxes.iter().map(|t| Bounds::points(t)).collect::<Vec<_>>(),
+        ));
+        result.boxes = Arc::new(boxes);
+        let support: Vec<_> = roofs
+            .iter()
+            .flat_map(|s| {
+                (1..s.vertices.len() - 1).map(|i| [s.vertices[0], s.vertices[i], s.vertices[i + 1]])
+            })
+            .collect();
+        result.box_support_index = Arc::new(Index::new(
+            &support
+                .iter()
+                .map(|t| Bounds::points(t))
+                .collect::<Vec<_>>(),
+        ));
+        result.box_support = Arc::new(support);
+        result.box_body_index = Arc::new(Index::new(
+            &bodies.iter().map(|b| Bounds::points(b)).collect::<Vec<_>>(),
+        ));
+        result.box_bodies = Arc::new(bodies);
+        result.roofs = Arc::new(roofs);
+        result
+    }
+    pub(super) fn box_contacts(&self) -> Vec<Point> {
+        let margin = self.physical.ground.options.profile.radius + 0.5;
+        self.box_bodies
+            .iter()
+            .flat_map(|body| {
+                let b = Bounds::points(body);
+                let x = (b.min[0] + b.max[0]) / 2.;
+                let z = (b.min[2] + b.max[2]) / 2.;
+                [
+                    [b.min[0] - margin, b.min[1], z],
+                    [b.max[0] + margin, b.min[1], z],
+                    [x, b.min[1], b.min[2] - margin],
+                    [x, b.min[1], b.max[2] + margin],
+                ]
+            })
+            .collect()
+    }
+    pub(super) fn excluded(&self, bounds: Bounds) -> bool {
+        self.walls.overlaps(bounds)
+    }
+    pub(super) fn static_triangles(&self, bounds: Bounds) -> Vec<[Point; 3]> {
+        let mut result = Vec::new();
+        self.collision_index.query(bounds, |i| {
+            result.push(self.collision[i]);
+            false
+        });
+        result
+    }
+    pub(super) fn coverage_contains(&self, bounds: Bounds) -> bool {
+        if let Some(window) = self
+            .physical
+            .ground
+            .build
+            .as_ref()
+            .and_then(|b| b.bounds.as_ref())
+            && (bounds.min[0] < window.min[0]
+                || bounds.max[0] > window.max[0]
+                || bounds.min[2] < window.min[1]
+                || bounds.max[2] > window.max[1])
+        {
+            return false;
+        }
+        if let Some(coverage) = &self.coverage {
+            for x in (bounds.min[0] / coverage.span).floor() as i64
+                ..=(bounds.max[0] / coverage.span).floor() as i64
+            {
+                for z in (bounds.min[2] / coverage.span).floor() as i64
+                    ..=(bounds.max[2] / coverage.span).floor() as i64
+                {
+                    if !coverage.tiles.contains(&(x, z)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        true
     }
     pub fn project(&self, p: Point, tolerance: f64) -> Option<Point> {
         // Available arrivals and authored device ports can rest on collision
@@ -241,7 +340,11 @@ impl World {
                 [p[0], height + crate::circular::CLEARANCE, p[2]]
             });
         }
-        if self.collision.is_empty() && self.moving.is_empty() && self.circular.is_empty() {
+        if self.collision.is_empty()
+            && self.moving.is_empty()
+            && self.circular.is_empty()
+            && self.boxes.is_empty()
+        {
             // A navigation-only hint still needs support; it cannot create a
             // floating launch platform when collision geometry is absent.
             let mut feet = None;
@@ -323,6 +426,7 @@ impl World {
         for (index, triangles, moving) in [
             (&self.collision_index, &self.collision, false),
             (&self.moving_index, &self.moving, true),
+            (&self.box_support_index, &self.box_support, false),
         ] {
             index.query(bounds, |i| {
                 let triangle = triangles[i];
@@ -392,20 +496,35 @@ impl World {
                 }
             }
         }
+        if self.box_body_index.query(bounds, |i| {
+            axis.iter()
+                .any(|p| crate::placement::contains(self.box_bodies[i], *p))
+        }) {
+            return true;
+        }
         if self.walls.blocked(axis, bounds, radius) {
             return true;
         }
-        self.collision_index.query(bounds, |i| {
-            let t = self.collision[i];
-            triangle_distance([axis[0], axis[1], axis[2]], t)
-                .min(triangle_distance([axis[0], axis[2], axis[3]], t))
-                < radius - 1e-6
+        [
+            (&self.collision_index, &self.collision),
+            (&self.box_index, &self.boxes),
+        ]
+        .into_iter()
+        .any(|(index, triangles)| {
+            index.query(bounds, |i| {
+                let t = triangles[i];
+                triangle_distance([axis[0], axis[1], axis[2]], t)
+                    .min(triangle_distance([axis[0], axis[2], axis[3]], t))
+                    < radius - 1e-6
+            })
         })
     }
     fn support_span(&self, path: [Point; 2], faces_only: bool) -> bool {
         const CONTACT_ENVELOPE: f64 = 0.02;
-        let physical =
-            !self.collision.is_empty() || !self.moving.is_empty() || !self.circular.is_empty();
+        let physical = !self.collision.is_empty()
+            || !self.moving.is_empty()
+            || !self.circular.is_empty()
+            || !self.boxes.is_empty();
         let mut intervals = Vec::new();
         let radius = if physical {
             self.physical.ground.options.profile.radius
@@ -417,12 +536,14 @@ impl World {
                 (&self.collision_index, &self.collision, true),
                 (&self.moving_index, &self.moving, true),
                 (&self.circular_index, &self.circular, true),
+                (&self.box_support_index, &self.box_support, true),
             ]
         } else {
             [
                 (&self.ground_index, &self.ground, false),
                 (&self.moving_index, &self.moving, true),
                 (&self.circular_index, &self.circular, true),
+                (&self.box_support_index, &self.box_support, true),
             ]
         };
         let minimum_up = self.physical.movement.max_slope.to_radians().cos();
@@ -480,7 +601,10 @@ impl World {
             return false;
         }
         if faces
-            || (self.collision.is_empty() && self.moving.is_empty() && self.circular.is_empty())
+            || (self.collision.is_empty()
+                && self.moving.is_empty()
+                && self.circular.is_empty()
+                && self.boxes.is_empty())
         {
             return true;
         }
@@ -503,7 +627,11 @@ impl World {
         })
     }
     fn walk_projection(&self, point: Point) -> Option<Point> {
-        if self.collision.is_empty() && self.moving.is_empty() && self.circular.is_empty() {
+        if self.collision.is_empty()
+            && self.moving.is_empty()
+            && self.circular.is_empty()
+            && self.boxes.is_empty()
+        {
             self.project(point, 0.5)
         } else {
             self.standing(point).or_else(|| self.project(point, 0.5))
@@ -580,43 +708,50 @@ impl World {
             return Vec::new();
         }
         let mut result = Vec::new();
-        self.ground_index.query(
-            Bounds::points(&[query.goal]).expand(interaction.radius),
-            |i| {
-                let triangle = self.ground[i];
-                let mut candidates = triangle.to_vec();
-                if let Some(y) = triangle_height(query.goal, triangle) {
-                    candidates.push([query.goal[0], y, query.goal[2]]);
-                }
-                for j in 0..3 {
-                    let a = triangle[j];
-                    let b = triangle[(j + 1) % 3];
-                    let d = sub(b, a);
-                    let denominator = dot(d, d);
-                    if denominator > 0. {
-                        candidates.push(lerp(
-                            a,
-                            b,
-                            (dot(sub(query.goal, a), d) / denominator).clamp(0., 1.),
-                        ));
+        for (index, triangles) in [
+            (&self.ground_index, &self.ground),
+            (&self.box_support_index, &self.box_support),
+        ] {
+            index.query(
+                Bounds::points(&[query.goal]).expand(interaction.radius),
+                |i| {
+                    let triangle = triangles[i];
+                    let mut candidates = triangle.to_vec();
+                    if let Some(y) = triangle_height(query.goal, triangle) {
+                        candidates.push([query.goal[0], y, query.goal[2]]);
                     }
-                }
-                if let Some(point) = candidates
-                    .into_iter()
-                    .filter(|p| crate::flight::hit(*p, *p, query.goal, interaction).is_some())
-                    .min_by(|a, b| distance(*a, query.goal).total_cmp(&distance(*b, query.goal)))
-                {
-                    if let Some(point) = self.standing(point) {
-                        if crate::flight::hit(point, point, query.goal, interaction).is_some()
-                            && !self.blocked(point, point, 0.)
-                        {
-                            result.push(point);
+                    for j in 0..3 {
+                        let a = triangle[j];
+                        let b = triangle[(j + 1) % 3];
+                        let d = sub(b, a);
+                        let denominator = dot(d, d);
+                        if denominator > 0. {
+                            candidates.push(lerp(
+                                a,
+                                b,
+                                (dot(sub(query.goal, a), d) / denominator).clamp(0., 1.),
+                            ));
                         }
                     }
-                }
-                false
-            },
-        );
+                    if let Some(point) = candidates
+                        .into_iter()
+                        .filter(|p| crate::flight::hit(*p, *p, query.goal, interaction).is_some())
+                        .min_by(|a, b| {
+                            distance(*a, query.goal).total_cmp(&distance(*b, query.goal))
+                        })
+                    {
+                        if let Some(point) = self.standing(point) {
+                            if crate::flight::hit(point, point, query.goal, interaction).is_some()
+                                && !self.blocked(point, point, 0.)
+                            {
+                                result.push(point);
+                            }
+                        }
+                    }
+                    false
+                },
+            );
+        }
         result.sort_by(|a, b| distance(*a, query.goal).total_cmp(&distance(*b, query.goal)));
         result.dedup_by(|a, b| distance(*a, *b) < 1e-6);
         result
