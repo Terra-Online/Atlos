@@ -21,7 +21,12 @@ fn walking_preserves_backbone_and_reports_convergence_rounds() {
     let before = engine.stats();
     let result = engine.solve(&query([9., 0., 1.])).unwrap();
     assert_eq!(result["route"]["status"], "complete");
-    assert!((result["route"]["cost"].as_f64().unwrap() - 3.6).abs() < 1e-8);
+    // This fixture has no stamina limit: accelerate from 5 to 7 m/s at
+    // 60 m/s², then cover the remainder of the 8 m approach at sprint speed.
+    let acceleration_time = (7. - 5.) / 60.;
+    let acceleration_distance = (5. + 7.) * acceleration_time / 2.;
+    let expected = 2. + acceleration_time + (8. - acceleration_distance) / 7.;
+    assert!((result["route"]["cost"].as_f64().unwrap() - expected).abs() < 1e-8);
     assert_eq!(engine.stats(), before);
     let rounds = result["diagnostics"]["v2"]["rounds"].as_array().unwrap();
     assert!(rounds.len() >= 3);

@@ -1,7 +1,9 @@
 mod backbone;
+mod circular;
 mod devices;
 mod flight;
 mod geometry;
+mod locomotion;
 #[cfg(feature = "napi")]
 mod native;
 mod optimize;
@@ -30,10 +32,11 @@ pub struct Engine {
 struct Candidate {
     arrival: Arrival,
     segments: Vec<Segment>,
+    scheduled: locomotion::Scheduled,
 }
 impl Candidate {
     fn cost(&self) -> f64 {
-        self.arrival.cost + self.segments.iter().map(Segment::cost).sum::<f64>()
+        self.arrival.cost + self.scheduled.duration
     }
 
     fn finishes_at_first_goal(&self, query: &Query) -> bool {
@@ -43,14 +46,14 @@ impl Candidate {
         // A valid terminal action is insufficient when its prefix already
         // entered the collection volume. Check the whole candidate before it
         // enters the population, including after a shortcut or splice.
-        for (index, segment) in self.segments.iter().enumerate() {
+        for (index, segment) in self.scheduled.segments.iter().enumerate() {
             for (chord, points) in segment.points.windows(2).enumerate() {
                 if let Some((fraction, position)) =
                     flight::hit(points[0], points[1], query.goal, interaction)
                 {
                     let time = segment.times[chord]
                         + fraction * (segment.times[chord + 1] - segment.times[chord]);
-                    return index + 1 == self.segments.len()
+                    return index + 1 == self.scheduled.segments.len()
                         && matches!(segment.mode, "jump" | "launch")
                         && distance(position, segment.end()) <= 1e-6
                         && (time - segment.cost()).abs() <= 1e-6;
@@ -61,6 +64,14 @@ impl Candidate {
     }
 }
 impl Engine {
+    fn candidate(&self, arrival: Arrival, segments: Vec<Segment>) -> Option<Candidate> {
+        let scheduled = locomotion::best(&segments, &self.world.physical)?;
+        Some(Candidate {
+            arrival,
+            segments,
+            scheduled,
+        })
+    }
     pub fn new(input: &str) -> Result<Self, String> {
         let started = Instant::now();
         let input: Input = serde_json::from_str(input).map_err(|e| e.to_string())?;
@@ -72,6 +83,7 @@ impl Engine {
         {
             return Err("Invalid optimization policy".into());
         }
+        locomotion::validate(&input.physical.locomotion)?;
         let world = World::new(input.physical)?;
         let anchor_supports: Vec<_> = input
             .anchors
@@ -121,16 +133,23 @@ impl Engine {
                 json!({"route":{"status":"no-verified-route"},"connections":[],"diagnostics":diagnostics,"reason":"No feasible route in the prepared backbone"}),
             );
         };
-        let points: Vec<_> = best
-            .segments
+        let segments = &best.scheduled.segments;
+        let points: Vec<_> = segments
             .iter()
             .enumerate()
             .flat_map(|(i, s)| s.points.iter().skip(usize::from(i > 0)).copied())
             .collect();
         let length: f64 = points.windows(2).map(|p| distance(p[0], p[1])).sum();
-        let last = best.segments.last().unwrap();
+        let last = segments.last().unwrap();
+        let policy = &self.world.physical.locomotion;
+        let state = &best.scheduled.state;
+        let schedule = if best.scheduled.boosts.is_empty() {
+            &best.segments
+        } else {
+            segments
+        };
         Ok(
-            json!({"route":{"status":"complete","start":best.arrival.id,"arrivalCost":best.arrival.cost,"cost":best.cost(),"length":length,"points":points,"segments":best.segments,"schedule":[{"segments":best.segments,"allowSprint":false,"allowDash":false}],"goalHit":{"segment":best.segments.len()-1,"time":last.cost(),"position":last.end()}},"arrival":best.arrival,"supportBoxes":devices::used_supports(&self.world,&best.segments),"connections":[],"diagnostics":diagnostics}),
+            json!({"route":{"status":"complete","start":best.arrival.id,"arrivalCost":best.arrival.cost,"cost":best.cost(),"length":length,"points":points,"segments":segments,"schedule":[{"segments":schedule,"allowSprint":best.scheduled.controls.allow_sprint,"allowDash":best.scheduled.controls.allow_dash}],"boosts":best.scheduled.boosts,"locomotion":{"initial":policy.stamina.as_ref().map_or(0.,|s|s.initial),"final":state.energy,"minimum":state.minimum,"dashes":state.dashes,"dash":policy.dash},"goalHit":{"segment":segments.len()-1,"time":last.cost(),"position":last.end()}},"arrival":best.arrival,"supportBoxes":devices::used_supports(&self.world,segments),"connections":[],"diagnostics":diagnostics}),
         )
     }
 }

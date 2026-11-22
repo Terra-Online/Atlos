@@ -8,6 +8,7 @@ pub(super) struct Edge {
 pub(super) struct Backbone {
     pub nodes: Vec<Point>,
     pub edges: Vec<Vec<Edge>>,
+    pub boosts: Vec<usize>,
     pub terminals: Vec<(Mark, Vec<(usize, Segment)>)>,
 }
 impl Backbone {
@@ -98,6 +99,10 @@ impl Backbone {
             .into_iter()
             .map(|(mark, action)| (mark, port(action.start()), action))
             .collect();
+        let boosts = crate::devices::boost_contacts(world)
+            .into_iter()
+            .map(&mut port)
+            .collect();
         let index = Index::new(
             &nodes
                 .iter()
@@ -162,6 +167,7 @@ impl Backbone {
             nodes,
             edges,
             terminals,
+            boosts,
         }
     }
 }

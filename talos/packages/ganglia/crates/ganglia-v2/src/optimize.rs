@@ -44,8 +44,8 @@ impl Engine {
                     ),
                 };
                 if let Some(candidate) = proposal {
-                    // Every retained suffix was already valid. Operators check
-                    // the new joins; run-only controls have no consumable state.
+                    // A changed prefix changes resources at every later action.
+                    // Proposals are fully rescheduled before they enter the population.
                     if candidate.cost() + 1e-9 < base.cost()
                         && candidate.finishes_at_first_goal(query)
                     {
@@ -100,9 +100,9 @@ impl Engine {
             right == len,
             query,
         )?;
-        let mut next = base.clone();
-        next.segments.splice(left..right, [action]);
-        Some(next)
+        let mut segments = base.segments.clone();
+        segments.splice(left..right, [action]);
+        self.candidate(base.arrival.clone(), segments)
     }
     fn move_join(&self, base: &Candidate, query: &Query, rng: &mut Random) -> Option<Candidate> {
         let len = base.segments.len();
@@ -121,9 +121,9 @@ impl Engine {
             index + 2 == len,
             query,
         )?;
-        let mut next = base.clone();
-        next.segments.splice(index..index + 2, [first, second]);
-        Some(next)
+        let mut segments = base.segments.clone();
+        segments.splice(index..index + 2, [first, second]);
+        self.candidate(base.arrival.clone(), segments)
     }
     fn splice(
         &self,
@@ -143,10 +143,7 @@ impl Engine {
         let mut segments = base.segments[..left].to_vec();
         segments.push(bridge);
         segments.extend_from_slice(&donor.segments[right + 1..]);
-        Some(Candidate {
-            arrival: base.arrival.clone(),
-            segments,
-        })
+        self.candidate(base.arrival.clone(), segments)
     }
 }
 // This local policy is replaceable independently of route generation. Keep the

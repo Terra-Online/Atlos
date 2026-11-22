@@ -19,6 +19,24 @@ function corridor(
 
 export const longCorridors: ReadonlyMap<string, Window> = new Map([
   [
+    '159-0PqRUqq',
+    // Collider 549449112 ends at z=-195.809. The supported passage around
+    // its north end reaches z=-191.973, beyond the local target district.
+    // Keep the original district and load only the northern passage tiles.
+    corridor(
+      [288, -352],
+      [608, -160],
+      [
+        [-10, 7, 15],
+        [-9, 7, 15],
+        [-8, 7, 15],
+        [-7, 7, 15],
+        [-6, 7, 15],
+        [-5, 12, 14],
+      ],
+    ),
+  ],
+  [
     '224-0aZUrpW',
     corridor(
       [-614.4, -422.4],

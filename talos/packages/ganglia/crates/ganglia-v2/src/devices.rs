@@ -37,6 +37,38 @@ fn endpoints(world: &World, device: &Device, goal: &Mark) -> Vec<Point> {
     points
 }
 
+pub fn boost_usage(device: &Device) -> Option<BoostUse> {
+    if device.kind != "accelerate" {
+        return None;
+    }
+    Some(BoostUse {
+        id: device.id.clone(),
+        duration: device
+            .duration
+            .as_ref()?
+            .as_f64()
+            .filter(|v| v.is_finite() && *v > 0.)?,
+        multiplier: device
+            .boost_multiplier
+            .filter(|v| v.is_finite() && *v > 1.)?,
+    })
+}
+
+pub fn boost_contacts(world: &World) -> Vec<Point> {
+    world
+        .physical
+        .devices
+        .iter()
+        .flat_map(|facts| &facts.devices)
+        .filter(|device| boost_usage(device).is_some())
+        .filter_map(|device| {
+            endpoints(world, device, device.goal.as_ref()?)
+                .into_iter()
+                .next()
+        })
+        .collect()
+}
+
 fn climb(world: &World, lower: &Device, upper: &Device) -> Option<Segment> {
     let speed = lower.speed?;
     let overhead = lower.overhead?;
@@ -73,6 +105,7 @@ fn climb(world: &World, lower: &Device, upper: &Device) -> Option<Segment> {
                 times.push(elapsed);
             }
             return Some(Segment {
+                boost: None,
                 mode: "rope",
                 points,
                 times,
@@ -308,7 +341,11 @@ pub fn rides(world: &World) -> Vec<Segment> {
         .iter()
         .flat_map(|facts| &facts.moving_supports)
     {
-        if support.assumption != "phase-free-swept-support" || support.circular.is_some() {
+        if support.assumption != "phase-free-swept-support" {
+            continue;
+        }
+        if support.circular.is_some() {
+            actions.extend(crate::circular::rides(world, support));
             continue;
         }
         for (index, transfer) in support.transfers.iter().enumerate() {
@@ -327,6 +364,7 @@ pub fn rides(world: &World) -> Vec<Segment> {
             }
             for (from, to, suffix) in [(start, end, ""), (end, start, "/reverse")] {
                 actions.push(Segment {
+                    boost: None,
                     mode: "rope",
                     traversal: Some("moving-support"),
                     points: vec![from, to],
@@ -352,8 +390,14 @@ pub fn used_supports(world: &World, segments: &[Segment]) -> Vec<serde_json::Val
         for (index, transfer) in support.transfers.iter().enumerate() {
             let id = format!("moving-ride/{}/{index}", support.id);
             for segment in segments {
-                let reverse = segment.connection.as_deref() == Some(&format!("{id}/reverse"));
-                if segment.connection.as_deref() != Some(&id) && !reverse {
+                let Some(connection) = segment.connection.as_deref() else {
+                    continue;
+                };
+                let reverse = connection.ends_with("/reverse");
+                let base = connection.strip_suffix("/reverse").unwrap_or(connection);
+                if base != id
+                    && !(support.circular.is_some() && base.starts_with(&format!("{id}/lane")))
+                {
                     continue;
                 }
                 let poses = if reverse {

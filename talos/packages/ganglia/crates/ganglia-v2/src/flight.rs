@@ -392,6 +392,7 @@ impl World {
             return None;
         }
         Some(Segment {
+            boost: None,
             mode: "jump",
             points,
             times,

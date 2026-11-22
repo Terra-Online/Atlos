@@ -14,6 +14,8 @@ pub struct World {
     collision_index: Index,
     moving: Vec<[Point; 3]>,
     moving_index: Index,
+    circular: Vec<[Point; 3]>,
+    circular_index: Index,
     coverage: Option<TileCoverage>,
     walls: Walls,
 }
@@ -74,6 +76,37 @@ impl World {
                 .take()
                 .unwrap_or_else(|| std::mem::take(&mut physical.ground.options.walls)),
         )?;
+        let mut circular_surfaces = Vec::new();
+        for support in physical
+            .devices
+            .iter()
+            .flat_map(|facts| &facts.moving_supports)
+        {
+            if support.assumption != "phase-free-swept-support" {
+                continue;
+            }
+            if let Some(shape) = &support.circular {
+                crate::circular::validate(shape)?;
+                if support.family != "waterwheel" {
+                    return Err("Invalid circular support family".into());
+                }
+                circular_surfaces.extend(support.surfaces.iter().cloned());
+            }
+        }
+        let circular: Vec<_> = circular_surfaces
+            .iter()
+            .flat_map(|s| {
+                (1..s.vertices.len().saturating_sub(1))
+                    .map(|i| [s.vertices[0], s.vertices[i], s.vertices[i + 1]])
+            })
+            .collect();
+        let circular_index = Index::new(
+            &circular
+                .iter()
+                .map(|t| Bounds::points(t))
+                .collect::<Vec<_>>(),
+        );
+        physical.ground.surfaces.extend(circular_surfaces);
         let moving_surfaces: Vec<_> = physical
             .devices
             .iter()
@@ -149,6 +182,8 @@ impl World {
             collision_index,
             moving,
             moving_index,
+            circular,
+            circular_index,
             coverage,
             walls,
         })
@@ -186,7 +221,14 @@ impl World {
             .filter(|point| (point[1] - p[1]).abs() <= tolerance + 1e-6)
     }
     pub fn standing(&self, p: Point) -> Option<Point> {
-        if self.collision.is_empty() && self.moving.is_empty() {
+        if let Some(height) = self.circular_height(p) {
+            return Some(if p[1] - height >= STANDING_OFFSET - 1e-6 {
+                p
+            } else {
+                [p[0], height + crate::circular::CLEARANCE, p[2]]
+            });
+        }
+        if self.collision.is_empty() && self.moving.is_empty() && self.circular.is_empty() {
             // A navigation-only hint still needs support; it cannot create a
             // floating launch platform when collision geometry is absent.
             let mut feet = None;
@@ -202,7 +244,8 @@ impl World {
             return feet;
         }
         self.support_height(p).map(|height| {
-            if !self.moving.is_empty() && (-1e-6..=WALK_CLEARANCE + 1e-6).contains(&(p[1] - height))
+            if (!self.moving.is_empty() || !self.circular.is_empty())
+                && (-1e-6..=WALK_CLEARANCE + 1e-6).contains(&(p[1] - height))
             {
                 p
             } else {
@@ -233,7 +276,26 @@ impl World {
         };
         (!self.blocked(feet, feet, 0.)).then_some(feet)
     }
+    fn circular_height(&self, p: Point) -> Option<f64> {
+        // A neighbouring higher rim patch must not lift this contact. Circular
+        // contacts use their explicit horizontal footprint and authored height.
+        let mut circular = None;
+        self.circular_index
+            .query(Bounds::points(&[p]).expand(0.02), |i| {
+                if let Some(y) = triangle_height(p, self.circular[i])
+                    && (-1e-6..=0.02).contains(&(p[1] - y))
+                    && circular.is_none_or(|old: f64| (p[1] - y).abs() < (p[1] - old).abs())
+                {
+                    circular = Some(y);
+                }
+                false
+            });
+        circular
+    }
     fn support_height(&self, p: Point) -> Option<f64> {
+        if let Some(height) = self.circular_height(p) {
+            return Some(height);
+        }
         let radius = self.physical.ground.options.profile.radius;
         let minimum_up = self.physical.movement.max_slope.to_radians().cos();
         let minimum = p[1] - 0.31;
@@ -328,7 +390,8 @@ impl World {
     }
     fn support_span(&self, path: [Point; 2], faces_only: bool) -> bool {
         const CONTACT_ENVELOPE: f64 = 0.02;
-        let physical = !self.collision.is_empty() || !self.moving.is_empty();
+        let physical =
+            !self.collision.is_empty() || !self.moving.is_empty() || !self.circular.is_empty();
         let mut intervals = Vec::new();
         let radius = if physical {
             self.physical.ground.options.profile.radius
@@ -339,11 +402,13 @@ impl World {
             [
                 (&self.collision_index, &self.collision, true),
                 (&self.moving_index, &self.moving, true),
+                (&self.circular_index, &self.circular, true),
             ]
         } else {
             [
                 (&self.ground_index, &self.ground, false),
                 (&self.moving_index, &self.moving, true),
+                (&self.circular_index, &self.circular, true),
             ]
         };
         let minimum_up = self.physical.movement.max_slope.to_radians().cos();
@@ -400,7 +465,9 @@ impl World {
         if (!faces && !self.support_span([a, b], false)) || self.blocked(a, b, 0.) {
             return false;
         }
-        if faces || (self.collision.is_empty() && self.moving.is_empty()) {
+        if faces
+            || (self.collision.is_empty() && self.moving.is_empty() && self.circular.is_empty())
+        {
             return true;
         }
         // The edge envelope only proves proximity. Follow the standing-height
@@ -422,7 +489,7 @@ impl World {
         })
     }
     fn walk_projection(&self, point: Point) -> Option<Point> {
-        if self.collision.is_empty() && self.moving.is_empty() {
+        if self.collision.is_empty() && self.moving.is_empty() && self.circular.is_empty() {
             self.project(point, 0.5)
         } else {
             self.standing(point).or_else(|| self.project(point, 0.5))
@@ -475,6 +542,7 @@ impl World {
             times.push(times.last().unwrap() + duration);
         }
         Some(Segment {
+            boost: None,
             mode: "walk",
             points,
             times,

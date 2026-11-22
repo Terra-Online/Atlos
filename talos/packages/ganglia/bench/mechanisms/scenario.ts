@@ -107,7 +107,7 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
         if (
           loadedBounds?.tiles?.length &&
           !isDeepStrictEqual(
-            raw.ground.tiles,
+            raw.ground.tiles?.map(({ x, z }) => ({ x, z })),
             [...loadedBounds.tiles].sort((a, b) => a.z - b.z || a.x - b.x),
           )
         )

@@ -31,6 +31,52 @@ impl Engine {
                 }
             }
         }
+        // Device contacts are prepared independently of requests. A reverse
+        // shortest-path tree supplies feasible suffixes for optional boost
+        // detours; complete resource replay decides whether they are useful.
+        let count = self.backbone.nodes.len();
+        let mut suffix: Vec<Option<(usize, Segment)>> = vec![None; count];
+        if !self.backbone.boosts.is_empty() {
+            let mut reverse = vec![Vec::new(); count];
+            for (from, edges) in self.backbone.edges.iter().enumerate() {
+                for edge in edges {
+                    reverse[edge.to].push((from, &edge.action));
+                }
+            }
+            let mut costs = vec![f64::INFINITY; count];
+            let mut queue = std::collections::BinaryHeap::new();
+            for (node, actions) in endings.iter().enumerate() {
+                for action in actions {
+                    if action.cost() < costs[node] {
+                        costs[node] = action.cost();
+                        suffix[node] = Some((count, action.clone()));
+                        queue.push(Label {
+                            node,
+                            cost: costs[node],
+                        });
+                    }
+                }
+            }
+            while let Some(Label { node, cost }) = queue.pop() {
+                if self.cancelled.load(Ordering::Relaxed) {
+                    break;
+                }
+                if cost > costs[node] {
+                    continue;
+                }
+                for &(from, action) in &reverse[node] {
+                    let next = cost + action.cost();
+                    if next < costs[from] {
+                        costs[from] = next;
+                        suffix[from] = Some((node, action.clone()));
+                        queue.push(Label {
+                            node: from,
+                            cost: next,
+                        });
+                    }
+                }
+            }
+        }
         let mut population = Vec::new();
         let mut origins = Vec::new();
         let mut reached = vec![false; self.backbone.nodes.len()];
@@ -47,10 +93,9 @@ impl Engine {
             };
             for &goal in &goals {
                 if let Some(action) = self.world.walk(start, goal) {
-                    population.push(Candidate {
-                        arrival: arrival.clone(),
-                        segments: vec![action],
-                    });
+                    if let Some(candidate) = self.candidate(arrival.clone(), vec![action]) {
+                        population.push(candidate);
+                    }
                 }
             }
             let count = self.backbone.nodes.len();
@@ -72,6 +117,13 @@ impl Engine {
             }
             origins.push(json!({"id":arrival.id,"projected":start,"attachments":queue.len()}));
             let mut found = 0;
+            let mut pending_boosts: std::collections::BTreeSet<_> = self
+                .backbone
+                .boosts
+                .iter()
+                .copied()
+                .filter(|&node| suffix[node].is_some())
+                .collect();
             while let Some(label) = queue.pop() {
                 if self.cancelled.load(Ordering::Relaxed) {
                     break;
@@ -82,7 +134,35 @@ impl Engine {
                 }
                 done[node] = true;
                 reached[node] = true;
-                for last in &endings[node] {
+                if pending_boosts.remove(&node) {
+                    let mut segments = Vec::new();
+                    let mut cursor = node;
+                    while let Some((from, action)) = &previous[cursor] {
+                        segments.push(action.clone());
+                        if *from == count {
+                            break;
+                        }
+                        cursor = *from;
+                    }
+                    segments.reverse();
+                    cursor = node;
+                    while let Some((to, action)) = &suffix[cursor] {
+                        segments.push(action.clone());
+                        if *to == count {
+                            break;
+                        }
+                        cursor = *to;
+                    }
+                    if let Some(candidate) = self.candidate(arrival.clone(), segments) {
+                        if candidate.finishes_at_first_goal(query) {
+                            population.push(candidate);
+                        }
+                    }
+                }
+                for last in endings[node]
+                    .iter()
+                    .take(self.config.population_size.saturating_sub(found))
+                {
                     let mut segments = vec![last.clone()];
                     let mut cursor = node;
                     while let Some((from, action)) = &previous[cursor] {
@@ -93,16 +173,15 @@ impl Engine {
                         cursor = *from;
                     }
                     segments.reverse();
-                    let candidate = Candidate {
-                        arrival: arrival.clone(),
-                        segments,
+                    let Some(candidate) = self.candidate(arrival.clone(), segments) else {
+                        continue;
                     };
                     if candidate.finishes_at_first_goal(query) {
                         population.push(candidate);
                         found += 1;
                     }
                 }
-                if found >= self.config.population_size {
+                if found >= self.config.population_size && pending_boosts.is_empty() {
                     break;
                 }
                 for edge in &self.backbone.edges[node] {

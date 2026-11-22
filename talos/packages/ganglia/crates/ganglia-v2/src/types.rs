@@ -58,7 +58,16 @@ pub struct MovingSupport {
     #[serde(default)]
     pub poses: Vec<Pose>,
     pub transfers: Vec<Transfer>,
-    pub circular: Option<serde_json::Value>,
+    pub circular: Option<Circular>,
+}
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Circular {
+    pub center: Point,
+    pub axis: Point,
+    pub radius: f64,
+    pub half_width: f64,
+    pub sagitta: f64,
 }
 #[derive(Clone, Deserialize)]
 pub struct Pose {
@@ -78,6 +87,8 @@ pub struct Transfer {
 #[serde(rename_all = "camelCase")]
 pub struct Device {
     pub id: String,
+    #[serde(default)]
+    pub kind: String,
     pub resolved: bool,
     pub unit_scale: bool,
     pub goal: Option<Mark>,
@@ -92,6 +103,8 @@ pub struct Device {
     pub aim: Option<Point>,
     pub height: Option<f64>,
     pub aim_clearance: Option<f64>,
+    pub duration: Option<serde_json::Value>,
+    pub boost_multiplier: Option<f64>,
 }
 #[derive(Clone, Deserialize)]
 pub struct Rope {
@@ -170,8 +183,39 @@ pub struct Model {
     pub air_deceleration: Option<f64>,
 }
 #[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Locomotion {
     pub speed: f64,
+    pub sprint_speed: Option<f64>,
+    pub sprint_acceleration: Option<f64>,
+    pub dash: Option<Dash>,
+    pub stamina: Option<Stamina>,
+    #[serde(default)]
+    pub sprint_through: Vec<String>,
+}
+#[derive(Clone, Deserialize, Serialize)]
+pub struct Dash {
+    pub speed: f64,
+    pub duration: f64,
+    pub cooldown: f64,
+    pub cost: f64,
+}
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Stamina {
+    pub capacity: f64,
+    pub initial: f64,
+    #[serde(default)]
+    pub activation_cost: f64,
+    #[serde(default)]
+    pub sprint_drain: f64,
+    pub recovery_rate: f64,
+    pub recovery_delay: f64,
+    pub reserve: f64,
+    #[serde(default)]
+    pub recovery_during_sprint: bool,
+    #[serde(default)]
+    pub recovery_during_non_walk: bool,
 }
 #[derive(Clone, Deserialize)]
 pub struct Wall {
@@ -219,6 +263,8 @@ pub struct Arrival {
 }
 #[derive(Clone, Serialize)]
 pub struct Segment {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub boost: Option<BoostUse>,
     pub mode: &'static str,
     pub points: Vec<Point>,
     pub times: Vec<f64>,
@@ -230,6 +276,13 @@ pub struct Segment {
     pub gait: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub traversal: Option<&'static str>,
+}
+
+#[derive(Clone, PartialEq, Serialize)]
+pub struct BoostUse {
+    pub id: String,
+    pub multiplier: f64,
+    pub duration: f64,
 }
 impl Segment {
     pub fn cost(&self) -> f64 {
