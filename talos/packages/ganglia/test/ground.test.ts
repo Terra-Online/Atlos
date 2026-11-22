@@ -3,8 +3,9 @@ import { test } from 'node:test';
 
 import type { Portal, Surface, Vec3, Wall } from '#@/src/geometry.ts';
 import type { GroundArrival, GroundConnection, GroundOptions } from '#@/src/route.ts';
+import { surfaceGraph } from '#@/src/v1/geo/surfaces.ts';
 import { createGroundPlanner, planGroundRoute, groundPreparation } from '#@/src/v1/route/ground.ts';
-import { route } from '#@/src/v1/route/routes.ts';
+import { prepareRoutePlanner, route } from '#@/src/v1/route/routes.ts';
 const surfaces: Surface[] = [
   {
     id: 'a',
@@ -656,5 +657,278 @@ test('an ordinary interaction can finish at a complete supported device exit', a
   assert.notEqual(
     planner.plan(starts, goal, { interaction, connections: [{ ...rope, state: 'closed' }] }).status,
     'complete',
+  );
+});
+
+test('createGroundPlanner incremental wall overlay matches full prepareRoutePlanner across wall kinds, inactive walls, views, and long imported portals', () => {
+  const tile = (
+    id: string,
+    x0: number,
+    x1: number,
+    y: number,
+    z0: number,
+    z1: number,
+  ): Surface => ({
+    id,
+    vertices: [
+      [x0, y, z0],
+      [x1, y, z0],
+      [x1, y, z1],
+      [x0, y, z1],
+    ],
+  });
+  const grid: Surface[] = [];
+  for (let ix = 0; ix < 6; ix++) {
+    for (let iz = 0; iz < 4; iz++) {
+      grid.push(tile(`cell_${ix}_${iz}`, ix * 2, (ix + 1) * 2, 0, iz * 2, (iz + 1) * 2));
+    }
+  }
+  const verifyParity = (
+    scene: Surface[],
+    opts: GroundOptions,
+    starts: GroundArrival[],
+    goal: Vec3,
+    probePoints: [Vec3, Vec3][],
+  ) => {
+    const planner = createGroundPlanner(scene, opts);
+    const prep = groundPreparation(planner)!;
+    const searchSpeed = opts.locomotion?.sprintSpeed ?? opts.speed;
+    const rawGraph = surfaceGraph(scene, { speed: searchSpeed, portals: opts.portals });
+    const fullRouteBase = prepareRoutePlanner(rawGraph, {
+      walls: opts.walls,
+      profile: opts.profile,
+    });
+
+    assert.equal(prep.routeBase.graph.nodes.length, fullRouteBase.graph.nodes.length);
+    assert.equal(prep.routeBase.graph.edges.length, fullRouteBase.graph.edges.length);
+    for (const node of rawGraph.nodes) {
+      assert.deepEqual(
+        prep.routeBase.forward.get(node.id) ?? [],
+        fullRouteBase.forward.get(node.id) ?? [],
+      );
+    }
+    assert.equal(prep.routeBase.topology.count, fullRouteBase.topology.count);
+    for (const node of rawGraph.nodes) {
+      const actualComp = prep.routeBase.condensed.components.get(node.id)!;
+      const expectedComp = fullRouteBase.condensed.components.get(node.id)!;
+      assert.deepEqual(
+        [...prep.routeBase.condensed.forward[actualComp]]
+          .map((c) => {
+            const targetId = rawGraph.nodes.find(
+              (n) => prep.routeBase.condensed.components.get(n.id) === c,
+            )!.id;
+            return fullRouteBase.condensed.components.get(targetId)!;
+          })
+          .sort((a, b) => a - b),
+        [...fullRouteBase.condensed.forward[expectedComp]].sort((a, b) => a - b),
+      );
+    }
+    for (const [a, b] of probePoints) {
+      assert.equal(prep.routeBase.blocked!(a, b), fullRouteBase.blocked!(a, b));
+    }
+
+    const actualRoute = planner.plan(starts, goal);
+    // Compare against a fresh full-prepareRoutePlanner search on a cloned surface array
+    // (fresh array skips topologyCache's unwalled reuse? No, topologyCache keys by Surface[],
+    // so cloning scene gives a separate entry, and checking fullRouteBase directly confirms graph parity).
+    const clonedScene = structuredClone(scene);
+    const fullPlanner = createGroundPlanner(clonedScene, opts);
+    const fullRoute = fullPlanner.plan(starts, goal);
+    assert.equal(actualRoute.status, fullRoute.status);
+    if (actualRoute.status === 'complete' && fullRoute.status === 'complete') {
+      assert.ok(Math.abs(actualRoute.cost - fullRoute.cost) < 1e-12);
+      assert.deepEqual(actualRoute.points, fullRoute.points);
+    }
+    return actualRoute;
+  };
+
+  const baseProfile = { radius: 0.25, height: 1.6 };
+  const baseOpts: GroundOptions = {
+    speed: 2,
+    maxVertical: 0.5,
+    profile: baseProfile,
+    walls: [],
+  };
+  const starts: GroundArrival[] = [
+    { id: 'player', state: 'available', position: [1, 0, 1], cost: 0 },
+  ];
+  const goal: Vec3 = [11, 0, 1];
+  const probes: [Vec3, Vec3][] = [
+    [
+      [1, 0, 1],
+      [11, 0, 1],
+    ],
+    [
+      [5, 0, 1],
+      [7, 0, 1],
+    ],
+    [
+      [5, 0, 7],
+      [7, 0, 7],
+    ],
+  ];
+
+  // 1. All-inactive walls (raw -> roundedWalls view switch sharing one `grid` instance).
+  const rawWall: Wall = { min: [5.5, -1, -0.5], max: [6.5, 2, 4.5], state: 'active' };
+  const roundedInactive: Wall = { ...rawWall, state: 'inactive' };
+  const roundedNarrow: Wall = { min: [5.5, -1, 1.5], max: [6.5, 2, 6.5], state: 'active' };
+  const rawRoute = verifyParity(grid, { ...baseOpts, walls: [rawWall] }, starts, goal, probes);
+  assert.equal(rawRoute.status, 'complete');
+  if (rawRoute.status === 'complete') {
+    assert.ok(rawRoute.points.some((p) => p[2] > 4.5));
+  }
+  const inactiveRoute = verifyParity(
+    grid,
+    { ...baseOpts, walls: [roundedInactive] },
+    starts,
+    goal,
+    probes,
+  );
+  assert.equal(inactiveRoute.status, 'complete');
+  if (inactiveRoute.status === 'complete') {
+    assert.ok(Math.abs(inactiveRoute.cost - 5) < 1e-9);
+  }
+  const narrowRoute = verifyParity(
+    grid,
+    { ...baseOpts, walls: [roundedNarrow], profile: { radius: 0.3, height: 1.8 } },
+    starts,
+    goal,
+    probes,
+  );
+  assert.equal(narrowRoute.status, 'complete');
+
+  // 2. Box wall completely blocking corridor.
+  const fullBlocker: Wall = { min: [5.5, -1, -1], max: [6.5, 2, 9], state: 'active' };
+  const blockedRoute = verifyParity(
+    grid,
+    { ...baseOpts, walls: [fullBlocker] },
+    starts,
+    goal,
+    probes,
+  );
+  assert.equal(blockedRoute.status, 'no-verified-route');
+
+  // 3. Polygon wall + polyline wall.
+  const polyWall: Wall = {
+    min: [5, -1, 0],
+    max: [7, 2, 4.5],
+    polygon: [
+      [5.2, 0.2],
+      [6.8, 0.2],
+      [6.8, 4.2],
+      [5.2, 4.2],
+    ],
+    state: 'active',
+  };
+  assert.equal(
+    verifyParity(grid, { ...baseOpts, walls: [polyWall] }, starts, goal, probes).status,
+    'complete',
+  );
+  const lineWall: Wall = {
+    min: [5.8, -1, -1],
+    max: [6.2, 2, 9],
+    points: [
+      [6, -0.5],
+      [6, 8.5],
+    ],
+    state: 'unknown',
+  };
+  assert.equal(
+    verifyParity(grid, { ...baseOpts, walls: [lineWall] }, starts, goal, probes).status,
+    'no-verified-route',
+  );
+
+  // 4. Sphere wall.
+  const sphereWall: Wall = {
+    min: [5.5, 0, 0.5],
+    max: [6.5, 1, 1.5],
+    sphere: { center: [6, 0.5, 1], radius: 1.2 },
+    state: 'active',
+  };
+  const sphereRoute = verifyParity(
+    grid,
+    { ...baseOpts, walls: [sphereWall] },
+    starts,
+    goal,
+    probes,
+  );
+  assert.equal(sphereRoute.status, 'complete');
+
+  // 5. Fallback (> 50% affected) when wall spans almost all surfaces.
+  const bigWall: Wall = { min: [-1, -1, -1], max: [13, 2, 9], state: 'active' };
+  assert.equal(
+    verifyParity(grid, { ...baseOpts, walls: [bigWall] }, starts, goal, probes).status,
+    'no-verified-route',
+  );
+
+  // 6. Long vertical imported portal crossing a wall in empty space (disjoint from surface AABBs).
+  const portalScene: Surface[] = [
+    tile('lower', 0, 2, 0, 0, 2),
+    tile('upper', 0, 2, 10, 0, 2),
+    tile('pad0', 10, 12, 0, 0, 2),
+    tile('pad1', 14, 16, 0, 0, 2),
+    tile('pad2', 18, 20, 0, 0, 2),
+    tile('pad3', 22, 24, 0, 0, 2),
+  ];
+  const verticalPortal: Portal = {
+    from: 'lower',
+    to: 'upper',
+    points: [
+      [1, 0, 0],
+      [1, 10, 0],
+    ],
+  };
+  const midAirWall: Wall = { min: [0, 5, -1], max: [2, 6, 1], state: 'active' };
+  const portalStart: GroundArrival[] = [
+    { id: 'p', state: 'available', position: [1, 0, 1], cost: 0 },
+  ];
+  assert.equal(
+    verifyParity(
+      portalScene,
+      { ...baseOpts, portals: [verticalPortal], walls: [midAirWall] },
+      portalStart,
+      [1, 10, 1],
+      [
+        [
+          [1, 0, 0],
+          [1, 10, 0],
+        ],
+      ],
+    ).status,
+    'no-verified-route',
+  );
+  assert.equal(
+    verifyParity(
+      portalScene,
+      { ...baseOpts, portals: [verticalPortal], walls: [{ ...midAirWall, state: 'inactive' }] },
+      portalStart,
+      [1, 10, 1],
+      [
+        [
+          [1, 0, 0],
+          [1, 10, 0],
+        ],
+      ],
+    ).status,
+    'complete',
+  );
+
+  // 7. Error parity for invalid inactive walls and invalid profile.
+  assert.throws(
+    () =>
+      createGroundPlanner(grid, {
+        ...baseOpts,
+        walls: [{ min: [2, 0, 0], max: [1, 1, 1], state: 'inactive' }],
+      }),
+    /Invalid wall/,
+  );
+  assert.throws(
+    () =>
+      createGroundPlanner(grid, {
+        ...baseOpts,
+        profile: { radius: -0.1, height: 1.6 },
+        walls: [],
+      }),
+    /Invalid wall query/,
   );
 });

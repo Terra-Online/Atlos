@@ -24,8 +24,9 @@ import {
 import { validateMotion } from '#@/src/v1/motion/motion.ts';
 import { retimeGroundRoute } from '#@/src/v1/resource/locomotion.ts';
 import {
-  type Graph,
   type Arrival,
+  type Edge,
+  type Graph,
   prepareOverlayRoutePlanner,
   prepareRoutePlanner,
 } from '#@/src/v1/route/routes.ts';
@@ -742,6 +743,72 @@ function assembleGroundPlanner(parts: PlannerParts): GroundPlanner {
   return planner;
 }
 
+function collectAffectedFromIds(
+  surfaces: Surface[],
+  walls: Wall[],
+  profile: GroundOptions['profile'],
+  baseForward: LookupMap<string, Edge[]>,
+  directed: readonly DirectedPortal[],
+): Set<string> {
+  const affectedFromIds = new Set<string>();
+  const pad = 1e-3;
+  let hasActiveWall = false;
+  for (let i = 0; i < walls.length; i++) {
+    const wall = walls[i];
+    if (wall.state === 'inactive') continue;
+    hasActiveWall = true;
+    const margin = profile.radius + (wall.padding ?? 0);
+    let minX = wall.min[0] - margin;
+    let minY = wall.min[1] - profile.height;
+    let minZ = wall.min[2] - margin;
+    let maxX = wall.max[0] + margin;
+    let maxY = wall.max[1];
+    let maxZ = wall.max[2] + margin;
+    const ring = wall.polygon ?? wall.points;
+    if (ring) {
+      for (let j = 0; j < ring.length; j++) {
+        const p = ring[j];
+        if (p[0] - margin < minX) minX = p[0] - margin;
+        if (p[0] + margin > maxX) maxX = p[0] + margin;
+        if (p[1] - margin < minZ) minZ = p[1] - margin;
+        if (p[1] + margin > maxZ) maxZ = p[1] + margin;
+      }
+    }
+    if (wall.sphere) {
+      const c = wall.sphere.center;
+      const r = wall.sphere.radius;
+      const lower = profile.height >= profile.radius * 2 ? profile.radius : 0;
+      const upper =
+        profile.height >= profile.radius * 2 ? profile.height - profile.radius : profile.height;
+      minX = Math.min(minX, c[0] - r - margin);
+      maxX = Math.max(maxX, c[0] + r + margin);
+      minY = Math.min(minY, c[1] - r - margin - upper);
+      maxY = Math.max(maxY, c[1] + r + margin - lower);
+      minZ = Math.min(minZ, c[2] - r - margin);
+      maxZ = Math.max(maxZ, c[2] + r + margin);
+    }
+    const center: Vec3 = [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2];
+    const halfY = (maxY - minY) / 2 + pad;
+    const halfXZ = Math.max(maxX - minX, maxZ - minZ) / 2 + pad;
+    const near = verticalProjectionCandidates(surfaces, center, halfY, halfXZ);
+    for (let j = 0; j < near.length; j++) {
+      const id = near[j].id;
+      affectedFromIds.add(id);
+      const out = baseForward.get(id);
+      if (out) {
+        for (let k = 0; k < out.length; k++) affectedFromIds.add(out[k].to);
+      }
+    }
+  }
+  if (hasActiveWall && directed.length) {
+    // Imported portals can span arbitrarily across empty space through a wall.
+    for (let i = 0; i < directed.length; i++) {
+      affectedFromIds.add(directed[i].from);
+    }
+  }
+  return affectedFromIds;
+}
+
 /** Prepare shared topology and ground visibility once for repeated, independent queries.
  * A caller must rebuild the planner when scene state, geometry or constraints change.
  * Search selects a corridor; continuous ground tracing removes unnecessary graph turns.
@@ -768,8 +835,31 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
     getUnwalledRouteBase,
     getWeakComponents,
   } = groundTopologyFor(surfaces, searchSpeed, options.portals);
-  const routeBase = prepareRoutePlanner(base, { walls, profile });
-  const blocked = routeBase.blocked!;
+  const blocked = createWallChecker(walls, profile);
+  const hasActiveWall = walls.some((wall) => wall.state !== 'inactive');
+  let routeBase: ReturnType<typeof prepareRoutePlanner>;
+  if (!hasActiveWall) {
+    routeBase = getUnwalledRouteBase(profile);
+  } else {
+    const unwalled = getUnwalledRouteBase(profile);
+    const affectedFromIds = collectAffectedFromIds(
+      surfaces,
+      walls,
+      profile,
+      unwalled.forward,
+      directed,
+    );
+    routeBase =
+      affectedFromIds.size <= surfaces.length * 0.5
+        ? prepareOverlayRoutePlanner(
+            unwalled,
+            baseCenters,
+            { nodes: [], edges: [] },
+            affectedFromIds,
+            blocked,
+          )
+        : prepareRoutePlanner(base, { walls, profile });
+  }
   const constraintsSignature = JSON.stringify([walls, profile]);
   const projectSupport = createSupportProjector(surfaces, byId);
   // Build the triangle straightener lazily on first connected trace/straighten
@@ -1007,63 +1097,14 @@ export function createOverlayGroundPlanner(
     preparedExtraBlocked ??
     (extraWalls.length ? createWallChecker(extraWalls, options.profile) : null);
 
-  // Collect every static surface whose outgoing edges could possibly touch extraWalls.
-  const affectedFromIds = new Set<string>();
   const { profile } = options;
-  const pad = 1e-3;
-  for (let i = 0; i < extraWalls.length; i++) {
-    const wall = extraWalls[i];
-    if (wall.state === 'inactive') continue;
-    const margin = profile.radius + (wall.padding ?? 0);
-    let minX = wall.min[0] - margin;
-    let minY = wall.min[1] - profile.height;
-    let minZ = wall.min[2] - margin;
-    let maxX = wall.max[0] + margin;
-    let maxY = wall.max[1];
-    let maxZ = wall.max[2] + margin;
-    const ring = wall.polygon ?? wall.points;
-    if (ring) {
-      for (let j = 0; j < ring.length; j++) {
-        const p = ring[j];
-        if (p[0] - margin < minX) minX = p[0] - margin;
-        if (p[0] + margin > maxX) maxX = p[0] + margin;
-        if (p[1] - margin < minZ) minZ = p[1] - margin;
-        if (p[1] + margin > maxZ) maxZ = p[1] + margin;
-      }
-    }
-    if (wall.sphere) {
-      const c = wall.sphere.center;
-      const r = wall.sphere.radius;
-      const lower = profile.height >= profile.radius * 2 ? profile.radius : 0;
-      const upper =
-        profile.height >= profile.radius * 2 ? profile.height - profile.radius : profile.height;
-      minX = Math.min(minX, c[0] - r - margin);
-      maxX = Math.max(maxX, c[0] + r + margin);
-      minY = Math.min(minY, c[1] - r - margin - upper);
-      maxY = Math.max(maxY, c[1] + r + margin - lower);
-      minZ = Math.min(minZ, c[2] - r - margin);
-      maxZ = Math.max(maxZ, c[2] + r + margin);
-    }
-    const center: Vec3 = [(minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2];
-    const halfY = (maxY - minY) / 2 + pad;
-    const halfXZ = Math.max(maxX - minX, maxZ - minZ) / 2 + pad;
-    const near = verticalProjectionCandidates(basePrep.surfaces, center, halfY, halfXZ);
-    for (let j = 0; j < near.length; j++) {
-      const id = near[j].id;
-      affectedFromIds.add(id);
-      const out = basePrep.routeBase.forward.get(id);
-      if (out) {
-        for (let k = 0; k < out.length; k++) affectedFromIds.add(out[k].to);
-      }
-    }
-  }
-  if (basePrep.directed.length && affectedFromIds.size) {
-    for (let i = 0; i < basePrep.directed.length; i++) {
-      if (affectedFromIds.has(basePrep.directed[i].to)) {
-        affectedFromIds.add(basePrep.directed[i].from);
-      }
-    }
-  }
+  const affectedFromIds = collectAffectedFromIds(
+    basePrep.surfaces,
+    extraWalls,
+    profile,
+    basePrep.routeBase.forward,
+    basePrep.directed,
+  );
 
   const routeBase = prepareOverlayRoutePlanner(
     basePrep.routeBase,
