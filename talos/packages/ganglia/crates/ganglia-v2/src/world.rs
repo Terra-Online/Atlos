@@ -1,4 +1,5 @@
 use crate::{geometry::*, types::*, walls::Walls};
+use std::collections::HashSet;
 
 const STANDING_OFFSET: f64 = 0.005;
 const WALK_CLEARANCE: f64 = 0.01;
@@ -13,8 +14,15 @@ pub struct World {
     collision_index: Index,
     moving: Vec<[Point; 3]>,
     moving_index: Index,
+    coverage: Option<TileCoverage>,
     walls: Walls,
 }
+
+struct TileCoverage {
+    span: f64,
+    tiles: HashSet<(i64, i64)>,
+}
+
 impl World {
     pub fn new(mut physical: Physical) -> Result<Self, String> {
         if physical.locomotion.speed <= 0.
@@ -34,6 +42,32 @@ impl World {
         {
             return Err("Invalid jump model".into());
         }
+        let coverage = physical
+            .ground
+            .tiles
+            .as_ref()
+            .or_else(|| {
+                physical
+                    .ground
+                    .build
+                    .as_ref()
+                    .and_then(|build| build.tiles.as_ref())
+            })
+            .map(|tiles| {
+                let span = physical.ground.build.as_ref().map_or(0., |build| {
+                    build.cell_size.unwrap_or(0.) * build.tile_cells.unwrap_or(0) as f64
+                });
+                if !span.is_finite() || span <= 0. {
+                    return Err(
+                        "Sparse coverage requires positive cellSize and tileCells".to_string()
+                    );
+                }
+                Ok(TileCoverage {
+                    span,
+                    tiles: tiles.iter().map(|t| (t.x, t.z)).collect(),
+                })
+            })
+            .transpose()?;
         let walls = Walls::new(
             physical
                 .rounded_walls
@@ -115,10 +149,19 @@ impl World {
             collision_index,
             moving,
             moving_index,
+            coverage,
             walls,
         })
     }
     pub fn project(&self, p: Point, tolerance: f64) -> Option<Point> {
+        // Available arrivals and authored device ports can rest on collision
+        // faces omitted by the navigation mesh. Prove that contact directly.
+        if let Some(feet) = self.standing(p)
+            && (feet[1] - p[1]).abs() <= tolerance + 1e-6
+            && !self.blocked(feet, feet, 0.)
+        {
+            return Some(feet);
+        }
         let mut best = None;
         let mut delta = tolerance + 1e-9;
         self.ground_index.query(
@@ -256,6 +299,22 @@ impl World {
                 || bounds.max[2] > coverage.max[1])
         {
             return true;
+        }
+        if let Some(coverage) = &self.coverage {
+            // Loaded empty tiles are usable flight space; omitted tiles make
+            // no collision claim. Include the entire swept body's footprint,
+            // using the same conservative rectangle as snapshot coverage.
+            for x in (bounds.min[0] / coverage.span).floor() as i64
+                ..=(bounds.max[0] / coverage.span).floor() as i64
+            {
+                for z in (bounds.min[2] / coverage.span).floor() as i64
+                    ..=(bounds.max[2] / coverage.span).floor() as i64
+                {
+                    if !coverage.tiles.contains(&(x, z)) {
+                        return true;
+                    }
+                }
+            }
         }
         if self.walls.blocked(axis, bounds, radius) {
             return true;

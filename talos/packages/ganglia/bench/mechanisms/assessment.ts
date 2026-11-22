@@ -10,6 +10,7 @@ import type { StartResolution } from '#@/bench/mechanisms/query.ts';
 import type { Case } from '#@/bench/mechanisms/suite.ts';
 import { classify } from '#@/bench/outcome.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
+import { physicalTileSpan } from '#@/src/model/coverage.ts';
 import { roofContains, shifted } from '#@/src/model/placement.ts';
 import { projectPoint } from '#@/src/model/support.ts';
 import type { RouteQuery, RouteResult, RouteEvent } from '#@/src/solver/contract.ts';
@@ -215,6 +216,9 @@ export function facilityAudit(input: PhysicalInput, catalog: FacilityCatalog) {
     throw new Error('Facility catalog and collision source differ');
   const bounds = input.ground.build?.bounds;
   if (!bounds) throw new Error('Missing facility audit bounds');
+  const { cellSize, tileCells } = input.ground.build!;
+  const tileSpan =
+    cellSize !== undefined && tileCells !== undefined ? cellSize * tileCells : physicalTileSpan;
   const expected = (catalog.staticSupports ?? []).filter((s) => {
     if (!s.positions.length) return false;
     let x0 = Infinity,
@@ -227,7 +231,20 @@ export function facilityAudit(input: PhysicalInput, catalog: FacilityCatalog) {
       z0 = Math.min(z0, s.positions[i + 2]);
       z1 = Math.max(z1, s.positions[i + 2]);
     }
-    return x1 >= bounds.min[0] && x0 <= bounds.max[0] && z1 >= bounds.min[1] && z0 <= bounds.max[1];
+    if (!(x1 >= bounds.min[0] && x0 <= bounds.max[0] && z1 >= bounds.min[1] && z0 <= bounds.max[1]))
+      return false;
+    // A sparse snapshot's outer rectangle includes unmapped holes. Only
+    // facilities touching its actual loaded tiles require import receipts.
+    return (
+      !input.ground.tiles ||
+      input.ground.tiles.some(
+        ({ x, z }) =>
+          x1 >= x * tileSpan &&
+          x0 <= (x + 1) * tileSpan &&
+          z1 >= z * tileSpan &&
+          z0 <= (z + 1) * tileSpan,
+      )
+    );
   });
   const receipt = collision.coverage?.staticSupports;
   const byId = new Map((receipt ?? []).map((s) => [s.id, s]));

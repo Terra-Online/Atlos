@@ -87,6 +87,8 @@ pub struct Device {
     pub overhead: Option<f64>,
     #[serde(default)]
     pub fixed_launch: bool,
+    #[serde(default)]
+    pub free_launch: bool,
     pub aim: Option<Point>,
     pub height: Option<f64>,
     pub aim_clearance: Option<f64>,
@@ -99,12 +101,22 @@ pub struct Rope {
 #[derive(Clone, Deserialize)]
 pub struct Ground {
     pub surfaces: Vec<Surface>,
+    pub tiles: Option<Vec<Tile>>,
     pub options: GroundOptions,
     pub build: Option<Build>,
 }
 #[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Build {
     pub bounds: Option<CoverageBounds>,
+    pub tiles: Option<Vec<Tile>>,
+    pub cell_size: Option<f64>,
+    pub tile_cells: Option<usize>,
+}
+#[derive(Clone, Deserialize)]
+pub struct Tile {
+    pub x: i64,
+    pub z: i64,
 }
 #[derive(Clone, Deserialize)]
 pub struct CoverageBounds {

@@ -101,58 +101,203 @@ pub fn ropes(world: &World) -> Vec<Segment> {
         .collect()
 }
 
-pub fn launches(world: &World) -> Vec<Segment> {
-    let Some(facts) = &world.physical.devices else {
-        return Vec::new();
+pub struct Launches {
+    pub edges: Vec<Segment>,
+    pub terminals: Vec<(usize, Segment)>,
+}
+
+fn launch_model(world: &World, height: f64) -> Model {
+    let mut model = world.physical.movement.model.clone();
+    model.max_jump_height = height;
+    model.start_horizontal_speed = None;
+    model.air_acceleration = None;
+    model.air_deceleration = None;
+    model.air_overspeed_deceleration = None;
+    model
+}
+
+fn launch_action(mut action: Segment, device: &Device, suffix: &str) -> Segment {
+    action.mode = "launch";
+    action.connection = Some(format!("launch/{}{suffix}", device.id));
+    action
+}
+
+/// Resolve device actions before queries. Free pads select supported landing
+/// candidates; fixed pads preserve the horizontal velocity through their aim.
+pub fn launches(world: &World, nodes: &[Point], marks: &[Mark]) -> Launches {
+    let mut result = Launches {
+        edges: Vec::new(),
+        terminals: Vec::new(),
     };
-    facts
+    for device in world
+        .physical
         .devices
         .iter()
-        .filter_map(|device| {
-            if !device.fixed_launch || !device.unit_scale {
-                return None;
+        .flat_map(|facts| &facts.devices)
+    {
+        if !device.unit_scale || (!device.fixed_launch && !device.free_launch) {
+            continue;
+        }
+        let Some(height) = device.height.filter(|h| *h >= 0.) else {
+            continue;
+        };
+        let Some(goal) = &device.goal else {
+            continue;
+        };
+        let starts = endpoints(world, device, goal);
+        if starts.is_empty() {
+            continue;
+        }
+        if device.fixed_launch {
+            let Some(aim) = device.aim else {
+                continue;
+            };
+            let Some(clearance) = device.aim_clearance.filter(|c| *c >= 0.) else {
+                continue;
+            };
+            if let Some(end) = world
+                .project(aim, 0.5)
+                .filter(|&end| !world.blocked(end, end, 0.))
+            {
+                if let Some(action) = starts.iter().find_map(|&start| {
+                    let mut model = launch_model(world, height.max(end[1] + clearance - start[1]));
+                    model.max_horizontal_speed =
+                        horizontal(start, end) / crate::flight::duration(&model, start[1], end[1])?;
+                    world.flight(start, end, None, model)
+                }) {
+                    result.edges.push(launch_action(action, device, ""));
+                }
             }
-            let aim = device.aim?;
-            let height = device.height?;
-            let clearance = device.aim_clearance?;
-            if height < 0. || clearance < 0. {
-                return None;
-            }
-            let end = world.project(aim, 0.5)?;
-            if world.blocked(end, end, 0.) {
-                return None;
-            }
-            endpoints(world, device, device.goal.as_ref()?)
-                .into_iter()
-                .find_map(|start| {
-                    // Fixed pads set a uniform horizontal trajectory and their own
-                    // jump height. Character acceleration and launch impulse do not apply.
-                    let mut model = world.physical.movement.model.clone();
-                    model.max_jump_height = height.max(end[1] + clearance - start[1]);
-                    let fall = start[1] + model.max_jump_height - end[1];
-                    let terminal_time = model.max_falling_speed / model.falling_gravity;
-                    let terminal_distance = model.max_falling_speed * terminal_time / 2.;
-                    let duration = (2. * model.max_jump_height / model.gravity).sqrt()
-                        + model.apex_time
-                        + (2. * fall / model.falling_gravity)
-                            .sqrt()
-                            .min(terminal_time)
-                        + (fall - terminal_distance).max(0.) / model.max_falling_speed;
-                    if !duration.is_finite() || duration <= 0. {
-                        return None;
+            // A target can be above empty space. Infer possible landing heights
+            // from nearby prepared supports, then intersect the authored ray
+            // with actual support instead of treating the aim as a platform.
+            for &start in starts.iter().take(16) {
+                let mut model = launch_model(world, height.max(aim[1] + clearance - start[1]));
+                let Some(aim_time) = crate::flight::duration(&model, start[1], aim[1]) else {
+                    continue;
+                };
+                let velocity = [
+                    (aim[0] - start[0]) / aim_time,
+                    (aim[2] - start[2]) / aim_time,
+                ];
+                model.max_horizontal_speed = velocity[0].hypot(velocity[1]);
+                let at_height = |y| {
+                    crate::flight::duration(&model, start[1], y).map(|time| {
+                        [
+                            start[0] + velocity[0] * time,
+                            y,
+                            start[2] + velocity[1] * time,
+                        ]
+                    })
+                };
+                let mut heights = std::collections::BTreeMap::new();
+                for &node in nodes {
+                    if let Some(point) = at_height(node[1]) {
+                        if horizontal(point, node) < 3. {
+                            heights
+                                .entry((node[1] * 2.).floor() as i64)
+                                .or_insert(node[1]);
+                        }
                     }
-                    model.max_horizontal_speed = horizontal(start, end) / duration;
-                    model.start_horizontal_speed = None;
-                    model.air_acceleration = None;
-                    model.air_deceleration = None;
-                    model.air_overspeed_deceleration = None;
-                    let mut action = world.flight(start, end, None, model)?;
-                    action.mode = "launch";
-                    action.connection = Some(format!("launch/{}", device.id));
-                    Some(action)
-                })
-        })
-        .collect()
+                }
+                for y in heights.into_values() {
+                    let Some(mut end) = at_height(y) else {
+                        continue;
+                    };
+                    let mut landed = false;
+                    for _ in 0..6 {
+                        let Some(feet) = world.project(end, 0.5) else {
+                            break;
+                        };
+                        if (feet[1] - end[1]).abs() < 1e-6 {
+                            landed = true;
+                            break;
+                        }
+                        let Some(next) = at_height(feet[1]) else {
+                            break;
+                        };
+                        end = next;
+                    }
+                    if !landed || world.blocked(end, end, 0.) {
+                        continue;
+                    }
+                    if result.edges.iter().any(|edge| {
+                        edge.connection.as_deref() == Some(&format!("launch/{}", device.id))
+                            && distance(edge.end(), end) < 0.25
+                    }) {
+                        continue;
+                    }
+                    if let Some(action) = world.flight(start, end, None, model.clone()) {
+                        result.edges.push(launch_action(action, device, ""));
+                    }
+                }
+                for (index, mark) in marks.iter().enumerate() {
+                    let y = (mark.position[1] - mark.interaction.radius).min(aim[1]);
+                    let Some(end) = at_height(y) else {
+                        continue;
+                    };
+                    if let Some(action) = world.flight(
+                        start,
+                        end,
+                        Some((&mark.position, &mark.interaction)),
+                        model.clone(),
+                    ) {
+                        if !result.terminals.iter().any(|(i, a)| {
+                            *i == index
+                                && a.connection.as_deref() == Some(&format!("launch/{}", device.id))
+                        }) {
+                            result
+                                .terminals
+                                .push((index, launch_action(action, device, "")));
+                        }
+                    }
+                }
+            }
+        } else if device.resolved {
+            let mut model = launch_model(world, height);
+            model.max_horizontal_speed = world.physical.movement.run_air_speed;
+            let mut landings = std::collections::BTreeMap::new();
+            for &end in nodes {
+                let start = starts[0];
+                let Some(time) = crate::flight::duration(&model, start[1], end[1]) else {
+                    continue;
+                };
+                if horizontal(start, end)
+                    <= time * model.max_horizontal_speed + goal.interaction.radius
+                    && time <= 60.
+                {
+                    let key = [
+                        (end[0] / 2.).floor() as i64,
+                        (end[1] * 2.).floor() as i64,
+                        (end[2] / 2.).floor() as i64,
+                    ];
+                    landings.entry(key).or_insert(end);
+                }
+            }
+            for (index, end) in landings.into_values().enumerate() {
+                if let Some(action) = starts
+                    .iter()
+                    .take(16)
+                    .find_map(|&start| world.flight(start, end, None, model.clone()))
+                {
+                    result
+                        .edges
+                        .push(launch_action(action, device, &format!("/{index}")));
+                }
+            }
+            for (index, mark) in marks.iter().enumerate() {
+                if let Some(action) = starts.iter().take(16).find_map(|&start| {
+                    world.collect_with_model(start, mark.position, &mark.interaction, model.clone())
+                }) {
+                    result.terminals.push((
+                        index,
+                        launch_action(action, device, &format!("/terminal/{index}")),
+                    ));
+                }
+            }
+        }
+    }
+    result
 }
 
 pub fn rides(world: &World) -> Vec<Segment> {

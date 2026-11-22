@@ -6,6 +6,7 @@
 import { readFile, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
+import type { ExecutionSuite } from '#@/bench/adapters/ganglia-v2/scopes.ts';
 import { parseInputIndex, type InputIndex } from '#@/bench/mechanisms/input-index.ts';
 import type { Binding } from '#@/bench/mechanisms/scenario.ts';
 import type { Case, Suite } from '#@/bench/mechanisms/suite.ts';
@@ -32,7 +33,7 @@ export async function readDataset(root: string): Promise<Dataset> {
 
 export async function scenarioBindings(
   dataset: Dataset,
-  suite: Suite,
+  suite: ExecutionSuite,
   suiteFile: string,
   selected: ReadonlySet<string>,
   memoryBudget = 1024 ** 3,
@@ -82,6 +83,13 @@ export async function scenarioBindings(
     bindings.set(spec.id, {
       suite: resolve(suiteFile),
       scenarioId: spec.id,
+      ...(spec.preparation
+        ? {
+            sourceScenarioId: spec.preparation.sourceScenarioId,
+            preparationBounds: spec.preparation.bounds,
+            preparationError: spec.preparation.error,
+          }
+        : {}),
       ids: cases.map((item) => item.id),
       dataRoot,
       exports,

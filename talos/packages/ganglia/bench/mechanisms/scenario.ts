@@ -10,6 +10,7 @@ import {
 import { exercised, facilityAudit } from '#@/bench/mechanisms/assessment.ts';
 import { QueryInputError, resolveQuery, sourceSupportWorld } from '#@/bench/mechanisms/query.ts';
 import { checkSetup, type Case, readSuite } from '#@/bench/mechanisms/suite.ts';
+import type { Window } from '#@/bench/scene-data/loader.ts';
 import type { WorkerSetup } from '#@/bench/workers.ts';
 import type { LocomotionOptions } from '#@/src/index.ts';
 import { joinedGeometry } from '#@/src/model/placement.ts';
@@ -26,6 +27,9 @@ import type { PhysicalInput } from '#@/src/solver/physical.ts';
 export interface Binding {
   suite: string;
   scenarioId: string;
+  sourceScenarioId?: string;
+  preparationBounds?: Window;
+  preparationError?: string;
   ids: string[];
   dataRoot: string;
   exports: string;
@@ -36,7 +40,10 @@ export interface Binding {
 export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
   const binding = JSON.parse(await readFile(setup.dataRoot, 'utf8')) as Binding;
   const suite = await readSuite(binding.suite);
-  const spec = suite.scenarios.find(({ id }) => id === binding.scenarioId);
+  if (binding.preparationError) throw new Error(binding.preparationError);
+  const spec = suite.scenarios.find(
+    ({ id }) => id === (binding.sourceScenarioId ?? binding.scenarioId),
+  );
   if (!spec) throw new Error(`Unknown bound scenario: ${binding.scenarioId}`);
   const { input: source, ...world } = spec.setup;
   const fixedBounds: Bounds | undefined =
@@ -44,10 +51,10 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
       ? { min: [source.bounds[0], source.bounds[1]], max: [source.bounds[2], source.bounds[3]] }
       : undefined;
   const v2 = setup.config.algorithm === 'ganglia-v2';
-  const preparationBounds: Bounds | undefined = v2
-    ? v2PreparationBounds(spec.id, fixedBounds)
+  const preparationBounds: Window | undefined = v2
+    ? (binding.preparationBounds ?? v2PreparationBounds(spec.id, fixedBounds))
     : fixedBounds;
-  const loadedBounds = v2 ? preparationBounds : fixedBounds;
+  const loadedBounds: Window | undefined = v2 ? preparationBounds : fixedBounds;
   const items = suite.cases.filter((c) => binding.ids.includes(c.id));
   const landmarks = (anchors[source.scene] ?? []).filter(
     ({ position }) =>
@@ -89,8 +96,22 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
     hooks: {
       onProgress: checkpoint,
       transformInput: (raw) => {
-        if (loadedBounds && !isDeepStrictEqual(raw.ground.build?.bounds, loadedBounds))
+        if (
+          loadedBounds &&
+          !isDeepStrictEqual(raw.ground.build?.bounds, {
+            min: loadedBounds.min,
+            max: loadedBounds.max,
+          })
+        )
           throw new Error('Physical bounds differ from the declared preparation scope');
+        if (
+          loadedBounds?.tiles?.length &&
+          !isDeepStrictEqual(
+            raw.ground.tiles,
+            [...loadedBounds.tiles].sort((a, b) => a.z - b.z || a.x - b.x),
+          )
+        )
+          throw new Error('Physical tiles differ from the declared preparation scope');
         const audit = facilityAudit(raw, catalog);
         if (audit.staticImport !== 'matched')
           throw new Error(
@@ -252,7 +273,9 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
         resolved,
         resolutions,
         resolutionErrors,
-        ...(v2 ? { declaredBounds: fixedBounds, preparationBounds } : {}),
+        ...(v2
+          ? { sourceScenarioId: spec.id, declaredBounds: fixedBounds, preparationBounds }
+          : {}),
       },
     },
     inspectResult(query: RouteQuery, result: RouteResult) {

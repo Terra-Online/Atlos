@@ -7,7 +7,7 @@ import {
   type GameAdapter,
   type SceneHooks,
 } from '#@/bench/adapters/ganglia-v1/scene.ts';
-import { openSceneLoader } from '#@/bench/scene-data/loader.ts';
+import { openSceneLoader, type Window } from '#@/bench/scene-data/loader.ts';
 import { createTimings, observePhysicalReport } from '#@/bench/timings.ts';
 import { createPhysicalVerifier } from '#@/src/evaluation/physical.ts';
 import { verificationDefaults } from '#@/src/evaluation/policy.ts';
@@ -46,7 +46,7 @@ export async function loadPackedScene(options: {
   scene: string;
   source: Source;
   memoryBudget: number;
-  fixedBounds?: Bounds;
+  fixedBounds?: Window;
   hooks?: SceneHooks;
 }) {
   const started = performance.now();
@@ -345,7 +345,7 @@ export async function loadPackedScene(options: {
     files,
     /** Query-independent physical preparation. The callback must finish copying
      * geometry before its borrowed loader snapshot is released. */
-    async prepareSnapshot<T>(bounds: Bounds, use: (input: PhysicalInput) => Promise<T>) {
+    async prepareSnapshot<T>(bounds: Window, use: (input: PhysicalInput) => Promise<T>) {
       const region = fixed ?? loader.describe(bounds);
       const position: Vec3 = [
         (bounds.min[0] + bounds.max[0]) / 2,

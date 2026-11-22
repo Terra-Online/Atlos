@@ -22,6 +22,15 @@ fn descent_times(model: &Model, fall: f64) -> (f64, f64) {
     )
 }
 
+pub fn duration(model: &Model, start_y: f64, end_y: f64) -> Option<f64> {
+    let fall = start_y + model.max_jump_height - end_y;
+    if fall < 0. || model.max_jump_height <= 0. {
+        return None;
+    }
+    let (descent, coast) = descent_times(model, fall);
+    Some(lift_off_speed(model) / model.gravity + model.apex_time + descent + coast)
+}
+
 fn collection_targets(start: Point, goal: Point, y: f64, interaction: &Interaction) -> Vec<Point> {
     let center = [goal[0], y, goal[2]];
     let radius = (interaction.radius.powi(2) - (y - goal[1]).powi(2))
@@ -116,8 +125,23 @@ pub fn hit(a: Point, b: Point, goal: Point, interaction: &Interaction) -> Option
 }
 impl World {
     pub fn collect(&self, start: Point, goal: Point, interaction: &Interaction) -> Option<Segment> {
-        let movement = &self.physical.movement;
-        let model = &movement.model;
+        let mut model = self.physical.movement.model.clone();
+        model.max_horizontal_speed = model
+            .max_horizontal_speed
+            .min(self.physical.movement.run_air_speed);
+        model.start_horizontal_speed = model
+            .start_horizontal_speed
+            .map(|speed| speed.min(model.max_horizontal_speed));
+        self.collect_with_model(start, goal, interaction, model)
+    }
+
+    pub fn collect_with_model(
+        &self,
+        start: Point,
+        goal: Point,
+        interaction: &Interaction,
+        model: Model,
+    ) -> Option<Segment> {
         let peak = start[1] + model.max_jump_height;
         let half_height = interaction
             .radius
@@ -131,8 +155,8 @@ impl World {
         {
             return None;
         }
-        let speed = model.max_horizontal_speed.min(movement.run_air_speed);
-        let lift_off = lift_off_speed(model);
+        let speed = model.max_horizontal_speed;
+        let lift_off = lift_off_speed(&model);
         let apex_end = lift_off / model.gravity + model.apex_time;
         // A sampled point in the goal volume can occur on ascent or descent.
         // Project its horizontal velocity to the end of an authored jump; the
@@ -155,7 +179,7 @@ impl World {
             let fall = peak - y;
             let rise = y - start[1];
             let ascent = 2. * rise / (lift_off + (2. * model.gravity * fall).sqrt());
-            let (fall_time, coast_time) = descent_times(model, fall);
+            let (fall_time, coast_time) = descent_times(&model, fall);
             let descent = apex_end + fall_time + coast_time;
             for target in collection_targets(start, goal, y, interaction) {
                 for (time, duration, end_y) in [(ascent, apex_end, peak), (descent, descent, y)] {
@@ -184,7 +208,7 @@ impl World {
         witnesses.dedup_by(|a, b| a.1 == b.1);
         witnesses
             .into_iter()
-            .find_map(|(_, end)| self.jump(start, end, Some((&goal, interaction))))
+            .find_map(|(_, end)| self.flight(start, end, Some((&goal, interaction)), model.clone()))
     }
 
     pub fn jump(

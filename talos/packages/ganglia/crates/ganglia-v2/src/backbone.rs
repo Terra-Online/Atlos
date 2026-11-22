@@ -69,15 +69,35 @@ impl Backbone {
             .collect();
         // Authored traversal ports are critical nodes even when lattice
         // representatives omit their small interaction volumes.
+        let launches = crate::devices::launches(world, &nodes, &marks);
         let devices: Vec<_> = crate::devices::ropes(world)
             .into_iter()
-            .chain(crate::devices::launches(world))
+            .chain(launches.edges)
             .chain(crate::devices::rides(world))
             .collect();
-        let device_offset = nodes.len();
-        for action in &devices {
-            nodes.extend([action.start(), action.end()]);
-        }
+        // A free pad can have many outgoing flights from the same launch point.
+        // Share that port so duplicate coordinates cannot consume its neighbours.
+        let mut ports: BTreeMap<_, _> = nodes
+            .iter()
+            .enumerate()
+            .map(|(index, point)| (point.map(f64::to_bits), index))
+            .collect();
+        let mut port = |point: Point| {
+            *ports.entry(point.map(f64::to_bits)).or_insert_with(|| {
+                let index = nodes.len();
+                nodes.push(point);
+                index
+            })
+        };
+        let devices: Vec<_> = devices
+            .into_iter()
+            .map(|action| (port(action.start()), port(action.end()), action))
+            .collect();
+        let launch_terminals: Vec<_> = launches
+            .terminals
+            .into_iter()
+            .map(|(mark, action)| (mark, port(action.start()), action))
+            .collect();
         let index = Index::new(
             &nodes
                 .iter()
@@ -115,16 +135,19 @@ impl Backbone {
                 }
             }
         }
-        for (index, action) in devices.into_iter().enumerate() {
-            edges[device_offset + 2 * index].push(Edge {
-                to: device_offset + 2 * index + 1,
-                action,
-            });
+        for (from, to, action) in devices {
+            edges[from].push(Edge { to, action });
         }
         let terminals = marks
             .into_iter()
-            .map(|mark| {
+            .enumerate()
+            .map(|(mark_index, mark)| {
                 let mut connections = Vec::new();
+                for (index, node, action) in &launch_terminals {
+                    if *index == mark_index {
+                        connections.push((*node, action.clone()));
+                    }
+                }
                 index.query(Bounds::points(&[mark.position]).expand(12.), |i| {
                     if let Some(action) = world.collect(nodes[i], mark.position, &mark.interaction)
                     {

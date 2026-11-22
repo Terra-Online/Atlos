@@ -51,7 +51,7 @@ impl Candidate {
                     let time = segment.times[chord]
                         + fraction * (segment.times[chord + 1] - segment.times[chord]);
                     return index + 1 == self.segments.len()
-                        && segment.mode == "jump"
+                        && matches!(segment.mode, "jump" | "launch")
                         && distance(position, segment.end()) <= 1e-6
                         && (time - segment.cost()).abs() <= 1e-6;
                 }

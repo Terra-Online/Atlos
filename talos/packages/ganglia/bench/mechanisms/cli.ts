@@ -13,7 +13,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-import { preparationBounds as v2PreparationBounds } from '#@/bench/adapters/ganglia-v2/annotations.ts';
+import { longCorridors } from '#@/bench/adapters/ganglia-v2/corridors.ts';
+import { executionSuite, type ExecutionSuite } from '#@/bench/adapters/ganglia-v2/scopes.ts';
 import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { expectation, matchesExpectation } from '#@/bench/mechanisms/assessment.ts';
 import { readDataset, scenarioBindings, scenarioBuilder } from '#@/bench/mechanisms/dataset.ts';
@@ -63,7 +64,9 @@ if (values.help) {
   )
     throw new Error('Invalid physical loader memory budget');
   const memoryBudget = Math.floor((budgetMiB * 1024 ** 2) / scenarioWorkers);
-  const suite = await readSuite(values.suite);
+  const authored = await readSuite(values.suite);
+  const suite: ExecutionSuite =
+    values.adapter === 'ganglia-v2' ? executionSuite(authored, longCorridors) : authored;
   const inputRoot = resolve(values['data-root']);
 
   const filter = values.ids && new Set(values.ids.split(','));
@@ -134,17 +137,21 @@ if (values.help) {
               scenarioId: spec.id,
               setup: {
                 ...spec.setup,
-                ...(config.algorithm === 'ganglia-v2'
+                ...(spec.preparation
                   ? {
-                      preparationBounds: v2PreparationBounds(
-                        spec.id,
-                        spec.setup.input.kind === 'frozen-window'
-                          ? {
-                              min: [spec.setup.input.bounds[0], spec.setup.input.bounds[1]],
-                              max: [spec.setup.input.bounds[2], spec.setup.input.bounds[3]],
-                            }
-                          : undefined,
-                      ),
+                      sourceScenarioId: spec.preparation.sourceScenarioId,
+                      preparationBounds: {
+                        min: spec.preparation.bounds.min,
+                        max: spec.preparation.bounds.max,
+                      },
+                      ...(spec.preparation.bounds.tiles
+                        ? {
+                            preparationTiles: spec.preparation.bounds.tiles.map(({ x, z }) => ({
+                              x,
+                              z,
+                            })),
+                          }
+                        : {}),
                     }
                   : {}),
                 physicalInput: 'scene-pack',
@@ -258,6 +265,7 @@ if (values.help) {
     const scenarioIds = new Set(spec.cases.map((item) => item.id));
     const items = selected.filter((item) => scenarioIds.has(item.id));
     try {
+      if (binding.preparationError) throw new Error(binding.preparationError);
       for (const item of items) {
         checkSetup(item);
         if (config.algorithm === 'ganglia-v1-rust' && item.setup.supportModel)
