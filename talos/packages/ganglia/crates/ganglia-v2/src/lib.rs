@@ -89,7 +89,8 @@ impl Engine {
             "anchorSupports":anchor_supports,
             "nodeBounds":bounds.map(|b|json!({"min":b.min,"max":b.max})),
             "markedTargets":backbone.terminals.iter().map(|(mark,edges)|json!({"position":mark.position,"connections":edges.len()})).collect::<Vec<_>>(),
-            "ropeConnections":backbone.edges.iter().flatten().filter_map(|edge|edge.action.connection.as_ref()).collect::<Vec<_>>()});
+            "ropeConnections":backbone.edges.iter().flatten().filter(|edge|edge.action.mode=="rope").filter_map(|edge|edge.action.connection.as_ref()).collect::<Vec<_>>(),
+            "launchConnections":backbone.edges.iter().flatten().filter(|edge|edge.action.mode=="launch").filter_map(|edge|edge.action.connection.as_ref()).collect::<Vec<_>>()});
         Ok(Self {
             world,
             backbone,

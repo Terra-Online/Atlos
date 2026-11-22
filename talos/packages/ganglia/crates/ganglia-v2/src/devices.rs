@@ -1,4 +1,9 @@
-use crate::{flight::hit, geometry::distance, types::*, world::World};
+use crate::{
+    flight::hit,
+    geometry::{distance, horizontal},
+    types::*,
+    world::World,
+};
 
 fn endpoints(world: &World, device: &Device, goal: &Mark) -> Vec<Point> {
     // A trigger can straddle coverage or a ledge. Its nearest navigation edge
@@ -91,6 +96,60 @@ pub fn ropes(world: &World) -> Vec<Segment> {
             let lower = facts.devices.iter().find(|d| d.id == rope.bottom)?;
             let upper = facts.devices.iter().find(|d| d.id == rope.top)?;
             climb(world, lower, upper)
+        })
+        .collect()
+}
+
+pub fn launches(world: &World) -> Vec<Segment> {
+    let Some(facts) = &world.physical.devices else {
+        return Vec::new();
+    };
+    facts
+        .devices
+        .iter()
+        .filter_map(|device| {
+            if !device.fixed_launch || !device.unit_scale {
+                return None;
+            }
+            let aim = device.aim?;
+            let height = device.height?;
+            let clearance = device.aim_clearance?;
+            if height < 0. || clearance < 0. {
+                return None;
+            }
+            let end = world.project(aim, 0.5)?;
+            if world.blocked(end, end, 0.) {
+                return None;
+            }
+            endpoints(world, device, device.goal.as_ref()?)
+                .into_iter()
+                .find_map(|start| {
+                    // Fixed pads set a uniform horizontal trajectory and their own
+                    // jump height. Character acceleration and launch impulse do not apply.
+                    let mut model = world.physical.movement.model.clone();
+                    model.max_jump_height = height.max(end[1] + clearance - start[1]);
+                    let fall = start[1] + model.max_jump_height - end[1];
+                    let terminal_time = model.max_falling_speed / model.falling_gravity;
+                    let terminal_distance = model.max_falling_speed * terminal_time / 2.;
+                    let duration = (2. * model.max_jump_height / model.gravity).sqrt()
+                        + model.apex_time
+                        + (2. * fall / model.falling_gravity)
+                            .sqrt()
+                            .min(terminal_time)
+                        + (fall - terminal_distance).max(0.) / model.max_falling_speed;
+                    if !duration.is_finite() || duration <= 0. {
+                        return None;
+                    }
+                    model.max_horizontal_speed = horizontal(start, end) / duration;
+                    model.start_horizontal_speed = None;
+                    model.air_acceleration = None;
+                    model.air_deceleration = None;
+                    model.air_overspeed_deceleration = None;
+                    let mut action = world.flight(start, end, None, model)?;
+                    action.mode = "launch";
+                    action.connection = Some(format!("launch/{}", device.id));
+                    Some(action)
+                })
         })
         .collect()
 }

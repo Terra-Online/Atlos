@@ -69,10 +69,13 @@ impl Backbone {
             .collect();
         // Authored traversal ports are critical nodes even when lattice
         // representatives omit their small interaction volumes.
-        let ropes = crate::devices::ropes(world);
-        let rope_offset = nodes.len();
-        for rope in &ropes {
-            nodes.extend([rope.start(), rope.end()]);
+        let devices: Vec<_> = crate::devices::ropes(world)
+            .into_iter()
+            .chain(crate::devices::launches(world))
+            .collect();
+        let device_offset = nodes.len();
+        for action in &devices {
+            nodes.extend([action.start(), action.end()]);
         }
         let index = Index::new(
             &nodes
@@ -83,9 +86,9 @@ impl Backbone {
         let mut edges: Vec<Vec<Edge>> = (0..nodes.len()).map(|_| Vec::new()).collect();
         if profile {
             eprintln!(
-                "ganglia-v2 backbone: {} nodes, {} rope actions",
+                "ganglia-v2 backbone: {} nodes, {} device actions",
                 nodes.len(),
-                ropes.len()
+                devices.len()
             );
         }
         for (i, &a) in nodes.iter().enumerate() {
@@ -111,10 +114,10 @@ impl Backbone {
                 }
             }
         }
-        for (index, rope) in ropes.into_iter().enumerate() {
-            edges[rope_offset + 2 * index].push(Edge {
-                to: rope_offset + 2 * index + 1,
-                action: rope,
+        for (index, action) in devices.into_iter().enumerate() {
+            edges[device_offset + 2 * index].push(Edge {
+                to: device_offset + 2 * index + 1,
+                action,
             });
         }
         let terminals = marks

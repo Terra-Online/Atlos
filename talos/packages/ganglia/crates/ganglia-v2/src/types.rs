@@ -57,6 +57,11 @@ pub struct Device {
     pub seeds: Vec<Point>,
     pub speed: Option<f64>,
     pub overhead: Option<f64>,
+    #[serde(default)]
+    pub fixed_launch: bool,
+    pub aim: Option<Point>,
+    pub height: Option<f64>,
+    pub aim_clearance: Option<f64>,
 }
 #[derive(Clone, Deserialize)]
 pub struct Rope {
@@ -115,10 +120,14 @@ pub struct Model {
     pub max_falling_speed: f64,
     pub apex_time: f64,
     pub max_horizontal_speed: f64,
-    pub start_horizontal_speed: f64,
-    pub air_overspeed_deceleration: f64,
-    pub air_acceleration: f64,
-    pub air_deceleration: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub start_horizontal_speed: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub air_overspeed_deceleration: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub air_acceleration: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub air_deceleration: Option<f64>,
 }
 #[derive(Clone, Deserialize)]
 pub struct Locomotion {

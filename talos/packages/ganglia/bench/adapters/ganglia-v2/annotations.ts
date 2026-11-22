@@ -21,6 +21,9 @@ export const anchors: Record<string, { position: Vec3; source: string }[]> = {
     { position: [-106.213, 93.989, -531.599], source: 'ground/163550086/16/27' },
   ],
   map02: [
+    // Collision-backed rim contact on the isolated eastern chest platform.
+    // Interior navigation representatives put its landing beyond a normal jump.
+    { position: [-674.096100522, 228.460560872, -1601.256439863], source: 'east-platform/rim' },
     // Finite capsule contact at the southern ridge. Interior nav representatives
     // make this rise look >2.1 m; these collision-proven edge contacts are 2.00 m apart.
     { position: [-773.8, 248.101615509, -1629.3], source: 'south-ridge/lower-contact' },

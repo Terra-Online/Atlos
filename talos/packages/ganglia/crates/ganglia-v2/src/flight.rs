@@ -193,14 +193,26 @@ impl World {
         end: Point,
         collection: Option<(&Point, &Interaction)>,
     ) -> Option<Segment> {
-        if self.blocked(start, start, 0.) {
-            return None;
-        }
         let mut model = self.physical.movement.model.clone();
         model.max_horizontal_speed = model
             .max_horizontal_speed
             .min(self.physical.movement.run_air_speed);
-        model.start_horizontal_speed = model.start_horizontal_speed.min(model.max_horizontal_speed);
+        model.start_horizontal_speed = model
+            .start_horizontal_speed
+            .map(|speed| speed.min(model.max_horizontal_speed));
+        self.flight(start, end, collection, model)
+    }
+
+    pub fn flight(
+        &self,
+        start: Point,
+        end: Point,
+        collection: Option<(&Point, &Interaction)>,
+        model: Model,
+    ) -> Option<Segment> {
+        if self.blocked(start, start, 0.) {
+            return None;
+        }
         let peak = start[1] + model.max_jump_height;
         if end[1] > peak || model.max_jump_height <= 0. {
             return None;
