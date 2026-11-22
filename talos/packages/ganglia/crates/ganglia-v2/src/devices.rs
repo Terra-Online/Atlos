@@ -437,7 +437,7 @@ pub fn rides(world: &World) -> Vec<Segment> {
 }
 
 pub fn used_supports(world: &World, segments: &[Segment]) -> Vec<serde_json::Value> {
-    let mut boxes = Vec::new();
+    let mut boxes = world.contact_receipts(segments).unwrap_or_default();
     for support in world
         .physical
         .devices

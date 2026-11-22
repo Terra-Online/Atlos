@@ -22,6 +22,8 @@ test('v2 projects static feet onto a nearby moving roof when no exact moving con
           model: 'roof',
           assumption: 'phase-free-swept-support',
           transfers: [],
+          poses: [{ min: [-4, 0.15, -4], max: [4, 0.15, 4] }],
+          surfacePoses: [[{ body: 0, fromPose: 0, toPose: 0 }]],
           surfaces: [
             {
               id: 'roof',
@@ -87,6 +89,10 @@ test('v2 rides an authored lift between supported poses without treating its swe
           model: 'lift',
           assumption: 'phase-free-swept-support',
           surfaces: [roof(1), roof(9)],
+          surfacePoses: [
+            [{ body: 0, fromPose: 0, toPose: 0 }],
+            [{ body: 0, fromPose: 1, toPose: 1 }],
+          ],
           poses: [
             { min: [-1, 0.8, -1], max: [1, 1, 1] },
             { min: [-1, 8.8, -1], max: [1, 9, 1] },
@@ -227,7 +233,23 @@ test('v2 preserves resource replay when a moving contact differs by floating poi
           model: 'forklift',
           assumption: 'phase-free-swept-support',
           surfaces,
-          transfers: [{ from: start, to: end, speed: 1 }],
+          // Preserve the source association between the two caps and their swept hull.
+          surfacePoses: [
+            [{ body: 0, fromPose: 0, toPose: 0 }],
+            [{ body: 0, fromPose: 1, toPose: 1 }],
+            [{ body: 0, fromPose: 0, toPose: 1 }],
+          ],
+          poses: [
+            {
+              min: [-160.00259451366344, 133.9711615628139, -77.05251036475656],
+              max: [-157.01400609510668, 136.14684927122042, -74.05453197732035],
+            },
+            {
+              min: [-160.0909656537748, 135.96875669428283, -77.09498354557293],
+              max: [-157.10237723521803, 138.14444440268934, -74.09700515813674],
+            },
+          ],
+          transfers: [{ from: start, to: end, speed: 1, fromPose: 0, toPose: 1, body: 0 }],
         },
       ],
     },

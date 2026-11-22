@@ -69,15 +69,24 @@ pub struct Placement {
     pub position: Point,
 }
 #[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MovingSupport {
     pub id: String,
     pub family: String,
     pub assumption: String,
     pub surfaces: Vec<Surface>,
     #[serde(default)]
+    pub surface_poses: Vec<Vec<PoseSpan>>,
+    #[serde(default)]
     pub poses: Vec<Pose>,
     pub transfers: Vec<Transfer>,
     pub circular: Option<Circular>,
+}
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PoseSpan {
+    pub from_pose: usize,
+    pub to_pose: usize,
 }
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]

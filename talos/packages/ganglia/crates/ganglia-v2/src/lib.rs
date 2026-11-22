@@ -1,6 +1,7 @@
 mod backbone;
 mod circular;
 mod conditional;
+mod contact_search;
 mod devices;
 mod flight;
 mod geometry;
@@ -83,7 +84,10 @@ impl Engine {
         arrival: Arrival,
         segments: Vec<Segment>,
     ) -> Option<Candidate> {
+        self.world_for(layout).contact_receipts(&segments)?;
         let scheduled = locomotion::best(&segments, &self.world_for(layout).physical)?;
+        self.world_for(layout)
+            .contact_receipts(&scheduled.segments)?;
         Some(Candidate {
             layout,
             arrival,

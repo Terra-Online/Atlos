@@ -224,6 +224,18 @@ impl Engine {
         }
         *diagnostics = json!({"starts":origins,"goalPositions":goals.len(),"goalAttachments":endings.iter().map(Vec::len).sum::<usize>(),"reachedNodes":reached.iter().filter(|&&v|v).count()});
         if population.is_empty()
+            && world.has_contacts()
+            && reached
+                .iter()
+                .enumerate()
+                .any(|(i, &yes)| yes && !endings[i].is_empty())
+            && !self.cancelled.load(Ordering::Relaxed)
+        {
+            let (candidates, labels) = self.contact_seeds(layout, query, &endings);
+            population.extend(candidates);
+            diagnostics["contactLabels"] = json!(labels);
+        }
+        if population.is_empty()
             && !self.cancelled.load(Ordering::Relaxed)
             && std::env::var_os("GANGLIA_PROFILE").is_some()
         {

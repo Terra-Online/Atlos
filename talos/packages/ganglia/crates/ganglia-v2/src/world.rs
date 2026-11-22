@@ -1,4 +1,7 @@
+#[path = "contacts.rs"]
+mod contacts;
 use crate::{geometry::*, types::*, walls::Walls};
+pub(super) use contacts::Contact;
 use std::{collections::HashSet, sync::Arc};
 
 const STANDING_OFFSET: f64 = 0.005;
@@ -9,6 +12,7 @@ const WALK_SAMPLE_MIN: f64 = 0.025;
 #[derive(Clone)]
 pub struct World {
     pub physical: Arc<Physical>,
+    contacts: Arc<contacts::Catalog>,
     ground: Arc<Vec<[Point; 3]>>,
     ground_index: Arc<Index>,
     collision: Arc<Vec<[Point; 3]>>,
@@ -182,7 +186,9 @@ impl World {
                 .map(|t| Bounds::points(t))
                 .collect::<Vec<_>>(),
         );
+        let contacts = Arc::new(contacts::Catalog::new(&physical));
         Ok(Self {
+            contacts,
             physical: Arc::new(physical),
             ground: Arc::new(ground),
             ground_index: Arc::new(ground_index),
@@ -526,6 +532,15 @@ impl World {
         })
     }
     fn support_span(&self, path: [Point; 2], faces_only: bool) -> bool {
+        self.support_span_with(path, faces_only, &self.moving_index, &self.moving)
+    }
+    fn support_span_with(
+        &self,
+        path: [Point; 2],
+        faces_only: bool,
+        moving_index: &Index,
+        moving: &[[Point; 3]],
+    ) -> bool {
         const CONTACT_ENVELOPE: f64 = 0.02;
         let physical = !self.collision.is_empty()
             || !self.moving.is_empty()
@@ -539,17 +554,29 @@ impl World {
         };
         let sources = if physical {
             [
-                (&self.collision_index, &self.collision, true),
-                (&self.moving_index, &self.moving, true),
-                (&self.circular_index, &self.circular, true),
-                (&self.box_support_index, &self.box_support, true),
+                (
+                    self.collision_index.as_ref(),
+                    self.collision.as_slice(),
+                    true,
+                ),
+                (moving_index, moving, true),
+                (self.circular_index.as_ref(), self.circular.as_slice(), true),
+                (
+                    self.box_support_index.as_ref(),
+                    self.box_support.as_slice(),
+                    true,
+                ),
             ]
         } else {
             [
-                (&self.ground_index, &self.ground, false),
-                (&self.moving_index, &self.moving, true),
-                (&self.circular_index, &self.circular, true),
-                (&self.box_support_index, &self.box_support, true),
+                (self.ground_index.as_ref(), self.ground.as_slice(), false),
+                (moving_index, moving, true),
+                (self.circular_index.as_ref(), self.circular.as_slice(), true),
+                (
+                    self.box_support_index.as_ref(),
+                    self.box_support.as_slice(),
+                    true,
+                ),
             ]
         };
         let minimum_up = self.physical.movement.max_slope.to_radians().cos();
