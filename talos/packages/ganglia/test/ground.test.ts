@@ -7,6 +7,7 @@ import type { GroundArrival, GroundConnection, GroundOptions } from '#@/src/rout
 import { surfaceGraph } from '#@/src/v1/geo/surfaces.ts';
 import { createGroundPlanner, planGroundRoute, groundPreparation } from '#@/src/v1/route/ground.ts';
 import { prepareRoutePlanner, route } from '#@/src/v1/route/routes.ts';
+import { createGroundStraightener } from '#@/src/v1/route/straighten.ts';
 const surfaces: Surface[] = [
   {
     id: 'a',
@@ -942,4 +943,121 @@ test('createGroundPlanner incremental wall overlay matches full prepareRoutePlan
   assert.equal(walledBlocked.empty, undefined);
   assert.equal(walledBlocked([1, 0, 1], [11, 0, 1]), true);
   assert.equal(walledBlocked([5, 0, 7], [7, 0, 7]), false);
+});
+
+test('wall-view switches share prepared straightener mesh while enforcing distinct walls', () => {
+  let portalMaskReads = 0;
+  const trackedSurface: Surface = {
+    id: 'left',
+    vertices: [
+      [0, 0, 0],
+      [4, 0, 0],
+      [4, 0, 4],
+      [0, 0, 4],
+    ],
+    get portals() {
+      portalMaskReads++;
+      return undefined;
+    },
+  };
+  const rightSurface: Surface = {
+    id: 'right',
+    vertices: [
+      [4, 0, 0],
+      [8, 0, 0],
+      [8, 0, 4],
+      [4, 0, 4],
+    ],
+  };
+  const sharedSurfaces: Surface[] = [trackedSurface, rightSurface];
+  const rawWall: Wall = { min: [3.8, -1, 1.2], max: [4.2, 3, 2.8], state: 'active' };
+  const sideWall: Wall = { min: [3.8, -1, -0.5], max: [4.2, 3, 2.0], state: 'active' };
+  const baseOpts: GroundOptions = {
+    speed: 2,
+    maxVertical: 0.5,
+    walls: [rawWall],
+    profile: { radius: 0.2, height: 1.6 },
+  };
+  const roundedOpts: GroundOptions = { ...baseOpts, walls: [sideWall] };
+  const clearOpts: GroundOptions = { ...baseOpts, walls: [] };
+
+  const starts: GroundArrival[] = [
+    { id: 'player', position: [1, 0, 2], state: 'available', cost: 0 },
+  ];
+  const goal: Vec3 = [7, 0, 2];
+
+  const rawPlanner = createGroundPlanner(sharedSurfaces, baseOpts);
+  const rawPlan = rawPlanner.plan(starts, goal);
+  const readsAfterFirst = portalMaskReads;
+  assert.ok(readsAfterFirst > 0);
+
+  const roundedPlanner = createGroundPlanner(sharedSurfaces, roundedOpts);
+  const clearPlanner = createGroundPlanner(sharedSurfaces, clearOpts);
+  const roundedPlan = roundedPlanner.plan(starts, goal);
+  const clearPlan = clearPlanner.plan(starts, goal);
+  // Subsequent wall views reuse the prepared straightener mesh without rebuilding it.
+  assert.equal(portalMaskReads, readsAfterFirst);
+
+  const rawFreshOpts = { ...baseOpts };
+  const roundedFreshOpts = { ...roundedOpts };
+  const clearFreshOpts = { ...clearOpts };
+  const cloneSurfaces = (): Surface[] => [
+    { id: 'left', vertices: trackedSurface.vertices.map((v) => [...v] as Vec3) },
+    structuredClone(rightSurface),
+  ];
+  assert.deepEqual(rawPlan, planGroundRoute(cloneSurfaces(), starts, goal, rawFreshOpts));
+  assert.deepEqual(roundedPlan, planGroundRoute(cloneSurfaces(), starts, goal, roundedFreshOpts));
+  assert.deepEqual(clearPlan, planGroundRoute(cloneSurfaces(), starts, goal, clearFreshOpts));
+
+  const rawPrep = groundPreparation(rawPlanner)!;
+  const roundedPrep = groundPreparation(roundedPlanner)!;
+  const clearPrep = groundPreparation(clearPlanner)!;
+  const rawStraighten = createGroundStraightener(cloneSurfaces(), rawFreshOpts);
+  const roundedStraighten = createGroundStraightener(cloneSurfaces(), roundedFreshOpts);
+  const clearStraighten = createGroundStraightener(cloneSurfaces(), clearFreshOpts);
+
+  const run: Vec3[] = [
+    [1, 0, 2],
+    [2, 0, 3.5],
+    [6, 0, 3.5],
+    [7, 0, 2],
+  ];
+  assert.equal(rawPrep.straighten.trace([1, 0, 2], [7, 0, 2]), null);
+  assert.equal(roundedPrep.straighten.trace([1, 0, 2], [7, 0, 2]), null);
+  assert.deepEqual(clearPrep.straighten.trace([1, 0, 2], [7, 0, 2]), [
+    [1, 0, 2],
+    [7, 0, 2],
+  ]);
+  assert.deepEqual(rawPrep.straighten(run), rawStraighten(run));
+  assert.deepEqual(roundedPrep.straighten(run), roundedStraighten(run));
+  assert.deepEqual(clearPrep.straighten(run), clearStraighten(run));
+  assert.equal(portalMaskReads, readsAfterFirst);
+
+  // Mutating the caller's surfaces array after planner creation falls back cleanly.
+  const mutableSurfaces: Surface[] = [
+    {
+      id: 's1',
+      vertices: [
+        [0, 0, 0],
+        [4, 0, 0],
+        [4, 0, 4],
+        [0, 0, 4],
+      ],
+    },
+  ];
+  const mutablePlanner = createGroundPlanner(mutableSurfaces, clearOpts);
+  mutableSurfaces.push({
+    id: 's2',
+    vertices: [
+      [4, 0, 0],
+      [8, 0, 0],
+      [8, 0, 4],
+      [4, 0, 4],
+    ],
+  });
+  assert.equal(
+    groundPreparation(mutablePlanner)!.straighten.mayConnect([1, 0, 2], [7, 0, 2]),
+    false,
+  );
+  assert.equal(groundPreparation(mutablePlanner)!.straighten.trace([1, 0, 2], [7, 0, 2]), null);
 });

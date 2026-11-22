@@ -30,7 +30,13 @@ import {
   prepareOverlayRoutePlanner,
   prepareRoutePlanner,
 } from '#@/src/v1/route/routes.ts';
-import { type GroundStraightener, createGroundStraightener } from '#@/src/v1/route/straighten.ts';
+import {
+  type GroundStraightener,
+  type GroundStraightenerMesh,
+  createGroundStraightener,
+  createGroundStraightenerFromMesh,
+  prepareGroundStraightenerMesh,
+} from '#@/src/v1/route/straighten.ts';
 
 export type LookupMap<K, V> = Pick<ReadonlyMap<K, V>, 'get' | 'has'>;
 
@@ -117,6 +123,12 @@ interface GroundTopologyEntry {
     unwalledRouteBase?: ReturnType<typeof prepareRoutePlanner>;
     weakComponents?: SurfaceWeakComponents;
   };
+  straightener?: {
+    importedPortals: GroundOptions['portals'];
+    importedLength: number;
+    directed: DirectedPortal[];
+    mesh?: GroundStraightenerMesh;
+  };
 }
 const topologyCache = new WeakMap<Surface[], GroundTopologyEntry>();
 
@@ -179,13 +191,19 @@ function groundTopologyFor(
     topologyCache.set(surfaces, entry);
   }
   const importedLength = importedPortals?.length ?? 0;
+  const sameStraightenerPortals =
+    entry.straightener !== undefined &&
+    entry.straightener.importedPortals === importedPortals &&
+    entry.straightener.importedLength === importedLength;
   if (
     !entry.graph ||
     entry.graph.searchSpeed !== searchSpeed ||
     entry.graph.importedPortals !== importedPortals ||
     entry.graph.importedLength !== importedLength
   ) {
-    const directed = directedPortals(surfaces, importedPortals, entry.byId);
+    const directed = sameStraightenerPortals
+      ? entry.straightener!.directed
+      : directedPortals(surfaces, importedPortals, entry.byId);
     const base = surfaceGraph(
       surfaces,
       { speed: searchSpeed, portals: importedPortals },
@@ -201,6 +219,14 @@ function groundTopologyFor(
     entry.graph = { searchSpeed, importedPortals, importedLength, directed, base, baseCenters };
   }
   const graphEntry = entry.graph;
+  if (!sameStraightenerPortals) {
+    entry.straightener = {
+      importedPortals,
+      importedLength,
+      directed: graphEntry.directed,
+    };
+  }
+  const straightenerEntry = entry.straightener!;
   return {
     portals: entry.portals,
     byId: entry.byId,
@@ -219,6 +245,13 @@ function groundTopologyFor(
         surfaces,
         entry!.portals,
         graphEntry.directed,
+      ));
+    },
+    getStraightenerMesh() {
+      return (straightenerEntry.mesh ??= prepareGroundStraightenerMesh(
+        surfaces,
+        entry!.portals,
+        straightenerEntry.directed,
       ));
     },
   };
@@ -876,6 +909,7 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
     baseCenters,
     getUnwalledRouteBase,
     getWeakComponents,
+    getStraightenerMesh,
   } = groundTopologyFor(surfaces, searchSpeed, options.portals);
   const blocked = createWallChecker(walls, profile);
   const hasActiveWall = walls.some((wall) => wall.state !== 'inactive');
@@ -942,13 +976,16 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
   };
   let realStraightener: GroundStraightener | undefined;
   const getStraightener = () => {
-    realStraightener ??= createGroundStraightener(
-      surfaceSnapshot,
-      { walls, profile, portals: importedPortalsSnapshot },
-      portals,
-      blocked,
-      directed,
-    );
+    realStraightener ??=
+      surfaces.length === surfaceSnapshot.length
+        ? createGroundStraightenerFromMesh(getStraightenerMesh(), blocked)
+        : createGroundStraightener(
+            surfaceSnapshot,
+            { walls, profile, portals: importedPortalsSnapshot },
+            portals,
+            blocked,
+            directed,
+          );
     return realStraightener;
   };
   const straighten: GroundStraightener = Object.assign(

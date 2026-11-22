@@ -5,7 +5,7 @@ import {
   supportSnapshot,
   supportTriangles,
 } from '#@/src/model/support-snapshot.ts';
-import { createWallChecker } from '#@/src/model/walls.ts';
+import { type WallChecker, createWallChecker } from '#@/src/model/walls.ts';
 import type { GroundOptions } from '#@/src/route.ts';
 import {
   type DirectedPortal,
@@ -39,6 +39,11 @@ export interface GroundStraightener {
   (points: Vec3[]): Vec3[];
   trace(start: Vec3, end: Vec3): Vec3[] | null;
   mayConnect(start: Vec3, end: Vec3): boolean;
+}
+export interface GroundStraightenerMesh {
+  readonly triangles: readonly Triangle[];
+  readonly supporting: (point: Vec3) => Triangle[];
+  readonly groupsAt: (point: Vec3) => Set<number>;
 }
 
 const pointKey = (point: Vec3) => point.map((value) => Math.round(value * 10000)).join(',');
@@ -133,21 +138,15 @@ const makeIndex = (triangles: Triangle[]) => {
     return result;
   };
 };
-/** Prepare reusable ground visibility queries over convex, clearance-eroded surfaces.
- * Coordinates are world metres. Connectivity follows the same full, oppositely oriented
- * 3D portals as surfaceGraph. The caller must select one scene, state and body profile.
- * Input points must already form a verified, continuous walking run. Unsupported
- * shortcuts retain that input. Returned queries preserve the run's endpoints.
- * Height changes are reconstructed from triangulated support, never fitted as a spline.
+/** Prepare reusable wall-independent triangulation, adjacency, spatial index,
+ * and lazy weak-connectivity state for ground visibility queries.
  */
-export function createGroundStraightener(
+export function prepareGroundStraightenerMesh(
   surfaces: Surface[],
-  { walls, profile, portals: imported = [] }: Pick<GroundOptions, 'walls' | 'profile' | 'portals'>,
   sharedPortals?: SharedPortal[],
-  preparedBlocked?: ReturnType<typeof createWallChecker>,
   preparedDirected?: DirectedPortal[],
-): GroundStraightener {
-  const blocked = preparedBlocked ?? createWallChecker(walls, profile);
+  importedPortals: GroundOptions['portals'] = [],
+): GroundStraightenerMesh {
   const portals = sharedPortals ?? surfacePortals(surfaces);
   const triangles: Triangle[] = [],
     boundaryOwners = new Map<string, Owner[]>();
@@ -209,7 +208,7 @@ export function createGroundStraightener(
     a.triangle.neighbours.push({ triangle: b.triangle, opposite: (a.edge + 2) % 3, portal });
     b.triangle.neighbours.push({ triangle: a.triangle, opposite: (b.edge + 2) % 3, portal });
   }
-  for (const portal of preparedDirected ?? directedPortals(surfaces, imported)) {
+  for (const portal of preparedDirected ?? directedPortals(surfaces, importedPortals)) {
     const a = boundaryOwners.get(portal.from)?.[portal.fromEdge];
     const b = boundaryOwners.get(portal.to)?.[portal.toEdge];
     if (a && b)
@@ -244,6 +243,15 @@ export function createGroundStraightener(
     endpointComponents.set(point, { position: [...point], groups });
     return groups;
   };
+  return { triangles, supporting, groupsAt };
+}
+
+/** Bind a wall checker to a prebuilt wall-independent straightener mesh. */
+export function createGroundStraightenerFromMesh(
+  mesh: GroundStraightenerMesh,
+  blocked: WallChecker,
+): GroundStraightener {
+  const { supporting, groupsAt } = mesh;
   const trace = (start: Vec3, end: Vec3, supports: Triangle[]): Vec3[] | null => {
     if (Math.hypot(end[0] - start[0], end[2] - start[2]) < 1e-10) {
       return distance(start, end) < tolerance ? [[...start], [...end]] : null;
@@ -425,4 +433,23 @@ export function createGroundStraightener(
     return false;
   };
   return straighten;
+}
+
+/** Prepare reusable ground visibility queries over convex, clearance-eroded surfaces.
+ * Coordinates are world metres. Connectivity follows the same full, oppositely oriented
+ * 3D portals as surfaceGraph. The caller must select one scene, state and body profile.
+ * Input points must already form a verified, continuous walking run. Unsupported
+ * shortcuts retain that input. Returned queries preserve the run's endpoints.
+ * Height changes are reconstructed from triangulated support, never fitted as a spline.
+ */
+export function createGroundStraightener(
+  surfaces: Surface[],
+  { walls, profile, portals: imported = [] }: Pick<GroundOptions, 'walls' | 'profile' | 'portals'>,
+  sharedPortals?: SharedPortal[],
+  preparedBlocked?: WallChecker,
+  preparedDirected?: DirectedPortal[],
+): GroundStraightener {
+  const blocked = preparedBlocked ?? createWallChecker(walls, profile);
+  const mesh = prepareGroundStraightenerMesh(surfaces, sharedPortals, preparedDirected, imported);
+  return createGroundStraightenerFromMesh(mesh, blocked);
 }

@@ -2,7 +2,12 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import type { Portal, Surface, Vec3, Wall } from '#@/src/geometry.ts';
-import { createGroundStraightener } from '#@/src/v1/route/straighten.ts';
+import { createWallChecker } from '#@/src/model/walls.ts';
+import {
+  createGroundStraightener,
+  createGroundStraightenerFromMesh,
+  prepareGroundStraightenerMesh,
+} from '#@/src/v1/route/straighten.ts';
 
 const options = { walls: [], profile: { radius: 0.3, height: 1.7 } };
 const rectangle = (
@@ -353,4 +358,47 @@ test('duplicate IDs are rejected even when the first face has no support triangl
     () => createGroundStraightener([empty, rectangle('floor', 0, 0)], options, []),
     /Invalid surface/,
   );
+});
+
+test('prepareGroundStraightenerMesh shares static mesh while each straightener enforces its own walls', () => {
+  const surfaces: Surface[] = [
+    rectangle('left', 0, 0, 2, 4),
+    rectangle('right', 2, 0, 2, 4),
+    rectangle('island', 10, 0, 2, 2),
+  ];
+  const mesh = prepareGroundStraightenerMesh(surfaces);
+  const centerWall: Wall = { min: [1.8, -1, 1.2], max: [2.2, 3, 2.8], state: 'active' };
+  const topWall: Wall = { min: [1.8, -1, 2.5], max: [2.2, 3, 4.1], state: 'active' };
+  const clear = createGroundStraightenerFromMesh(mesh, createWallChecker([], options.profile));
+  const centerBlocked = createGroundStraightenerFromMesh(
+    mesh,
+    createWallChecker([centerWall], options.profile),
+  );
+  const topBlocked = createGroundStraightenerFromMesh(
+    mesh,
+    createWallChecker([topWall], options.profile),
+  );
+  const freshClear = createGroundStraightener(surfaces, options);
+  const freshCenter = createGroundStraightener(surfaces, { ...options, walls: [centerWall] });
+  const freshTop = createGroundStraightener(surfaces, { ...options, walls: [topWall] });
+
+  const start: Vec3 = [0.5, 0, 2];
+  const goal: Vec3 = [3.5, 0, 2];
+  const islandPt: Vec3 = [11, 0, 1];
+  const lowerBend: Vec3[] = [start, [1, 0, 0.5], [3, 0, 0.5], goal];
+  const upperBend: Vec3[] = [start, [1, 0, 3.5], [3, 0, 3.5], goal];
+
+  assert.equal(clear.mayConnect(start, goal), true);
+  assert.equal(centerBlocked.mayConnect(start, goal), true);
+  assert.equal(clear.mayConnect(start, islandPt), false);
+  assert.equal(centerBlocked.mayConnect(start, islandPt), false);
+
+  assert.deepEqual(clear.trace(start, goal), freshClear.trace(start, goal));
+  assert.equal(centerBlocked.trace(start, goal), null);
+  assert.deepEqual(topBlocked.trace(start, goal), freshTop.trace(start, goal));
+
+  assert.deepEqual(clear(upperBend), freshClear(upperBend));
+  assert.deepEqual(centerBlocked(upperBend), freshCenter(upperBend));
+  assert.deepEqual(topBlocked(upperBend), freshTop(upperBend));
+  assert.deepEqual(topBlocked(lowerBend), freshTop(lowerBend));
 });
