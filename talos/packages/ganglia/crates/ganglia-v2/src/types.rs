@@ -1,0 +1,160 @@
+use serde::{Deserialize, Serialize};
+
+pub type Point = [f64; 3];
+#[derive(Clone, Deserialize)]
+pub struct Input {
+    pub physical: Physical,
+    #[serde(default)]
+    pub marks: Vec<Mark>,
+    #[serde(default)]
+    pub config: Config,
+}
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct Config {
+    pub seed: u64,
+    pub population_size: usize,
+    pub attempts_per_round: usize,
+    pub stagnant_rounds: usize,
+    pub improvement_threshold: f64,
+}
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            seed: 1,
+            population_size: 4,
+            attempts_per_round: 100,
+            stagnant_rounds: 3,
+            improvement_threshold: 0.001,
+        }
+    }
+}
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Physical {
+    pub ground: Ground,
+    pub collision: Collision,
+    pub movement: Movement,
+    pub locomotion: Locomotion,
+    pub rounded_walls: Option<Vec<Wall>>,
+}
+#[derive(Clone, Deserialize)]
+pub struct Ground {
+    pub surfaces: Vec<Surface>,
+    pub options: GroundOptions,
+}
+#[derive(Clone, Deserialize)]
+pub struct Surface {
+    pub vertices: Vec<Point>,
+}
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GroundOptions {
+    pub max_vertical: f64,
+    pub profile: Profile,
+    pub walls: Vec<Wall>,
+}
+#[derive(Clone, Deserialize)]
+pub struct Profile {
+    pub radius: f64,
+    pub height: f64,
+}
+#[derive(Clone, Deserialize)]
+pub struct Collision {
+    pub positions: Vec<f64>,
+    pub indices: Vec<usize>,
+}
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Movement {
+    pub model: Model,
+    pub max_slope: f64,
+    pub run_air_speed: f64,
+}
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Model {
+    pub gravity: f64,
+    pub falling_gravity: f64,
+    pub max_jump_height: f64,
+    pub max_falling_speed: f64,
+    pub apex_time: f64,
+    pub max_horizontal_speed: f64,
+    pub start_horizontal_speed: f64,
+    pub air_overspeed_deceleration: f64,
+    pub air_acceleration: f64,
+    pub air_deceleration: f64,
+}
+#[derive(Clone, Deserialize)]
+pub struct Locomotion {
+    pub speed: f64,
+}
+#[derive(Clone, Deserialize)]
+pub struct Wall {
+    pub min: Point,
+    pub max: Point,
+    pub state: String,
+    #[serde(default)]
+    pub padding: f64,
+}
+#[derive(Clone, Deserialize)]
+pub struct Mark {
+    pub position: Point,
+    pub interaction: Interaction,
+}
+#[derive(Clone, Deserialize, Default, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct Interaction {
+    #[serde(default)]
+    pub airborne: bool,
+    pub radius: f64,
+    pub max_vertical: Option<f64>,
+    pub facing: Option<Point>,
+    pub half_angle: Option<f64>,
+}
+#[derive(Clone, Deserialize)]
+pub struct Query {
+    pub starts: Vec<Arrival>,
+    pub goal: Point,
+    pub interaction: Option<Interaction>,
+}
+#[derive(Clone, Deserialize, Serialize)]
+pub struct Arrival {
+    pub id: String,
+    pub position: Point,
+    pub cost: f64,
+    pub state: String,
+}
+#[derive(Clone, Serialize)]
+pub struct Segment {
+    pub mode: &'static str,
+    pub points: Vec<Point>,
+    pub times: Vec<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub flight: Option<Flight>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gait: Option<&'static str>,
+}
+impl Segment {
+    pub fn cost(&self) -> f64 {
+        *self.times.last().unwrap()
+    }
+    pub fn start(&self) -> Point {
+        self.points[0]
+    }
+    pub fn end(&self) -> Point {
+        *self.points.last().unwrap()
+    }
+}
+#[derive(Clone, Serialize)]
+pub struct Flight {
+    pub kind: &'static str,
+    pub start: Point,
+    pub end: Point,
+    pub model: Model,
+    pub control: Control,
+}
+#[derive(Clone, Serialize)]
+pub struct Control {
+    pub mode: &'static str,
+}

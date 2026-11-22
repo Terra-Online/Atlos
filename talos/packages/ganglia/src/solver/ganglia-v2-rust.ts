@@ -1,0 +1,110 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+
+import type {
+  PreparedRouteSolver,
+  RouteQuery,
+  RouteResult,
+  SolveOptions,
+} from '#@/src/solver/contract.ts';
+import type { GangliaV2Config, NavigationMark, V2Diagnostics } from '#@/src/solver/ganglia-v2.ts';
+import type { PhysicalInput } from '#@/src/solver/physical.ts';
+
+export { gangliaV2Defaults } from '#@/src/solver/ganglia-v2.ts';
+export type { GangliaV2Config, NavigationMark } from '#@/src/solver/ganglia-v2.ts';
+
+interface NativeEngine {
+  solve(query: string): Promise<string>;
+  cancel(): void;
+  stats(): string;
+}
+
+export interface V2Result extends RouteResult {
+  diagnostics: RouteResult['diagnostics'] & { v2: V2Diagnostics };
+}
+
+export interface V2PreparedSolver extends PreparedRouteSolver<GangliaV2Config> {
+  solve(query: RouteQuery, options?: SolveOptions): Promise<V2Result>;
+  preparationStats(): Record<string, unknown>;
+}
+
+export function gangliaV2LibraryPath(): string {
+  return (
+    process.env.GANGLIA_V2_RUST_LIBRARY ??
+    fileURLToPath(
+      new URL('../../../../../.local/cache/ganglia-v2/ganglia-v2.node', import.meta.url),
+    )
+  );
+}
+
+const encode = (value: unknown) =>
+  JSON.stringify(value, (_key, item: unknown) =>
+    ArrayBuffer.isView(item) && !(item instanceof DataView)
+      ? Array.from(item as unknown as ArrayLike<number>)
+      : item,
+  );
+
+/** Builds one immutable backbone. Native query work runs off the JS thread so
+ * benchmark cancellation remains observable while optimization is in progress. */
+export async function prepareGangliaV2(
+  config: GangliaV2Config,
+  physical: PhysicalInput,
+  marks: readonly NavigationMark[],
+): Promise<V2PreparedSolver> {
+  const { NativeEngine } = createRequire(import.meta.url)(gangliaV2LibraryPath()) as {
+    NativeEngine: new (input: string) => NativeEngine;
+  };
+  const settings = Object.freeze({ ...config });
+  let engine: NativeEngine | undefined = new NativeEngine(
+    encode({ physical, marks, config: settings }),
+  );
+  const stats = JSON.parse(engine.stats()) as Record<string, unknown>;
+  let closing = false;
+  let tail = Promise.resolve();
+  let closePromise: Promise<void> | undefined;
+  const solve = (query: RouteQuery, options?: SolveOptions): Promise<V2Result> => {
+    if (closing) return Promise.reject(new Error('Prepared solver is closed'));
+    const work = tail.then(async () => {
+      const active = engine!;
+      const abort = () => active.cancel();
+      options?.signal?.addEventListener('abort', abort, { once: true });
+      try {
+        options?.signal?.throwIfAborted();
+        options?.onEvent?.({ type: 'progress', phase: 'search' });
+        options?.signal?.throwIfAborted();
+        const result = JSON.parse(await active.solve(encode(query))) as V2Result;
+        options?.signal?.throwIfAborted();
+        options?.onEvent?.({ type: 'candidate', result, optimizing: false });
+        return result;
+      } catch (error) {
+        options?.signal?.throwIfAborted();
+        throw error;
+      } finally {
+        options?.signal?.removeEventListener('abort', abort);
+      }
+    });
+    tail = work.then(
+      () => {},
+      () => {},
+    );
+    return work;
+  };
+  return {
+    config: settings,
+    solve,
+    solveBatch: (queries, options) =>
+      closing
+        ? Promise.reject(new Error('Prepared solver is closed'))
+        : Promise.all(queries.map((query) => solve(query, options))),
+    preparationStats: () => structuredClone(stats),
+    close() {
+      if (!closePromise) {
+        closing = true;
+        closePromise = tail.then(() => {
+          engine = undefined;
+        });
+      }
+      return closePromise;
+    },
+  };
+}

@@ -24,6 +24,7 @@ import { runScenario } from '#@/bench/run.ts';
 import { sourceHash } from '#@/bench/source.ts';
 import type { WorkerResult } from '#@/bench/workers.ts';
 import { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
+import { gangliaV2Defaults } from '#@/src/solver/ganglia-v2.ts';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const { values } = parseArgs({
@@ -44,11 +45,11 @@ const { values } = parseArgs({
 });
 if (values.help) {
   console.log(
-    'Usage: node bench/mechanism-benchmark.ts --output <new-report.json> [--data-root <candidate-input-root>] [--memory-budget-mib <total-loader-budget>] [--adapter ganglia-v1-rust|ganglia-v1-ts] [--ids id,id]. Input roots register one physical pack per scene in input-index.json. Each scenario trains the suite-declared catalog, freezes it, then measures one round without warmup. Independent physical verification runs after solving. Deadlines use GANGLIA_BENCHMARK_QUERY_CUTOFF_MS and cooperative cancellation; workers are never replaced.',
+    'Usage: node bench/mechanism-benchmark.ts --output <new-report.json> [--data-root <candidate-input-root>] [--memory-budget-mib <total-loader-budget>] [--adapter ganglia-v1-rust|ganglia-v1-ts|ganglia-v2] [--ids id,id]. Input roots register one physical pack per scene in input-index.json. Each scenario trains the suite-declared catalog, freezes it, then measures one round without warmup. Independent physical verification runs after solving. Deadlines use GANGLIA_BENCHMARK_QUERY_CUTOFF_MS and cooperative cancellation; workers are never replaced.',
   );
 } else {
   if (!values.output) throw new Error('Provide --output for a new mechanism report');
-  if (!['ganglia-v1-rust', 'ganglia-v1-ts'].includes(values.adapter))
+  if (!['ganglia-v1-rust', 'ganglia-v1-ts', 'ganglia-v2'].includes(values.adapter))
     throw new Error('Unknown mechanism adapter');
   const scenarioWorkers = Number(values['scenario-workers']);
   if (!Number.isSafeInteger(scenarioWorkers) || scenarioWorkers < 1)
@@ -83,15 +84,19 @@ if (values.help) {
   const journal = output + '.events.jsonl';
   writeFileSync(journal, '', { flag: 'wx' });
   const record = (event: unknown) => appendFileSync(journal, JSON.stringify(event) + '\n');
-  const config = {
-    ...gangliaV1Defaults,
-    algorithm: values.adapter as 'ganglia-v1-rust' | 'ganglia-v1-ts',
-  };
+  const config =
+    values.adapter === 'ganglia-v2'
+      ? gangliaV2Defaults
+      : {
+          ...gangliaV1Defaults,
+          algorithm: values.adapter as 'ganglia-v1-rust' | 'ganglia-v1-ts',
+        };
+  const crate = values.adapter === 'ganglia-v2' ? 'ganglia-v2' : 'ganglia-v1';
   const digest = () =>
     sourceHash(
       root,
-      ['src', 'bench', 'crates/ganglia-v1/src'],
-      ['crates/ganglia-v1/Cargo.toml', 'crates/ganglia-v1/Cargo.lock'],
+      ['src', 'bench', `crates/${crate}/src`],
+      [`crates/${crate}/Cargo.toml`, `crates/${crate}/Cargo.lock`],
     );
   const before = await digest();
   const revision = execFileSync('git', ['rev-parse', 'HEAD'], {

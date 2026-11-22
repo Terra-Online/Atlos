@@ -23,6 +23,10 @@ type WorkerScene = Pick<
 > & {
   input: Parameters<typeof prepareRouteSolver>[1];
   metadata: SceneMetadata;
+  /** A second adapter can share IPC and verification without entering v1 search. */
+  prepareSolver?(): Promise<PreparedRouteSolver>;
+  nativeLibrary?: string;
+  preparationStats?(): Record<string, unknown>;
   beginRequest?(signal: AbortSignal): void;
   endRequest?(): void;
   inspectResult?: (
@@ -59,10 +63,11 @@ export function serveWorker(
     const setup = message.setup;
     const native = setup.config.algorithm === 'ganglia-v1-rust';
     let catalogPhase = setup.catalogPhase ?? 'disabled';
-    if (!native) setActionCatalogPhase(catalogPhase);
     let active: ({ id: number } & ReturnType<typeof requestControl>) | undefined;
     const checkpoint = () => active?.checkpoint();
     const scene = await load(setup, (files) => send({ type: 'region', files }), checkpoint);
+    const custom = !!scene.prepareSolver;
+    if (!native && !custom) setActionCatalogPhase(catalogPhase);
     let solver: PreparedRouteSolver | undefined;
     let rustSolver: RustPreparedSolver | undefined;
     let initialization: Promise<void> | undefined;
@@ -71,27 +76,31 @@ export function serveWorker(
       if (!initialization)
         initialization = (async () => {
           const started = performance.now();
-          solver = await prepareRouteSolver(
-            setup.config as import('#@/src/solver/ganglia-v1.ts').GangliaV1Config,
-            scene.input,
-          );
+          solver = scene.prepareSolver
+            ? await scene.prepareSolver()
+            : await prepareRouteSolver(
+                setup.config as import('#@/src/solver/ganglia-v1.ts').GangliaV1Config,
+                scene.input,
+              );
           rustSolver = native ? (solver as RustPreparedSolver) : undefined;
           if (rustSolver) rustSolver.setCatalogPhase(catalogPhase);
-          else setActionCatalogPhase(catalogPhase);
+          else if (!custom) setActionCatalogPhase(catalogPhase);
           preparationMs += performance.now() - started;
         })();
       return initialization;
     };
     if (!setup.deferKernel) await initialize();
-    const nativeBinary = native
+    const nativePath = scene.nativeLibrary ?? (native ? rustLibraryPath() : undefined);
+    const nativeBinary = nativePath
       ? {
-          path: rustLibraryPath(),
+          path: nativePath,
           sha256: createHash('sha256')
-            .update(await readFile(rustLibraryPath()))
+            .update(await readFile(nativePath))
             .digest('hex'),
         }
       : undefined;
     const catalogStats = () => {
+      if (custom) return undefined;
       const base = actionCatalogStats();
       if (!rustSolver) return base;
       const stats = rustSolver.catalogStats();
@@ -124,6 +133,7 @@ export function serveWorker(
             catalog: catalogStats(),
             memory: workerMemory(),
             preparationMs: preparationMs - before,
+            preparation: scene.preparationStats?.(),
           });
         } catch (error) {
           send({ type: 'error', id: message.id, error: String(error) });
@@ -146,7 +156,7 @@ export function serveWorker(
         if (message.type === 'catalog-phase') {
           catalogPhase = message.phase;
           if (rustSolver) rustSolver.setCatalogPhase(message.phase);
-          else setActionCatalogPhase(message.phase);
+          else if (!custom) setActionCatalogPhase(message.phase);
         } else if (process.env.GANGLIA_PROFILE)
           console.error(JSON.stringify({ phase: message.phase, worker: setup.index }));
         send({
