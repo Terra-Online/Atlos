@@ -60,6 +60,7 @@ pub(super) struct Backbone {
     pub nodes: Vec<Point>,
     pub edges: Vec<Vec<Edge>>,
     pub boosts: Vec<usize>,
+    pub conditional: Vec<Vec<Edge>>,
     pub terminals: Vec<(Mark, Vec<(usize, Segment)>)>,
 }
 impl Backbone {
@@ -174,6 +175,7 @@ impl Backbone {
                 .collect::<Vec<_>>(),
         );
         let mut edges: Vec<Vec<Edge>> = (0..nodes.len()).map(|_| Vec::new()).collect();
+        let mut conditional: Vec<Vec<Edge>> = (0..nodes.len()).map(|_| Vec::new()).collect();
         if profile {
             eprintln!(
                 "ganglia-v2 backbone: {} nodes, {} device actions",
@@ -201,6 +203,13 @@ impl Backbone {
             for j in nearby.into_iter().take(24) {
                 if let Some(action) = proofs.action(world, a, nodes[j]) {
                     edges[i].push(Edge { to: j, action });
+                } else {
+                    conditional[i].extend(world.conditional_flights(a, nodes[j]).into_iter().map(
+                        |action| Edge {
+                            to: j,
+                            action: Arc::new(action),
+                        },
+                    ));
                 }
             }
         }
@@ -235,6 +244,7 @@ impl Backbone {
             edges,
             terminals,
             boosts,
+            conditional,
         }
     }
 }

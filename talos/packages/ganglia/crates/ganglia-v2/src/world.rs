@@ -690,6 +690,7 @@ impl World {
             times.push(times.last().unwrap() + duration);
         }
         Some(Segment {
+            required_gait: None,
             boost: None,
             mode: "walk",
             points,

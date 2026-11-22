@@ -250,6 +250,90 @@ impl World {
             .find_map(|(_, end)| self.flight(start, end, Some((&goal, interaction)), model.clone()))
     }
 
+    /// Prepared constant-horizontal trajectories whose entry needs an actual
+    /// sprint approach or a source boost. These never enter ordinary adjacency.
+    pub fn conditional_flights(&self, start: Point, end: Point) -> Vec<Segment> {
+        let base = &self.physical.movement.model;
+        let run = base
+            .max_horizontal_speed
+            .min(self.physical.movement.run_air_speed);
+        let span = horizontal(start, end);
+        let mut result = Vec::new();
+        for mode in ["jump", "drop"] {
+            let duration = if mode == "jump" {
+                duration(base, start[1], end[1])
+            } else if end[1] < start[1] - 1e-6 {
+                let (fall, coast) = descent_times(base, start[1] - end[1]);
+                Some(fall + coast)
+            } else {
+                None
+            };
+            let Some(duration) = duration.filter(|time| *time > 0. && *time <= 60.) else {
+                continue;
+            };
+            let required = span / duration;
+            // Increasing the cap leaves this trajectory unchanged. If run can
+            // cover its span, a failed ordinary proof was a geometry failure.
+            if required <= run + 1e-9 {
+                continue;
+            }
+            let mut modifiers = Vec::new();
+            if required <= base.max_horizontal_speed + 1e-9 {
+                modifiers.push(None);
+            }
+            // A boost-run alternative can remain feasible when the unboosted
+            // sprint trajectory has the same geometry but insufficient energy.
+            modifiers.extend(
+                self.physical
+                    .devices
+                    .iter()
+                    .flat_map(|facts| &facts.devices)
+                    .filter_map(crate::devices::boost_usage)
+                    .filter(|usage| {
+                        duration <= usage.duration + 1e-9
+                            && required <= base.max_horizontal_speed * usage.multiplier + 1e-9
+                    })
+                    .map(Some),
+            );
+            let mut proof: Option<Segment> = None;
+            for boost in modifiers {
+                let multiplier = boost.as_ref().map_or(1., |usage| usage.multiplier);
+                let sprint = required > run * multiplier + 1e-9;
+                let mut model = base.clone();
+                model.max_horizontal_speed = if sprint {
+                    base.max_horizontal_speed * multiplier
+                } else {
+                    run * multiplier
+                };
+                // This family deliberately excludes overspeed, expiration in
+                // flight and piecewise steering. Its speed is span / duration.
+                model.start_horizontal_speed = model
+                    .start_horizontal_speed
+                    .map(|speed| (speed * multiplier).min(model.max_horizontal_speed));
+                // All these caps cover the same constant-horizontal trace.
+                // Prove its sweep once, including when it fails on an obstacle.
+                let mut action = if let Some(proof) = &proof {
+                    proof.clone()
+                } else {
+                    let Some(action) = self.flight_mode(start, end, None, model.clone(), mode)
+                    else {
+                        break;
+                    };
+                    proof = Some(action.clone());
+                    action
+                };
+                action.flight.as_mut().unwrap().model = model;
+                action.required_gait = sprint.then_some("sprint");
+                action.boost = boost;
+                if mode == "drop" {
+                    action.connection = crate::devices::drop_source(self, start, end);
+                }
+                result.push(action);
+            }
+        }
+        result
+    }
+
     pub fn jump(
         &self,
         start: Point,
@@ -468,6 +552,7 @@ impl World {
             return None;
         }
         Some(Segment {
+            required_gait: None,
             boost: None,
             mode,
             points,

@@ -282,6 +282,8 @@ pub struct Arrival {
 }
 #[derive(Clone, Serialize)]
 pub struct Segment {
+    #[serde(rename = "requiredGait", skip_serializing_if = "Option::is_none")]
+    pub required_gait: Option<&'static str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub boost: Option<BoostUse>,
     pub mode: &'static str,

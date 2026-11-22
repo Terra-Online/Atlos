@@ -28,6 +28,16 @@ export const anchors: Record<string, { position: Vec3; source: string }[]> = {
     { position: [-106.213, 93.989, -531.599], source: 'ground/163550086/16/27' },
   ],
   map02: [
+    // Finite capsule contacts offset toward the gap from the nearest bridge
+    // vertices (triangles 10/189); native preparation proves the sprint crossing.
+    {
+      position: [-751.1595325277767, 242.9249841322467, -1390.5257706458467],
+      source: 'static-support/10100030203/10/edge',
+    },
+    {
+      position: [-754.6483722897664, 242.86580210181893, -1387.3899138024053],
+      source: 'static-support/10100030203/189/edge',
+    },
     // Static bridge 10100030203, authored state 0 away. These four upward
     // top-face centroids are absent from navigation; add standing clearance.
     {

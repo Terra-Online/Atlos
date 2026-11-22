@@ -1,5 +1,6 @@
 mod backbone;
 mod circular;
+mod conditional;
 mod devices;
 mod flight;
 mod geometry;
@@ -142,7 +143,7 @@ impl Engine {
                 &mut proofs,
             );
             let after = proofs.stats();
-            layout_stats.push(json!({"layout":layouts.len(),"placements":picks,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),"buildMs":layout_started.elapsed().as_secs_f64()*1000.,"walkProofsStored":after.0-before.0,"walkProofHits":after.1-before.1}));
+            layout_stats.push(json!({"layout":layouts.len(),"placements":picks,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),"conditionalEdgeCount":backbone.conditional.iter().map(Vec::len).sum::<usize>(),"buildMs":layout_started.elapsed().as_secs_f64()*1000.,"walkProofsStored":after.0-before.0,"walkProofHits":after.1-before.1}));
             layouts.push(PreparedLayout {
                 world,
                 backbone,
@@ -155,6 +156,7 @@ impl Engine {
         let backbone = &layouts[0].backbone;
         let bounds = (!backbone.nodes.is_empty()).then(|| Bounds::points(&backbone.nodes));
         let stats = json!({"walkProofCount":walk_proofs,"walkProofHits":walk_hits,"layouts":layout_stats,"totalNodeCount":layouts.iter().map(|l|l.backbone.nodes.len()).sum::<usize>(),"totalEdgeCount":layouts.iter().flat_map(|l|&l.backbone.edges).map(Vec::len).sum::<usize>(),"backboneBuildMs":started.elapsed().as_secs_f64()*1000.,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),
+            "conditionalEdgeCount":layouts.iter().flat_map(|layout| &layout.backbone.conditional).map(Vec::len).sum::<usize>(),
             "anchorSupports":anchor_supports,
             "nodeBounds":bounds.map(|b|json!({"min":b.min,"max":b.max})),
             "markedTargets":backbone.terminals.iter().map(|(mark,edges)|json!({"position":mark.position,"connections":edges.len()})).collect::<Vec<_>>(),

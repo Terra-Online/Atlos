@@ -62,6 +62,7 @@ pub fn rides(world: &World, support: &MovingSupport) -> Vec<Segment> {
             }
             for (start, end, suffix) in [(a, b, ""), (b, a, "/reverse")] {
                 actions.push(Segment {
+                    required_gait: None,
                     boost: None,
                     mode: "rope",
                     traversal: Some("moving-support"),

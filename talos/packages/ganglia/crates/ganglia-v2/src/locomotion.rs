@@ -263,6 +263,58 @@ fn schedule(
         }
         if segment.mode != "walk" {
             let duration = segment.cost();
+            if segment.required_gait.is_some() || segment.boost.is_some() {
+                if segment.required_gait == Some("sprint") && !state.sprinting {
+                    return None;
+                }
+                if let Some(required) = &segment.boost {
+                    let (active, expires) = boosts.active.as_ref()?;
+                    if active != required || *expires - elapsed + EPSILON < duration {
+                        return None;
+                    }
+                    // A new source can replace the modifier partway through
+                    // this flight. Defer that piecewise family until supported.
+                    if sources.iter().enumerate().any(|(index, source)| {
+                        !boosts.consumed[index]
+                            && segment.points.windows(2).any(|pair| {
+                                hit(
+                                    pair[0],
+                                    pair[1],
+                                    source.goal.position,
+                                    &source.goal.interaction,
+                                )
+                                .is_some()
+                            })
+                    }) {
+                        return None;
+                    }
+                }
+                let delta = sub(segment.end(), segment.start());
+                let span = delta[0].hypot(delta[2]);
+                if span > EPSILON {
+                    let previous = state.direction?;
+                    let previous_span = previous[0].hypot(previous[2]);
+                    if previous_span <= EPSILON {
+                        return None;
+                    }
+                    let alignment =
+                        (previous[0] * delta[0] + previous[2] * delta[2]) / (previous_span * span);
+                    let multiplier = boosts.multiplier();
+                    let run = speed * multiplier;
+                    let sprint = model.sprint_speed.unwrap_or(speed) * multiplier;
+                    // Walking speed is measured along the 3D support path;
+                    // only its horizontal component can authorize air speed.
+                    let carried = state.velocity.clamp(run, sprint) * previous_span;
+                    let available = if alignment < (std::f64::consts::PI / 6.).cos() {
+                        run.min(carried)
+                    } else {
+                        carried
+                    };
+                    if available + EPSILON < span / duration {
+                        return None;
+                    }
+                }
+            }
             boosts.crossing(segment, elapsed);
             elapsed += duration;
             boosts.expire(elapsed);

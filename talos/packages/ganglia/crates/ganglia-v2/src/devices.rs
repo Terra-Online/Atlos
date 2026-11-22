@@ -105,6 +105,7 @@ fn climb(world: &World, lower: &Device, upper: &Device) -> Option<Segment> {
                 times.push(elapsed);
             }
             return Some(Segment {
+                required_gait: None,
                 boost: None,
                 mode: "rope",
                 points,
@@ -419,6 +420,7 @@ pub fn rides(world: &World) -> Vec<Segment> {
             }
             for (from, to, suffix) in [(start, end, ""), (end, start, "/reverse")] {
                 actions.push(Segment {
+                    required_gait: None,
                     boost: None,
                     mode: "rope",
                     traversal: Some("moving-support"),

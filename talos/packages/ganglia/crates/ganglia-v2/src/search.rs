@@ -58,7 +58,8 @@ impl Engine {
         // detours; complete resource replay decides whether they are useful.
         let count = backbone.nodes.len();
         let mut suffix: Vec<Option<(usize, Segment)>> = vec![None; count];
-        if !backbone.boosts.is_empty() {
+        if !backbone.boosts.is_empty() || backbone.conditional.iter().any(|edges| !edges.is_empty())
+        {
             let mut reverse = vec![Vec::new(); count];
             for (from, edges) in backbone.edges.iter().enumerate() {
                 for edge in edges {
@@ -216,6 +217,10 @@ impl Engine {
                     }
                 }
             }
+            if population.is_empty() && !self.cancelled.load(Ordering::Relaxed) {
+                population
+                    .extend(self.conditional_seeds(layout, arrival, query, &previous, &suffix));
+            }
         }
         *diagnostics = json!({"starts":origins,"goalPositions":goals.len(),"goalAttachments":endings.iter().map(Vec::len).sum::<usize>(),"reachedNodes":reached.iter().filter(|&&v|v).count()});
         if population.is_empty()
@@ -297,9 +302,9 @@ impl Engine {
         population
     }
 }
-struct Label {
-    cost: f64,
-    node: usize,
+pub(super) struct Label {
+    pub cost: f64,
+    pub node: usize,
 }
 impl PartialEq for Label {
     fn eq(&self, other: &Self) -> bool {
