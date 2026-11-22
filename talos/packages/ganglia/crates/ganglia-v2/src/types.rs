@@ -85,6 +85,7 @@ pub struct MovingSupport {
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PoseSpan {
+    pub body: usize,
     pub from_pose: usize,
     pub to_pose: usize,
 }
@@ -105,6 +106,7 @@ pub struct Pose {
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Transfer {
+    pub body: Option<usize>,
     pub from: Point,
     pub to: Point,
     pub speed: Option<f64>,
