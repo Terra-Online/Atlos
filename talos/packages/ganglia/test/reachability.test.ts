@@ -272,3 +272,216 @@ test('predecessor height, time and launch-speed intervals contain analytically f
   assert.ok(domain.initialSpeed[0] > model.maxHorizontalSpeed);
   assert.ok(domain.initialSpeed[1] <= 9);
 });
+
+test('optimized createJumpEnvelope matches original reference formula across random boxes, tangencies, huge coords, and non-finite bounds', () => {
+  const referenceEnvelope = (anchor: readonly number[], envOpts: EnvelopeOptions) => {
+    const {
+      model: m,
+      maxDrop,
+      maxHorizontalDistance,
+      endpointTolerance = 0,
+      reverse = false,
+      padding = [0, 0, 0],
+    } = envOpts;
+    const vertical = {
+      ...m,
+      mode: m.maxJumpHeight > 0 ? ('jump' as const) : ('drop' as const),
+    };
+    const initial = Math.max(m.maxHorizontalSpeed, m.startHorizontalSpeed ?? 0);
+    const analyticReach = (drop: number) => {
+      const duration = jumpDuration(0, -drop, vertical);
+      if (duration === null) return 0;
+      return Number.isFinite(m.airOverspeedDeceleration) && m.airOverspeedDeceleration! > 0
+        ? jumpTravel(initial, duration, m)
+        : initial * duration;
+    };
+    const heightResolution = 0.25;
+    const minimumBin = Math.floor(-m.maxJumpHeight / heightResolution);
+    const maximumBin = Math.ceil(
+      (maxDrop + 4 * endpointTolerance + heightResolution) / heightResolution,
+    );
+    const count = maximumBin - minimumBin + 1;
+    const table =
+      Number.isSafeInteger(count) && count > 0 && count <= 4096
+        ? Float64Array.from({ length: count }, (_, index) =>
+            analyticReach((minimumBin + index) * heightResolution),
+          )
+        : null;
+    const reachAt = (drop: number) => {
+      const index = Math.ceil(drop / heightResolution) - minimumBin;
+      return table && index >= 0 && index < table.length ? table[index] : analyticReach(drop);
+    };
+    const [x, y, z] = anchor;
+    const [paddingX, paddingY, paddingZ] = padding;
+    const rise = m.maxJumpHeight + 2 * endpointTolerance;
+    const fall = maxDrop + 2 * endpointTolerance;
+    const scale = Math.max(
+      1,
+      Math.abs(x),
+      Math.abs(y),
+      Math.abs(z),
+      maxHorizontalDistance,
+      rise,
+      fall,
+    );
+    return (box: { min: readonly number[]; max: readonly number[] }) => {
+      const minX = box.min[0] - paddingX,
+        maxX = box.max[0] + paddingX;
+      const minY = box.min[1] - paddingY,
+        maxY = box.max[1] + paddingY;
+      const minZ = box.min[2] - paddingZ,
+        maxZ = box.max[2] + paddingZ;
+      const epsilon =
+        32 *
+        Number.EPSILON *
+        Math.max(
+          scale,
+          Math.abs(minX),
+          Math.abs(maxX),
+          Math.abs(minY),
+          Math.abs(maxY),
+          Math.abs(minZ),
+          Math.abs(maxZ),
+        );
+      if (!Number.isFinite(epsilon)) return true;
+      if (
+        reverse
+          ? maxY < y - rise - epsilon || minY > y + fall + epsilon
+          : maxY < y - fall - epsilon || minY > y + rise + epsilon
+      )
+        return false;
+      const dx = Math.max(minX - x, 0, x - maxX),
+        dz = Math.max(minZ - z, 0, z - maxZ);
+      const horizontal = maxHorizontalDistance + epsilon;
+      if (dx > horizontal || dz > horizontal) return false;
+      const source = reverse ? Math.min(maxY, y + fall) : y;
+      const landing = reverse ? y : Math.max(minY, y - fall);
+      const drop = source - landing + 2 * endpointTolerance + epsilon;
+      const reach = Number.isFinite(drop) ? reachAt(drop) : Infinity;
+      const radius = Number.isFinite(reach) ? Math.min(horizontal, reach + epsilon) : horizontal;
+      if (dx > radius || dz > radius) return false;
+      const squared = dx * dx + dz * dz;
+      const radiusSquared = radius * radius;
+      if (
+        squared >= 2 ** -1022 &&
+        radiusSquared >= 2 ** -1022 &&
+        Number.isFinite(squared) &&
+        Number.isFinite(radiusSquared) &&
+        Math.abs(squared - radiusSquared) > 32 * Number.EPSILON * Math.max(squared, radiusSquared)
+      )
+        return squared < radiusSquared;
+      return Math.hypot(dx, dz) <= radius;
+    };
+  };
+
+  let seed = 0x517cc1b7;
+  const rand = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+
+  const configs: { anchor: number[]; env: EnvelopeOptions }[] = [
+    { anchor: [0, 0, 0], env: { ...options, reverse: false } },
+    { anchor: [0, 0, 0], env: { ...options, reverse: true, padding: [0.3, 0.5, 0.3] } },
+    {
+      anchor: [500, 12, -400],
+      env: {
+        model: { ...model, startHorizontalSpeed: 9, airOverspeedDeceleration: 2 },
+        maxDrop: 25,
+        maxHorizontalDistance: 100,
+        endpointTolerance: 0.25,
+        reverse: false,
+      },
+    },
+    {
+      anchor: [1e9, -1e9, 1e9],
+      env: {
+        model: { ...model, maxJumpHeight: 0 },
+        maxDrop: 5000, // forces table === null analytic fallback
+        maxHorizontalDistance: 150,
+        endpointTolerance: 0.1,
+        reverse: false,
+      },
+    },
+    {
+      anchor: [1e15, 1e15, -1e15],
+      env: {
+        model: {
+          ...model,
+          maxHorizontalSpeed: 0,
+          startHorizontalSpeed: 5,
+          airOverspeedDeceleration: 2,
+        },
+        maxDrop: 40,
+        maxHorizontalDistance: 60,
+        endpointTolerance: 0.2,
+        reverse: true,
+        padding: [0.4, 0.8, 0.4],
+      },
+    },
+  ];
+
+  for (const { anchor, env } of configs) {
+    const actual = createJumpEnvelope(anchor, env);
+    const expected = referenceEnvelope(anchor, env);
+    const [ax, ay, az] = anchor;
+    const boxes: { min: number[]; max: number[] }[] = [
+      // Tangencies, boundary points, huge/subnormal/non-finite/inverted boxes
+      pointBox([ax, ay, az]),
+      pointBox([ax + env.maxHorizontalDistance, ay, az]),
+      pointBox([ax, ay - env.maxDrop - 2 * (env.endpointTolerance ?? 0), az]),
+      pointBox([ax, ay + env.model.maxJumpHeight + 2 * (env.endpointTolerance ?? 0), az]),
+      pointBox([ax + 1e-160, ay, az + 1e-160]),
+      { min: [ax + 20, ay - 5, az], max: [1e15, ay, az + 1] },
+      { min: [-1e15, ay - 1, -1e15], max: [1e15, ay + 1, 1e15] },
+      { min: [ax + 10, ay, az], max: [ax + 5, ay + 1, az + 1] }, // inverted X
+      { min: [Infinity, ay, az], max: [Infinity, ay, az] },
+      { min: [-Infinity, ay, az], max: [ax, ay, az] },
+      { min: [NaN, ay, az], max: [ax + 1, ay + 1, az + 1] },
+      { min: [ax, NaN, az], max: [ax + 1, ay + 1, az + 1] },
+      { min: [ax, ay, az], max: [ax + 1, ay + 1, NaN] },
+    ];
+    // 800 random boxes per config (4,000 total) spanning inside, near boundary, and distant regions
+    for (let i = 0; i < 800; i++) {
+      const spanScale = i % 4 === 0 ? 150 : i % 4 === 1 ? 35 : i % 4 === 2 ? 12 : 1200;
+      const cx = ax + (rand() * 2 - 1) * spanScale;
+      const cy = ay + (rand() * 2 - 1) * 100;
+      const cz = az + (rand() * 2 - 1) * spanScale;
+      const hx = rand() * 8;
+      const hy = rand() * 8;
+      const hz = rand() * 8;
+      boxes.push({
+        min: [cx - hx, cy - hy, cz - hz],
+        max: [cx + hx, cy + hy, cz + hz],
+      });
+    }
+    for (let i = 0; i < boxes.length; i++) {
+      const box = boxes[i];
+      assert.equal(
+        actual(box),
+        expected(box),
+        `mismatch at anchor=${JSON.stringify(anchor)} reverse=${Boolean(env.reverse)} box=${JSON.stringify(box)}`,
+      );
+    }
+  }
+
+  // Exact radial tangency parity around 5m and 1e155
+  const radialEnv: EnvelopeOptions = {
+    model: { ...model, maxHorizontalSpeed: 100 },
+    maxDrop: 80,
+    maxHorizontalDistance: 5,
+  };
+  const actualRadial = createJumpEnvelope([0, 0, 0], radialEnv);
+  const expectedRadial = referenceEnvelope([0, 0, 0], radialEnv);
+  for (const pt of [
+    [3, 0, 4],
+    [3.00000000000034, 0, 4.000000000000453],
+    [3.000000000000342, 0, 4.000000000000456],
+    [5.000000000000568, 0, 0],
+    [5.000000000000569, 0, 0],
+    [1e-160, 0, 1e-160],
+  ]) {
+    const b = pointBox(pt);
+    assert.equal(actualRadial(b), expectedRadial(b));
+  }
+});

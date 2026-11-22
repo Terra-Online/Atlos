@@ -168,6 +168,28 @@ export function createJumpEnvelope(
     rise,
     fall,
   );
+  const baseEpsilon = 32 * Number.EPSILON * scale;
+  const worstSpan = reverse ? y + fall - y : y - (y - fall);
+  const baseDropCap = worstSpan + 2 * endpointTolerance + baseEpsilon;
+  const rawBaseReach = Number.isFinite(baseDropCap) ? flight.reach(baseDropCap) : Infinity;
+  // Margin of 8 ULPs guards against 1-ULP rounding differences across table/analytic boundaries.
+  const baseReach = Number.isFinite(rawBaseReach)
+    ? rawBaseReach * (1 + 8 * Number.EPSILON)
+    : Infinity;
+  const maxReach = Number.isFinite(baseReach)
+    ? Math.min(maxHorizontalDistance + baseEpsilon, baseReach + baseEpsilon)
+    : maxHorizontalDistance + baseEpsilon;
+  const maxReachSquared = maxReach * maxReach;
+  const hasOuterCircleReject = maxReachSquared >= 2 ** -1022 && Number.isFinite(maxReachSquared);
+  const farOutside = (dx: number, dz: number, limitSq: number) => {
+    const sq = dx * dx + dz * dz;
+    return (
+      sq >= 2 ** -1022 &&
+      Number.isFinite(sq) &&
+      sq > limitSq &&
+      sq - limitSq > 32 * Number.EPSILON * sq
+    );
+  };
   return (box: Bounds) => {
     const minX = box.min[0] - paddingX,
       maxX = box.max[0] + paddingX;
@@ -177,18 +199,29 @@ export function createJumpEnvelope(
       maxZ = box.max[2] + paddingZ;
     // Outward roundoff slack keeps exact-height, tangential and large-coordinate
     // boundary witnesses eligible. Non-finite arithmetic cannot justify pruning.
-    const epsilon =
-      32 *
-      Number.EPSILON *
-      Math.max(
-        scale,
-        Math.abs(minX),
-        Math.abs(maxX),
-        Math.abs(minY),
-        Math.abs(maxY),
-        Math.abs(minZ),
-        Math.abs(maxZ),
-      );
+    const inScale =
+      minX >= -scale &&
+      maxX <= scale &&
+      minX <= maxX &&
+      minY >= -scale &&
+      maxY <= scale &&
+      minY <= maxY &&
+      minZ >= -scale &&
+      maxZ <= scale &&
+      minZ <= maxZ;
+    const epsilon = inScale
+      ? baseEpsilon
+      : 32 *
+        Number.EPSILON *
+        Math.max(
+          scale,
+          Math.abs(minX),
+          Math.abs(maxX),
+          Math.abs(minY),
+          Math.abs(maxY),
+          Math.abs(minZ),
+          Math.abs(maxZ),
+        );
     if (!Number.isFinite(epsilon)) return true;
     if (
       reverse
@@ -200,12 +233,26 @@ export function createJumpEnvelope(
       dz = Math.max(minZ - z, 0, z - maxZ);
     const horizontal = maxHorizontalDistance + epsilon;
     if (dx > horizontal || dz > horizontal) return false;
+    if (
+      inScale &&
+      (dx > maxReach ||
+        dz > maxReach ||
+        (hasOuterCircleReject && farOutside(dx, dz, maxReachSquared)))
+    )
+      return false;
     // Flight time increases with source height and decreases with landing height.
     // Clip the optimistic pair to the declared drop allowance before taking the
     // longest possible flight, and use relative heights to retain local precision.
     const source = reverse ? Math.min(maxY, y + fall) : y;
     const landing = reverse ? y : Math.max(minY, y - fall);
     const drop = source - landing + 2 * endpointTolerance + epsilon;
+    if (!inScale && Number.isFinite(drop) && drop <= baseDropCap && Number.isFinite(baseReach)) {
+      const outerRadius = Math.min(horizontal, baseReach + epsilon);
+      if (dx > outerRadius || dz > outerRadius) return false;
+      const outerSq = outerRadius * outerRadius;
+      if (outerSq >= 2 ** -1022 && Number.isFinite(outerSq) && farOutside(dx, dz, outerSq))
+        return false;
+    }
     const reach = Number.isFinite(drop) ? flight.reach(drop) : Infinity;
     const radius = Number.isFinite(reach) ? Math.min(horizontal, reach + epsilon) : horizontal;
     if (dx > radius || dz > radius) return false;
