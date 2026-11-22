@@ -7,7 +7,7 @@ game assets, profiles and private config local.
 ## Choose the runner
 
 Use `pnpm benchmark:mechanisms --adapter ganglia-v1-ts` for service measurements.
-The runner looks up scene input directories in the Dataset, loads scenarios, trains/freezes their kernels,
+The runner opens one physical pack per selected scene, loads scenarios, trains/freezes their kernels,
 then scores routes and independently replays complete results. The beta replay
 result is reported separately and does not gate search completion or acceptance. The CLI defaults
 to Rust, so select TS explicitly. Before starting workers, the runner checks the
@@ -54,7 +54,7 @@ and a validated private config. From repository root:
 
 ```sh
 export GANGLIA_CONFIG=/absolute/path/to/private-config.json
-export GANGLIA_INPUT_ROOT="$PWD/.local/data/mechanisms-266-generated"
+export GANGLIA_INPUT_ROOT="$PWD/.local/data/mechanisms-266-pack"
 export GANGLIA_EXTRACTOR="$PWD/talos/.cache/noclip"
 pnpm --dir talos/packages/ganglia benchmark:prepare-mechanisms \
   --config "$GANGLIA_CONFIG" --extractor "$GANGLIA_EXTRACTOR" \
@@ -68,16 +68,15 @@ Retain failed output for diagnosis and retry at a new destination. Reuse the
 same dataset for baseline and candidate runs. Keep private configuration and raw
 game content local.
 
-Each Scenario selects a dynamic input or a fixed window for its scene. The Suite
-defines fixed bounds in `sources[scene].regions`. The
-Dataset index registers the actual input locations under
-`inputs[scene].dynamic` and `inputs[scene].regions[region]`. Each directory is
-relative to `--data-root`. Multiple scenarios can share an entry. The report
-records the suite digest and the scene resources checked by the worker.
-
-The per-case diagnostic uses retained paths from the fixed window registration
-or `<scene-data-root>/<caseId>` for dynamic cases. These paths can refer to a
-different export layout than the service runner.
+Each scenario selects a dynamic corridor or a fixed window from its scene's
+pack. The Suite defines fixed bounds in `sources[scene].regions`. The Dataset
+registers one directory per scene under `inputs[scene].directory`, relative to
+`--data-root`. Both selections use the same immutable ground and collision
+blocks. The runner assembles windows in the worker and records the manifest
+digest. Use `--memory-budget-mib` to set the total loader budget, shared among
+scenario workers (2,048 MiB by default). The budget estimates memory held by
+loaded blocks and assembled windows. Solver memory is sampled separately.
+Rebuild the pack for the source and coverage being measured.
 
 ## Input files
 
@@ -110,8 +109,7 @@ query array and cannot preserve this manifest's acceptance semantics.
    facing/airborne rules. Prove support for projected starts. `waypoints` are ordered
    discovery hints; they impose no trace-visit or stopping requirement.
 3. A `frozen-window` scenario uses the bounds declared for its window under
-   `sources[scene].regions`. Dynamic input can export additional physical
-   coverage with `--prepare-config`.
+   `sources[scene].regions`. Dynamic corridors use the physical coverage exported in the scene pack.
 4. Apply merged `setup.locomotion` before preparation. `locomotionPatch` records
    intent. Preserve device facts, following-box activity ranges and source
    collisions; reject unsupported setup explicitly.

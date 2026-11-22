@@ -1,46 +1,26 @@
-/**
- * Published by preparation after the exports succeed. A dataset can relocate
- * its inputs without changing the suite's scenes, window bounds or case IDs.
- * Each registered input root is separate from the shared routing exports.
- */
 import { z } from 'zod';
 
 const directory = z
   .string()
-  .regex(/^(?![A-Za-z]:)(?:(?!\.{1,2}(?:\/|$))[A-Za-z0-9_.-]+\/)*(?!\.{1,2}$)[A-Za-z0-9_.-]+$/)
-  .brand<'DatasetPath'>();
-const entry = z.strictObject({ directory });
+  .regex(/^(?![A-Za-z]:)(?:(?!\.{1,2}(?:\/|$))[A-Za-z0-9_.-]+\/)*(?!\.{1,2}$)[A-Za-z0-9_.-]+$/);
 const indexSchema = z.strictObject({
-  inputs: z.record(
-    z.string(),
-    z.strictObject({
-      dynamic: entry.optional(),
-      regions: z.record(z.string(), entry),
-    }),
-  ),
+  inputs: z.record(z.string(), z.strictObject({ directory })),
 });
 
 export type InputIndex = z.infer<typeof indexSchema>;
 
 export function parseInputIndex(value: unknown): InputIndex {
-  // Existing local datasets can retain their original metadata.
-  const { inputs } = indexSchema.extend({ schema: z.unknown().optional() }).parse(value);
-  const roots = new Map<string, string>([
-    ['routing', 'shared routing'],
-    ['input-index.json', 'the input index'],
-    ['input-index.json.tmp', 'the pending input index'],
-  ]);
-  function register(directory: z.infer<typeof entry>['directory'], label: string) {
-    const path = directory.toLowerCase();
-    for (const [other, owner] of roots)
-      if (path === other || path.startsWith(other + '/') || other.startsWith(path + '/'))
-        throw new Error(`Dataset directory ${directory} for ${label} overlaps ${owner}`);
-    roots.set(path, label);
+  const index = indexSchema.parse(value);
+  const roots = ['routing', 'input-index.json', 'input-index.json.tmp'];
+  for (const { directory } of Object.values(index.inputs)) {
+    const name = directory.toLowerCase();
+    if (
+      roots.some(
+        (path) => path === name || name.startsWith(path + '/') || path.startsWith(name + '/'),
+      )
+    )
+      throw new Error(`Overlapping physical pack directory: ${directory}`);
+    roots.push(name);
   }
-  for (const [scene, { dynamic, regions }] of Object.entries(inputs)) {
-    if (dynamic) register(dynamic.directory, `${scene} dynamic input`);
-    for (const [id, { directory }] of Object.entries(regions))
-      register(directory, `${scene} window ${id}`);
-  }
-  return { inputs };
+  return index;
 }

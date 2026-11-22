@@ -35,3 +35,26 @@ export function mergeTimings(total: Timings, query: Timings) {
     current.misses += count.misses;
   }
 }
+
+/** Count one finished physical solve, even if its report reused candidate diagnostics. */
+export function observePhysicalReport(timings: Timings, diagnostics: unknown) {
+  timings.physical.calls++;
+  if (!diagnostics || typeof diagnostics !== 'object') return;
+  // Count final physical reports once; provisional candidate emissions share
+  // the same mutable diagnostics and would otherwise multiply these totals.
+  if ('timingMs' in diagnostics && diagnostics.timingMs && typeof diagnostics.timingMs === 'object')
+    for (const [stage, milliseconds] of Object.entries(diagnostics.timingMs))
+      if (typeof milliseconds === 'number')
+        timings.physical.stagesMs[stage] = (timings.physical.stagesMs[stage] ?? 0) + milliseconds;
+  if (
+    'prepareReuse' in diagnostics &&
+    diagnostics.prepareReuse &&
+    typeof diagnostics.prepareReuse === 'object'
+  )
+    for (const [slot, reused] of Object.entries(diagnostics.prepareReuse)) {
+      if (typeof reused !== 'boolean') continue;
+      const count = (timings.physical.preparation[slot] ??= { hits: 0, misses: 0 });
+      if (reused) count.hits++;
+      else count.misses++;
+    }
+}

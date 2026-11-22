@@ -2,20 +2,14 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 
-import { loadScene, type SceneHooks } from '#@/bench/adapters/ganglia-v1/scene.ts';
-/**
- * Construct a mechanism world once, retaining its resource windows and resolved
- * query evidence for all training and measured requests. World setup is applied
- * to every physical snapshot; case requirements check source facts rather than
- * forcing a solver route. The returned scene stays inside its owning worker.
- */
+import { loadPackedScene } from '#@/bench/adapters/ganglia-v1/packed-scene.ts';
 import { exercised, facilityAudit } from '#@/bench/mechanisms/assessment.ts';
 import { QueryInputError, resolveQuery, sourceSupportWorld } from '#@/bench/mechanisms/query.ts';
 import { checkSetup, type Case, readSuite } from '#@/bench/mechanisms/suite.ts';
-import { exportPhysicalRegion } from '#@/bench/prepare-region.ts';
 import type { WorkerSetup } from '#@/bench/workers.ts';
 import type { LocomotionOptions } from '#@/src/index.ts';
 import { joinedGeometry } from '#@/src/model/placement.ts';
+import type { Bounds } from '#@/src/scene-pack.ts';
 import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 
@@ -25,20 +19,17 @@ export interface Binding {
   ids: string[];
   dataRoot: string;
   exports: string;
-  prepareConfig?: string;
+  memoryBudget: number;
 }
 
-export async function loadScenario(
-  setup: WorkerSetup,
-  onRegion: (files: { ground: string; collision: string }) => void,
-  checkpoint: () => void,
-) {
+/** Resolve queries against one scene pack and apply this scenario's physics in its worker. */
+export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
   const binding = JSON.parse(await readFile(setup.dataRoot, 'utf8')) as Binding;
   const suite = await readSuite(binding.suite);
   const spec = suite.scenarios.find(({ id }) => id === binding.scenarioId);
   if (!spec) throw new Error(`Unknown bound scenario: ${binding.scenarioId}`);
   const { input: source, ...world } = spec.setup;
-  const fixedBounds: SceneHooks['requiredPhysicalBounds'] =
+  const fixedBounds: Bounds | undefined =
     source.kind === 'frozen-window'
       ? { min: [source.bounds[0], source.bounds[1]], max: [source.bounds[2], source.bounds[3]] }
       : undefined;
@@ -48,7 +39,8 @@ export async function loadScenario(
   );
   if (!isDeepStrictEqual(catalog.source, suite.source))
     throw new Error('Mechanism source build differs from exported device facts');
-  const inputs: PhysicalInput[] = [];
+  let evidence: Pick<PhysicalInput, 'devices'> | undefined;
+  const bySupport = new Map<string, Pick<PhysicalInput, 'devices'>>();
   // Only these fields change physical rules. Required IDs and exercise assertions
   // describe source coverage, rather than forcing the solver to choose a device.
   const policy = {
@@ -63,28 +55,15 @@ export async function loadScenario(
     if (required && !catalog.devices.some((d: { id: string }) => d.id === required))
       throw new Error(`Missing required source device: ${required}`);
   }
-  const scene = await loadScene(
-    binding.dataRoot,
-    setup.extractor,
-    1,
-    source.scene,
-    binding.prepareConfig && source.kind === 'dynamic'
-      ? async (request) => {
-          const files = await exportPhysicalRegion(
-            {
-              dataRoot: binding.dataRoot,
-              extractor: setup.extractor,
-              config: binding.prepareConfig!,
-              devices: resolve(binding.exports, `${source.scene}-traversal-devices.json`),
-            },
-            request,
-          );
-          onRegion(files);
-          return files;
-        }
-      : undefined,
-    {
-      requiredPhysicalBounds: fixedBounds,
+  const scene = await loadPackedScene({
+    directory: binding.dataRoot,
+    routing: binding.exports,
+    extractor: setup.extractor,
+    scene: source.scene,
+    source: suite.source,
+    memoryBudget: binding.memoryBudget,
+    fixedBounds,
+    hooks: {
       onProgress: checkpoint,
       transformInput: (raw) => {
         if (fixedBounds && !isDeepStrictEqual(raw.ground.build?.bounds, fixedBounds))
@@ -98,11 +77,16 @@ export async function loadScenario(
         const input = scenarioInput(raw, policy);
         if (!isDeepStrictEqual(input.ground.options.profile, suite.sources[source.scene].profile))
           throw new Error('Mechanism player profile differs from the frozen specification');
-        if (!inputs.includes(input)) inputs.push(input);
+        evidence = { devices: input.devices };
+        for (const support of [
+          ...(input.devices?.movingSupports ?? []),
+          ...(input.devices?.followingSupports ?? []),
+        ])
+          bySupport.set(support.id, evidence);
         return input;
       },
     },
-  );
+  });
   if (
     !isDeepStrictEqual(scene.input.scene.source, suite.source) ||
     !isDeepStrictEqual(
@@ -114,22 +98,6 @@ export async function loadScenario(
   // Scene owns the whole-route resource clock. Physical windows and replay
   // receive this same policy through transformInput above.
   scene.input.locomotion = world.locomotion ?? scene.input.locomotion;
-  if (fixedBounds) {
-    const resources = scene.input.resources;
-    const query = resources.query;
-    // A frozen case offers its selected window, even when the coarse planner
-    // proposes a larger corridor. Physical snapshots keep their actual bounds
-    // and tiles, so neither search nor verification can treat the halo as loaded.
-    resources.query = (scene, requestSource, start, target, options) =>
-      query(scene, requestSource, start, target, {
-        ...options,
-        corridor: {
-          ...options.corridor,
-          bounds: fixedBounds,
-          tiles: [],
-        },
-      });
-  }
   scene.input.scene.walls = scene.input.scene.navigation.options.walls ?? [];
   const resolved: Record<string, RouteQuery> = {};
   const resolutions: Record<string, unknown> = {};
@@ -188,7 +156,7 @@ export async function loadScenario(
             ...snapshot,
             world: sourceSupportWorld(snapshot.input, snapshot.coverage, volume),
             source: suite.source,
-            files: job.region.files,
+            files: scene.files,
             reuse: 'source-only support proof; no solver search',
           };
         },
@@ -199,6 +167,8 @@ export async function loadScenario(
       if (!(error instanceof QueryInputError)) throw error;
       resolutions[item.id] = error.receipt;
       resolutionErrors[item.id] = { status: error.status, reason: error.message };
+    } finally {
+      scene.endRequest();
     }
   }
   const byQuery = new Map(items.map((item) => [JSON.stringify(resolved[item.id]), item]));
@@ -211,17 +181,13 @@ export async function loadScenario(
     inspectResult(query: RouteQuery, result: RouteResult) {
       const item = byQuery.get(JSON.stringify(query));
       if (!item) return result;
-      const input = inputs.findLast(
-        (input) =>
-          !item.setup.requiredSupport ||
-          input.devices?.movingSupports?.some((s) => s.id === item.setup.requiredSupport) ||
-          input.devices?.followingSupports?.some((s) => s.id === item.setup.requiredSupport),
-      );
+      const support = item.setup.requiredSupport;
+      const input = support ? bySupport.get(support) : evidence;
       return {
         ...result,
         diagnostics: {
           ...result.diagnostics,
-          mechanism: { exercise: exercised(item, result, input) },
+          mechanism: { exercise: exercised(item, result, input), loader: scene.loaderStats() },
         },
       };
     },

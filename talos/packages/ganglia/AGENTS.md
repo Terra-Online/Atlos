@@ -57,7 +57,6 @@ GANGLIA_BENCHMARK_QUERY_CUTOFF_MS=60000 \
   pnpm --silent benchmark:mechanisms --adapter ganglia-v1-ts \
   --data-root /absolute/path/to/mechanism-inputs \
   --extractor /absolute/path/to/talos/.cache/noclip \
-  --prepare-config /absolute/path/to/private-config.json \
   --scenario-workers 1 --output /absolute/path/to/new-report.json
 ```
 

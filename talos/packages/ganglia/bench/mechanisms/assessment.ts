@@ -35,7 +35,7 @@ export function matchesExpectation(c: Case, result: RouteResult) {
 function singleConveyorPose(
   c: Case,
   result: RouteResult,
-  input?: PhysicalInput,
+  input?: Pick<PhysicalInput, 'devices'>,
 ): boolean | undefined {
   const route = result.route;
   if (route.status !== 'complete' || !input || route.segments.some((s) => s.mode !== 'walk'))
@@ -89,7 +89,7 @@ function singleConveyorPose(
   return false;
 }
 
-export function exercised(c: Case, result: RouteResult, input?: PhysicalInput) {
+export function exercised(c: Case, result: RouteResult, input?: Pick<PhysicalInput, 'devices'>) {
   const route = result.route;
   const used = new Set<string>();
   if (route.status === 'complete' && input)

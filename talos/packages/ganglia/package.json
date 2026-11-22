@@ -16,6 +16,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./build": "./src/build.ts",
+    "./scene-pack": "./src/scene-pack.ts",
     "./collision": "./src/collision.ts",
     "./model": "./src/model/index.ts",
     "./evaluation": "./src/evaluation/index.ts",

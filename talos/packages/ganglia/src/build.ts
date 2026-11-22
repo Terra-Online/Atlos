@@ -1,5 +1,5 @@
 import type { Surface, Portal, CollisionGeometry } from '#@/src/geometry.ts';
-export { buildGroundSurfaces, buildGroundTiles } from '#@/src/v1/geo/build.ts';
+export { assembleGroundTiles, buildGroundSurfaces, buildGroundTiles } from '#@/src/v1/geo/build.ts';
 export { groundBuildIdentity } from '#@/src/v1/geo/build-identity.ts';
 export type { CollisionGeometry } from '#@/src/geometry.ts';
 
