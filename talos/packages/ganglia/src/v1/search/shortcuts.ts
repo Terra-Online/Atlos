@@ -40,8 +40,10 @@ import { movementGeometry } from '#@/src/v1/route/movement-geometry.ts';
 import type { Edge } from '#@/src/v1/route/routes.ts';
 import { type GroundStraightener, createGroundStraightener } from '#@/src/v1/route/straighten.ts';
 import {
+  type BoundaryTree,
   boundaryTree,
   boundaryOrderIterator,
+  extendBoundaryTree,
   interleaveBoundaryOrders,
 } from '#@/src/v1/search/boundary-order.ts';
 import { createCandidateBounds } from '#@/src/v1/search/candidate-bounds.ts';
@@ -120,7 +122,8 @@ interface PreparedGeometry {
   projectSupport: ReturnType<typeof movementGeometry>['projectSupport'];
   project: ReturnType<typeof movementGeometry>['project'];
   visibility?: GroundStraightener;
-  boundaryOrder?: { key: string; tree: ReturnType<typeof boundaryTree<IndexedBoundary>> };
+  boundaryOverlay?: { baseIndexed: IndexedBoundary[]; extraIndexed: IndexedBoundary[] };
+  boundaryOrder?: { key: string; tree: BoundaryTree<IndexedBoundary> };
 }
 export type ShortcutOptions = Omit<DiscoveryOptions, 'connections'> &
   Pick<GroundOptions, 'speed' | 'locomotion' | 'activeBoost'> & {
@@ -213,6 +216,46 @@ const distance = (a: readonly number[], b: readonly number[]) =>
 const horizontal = (a: readonly number[], b: readonly number[]) =>
   Math.hypot(a[0] - b[0], a[2] - b[2]);
 const geometries = new WeakMap<ReturnType<typeof movementGeometry>, PreparedGeometry>();
+const indexedBoundaries = new WeakMap<Boundary[], IndexedBoundary[]>();
+const boundaryTrees = new WeakMap<IndexedBoundary[], Map<string, BoundaryTree<IndexedBoundary>>>();
+const indexBoundary = (boundary: Boundary, ordinal: number): IndexedBoundary => {
+  const a = boundary.a,
+    b = boundary.b;
+  return {
+    ...boundary,
+    ordinal,
+    min: [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.min(a[2], b[2])],
+    max: [Math.max(a[0], b[0]), Math.max(a[1], b[1]), Math.max(a[2], b[2])],
+  };
+};
+const getIndexedBoundaries = (raw: Boundary[]): IndexedBoundary[] => {
+  let cached = indexedBoundaries.get(raw);
+  if (!cached) {
+    cached = new Array<IndexedBoundary>(raw.length);
+    for (let i = 0; i < raw.length; i++) cached[i] = indexBoundary(raw[i], i);
+    indexedBoundaries.set(raw, cached);
+  }
+  return cached;
+};
+const getBaseBoundaryTree = (
+  entries: IndexedBoundary[],
+  treeKey: string,
+  size: number,
+  height: number,
+  diversity: number,
+): BoundaryTree<IndexedBoundary> => {
+  let byKey = boundaryTrees.get(entries);
+  if (!byKey) {
+    byKey = new Map();
+    boundaryTrees.set(entries, byKey);
+  }
+  let tree = byKey.get(treeKey);
+  if (!tree) {
+    tree = boundaryTree(entries, size, height, diversity);
+    byKey.set(treeKey, tree);
+  }
+  return tree;
+};
 const adjacency = (edges: Edge[], sharedForward: PreparedGeometry['forward'] | undefined) => {
   const forward = sharedForward ?? new Map<string, Edge[]>(),
     reverse = new Map<string, Edge[]>();
@@ -237,17 +280,39 @@ function prepareGeometry(surfaces: Surface[], options: DiscoveryOptions): Prepar
   const representatives: string[] = [];
   const componentOf = (id: string) => topology.components[topology.ids.get(id)!];
   for (const node of graph.nodes) representatives[componentOf(node.id)] ??= node.id;
-  const boundaries = new Array<IndexedBoundary>(shared.boundaries.length);
-  for (let i = 0; i < shared.boundaries.length; i++) {
-    const boundary = shared.boundaries[i];
-    const a = boundary.a,
-      b = boundary.b;
-    boundaries[i] = {
-      ...boundary,
-      ordinal: i,
-      min: [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.min(a[2], b[2])],
-      max: [Math.max(a[0], b[0]), Math.max(a[1], b[1]), Math.max(a[2], b[2])],
-    };
+  const candidate = groundPreparation(options.groundPlanner);
+  const overlay = candidate?.surfaces === surfaces ? candidate.overlay : undefined;
+  let boundaries: IndexedBoundary[];
+  let boundaryOverlay: PreparedGeometry['boundaryOverlay'];
+  if (overlay) {
+    const baseGeo = movementGeometry(overlay.basePrep.surfaces, {
+      walls: overlay.basePrep.walls,
+      profile: overlay.basePrep.profile,
+      portals: overlay.basePrep.importedPortals,
+      groundPlanner: overlay.basePlanner,
+    });
+    const baseRaw = baseGeo.boundaries;
+    const baseIndexed = getIndexedBoundaries(baseRaw);
+    if (shared.boundaries === baseRaw) {
+      boundaries = baseIndexed;
+    } else if (
+      shared.boundaries.length > baseRaw.length &&
+      (baseRaw.length === 0 || shared.boundaries[0] === baseRaw[0])
+    ) {
+      const extraCount = shared.boundaries.length - baseRaw.length;
+      const extraIndexed = new Array<IndexedBoundary>(extraCount);
+      boundaries = baseIndexed.slice();
+      for (let i = 0; i < extraCount; i++) {
+        const wrapped = indexBoundary(shared.boundaries[baseRaw.length + i], baseRaw.length + i);
+        extraIndexed[i] = wrapped;
+        boundaries.push(wrapped);
+      }
+      boundaryOverlay = { baseIndexed, extraIndexed };
+    } else {
+      boundaries = getIndexedBoundaries(shared.boundaries);
+    }
+  } else {
+    boundaries = getIndexedBoundaries(shared.boundaries);
   }
   const landingSurfaces = new Array<LandingFace>(surfaces.length);
   for (let i = 0; i < surfaces.length; i++) {
@@ -279,6 +344,7 @@ function prepareGeometry(surfaces: Surface[], options: DiscoveryOptions): Prepar
     lengthScale: shared.lengthScale,
     blocked,
     boundaries,
+    boundaryOverlay,
     landingSurfaces,
     boundaryIndex: createBoundsIndex(boundaries, (edge) => componentOf(edge.surface)),
     landingIndex: createBoundsIndex(landingSurfaces, (surface) => componentOf(surface.id)),
@@ -784,21 +850,26 @@ function findConnections(
     // Visit coarse spatial regions before refining body-scale offsets. A distant
     // opening must compete with nearby ledges even on a densely triangulated floor.
     const seedLimit = diagnostics.limits.seedChecks;
-    const treeKey = JSON.stringify([
-      regionSize,
-      Math.max(profile.height, model.maxJumpHeight),
-      diversity,
-    ]);
-    if (prepared.boundaryOrder?.key !== treeKey)
-      prepared.boundaryOrder = {
-        key: treeKey,
-        tree: boundaryTree(
-          boundaries,
-          regionSize,
-          Math.max(profile.height, model.maxJumpHeight),
-          diversity,
-        ),
-      };
+    const treeHeight = Math.max(profile.height, model.maxJumpHeight);
+    const treeKey = JSON.stringify([regionSize, treeHeight, diversity]);
+    if (prepared.boundaryOrder?.key !== treeKey) {
+      const tree = prepared.boundaryOverlay
+        ? extendBoundaryTree(
+            getBaseBoundaryTree(
+              prepared.boundaryOverlay.baseIndexed,
+              treeKey,
+              regionSize,
+              treeHeight,
+              diversity,
+            ),
+            prepared.boundaryOverlay.extraIndexed,
+            regionSize,
+            treeHeight,
+            diversity,
+          )
+        : getBaseBoundaryTree(boundaries, treeKey, regionSize, treeHeight, diversity);
+      prepared.boundaryOrder = { key: treeKey, tree };
+    }
     // Resuming a cursor requires the same query binding and action revision.
     // Identical distance-field inputs leave costs untouched; changed inputs
     // discard the old cursor before its lazy comparisons can read those maps.
