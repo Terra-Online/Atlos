@@ -2,10 +2,15 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { createCollisionWorld } from '#@/src/collision.ts';
-import type { Surface, Vec3 } from '#@/src/geometry.ts';
+import type { Surface, Vec3, Wall } from '#@/src/geometry.ts';
 import type { GroundArrival, GroundConnection } from '#@/src/route.ts';
 import { jumpConnection } from '#@/src/v1/motion/jumps.ts';
-import { createGroundPlanner, groundPreparation, planGroundRoute } from '#@/src/v1/route/ground.ts';
+import {
+  createGroundPlanner,
+  createOverlayGroundPlanner,
+  groundPreparation,
+  planGroundRoute,
+} from '#@/src/v1/route/ground.ts';
 import { findRouteShortcuts } from '#@/src/v1/route/route-shortcuts.ts';
 import type { route } from '#@/src/v1/route/routes.ts';
 import {
@@ -778,5 +783,131 @@ test('provided ground planners retain gait-aware shortcut bounds without repeate
   assert.deepEqual(
     changed.connections,
     findJumpFrontier(surfaces, world, { ...frontier, groundPlanner: fasterSprint }, {}).connections,
+  );
+});
+
+test('overlay geometries sharing IndexedBoundary objects preserve differing component splits', () => {
+  const staticSurfaces: Surface[] = [
+    floor('left', 0, 4, 0, -2, 2),
+    floor('bridge', 4, 6, 0, -0.5, 0.5),
+    floor('right', 6, 10, 0, -2, 2),
+    floor('ledge', 12, 16, 0, -2, 2),
+  ];
+  const roof: Surface = floor('roof', 0, 2, 1.5, 4, 6);
+  const layoutSurfaces = [...staticSurfaces, roof];
+  const splitWall: Wall = { min: [4.5, -1, -2], max: [5.5, 3, 2], state: 'active' };
+  const idleWall: Wall = { min: [20, -1, 20], max: [21, 3, 21], state: 'active' };
+  const world = createCollisionWorld(geometry([...staticSurfaces, roof]));
+  const groundOpts = { speed: options.speed, maxVertical: options.maxVertical, walls: [], profile };
+
+  const basePlanner = createGroundPlanner(staticSurfaces, groundOpts);
+  const splitOverlay = createOverlayGroundPlanner(
+    basePlanner,
+    layoutSurfaces,
+    [roof],
+    [splitWall],
+    {
+      ...groundOpts,
+      walls: [splitWall],
+    },
+  );
+  const unsplitOverlay = createOverlayGroundPlanner(
+    basePlanner,
+    layoutSurfaces,
+    [roof],
+    [idleWall],
+    { ...groundOpts, walls: [idleWall] },
+  );
+
+  const from: Vec3 = [2, 0, 0];
+  const to: Vec3 = [14, 0, 0];
+  const splitQuery: ShortcutOptions = {
+    ...options,
+    walls: [splitWall],
+    from,
+    to,
+    groundPlanner: splitOverlay,
+  };
+  const unsplitQuery: ShortcutOptions = {
+    ...options,
+    walls: [idleWall],
+    from,
+    to,
+    groundPlanner: unsplitOverlay,
+  };
+
+  const splitCache: ShortcutCache = {};
+  const unsplitCache: ShortcutCache = {};
+  const splitFrontier = findJumpFrontier(layoutSurfaces, world, splitQuery, splitCache);
+  const unsplitFrontier = findJumpFrontier(layoutSurfaces, world, unsplitQuery, unsplitCache);
+
+  const freshSplit = findJumpFrontier(layoutSurfaces, world, {
+    ...splitQuery,
+    groundPlanner: createGroundPlanner(layoutSurfaces, { ...groundOpts, walls: [splitWall] }),
+  });
+  const freshUnsplit = findJumpFrontier(layoutSurfaces, world, {
+    ...unsplitQuery,
+    groundPlanner: createGroundPlanner(layoutSurfaces, { ...groundOpts, walls: [idleWall] }),
+  });
+
+  assert.deepEqual(splitFrontier, freshSplit);
+  assert.deepEqual(unsplitFrontier, freshUnsplit);
+  // Shared IndexedBoundary instances must not carry stale .component tags across overlays.
+  assert.equal('component' in splitCache.geometry!.boundaries[0], false);
+  assert.notEqual(
+    splitCache.geometry!.componentOf('left'),
+    splitCache.geometry!.componentOf('right'),
+  );
+  assert.equal(
+    unsplitCache.geometry!.componentOf('left'),
+    unsplitCache.geometry!.componentOf('right'),
+  );
+  for (let i = 0; i < splitCache.geometry!.boundaries.length; i++) {
+    const edge = splitCache.geometry!.boundaries[i];
+    assert.equal(edge.ordinal, i);
+    assert.equal(
+      splitCache.geometry!.boundaryComponents[i],
+      splitCache.geometry!.componentOf(edge.surface),
+    );
+  }
+  for (let i = 0; i < unsplitCache.geometry!.landingSurfaces.length; i++) {
+    const face = unsplitCache.geometry!.landingSurfaces[i];
+    assert.equal(face.ordinal, i);
+    assert.equal(
+      unsplitCache.geometry!.landingComponents[i],
+      unsplitCache.geometry!.componentOf(face.id),
+    );
+  }
+  // Cold reverse frontier sharing splitOverlay PreparedGeometry matches fresh completely,
+  // and warm reverse frontier on splitCache preserves identical connections.
+  const freshSplitReverse = findJumpFrontier(
+    layoutSurfaces,
+    world,
+    {
+      ...splitQuery,
+      groundPlanner: createGroundPlanner(layoutSurfaces, { ...groundOpts, walls: [splitWall] }),
+    },
+    {},
+    true,
+  );
+  assert.deepEqual(
+    findJumpFrontier(layoutSurfaces, world, splitQuery, {}, true),
+    freshSplitReverse,
+  );
+  assert.deepEqual(
+    findJumpFrontier(layoutSurfaces, world, splitQuery, splitCache, true).connections,
+    freshSplitReverse.connections,
+  );
+  // Repeated forward findJumpShortcuts on unsplitOverlay also matches fresh non-overlay planner.
+  const arrivals: GroundArrival[] = [{ id: 'player', position: from, cost: 0, state: 'available' }];
+  const baseline = unsplitOverlay.plan(arrivals, [9, 0, 0]);
+  assert.ok(baseline.status === 'complete');
+  const shortcutQuery = { ...unsplitQuery, to: [9, 0, 0] as Vec3, baseline };
+  assert.deepEqual(
+    findJumpShortcuts(layoutSurfaces, world, shortcutQuery, unsplitCache),
+    findJumpShortcuts(layoutSurfaces, world, {
+      ...shortcutQuery,
+      groundPlanner: createGroundPlanner(layoutSurfaces, { ...groundOpts, walls: [idleWall] }),
+    }),
   );
 });

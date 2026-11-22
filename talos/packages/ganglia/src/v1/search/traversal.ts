@@ -513,7 +513,7 @@ export function findJumpConnections(
   };
   const connections: DiscoveredConnection[] = [];
   const geometry = movementGeometry(surfaces, options);
-  const { graph, topology, project } = geometry;
+  const { topology, project } = geometry;
   diagnostics.components = topology.count;
   const componentOf = (surface: string) => topology.components[topology.ids.get(surface)!];
   const source = project(from, { maxVertical })[0];
@@ -594,9 +594,26 @@ export function findJumpConnections(
       const bounded = Object.assign(boundary, boundsOf([boundary.a, boundary.b]));
       regions[componentOf(boundary.surface)].boundaries.push(bounded);
     }
-    return { regions, boundaries, queryRegions: createBoundsIndex(regions) };
+    // Cache deduplicated cross-component ground transfers once per shared
+    // topology so repeated queries skip scanning all static graph edges.
+    const groundTransfers: [number, number][] = [];
+    const stride = topology.count;
+    const seenTransfer = new Set<number>();
+    for (let node = 0; node < topology.forward.length; node++) {
+      const fromComp = topology.components[node];
+      const outgoing = topology.forward[node];
+      for (let i = 0; i < outgoing.length; i++) {
+        const toComp = topology.components[outgoing[i]];
+        if (fromComp === toComp) continue;
+        const pairId = fromComp * stride + toComp;
+        if (seenTransfer.has(pairId)) continue;
+        seenTransfer.add(pairId);
+        groundTransfers.push([fromComp, toComp]);
+      }
+    }
+    return { regions, boundaries, queryRegions: createBoundsIndex(regions), groundTransfers };
   })();
-  const { regions, boundaries, queryRegions } = geometry.regions;
+  const { regions, boundaries, queryRegions, groundTransfers } = geometry.regions;
   diagnostics.boundaryEdges = boundaries.length;
   const endpointTolerance = Math.min(maxVertical, profile.radius);
   // A sprint jump can launch above the sustained air cap. Candidate bounds
@@ -626,10 +643,9 @@ export function findJumpConnections(
     transfers.set(key, entry);
     return entry;
   };
-  for (const edge of graph.edges) {
-    const a = regions[componentOf(edge.from)],
-      b = regions[componentOf(edge.to)];
-    if (a === b) continue;
+  for (const [fromComp, toComp] of groundTransfers) {
+    const a = regions[fromComp],
+      b = regions[toComp];
     const entries = groundIncoming.get(b.id) ?? new Set<Transfer>();
     entries.add(transfer(a, b, true, 0));
     groundIncoming.set(b.id, entries);

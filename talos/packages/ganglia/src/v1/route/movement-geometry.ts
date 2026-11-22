@@ -27,7 +27,12 @@ interface Geometry {
   visibility?: NonNullable<ReturnType<typeof groundPreparation>>['straighten'];
   topology: GroundTopology;
   boundaries: Boundary[];
-  regions?: { regions: Region[]; boundaries: Boundary[]; queryRegions: BoundsIndex<Region> };
+  regions?: {
+    regions: Region[];
+    boundaries: Boundary[];
+    queryRegions: BoundsIndex<Region>;
+    groundTransfers: readonly [number, number][];
+  };
 }
 
 const snapshots = new WeakMap<

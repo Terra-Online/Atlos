@@ -105,9 +105,11 @@ export interface FrontierDiagnostics extends Omit<ShortcutDiagnostics, 'baseline
 }
 
 type IndexedBoundary = Boundary & Bounds & { ordinal: number };
-type LandingFace = Surface & Bounds;
+type LandingFace = Surface & Bounds & { readonly ordinal: number };
 interface PreparedGeometry {
   componentOf(id: string): number;
+  boundaryComponents: Int32Array;
+  landingComponents: Int32Array;
   forward: { get(id: string): WeightedEdge[] | undefined };
   reverse: Map<string, WeightedEdge[]>;
   lengthScale: number;
@@ -314,7 +316,12 @@ function prepareGeometry(surfaces: Surface[], options: DiscoveryOptions): Prepar
   } else {
     boundaries = getIndexedBoundaries(shared.boundaries);
   }
+  const boundaryComponents = new Int32Array(boundaries.length);
+  for (let i = 0; i < boundaries.length; i++) {
+    boundaryComponents[i] = componentOf(boundaries[i].surface);
+  }
   const landingSurfaces = new Array<LandingFace>(surfaces.length);
+  const landingComponents = new Int32Array(surfaces.length);
   for (let i = 0; i < surfaces.length; i++) {
     const surface = surfaces[i];
     const verts = surface.vertices;
@@ -335,9 +342,11 @@ function prepareGeometry(surfaces: Surface[], options: DiscoveryOptions): Prepar
     }
     landingSurfaces[i] = {
       ...surface,
+      ordinal: i,
       min: [minX, minY, minZ],
       max: [maxX, maxY, maxZ],
     };
+    landingComponents[i] = componentOf(surface.id);
   }
   const geometry: PreparedGeometry = {
     ...adjacency(graph.edges, shared.forward),
@@ -346,8 +355,13 @@ function prepareGeometry(surfaces: Surface[], options: DiscoveryOptions): Prepar
     boundaries,
     boundaryOverlay,
     landingSurfaces,
-    boundaryIndex: createBoundsIndex(boundaries, (edge) => componentOf(edge.surface)),
-    landingIndex: createBoundsIndex(landingSurfaces, (surface) => componentOf(surface.id)),
+    boundaryComponents,
+    landingComponents,
+    boundaryIndex: createBoundsIndex(boundaries, (edge) => boundaryComponents[edge.ordinal]),
+    landingIndex: createBoundsIndex(
+      landingSurfaces,
+      (surface) => landingComponents[surface.ordinal],
+    ),
     representatives,
     byId,
     projectSupport,

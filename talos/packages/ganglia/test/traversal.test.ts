@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { createCollisionWorld, type Capsule, type CollisionWorld } from '#@/src/collision.ts';
-import type { Surface, Vec3, Wall } from '#@/src/geometry.ts';
+import type { Portal, Surface, Vec3, Wall } from '#@/src/geometry.ts';
 import { createGoalProjector } from '#@/src/model/goals.ts';
 import type { GroundConnection } from '#@/src/route.ts';
 import { jumpConnection } from '#@/src/v1/motion/jumps.ts';
@@ -901,4 +901,90 @@ test('traversal covers decaying overspeed jumps with a legal supported sprint ap
     }).connections,
     [],
   );
+});
+
+test('repeated findJumpConnections queries reuse cached cross-component groundTransfers identically', () => {
+  const stepLowA: Surface = { ...floor('stepLowA', 6, 8, 0, -2, 0), portals: [] };
+  const stepLowB: Surface = { ...floor('stepLowB', 6, 8, 0, 0, 2), portals: [] };
+  const stepHighA: Surface = { ...floor('stepHighA', 8, 10, 3, -2, 0), portals: [] };
+  const stepHighB: Surface = { ...floor('stepHighB', 8, 10, 3, 0, 2), portals: [] };
+  const surfaces: Surface[] = [
+    floor('start', 0, 4, 0, -2, 2),
+    stepLowA,
+    stepLowB,
+    stepHighA,
+    stepHighB,
+    floor('mid', 10, 12, 3, -2, 2),
+    floor('goal', 15, 19, 3, -2, 2),
+  ];
+  // Connect low pair together and high pair together, with two parallel one-way directed steps
+  // from low component to high component (plus mid joined by portal to stepHighA/B).
+  stepLowA.portals = [2];
+  stepLowB.portals = [0];
+  stepHighA.portals = [1, 2];
+  stepHighB.portals = [0, 1];
+  const portals: Portal[] = [
+    {
+      from: 'stepLowA',
+      to: 'stepHighA',
+      points: [
+        [8, 0, -1],
+        [8, 3, -1],
+      ],
+      entry: [
+        [8, 0, -2],
+        [8, 0, 0],
+      ],
+      exit: [
+        [8, 3, -2],
+        [8, 3, 0],
+      ],
+    },
+    {
+      from: 'stepLowB',
+      to: 'stepHighB',
+      points: [
+        [8, 0, 1],
+        [8, 3, 1],
+      ],
+      entry: [
+        [8, 0, 0],
+        [8, 0, 2],
+      ],
+      exit: [
+        [8, 3, 0],
+        [8, 3, 2],
+      ],
+    },
+  ];
+  const world = createCollisionWorld(geometry(surfaces));
+  const query: DiscoveryOptions & { speed: number } = {
+    ...options,
+    speed: 5,
+    portals,
+    from: [2, 0, 0],
+    to: [17, 3, 0],
+    maxDrop: 1,
+    maxHorizontalDistance: 6,
+  };
+  const groundPlanner = createGroundPlanner(surfaces, query);
+  const first = findJumpConnections(surfaces, world, { ...query, groundPlanner });
+  const second = findJumpConnections(surfaces, world, { ...query, groundPlanner });
+  const reverse = findJumpConnections(surfaces, world, {
+    ...query,
+    from: [17, 3, 0],
+    to: [2, 0, 0],
+    groundPlanner,
+  });
+  const third = findJumpConnections(surfaces, world, { ...query, groundPlanner });
+
+  assert.equal(first.diagnostics.targetReached, true);
+  assert.deepEqual(first, findJumpConnections(surfaces, world, query));
+  assert.deepEqual(second, first);
+  assert.deepEqual(third, first);
+  assert.deepEqual(
+    reverse,
+    findJumpConnections(surfaces, world, { ...query, from: [17, 3, 0], to: [2, 0, 0] }),
+  );
+  assert.equal(reverse.diagnostics.targetReached, false);
 });
