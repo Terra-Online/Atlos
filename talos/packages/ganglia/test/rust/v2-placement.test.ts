@@ -153,3 +153,56 @@ test('v2 never promotes an unsupported authored spawn to a proved placement', as
     /placement layout/,
   );
 });
+
+test('v2 keeps a later placement from reusing a walk through its relocated box', async () => {
+  const boxes = [box('goal', 8, 8, 1.5), box('obstacle', 0, -8, 3)];
+  const layout = boxes.map((b) => ({ device: b.id, position: [b.spawn[0], -0.15, 0] as Vec3 }));
+  const solver = await prepareGangliaV2(
+    settings,
+    scene(boxes),
+    [],
+    [
+      [-4, 0, 0],
+      [4, 0, 0],
+      [5, 0, 0],
+      [-4, 0, 3],
+      [0, 0, 3],
+      [4, 0, 3],
+    ],
+    [layout],
+  );
+  try {
+    const result = await solver.solve({
+      starts: [{ id: 'player', position: [-4, 0, 0], cost: 0, state: 'available' }],
+      goal: [8, 1.5, 0],
+    });
+    assert.equal(result.route.status, 'complete');
+    if (result.route.status !== 'complete') return;
+    assert.deepEqual(result.route.placements, layout);
+    // Intersect each returned walk chord with the fixture box interior. The
+    // default layout leaves this road open; the selected layout closes it.
+    const enters = (a: Vec3, b: Vec3) => {
+      let lo = 0,
+        hi = 1;
+      const min = [-1.249, 0.001, -1.249],
+        max = [1.249, 2.999, 1.249];
+      for (let axis = 0; axis < 3; axis++) {
+        const delta = b[axis] - a[axis];
+        if (delta === 0) {
+          if (a[axis] < min[axis] || a[axis] > max[axis]) return false;
+        } else {
+          const first = (min[axis] - a[axis]) / delta,
+            last = (max[axis] - a[axis]) / delta;
+          lo = Math.max(lo, Math.min(first, last));
+          hi = Math.min(hi, Math.max(first, last));
+        }
+      }
+      return lo <= hi;
+    };
+    for (const segment of result.route.segments.filter((s) => s.mode === 'walk'))
+      for (let i = 1; i < segment.points.length; i++)
+        assert.equal(enters(segment.points[i - 1], segment.points[i]), false);
+  } finally {
+    await solver.close();
+  }
+});

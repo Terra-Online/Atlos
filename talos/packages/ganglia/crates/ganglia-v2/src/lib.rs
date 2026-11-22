@@ -60,7 +60,7 @@ impl Candidate {
                     let time = segment.times[chord]
                         + fraction * (segment.times[chord + 1] - segment.times[chord]);
                     return index + 1 == self.scheduled.segments.len()
-                        && matches!(segment.mode, "jump" | "launch")
+                        && matches!(segment.mode, "jump" | "drop" | "launch")
                         && distance(position, segment.end()) <= 1e-6
                         && (time - segment.cost()).abs() <= 1e-6;
                 }
@@ -104,42 +104,54 @@ impl Engine {
         locomotion::validate(&input.physical.locomotion)?;
         let base = World::new(input.physical)?;
         let placements = placement::prepare(&base, input.layouts)?;
-        let world = base.layout(&[]);
+        let worlds: Vec<_> = placements
+            .into_iter()
+            .map(|picks| (base.layout(&picks), picks))
+            .collect();
+        let mut proofs = backbone::WalkProofs::new(
+            worlds
+                .iter()
+                .flat_map(|(world, _)| world.box_bounds())
+                .collect(),
+            &base.physical.ground.options.profile,
+            worlds.len() > 1,
+        );
         let anchor_supports: Vec<_> = input
             .anchors
             .iter()
             .map(|&position| {
+                let world = &worlds[0].0;
                 let feet = world
                     .standing(position)
                     .filter(|&p| !world.blocked(p, p, 0.));
                 json!({"position":position,"feet":feet})
             })
             .collect();
-        let backbone =
-            backbone::Backbone::build(&world, input.marks.clone(), input.anchors.clone());
-        let mut layout_stats = vec![
-            json!({"layout":0,"placements":[],"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),"buildMs":started.elapsed().as_secs_f64()*1000.}),
-        ];
-        let mut layouts = vec![PreparedLayout {
-            world,
-            backbone,
-            placements: Vec::new(),
-        }];
-        for picks in placements.into_iter().skip(1) {
+        let mut layout_stats = Vec::new();
+        let mut layouts = Vec::new();
+        for (world, picks) in worlds {
             let layout_started = Instant::now();
-            let world = base.layout(&picks);
-            let backbone =
-                backbone::Backbone::build(&world, input.marks.clone(), input.anchors.clone());
-            layout_stats.push(json!({"layout":layouts.len(),"placements":picks,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),"buildMs":layout_started.elapsed().as_secs_f64()*1000.}));
+            let before = proofs.stats();
+            let backbone = backbone::Backbone::build(
+                &world,
+                input.marks.clone(),
+                input.anchors.clone(),
+                &mut proofs,
+            );
+            let after = proofs.stats();
+            layout_stats.push(json!({"layout":layouts.len(),"placements":picks,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),"buildMs":layout_started.elapsed().as_secs_f64()*1000.,"walkProofsStored":after.0-before.0,"walkProofHits":after.1-before.1}));
             layouts.push(PreparedLayout {
                 world,
                 backbone,
                 placements: picks,
             });
         }
+        let (walk_proofs, walk_hits) = proofs.stats();
+        // The key table is construction-only; shared segment proofs remain in edges.
+        drop(proofs);
         let backbone = &layouts[0].backbone;
         let bounds = (!backbone.nodes.is_empty()).then(|| Bounds::points(&backbone.nodes));
-        let stats = json!({"layouts":layout_stats,"totalNodeCount":layouts.iter().map(|l|l.backbone.nodes.len()).sum::<usize>(),"totalEdgeCount":layouts.iter().flat_map(|l|&l.backbone.edges).map(Vec::len).sum::<usize>(),"backboneBuildMs":started.elapsed().as_secs_f64()*1000.,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),
+        let stats = json!({"walkProofCount":walk_proofs,"walkProofHits":walk_hits,"layouts":layout_stats,"totalNodeCount":layouts.iter().map(|l|l.backbone.nodes.len()).sum::<usize>(),"totalEdgeCount":layouts.iter().flat_map(|l|&l.backbone.edges).map(Vec::len).sum::<usize>(),"backboneBuildMs":started.elapsed().as_secs_f64()*1000.,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),
             "anchorSupports":anchor_supports,
             "nodeBounds":bounds.map(|b|json!({"min":b.min,"max":b.max})),
             "markedTargets":backbone.terminals.iter().map(|(mark,edges)|json!({"position":mark.position,"connections":edges.len()})).collect::<Vec<_>>(),

@@ -1,5 +1,9 @@
 import type { Vec3 } from '#@/src/geometry.ts';
+import { createCoverage, physicalTileSpan } from '#@/src/model/coverage.ts';
+import { shifted, vector } from '#@/src/model/placement.ts';
+import { supportBounds } from '#@/src/model/supports.ts';
 import type { Bounds } from '#@/src/scene-pack.ts';
+import type { PhysicalInput } from '#@/src/solver/physical.ts';
 
 /** Fixed preparation scopes, independent of query selection. The southern
  * metre in map02 retains complete body coverage at the authored rope trigger. */
@@ -39,3 +43,44 @@ export const anchors: Record<string, { position: Vec3; source: string }[]> = {
     { position: [-772.464, 232.929, -1594.749], source: 'static-gap/west' },
   ],
 };
+
+const placementHints: Record<
+  string,
+  {
+    layout: { device: string; position: Vec3 }[];
+    anchors: Vec3[];
+    source: string;
+  }[]
+> = {
+  map01: [
+    {
+      layout: [{ device: '300001708', position: [327.5, 26.851648043847263, -646.5] }],
+      anchors: [[327, 28.253298509781267, -645.2]],
+      // Flat terrain 4279771580 supports the translated source box; mesh
+      // 474682448 supplies the upper ledge. The anchor is the placed box edge contact.
+      source: 'collision/4279771580+474682448;following/300001708',
+    },
+  ],
+};
+
+/** Admit fixed scene annotations only when original and selected box bodies
+ * are fully covered. Native construction still proves placement and motion. */
+export function placementAnnotations(scene: string, physical: PhysicalInput, bounds: Bounds) {
+  const tiles = physical.ground.tiles;
+  if (!tiles) return [];
+  const covered = createCoverage({ bounds, tiles, tileSpan: physicalTileSpan });
+  return (placementHints[scene] ?? []).filter(
+    (hint) =>
+      hint.layout.every((placement) => {
+        const support = physical.devices?.followingSupports?.find((s) => s.id === placement.device);
+        if (!support) return false;
+        const delta = vector((axis) => placement.position[axis] - support.spawn[axis]);
+        return support.bodies.every((body) => {
+          const original = supportBounds([body]);
+          const selected = supportBounds([body.map((point) => shifted(point, delta))]);
+          return covered(original.min, original.max) && covered(selected.min, selected.max);
+        });
+      }) &&
+      hint.anchors.every((point) => covered(point, point, physical.ground.options.profile.radius)),
+  );
+}

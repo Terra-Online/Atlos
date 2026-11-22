@@ -230,6 +230,12 @@ impl World {
         result.roofs = Arc::new(roofs);
         result
     }
+    pub(super) fn box_bounds(&self) -> Vec<Bounds> {
+        self.box_bodies
+            .iter()
+            .map(|body| Bounds::points(body))
+            .collect()
+    }
     pub(super) fn box_contacts(&self) -> Vec<Point> {
         let margin = self.physical.ground.options.profile.radius + 0.5;
         self.box_bodies
@@ -695,7 +701,9 @@ impl World {
         })
     }
     pub fn action(&self, a: Point, b: Point) -> Option<Segment> {
-        self.walk(a, b).or_else(|| self.jump(a, b, None))
+        self.walk(a, b)
+            .or_else(|| self.drop(a, b))
+            .or_else(|| self.jump(a, b, None))
     }
     pub fn goals(&self, query: &Query) -> Vec<Point> {
         let Some(interaction) = &query.interaction else {

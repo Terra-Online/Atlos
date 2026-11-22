@@ -90,7 +90,7 @@ impl Engine {
                     let next = cost + action.cost();
                     if next < costs[from] {
                         costs[from] = next;
-                        suffix[from] = Some((node, action.clone()));
+                        suffix[from] = Some((node, action.as_ref().clone()));
                         queue.push(Label {
                             node: from,
                             cost: next,
@@ -212,7 +212,7 @@ impl Engine {
                             cost,
                             node: edge.to,
                         });
-                        previous[edge.to] = Some((node, edge.action.clone()));
+                        previous[edge.to] = Some((node, edge.action.as_ref().clone()));
                     }
                 }
             }

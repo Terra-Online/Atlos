@@ -132,7 +132,46 @@ impl World {
         model.start_horizontal_speed = model
             .start_horizontal_speed
             .map(|speed| speed.min(model.max_horizontal_speed));
-        self.collect_with_model(start, goal, interaction, model)
+        self.collect_drop(start, goal, interaction, model.clone())
+            .or_else(|| self.collect_with_model(start, goal, interaction, model))
+    }
+
+    fn collect_drop(
+        &self,
+        start: Point,
+        goal: Point,
+        interaction: &Interaction,
+        model: Model,
+    ) -> Option<Segment> {
+        let half_height = interaction
+            .radius
+            .min(interaction.max_vertical.unwrap_or(f64::INFINITY));
+        let lower = goal[1] - half_height;
+        let upper = (start[1] - 1e-6).min(goal[1] + half_height);
+        if lower > upper || hit(start, start, goal, interaction).is_some() {
+            return None;
+        }
+        for y in [upper, goal[1].clamp(lower, upper), lower] {
+            let (fall, coast) = descent_times(&model, start[1] - y);
+            let duration = fall + coast;
+            if duration <= 0. || duration > 60. {
+                continue;
+            }
+            for target in collection_targets(start, goal, y, interaction) {
+                if horizontal(start, target) <= model.max_horizontal_speed * duration + 1e-9 {
+                    if let Some(action) = self.flight_mode(
+                        start,
+                        target,
+                        Some((&goal, interaction)),
+                        model.clone(),
+                        "drop",
+                    ) {
+                        return Some(action);
+                    }
+                }
+            }
+        }
+        None
     }
 
     pub fn collect_with_model(
@@ -234,21 +273,58 @@ impl World {
         collection: Option<(&Point, &Interaction)>,
         model: Model,
     ) -> Option<Segment> {
+        self.flight_mode(start, end, collection, model, "jump")
+    }
+
+    pub fn drop(&self, start: Point, end: Point) -> Option<Segment> {
+        if end[1] >= start[1] - 1e-6 {
+            return None;
+        }
+        let supported = self.standing(end)?;
+        if distance(supported, end) > 0.025 {
+            return None;
+        }
+        let mut model = self.physical.movement.model.clone();
+        model.max_horizontal_speed = model
+            .max_horizontal_speed
+            .min(self.physical.movement.run_air_speed);
+        model.start_horizontal_speed = model
+            .start_horizontal_speed
+            .map(|speed| speed.min(model.max_horizontal_speed));
+        let mut action = self.flight_mode(start, end, None, model, "drop")?;
+        // Optimized falls retain source provenance only when both endpoints
+        // still satisfy that authored pair's actual interaction volumes.
+        action.connection = crate::devices::drop_source(self, start, end);
+        Some(action)
+    }
+
+    fn flight_mode(
+        &self,
+        start: Point,
+        end: Point,
+        collection: Option<(&Point, &Interaction)>,
+        model: Model,
+        mode: &'static str,
+    ) -> Option<Segment> {
         if self.blocked(start, start, 0.) {
             return None;
         }
-        let peak = start[1] + model.max_jump_height;
-        if end[1] > peak || model.max_jump_height <= 0. {
+        let jumping = mode == "jump";
+        let peak = start[1] + if jumping { model.max_jump_height } else { 0. };
+        if end[1] > peak || (jumping && model.max_jump_height <= 0.) {
             return None;
         }
-        let velocity = lift_off_speed(&model);
-        let mut phases = vec![Phase {
-            y: start[1],
-            velocity,
-            acceleration: -model.gravity,
-            duration: velocity / model.gravity,
-        }];
-        if model.apex_time > 0. {
+        let mut phases = Vec::new();
+        if jumping {
+            let velocity = lift_off_speed(&model);
+            phases.push(Phase {
+                y: start[1],
+                velocity,
+                acceleration: -model.gravity,
+                duration: velocity / model.gravity,
+            });
+        }
+        if jumping && model.apex_time > 0. {
             phases.push(Phase {
                 y: peak,
                 velocity: 0.,
@@ -393,7 +469,7 @@ impl World {
         }
         Some(Segment {
             boost: None,
-            mode: "jump",
+            mode,
             points,
             times,
             connection: None,
@@ -402,7 +478,7 @@ impl World {
                 start,
                 end,
                 model,
-                control: Control { mode: "jump" },
+                control: Control { mode },
             }),
             gait: None,
             traversal: None,

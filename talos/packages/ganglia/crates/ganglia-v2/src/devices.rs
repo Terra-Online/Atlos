@@ -134,6 +134,61 @@ pub fn ropes(world: &World) -> Vec<Segment> {
         .collect()
 }
 
+pub fn drop_source(world: &World, start: Point, end: Point) -> Option<String> {
+    let facts = world.physical.devices.as_ref()?;
+    facts.ropes.iter().find_map(|rope| {
+        let lower = facts
+            .devices
+            .iter()
+            .find(|d| d.id == rope.bottom)?
+            .goal
+            .as_ref()?;
+        let upper = facts
+            .devices
+            .iter()
+            .find(|d| d.id == rope.top)?
+            .goal
+            .as_ref()?;
+        hit(start, start, upper.position, &upper.interaction)?;
+        hit(end, end, lower.position, &lower.interaction)?;
+        Some(format!("drop/{}/{}", rope.bottom, rope.top))
+    })
+}
+
+// Rope pairs are discovery hints for independently swept falls, never reverse climbs.
+pub fn rope_drops(world: &World) -> Vec<Segment> {
+    let Some(facts) = &world.physical.devices else {
+        return Vec::new();
+    };
+    let mut result = Vec::new();
+    for rope in &facts.ropes {
+        let Some(lower) = facts.devices.iter().find(|d| d.id == rope.bottom) else {
+            continue;
+        };
+        let Some(upper) = facts.devices.iter().find(|d| d.id == rope.top) else {
+            continue;
+        };
+        let (Some(bottom), Some(top)) = (&lower.goal, &upper.goal) else {
+            continue;
+        };
+        let starts = endpoints(world, upper, top);
+        let ends = endpoints(world, lower, bottom);
+        let mut best: Option<Segment> = None;
+        for start in starts {
+            for &end in &ends {
+                if let Some(mut action) = world.drop(start, end) {
+                    if best.as_ref().is_none_or(|old| action.cost() < old.cost()) {
+                        action.connection = Some(format!("drop/{}/{}", lower.id, upper.id));
+                        best = Some(action);
+                    }
+                }
+            }
+        }
+        result.extend(best);
+    }
+    result
+}
+
 pub struct Launches {
     pub edges: Vec<Segment>,
     pub terminals: Vec<(usize, Segment)>,

@@ -1,9 +1,60 @@
 use crate::{geometry::*, types::*, world::World};
-use std::collections::BTreeMap;
+use std::{
+    collections::{BTreeMap, HashMap},
+    sync::Arc,
+};
+
+// Lifetime is exactly one Engine::new. Only successful walks whose entire
+// support/capsule envelope misses every source and candidate box are reusable.
+// Failed actions stay layout-local: moving a box can open a previously blocked path.
+pub(super) struct WalkProofs {
+    affected: Index,
+    enabled: bool,
+    padding: f64,
+    height: f64,
+    walks: HashMap<[[u64; 3]; 2], Arc<Segment>>,
+    hits: usize,
+}
+impl WalkProofs {
+    pub fn new(bounds: Vec<Bounds>, profile: &Profile, enabled: bool) -> Self {
+        Self {
+            affected: Index::new(&bounds),
+            enabled,
+            // Walk projection can search +/-0.5m before finite-radius support
+            // refinement. One metre plus radius conservatively covers both.
+            padding: profile.radius + 1.,
+            height: profile.height,
+            walks: HashMap::new(),
+            hits: 0,
+        }
+    }
+    fn action(&mut self, world: &World, from: Point, to: Point) -> Option<Arc<Segment>> {
+        if !self.enabled {
+            return world.action(from, to).map(Arc::new);
+        }
+        let key = [from.map(f64::to_bits), to.map(f64::to_bits)];
+        if let Some(action) = self.walks.get(&key) {
+            self.hits += 1;
+            return Some(Arc::clone(action));
+        }
+        let action = Arc::new(world.action(from, to)?);
+        if action.mode == "walk" {
+            let mut bounds = Bounds::points(&action.points).expand(self.padding);
+            bounds.max[1] += self.height;
+            if !self.affected.query(bounds, |_| true) {
+                self.walks.insert(key, Arc::clone(&action));
+            }
+        }
+        Some(action)
+    }
+    pub fn stats(&self) -> (usize, usize) {
+        (self.walks.len(), self.hits)
+    }
+}
 
 pub(super) struct Edge {
     pub to: usize,
-    pub action: Segment,
+    pub action: Arc<Segment>,
 }
 pub(super) struct Backbone {
     pub nodes: Vec<Point>,
@@ -12,7 +63,12 @@ pub(super) struct Backbone {
     pub terminals: Vec<(Mark, Vec<(usize, Segment)>)>,
 }
 impl Backbone {
-    pub fn build(world: &World, marks: Vec<Mark>, anchors: Vec<Point>) -> Self {
+    pub fn build(
+        world: &World,
+        marks: Vec<Mark>,
+        anchors: Vec<Point>,
+        proofs: &mut WalkProofs,
+    ) -> Self {
         let profile = std::env::var_os("GANGLIA_PROFILE").is_some();
         let started = std::time::Instant::now();
         // Sparse interior representatives plus ledge samples. The lattice is a
@@ -80,6 +136,7 @@ impl Backbone {
         let launches = crate::devices::launches(world, &nodes, &marks);
         let devices: Vec<_> = crate::devices::ropes(world)
             .into_iter()
+            .chain(crate::devices::rope_drops(world))
             .chain(launches.edges)
             .chain(crate::devices::rides(world))
             .collect();
@@ -142,13 +199,16 @@ impl Backbone {
             nearby
                 .sort_unstable_by(|&j, &k| distance(a, nodes[j]).total_cmp(&distance(a, nodes[k])));
             for j in nearby.into_iter().take(24) {
-                if let Some(action) = world.action(a, nodes[j]) {
+                if let Some(action) = proofs.action(world, a, nodes[j]) {
                     edges[i].push(Edge { to: j, action });
                 }
             }
         }
         for (from, to, action) in devices {
-            edges[from].push(Edge { to, action });
+            edges[from].push(Edge {
+                to,
+                action: Arc::new(action),
+            });
         }
         let terminals = marks
             .into_iter()

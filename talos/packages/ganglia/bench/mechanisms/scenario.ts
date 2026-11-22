@@ -5,6 +5,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { loadPackedScene } from '#@/bench/adapters/ganglia-v1/packed-scene.ts';
 import {
   anchors,
+  placementAnnotations,
   preparationBounds as v2PreparationBounds,
 } from '#@/bench/adapters/ganglia-v2/annotations.ts';
 import { exercised, facilityAudit } from '#@/bench/mechanisms/assessment.ts';
@@ -231,8 +232,9 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
             try {
               if (!preparationBounds)
                 throw new Error('ganglia-v2 requires an authored preparation scope');
-              prepared = await scene.prepareSnapshot(preparationBounds, (physical) =>
-                prepareGangliaV2(
+              prepared = await scene.prepareSnapshot(preparationBounds, (physical) => {
+                const hints = placementAnnotations(source.scene, physical, preparationBounds);
+                return prepareGangliaV2(
                   setup.config as GangliaV2Config,
                   physical,
                   marks.filter(
@@ -242,9 +244,13 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
                       position[2] >= preparationBounds.min[1] &&
                       position[2] <= preparationBounds.max[1],
                   ),
-                  landmarks.map(({ position }) => position),
-                ),
-              );
+                  [
+                    ...landmarks.map(({ position }) => position),
+                    ...hints.flatMap((hint) => hint.anchors),
+                  ],
+                  hints.map((hint) => hint.layout),
+                );
+              });
             } catch (error) {
               await scene.input.resources.close?.();
               throw error;
