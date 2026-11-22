@@ -109,7 +109,6 @@ export interface Boundary {
 export interface Region extends Bounds {
   min: number[];
   max: number[];
-  id: string;
   component: number;
   boundaries: (Boundary & Bounds)[];
   surfaces: Surface[];
@@ -124,7 +123,6 @@ interface Candidate extends Pair {
   score: number;
 }
 interface Transfer {
-  key: string;
   a: Region;
   b: Region;
   ground: boolean;
@@ -590,7 +588,6 @@ export function findJumpConnections(
   }
   geometry.regions ??= (() => {
     const regions = Array.from({ length: topology.count }, (_, component): Region => ({
-      id: String(component),
       component,
       min: [Infinity, Infinity, Infinity],
       max: [-Infinity, -Infinity, -Infinity],
@@ -640,112 +637,134 @@ export function findJumpConnections(
     model.maxJumpHeight > 0 ? (model.startHorizontalSpeed ?? 0) : 0,
   );
   const travelAt = (duration: number) => jumpTravel(initialSpeed, duration, model);
-  const transfers = new Map<string, Transfer>(),
-    groundIncoming = new Map<string, Set<Transfer>>();
-  const transfer = (a: Region, b: Region, ground: boolean, reach: number): Transfer => {
-    const key = `${a.id}/${b.id}`;
-    if (transfers.has(key)) return transfers.get(key)!;
-    const gap = horizontalGap(a, b);
-    // This optimistic ordering favours short chains; it is never a travel-time
-    // proof or a grant of access through the overlapping region bounds.
-    const entry = {
-      key,
-      a,
-      b,
-      ground,
-      reach,
-      closed: false,
-      cost: ground ? 0 : 1 + gap / Math.max(1, model.maxHorizontalSpeed),
-    };
-    transfers.set(key, entry);
-    return entry;
+  const jumpOptions = {
+    ...model,
+    mode: model.maxJumpHeight > 0 ? 'jump' : 'drop',
+  } satisfies Parameters<typeof jumpDuration>[2];
+  const reachAtDrop = (drop: number) => {
+    const duration = jumpDuration(drop, 0, jumpOptions);
+    return duration === null ? null : Math.min(maxHorizontalDistance, travelAt(duration));
   };
-  for (const [fromComp, toComp] of groundTransfers) {
-    const a = regions[fromComp],
-      b = regions[toComp];
-    const entries = groundIncoming.get(b.id) ?? new Set<Transfer>();
-    entries.add(transfer(a, b, true, 0));
-    groundIncoming.set(b.id, entries);
-  }
+  let cappedReach: number | null | undefined;
+  // Costs order optimistic chains. Every airborne step still needs motion validation.
+  const orderingSpeed = Math.max(1, model.maxHorizontalSpeed);
+  let regionPairs = 0;
+  const groundIncoming: (Map<number, Transfer> | undefined)[] = [];
+  const addGroundTransfer = (from: number, to: number) => {
+    const entries = (groundIncoming[to] ??= new Map());
+    if (entries.has(from)) return;
+    entries.set(from, {
+      a: regions[from],
+      b: regions[to],
+      ground: true,
+      reach: 0,
+      closed: false,
+      cost: 0,
+    });
+    regionPairs++;
+  };
+  for (const [from, to] of groundTransfers) addGroundTransfer(from, to);
   // Known actions must also join intermediate proposal regions. Source closure
   // alone cannot discover a jump into a ride followed by another jump out of it.
   // Keep their direction without merging the underlying ground components.
   if (intermediateActions)
     for (const [from, destinations] of extraForward)
       for (const to of destinations) {
-        const a = regions[topology.components[from]],
-          b = regions[topology.components[to]];
-        if (a === b) continue;
-        const entries = groundIncoming.get(b.id) ?? new Set<Transfer>();
-        entries.add(transfer(a, b, true, 0));
-        groundIncoming.set(b.id, entries);
+        const source = topology.components[from],
+          target = topology.components[to];
+        if (source !== target) addGroundTransfer(source, target);
       }
-  const incoming = new Map<string, Transfer[]>(),
-    preparedIncoming = new Map<string, Transfer[]>();
+  const incoming: (Transfer[] | undefined)[] = [],
+    preparedIncoming: (Transfer[] | undefined)[] = [];
   const pairingAvailable = () =>
     diagnostics.neighbourChecks < diagnostics.limits.neighbourChecks &&
     diagnostics.pairChecks < diagnostics.limits.pairChecks;
   const generationAvailable = () =>
     diagnostics.seedChecks < diagnostics.limits.seedChecks && pairingAvailable();
   const neighbours = (b: Region): Transfer[] => {
+    const component = b.component;
+    const ground = groundIncoming[component];
     if (!generationAvailable())
-      return [...(groundIncoming.get(b.id) ?? []), ...(preparedIncoming.get(b.id) ?? [])];
-    if (incoming.has(b.id)) return incoming.get(b.id)!;
-    const entries = [...(groundIncoming.get(b.id) ?? [])];
-    const bounds = {
-      min: [
+      return [...(ground?.values() ?? []), ...(preparedIncoming[component] ?? [])];
+    const cached = incoming[component];
+    if (cached) return cached;
+    const entries = [...(ground?.values() ?? [])];
+    // Keep the original tree and hit order: tied chains can spend the search
+    // budget on different candidates if boundary-less regions are removed before indexing.
+    if (b.boundaries.length)
+      queryRegions.forEachBox(
         b.min[0] - maxHorizontalDistance,
         b.min[1] - model.maxJumpHeight - 2 * endpointTolerance,
         b.min[2] - maxHorizontalDistance,
-      ],
-      max: [
         b.max[0] + maxHorizontalDistance,
         b.max[1] + maxDrop + 2 * endpointTolerance,
         b.max[2] + maxHorizontalDistance,
-      ],
-    };
-    for (const a of queryRegions(bounds)) {
-      if (a === b || !a.boundaries.length || !b.boundaries.length) continue;
-      const drop = Math.min(maxDrop, a.max[1] - b.min[1] + 2 * endpointTolerance);
-      if (-drop > model.maxJumpHeight || a.min[1] - b.max[1] - 2 * endpointTolerance > maxDrop)
-        continue;
-      const duration = jumpDuration(drop, 0, {
-        ...model,
-        mode: model.maxJumpHeight > 0 ? 'jump' : 'drop',
-      });
-      const reach = duration === null ? 0 : Math.min(maxHorizontalDistance, travelAt(duration));
-      if (duration !== null && horizontalGap(a, b) <= reach)
-        entries.push(transfer(a, b, false, reach));
-    }
-    incoming.set(b.id, entries);
-    diagnostics.regionPairs = transfers.size;
+        (a) => {
+          if (a === b || !a.boundaries.length) return;
+          const drop = Math.min(maxDrop, a.max[1] - b.min[1] + 2 * endpointTolerance);
+          if (-drop > model.maxJumpHeight || a.min[1] - b.max[1] - 2 * endpointTolerance > maxDrop)
+            return;
+          // Many pairs share the capped drop. Keep the exact reach for seed admission.
+          let reach: number | null;
+          if (Object.is(drop, maxDrop)) {
+            if (cappedReach === undefined) cappedReach = reachAtDrop(drop);
+            reach = cappedReach;
+          } else {
+            reach = reachAtDrop(drop);
+          }
+          if (reach === null) return;
+          const gap = horizontalGap(a, b);
+          if (!(gap <= reach)) return;
+          // Each destination is scanned once. Reuse any directed ground transfer
+          // already admitted for the pair, otherwise the incoming list owns it.
+          const existing = ground?.get(a.component);
+          if (existing) entries.push(existing);
+          else {
+            entries.push({
+              a,
+              b,
+              ground: false,
+              reach,
+              closed: false,
+              cost: 1 + gap / orderingSpeed,
+            });
+            regionPairs++;
+          }
+        },
+      );
+    incoming[component] = entries;
+    diagnostics.regionPairs = regionPairs;
     return entries;
   };
+  const costs = new Float64Array(regions.length);
+  const next: (Transfer | undefined)[] = [];
   const findChain = (): Transfer[] | null => {
-    const pending = createMinHeap<{ region: Region; travelled: number; cost: number }>(),
-      costs = new Map<string, number>(),
-      next = new Map<string, Transfer>();
+    const pending = createMinHeap<{ region: Region; cost: number }>();
+    costs.fill(Infinity);
+    // Every reached component overwrites its successor on insertion. Reset
+    // target roots as well so chains cannot follow successors from an earlier search.
     for (const component of targetComponents) {
-      const region = regions[component];
-      costs.set(region.id, 0);
-      pending.push({ region, travelled: 0, cost: 0 });
+      costs[component] = 0;
+      next[component] = undefined;
+      pending.push({ region: regions[component], cost: 0 });
     }
     while (pending.size) {
-      const { region, travelled } = pending.pop()!;
-      if (travelled !== costs.get(region.id)) continue;
+      const { region, cost: travelled } = pending.pop()!;
+      if (travelled !== costs[region.component]) continue;
       if (sourceComponents.has(region.component)) {
-        const chain = [];
-        for (let entry = next.get(region.id); entry; entry = next.get(entry.b.id))
+        const chain: Transfer[] = [];
+        for (let entry = next[region.component]; entry; entry = next[entry.b.component])
           chain.push(entry);
         return chain;
       }
       for (const entry of neighbours(region)) {
         if (entry.closed) continue;
         const cost = travelled + entry.cost;
-        if (cost >= (costs.get(entry.a.id) ?? Infinity)) continue;
-        costs.set(entry.a.id, cost);
-        next.set(entry.a.id, entry);
-        pending.push({ region: entry.a, travelled: cost, cost });
+        const component = entry.a.component;
+        if (cost >= costs[component]) continue;
+        costs[component] = cost;
+        next[component] = entry;
+        pending.push({ region: entry.a, cost });
       }
     }
     return null;
@@ -922,7 +941,7 @@ export function findJumpConnections(
       const duration = jumpDuration(
         start[1] + endpointTolerance,
         Math.max(b.min[1] - endpointTolerance, start[1] + endpointTolerance - maxDrop),
-        { ...model, mode: model.maxJumpHeight > 0 ? 'jump' : 'drop' },
+        jumpOptions,
       );
       if (duration === null) continue;
       const reach = Math.min(maxHorizontalDistance, travelAt(duration));
@@ -1027,10 +1046,11 @@ export function findJumpConnections(
         diagnostics.rejected.range++;
         continue;
       }
-      const duration = jumpDuration(start[1] + endpointTolerance, end[1] - endpointTolerance, {
-        ...model,
-        mode: model.maxJumpHeight > 0 ? 'jump' : 'drop',
-      });
+      const duration = jumpDuration(
+        start[1] + endpointTolerance,
+        end[1] - endpointTolerance,
+        jumpOptions,
+      );
       if (duration === null || span > travelAt(duration)) {
         diagnostics.rejected.range++;
         continue;
@@ -1040,10 +1060,7 @@ export function findJumpConnections(
       const landingKey = end.map((value) => Math.floor(value / diversity)).join('/');
       const destinations = buckets.get(launch) ?? new Map<string, Candidate[]>();
       const bucket = destinations.get(landingKey) ?? [];
-      const nominal = jumpDuration(start[1], end[1], {
-        ...model,
-        mode: model.maxJumpHeight > 0 ? 'jump' : 'drop',
-      });
+      const nominal = jumpDuration(start[1], end[1], jumpOptions);
       bucket.push({
         start,
         end,
@@ -1093,9 +1110,7 @@ export function findJumpConnections(
     const { a, b } = entry;
     if (!entry.search) {
       entry.search = { candidates: [], cursor: 0, tried: new Set<string>() };
-      const entries = preparedIncoming.get(b.id) ?? [];
-      entries.push(entry);
-      preparedIncoming.set(b.id, entries);
+      (preparedIncoming[b.component] ??= []).push(entry);
     }
     const search = entry.search,
       firstAttempt = diagnostics.attempted;
@@ -1168,7 +1183,7 @@ export function findJumpConnections(
           continue;
         }
         return {
-          id: `traversal/${a.id}/${b.id}`,
+          id: `traversal/${a.component}/${b.component}`,
           ...arc,
           state: 'open',
           endpointTolerance,
@@ -1193,7 +1208,7 @@ export function findJumpConnections(
     }
     return null;
   };
-  const validated = new Set<string>();
+  const validated = new Set<Transfer>();
   let goalFirst = false;
   while (
     connections.length < maxLinks &&
@@ -1208,7 +1223,7 @@ export function findJumpConnections(
     // keep source-first admission; later zero-arc failures must also rotate so
     // one side cannot consume every remaining region search.
     for (const entry of goalFirst ? [...chain].reverse() : chain) {
-      if (entry.ground || validated.has(entry.key)) continue;
+      if (entry.ground || validated.has(entry)) continue;
       const connection = validate(entry);
       diagnostics.pairBatches++;
       if (!connection) {
@@ -1221,12 +1236,12 @@ export function findJumpConnections(
         break;
       }
       diagnostics.validatedPairs++;
-      validated.add(entry.key);
+      validated.add(entry);
       connections.push(connection);
       diagnostics.accepted++;
       if (connections.length >= maxLinks) break;
     }
-    if (complete && chain.every((entry) => entry.ground || validated.has(entry.key))) {
+    if (complete && chain.every((entry) => entry.ground || validated.has(entry))) {
       diagnostics.targetReached = true;
       break;
     }

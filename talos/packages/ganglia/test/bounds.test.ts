@@ -86,10 +86,17 @@ test('median partitions preserve overlapping, coincident and elongated bounds wi
         ),
       )
       .map((entry) => entry.id);
+    const hits = [...query(bounds)];
     assert.deepEqual(
-      [...query(bounds)].map((entry) => entry.id).sort((a, b) => a - b),
+      hits.map((entry) => entry.id).sort((a, b) => a - b),
       expected,
     );
+    const visited: typeof hits = [];
+    const { min, max } = bounds;
+    query.forEachBox(min[0], min[1], min[2], max[0], max[1], max[2], (entry) => {
+      visited.push(entry);
+    });
+    assert.deepEqual(visited, hits);
   }
   assert.deepEqual(entries, original);
 });
