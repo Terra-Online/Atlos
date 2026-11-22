@@ -781,4 +781,31 @@ test('overlay planners sharing one basePlanner reuse static traces while still e
   const route4 = overlay4.plan(origin, b, { connections: [idle] });
   assert.deepEqual(route4, route2);
   assert.equal(staticTraceCalls, callsAfterLayout2);
+
+  // Layout 5: nested overlays (outer over middle over root) reuse the root cache once per pair.
+  const middleRoof = floor('following/mid/0', -3.5, -2.5, 1.2, 2.5, 3.5);
+  const middleOverlay = createOverlayGroundPlanner(
+    basePlanner,
+    [...grid, middleRoof],
+    [middleRoof],
+    [],
+    baseOptions,
+  );
+  const outer1 = createOverlayGroundPlanner(
+    middleOverlay,
+    [...grid, middleRoof, roof1],
+    [roof1],
+    [wall1],
+    { ...baseOptions, walls: [wall1] },
+  );
+  const outer2 = createOverlayGroundPlanner(
+    middleOverlay,
+    [...grid, middleRoof, roof2],
+    [roof2],
+    [wall2],
+    { ...baseOptions, walls: [wall2] },
+  );
+  assert.deepEqual(groundPreparation(outer1)!.straighten.trace(a, b), [a, b]);
+  assert.equal(groundPreparation(outer2)!.straighten.trace(a, b), null);
+  assert.equal(staticTraceCalls, callsAfterLayout2);
 });

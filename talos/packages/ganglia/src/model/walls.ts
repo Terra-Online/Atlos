@@ -283,6 +283,11 @@ const touchesWall = (start: Vec3, end: Vec3, record: WallRecord, inflation = 0) 
     return false;
   return touchesWallAfterBounds(start, end, record, inflation);
 };
+/** Wall segment collision predicate, optionally tagged as unconditionally false when empty. */
+export type WallChecker = ((start: Vec3, end: Vec3, inflation?: number) => boolean) & {
+  readonly empty?: true;
+};
+
 /** Snapshot and validate exclusions for repeated feet-segment queries with one body.
  * Expanded 3D bounds include padding and all authored polyline/polygon vertices.
  * Optional spheres retain their round occupied volume, including initial overlap.
@@ -290,7 +295,7 @@ const touchesWall = (start: Vec3, end: Vec3, record: WallRecord, inflation = 0) 
  * including inactive records, is validated before any query can return a hit.
  * Optional query inflation expands the indexed body uniformly for curved sweeps.
  */
-export function createWallChecker(walls: Wall[], profile: Profile) {
+export function createWallChecker(walls: Wall[], profile: Profile): WallChecker {
   validateProfile(profile);
   const records: WallRecord[] = [];
   for (const wall of walls) {
@@ -299,11 +304,19 @@ export function createWallChecker(walls: Wall[], profile: Profile) {
   }
   const count = records.length;
   if (count === 0) {
-    return (start: Vec3, end: Vec3, inflation = 0) => {
-      if (!finitePoint(start) || !finitePoint(end) || !Number.isFinite(inflation) || inflation < 0)
-        throw new Error('Invalid wall query');
-      return false;
-    };
+    return Object.assign(
+      (start: Vec3, end: Vec3, inflation = 0) => {
+        if (
+          !finitePoint(start) ||
+          !finitePoint(end) ||
+          !Number.isFinite(inflation) ||
+          inflation < 0
+        )
+          throw new Error('Invalid wall query');
+        return false;
+      },
+      { empty: true as const },
+    );
   }
 
   // Flat TypedArray BVH over active wall records for zero-allocation queries

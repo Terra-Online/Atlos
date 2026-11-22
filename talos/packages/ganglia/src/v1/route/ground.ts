@@ -326,27 +326,46 @@ function assembleGroundPlanner(parts: PlannerParts): GroundPlanner {
   const visibility = new Map<string, Map<string, Vec3[]>>();
   const failedVisibility = new Map<string, Set<string>>();
   let endpointKeys = new Map<string, string>();
-  // Bounded LRU cache of static straightener.trace results shared across overlay
-  // layouts that use this planner as basePrep. Callers treat returned arrays read-only.
-  let staticTraceCache: Map<string, Vec3[] | null> | undefined;
-  const traceStatic = (start: Vec3, end: Vec3): Vec3[] | null => {
-    if (!finiteVec3(start) || !finiteVec3(end))
-      throw new Error('Invalid ground visibility endpoints');
-    const key = `${Object.is(start[0], -0) ? '-0' : start[0]},${Object.is(start[1], -0) ? '-0' : start[1]},${Object.is(start[2], -0) ? '-0' : start[2]}|${Object.is(end[0], -0) ? '-0' : end[0]},${Object.is(end[1], -0) ? '-0' : end[1]},${Object.is(end[2], -0) ? '-0' : end[2]}`;
-    if (staticTraceCache?.has(key)) {
-      const cached = staticTraceCache.get(key)!;
-      staticTraceCache.delete(key);
-      staticTraceCache.set(key, cached);
-      return cached;
+  // Bounded two-level cache of root static straightener.trace results shared across
+  // overlay layouts. Overlay planners delegate directly to avoid double-caching.
+  // Callers treat returned arrays read-only.
+  const STATIC_TRACE_LIMIT = 65536;
+  let staticTraceCache: Map<string, Map<string, Vec3[] | null>> | undefined;
+  let staticTraceCount = 0;
+  const pointKeyCache = new WeakMap<Vec3, { x: number; y: number; z: number; key: string }>();
+  const pointKey = (point: Vec3): string => {
+    const cached = pointKeyCache.get(point);
+    if (cached && cached.x === point[0] && cached.y === point[1] && cached.z === point[2]) {
+      return cached.key;
     }
-    const traced = straighten.trace(start, end);
-    staticTraceCache ??= new Map<string, Vec3[] | null>();
-    if (staticTraceCache.size >= 8192) {
-      staticTraceCache.delete(staticTraceCache.keys().next().value!);
-    }
-    staticTraceCache.set(key, traced);
-    return traced;
+    if (!finiteVec3(point)) throw new Error('Invalid ground visibility endpoints');
+    const key = `${point[0]},${point[1]},${point[2]}`;
+    pointKeyCache.set(point, { x: point[0], y: point[1], z: point[2], key });
+    return key;
   };
+  const traceStatic = overlay
+    ? (start: Vec3, end: Vec3): Vec3[] | null => straighten.trace(start, end)
+    : (start: Vec3, end: Vec3): Vec3[] | null => {
+        const startKey = pointKey(start);
+        const endKey = pointKey(end);
+        let row = staticTraceCache?.get(startKey);
+        if (row?.has(endKey)) return row.get(endKey)!;
+        const traced = straighten.trace(start, end);
+        staticTraceCache ??= new Map<string, Map<string, Vec3[] | null>>();
+        while (staticTraceCount >= STATIC_TRACE_LIMIT && staticTraceCache.size > 0) {
+          const oldestKey = staticTraceCache.keys().next().value!;
+          staticTraceCount -= staticTraceCache.get(oldestKey)!.size;
+          staticTraceCache.delete(oldestKey);
+          if (oldestKey === startKey) row = undefined;
+        }
+        if (!row) {
+          row = new Map<string, Vec3[] | null>();
+          staticTraceCache.set(startKey, row);
+        }
+        row.set(endKey, traced);
+        staticTraceCount++;
+        return traced;
+      };
   const planRoute = (
     starts: GroundArrival[],
     goal: Vec3,

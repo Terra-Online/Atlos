@@ -1,5 +1,5 @@
 import type { Vec3, Wall } from '#@/src/geometry.ts';
-import { createWallChecker } from '#@/src/model/walls.ts';
+import { createWallChecker, type WallChecker } from '#@/src/model/walls.ts';
 import type { MovementMode, Segment, LocomotionOptions } from '#@/src/movement.ts';
 import type { Route } from '#@/src/route.ts';
 import { validateMotion, routeSegment } from '#@/src/v1/motion/motion.ts';
@@ -59,7 +59,7 @@ interface Index<V> {
 export interface RouteBase {
   nodes: Index<Vec3>;
   edges: Index<Edge[]>;
-  blocked: ReturnType<typeof createWallChecker> | null;
+  blocked: WallChecker | null;
 }
 interface PreparedGraph extends RouteBase {
   maxSpeed: number;
@@ -202,11 +202,13 @@ export function prepareOverlayRoutePlanner(
   extraBlocked: RouteBase['blocked'],
 ): ReturnType<typeof prepareRoutePlanner> {
   const baseBlocked = baseRouteBase.blocked;
+  const activeBase = baseBlocked && !baseBlocked.empty ? baseBlocked : null;
+  const activeExtra = extraBlocked && !extraBlocked.empty ? extraBlocked : null;
   const combinedBlocked: RouteBase['blocked'] =
-    baseBlocked && extraBlocked
+    activeBase && activeExtra
       ? (start, end, inflation = 0) =>
-          baseBlocked(start, end, inflation) || extraBlocked(start, end, inflation)
-      : (baseBlocked ?? extraBlocked);
+          activeBase(start, end, inflation) || activeExtra(start, end, inflation)
+      : (activeBase ?? activeExtra ?? baseBlocked ?? extraBlocked);
 
   const ownNodes = new Map<string, Vec3>();
   for (let i = 0; i < extraGraph.nodes.length; i++) {
@@ -457,7 +459,9 @@ function prepareGraph(
   // still validating all walls/profile via createWallChecker above.
   const checkBlocked =
     base !== undefined
-      ? blocked
+      ? blocked && !blocked.empty
+        ? blocked
+        : null
       : constraints && constraints.walls.some((wall) => wall.state !== 'inactive')
         ? blocked
         : null;

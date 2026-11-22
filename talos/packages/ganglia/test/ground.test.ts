@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import type { Portal, Surface, Vec3, Wall } from '#@/src/geometry.ts';
+import { createWallChecker } from '#@/src/model/walls.ts';
 import type { GroundArrival, GroundConnection, GroundOptions } from '#@/src/route.ts';
 import { surfaceGraph } from '#@/src/v1/geo/surfaces.ts';
 import { createGroundPlanner, planGroundRoute, groundPreparation } from '#@/src/v1/route/ground.ts';
@@ -931,4 +932,14 @@ test('createGroundPlanner incremental wall overlay matches full prepareRoutePlan
       }),
     /Invalid wall query/,
   );
+
+  // 8. Empty wall checker carries .empty so unwalled->walled overlays do not wrap no-ops.
+  const emptyChecker = createWallChecker([], baseProfile);
+  assert.equal(emptyChecker.empty, true);
+  assert.equal(emptyChecker([1, 0, 1], [11, 0, 1]), false);
+  const walledPlanner = createGroundPlanner(grid, { ...baseOpts, walls: [rawWall] });
+  const walledBlocked = groundPreparation(walledPlanner)!.routeBase.blocked!;
+  assert.equal(walledBlocked.empty, undefined);
+  assert.equal(walledBlocked([1, 0, 1], [11, 0, 1]), true);
+  assert.equal(walledBlocked([5, 0, 7], [7, 0, 7]), false);
 });
