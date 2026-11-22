@@ -82,8 +82,7 @@ impl Engine {
             .as_ref()
             .filter(|i| terminal && i.airborne)
         {
-            self.world
-                .jump(start, query.goal, Some((&query.goal, interaction)))
+            self.world.collect(start, query.goal, interaction)
         } else {
             self.world.action(start, end)
         }

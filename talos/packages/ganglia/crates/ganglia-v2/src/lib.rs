@@ -1,4 +1,5 @@
 mod backbone;
+mod devices;
 mod flight;
 mod geometry;
 #[cfg(feature = "napi")]
@@ -6,6 +7,7 @@ mod native;
 mod optimize;
 mod search;
 mod types;
+mod walls;
 mod world;
 
 use geometry::*;
@@ -71,8 +73,23 @@ impl Engine {
             return Err("Invalid optimization policy".into());
         }
         let world = World::new(input.physical)?;
-        let backbone = backbone::Backbone::build(&world, input.marks);
-        let stats = json!({"backboneBuildMs":started.elapsed().as_secs_f64()*1000.,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>()});
+        let anchor_supports: Vec<_> = input
+            .anchors
+            .iter()
+            .map(|&position| {
+                let feet = world
+                    .standing(position)
+                    .filter(|&p| !world.blocked(p, p, 0.));
+                json!({"position":position,"feet":feet})
+            })
+            .collect();
+        let backbone = backbone::Backbone::build(&world, input.marks, input.anchors);
+        let bounds = (!backbone.nodes.is_empty()).then(|| Bounds::points(&backbone.nodes));
+        let stats = json!({"backboneBuildMs":started.elapsed().as_secs_f64()*1000.,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),
+            "anchorSupports":anchor_supports,
+            "nodeBounds":bounds.map(|b|json!({"min":b.min,"max":b.max})),
+            "markedTargets":backbone.terminals.iter().map(|(mark,edges)|json!({"position":mark.position,"connections":edges.len()})).collect::<Vec<_>>(),
+            "ropeConnections":backbone.edges.iter().flatten().filter_map(|edge|edge.action.connection.as_ref()).collect::<Vec<_>>()});
         Ok(Self {
             world,
             backbone,
@@ -90,12 +107,13 @@ impl Engine {
     pub fn solve(&self, query: &str) -> Result<Value, String> {
         let query: Query = serde_json::from_str(query).map_err(|e| e.to_string())?;
         let started = Instant::now();
-        let mut population = self.initialize(&query);
+        let mut initialization = json!({});
+        let mut population = self.initialize(&query, &mut initialization);
         let initialization_ms = started.elapsed().as_secs_f64() * 1000.;
         optimize::select(&mut population, self.config.population_size);
         let initial_cost = population.first().map(Candidate::cost);
         let rounds = self.optimize(&mut population, &query);
-        let diagnostics = json!({"truncated":self.cancelled.load(Ordering::Relaxed),"v2":{"backboneBuildMs":self.stats["backboneBuildMs"],"nodeCount":self.backbone.nodes.len(),"edgeCount":self.stats["edgeCount"],"initializationMs":initialization_ms,"initialCost":initial_cost,"rounds":rounds,"seed":self.config.seed}});
+        let diagnostics = json!({"truncated":self.cancelled.load(Ordering::Relaxed),"v2":{"backboneBuildMs":self.stats["backboneBuildMs"],"nodeCount":self.backbone.nodes.len(),"edgeCount":self.stats["edgeCount"],"initializationMs":initialization_ms,"initialization":initialization,"initialCost":initial_cost,"rounds":rounds,"seed":self.config.seed}});
         let Some(best) = population.first() else {
             return Ok(
                 json!({"route":{"status":"no-verified-route"},"connections":[],"diagnostics":diagnostics,"reason":"No feasible route in the prepared backbone"}),

@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
+import type { Vec3 } from '#@/src/geometry.ts';
 import type {
   PreparedRouteSolver,
   RouteQuery,
@@ -50,13 +51,14 @@ export async function prepareGangliaV2(
   config: GangliaV2Config,
   physical: PhysicalInput,
   marks: readonly NavigationMark[],
+  anchors: readonly Vec3[] = [],
 ): Promise<V2PreparedSolver> {
   const { NativeEngine } = createRequire(import.meta.url)(gangliaV2LibraryPath()) as {
     NativeEngine: new (input: string) => NativeEngine;
   };
   const settings = Object.freeze({ ...config });
   let engine: NativeEngine | undefined = new NativeEngine(
-    encode({ physical, marks, config: settings }),
+    encode({ physical, marks, anchors, config: settings }),
   );
   const stats = JSON.parse(engine.stats()) as Record<string, unknown>;
   let closing = false;

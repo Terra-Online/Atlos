@@ -6,6 +6,52 @@ struct Phase {
     acceleration: f64,
     duration: f64,
 }
+
+fn lift_off_speed(model: &Model) -> f64 {
+    (2. * model.gravity * model.max_jump_height).sqrt()
+}
+
+fn descent_times(model: &Model, fall: f64) -> (f64, f64) {
+    let terminal_time = model.max_falling_speed / model.falling_gravity;
+    let terminal_distance = model.max_falling_speed * terminal_time / 2.;
+    (
+        (2. * fall / model.falling_gravity)
+            .sqrt()
+            .min(terminal_time),
+        (fall - terminal_distance).max(0.) / model.max_falling_speed,
+    )
+}
+
+fn collection_targets(start: Point, goal: Point, y: f64, interaction: &Interaction) -> Vec<Point> {
+    let center = [goal[0], y, goal[2]];
+    let radius = (interaction.radius.powi(2) - (y - goal[1]).powi(2))
+        .max(0.)
+        .sqrt();
+    let length = horizontal(start, center);
+    let mut targets = Vec::new();
+    if length > 0. && radius > 0. {
+        let towards_start = [start[0], y, start[2]];
+        targets.push(lerp(
+            center,
+            towards_start,
+            (0.99 * radius / length).min(1.),
+        ));
+    }
+    targets.push(center);
+    if let (Some(facing), Some(angle)) = (interaction.facing, interaction.half_angle) {
+        let length = facing[0].hypot(facing[2]);
+        if radius > 0. && length > 0. {
+            for turn in [0., angle * 0.8, -angle * 0.8] {
+                let (sin, cos) = turn.to_radians().sin_cos();
+                let x = facing[0] * cos - facing[2] * sin;
+                let z = facing[0] * sin + facing[2] * cos;
+                targets.push(add(center, scale([x, 0., z], 0.7 * radius / length)));
+            }
+        }
+    }
+    targets
+}
+
 pub fn hit(a: Point, b: Point, goal: Point, interaction: &Interaction) -> Option<(f64, Point)> {
     let mut near: f64 = 0.;
     let mut far: f64 = 1.;
@@ -33,14 +79,15 @@ pub fn hit(a: Point, b: Point, goal: Point, interaction: &Interaction) -> Option
         if length == 0. {
             return None;
         }
+        let forward_x = facing[0] / length;
+        let forward_z = facing[2] / length;
         let (sin, cos) = angle.to_radians().sin_cos();
+        let cos = if angle == 90. { 0. } else { cos };
         for sign in [-1., 1.] {
             let plane = |p: Point| {
                 let x = p[0] - goal[0];
                 let z = p[2] - goal[2];
-                ((x * facing[0] + z * facing[2]) * sin
-                    + sign * (x * facing[2] - z * facing[0]) * cos)
-                    / length
+                (x * forward_x + z * forward_z) * sin + sign * (x * forward_z - z * forward_x) * cos
             };
             if !clip(plane(a), plane(b)) {
                 return None;
@@ -64,10 +111,82 @@ pub fn hit(a: Point, b: Point, goal: Point, interaction: &Interaction) -> Option
     if fraction > far.min((-l + root) / q) + 1e-9 {
         return None;
     }
-    let fraction = (fraction + 1e-12).min(far);
+    let fraction = fraction.min(far);
     Some((fraction, lerp(a, b, fraction)))
 }
 impl World {
+    pub fn collect(&self, start: Point, goal: Point, interaction: &Interaction) -> Option<Segment> {
+        let movement = &self.physical.movement;
+        let model = &movement.model;
+        let peak = start[1] + model.max_jump_height;
+        let half_height = interaction
+            .radius
+            .min(interaction.max_vertical.unwrap_or(f64::INFINITY));
+        let lower = goal[1] - half_height;
+        let upper = peak.min(goal[1] + half_height);
+        if model.max_jump_height <= 0.
+            || lower > upper
+            || self.blocked(start, start, 0.)
+            || hit(start, start, goal, interaction).is_some()
+        {
+            return None;
+        }
+        let speed = model.max_horizontal_speed.min(movement.run_air_speed);
+        let lift_off = lift_off_speed(model);
+        let apex_end = lift_off / model.gravity + model.apex_time;
+        // A sampled point in the goal volume can occur on ascent or descent.
+        // Project its horizontal velocity to the end of an authored jump; the
+        // sweep finds the first collection hit and checks only the flight prefix.
+        let mut witnesses = Vec::new();
+        let center = goal[1].min(upper);
+        let span = upper - lower;
+        let heights = [
+            center,
+            upper,
+            lower,
+            lower + span * 0.25,
+            lower + span * 0.5,
+            lower + span * 0.75,
+        ];
+        for (index, &y) in heights.iter().enumerate() {
+            if heights[..index].contains(&y) {
+                continue;
+            }
+            let fall = peak - y;
+            let rise = y - start[1];
+            let ascent = 2. * rise / (lift_off + (2. * model.gravity * fall).sqrt());
+            let (fall_time, coast_time) = descent_times(model, fall);
+            let descent = apex_end + fall_time + coast_time;
+            for target in collection_targets(start, goal, y, interaction) {
+                for (time, duration, end_y) in [(ascent, apex_end, peak), (descent, descent, y)] {
+                    if time <= 0. || duration > 60. {
+                        continue;
+                    }
+                    let dx = target[0] - start[0];
+                    let dz = target[2] - start[2];
+                    let distance = dx.hypot(dz);
+                    let reachable = (1. - 1e-12) * speed * time;
+                    let fraction = if distance > reachable {
+                        reachable / distance
+                    } else {
+                        1.
+                    };
+                    let point = [start[0] + dx * fraction, y, start[2] + dz * fraction];
+                    if hit(point, point, goal, interaction).is_some() {
+                        let scale = fraction * (duration / time);
+                        let end = [start[0] + dx * scale, end_y, start[2] + dz * scale];
+                        witnesses.push((time, end));
+                    }
+                }
+            }
+        }
+        witnesses.sort_by(|a, b| a.0.total_cmp(&b.0));
+        witnesses.dedup_by(|a, b| a.1 == b.1);
+        witnesses
+            .into_iter()
+            .find_map(|(_, end)| self.jump(start, end, Some((&goal, interaction))))
+    }
+
     pub fn jump(
         &self,
         start: Point,
@@ -86,7 +205,7 @@ impl World {
         if end[1] > peak || model.max_jump_height <= 0. {
             return None;
         }
-        let velocity = (2. * model.gravity * model.max_jump_height).sqrt();
+        let velocity = lift_off_speed(&model);
         let mut phases = vec![Phase {
             y: start[1],
             velocity,
@@ -102,24 +221,20 @@ impl World {
             });
         }
         let fall = peak - end[1];
-        let terminal_time = model.max_falling_speed / model.falling_gravity;
-        let terminal_distance = model.max_falling_speed * terminal_time / 2.;
         if fall > 0. {
-            let descent = (2. * fall / model.falling_gravity)
-                .sqrt()
-                .min(terminal_time);
+            let (descent, coast) = descent_times(&model, fall);
             phases.push(Phase {
                 y: peak,
                 velocity: 0.,
                 acceleration: -model.falling_gravity,
                 duration: descent,
             });
-            if fall > terminal_distance {
+            if coast > 0. {
                 phases.push(Phase {
-                    y: peak - terminal_distance,
+                    y: peak - model.max_falling_speed * descent / 2.,
                     velocity: -model.max_falling_speed,
                     acceleration: 0.,
-                    duration: (fall - terminal_distance) / model.max_falling_speed,
+                    duration: coast,
                 });
             }
         }
@@ -161,8 +276,33 @@ impl World {
                 let previous = *points.last().unwrap();
                 let mut hit_goal = false;
                 if let Some((goal, interaction)) = self.collection {
-                    if let Some((fraction, p)) = hit(previous, point, *goal, interaction) {
-                        point = p;
+                    if let Some((mut fraction, mut clipped)) =
+                        hit(previous, point, *goal, interaction)
+                    {
+                        // Preserve an inside witness across JSON and different
+                        // floating-point summation orders. This sub-micrometre
+                        // advance remains on the swept chord and within the
+                        // independent first-event tolerance.
+                        let advanced =
+                            (fraction + 1e-8 / distance(previous, point).max(1e-12)).min(1.);
+                        let inside = lerp(previous, point, advanced);
+                        if hit(inside, inside, *goal, interaction).is_some() {
+                            fraction = advanced;
+                            clipped = inside;
+                        }
+                        if hit(clipped, clipped, *goal, interaction).is_none() {
+                            // An interpolated entry can round outside the volume.
+                            // Advance slightly on the chord and require an inside witness.
+                            (fraction, clipped) = (0..=12)
+                                .map(|i| {
+                                    let t = (fraction + f64::EPSILON * (1 << i) as f64).min(1.);
+                                    (t, lerp(previous, point, t))
+                                })
+                                .find(|&(t, p)| {
+                                    t > fraction && hit(p, p, *goal, interaction).is_some()
+                                })?;
+                        }
+                        point = clipped;
                         let previous_time = *times.last().unwrap();
                         time = previous_time + fraction * (time - previous_time);
                         hit_goal = true;
@@ -219,6 +359,7 @@ impl World {
             mode: "jump",
             points,
             times,
+            connection: None,
             flight: Some(Flight {
                 kind: "flight",
                 start,

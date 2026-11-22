@@ -3,6 +3,10 @@ import { resolve } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 
 import { loadPackedScene } from '#@/bench/adapters/ganglia-v1/packed-scene.ts';
+import {
+  anchors,
+  preparationBounds as v2PreparationBounds,
+} from '#@/bench/adapters/ganglia-v2/annotations.ts';
 import { exercised, facilityAudit } from '#@/bench/mechanisms/assessment.ts';
 import { QueryInputError, resolveQuery, sourceSupportWorld } from '#@/bench/mechanisms/query.ts';
 import { checkSetup, type Case, readSuite } from '#@/bench/mechanisms/suite.ts';
@@ -40,13 +44,19 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
       ? { min: [source.bounds[0], source.bounds[1]], max: [source.bounds[2], source.bounds[3]] }
       : undefined;
   const v2 = setup.config.algorithm === 'ganglia-v2';
-  // This first-slice scope covers the western static bridge and wall area.
-  // It is authored before query selection: changing --ids never changes the
-  // backbone's physical input. Other dynamic scenarios need their own scope.
-  const preparationBounds: Bounds | undefined =
-    fixedBounds ??
-    (v2 && spec.id === 'map01-019' ? { min: [-704, -224], max: [-512, 64] } : undefined);
+  const preparationBounds: Bounds | undefined = v2
+    ? v2PreparationBounds(spec.id, fixedBounds)
+    : fixedBounds;
+  const loadedBounds = v2 ? preparationBounds : fixedBounds;
   const items = suite.cases.filter((c) => binding.ids.includes(c.id));
+  const landmarks = (anchors[source.scene] ?? []).filter(
+    ({ position }) =>
+      preparationBounds &&
+      position[0] >= preparationBounds.min[0] &&
+      position[0] <= preparationBounds.max[0] &&
+      position[2] >= preparationBounds.min[1] &&
+      position[2] <= preparationBounds.max[1],
+  );
   const catalog = JSON.parse(
     await readFile(resolve(binding.exports, `${source.scene}-traversal-devices.json`), 'utf8'),
   );
@@ -75,12 +85,12 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
     scene: source.scene,
     source: suite.source,
     memoryBudget: binding.memoryBudget,
-    fixedBounds,
+    fixedBounds: loadedBounds,
     hooks: {
       onProgress: checkpoint,
       transformInput: (raw) => {
-        if (fixedBounds && !isDeepStrictEqual(raw.ground.build?.bounds, fixedBounds))
-          throw new Error('Frozen physical bounds differ from the selected specification');
+        if (loadedBounds && !isDeepStrictEqual(raw.ground.build?.bounds, loadedBounds))
+          throw new Error('Physical bounds differ from the declared preparation scope');
         const audit = facilityAudit(raw, catalog);
         if (audit.staticImport !== 'matched')
           throw new Error(
@@ -211,6 +221,7 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
                       position[2] >= preparationBounds.min[1] &&
                       position[2] <= preparationBounds.max[1],
                   ),
+                  landmarks.map(({ position }) => position),
                 ),
               );
             } catch (error) {
@@ -230,6 +241,7 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
           },
           preparationStats: () => ({
             scope: preparationBounds,
+            landmarks,
             ...prepared?.preparationStats(),
           }),
         }
@@ -240,7 +252,7 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
         resolved,
         resolutions,
         resolutionErrors,
-        ...(v2 ? { preparationBounds } : {}),
+        ...(v2 ? { declaredBounds: fixedBounds, preparationBounds } : {}),
       },
     },
     inspectResult(query: RouteQuery, result: RouteResult) {

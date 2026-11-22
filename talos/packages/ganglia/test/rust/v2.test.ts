@@ -178,3 +178,187 @@ test('v2 observes an abort during native optimization and can accept another que
     await solver.close();
   }
 });
+
+test('v2 can use a collision-backed landmark omitted by navigation without forcing an edge', async () => {
+  const surfaces: Surface[] = [0, 7].map((x, i) => ({
+    id: `ledge/${i}`,
+    vertices: [
+      [x, 0, 0],
+      [x + 3, 0, 0],
+      [x + 3, 0, 3],
+      [x, 0, 3],
+    ],
+  }));
+  const triangles = surfaces.flatMap(({ vertices: v }) => [v[0], v[2], v[1], v[0], v[3], v[2]]);
+  const input = {
+    ...physical,
+    ground: { ...physical.ground, surfaces: [surfaces[0]] },
+    collision: { positions: triangles.flat(), indices: triangles.map((_, i) => i) },
+  };
+  const query: RouteQuery = {
+    starts: [{ id: 'player', position: [1, 0, 1.5], cost: 0, state: 'available' }],
+    goal: [9.5, 1.8, 1.5],
+    interaction: { radius: 0.2, airborne: true },
+  };
+  const marks = [{ position: query.goal, interaction: query.interaction! }];
+  const omitted = await prepareGangliaV2(gangliaV2Defaults, input, marks);
+  try {
+    assert.equal((await omitted.solve(query)).route.status, 'no-verified-route');
+  } finally {
+    await omitted.close();
+  }
+  const solver = await prepareGangliaV2(gangliaV2Defaults, input, marks, [[8.5, 0, 1.5]]);
+  try {
+    const result = await solver.solve(query);
+    assert.equal(result.route.status, 'complete');
+    const evaluation = createPhysicalVerifier(() => [createPhysicalWorld(input, 'complete')])(
+      query,
+      result.route,
+    );
+    assert.equal(evaluation.valid, true, evaluation.issues.join('; '));
+  } finally {
+    await solver.close();
+  }
+});
+
+test('v2 walking on a slope uses finite capsule support and independently replays', async () => {
+  const incline = (point: Vec3): Vec3 => [point[0], 3 + point[0] * 0.5, point[2]];
+  const input = {
+    ...physical,
+    ground: {
+      ...physical.ground,
+      surfaces: physical.ground.surfaces.map((surface) => ({
+        ...surface,
+        vertices: surface.vertices.map(incline),
+      })),
+    },
+    collision: {
+      ...physical.collision,
+      positions: Array.from(physical.collision.positions, (value, index) =>
+        index % 3 === 1 ? 3 + physical.collision.positions[index - 1] * 0.5 : value,
+      ),
+    },
+  };
+  const query: RouteQuery = {
+    starts: [{ id: 'player', position: [-2, 2, 0], cost: 0, state: 'available' }],
+    goal: [2, 4, 0],
+  };
+  const solver = await prepareGangliaV2(gangliaV2Defaults, input, []);
+  try {
+    const result = await solver.solve(query);
+    assert.equal(result.route.status, 'complete');
+    if (result.route.status !== 'complete') return;
+    assert.ok(result.route.segments.every((segment) => segment.mode === 'walk'));
+    const evaluation = createPhysicalVerifier(() => [createPhysicalWorld(input, 'complete')])(
+      query,
+      result.route,
+    );
+    assert.equal(evaluation.valid, true, evaluation.issues.join('; '));
+  } finally {
+    await solver.close();
+  }
+});
+
+test('v2 airborne terminal remains inside a world-coordinate interaction after serialization', async () => {
+  const offset: Vec3 = [-103.11, 115.05985242311868, -534.38];
+  const input = {
+    ...physical,
+    ground: {
+      ...physical.ground,
+      surfaces: physical.ground.surfaces.map((surface) => ({
+        ...surface,
+        vertices: surface.vertices.map(
+          (point) => point.map((value, i) => value + offset[i]) as Vec3,
+        ),
+      })),
+    },
+    collision: {
+      ...physical.collision,
+      positions: Array.from(physical.collision.positions, (value, i) => value + offset[i % 3]),
+    },
+    movement: {
+      ...physical.movement,
+      runAirSpeed: 4.75,
+      model: {
+        gravity: 40,
+        fallingGravity: 38,
+        maxJumpHeight: 2.0999999046325684,
+        maxFallingSpeed: 80,
+        apexTime: 0.10000000149011612,
+        maxHorizontalSpeed: 4.75,
+        startHorizontalSpeed: 4.75,
+        airAcceleration: 60,
+        airDeceleration: 10,
+        airOverspeedDeceleration: 5,
+      },
+    },
+  };
+  const query: RouteQuery = {
+    starts: [{ id: 'player', position: offset, cost: 0, state: 'available' }],
+    goal: [-104.05000305175781, 118.44999847412109, -533.6300048828125],
+    interaction: { radius: 2.090000033378601, airborne: true },
+  };
+  const solver = await prepareGangliaV2(gangliaV2Defaults, input, [
+    { position: query.goal, interaction: query.interaction! },
+  ]);
+  try {
+    const result = await solver.solve(query);
+    assert.equal(result.route.status, 'complete');
+    const evaluation = createPhysicalVerifier(() => [createPhysicalWorld(input, 'complete')])(
+      query,
+      result.route,
+    );
+    assert.equal(evaluation.valid, true, evaluation.issues.join('; '));
+  } finally {
+    await solver.close();
+  }
+});
+
+test('v2 rejects floating landmarks when only navigation support is available', async () => {
+  const input = { ...physical, collision: { positions: [], indices: [] } };
+  const query: RouteQuery = {
+    starts: [{ id: 'player', position: [-1, 0, 0], cost: 0, state: 'available' }],
+    goal: [0, 3.5, 0],
+    interaction: { radius: 0.1, airborne: true },
+  };
+  const solver = await prepareGangliaV2(
+    gangliaV2Defaults,
+    input,
+    [{ position: query.goal, interaction: query.interaction! }],
+    [[0, 1.8, 0]],
+  );
+  try {
+    assert.equal((await solver.solve(query)).route.status, 'no-verified-route');
+  } finally {
+    await solver.close();
+  }
+});
+
+test('v2 keeps the entire body inside the prepared physical coverage', async () => {
+  const input = {
+    ...physical,
+    ground: {
+      ...physical.ground,
+      build: { bounds: { min: [-5, -5] as [number, number], max: [5, 5] as [number, number] } },
+    },
+  };
+  const solver = await prepareGangliaV2(gangliaV2Defaults, input, []);
+  try {
+    const result = await solver.solve({
+      starts: [{ id: 'player', position: [-2, 0, 4.9], cost: 0, state: 'available' }],
+      goal: [2, 0, 4.9],
+    });
+    assert.equal(result.route.status, 'no-verified-route');
+    assert.equal(
+      (
+        await solver.solve({
+          starts: [{ id: 'player', position: [-2, 0, 4.5], cost: 0, state: 'available' }],
+          goal: [2, 0, 4.5],
+        })
+      ).route.status,
+      'complete',
+    );
+  } finally {
+    await solver.close();
+  }
+});

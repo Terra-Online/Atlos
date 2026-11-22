@@ -11,7 +11,9 @@ pub(super) struct Backbone {
     pub terminals: Vec<(Mark, Vec<(usize, Segment)>)>,
 }
 impl Backbone {
-    pub fn build(world: &World, marks: Vec<Mark>) -> Self {
+    pub fn build(world: &World, marks: Vec<Mark>, anchors: Vec<Point>) -> Self {
+        let profile = std::env::var_os("GANGLIA_PROFILE").is_some();
+        let started = std::time::Instant::now();
         // Sparse interior representatives plus ledge samples. The lattice is a
         // discovery heuristic, not a completeness claim: missed connectivity is
         // deliberately left unavailable until the next construction strategy.
@@ -58,12 +60,20 @@ impl Backbone {
                 ledges.entry(key(point, 2.)).or_insert(point);
             }
         }
-        let nodes: Vec<_> = interior
+        let mut nodes: Vec<_> = interior
             .into_values()
             .chain(ledges.into_values())
+            .chain(anchors)
             .filter_map(|p| world.standing(p))
             .filter(|p| !world.blocked(*p, *p, 0.))
             .collect();
+        // Authored traversal ports are critical nodes even when lattice
+        // representatives omit their small interaction volumes.
+        let ropes = crate::devices::ropes(world);
+        let rope_offset = nodes.len();
+        for rope in &ropes {
+            nodes.extend([rope.start(), rope.end()]);
+        }
         let index = Index::new(
             &nodes
                 .iter()
@@ -71,7 +81,21 @@ impl Backbone {
                 .collect::<Vec<_>>(),
         );
         let mut edges: Vec<Vec<Edge>> = (0..nodes.len()).map(|_| Vec::new()).collect();
+        if profile {
+            eprintln!(
+                "ganglia-v2 backbone: {} nodes, {} rope actions",
+                nodes.len(),
+                ropes.len()
+            );
+        }
         for (i, &a) in nodes.iter().enumerate() {
+            if profile && i % 1024 == 0 {
+                eprintln!(
+                    "ganglia-v2 backbone: {i}/{} nodes, {:.3}s",
+                    nodes.len(),
+                    started.elapsed().as_secs_f64()
+                );
+            }
             let mut nearby = Vec::new();
             index.query(Bounds::points(&[a]).expand(12.), |j| {
                 if i != j {
@@ -87,16 +111,19 @@ impl Backbone {
                 }
             }
         }
+        for (index, rope) in ropes.into_iter().enumerate() {
+            edges[rope_offset + 2 * index].push(Edge {
+                to: rope_offset + 2 * index + 1,
+                action: rope,
+            });
+        }
         let terminals = marks
             .into_iter()
             .map(|mark| {
                 let mut connections = Vec::new();
                 index.query(Bounds::points(&[mark.position]).expand(12.), |i| {
-                    if let Some(action) = world.jump(
-                        nodes[i],
-                        mark.position,
-                        Some((&mark.position, &mark.interaction)),
-                    ) {
+                    if let Some(action) = world.collect(nodes[i], mark.position, &mark.interaction)
+                    {
                         connections.push((i, action));
                     }
                     false

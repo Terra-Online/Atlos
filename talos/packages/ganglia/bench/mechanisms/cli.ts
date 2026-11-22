@@ -13,6 +13,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import { preparationBounds as v2PreparationBounds } from '#@/bench/adapters/ganglia-v2/annotations.ts';
 import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { expectation, matchesExpectation } from '#@/bench/mechanisms/assessment.ts';
 import { readDataset, scenarioBindings, scenarioBuilder } from '#@/bench/mechanisms/dataset.ts';
@@ -133,6 +134,19 @@ if (values.help) {
               scenarioId: spec.id,
               setup: {
                 ...spec.setup,
+                ...(config.algorithm === 'ganglia-v2'
+                  ? {
+                      preparationBounds: v2PreparationBounds(
+                        spec.id,
+                        spec.setup.input.kind === 'frozen-window'
+                          ? {
+                              min: [spec.setup.input.bounds[0], spec.setup.input.bounds[1]],
+                              max: [spec.setup.input.bounds[2], spec.setup.input.bounds[3]],
+                            }
+                          : undefined,
+                      ),
+                    }
+                  : {}),
                 physicalInput: 'scene-pack',
                 memoryBudgetBytes: memoryBudget,
               },
@@ -200,7 +214,9 @@ if (values.help) {
     dataRoot: inputRoot,
     policy: config,
     scenarioPreparation:
-      'Each authored scenario supplies ordered training IDs before measurement filtering; one solver config is shared by the run; no warmup.',
+      config.algorithm === 'ganglia-v2'
+        ? 'Build an immutable backbone from scene facts and declared landmarks before measurement. Suite training requests are recorded separately; no warmup or persistent backbone cache.'
+        : 'Each authored scenario supplies ordered training IDs before measurement filtering; one solver config is shared by the run; no warmup.',
     rounds: 1,
     scenarioWorkers,
     queryCutoffMs: QUERY_CUTOFF_MS,
@@ -208,7 +224,9 @@ if (values.help) {
       'beta; observations do not affect search status, cost comparisons or acceptance',
     cancellation: 'cooperative-checkpoints; no worker replacement',
     timing:
-      'Serial solve attempts include cancellation tails. Preparation and independent verification are separate; no runtime warmup. Scenario groups retain the same trained worker. Training overlaps scored queries and retains physical actions, never query answers.',
+      config.algorithm === 'ganglia-v2'
+        ? 'Serial solve attempts include cancellation tails. Scene loading, backbone construction and independent verification are separate. Queries initialize fresh routes and report each optimization round; no runtime warmup.'
+        : 'Serial solve attempts include cancellation tails. Preparation and independent verification are separate; no runtime warmup. Scenario groups retain the same trained worker. Training overlaps scored queries and retains physical actions, never query answers.',
     populationTotal: suite.cases.length,
     selectedIds: selected.map((c) => c.id),
     preparations: [] as object[],

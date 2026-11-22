@@ -28,6 +28,15 @@ export interface OptimizationRound {
 export interface V2Diagnostics {
   backboneBuildMs: number;
   initializationMs: number;
+  initialization: {
+    starts: { id: string; projected: Vec3 | null; attachments: number }[];
+    goalPositions: number;
+    goalAttachments: number;
+    reachedNodes: number;
+    nodesReachingGoal?: number;
+    nearestReached?: Vec3[];
+    nearestGaps?: { from: Vec3; to: Vec3; distance: number; action: string | null }[];
+  };
   initialCost: number | null;
   seed: number;
   nodeCount: number;

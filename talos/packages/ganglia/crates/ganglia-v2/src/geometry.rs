@@ -66,6 +66,7 @@ impl Bounds {
 }
 pub struct Index {
     nodes: Vec<Node>,
+    item_bounds: Vec<Bounds>,
 }
 struct Node {
     bounds: Bounds,
@@ -74,7 +75,10 @@ struct Node {
 }
 impl Index {
     pub fn new(bounds: &[Bounds]) -> Self {
-        let mut result = Self { nodes: Vec::new() };
+        let mut result = Self {
+            nodes: Vec::new(),
+            item_bounds: bounds.to_vec(),
+        };
         if !bounds.is_empty() {
             result.build((0..bounds.len()).collect(), bounds);
         }
@@ -125,7 +129,9 @@ impl Index {
                 pending.push(b);
             } else {
                 for &item in &node.items {
-                    if visit(item) {
+                    // A leaf can straddle several floors. Cull its individual
+                    // members before invoking expensive triangle/body checks.
+                    if self.item_bounds[item].overlaps(bounds) && visit(item) {
                         return true;
                     }
                 }
@@ -145,7 +151,177 @@ pub fn triangle_height(p: Point, t: [Point; 3]) -> Option<f64> {
     (u >= -1e-8 && v >= -1e-8 && u + v <= 1. + 1e-8)
         .then_some(u * a[1] + v * b[1] + (1. - u - v) * c[1])
 }
-fn point_segment(p: Point, a: Point, b: Point) -> f64 {
+
+pub fn sphere_support(p: Point, triangle: [Point; 3], normal: Point, radius: f64) -> Option<f64> {
+    let contact = sub(p, scale(normal, radius));
+    if let Some(height) = triangle_height(contact, triangle) {
+        return Some(height + radius * (normal[1] - 1.));
+    }
+    // Outside the face, the highest sphere contact lies on an edge or corner.
+    // The contact height along an edge is concave, so clamp its stationary point
+    // to the edge and let the endpoints account for the corners.
+    let radius_squared = radius * radius;
+    (0..3)
+        .filter_map(|i| {
+            let a = triangle[i];
+            let [dx, dy, dz] = sub(triangle[(i + 1) % 3], a);
+            let [x, _, z] = sub(p, a);
+            let length_squared = dx * dx + dz * dz;
+            let projection = (x * dx + z * dz) / length_squared;
+            let distance_squared = (x - projection * dx).powi(2) + (z - projection * dz).powi(2);
+            let reach_squared = radius_squared - distance_squared;
+            if reach_squared < 0. {
+                return None;
+            }
+            let fraction = (projection
+                + dy * (reach_squared / (length_squared * (length_squared + dy * dy))).sqrt())
+            .clamp(0., 1.);
+            let distance_squared = (x - fraction * dx).powi(2) + (z - fraction * dz).powi(2);
+            (distance_squared <= radius_squared)
+                .then(|| a[1] + fraction * dy + (radius_squared - distance_squared).sqrt() - radius)
+        })
+        .max_by(f64::total_cmp)
+}
+
+pub type Interval = [f64; 2];
+const SPAN: Interval = [0., 1.];
+const EMPTY: Interval = [1., 0.];
+
+fn clip_positive(interval: &mut Interval, first: f64, last: f64) {
+    if first < 0. && last < 0. {
+        *interval = EMPTY;
+    } else if first < 0. {
+        interval[0] = interval[0].max(first / (first - last));
+    } else if last < 0. {
+        interval[1] = interval[1].min(first / (first - last));
+    }
+}
+
+fn face_interval([a, b]: [Point; 2], triangle: [Point; 3]) -> Interval {
+    let winding = cross(sub(triangle[1], triangle[0]), sub(triangle[2], triangle[0]))[1];
+    let mut interval = SPAN;
+    for i in 0..3 {
+        let p = triangle[i];
+        let edge = sub(triangle[(i + 1) % 3], p);
+        let side = |point| cross(edge, sub(point, p))[1] / winding + 1e-9;
+        clip_positive(&mut interval, side(a), side(b));
+    }
+    interval
+}
+
+pub fn face_support_interval(
+    path: [Point; 2],
+    triangle: [Point; 3],
+    normal: Point,
+    radius: f64,
+    clearance: f64,
+) -> Interval {
+    let [first, last] = path.map(|point| {
+        let center = add(point, [0., radius, 0.]);
+        dot(sub(center, triangle[0]), normal) - radius
+    });
+    // The signed normal gap is the vertical feet gap scaled by normal.y.
+    // At the supported height, the sphere touches the face at this tangent XZ.
+    let upper = clearance * normal[1];
+    if (first < 0. && last < 0.) || (first > upper && last > upper) {
+        return EMPTY;
+    }
+    let tangent = path.map(|point| sub(point, scale(normal, radius)));
+    let mut interval = face_interval(tangent, triangle);
+    clip_positive(&mut interval, first, last);
+    clip_positive(&mut interval, upper - first, upper - last);
+    interval
+}
+
+fn ball_interval(offset: Point, velocity: Point, radius: f64) -> Interval {
+    let speed_squared = dot(velocity, velocity);
+    let along = dot(offset, velocity);
+    let separation = dot(offset, offset) - radius * radius;
+    if speed_squared == 0. {
+        return if separation <= 0. { SPAN } else { EMPTY };
+    }
+    let discriminant = along * along - speed_squared * separation;
+    if discriminant < 0. {
+        return EMPTY;
+    }
+    let root = discriminant.sqrt();
+    [
+        ((-along - root) / speed_squared).max(0.),
+        ((-along + root) / speed_squared).min(1.),
+    ]
+}
+
+// A finite edge's radius neighbourhood is a cylinder and two end balls.
+fn edge_intervals(path: [Point; 2], edge: [Point; 2], radius: f64) -> [Interval; 3] {
+    let [a, b] = path;
+    let [p, q] = edge;
+    let velocity = sub(b, a);
+    let direction = sub(q, p);
+    let offset = sub(a, p);
+    let squared = dot(direction, direction);
+    let mut cylinder = EMPTY;
+    if squared > 0. {
+        let start = dot(offset, direction) / squared;
+        let change = dot(velocity, direction) / squared;
+        cylinder = ball_interval(
+            sub(offset, scale(direction, start)),
+            sub(velocity, scale(direction, change)),
+            radius,
+        );
+        clip_positive(&mut cylinder, start, start + change);
+        clip_positive(&mut cylinder, 1. - start, 1. - start - change);
+    }
+    [
+        cylinder,
+        ball_interval(offset, velocity, radius),
+        ball_interval(sub(a, q), velocity, radius),
+    ]
+}
+
+pub fn support_intervals(
+    path: [Point; 2],
+    triangle: [Point; 3],
+    normal: Point,
+    radius: f64,
+    tolerance: f64,
+    intervals: &mut Vec<Interval>,
+) {
+    let edge = |i| [triangle[i], triangle[(i + 1) % 3]];
+    let flat = |[x, _, z]: Point| [x, 0., z];
+    let centers = path.map(|p| add(p, [0., radius, 0.]));
+    let distances = centers.map(|p| dot(sub(p, triangle[0]), normal));
+    let [first, last] = distances;
+    let projected = std::array::from_fn(|i| sub(centers[i], scale(normal, distances[i])));
+    let mut plane = face_interval(projected, triangle);
+    clip_positive(&mut plane, first, last);
+    let reach = radius + tolerance;
+    clip_positive(&mut plane, reach - first, reach - last);
+    let projected_path = face_interval(path, triangle);
+    if projected_path == SPAN && plane == SPAN {
+        intervals.push(SPAN);
+        return;
+    }
+
+    // Height tolerance applies to contact, while horizontal reach stays at the
+    // physical radius. Intersect the intervals so tolerance cannot bridge a gap.
+    let footprint = std::iter::once(projected_path)
+        .chain((0..3).flat_map(|i| edge_intervals(path.map(flat), edge(i).map(flat), radius)));
+    let mut contact = [EMPTY; 10];
+    contact[0] = plane;
+    for i in 0..3 {
+        contact[1 + i * 3..4 + i * 3].copy_from_slice(&edge_intervals(centers, edge(i), reach));
+    }
+    for [near, far] in footprint.filter(|interval| interval[0] <= interval[1]) {
+        for [start, end] in contact {
+            let overlap = [near.max(start), far.min(end)];
+            if overlap[0] <= overlap[1] {
+                intervals.push(overlap);
+            }
+        }
+    }
+}
+
+pub fn point_segment(p: Point, a: Point, b: Point) -> f64 {
     let d = sub(b, a);
     let den = dot(d, d);
     distance(
@@ -184,7 +360,7 @@ fn segment_segment(a: Point, b: Point, c: Point, d: Point) -> f64 {
     }
     result
 }
-fn point_triangle(p: Point, t: [Point; 3]) -> f64 {
+pub fn point_triangle(p: Point, t: [Point; 3]) -> f64 {
     let [a, b, c] = t;
     let n = cross(sub(b, a), sub(c, a));
     let nn = dot(n, n);

@@ -7,6 +7,8 @@ pub struct Input {
     #[serde(default)]
     pub marks: Vec<Mark>,
     #[serde(default)]
+    pub anchors: Vec<Point>,
+    #[serde(default)]
     pub config: Config,
 }
 #[derive(Clone, Deserialize)]
@@ -37,11 +39,44 @@ pub struct Physical {
     pub movement: Movement,
     pub locomotion: Locomotion,
     pub rounded_walls: Option<Vec<Wall>>,
+    pub devices: Option<DeviceFacts>,
+}
+#[derive(Clone, Deserialize)]
+pub struct DeviceFacts {
+    pub devices: Vec<Device>,
+    pub ropes: Vec<Rope>,
+}
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Device {
+    pub id: String,
+    pub resolved: bool,
+    pub unit_scale: bool,
+    pub goal: Option<Mark>,
+    #[serde(default)]
+    pub seeds: Vec<Point>,
+    pub speed: Option<f64>,
+    pub overhead: Option<f64>,
+}
+#[derive(Clone, Deserialize)]
+pub struct Rope {
+    pub bottom: String,
+    pub top: String,
 }
 #[derive(Clone, Deserialize)]
 pub struct Ground {
     pub surfaces: Vec<Surface>,
     pub options: GroundOptions,
+    pub build: Option<Build>,
+}
+#[derive(Clone, Deserialize)]
+pub struct Build {
+    pub bounds: Option<CoverageBounds>,
+}
+#[derive(Clone, Deserialize)]
+pub struct CoverageBounds {
+    pub min: [f64; 2],
+    pub max: [f64; 2],
 }
 #[derive(Clone, Deserialize)]
 pub struct Surface {
@@ -96,6 +131,14 @@ pub struct Wall {
     pub state: String,
     #[serde(default)]
     pub padding: f64,
+    pub points: Option<Vec<[f64; 2]>>,
+    pub polygon: Option<Vec<[f64; 2]>>,
+    pub sphere: Option<Sphere>,
+}
+#[derive(Clone, Deserialize)]
+pub struct Sphere {
+    pub center: Point,
+    pub radius: f64,
 }
 #[derive(Clone, Deserialize)]
 pub struct Mark {
@@ -130,6 +173,8 @@ pub struct Segment {
     pub mode: &'static str,
     pub points: Vec<Point>,
     pub times: Vec<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub connection: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub flight: Option<Flight>,
     #[serde(skip_serializing_if = "Option::is_none")]
