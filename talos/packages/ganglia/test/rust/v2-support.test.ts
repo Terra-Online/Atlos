@@ -67,3 +67,39 @@ test('v2 follows the capsule contact around a low step edge', async () => {
   );
   assert.equal(route.status, 'complete');
 });
+
+test('v2 projects onto physical support throughout the public vertical tolerance', async () => {
+  const vertices = floor(-2, 2, 0);
+  const triangles = [vertices[0], vertices[1], vertices[2], vertices[0], vertices[2], vertices[3]];
+  const input = {
+    ...physical,
+    ground: {
+      surfaces: [{ id: 'lower-nav', vertices: floor(-2, 2, -0.1) }],
+      options: { ...physical.ground.options, maxVertical: 0.5, walls: [] },
+    },
+    collision: { positions: triangles.flat(), indices: triangles.map((_, i) => i) },
+  };
+  const solver = await prepareGangliaV2(gangliaV2Defaults, input, []);
+  try {
+    // The navigation height lies outside the tolerance, but the physical feet
+    // fit. Include the exact boundary after standing clearance is applied.
+    for (const height of [0.48, 0.505]) {
+      const { route } = await solver.solve({
+        starts: [{ id: 'player', position: [0, height, 0], cost: 0, state: 'available' }],
+        goal: [1, 0, 0],
+      });
+      assert.equal(route.status, 'complete');
+      if (route.status !== 'complete') continue;
+      assert.ok(Math.abs(route.points[0][1] - height) <= 0.5 + 1e-9);
+    }
+    // The plane is within tolerance from below, but the complete feet position
+    // includes clearance and therefore exceeds the caller's allowed offset.
+    const { route } = await solver.solve({
+      starts: [{ id: 'player', position: [0, -0.499, 0], cost: 0, state: 'available' }],
+      goal: [1, 0, 0],
+    });
+    assert.equal(route.status, 'no-verified-route');
+  } finally {
+    await solver.close();
+  }
+});

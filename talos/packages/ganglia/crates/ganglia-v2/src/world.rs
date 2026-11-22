@@ -197,6 +197,19 @@ impl World {
         {
             return Some(feet);
         }
+        // Arrival projection uses its public tolerance, independently of the
+        // tighter support envelope used by continuous walking. Navigation can
+        // be lower than the physical capsule contact at the same XZ position.
+        if let Some(height) = self.support_height_range(
+            p,
+            p[1] - tolerance - STANDING_OFFSET - 1e-9,
+            p[1] + tolerance - STANDING_OFFSET + 1e-9,
+        ) {
+            let feet = [p[0], height + STANDING_OFFSET, p[2]];
+            if (feet[1] - p[1]).abs() <= tolerance + 1e-6 && !self.blocked(feet, feet, 0.) {
+                return Some(feet);
+            }
+        }
         let mut best = None;
         let mut delta = tolerance + 1e-9;
         self.ground_index.query(
@@ -293,13 +306,14 @@ impl World {
         circular
     }
     fn support_height(&self, p: Point) -> Option<f64> {
+        self.support_height_range(p, p[1] - 0.31, p[1] + 0.31)
+    }
+    fn support_height_range(&self, p: Point, minimum: f64, maximum: f64) -> Option<f64> {
         if let Some(height) = self.circular_height(p) {
             return Some(height);
         }
         let radius = self.physical.ground.options.profile.radius;
         let minimum_up = self.physical.movement.max_slope.to_radians().cos();
-        let minimum = p[1] - 0.31;
-        let maximum = p[1] + 0.31;
         let mut best = None;
         let mut moving_contact: Option<f64> = None;
         let bounds = Bounds {
