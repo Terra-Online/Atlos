@@ -380,6 +380,7 @@ impl World {
                 control: Control { mode: "jump" },
             }),
             gait: None,
+            traversal: None,
         })
     }
 }

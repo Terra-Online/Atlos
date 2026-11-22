@@ -42,9 +42,37 @@ pub struct Physical {
     pub devices: Option<DeviceFacts>,
 }
 #[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DeviceFacts {
     pub devices: Vec<Device>,
     pub ropes: Vec<Rope>,
+    #[serde(default)]
+    pub moving_supports: Vec<MovingSupport>,
+}
+#[derive(Clone, Deserialize)]
+pub struct MovingSupport {
+    pub id: String,
+    pub family: String,
+    pub assumption: String,
+    pub surfaces: Vec<Surface>,
+    #[serde(default)]
+    pub poses: Vec<Pose>,
+    pub transfers: Vec<Transfer>,
+    pub circular: Option<serde_json::Value>,
+}
+#[derive(Clone, Deserialize)]
+pub struct Pose {
+    pub min: Point,
+    pub max: Point,
+}
+#[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Transfer {
+    pub from: Point,
+    pub to: Point,
+    pub speed: Option<f64>,
+    pub from_pose: Option<usize>,
+    pub to_pose: Option<usize>,
 }
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -188,6 +216,8 @@ pub struct Segment {
     pub flight: Option<Flight>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub gait: Option<&'static str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub traversal: Option<&'static str>,
 }
 impl Segment {
     pub fn cost(&self) -> f64 {

@@ -79,6 +79,7 @@ fn climb(world: &World, lower: &Device, upper: &Device) -> Option<Segment> {
                 connection: Some(format!("rope/{}/{}", lower.id, upper.id)),
                 flight: None,
                 gait: None,
+                traversal: None,
             });
         }
     }
@@ -152,4 +153,76 @@ pub fn launches(world: &World) -> Vec<Segment> {
                 })
         })
         .collect()
+}
+
+pub fn rides(world: &World) -> Vec<Segment> {
+    let mut actions = Vec::new();
+    for support in world
+        .physical
+        .devices
+        .iter()
+        .flat_map(|facts| &facts.moving_supports)
+    {
+        if support.assumption != "phase-free-swept-support" || support.circular.is_some() {
+            continue;
+        }
+        for (index, transfer) in support.transfers.iter().enumerate() {
+            let Some(speed) = transfer.speed.filter(|speed| *speed > 0.) else {
+                continue;
+            };
+            let Some(start) = world.moving_standing(support, transfer.from) else {
+                continue;
+            };
+            let Some(end) = world.moving_standing(support, transfer.to) else {
+                continue;
+            };
+            let duration = distance(transfer.from, transfer.to) / speed;
+            if duration <= 0. || world.blocked(start, end, 0.) {
+                continue;
+            }
+            for (from, to, suffix) in [(start, end, ""), (end, start, "/reverse")] {
+                actions.push(Segment {
+                    mode: "rope",
+                    traversal: Some("moving-support"),
+                    points: vec![from, to],
+                    times: vec![0., duration],
+                    connection: Some(format!("moving-ride/{}/{index}{suffix}", support.id)),
+                    flight: None,
+                    gait: None,
+                });
+            }
+        }
+    }
+    actions
+}
+
+pub fn used_supports(world: &World, segments: &[Segment]) -> Vec<serde_json::Value> {
+    let mut boxes = Vec::new();
+    for support in world
+        .physical
+        .devices
+        .iter()
+        .flat_map(|facts| &facts.moving_supports)
+    {
+        for (index, transfer) in support.transfers.iter().enumerate() {
+            let id = format!("moving-ride/{}/{index}", support.id);
+            for segment in segments {
+                let reverse = segment.connection.as_deref() == Some(&format!("{id}/reverse"));
+                if segment.connection.as_deref() != Some(&id) && !reverse {
+                    continue;
+                }
+                let poses = if reverse {
+                    [transfer.to_pose, transfer.from_pose]
+                } else {
+                    [transfer.from_pose, transfer.to_pose]
+                };
+                for (pose, role) in poses.into_iter().zip(["board", "leave"]) {
+                    if let Some(pose) = pose.and_then(|i| support.poses.get(i)) {
+                        boxes.push(serde_json::json!({"min":pose.min,"max":pose.max,"device":support.id,"family":support.family,"role":role}));
+                    }
+                }
+            }
+        }
+    }
+    boxes
 }

@@ -6,6 +6,9 @@ import type { Bounds } from '#@/src/scene-pack.ts';
 export function preparationBounds(scenario: string, frozen?: Bounds): Bounds | undefined {
   if (scenario === 'map02-007') return { min: [-832, -1633], max: [-640, -1440] };
   if (scenario === 'map01-019') return { min: [-704, -224], max: [-512, 64] };
+  // Fixed lift/forklift district; construction never follows individual queries.
+  if (scenario === 'map01-021') return { min: [-180, -112], max: [-64, -48] };
+  if (scenario === 'map02-022') return { min: [-1520, -184], max: [-1496, -160] };
   return frozen;
 }
 

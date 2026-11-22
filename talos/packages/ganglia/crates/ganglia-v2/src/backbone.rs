@@ -72,6 +72,7 @@ impl Backbone {
         let devices: Vec<_> = crate::devices::ropes(world)
             .into_iter()
             .chain(crate::devices::launches(world))
+            .chain(crate::devices::rides(world))
             .collect();
         let device_offset = nodes.len();
         for action in &devices {

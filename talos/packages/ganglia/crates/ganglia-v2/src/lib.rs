@@ -89,7 +89,8 @@ impl Engine {
             "anchorSupports":anchor_supports,
             "nodeBounds":bounds.map(|b|json!({"min":b.min,"max":b.max})),
             "markedTargets":backbone.terminals.iter().map(|(mark,edges)|json!({"position":mark.position,"connections":edges.len()})).collect::<Vec<_>>(),
-            "ropeConnections":backbone.edges.iter().flatten().filter(|edge|edge.action.mode=="rope").filter_map(|edge|edge.action.connection.as_ref()).collect::<Vec<_>>(),
+            "ropeConnections":backbone.edges.iter().flatten().filter(|edge|edge.action.mode=="rope" && edge.action.traversal.is_none()).filter_map(|edge|edge.action.connection.as_ref()).collect::<Vec<_>>(),
+            "movingConnections":backbone.edges.iter().flatten().filter(|edge|edge.action.traversal.is_some()).filter_map(|edge|edge.action.connection.as_ref()).collect::<Vec<_>>(),
             "launchConnections":backbone.edges.iter().flatten().filter(|edge|edge.action.mode=="launch").filter_map(|edge|edge.action.connection.as_ref()).collect::<Vec<_>>()});
         Ok(Self {
             world,
@@ -129,7 +130,7 @@ impl Engine {
         let length: f64 = points.windows(2).map(|p| distance(p[0], p[1])).sum();
         let last = best.segments.last().unwrap();
         Ok(
-            json!({"route":{"status":"complete","start":best.arrival.id,"arrivalCost":best.arrival.cost,"cost":best.cost(),"length":length,"points":points,"segments":best.segments,"schedule":[{"segments":best.segments,"allowSprint":false,"allowDash":false}],"goalHit":{"segment":best.segments.len()-1,"time":last.cost(),"position":last.end()}},"arrival":best.arrival,"connections":[],"diagnostics":diagnostics}),
+            json!({"route":{"status":"complete","start":best.arrival.id,"arrivalCost":best.arrival.cost,"cost":best.cost(),"length":length,"points":points,"segments":best.segments,"schedule":[{"segments":best.segments,"allowSprint":false,"allowDash":false}],"goalHit":{"segment":best.segments.len()-1,"time":last.cost(),"position":last.end()}},"arrival":best.arrival,"supportBoxes":devices::used_supports(&self.world,&best.segments),"connections":[],"diagnostics":diagnostics}),
         )
     }
 }
