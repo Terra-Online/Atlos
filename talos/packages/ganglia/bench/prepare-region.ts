@@ -1,11 +1,42 @@
 import { spawn } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, rename, rm } from 'node:fs/promises';
+import { access, mkdir, readdir, rename, rm, stat, statfs } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { physicalTileSpan } from '@opendfieldmap/ganglia/solver/host';
 
 import type { RegionBuildRequest } from '#@/bench/scene-data.ts';
+
+const GIB = 1024 * 1024 * 1024;
+
+function parseBudgetGiB(envName: string, fallbackGiB: number) {
+  const raw = process.env[envName];
+  if (raw === undefined) return fallbackGiB * GIB;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed * GIB : fallbackGiB * GIB;
+}
+
+async function ensureDiskBudget(directory: string) {
+  const minFreeBytes = parseBudgetGiB('GANGLIA_BENCHMARK_MIN_FREE_DISK_GB', 30);
+  const maxDirBytes = parseBudgetGiB('GANGLIA_BENCHMARK_MAX_REGION_CACHE_GB', 12);
+  const fsStats = await statfs(directory);
+  const availBytes = fsStats.bavail * fsStats.bsize;
+  if (availBytes < minFreeBytes) {
+    throw new Error(
+      `Refusing to export region: available disk ${(availBytes / GIB).toFixed(1)} GiB is below ${(minFreeBytes / GIB).toFixed(1)} GiB safety floor`,
+    );
+  }
+  let dirBytes = 0;
+  for (const name of await readdir(directory)) {
+    const info = await stat(resolve(directory, name)).catch(() => null);
+    if (info?.isFile()) dirBytes += info.size;
+  }
+  if (dirBytes >= maxDirBytes) {
+    throw new Error(
+      `Refusing to export region: ${directory} reached ${(dirBytes / GIB).toFixed(1)} GiB cap (limit ${(maxDirBytes / GIB).toFixed(1)} GiB)`,
+    );
+  }
+}
 
 export async function exportPhysicalRegion(
   options: { dataRoot: string; extractor: string; config: string; devices?: string },
@@ -14,12 +45,23 @@ export async function exportPhysicalRegion(
   const directory = resolve(options.dataRoot, `scene-${request.scene}/regions`);
   await mkdir(directory, { recursive: true });
   const digest = createHash('sha256').update(JSON.stringify(request)).digest('hex').slice(0, 16);
-  const name = `${digest}-${randomUUID()}`;
+  const ground = resolve(directory, `${digest}.ground.json`);
+  const collision = resolve(directory, `${digest}.collision.bin`);
+  const exists = await Promise.all([
+    access(ground).then(
+      () => true,
+      () => false,
+    ),
+    access(collision).then(
+      () => true,
+      () => false,
+    ),
+  ]);
+  if (exists[0] && exists[1]) return { ground, collision };
+  await ensureDiskBudget(directory);
   // An interrupted exporter must not leave a discoverable half-written region.
-  const pending = resolve(directory, `.pending-${name}`);
+  const pending = resolve(directory, `.pending-${digest}-${randomUUID()}`);
   await mkdir(pending);
-  const ground = resolve(directory, `${name}.ground.json`);
-  const collision = resolve(directory, `${name}.collision.bin`);
   const tiles = [...request.tiles];
   if (!tiles.length)
     for (
