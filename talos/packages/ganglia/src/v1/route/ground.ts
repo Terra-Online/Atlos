@@ -61,6 +61,7 @@ interface Preparation {
   portals: SharedPortal[];
   directed: DirectedPortal[];
   straighten: GroundStraightener;
+  traceStatic(start: Vec3, end: Vec3): Vec3[] | null;
   projectGoal: GoalProjector;
   projectSupport: ReturnType<typeof createSupportProjector>;
   byId: LookupMap<string, Surface>;
@@ -325,6 +326,27 @@ function assembleGroundPlanner(parts: PlannerParts): GroundPlanner {
   const visibility = new Map<string, Map<string, Vec3[]>>();
   const failedVisibility = new Map<string, Set<string>>();
   let endpointKeys = new Map<string, string>();
+  // Bounded LRU cache of static straightener.trace results shared across overlay
+  // layouts that use this planner as basePrep. Callers treat returned arrays read-only.
+  let staticTraceCache: Map<string, Vec3[] | null> | undefined;
+  const traceStatic = (start: Vec3, end: Vec3): Vec3[] | null => {
+    if (!finiteVec3(start) || !finiteVec3(end))
+      throw new Error('Invalid ground visibility endpoints');
+    const key = `${Object.is(start[0], -0) ? '-0' : start[0]},${Object.is(start[1], -0) ? '-0' : start[1]},${Object.is(start[2], -0) ? '-0' : start[2]}|${Object.is(end[0], -0) ? '-0' : end[0]},${Object.is(end[1], -0) ? '-0' : end[1]},${Object.is(end[2], -0) ? '-0' : end[2]}`;
+    if (staticTraceCache?.has(key)) {
+      const cached = staticTraceCache.get(key)!;
+      staticTraceCache.delete(key);
+      staticTraceCache.set(key, cached);
+      return cached;
+    }
+    const traced = straighten.trace(start, end);
+    staticTraceCache ??= new Map<string, Vec3[] | null>();
+    if (staticTraceCache.size >= 8192) {
+      staticTraceCache.delete(staticTraceCache.keys().next().value!);
+    }
+    staticTraceCache.set(key, traced);
+    return traced;
+  };
   const planRoute = (
     starts: GroundArrival[],
     goal: Vec3,
@@ -725,6 +747,7 @@ function assembleGroundPlanner(parts: PlannerParts): GroundPlanner {
     portals,
     directed,
     straighten,
+    traceStatic,
     projectGoal,
     projectSupport,
     byId,
@@ -1216,7 +1239,7 @@ export function createOverlayGroundPlanner(
     const eRoof = onRoof(end);
     if (sRoof && eRoof) return getRoofStraightener().trace(start, end);
     if (sRoof !== eRoof) return null;
-    const traced = basePrep.straighten.trace(start, end);
+    const traced = basePrep.traceStatic(start, end);
     if (!traced) return null;
     return segmentClearExtra(traced) ? traced : null;
   };

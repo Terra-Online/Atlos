@@ -5,7 +5,11 @@ import { createCollisionWorld } from '#@/src/collision.ts';
 import type { GroundArrival, Surface, Vec3 } from '#@/src/index.ts';
 import { createPhysicalWorld } from '#@/src/model/world.ts';
 import type { FollowingSupport } from '#@/src/solver/physical.ts';
-import { createGroundPlanner, createOverlayGroundPlanner } from '#@/src/v1/route/ground.ts';
+import {
+  createGroundPlanner,
+  createOverlayGroundPlanner,
+  groundPreparation,
+} from '#@/src/v1/route/ground.ts';
 import type { JumpRouteOptions } from '#@/src/v1/route/jump-planner.ts';
 import { planFollowingRoute } from '#@/src/v1/solver/physical/following-route.ts';
 
@@ -675,4 +679,106 @@ test('createOverlayGroundPlanner matches full createGroundPlanner for box walls,
   );
   const flushRoute = flushOverlay.plan(origin, [9, 0, 0]);
   assert.equal(flushRoute.status, 'complete');
+});
+
+test('overlay planners sharing one basePlanner reuse static traces while still enforcing per-layout box walls', () => {
+  const grid: Surface[] = [];
+  for (let ix = -2; ix < 4; ix++) {
+    for (let iz = -2; iz < 2; iz++) {
+      grid.push(floor(`cell_${ix}_${iz}`, ix * 2, (ix + 1) * 2, 0, iz * 2, (iz + 1) * 2));
+    }
+  }
+  const baseOptions = {
+    profile: build.profile,
+    speed: 3,
+    maxVertical: 0.5,
+    walls: [],
+  };
+  const basePlanner = createGroundPlanner(grid, baseOptions);
+  const basePrep = groundPreparation(basePlanner)!;
+  const originalTrace = basePrep.straighten.trace;
+  let staticTraceCalls = 0;
+  basePrep.straighten.trace = (start, end) => {
+    staticTraceCalls++;
+    return originalTrace(start, end);
+  };
+
+  const a: Vec3 = [-3, 0, 0];
+  const b: Vec3 = [7, 0, 0];
+
+  // Layout 1: box placed off to the side, leaving a -> b clear.
+  const wall1 = {
+    min: [1.2, 0, 2.0] as Vec3,
+    max: [2.8, 1.199, 3.6] as Vec3,
+    state: 'active' as const,
+  };
+  const roof1 = floor('following/box1/0', 1.2, 2.8, 1.2, 2.0, 3.6);
+  const overlay1 = createOverlayGroundPlanner(basePlanner, [...grid, roof1], [roof1], [wall1], {
+    ...baseOptions,
+    walls: [wall1],
+  });
+  const trace1 = groundPreparation(overlay1)!.straighten.trace(a, b);
+  assert.deepEqual(trace1, [a, b]);
+  assert.equal(staticTraceCalls, 1);
+
+  // Also test traceStatic LRU / endpoint validation via an idle connection route in layout 1.
+  const origin: GroundArrival[] = [{ id: 'p', state: 'available', position: a, cost: 0 }];
+  const idle = {
+    id: 'idle',
+    mode: 'rope' as const,
+    state: 'open' as const,
+    points: [a, a] as Vec3[],
+    times: [0, 1],
+  };
+  const route1 = overlay1.plan(origin, b, { connections: [idle] });
+  assert.equal(route1.status, 'complete');
+  const callsAfterLayout1 = staticTraceCalls;
+
+  // Layout 2: box placed directly across a -> b. Must reuse cached static trace (zero new
+  // basePrep.straighten.trace calls for (a, b)) while rejecting the trace through wall2!
+  const wall2 = {
+    min: [1.2, 0, -1.2] as Vec3,
+    max: [2.8, 1.199, 1.2] as Vec3,
+    state: 'active' as const,
+  };
+  const roof2 = floor('following/box2/0', 1.2, 2.8, 1.2, -1.2, 1.2);
+  const overlay2 = createOverlayGroundPlanner(basePlanner, [...grid, roof2], [roof2], [wall2], {
+    ...baseOptions,
+    walls: [wall2],
+  });
+  const prep2 = groundPreparation(overlay2)!;
+  assert.equal(prep2.straighten.trace(a, b), null);
+  assert.equal(staticTraceCalls, callsAfterLayout1);
+
+  const route2 = overlay2.plan(origin, b, { connections: [idle] });
+  assert.equal(route2.status, 'complete');
+  if (route2.status === 'complete') {
+    assert.ok(route2.points.some((p) => Math.abs(p[2]) > 1.2));
+  }
+  const callsAfterLayout2 = staticTraceCalls;
+
+  // Layout 3: non-blocking layout reuses cached [a, b] trace with zero static re-traces.
+  const wall3 = {
+    min: [1.2, 0, -3.6] as Vec3,
+    max: [2.8, 1.199, -2.0] as Vec3,
+    state: 'active' as const,
+  };
+  const roof3 = floor('following/box3/0', 1.2, 2.8, 1.2, -3.6, -2.0);
+  const overlay3 = createOverlayGroundPlanner(basePlanner, [...grid, roof3], [roof3], [wall3], {
+    ...baseOptions,
+    walls: [wall3],
+  });
+  assert.deepEqual(groundPreparation(overlay3)!.straighten.trace(a, b), [a, b]);
+  assert.equal(overlay3.plan(origin, b, { connections: [idle] }).status, 'complete');
+  assert.equal(staticTraceCalls, callsAfterLayout2);
+
+  // Layout 4: different roof id/height sharing wall2's footprint reuses all detour traces too.
+  const roof4 = floor('following/box4/0', 1.2, 2.8, 1.5, -1.2, 1.2);
+  const overlay4 = createOverlayGroundPlanner(basePlanner, [...grid, roof4], [roof4], [wall2], {
+    ...baseOptions,
+    walls: [wall2],
+  });
+  const route4 = overlay4.plan(origin, b, { connections: [idle] });
+  assert.deepEqual(route4, route2);
+  assert.equal(staticTraceCalls, callsAfterLayout2);
 });
