@@ -227,6 +227,7 @@ export async function openSceneLoader(
     held: number,
     signal: AbortSignal | undefined,
     groundOnly: boolean,
+    sparse: boolean,
   ) {
     const { bounds, tiles, revision } = window;
     // Search and independent replay may test the capsule just beyond the core.
@@ -266,40 +267,106 @@ export async function openSceneLoader(
         charge: block.length * 5,
       })),
     ];
-    const active = new Set(blocks.map(cacheKey));
-    const temporary = blocks.reduce((sum, { charge }) => sum + charge, 0);
-    const growth = blocks.reduce(
-      (sum, request) => sum + (cache.has(cacheKey(request)) ? 0 : request.charge),
-      0,
-    );
-    for (const [key, record] of cache) {
-      if (retained + held + resident + temporary + growth <= budget) break;
-      if (active.has(key)) continue;
-      cache.delete(key);
-      resident -= record.bytes;
-    }
-    const reserved = retained + held + resident + temporary + growth;
-    if (reserved > budget)
-      throw new Error(
-        `Physical window exceeds memory budget: ${scene} ${JSON.stringify(bounds)} needs ${reserved} bytes, budget ${budget}`,
-      );
-    peak = Math.max(peak, reserved);
-
-    await loadMissing(blocks, signal);
-    const assemblyStarted = performance.now();
     const shapes: Shape[] = [];
     const groundTiles: GroundTile[] = [];
-    for (const request of blocks) {
-      const key = cacheKey(request);
-      const entry = cache.get(key)!;
-      cache.delete(key);
-      cache.set(key, entry);
-      if (request.kind === 'collision') {
-        for (const shape of entry.value as Shape[])
-          if (intersects(shape.record.bounds.min, shape.record.bounds.max, padded))
-            shapes.push(shape);
-      } else groundTiles.push(entry.value as GroundTile);
+    let temporary = blocks.reduce((sum, { charge }) => sum + charge, 0);
+    const reserve = (additional: number, active: ReadonlySet<string>) => {
+      for (const [key, record] of cache) {
+        if (retained + held + resident + additional <= budget) break;
+        if (active.has(key)) continue;
+        cache.delete(key);
+        resident -= record.bytes;
+      }
+      const reserved = retained + held + resident + additional;
+      if (reserved > budget)
+        throw new Error(
+          `Physical window exceeds memory budget: ${scene} ${JSON.stringify(bounds)} needs ${reserved} bytes, budget ${budget}`,
+        );
+      peak = Math.max(peak, reserved);
+    };
+    const tileBounds = tiles.map(({ x, z }) =>
+      pad({
+        min: [Math.max(bounds.min[0], x * span), Math.max(bounds.min[1], z * span)],
+        max: [Math.min(bounds.max[0], (x + 1) * span), Math.min(bounds.max[1], (z + 1) * span)],
+      }),
+    );
+    const selected = (min: Vec3, max: Vec3) =>
+      sparse ? tileBounds.some((tile) => intersects(min, max, tile)) : intersects(min, max, padded);
+    if (sparse && !groundOnly) {
+      let collisionBytes = 0;
+      // Sparse corridors may touch many large collision cells. Borrow one block
+      // at a time, and copy selected whole meshes so V8 backing buffers cannot
+      // keep discarded geometry alive. Receipts still bind to the complete mesh.
+      const copyBlock = async (request: Request) => {
+        const key = cacheKey(request);
+        reserve(2 * groundBytes + 2 * collisionBytes + 3 * request.block.length, new Set([key]));
+        await loadMissing([request], signal);
+        try {
+          const entry = cache.get(key)!;
+          const copiedAt = performance.now();
+          for (const shape of entry.value as Shape[]) {
+            signal?.throwIfAborted();
+            if (!selected(shape.record.bounds.min, shape.record.bounds.max)) continue;
+            // Include record/object overhead, in addition to both compact mesh
+            // copies alive during final assembly. The resident charge includes
+            // the decoded source block; one extra block covers its read buffer.
+            const bytes = shape.positions.byteLength + shape.indices.byteLength + 512;
+            reserve(
+              2 * groundBytes + 2 * (collisionBytes + bytes) + request.block.length,
+              new Set([key]),
+            );
+            shapes.push({
+              record: shape.record,
+              positions: new Float64Array(shape.positions),
+              indices: new Uint32Array(shape.indices),
+            });
+            collisionBytes += bytes;
+          }
+          assemblyMs += performance.now() - copiedAt;
+        } finally {
+          const entry = cache.get(key);
+          if (entry) {
+            cache.delete(key);
+            resident -= entry.bytes;
+          }
+        }
+      };
+      for (const request of blocks.filter(({ kind }) => kind === 'collision'))
+        await copyBlock(request);
+      const groundRequests = blocks.filter(({ kind }) => kind === 'ground');
+      const growth = groundRequests.reduce(
+        (sum, request) => sum + (cache.has(cacheKey(request)) ? 0 : request.charge),
+        0,
+      );
+      reserve(groundBytes + 2 * collisionBytes + growth, new Set(groundRequests.map(cacheKey)));
+      await loadMissing(groundRequests, signal);
+      for (const request of groundRequests) {
+        const key = cacheKey(request);
+        const entry = cache.get(key)!;
+        cache.delete(key);
+        cache.set(key, entry);
+        groundTiles.push(entry.value as GroundTile);
+      }
+      temporary = groundBytes + collisionBytes;
+    } else {
+      const growth = blocks.reduce(
+        (sum, request) => sum + (cache.has(cacheKey(request)) ? 0 : request.charge),
+        0,
+      );
+      reserve(temporary + growth, new Set(blocks.map(cacheKey)));
+      await loadMissing(blocks, signal);
+      for (const request of blocks) {
+        const key = cacheKey(request);
+        const entry = cache.get(key)!;
+        cache.delete(key);
+        cache.set(key, entry);
+        if (request.kind === 'collision') {
+          for (const shape of entry.value as Shape[])
+            if (selected(shape.record.bounds.min, shape.record.bounds.max)) shapes.push(shape);
+        } else groundTiles.push(entry.value as GroundTile);
+      }
     }
+    const assemblyStarted = performance.now();
     signal?.throwIfAborted();
     const positions = new Float64Array(shapes.reduce((n, shape) => n + shape.positions.length, 0));
     const indices = new Uint32Array(shapes.reduce((n, shape) => n + shape.indices.length, 0));
@@ -312,7 +379,7 @@ export async function openSceneLoader(
       vp += shape.positions.length;
       return record;
     });
-    const walls = manifest.exclusions.filter((w) => intersects(w.min, w.max, padded));
+    const walls = manifest.exclusions.filter((w) => selected(w.min, w.max));
     const staticSupports = [...new Set(shapes.flatMap(findFacilities))];
     const ground = assembleGroundTiles(groundTiles, { ...settings, bounds });
     assemblyMs += performance.now() - assemblyStarted;
@@ -355,6 +422,7 @@ export async function openSceneLoader(
           held,
           signal,
           groundOnly,
+          Boolean(window.tiles?.length),
         );
         const collisionBytes = retainedBytes - groundBytes;
         let groundOwners = 0;
