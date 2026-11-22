@@ -716,14 +716,28 @@ impl World {
             return Vec::new();
         }
         let mut result = Vec::new();
-        for (index, triangles) in [
-            (&self.ground_index, &self.ground),
-            (&self.box_support_index, &self.box_support),
+        // Authored static supports can be absent from navigation. Query their
+        // local collision faces as terminal contacts without adding query nodes
+        // to the prepared backbone. Standing and obstruction proofs still apply.
+        for (index, triangles, physical) in [
+            (&self.ground_index, &self.ground, false),
+            (&self.box_support_index, &self.box_support, false),
+            (&self.collision_index, &self.collision, true),
         ] {
             index.query(
                 Bounds::points(&[query.goal]).expand(interaction.radius),
                 |i| {
                     let triangle = triangles[i];
+                    if physical
+                        && support_normal(
+                            triangle,
+                            self.physical.movement.max_slope.to_radians().cos(),
+                            true,
+                        )
+                        .is_none()
+                    {
+                        return false;
+                    }
                     let mut candidates = triangle.to_vec();
                     if let Some(y) = triangle_height(query.goal, triangle) {
                         candidates.push([query.goal[0], y, query.goal[2]]);

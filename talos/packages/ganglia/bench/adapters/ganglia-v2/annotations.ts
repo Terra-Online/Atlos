@@ -28,6 +28,24 @@ export const anchors: Record<string, { position: Vec3; source: string }[]> = {
     { position: [-106.213, 93.989, -531.599], source: 'ground/163550086/16/27' },
   ],
   map02: [
+    // Static bridge 10100030203, authored state 0 away. These four upward
+    // top-face centroids are absent from navigation; add standing clearance.
+    {
+      position: [-750.502597761711, 242.92857397079467, -1390.6660457404166],
+      source: 'static-support/10100030203/7',
+    },
+    {
+      position: [-750.8124754961185, 242.92857397079467, -1390.6126245598507],
+      source: 'static-support/10100030203/10',
+    },
+    {
+      position: [-754.8831733953175, 242.92857397079467, -1386.9537790021213],
+      source: 'static-support/10100030203/182',
+    },
+    {
+      position: [-754.9692209716405, 242.92857397079467, -1386.651332564841],
+      source: 'static-support/10100030203/189',
+    },
     // Collision-backed rim contact on the isolated eastern chest platform.
     // Interior navigation representatives put its landing beyond a normal jump.
     { position: [-674.096100522, 228.460560872, -1601.256439863], source: 'east-platform/rim' },
