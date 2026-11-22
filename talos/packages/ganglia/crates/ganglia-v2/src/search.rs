@@ -100,6 +100,8 @@ impl Engine {
                 }
             }
         }
+        let mut contact_attempted = false;
+        let mut contact_labels = 0;
         let mut population = Vec::new();
         let mut origins = Vec::new();
         let mut reached = vec![false; backbone.nodes.len()];
@@ -217,23 +219,30 @@ impl Engine {
                     }
                 }
             }
+            // A topological route can cross incompatible moving poses. Repair
+            // that contact chain before exploring unrelated fast-flight seeds.
+            if population.is_empty()
+                && !contact_attempted
+                && world.has_contacts()
+                && done
+                    .iter()
+                    .enumerate()
+                    .any(|(node, &yes)| yes && !endings[node].is_empty())
+                && !self.cancelled.load(Ordering::Relaxed)
+            {
+                contact_attempted = true;
+                let (candidates, labels) = self.contact_seeds(layout, query, &endings);
+                population.extend(candidates);
+                contact_labels += labels;
+            }
             if population.is_empty() && !self.cancelled.load(Ordering::Relaxed) {
                 population
                     .extend(self.conditional_seeds(layout, arrival, query, &previous, &suffix));
             }
         }
         *diagnostics = json!({"starts":origins,"goalPositions":goals.len(),"goalAttachments":endings.iter().map(Vec::len).sum::<usize>(),"reachedNodes":reached.iter().filter(|&&v|v).count()});
-        if population.is_empty()
-            && world.has_contacts()
-            && reached
-                .iter()
-                .enumerate()
-                .any(|(i, &yes)| yes && !endings[i].is_empty())
-            && !self.cancelled.load(Ordering::Relaxed)
-        {
-            let (candidates, labels) = self.contact_seeds(layout, query, &endings);
-            population.extend(candidates);
-            diagnostics["contactLabels"] = json!(labels);
+        if contact_labels > 0 {
+            diagnostics["contactLabels"] = json!(contact_labels);
         }
         if population.is_empty()
             && !self.cancelled.load(Ordering::Relaxed)
