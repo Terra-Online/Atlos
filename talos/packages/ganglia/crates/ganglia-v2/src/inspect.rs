@@ -1,4 +1,4 @@
-use crate::{backbone::Backbone, geometry::Bounds, types::Point, world::World};
+use crate::{backbone::Backbone, geometry::Bounds, graph, types::Point, world::World};
 use serde::Serialize;
 use std::collections::BTreeMap;
 
@@ -24,7 +24,7 @@ pub(super) struct View {
     min: Point,
     max: Point,
     triangles: Vec<[Point; 3]>,
-    nodes: Vec<(Point, bool, bool)>,
+    nodes: Vec<(Point, bool, bool, usize)>,
     edges: Vec<(usize, usize, &'static str, bool)>,
 }
 
@@ -68,19 +68,40 @@ pub(super) fn coverage(
     })
 }
 
-pub(super) fn capture(
+pub(super) fn views(
+    windows: &[Bounds],
+    world: &World,
+    backbone: &Backbone,
+    reached: &[bool],
+    to_goal: &[bool],
+) -> Vec<View> {
+    // Decompose the entire directed backbone before cropping inspection windows.
+    let (components, _) = graph::components(backbone.nodes.len(), |from| {
+        backbone.edges[from]
+            .iter()
+            .map(|edge| edge.to)
+            .chain(backbone.conditional[from].iter().map(|edge| edge.to))
+    });
+    windows
+        .iter()
+        .map(|&bounds| capture(bounds, world, backbone, reached, to_goal, &components))
+        .collect()
+}
+
+fn capture(
     bounds: Bounds,
     world: &World,
     backbone: &Backbone,
     reached: &[bool],
     to_goal: &[bool],
+    components: &[usize],
 ) -> View {
     let mut ids = vec![None; backbone.nodes.len()];
     let mut nodes = Vec::new();
     for (index, &point) in backbone.nodes.iter().enumerate() {
         if (0..3).all(|axis| (bounds.min[axis]..=bounds.max[axis]).contains(&point[axis])) {
             ids[index] = Some(nodes.len());
-            nodes.push((point, reached[index], to_goal[index]));
+            nodes.push((point, reached[index], to_goal[index], components[index]));
         }
     }
     let mut edges = Vec::new();

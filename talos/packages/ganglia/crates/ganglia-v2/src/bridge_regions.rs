@@ -1,4 +1,5 @@
 use super::Edge;
+use crate::graph::components;
 
 pub(super) struct Regions {
     pub node: Vec<usize>,
@@ -9,60 +10,7 @@ pub(super) struct Regions {
 
 impl Regions {
     pub fn new(edges: &[Vec<Edge>]) -> Self {
-        let mut incoming = vec![Vec::new(); edges.len()];
-        for (from, outgoing) in edges.iter().enumerate() {
-            for edge in outgoing {
-                incoming[edge.to].push(from);
-            }
-        }
-
-        // Finish a forward traversal, then assign its strongly connected
-        // regions in reverse finish order. Both traversals use explicit stacks
-        // because scene-sized paths can exhaust the native thread stack.
-        let mut visited = vec![false; edges.len()];
-        let mut finished = Vec::with_capacity(edges.len());
-        let mut stack = Vec::new();
-        for start in 0..edges.len() {
-            if visited[start] {
-                continue;
-            }
-            visited[start] = true;
-            stack.push((start, 0));
-            while let Some((node, next)) = stack.last_mut() {
-                if let Some(edge) = edges[*node].get(*next) {
-                    *next += 1;
-                    if !visited[edge.to] {
-                        visited[edge.to] = true;
-                        stack.push((edge.to, 0));
-                    }
-                } else {
-                    finished.push(*node);
-                    stack.pop();
-                }
-            }
-        }
-        let mut node = vec![usize::MAX; edges.len()];
-        let mut sizes = Vec::<usize>::new();
-        let mut pending = Vec::new();
-        for start in finished.into_iter().rev() {
-            if node[start] != usize::MAX {
-                continue;
-            }
-            let region = sizes.len();
-            sizes.push(0);
-            node[start] = region;
-            pending.push(start);
-            while let Some(current) = pending.pop() {
-                sizes[region] += 1;
-                for &previous in &incoming[current] {
-                    if node[previous] == usize::MAX {
-                        node[previous] = region;
-                        pending.push(previous);
-                    }
-                }
-            }
-        }
-        drop(incoming);
+        let (node, sizes) = components(edges.len(), |from| edges[from].iter().map(|edge| edge.to));
 
         // Region IDs are in topological order. Propagate the largest known
         // entry and exit regions, avoiding a transitive closure or counting

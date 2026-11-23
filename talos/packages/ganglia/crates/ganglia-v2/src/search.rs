@@ -326,10 +326,7 @@ impl Engine {
             if !inspection.is_empty() && !self.cancelled.load(Ordering::Relaxed) {
                 diagnostics["inspection"] = json!({
                     "coverage": inspect::coverage(world, backbone, &reached, &to_goal),
-                    "views": inspection
-                        .iter()
-                        .map(|&bounds| inspect::capture(bounds, world, backbone, &reached, &to_goal))
-                        .collect::<Vec<_>>()
+                    "views": inspect::views(inspection, world, backbone, &reached, &to_goal)
                 });
             }
             if !profile_gaps {
