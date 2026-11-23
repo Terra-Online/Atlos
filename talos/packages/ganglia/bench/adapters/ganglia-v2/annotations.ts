@@ -76,6 +76,7 @@ const placementHints: Record<
   string,
   {
     scenario?: string;
+    scope?: Bounds;
     layout: { device: string; position: Vec3 }[];
     anchors: Vec3[];
     source: string;
@@ -108,6 +109,25 @@ const placementHints: Record<
       source: 'following/2100390488/basin-ledge',
     },
   ],
+  map02: [
+    {
+      scenario: 'map02-020',
+      scope: { min: [-608, 448], max: [-512, 576] },
+      layout: [
+        {
+          device: '10200270059',
+          position: [-557.9429931640625, 237.94593307375908, 540.000024420023],
+        },
+      ],
+      // The source box provides the last step into the raised interaction.
+      anchors: [
+        [-557.9429931640625, 238.10093307971954, 535.500024420023],
+        [-557.7430216471354, 239.4509331035614, 539.8000284830729],
+        [-557.9429931640625, 239.4509331035614, 540.6000366210938],
+      ],
+      source: 'following/10200270059/upper-interaction',
+    },
+  ],
 };
 
 /** Admit fixed scene annotations only when original and selected box bodies
@@ -124,6 +144,9 @@ export function placementAnnotations(
   return (placementHints[scene] ?? []).filter(
     (hint) =>
       (!hint.scenario || hint.scenario === scenario) &&
+      (!hint.scope ||
+        (hint.scope.min.every((value, axis) => value === bounds.min[axis]) &&
+          hint.scope.max.every((value, axis) => value === bounds.max[axis]))) &&
       hint.layout.every((placement) => {
         const support = physical.devices?.followingSupports?.find((s) => s.id === placement.device);
         if (!support) return false;
