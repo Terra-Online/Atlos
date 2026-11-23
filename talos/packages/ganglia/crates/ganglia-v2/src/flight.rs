@@ -1,5 +1,73 @@
 use crate::{geometry::*, types::*, world::World};
 
+pub(super) struct PreparedFlight {
+    pub action: Segment,
+    requirement: FlightRequirement,
+}
+
+impl PreparedFlight {
+    pub fn variants<'a>(
+        &'a self,
+        base: &'a Model,
+        boosts: &'a [BoostUse],
+    ) -> impl Iterator<Item = Segment> + 'a {
+        self.requirement.modifiers(boosts).map(|boost| {
+            let mut action = self.action.clone();
+            let flight = action.flight.as_mut().unwrap();
+            flight.model = self.requirement.model(base, boost);
+            action.required_gait = self.requirement.sprints(boost).then_some("sprint");
+            action.boost = boost.cloned();
+            action
+        })
+    }
+}
+
+struct FlightRequirement {
+    speed: f64,
+    duration: f64,
+    run: f64,
+    base_cap: f64,
+}
+
+impl FlightRequirement {
+    fn modifiers<'a>(
+        &'a self,
+        boosts: &'a [BoostUse],
+    ) -> impl Iterator<Item = Option<&'a BoostUse>> {
+        (self.speed <= self.base_cap + 1e-9)
+            .then_some(None)
+            .into_iter()
+            .chain(
+                boosts
+                    .iter()
+                    .filter(|usage| {
+                        self.duration <= usage.duration + 1e-9
+                            && self.speed <= self.base_cap * usage.multiplier + 1e-9
+                    })
+                    .map(Some),
+            )
+    }
+
+    fn sprints(&self, boost: Option<&BoostUse>) -> bool {
+        self.speed > self.run * boost.map_or(1., |usage| usage.multiplier) + 1e-9
+    }
+
+    fn model(&self, base: &Model, boost: Option<&BoostUse>) -> Model {
+        let multiplier = boost.map_or(1., |usage| usage.multiplier);
+        let mut model = base.clone();
+        model.max_horizontal_speed = multiplier
+            * if self.sprints(boost) {
+                self.base_cap
+            } else {
+                self.run
+            };
+        model.start_horizontal_speed = base
+            .start_horizontal_speed
+            .map(|speed| (speed * multiplier).min(model.max_horizontal_speed));
+        model
+    }
+}
+
 struct Phase {
     y: f64,
     velocity: f64,
@@ -250,16 +318,20 @@ impl World {
             .find_map(|(_, end)| self.flight(start, end, Some((&goal, interaction)), model.clone()))
     }
 
-    /// Prepared constant-horizontal trajectories whose entry needs an actual
-    /// sprint approach or a source boost. These never enter ordinary adjacency.
-    pub fn conditional_flights(&self, start: Point, end: Point) -> Vec<Segment> {
+    /// Prove one trace per motion. The source modifiers share its points and
+    /// times, and are materialized only for reachable edges during search.
+    pub fn conditional_flights(
+        &self,
+        start: Point,
+        end: Point,
+        boosts: &[BoostUse],
+    ) -> [Option<PreparedFlight>; 2] {
         let base = &self.physical.movement.model;
         let run = base
             .max_horizontal_speed
             .min(self.physical.movement.run_air_speed);
         let span = horizontal(start, end);
-        let mut result = Vec::new();
-        for mode in ["jump", "drop"] {
+        ["jump", "drop"].map(|mode| {
             let duration = if mode == "jump" {
                 duration(base, start[1], end[1])
             } else if end[1] < start[1] - 1e-6 {
@@ -267,71 +339,29 @@ impl World {
                 Some(fall + coast)
             } else {
                 None
+            }
+            .filter(|time| *time > 0. && *time <= 60.)?;
+            let speed = span / duration;
+            if speed <= run + 1e-9 {
+                return None;
+            }
+            let requirement = FlightRequirement {
+                speed,
+                duration,
+                run,
+                base_cap: base.max_horizontal_speed,
             };
-            let Some(duration) = duration.filter(|time| *time > 0. && *time <= 60.) else {
-                continue;
-            };
-            let required = span / duration;
-            // Increasing the cap leaves this trajectory unchanged. If run can
-            // cover its span, a failed ordinary proof was a geometry failure.
-            if required <= run + 1e-9 {
-                continue;
+            let modifier = requirement.modifiers(boosts).next()?;
+            let mut action =
+                self.flight_mode(start, end, None, requirement.model(base, modifier), mode)?;
+            if mode == "drop" {
+                action.connection = crate::devices::drop_source(self, start, end);
             }
-            let mut modifiers = Vec::new();
-            if required <= base.max_horizontal_speed + 1e-9 {
-                modifiers.push(None);
-            }
-            // A boost-run alternative can remain feasible when the unboosted
-            // sprint trajectory has the same geometry but insufficient energy.
-            modifiers.extend(
-                self.physical
-                    .devices
-                    .iter()
-                    .flat_map(|facts| &facts.devices)
-                    .filter_map(crate::devices::boost_usage)
-                    .filter(|usage| {
-                        duration <= usage.duration + 1e-9
-                            && required <= base.max_horizontal_speed * usage.multiplier + 1e-9
-                    })
-                    .map(Some),
-            );
-            let mut proof: Option<Segment> = None;
-            for boost in modifiers {
-                let multiplier = boost.as_ref().map_or(1., |usage| usage.multiplier);
-                let sprint = required > run * multiplier + 1e-9;
-                let mut model = base.clone();
-                model.max_horizontal_speed = if sprint {
-                    base.max_horizontal_speed * multiplier
-                } else {
-                    run * multiplier
-                };
-                // This family deliberately excludes overspeed, expiration in
-                // flight and piecewise steering. Its speed is span / duration.
-                model.start_horizontal_speed = model
-                    .start_horizontal_speed
-                    .map(|speed| (speed * multiplier).min(model.max_horizontal_speed));
-                // All these caps cover the same constant-horizontal trace.
-                // Prove its sweep once, including when it fails on an obstacle.
-                let mut action = if let Some(proof) = &proof {
-                    proof.clone()
-                } else {
-                    let Some(action) = self.flight_mode(start, end, None, model.clone(), mode)
-                    else {
-                        break;
-                    };
-                    proof = Some(action.clone());
-                    action
-                };
-                action.flight.as_mut().unwrap().model = model;
-                action.required_gait = sprint.then_some("sprint");
-                action.boost = boost;
-                if mode == "drop" {
-                    action.connection = crate::devices::drop_source(self, start, end);
-                }
-                result.push(action);
-            }
-        }
-        result
+            Some(PreparedFlight {
+                action,
+                requirement,
+            })
+        })
     }
 
     pub fn jump(

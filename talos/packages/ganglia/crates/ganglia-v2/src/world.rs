@@ -236,6 +236,9 @@ impl World {
         result.roofs = Arc::new(roofs);
         result
     }
+    pub(super) fn has_static_collision(&self) -> bool {
+        !self.collision.is_empty()
+    }
     pub(super) fn box_bounds(&self) -> Vec<Bounds> {
         self.box_bodies
             .iter()

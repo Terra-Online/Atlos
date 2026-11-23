@@ -1,54 +1,89 @@
-use crate::{geometry::*, types::*, world::World};
+use crate::{flight::PreparedFlight, geometry::*, types::*, world::World};
 use std::{
     collections::{BTreeMap, HashMap},
-    sync::Arc,
+    hash::{DefaultHasher, Hash, Hasher},
+    sync::{Arc, Mutex},
+    thread,
+    time::Instant,
 };
 
-// Lifetime is exactly one Engine::new. Only successful walks whose entire
-// support/capsule envelope misses every source and candidate box are reusable.
-// Failed actions stay layout-local: moving a box can open a previously blocked path.
-pub(super) struct WalkProofs {
-    affected: Index,
-    enabled: bool,
-    padding: f64,
-    height: f64,
-    walks: HashMap<[[u64; 3]; 2], Arc<Segment>>,
+type Pair = [[u64; 3]; 2];
+
+#[derive(Clone)]
+enum Actions {
+    Ordinary(Arc<Segment>),
+    Conditional([Option<Arc<PreparedFlight>>; 2]),
+}
+
+struct ProofShard {
+    pairs: HashMap<Pair, Actions>,
     hits: usize,
 }
-impl WalkProofs {
-    pub fn new(bounds: Vec<Bounds>, profile: &Profile, enabled: bool) -> Self {
+
+// Layouts share exact proofs, including misses, if their only varying geometry
+// cannot affect the motion. Even recursive walk projection keeps XZ between
+// the endpoints. Ignore Y in this check so elevated jumps cannot evade it.
+pub(super) struct Proofs {
+    affected: Index,
+    padding: f64,
+    shards: Vec<Mutex<ProofShard>>,
+}
+impl Proofs {
+    pub fn new(bounds: Vec<Bounds>, profile: &Profile, reuse: bool) -> Self {
         Self {
             affected: Index::new(&bounds),
-            enabled,
-            // Walk projection can search +/-0.5m before finite-radius support
-            // refinement. One metre plus radius conservatively covers both.
+            // Larger than the capsule sweep, support and projection margins.
             padding: profile.radius + 1.,
-            height: profile.height,
-            walks: HashMap::new(),
-            hits: 0,
+            shards: (0..if reuse { 64 } else { 0 })
+                .map(|_| {
+                    Mutex::new(ProofShard {
+                        pairs: HashMap::new(),
+                        hits: 0,
+                    })
+                })
+                .collect(),
         }
     }
-    fn action(&mut self, world: &World, from: Point, to: Point) -> Option<Arc<Segment>> {
-        if !self.enabled {
-            return world.action(from, to).map(Arc::new);
+
+    fn actions(&self, world: &World, from: Point, to: Point, boosts: &[BoostUse]) -> Actions {
+        let prove = || match world.action(from, to) {
+            Some(action) => Actions::Ordinary(Arc::new(action)),
+            None => Actions::Conditional(
+                world
+                    .conditional_flights(from, to, boosts)
+                    .map(|a| a.map(Arc::new)),
+            ),
+        };
+        if self.shards.is_empty() {
+            return prove();
+        }
+        let mut bounds = Bounds::points(&[from, to]).expand(self.padding);
+        bounds.min[1] = f64::NEG_INFINITY;
+        bounds.max[1] = f64::INFINITY;
+        if self.affected.query(bounds, |_| true) {
+            return prove();
         }
         let key = [from.map(f64::to_bits), to.map(f64::to_bits)];
-        if let Some(action) = self.walks.get(&key) {
-            self.hits += 1;
-            return Some(Arc::clone(action));
-        }
-        let action = Arc::new(world.action(from, to)?);
-        if action.mode == "walk" {
-            let mut bounds = Bounds::points(&action.points).expand(self.padding);
-            bounds.max[1] += self.height;
-            if !self.affected.query(bounds, |_| true) {
-                self.walks.insert(key, Arc::clone(&action));
+        let mut hash = DefaultHasher::new();
+        key.hash(&mut hash);
+        let shard = &self.shards[hash.finish() as usize % self.shards.len()];
+        {
+            let mut saved = shard.lock().unwrap();
+            if let Some(actions) = saved.pairs.get(&key).cloned() {
+                saved.hits += 1;
+                return actions;
             }
         }
-        Some(action)
+        let actions = prove();
+        shard.lock().unwrap().pairs.insert(key, actions.clone());
+        actions
     }
+
     pub fn stats(&self) -> (usize, usize) {
-        (self.walks.len(), self.hits)
+        self.shards.iter().fold((0, 0), |(count, hits), shard| {
+            let saved = shard.lock().unwrap();
+            (count + saved.pairs.len(), hits + saved.hits)
+        })
     }
 }
 
@@ -56,20 +91,21 @@ pub(super) struct Edge {
     pub to: usize,
     pub action: Arc<Segment>,
 }
+pub(super) struct ConditionalEdge {
+    pub to: usize,
+    pub flight: Arc<PreparedFlight>,
+}
 pub(super) struct Backbone {
     pub nodes: Vec<Point>,
     pub edges: Vec<Vec<Edge>>,
     pub boosts: Vec<usize>,
-    pub conditional: Vec<Vec<Edge>>,
+    pub conditional: Vec<Vec<ConditionalEdge>>,
+    pub boost_uses: Vec<BoostUse>,
+    pub preparation_ms: [f64; 4],
     pub terminals: Vec<(Mark, Vec<(usize, Segment)>)>,
 }
 impl Backbone {
-    pub fn build(
-        world: &World,
-        marks: Vec<Mark>,
-        anchors: Vec<Point>,
-        proofs: &mut WalkProofs,
-    ) -> Self {
+    pub fn build(world: &World, marks: Vec<Mark>, anchors: Vec<Point>, proofs: &Proofs) -> Self {
         let profile = std::env::var_os("GANGLIA_PROFILE").is_some();
         let started = std::time::Instant::now();
         // Sparse interior representatives plus ledge samples. The lattice is a
@@ -132,6 +168,8 @@ impl Backbone {
             .filter_map(|p| world.standing(p))
             .filter(|p| !world.blocked(*p, *p, 0.))
             .collect();
+        let samples_ms = started.elapsed().as_secs_f64() * 1000.;
+        let ports_started = Instant::now();
         // Authored traversal ports are critical nodes even when lattice
         // representatives omit their small interaction volumes.
         let launches = crate::devices::launches(world, &nodes, &marks);
@@ -174,8 +212,18 @@ impl Backbone {
                 .map(|p| Bounds::points(&[*p]))
                 .collect::<Vec<_>>(),
         );
+        let ports_ms = ports_started.elapsed().as_secs_f64() * 1000.;
+        let boost_uses: Vec<_> = world
+            .physical
+            .devices
+            .iter()
+            .flat_map(|facts| &facts.devices)
+            .filter_map(crate::devices::boost_usage)
+            .collect();
         let mut edges: Vec<Vec<Edge>> = (0..nodes.len()).map(|_| Vec::new()).collect();
-        let mut conditional: Vec<Vec<Edge>> = (0..nodes.len()).map(|_| Vec::new()).collect();
+        let mut conditional: Vec<Vec<ConditionalEdge>> =
+            (0..nodes.len()).map(|_| Vec::new()).collect();
+        let edges_started = Instant::now();
         if profile {
             eprintln!(
                 "ganglia-v2 backbone: {} nodes, {} device actions",
@@ -183,36 +231,66 @@ impl Backbone {
                 devices.len()
             );
         }
-        for (i, &a) in nodes.iter().enumerate() {
-            if profile && i % 1024 == 0 {
-                eprintln!(
-                    "ganglia-v2 backbone: {i}/{} nodes, {:.3}s",
-                    nodes.len(),
-                    started.elapsed().as_secs_f64()
-                );
+        // Scenario benchmark workers already run concurrently. Leave half the
+        // machine available to the other worker. Write disjoint adjacency rows
+        // so scheduling cannot change discovery order within a row.
+        let workers =
+            thread::available_parallelism().map_or(1, |count| (count.get() / 2).clamp(1, 6));
+        const CHUNK: usize = 256;
+        let chunks = Mutex::new(
+            edges
+                .chunks_mut(CHUNK)
+                .zip(conditional.chunks_mut(CHUNK))
+                .enumerate(),
+        );
+        thread::scope(|scope| {
+            for _ in 0..workers.min(nodes.len().div_ceil(CHUNK)) {
+                let nodes = &nodes;
+                let index = &index;
+                let boost_uses = &boost_uses;
+                let chunks = &chunks;
+                scope.spawn(move || {
+                    let mut nearby = Vec::new();
+                    loop {
+                        // Dense geometry makes adjacent rows very different
+                        // in cost. Draw another batch when a worker finishes.
+                        let Some((chunk, (edges, conditional))) = chunks.lock().unwrap().next()
+                        else {
+                            break;
+                        };
+                        for (row, (edges, conditional)) in
+                            edges.iter_mut().zip(conditional).enumerate()
+                        {
+                            let i = chunk * CHUNK + row;
+                            let a = nodes[i];
+                            nearby.clear();
+                            index.query(Bounds::points(&[a]).expand(12.), |j| {
+                                if i != j {
+                                    nearby.push(j);
+                                }
+                                false
+                            });
+                            nearby.sort_unstable_by(|&j, &k| {
+                                distance(a, nodes[j]).total_cmp(&distance(a, nodes[k]))
+                            });
+                            for &j in nearby.iter().take(24) {
+                                match proofs.actions(world, a, nodes[j], boost_uses) {
+                                    Actions::Ordinary(action) => edges.push(Edge { to: j, action }),
+                                    Actions::Conditional(flights) => conditional.extend(
+                                        flights
+                                            .into_iter()
+                                            .flatten()
+                                            .map(|flight| ConditionalEdge { to: j, flight }),
+                                    ),
+                                }
+                            }
+                        }
+                    }
+                });
             }
-            let mut nearby = Vec::new();
-            index.query(Bounds::points(&[a]).expand(12.), |j| {
-                if i != j {
-                    nearby.push(j);
-                }
-                false
-            });
-            nearby
-                .sort_unstable_by(|&j, &k| distance(a, nodes[j]).total_cmp(&distance(a, nodes[k])));
-            for j in nearby.into_iter().take(24) {
-                if let Some(action) = proofs.action(world, a, nodes[j]) {
-                    edges[i].push(Edge { to: j, action });
-                } else {
-                    conditional[i].extend(world.conditional_flights(a, nodes[j]).into_iter().map(
-                        |action| Edge {
-                            to: j,
-                            action: Arc::new(action),
-                        },
-                    ));
-                }
-            }
-        }
+        });
+        let edges_ms = edges_started.elapsed().as_secs_f64() * 1000.;
+        let terminals_started = Instant::now();
         for (from, to, action) in devices {
             edges[from].push(Edge {
                 to,
@@ -245,6 +323,13 @@ impl Backbone {
             terminals,
             boosts,
             conditional,
+            boost_uses,
+            preparation_ms: [
+                samples_ms,
+                ports_ms,
+                edges_ms,
+                terminals_started.elapsed().as_secs_f64() * 1000.,
+            ],
         }
     }
 }

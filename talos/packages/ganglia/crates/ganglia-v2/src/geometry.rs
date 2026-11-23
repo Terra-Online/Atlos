@@ -115,29 +115,22 @@ impl Index {
         id
     }
     pub fn query(&self, bounds: Bounds, mut visit: impl FnMut(usize) -> bool) -> bool {
-        if self.nodes.is_empty() {
+        !self.nodes.is_empty() && self.visit(0, bounds, &mut visit)
+    }
+    fn visit(&self, id: usize, bounds: Bounds, visit: &mut impl FnMut(usize) -> bool) -> bool {
+        let node = &self.nodes[id];
+        if !node.bounds.overlaps(bounds) {
             return false;
         }
-        let mut pending = vec![0];
-        while let Some(id) = pending.pop() {
-            let node = &self.nodes[id];
-            if !node.bounds.overlaps(bounds) {
-                continue;
-            }
-            if let Some((a, b)) = node.children {
-                pending.push(a);
-                pending.push(b);
-            } else {
-                for &item in &node.items {
-                    // A leaf can straddle several floors. Cull its individual
-                    // members before invoking expensive triangle/body checks.
-                    if self.item_bounds[item].overlaps(bounds) && visit(item) {
-                        return true;
-                    }
-                }
-            }
+        // Median splits bound recursion depth. Visit right first to preserve
+        // the order used by support projection when candidates tie.
+        if let Some((a, b)) = node.children {
+            self.visit(b, bounds, visit) || self.visit(a, bounds, visit)
+        } else {
+            node.items
+                .iter()
+                .any(|&item| self.item_bounds[item].overlaps(bounds) && visit(item))
         }
-        false
     }
 }
 pub fn triangle_height(p: Point, t: [Point; 3]) -> Option<f64> {

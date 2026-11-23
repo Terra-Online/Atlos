@@ -20,6 +20,7 @@ impl Engine {
         suffix: &[Option<(usize, Segment)>],
     ) -> Vec<Candidate> {
         let backbone = self.backbone_for(layout);
+        let base = &self.world_for(layout).physical.movement.model;
         if !backbone.conditional.iter().any(|edges| !edges.is_empty()) {
             return Vec::new();
         }
@@ -44,85 +45,87 @@ impl Engine {
                 let Some(ending) = chain(suffix, edge.to, false) else {
                     continue;
                 };
-                let axis = sub(edge.action.end(), edge.action.start());
-                let span = axis[0].hypot(axis[2]);
-                // The cheapest prefix may approach from the wrong direction.
-                // Try a few existing incoming walks as explicit run-up tails.
-                let mut runups: Vec<_> = incoming[from]
-                    .iter()
-                    .copied()
-                    .filter(|(_, action)| {
-                        let delta = sub(action.end(), action.start());
-                        let length = delta[0].hypot(delta[2]);
-                        span > 0.
-                            && length > 0.
-                            && (delta[0] * axis[0] + delta[2] * axis[2]) / (span * length)
-                                >= (std::f64::consts::PI / 6.).cos()
-                    })
-                    .collect();
-                runups.sort_by(|a, b| b.1.cost().total_cmp(&a.1.cost()));
-                let approaches: Vec<_> = std::iter::once((from, None))
-                    .chain(
-                        runups
-                            .into_iter()
-                            .take(8)
-                            .map(|(node, action)| (node, Some(action))),
-                    )
-                    .collect();
-                for (node, runup) in approaches {
-                    if self.cancelled.load(Ordering::Relaxed) {
-                        return result;
-                    }
-                    let mut prefixes = Vec::new();
-                    if let Some(prefix) = chain(previous, node, true) {
-                        prefixes.push(prefix);
-                    }
-                    if let Some(required) = &edge.action.boost {
-                        let source = self
-                            .world_for(layout)
-                            .physical
-                            .devices
-                            .iter()
-                            .flat_map(|facts| &facts.devices)
-                            .find(|device| device.id == required.id)
-                            .and_then(|device| device.goal.as_ref());
-                        if let Some(source) = source {
-                            for &boost in &backbone.boosts {
-                                if flight::hit(
-                                    backbone.nodes[boost],
-                                    backbone.nodes[boost],
-                                    source.position,
-                                    &source.interaction,
-                                )
-                                .is_none()
-                                {
-                                    continue;
+                for flight in edge.flight.variants(base, &backbone.boost_uses) {
+                    let axis = sub(flight.end(), flight.start());
+                    let span = axis[0].hypot(axis[2]);
+                    // The cheapest prefix may approach from the wrong direction.
+                    // Try a few existing incoming walks as explicit run-up tails.
+                    let mut runups: Vec<_> = incoming[from]
+                        .iter()
+                        .copied()
+                        .filter(|(_, action)| {
+                            let delta = sub(action.end(), action.start());
+                            let length = delta[0].hypot(delta[2]);
+                            span > 0.
+                                && length > 0.
+                                && (delta[0] * axis[0] + delta[2] * axis[2]) / (span * length)
+                                    >= (std::f64::consts::PI / 6.).cos()
+                        })
+                        .collect();
+                    runups.sort_by(|a, b| b.1.cost().total_cmp(&a.1.cost()));
+                    let approaches: Vec<_> = std::iter::once((from, None))
+                        .chain(
+                            runups
+                                .into_iter()
+                                .take(8)
+                                .map(|(node, action)| (node, Some(action))),
+                        )
+                        .collect();
+                    for (node, runup) in approaches {
+                        if self.cancelled.load(Ordering::Relaxed) {
+                            return result;
+                        }
+                        let mut prefixes = Vec::new();
+                        if let Some(prefix) = chain(previous, node, true) {
+                            prefixes.push(prefix);
+                        }
+                        if let Some(required) = &flight.boost {
+                            let source = self
+                                .world_for(layout)
+                                .physical
+                                .devices
+                                .iter()
+                                .flat_map(|facts| &facts.devices)
+                                .find(|device| device.id == required.id)
+                                .and_then(|device| device.goal.as_ref());
+                            if let Some(source) = source {
+                                for &boost in &backbone.boosts {
+                                    if flight::hit(
+                                        backbone.nodes[boost],
+                                        backbone.nodes[boost],
+                                        source.position,
+                                        &source.interaction,
+                                    )
+                                    .is_none()
+                                    {
+                                        continue;
+                                    }
+                                    let Some(mut prefix) = chain(previous, boost, true) else {
+                                        continue;
+                                    };
+                                    let tree = trees.entry(boost).or_insert_with(|| {
+                                        Tree::new(backbone, boost, &self.cancelled)
+                                    });
+                                    let Some(detour) = tree.path(node) else {
+                                        continue;
+                                    };
+                                    prefix.extend(detour);
+                                    prefixes.push(prefix);
                                 }
-                                let Some(mut prefix) = chain(previous, boost, true) else {
-                                    continue;
-                                };
-                                let tree = trees
-                                    .entry(boost)
-                                    .or_insert_with(|| Tree::new(backbone, boost, &self.cancelled));
-                                let Some(detour) = tree.path(node) else {
-                                    continue;
-                                };
-                                prefix.extend(detour);
-                                prefixes.push(prefix);
                             }
                         }
-                    }
-                    for mut path in prefixes {
-                        if let Some(runup) = runup {
-                            path.push(runup.as_ref().clone());
-                        }
-                        path.push(edge.action.as_ref().clone());
-                        path.extend(ending.iter().cloned());
-                        if let Some(candidate) = self.candidate(layout, arrival.clone(), path) {
-                            if candidate.finishes_at_first_goal(query) {
-                                result.push(candidate);
-                                if result.len() >= self.config.population_size {
-                                    return result;
+                        for mut path in prefixes {
+                            if let Some(runup) = runup {
+                                path.push(runup.as_ref().clone());
+                            }
+                            path.push(flight.clone());
+                            path.extend(ending.iter().cloned());
+                            if let Some(candidate) = self.candidate(layout, arrival.clone(), path) {
+                                if candidate.finishes_at_first_goal(query) {
+                                    result.push(candidate);
+                                    if result.len() >= self.config.population_size {
+                                        return result;
+                                    }
                                 }
                             }
                         }
