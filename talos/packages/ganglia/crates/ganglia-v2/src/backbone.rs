@@ -314,6 +314,16 @@ impl Backbone {
                     }
                     false
                 });
+                if connections.is_empty() {
+                    index.query(Bounds::points(&[mark.position]).expand(12.), |i| {
+                        if let Some(action) =
+                            world.collect_sprinting(nodes[i], mark.position, &mark.interaction)
+                        {
+                            connections.push((i, action));
+                        }
+                        false
+                    });
+                }
                 (mark, connections)
             })
             .collect();

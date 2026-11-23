@@ -57,7 +57,13 @@ impl Engine {
         // shortest-path tree supplies feasible suffixes for optional boost
         // detours; complete resource replay decides whether they are useful.
         let count = backbone.nodes.len();
+        let sprint_terminal = endings.iter().flatten().next().is_some()
+            && endings
+                .iter()
+                .flatten()
+                .all(|action| action.required_gait == Some("sprint"));
         let mut suffix: Vec<Option<(usize, Segment)>> = vec![None; count];
+        let mut suffix_costs = Vec::new();
         if !backbone.boosts.is_empty() || backbone.conditional.iter().any(|edges| !edges.is_empty())
         {
             let mut reverse = vec![Vec::new(); count];
@@ -66,16 +72,16 @@ impl Engine {
                     reverse[edge.to].push((from, &edge.action));
                 }
             }
-            let mut costs = vec![f64::INFINITY; count];
+            suffix_costs = vec![f64::INFINITY; count];
             let mut queue = std::collections::BinaryHeap::new();
             for (node, actions) in endings.iter().enumerate() {
                 for action in actions {
-                    if action.cost() < costs[node] {
-                        costs[node] = action.cost();
+                    if action.cost() < suffix_costs[node] {
+                        suffix_costs[node] = action.cost();
                         suffix[node] = Some((count, action.clone()));
                         queue.push(Label {
                             node,
-                            cost: costs[node],
+                            cost: suffix_costs[node],
                         });
                     }
                 }
@@ -84,13 +90,13 @@ impl Engine {
                 if self.cancelled.load(Ordering::Relaxed) {
                     break;
                 }
-                if cost > costs[node] {
+                if cost > suffix_costs[node] {
                     continue;
                 }
                 for &(from, action) in &reverse[node] {
                     let next = cost + action.cost();
-                    if next < costs[from] {
-                        costs[from] = next;
+                    if next < suffix_costs[from] {
+                        suffix_costs[from] = next;
                         suffix[from] = Some((node, action.as_ref().clone()));
                         queue.push(Label {
                             node: from,
@@ -236,8 +242,14 @@ impl Engine {
                 contact_labels += labels;
             }
             if population.is_empty() && !self.cancelled.load(Ordering::Relaxed) {
-                population
-                    .extend(self.conditional_seeds(layout, arrival, query, &previous, &suffix));
+                population.extend(self.conditional_seeds(
+                    layout,
+                    arrival,
+                    query,
+                    &previous,
+                    &suffix,
+                    sprint_terminal.then_some((costs.as_slice(), suffix_costs.as_slice())),
+                ));
             }
         }
         *diagnostics = json!({"starts":origins,"goalPositions":goals.len(),"goalAttachments":endings.iter().map(Vec::len).sum::<usize>(),"reachedNodes":reached.iter().filter(|&&v|v).count()});

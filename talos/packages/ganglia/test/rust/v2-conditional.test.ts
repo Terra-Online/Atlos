@@ -225,3 +225,30 @@ test('v2 re-establishes entry speed after an ordinary jump even when sprint surv
     }
   }
 });
+
+test('v2 requires a proven sprint approach to collect a prepared airborne target outside run range', async () => {
+  const goal: Vec3 = [7, 1.2, 0];
+  const interaction = { radius: 0.2, airborne: true };
+  for (const energy of [8, 0]) {
+    const solver = await prepareGangliaV2(
+      gangliaV2Defaults,
+      scene(-10, 100, energy),
+      [{ position: goal, interaction }],
+      [[0, 0, 0]],
+    );
+    try {
+      const result = await solver.solve({
+        starts: [{ id: 'player', position: [-8, 0, 0], cost: 0, state: 'available' }],
+        goal,
+        interaction,
+      });
+      assert.equal(result.route.status, energy ? 'complete' : 'no-verified-route');
+      if (result.route.status === 'complete') {
+        assert.equal(result.route.segments.at(-1)?.requiredGait, 'sprint');
+        assert.ok(result.route.segments.slice(0, -1).some((s) => s.gait === 'sprint'));
+      }
+    } finally {
+      await solver.close();
+    }
+  }
+});

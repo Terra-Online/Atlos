@@ -204,6 +204,29 @@ impl World {
             .or_else(|| self.collect_with_model(start, goal, interaction, model))
     }
 
+    /// An authored target may lie just beyond ordinary run-air reach.
+    /// Preserve the higher cap only when whole-route replay proves the approach.
+    pub(super) fn collect_sprinting(
+        &self,
+        start: Point,
+        goal: Point,
+        interaction: &Interaction,
+    ) -> Option<Segment> {
+        let model = &self.physical.movement.model;
+        let run = self.physical.movement.run_air_speed;
+        if model.max_horizontal_speed <= run + 1e-9 {
+            return None;
+        }
+        let mut action = self
+            .collect_drop(start, goal, interaction, model.clone())
+            .or_else(|| self.collect_with_model(start, goal, interaction, model.clone()))?;
+        if horizontal(start, action.end()) <= run * action.cost() + 1e-9 {
+            return None;
+        }
+        action.required_gait = Some("sprint");
+        Some(action)
+    }
+
     fn collect_drop(
         &self,
         start: Point,
