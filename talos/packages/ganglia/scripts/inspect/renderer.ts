@@ -28,6 +28,8 @@ export type Drawable = { space?: 'world' | 'screen' } & (
       points: readonly Point[];
       stroke: Stroke;
       outline?: Stroke;
+      /** An arrow in the direction of the point order. */
+      arrow?: { color: string };
       /** Draw the full line with its own style regardless of scene depth. */
       alwaysRender?: boolean;
     }
@@ -38,6 +40,8 @@ export type Drawable = { space?: 'world' | 'screen' } & (
       text: string;
       color: string;
       halo?: string;
+      offset?: readonly [x: number, y: number];
+      align?: 'left' | 'right';
       marker?: { color: string; align?: 'left' | 'right' };
     }
 );
@@ -161,8 +165,8 @@ export function createRenderer(canvas: HTMLCanvasElement, state: State) {
           5,
           Math.min(width - textWidth - 5, marker.align === 'right' ? x - textWidth - 9 : x + 9),
         )
-      : x;
-    const ty = marker ? (y < 21 ? y + 17 : y - 8) : y;
+      : x + (item.offset?.[0] ?? 0) - (item.align === 'right' ? textWidth : 0);
+    const ty = marker ? (y < 21 ? y + 17 : y - 8) : y + (item.offset?.[1] ?? 0);
     if (item.halo) {
       ctx.setLineDash([]);
       ctx.lineWidth = 3;
@@ -379,6 +383,34 @@ export function createRenderer(canvas: HTMLCanvasElement, state: State) {
     if (lo < hi) return [lo, hi] as const;
   }
 
+  function arrowhead(
+    spans: readonly (readonly [Point, Point])[],
+    style: Paint | undefined,
+    outline?: Stroke,
+  ) {
+    const lengths = spans.map(([a, b]) => Math.hypot(b[0] - a[0], b[1] - a[1]));
+    const total = lengths.reduce((sum, n) => sum + n, 0);
+    if (total < 15) return false;
+    let remaining = total * 0.72;
+    for (const [i, [a, b]] of spans.entries()) {
+      const length = lengths[i];
+      if (remaining > length || length === 0) {
+        remaining -= length;
+        continue;
+      }
+      const tip = interpolate(a, b, remaining / length);
+      const dx = (b[0] - a[0]) / length,
+        dy = (b[1] - a[1]) / length;
+      const x = tip[0] - 7 * dx,
+        y = tip[1] - 7 * dy;
+      path([[x - dy * 4, y + dx * 4, tip[2]], tip, [x + dy * 4, y - dx * 4, tip[2]]]);
+      if (outline) stroke({ color: outline.color, opacity: outline.opacity, width: 4 });
+      if (style) stroke({ color: style.color, opacity: style.opacity, width: 2 });
+      return true;
+    }
+    return false;
+  }
+
   function drawLine(
     item: Extract<Drawable, { kind: 'line' }>,
     points: readonly Point[],
@@ -386,10 +418,19 @@ export function createRenderer(canvas: HTMLCanvasElement, state: State) {
     bias: number,
   ) {
     if (points.length < 2) return;
-    if (!depth) {
+    function drawWholeLine() {
       path(points);
       if (item.outline) stroke(item.outline);
       stroke(item.stroke);
+      if (item.arrow)
+        arrowhead(
+          points.slice(1).map((point, i) => [points[i], point]),
+          { color: item.arrow.color, opacity: item.stroke.opacity },
+          item.outline,
+        );
+    }
+    if (!depth) {
+      drawWholeLine();
       return;
     }
     const visible: [Point, Point][] = [],
@@ -399,7 +440,8 @@ export function createRenderer(canvas: HTMLCanvasElement, state: State) {
     function append(run: [Point, Point][], a: Point, b: Point, start: number, end: number) {
       if (run === hidden) {
         hasHidden = true;
-        if (hide) return;
+        // Hidden spans can still position an arrow outline.
+        if (hide && !(item.arrow && item.outline)) return;
       }
       run.push([interpolate(a, b, start), interpolate(a, b, end)]);
     }
@@ -426,13 +468,11 @@ export function createRenderer(canvas: HTMLCanvasElement, state: State) {
       append(run, a, b, start, range[1]);
     }
     if (!hasHidden) {
-      path(points);
-      if (item.outline) stroke(item.outline);
-      stroke(item.stroke);
+      drawWholeLine();
       return;
     }
     const dash = [4, 3];
-    for (const spans of [hidden, visible]) {
+    for (const spans of hide ? [visible] : [hidden, visible]) {
       if (!spans.length) continue;
       ctx.beginPath();
       let end: Point | undefined;
@@ -453,6 +493,13 @@ export function createRenderer(canvas: HTMLCanvasElement, state: State) {
       } else {
         if (item.outline) stroke(item.outline);
         stroke(item.stroke);
+      }
+    }
+    if (item.arrow) {
+      const arrow = { color: item.arrow.color, opacity: item.stroke.opacity };
+      if (!arrowhead(visible, arrow, item.outline)) {
+        const fill = hide ? undefined : { ...arrow, opacity: (arrow.opacity ?? 1) * 0.72 };
+        arrowhead(hidden, fill, item.outline);
       }
     }
   }

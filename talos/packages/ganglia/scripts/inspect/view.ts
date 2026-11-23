@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import { createRenderer } from '#@/scripts/inspect/renderer.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
+import type { Segment } from '#@/src/movement.ts';
 import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
 
 interface Capture {
@@ -21,8 +22,7 @@ interface Capture {
   }[];
 }
 
-interface Trace {
-  mode: string;
+interface Trace extends Pick<Segment, 'mode' | 'traversal' | 'gait' | 'requiredGait'> {
   points: readonly Vec3[];
 }
 
@@ -89,7 +89,15 @@ const annotations: { title?: string; overview?: string; views?: Annotation[] } =
   : {};
 const route = artifact.result.route;
 const trace: Trace[] =
-  route.status === 'complete' ? route.segments.map(({ mode, points }) => ({ mode, points })) : [];
+  route.status === 'complete'
+    ? route.segments.map(({ mode, points, traversal, gait, requiredGait }) => ({
+        mode,
+        points,
+        traversal,
+        gait,
+        requiredGait,
+      }))
+    : [];
 const data = {
   title: annotations.title ?? 'Ganglia 骨干网络',
   overview: annotations.overview,
@@ -132,7 +140,10 @@ const data = {
         to,
         conditional ? 2 : Number(mode !== 'walk'),
       ]),
-      trace: (note.trace ?? trace).map(({ mode, points }) => ({ mode, points: points.map(local) })),
+      trace: (note.trace ?? trace).map((segment) => ({
+        ...segment,
+        points: segment.points.map(local),
+      })),
       objects: objects.map((object) =>
         object.kind === 'label'
           ? { ...object, at: local(object.at) }

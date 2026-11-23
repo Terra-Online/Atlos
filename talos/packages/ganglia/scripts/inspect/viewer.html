@@ -535,6 +535,80 @@
       return renderer.render([...sceneObjects, ...hud]);
     }
 
+    const actionNames = { walk: '行走', jump: '跳跃', drop: '下落', rope: '攀绳', launch: '发射' };
+    const gaitNames = { run: '跑步', sprint: '冲刺', dash: '闪避' };
+
+    function traceObjects(trace) {
+      const lines = [],
+        labels = [],
+        endpoints = new Map();
+      function endpoint(at) {
+        const key = at.join(',');
+        if (endpoints.has(key)) return;
+        const first = endpoints.size === 0;
+        endpoints.set(key, {
+          kind: 'point',
+          at,
+          radius: first ? 3.4 : 2.8,
+          color: first ? colors.path : colors.scene,
+          outline: { color: first ? colors.scene : colors.path, width: 1.5 },
+        });
+      }
+      for (const segment of trace) {
+        const { mode, points, traversal, gait, requiredGait } = segment;
+        const lengths = points
+          .slice(1)
+          .map((b, i) => Math.hypot(...b.map((value, axis) => value - points[i][axis])));
+        const total = lengths.reduce((sum, length) => sum + length, 0);
+        if (total === 0) continue;
+        const walking = mode === 'walk' && !traversal;
+        lines.push({
+          kind: 'line',
+          points,
+          arrow: { color: '#fff' },
+          stroke: {
+            color: colors.path,
+            width: walking ? 1.6 : 3,
+            dash: walking ? [4, 3] : undefined,
+          },
+          outline: { color: colors.scene, width: walking ? 3 : 5, opacity: 0.9 },
+        });
+        endpoint(points[0]);
+        endpoint(points.at(-1));
+        let remaining = total / 2;
+        const middle = lengths.findIndex((length) => {
+          if (length > 0 && remaining <= length) return true;
+          remaining -= length;
+          return false;
+        });
+        const at = points[middle].map(
+          (value, axis) =>
+            value + (points[middle + 1][axis] - value) * (remaining / lengths[middle]),
+        );
+        const modeName = actionNames[mode] ?? mode;
+        const gaitName = gaitNames[gait ?? requiredGait];
+        const movement =
+          traversal === 'moving-support'
+            ? '乘平台'
+            : gaitName
+              ? walking
+                ? gaitName
+                : gaitName + modeName
+              : modeName;
+        const align = lines.length % 2 ? 'left' : 'right';
+        labels.push({
+          kind: 'label',
+          at,
+          align,
+          offset: [align === 'left' ? 12 : -12, -4],
+          text: `${lines.length} ${movement}`,
+          color: colors.ink,
+          halo: colors.scene,
+        });
+      }
+      return [...lines, ...endpoints.values(), ...labels];
+    }
+
     function localObjects(view) {
       const objects = [];
       if (settings.mesh) objects.push(view.mesh);
@@ -571,30 +645,29 @@
         });
       }
       if (settings.trace) {
-        let jump = 0;
-        for (const { mode, points } of view.trace) {
-          const walking = mode === 'walk';
-          objects.push({
-            kind: 'line',
-            points,
-            stroke: {
-              color: colors.path,
-              width: walking ? 1.6 : 3,
-              dash: walking ? [4, 3] : undefined,
-            },
-            outline: { color: colors.scene, width: walking ? 3 : 5, opacity: 0.9 },
-          });
-          if (mode === 'jump' && points.length) {
-            objects.push(
-              marker(points[Math.floor(points.length / 2)], `跳 ${++jump}`, colors.path),
-            );
-          }
-        }
+        const route = traceObjects(view.trace);
+        objects.push(...route);
+        const endpoints = new Set(
+          route.filter((item) => item.kind === 'point').map((item) => item.at.join(',')),
+        );
         for (const object of view.objects) {
           if (object.kind === 'label') {
-            objects.push(
-              marker(object.at, object.text, colors[object.tone ?? 'ink'], object.align),
+            const label = marker(
+              object.at,
+              object.text,
+              colors[object.tone ?? 'ink'],
+              object.align,
             );
+            if (endpoints.has(object.at.join(','))) {
+              objects.push({
+                ...label,
+                marker: undefined,
+                align: object.align,
+                offset: [object.align === 'right' ? -9 : 9, -8],
+              });
+            } else {
+              objects.push(label);
+            }
           } else if (object.kind === 'line') {
             objects.push({
               kind: 'line',
