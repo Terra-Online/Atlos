@@ -83,6 +83,7 @@ export type WorkerReply =
       catalog?: CatalogStats;
       memory?: Memory;
       preparationMs?: number;
+      preparation?: Record<string, unknown>;
     }
   | { type: 'error'; id: number; error: string }
   | { type: 'closed' };
@@ -111,6 +112,7 @@ type Slot = {
   catalog?: CatalogStats;
   inputLoadMs?: number;
   preparationMs?: number;
+  preparation?: Record<string, unknown>;
   readyMemory?: Memory;
   preparedMemory?: Memory;
 };
@@ -339,6 +341,7 @@ export async function prepareWorkerSolver(options: {
           }
           if (message.type === 'closed') return;
           if (message.type === 'control') {
+            if (message.preparation) slot.preparation = message.preparation;
             slot.catalog = message.catalog;
             if (message.preparationMs !== undefined) {
               slot.preparationMs = (slot.preparationMs ?? 0) + message.preparationMs;
@@ -705,6 +708,7 @@ export async function prepareWorkerSolver(options: {
           return slots.map((slot) => ({
             inputLoadMs: slot.inputLoadMs,
             preparationMs: slot.preparationMs,
+            diagnostics: slot.preparation,
           }));
         },
       },

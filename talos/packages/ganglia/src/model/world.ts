@@ -1,6 +1,7 @@
 import type { CollisionWorld } from '#@/src/collision.ts';
 import type { CollisionGeometry, Surface, Vec3 } from '#@/src/geometry.ts';
 import { createTypeScriptCollisionWorld } from '#@/src/model/collision.ts';
+import { createCoverage, type Coverage } from '#@/src/model/coverage.ts';
 import {
   flatCuboid,
   footprintOf,
@@ -29,13 +30,7 @@ interface Configuration {
   contactTolerance?: number;
 }
 
-export type Coverage =
-  | 'complete'
-  | {
-      bounds: { min: [number, number]; max: [number, number] };
-      tiles: readonly { x: number; z: number }[];
-      tileSpan: number;
-    };
+export type { Coverage } from '#@/src/model/coverage.ts';
 const distance = (a: Vec3, b: Vec3) => Math.hypot(...a.map((v, i) => v - b[i]));
 const at = (a: Vec3, b: Vec3, t: number): Vec3 => a.map((v, i) => v + t * (b[i] - v)) as Vec3;
 const faces = [
@@ -54,49 +49,8 @@ export function createPhysicalWorld(
   coverage: Coverage,
   prepared?: PreparedBase,
 ) {
-  if (
-    coverage !== 'complete' &&
-    (!Number.isFinite(coverage.tileSpan) ||
-      coverage.tileSpan <= 0 ||
-      coverage.bounds.min.some(
-        (v, i) =>
-          !Number.isFinite(v) ||
-          !Number.isFinite(coverage.bounds.max[i]) ||
-          v >= coverage.bounds.max[i],
-      ) ||
-      coverage.tiles.some(({ x, z }) => !Number.isSafeInteger(x) || !Number.isSafeInteger(z)))
-  )
-    throw new Error('Invalid physical coverage');
   const profile = input.ground.options.profile;
-  const tiles = new Set(
-    coverage === 'complete' ? [] : coverage.tiles.map(({ x, z }) => `${x},${z}`),
-  );
-  const covered = (a: Vec3, b: Vec3, radius = profile.radius) => {
-    const low = [Math.min(a[0], b[0]) - radius, Math.min(a[2], b[2]) - radius];
-    const high = [Math.max(a[0], b[0]) + radius, Math.max(a[2], b[2]) + radius];
-    // A prepared bounded index cannot claim facts outside its own scope,
-    // including when the caller otherwise declares complete source geometry.
-    const scope = prepared?.world.bounds;
-    if (scope && low.some((v, i) => v < scope.min[i] || high[i] > scope.max[i])) return false;
-    if (coverage === 'complete') return true;
-    if (
-      low.some((v, i) => v < coverage.bounds.min[i]) ||
-      high.some((v, i) => v > coverage.bounds.max[i])
-    )
-      return false;
-    for (
-      let x = Math.floor(low[0] / coverage.tileSpan);
-      x <= Math.floor(high[0] / coverage.tileSpan);
-      x++
-    )
-      for (
-        let z = Math.floor(low[1] / coverage.tileSpan);
-        z <= Math.floor(high[1] / coverage.tileSpan);
-        z++
-      )
-        if (!tiles.has(`${x},${z}`)) return false;
-    return true;
-  };
+  const covered = createCoverage(coverage, profile.radius, prepared?.world.bounds);
   if (prepared) {
     const scope =
       coverage === 'complete'

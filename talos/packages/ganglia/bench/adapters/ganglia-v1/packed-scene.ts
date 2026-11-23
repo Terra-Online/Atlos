@@ -7,7 +7,7 @@ import {
   type GameAdapter,
   type SceneHooks,
 } from '#@/bench/adapters/ganglia-v1/scene.ts';
-import { openSceneLoader } from '#@/bench/scene-data/loader.ts';
+import { openSceneLoader, type Window } from '#@/bench/scene-data/loader.ts';
 import { createTimings, observePhysicalReport } from '#@/bench/timings.ts';
 import { createPhysicalVerifier } from '#@/src/evaluation/physical.ts';
 import { verificationDefaults } from '#@/src/evaluation/policy.ts';
@@ -46,7 +46,7 @@ export async function loadPackedScene(options: {
   scene: string;
   source: Source;
   memoryBudget: number;
-  fixedBounds?: Bounds;
+  fixedBounds?: Window;
   hooks?: SceneHooks;
 }) {
   const started = performance.now();
@@ -106,6 +106,7 @@ export async function loadPackedScene(options: {
   const transform = options.hooks?.transformInput ?? ((input: PhysicalInput) => input);
   const preparation = createPhysicalPreparation();
   const visited = new Map<string, Region>();
+  const preparedRegions = new Map<string, Region>();
   const held = new Map<
     string,
     {
@@ -342,6 +343,29 @@ export async function loadPackedScene(options: {
       resources,
     },
     files,
+    /** Query-independent physical preparation. The callback must finish copying
+     * geometry before its borrowed loader snapshot is released. */
+    async prepareSnapshot<T>(bounds: Window, use: (input: PhysicalInput) => Promise<T>) {
+      const region = fixed ?? loader.describe(bounds);
+      const position: Vec3 = [
+        (bounds.min[0] + bounds.max[0]) / 2,
+        0,
+        (bounds.min[1] + bounds.max[1]) / 2,
+      ];
+      return withRaw(region, undefined, async (raw) => {
+        const prepared = await normalize(raw, region, {
+          scene,
+          source,
+          arrival: { id: 'scene-preparation', position, cost: 0, state: 'available' },
+          target: position,
+          walls: navigation.options.walls ?? [],
+        });
+        if (!prepared.input) throw new Error('Missing normalized preparation input');
+        const result = await use(transform(prepared.input));
+        preparedRegions.set(region.revision, region);
+        return result;
+      });
+    },
     loaderStats() {
       const memory = process.memoryUsage();
       return {
@@ -357,6 +381,7 @@ export async function loadPackedScene(options: {
       signal = nextSignal;
       inputFailure = undefined;
       visited.clear();
+      for (const [key, region] of preparedRegions) visited.set(key, region);
     },
     endRequest() {
       releasePhysical();

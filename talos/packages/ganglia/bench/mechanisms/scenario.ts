@@ -3,19 +3,34 @@ import { resolve } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 
 import { loadPackedScene } from '#@/bench/adapters/ganglia-v1/packed-scene.ts';
+import {
+  anchors,
+  scopeAnnotations,
+  preparationBounds as v2PreparationBounds,
+} from '#@/bench/adapters/ganglia-v2/annotations.ts';
 import { exercised, facilityAudit } from '#@/bench/mechanisms/assessment.ts';
 import { QueryInputError, resolveQuery, sourceSupportWorld } from '#@/bench/mechanisms/query.ts';
 import { checkSetup, type Case, readSuite } from '#@/bench/mechanisms/suite.ts';
+import type { Window } from '#@/bench/scene-data/loader.ts';
 import type { WorkerSetup } from '#@/bench/workers.ts';
 import type { LocomotionOptions } from '#@/src/index.ts';
 import { joinedGeometry } from '#@/src/model/placement.ts';
 import type { Bounds } from '#@/src/scene-pack.ts';
 import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
+import {
+  prepareGangliaV2,
+  gangliaV2LibraryPath,
+  type V2PreparedSolver,
+} from '#@/src/solver/ganglia-v2-rust.ts';
+import type { GangliaV2Config } from '#@/src/solver/ganglia-v2.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 
 export interface Binding {
   suite: string;
   scenarioId: string;
+  sourceScenarioId?: string;
+  preparationBounds?: Window;
+  preparationError?: string;
   ids: string[];
   dataRoot: string;
   exports: string;
@@ -26,14 +41,30 @@ export interface Binding {
 export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
   const binding = JSON.parse(await readFile(setup.dataRoot, 'utf8')) as Binding;
   const suite = await readSuite(binding.suite);
-  const spec = suite.scenarios.find(({ id }) => id === binding.scenarioId);
+  if (binding.preparationError) throw new Error(binding.preparationError);
+  const spec = suite.scenarios.find(
+    ({ id }) => id === (binding.sourceScenarioId ?? binding.scenarioId),
+  );
   if (!spec) throw new Error(`Unknown bound scenario: ${binding.scenarioId}`);
   const { input: source, ...world } = spec.setup;
   const fixedBounds: Bounds | undefined =
     source.kind === 'frozen-window'
       ? { min: [source.bounds[0], source.bounds[1]], max: [source.bounds[2], source.bounds[3]] }
       : undefined;
+  const v2 = setup.config.algorithm === 'ganglia-v2';
+  const preparationBounds: Window | undefined = v2
+    ? (binding.preparationBounds ?? v2PreparationBounds(spec.id, fixedBounds))
+    : fixedBounds;
+  const loadedBounds: Window | undefined = v2 ? preparationBounds : fixedBounds;
   const items = suite.cases.filter((c) => binding.ids.includes(c.id));
+  const landmarks = (anchors[source.scene] ?? []).filter(
+    ({ position }) =>
+      preparationBounds &&
+      position[0] >= preparationBounds.min[0] &&
+      position[0] <= preparationBounds.max[0] &&
+      position[2] >= preparationBounds.min[1] &&
+      position[2] <= preparationBounds.max[1],
+  );
   const catalog = JSON.parse(
     await readFile(resolve(binding.exports, `${source.scene}-traversal-devices.json`), 'utf8'),
   );
@@ -62,12 +93,26 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
     scene: source.scene,
     source: suite.source,
     memoryBudget: binding.memoryBudget,
-    fixedBounds,
+    fixedBounds: loadedBounds,
     hooks: {
       onProgress: checkpoint,
       transformInput: (raw) => {
-        if (fixedBounds && !isDeepStrictEqual(raw.ground.build?.bounds, fixedBounds))
-          throw new Error('Frozen physical bounds differ from the selected specification');
+        if (
+          loadedBounds &&
+          !isDeepStrictEqual(raw.ground.build?.bounds, {
+            min: loadedBounds.min,
+            max: loadedBounds.max,
+          })
+        )
+          throw new Error('Physical bounds differ from the declared preparation scope');
+        if (
+          loadedBounds?.tiles?.length &&
+          !isDeepStrictEqual(
+            raw.ground.tiles?.map(({ x, z }) => ({ x, z })),
+            [...loadedBounds.tiles].sort((a, b) => a.z - b.z || a.x - b.x),
+          )
+        )
+          throw new Error('Physical tiles differ from the declared preparation scope');
         const audit = facilityAudit(raw, catalog);
         if (audit.staticImport !== 'matched')
           throw new Error(
@@ -172,11 +217,73 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
     }
   }
   const byQuery = new Map(items.map((item) => [JSON.stringify(resolved[item.id]), item]));
+  let prepared: V2PreparedSolver | undefined;
+  // Marks are scene annotations from the complete authored catalog, independent
+  // of the selected measurement IDs. Starts are never used as preparation hints.
+  const marks = suite.cases
+    .filter((item) => item.scene === source.scene && item.query.interaction?.airborne)
+    .map((item) => ({ position: item.query.goal, interaction: item.query.interaction! }));
   return {
     ...scene,
+    ...(v2
+      ? {
+          nativeLibrary: gangliaV2LibraryPath(),
+          async prepareSolver() {
+            try {
+              if (!preparationBounds)
+                throw new Error('ganglia-v2 requires an authored preparation scope');
+              prepared = await scene.prepareSnapshot(preparationBounds, (physical) => {
+                const hints = scopeAnnotations(source.scene, spec.id, physical, preparationBounds);
+                return prepareGangliaV2(
+                  setup.config as GangliaV2Config,
+                  physical,
+                  marks.filter(
+                    ({ position }) =>
+                      position[0] >= preparationBounds.min[0] &&
+                      position[0] <= preparationBounds.max[0] &&
+                      position[2] >= preparationBounds.min[1] &&
+                      position[2] <= preparationBounds.max[1],
+                  ),
+                  [
+                    ...landmarks.map(({ position }) => position),
+                    ...hints.flatMap((hint) => hint.anchors),
+                  ],
+                  hints.map((hint) => hint.layout).filter((layout) => layout.length > 0),
+                  hints.flatMap((hint) => hint.links),
+                );
+              });
+            } catch (error) {
+              await scene.input.resources.close?.();
+              throw error;
+            }
+            return {
+              ...prepared,
+              async close() {
+                try {
+                  await prepared!.close();
+                } finally {
+                  await scene.input.resources.close?.();
+                }
+              },
+            };
+          },
+          preparationStats: () => ({
+            scope: preparationBounds,
+            landmarks,
+            ...prepared?.preparationStats(),
+          }),
+        }
+      : {}),
     metadata: {
       ...scene.metadata,
-      mechanism: { resolved, resolutions, resolutionErrors },
+      mechanism: {
+        resolved,
+        resolutions,
+        resolutionErrors,
+        ...(v2
+          ? { sourceScenarioId: spec.id, declaredBounds: fixedBounds, preparationBounds }
+          : {}),
+      },
     },
     inspectResult(query: RouteQuery, result: RouteResult) {
       const item = byQuery.get(JSON.stringify(query));

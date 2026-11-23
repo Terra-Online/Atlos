@@ -1,5 +1,12 @@
 export { prepareRouteSolver } from '#@/src/solver/prepare.ts';
 export { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
+export { gangliaV2Defaults } from '#@/src/solver/ganglia-v2.ts';
+export type {
+  GangliaV2Config,
+  NavigationMark,
+  V2Diagnostics,
+  OptimizationRound,
+} from '#@/src/solver/ganglia-v2.ts';
 export type { GangliaV1Config, GangliaV1Config as SolverConfig } from '#@/src/solver/ganglia-v1.ts';
 export type {
   SceneInput,

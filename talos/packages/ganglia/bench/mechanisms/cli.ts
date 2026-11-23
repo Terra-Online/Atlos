@@ -13,6 +13,8 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import { longCorridors } from '#@/bench/adapters/ganglia-v2/corridors.ts';
+import { executionSuite, type ExecutionSuite } from '#@/bench/adapters/ganglia-v2/scopes.ts';
 import { QUERY_CUTOFF_MS } from '#@/bench/cutoff.ts';
 import { expectation, matchesExpectation } from '#@/bench/mechanisms/assessment.ts';
 import { readDataset, scenarioBindings, scenarioBuilder } from '#@/bench/mechanisms/dataset.ts';
@@ -24,6 +26,7 @@ import { runScenario } from '#@/bench/run.ts';
 import { sourceHash } from '#@/bench/source.ts';
 import type { WorkerResult } from '#@/bench/workers.ts';
 import { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
+import { gangliaV2Defaults } from '#@/src/solver/ganglia-v2.ts';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const { values } = parseArgs({
@@ -44,11 +47,11 @@ const { values } = parseArgs({
 });
 if (values.help) {
   console.log(
-    'Usage: node bench/mechanism-benchmark.ts --output <new-report.json> [--data-root <candidate-input-root>] [--memory-budget-mib <total-loader-budget>] [--adapter ganglia-v1-rust|ganglia-v1-ts] [--ids id,id]. Input roots register one physical pack per scene in input-index.json. Each scenario trains the suite-declared catalog, freezes it, then measures one round without warmup. Independent physical verification runs after solving. Deadlines use GANGLIA_BENCHMARK_QUERY_CUTOFF_MS and cooperative cancellation; workers are never replaced.',
+    'Usage: node bench/mechanism-benchmark.ts --output <new-report.json> [--data-root <candidate-input-root>] [--memory-budget-mib <total-loader-budget>] [--adapter ganglia-v1-rust|ganglia-v1-ts|ganglia-v2] [--ids id,id]. Input roots register one physical pack per scene in input-index.json. Each scenario trains the suite-declared catalog, freezes it, then measures one round without warmup. Independent physical verification runs after solving. Deadlines use GANGLIA_BENCHMARK_QUERY_CUTOFF_MS and cooperative cancellation; workers are never replaced.',
   );
 } else {
   if (!values.output) throw new Error('Provide --output for a new mechanism report');
-  if (!['ganglia-v1-rust', 'ganglia-v1-ts'].includes(values.adapter))
+  if (!['ganglia-v1-rust', 'ganglia-v1-ts', 'ganglia-v2'].includes(values.adapter))
     throw new Error('Unknown mechanism adapter');
   const scenarioWorkers = Number(values['scenario-workers']);
   if (!Number.isSafeInteger(scenarioWorkers) || scenarioWorkers < 1)
@@ -61,7 +64,9 @@ if (values.help) {
   )
     throw new Error('Invalid physical loader memory budget');
   const memoryBudget = Math.floor((budgetMiB * 1024 ** 2) / scenarioWorkers);
-  const suite = await readSuite(values.suite);
+  const authored = await readSuite(values.suite);
+  const suite: ExecutionSuite =
+    values.adapter === 'ganglia-v2' ? executionSuite(authored, longCorridors) : authored;
   const inputRoot = resolve(values['data-root']);
 
   const filter = values.ids && new Set(values.ids.split(','));
@@ -83,15 +88,19 @@ if (values.help) {
   const journal = output + '.events.jsonl';
   writeFileSync(journal, '', { flag: 'wx' });
   const record = (event: unknown) => appendFileSync(journal, JSON.stringify(event) + '\n');
-  const config = {
-    ...gangliaV1Defaults,
-    algorithm: values.adapter as 'ganglia-v1-rust' | 'ganglia-v1-ts',
-  };
+  const config =
+    values.adapter === 'ganglia-v2'
+      ? gangliaV2Defaults
+      : {
+          ...gangliaV1Defaults,
+          algorithm: values.adapter as 'ganglia-v1-rust' | 'ganglia-v1-ts',
+        };
+  const crate = values.adapter === 'ganglia-v2' ? 'ganglia-v2' : 'ganglia-v1';
   const digest = () =>
     sourceHash(
       root,
-      ['src', 'bench', 'crates/ganglia-v1/src'],
-      ['crates/ganglia-v1/Cargo.toml', 'crates/ganglia-v1/Cargo.lock'],
+      ['src', 'bench', `crates/${crate}/src`],
+      [`crates/${crate}/Cargo.toml`, `crates/${crate}/Cargo.lock`],
     );
   const before = await digest();
   const revision = execFileSync('git', ['rev-parse', 'HEAD'], {
@@ -128,6 +137,23 @@ if (values.help) {
               scenarioId: spec.id,
               setup: {
                 ...spec.setup,
+                ...(spec.preparation
+                  ? {
+                      sourceScenarioId: spec.preparation.sourceScenarioId,
+                      preparationBounds: {
+                        min: spec.preparation.bounds.min,
+                        max: spec.preparation.bounds.max,
+                      },
+                      ...(spec.preparation.bounds.tiles
+                        ? {
+                            preparationTiles: spec.preparation.bounds.tiles.map(({ x, z }) => ({
+                              x,
+                              z,
+                            })),
+                          }
+                        : {}),
+                    }
+                  : {}),
                 physicalInput: 'scene-pack',
                 memoryBudgetBytes: memoryBudget,
               },
@@ -195,7 +221,9 @@ if (values.help) {
     dataRoot: inputRoot,
     policy: config,
     scenarioPreparation:
-      'Each authored scenario supplies ordered training IDs before measurement filtering; one solver config is shared by the run; no warmup.',
+      config.algorithm === 'ganglia-v2'
+        ? 'Build an immutable backbone from scene facts and declared landmarks before measurement. Suite training requests are recorded separately; no warmup or persistent backbone cache.'
+        : 'Each authored scenario supplies ordered training IDs before measurement filtering; one solver config is shared by the run; no warmup.',
     rounds: 1,
     scenarioWorkers,
     queryCutoffMs: QUERY_CUTOFF_MS,
@@ -203,7 +231,9 @@ if (values.help) {
       'beta; observations do not affect search status, cost comparisons or acceptance',
     cancellation: 'cooperative-checkpoints; no worker replacement',
     timing:
-      'Serial solve attempts include cancellation tails. Preparation and independent verification are separate; no runtime warmup. Scenario groups retain the same trained worker. Training overlaps scored queries and retains physical actions, never query answers.',
+      config.algorithm === 'ganglia-v2'
+        ? 'Serial solve attempts include cancellation tails. Scene loading, backbone construction and independent verification are separate. Queries initialize fresh routes and report each optimization round; no runtime warmup.'
+        : 'Serial solve attempts include cancellation tails. Preparation and independent verification are separate; no runtime warmup. Scenario groups retain the same trained worker. Training overlaps scored queries and retains physical actions, never query answers.',
     populationTotal: suite.cases.length,
     selectedIds: selected.map((c) => c.id),
     preparations: [] as object[],
@@ -235,6 +265,7 @@ if (values.help) {
     const scenarioIds = new Set(spec.cases.map((item) => item.id));
     const items = selected.filter((item) => scenarioIds.has(item.id));
     try {
+      if (binding.preparationError) throw new Error(binding.preparationError);
       for (const item of items) {
         checkSetup(item);
         if (config.algorithm === 'ganglia-v1-rust' && item.setup.supportModel)

@@ -185,3 +185,104 @@ test('binds facility receipts to observed geometry with a compound source ID', a
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test('prepares sparse windows within budget while retaining complete facility geometry', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'ganglia-scene-sparse-'));
+  const receipt = { id: 'facility:long', model: 'bridge', pose: 'rest' };
+  const support = { ...receipt, positions: collision.positions, indices: collision.indices };
+  const window = {
+    min: [0, 0] as [number, number],
+    max: [345.6, 10] as [number, number],
+    tiles: [
+      { x: 0, z: 0 },
+      { x: 4, z: 0 },
+      { x: 8, z: 0 },
+    ],
+  };
+  try {
+    await writeScenePack(
+      root,
+      { scene: 'example', source, selection: {}, settings },
+      async (append) => {
+        await append({ ...collision, coverage: { staticSupports: [receipt] } }, [
+          tile(0),
+          tile(4),
+          tile(8),
+        ]);
+        await append(
+          {
+            positions: [60, 0, 2, 65, 0, 2, 60, 0, 5],
+            indices: [0, 1, 2],
+            records: [{ id: 99, first: 0, count: 1, bounds: { min: [60, 0, 2], max: [65, 0, 5] } }],
+            coverage: {},
+            exclusions: [],
+          },
+          [],
+        );
+        // Each selected tile shares a collision cell with a large unrelated mesh.
+        // None intersects the padded selected tile or the selected window height.
+        for (const x of [50, 180, 310]) {
+          const indices = new Uint32Array(300_000);
+          for (let i = 0; i < indices.length; i++) indices[i] = i % 3;
+          await append(
+            {
+              positions: [x, 0, 25, x + 5, 0, 25, x, 0, 30],
+              indices,
+              records: [
+                {
+                  id: x,
+                  first: 0,
+                  count: 100_000,
+                  bounds: { min: [x, 0, 25], max: [x + 5, 0, 30] },
+                },
+              ],
+              coverage: {},
+              exclusions: [],
+            },
+            [],
+          );
+        }
+      },
+    );
+    const budget = 4 * 1024 ** 2;
+    const loader = await openSceneLoader(root, 'example', source, budget, [support]);
+    try {
+      const kept = await loader.withWindow(window, undefined, (snapshot) => {
+        assert.deepEqual([...snapshot.collision.positions], collision.positions);
+        assert.deepEqual([...snapshot.collision.indices], collision.indices);
+        assert.deepEqual(snapshot.collision.coverage.staticSupports, [receipt]);
+        assert.deepEqual(
+          snapshot.collision.records.map(({ id }) => id),
+          [7],
+        );
+        assert.equal(snapshot.ground.surfaces.length, 3);
+        return { snapshot, release: snapshot.retain() };
+      });
+      assert.ok(loader.stats().retainedBytes > 0);
+      // A retained result remains usable while another snapshot is assembled.
+      await loader.withWindow(window, undefined, (snapshot) => {
+        assert.deepEqual(snapshot.collision.coverage.staticSupports, [receipt]);
+      });
+      assert.deepEqual([...kept.snapshot.collision.positions], collision.positions);
+      kept.release();
+      assert.equal(loader.stats().retainedBytes, 0);
+      assert.ok(loader.stats().peakReservedBytes <= budget);
+    } finally {
+      await loader.close();
+    }
+    const small = await openSceneLoader(root, 'example', source, 1024 ** 2, [support]);
+    try {
+      await assert.rejects(
+        small.withWindow(window, undefined, () => assert.fail()),
+        /memory budget/,
+      );
+      await small.withGround(window, undefined, (snapshot) =>
+        assert.equal(snapshot.ground.surfaces.length, 3),
+      );
+    } finally {
+      await small.close();
+    }
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
