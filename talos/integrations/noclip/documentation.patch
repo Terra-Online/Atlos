@@ -1,10 +1,10 @@
 diff --git a/docs/architecture.md b/docs/architecture.md
-index 9594f135..50ac16c7 100644
+index c36b9818..624437d3 100644
 --- a/docs/architecture.md
 +++ b/docs/architecture.md
-@@ -33,8 +33,14 @@ shows in game, with unchecked facts marked as such. how our code implements any
- [package-format.md](package-format.md), and what it lacks in [status.md](status.md). links run from
- those pages to game-data, never the reverse.
+@@ -34,8 +34,14 @@ unchecked facts marked. our implementation lives in [viewer](viewer/index.md),
+ [extraction.md](extraction.md) (and its subpages), and [package-format.md](package-format.md); gaps
+ live in [status.md](status.md). links point toward `game-data/`, never back.
  
 +[ground navigation extraction](navigation.md) documents the experimental routing data exports and
 +their limits.
@@ -18,32 +18,12 @@ index 9594f135..50ac16c7 100644
  install (Endfield_Data)                      local, read-only
    │  VFS catalogs + chunks → HG bundles → Unity SerializedFiles, world data, tables
 diff --git a/docs/extraction.md b/docs/extraction.md
-index c1d2bd16..3664341d 100644
+index 51f6b4d2..28843807 100644
 --- a/docs/extraction.md
 +++ b/docs/extraction.md
-@@ -24,12 +24,13 @@ pnpm extract --help
- ```
- 
- `cli.ts` loads every file in `commands/` as a subcommand exporting `summary`, `usage` and
--`run(args)`, so a new command is a new file there; shared argument helpers live outside that
--directory, in `cli-args.ts`. run a command without arguments or with `--help` / `-h` for its usage,
--which works without a config or install. every command takes `--config <file>` (default
--`endfield.local.json` in the working directory) and, except for `init`, opens the install through
--`withContext` in `context.ts`, which mounts the VFS, builds the world index and creates the asset
--resolver on first use.
-+`run(args)`, so a new command is a new file there. shared argument helpers live in `cli-args.ts`,
-+outside `commands/`, because every file in that directory is treated as a command. each command
-+exports its usage text; run it without arguments or with `--help` / `-h` for details. help works
-+without a config or install, including `world find --help`. commands that read the install take
-+`--config <file>` (default `endfield.local.json` in the working directory) and open the install
-+through `withContext` in `context.ts`, which mounts the VFS, builds the world index and creates the
-+asset resolver on first use.
- 
- | command    | what it does                                                                                                                                                                                                                                                                                                                                                              |
- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-@@ -112,6 +113,21 @@ with `--class`, it selects objects of that class in matching SerializedFiles. `-
- `selection` object of sorted area ids and chunk file names to the variants object, without trailing
- text.
+@@ -118,6 +118,21 @@ requirements by `&`, each `control=values` (or `always` when ungated). `static`
+   `materials` / `geometries` / `textures` / `stand-ins` / `interactives` / `water` / `env` query
+   `debug/` (`materials --packed` also reads the packed `core.czar` entry).
  
 +### OEM companion releases
 +
@@ -62,8 +42,8 @@ index c1d2bd16..3664341d 100644
 +
  ## local config and keys
  
- `endfield.local.json` holds the install path (`gameData`, the `Endfield_Data` directory) and the key
-@@ -271,6 +287,19 @@ booleans. code: [serialized-file.ts](../packages/formats/src/unity/serialized-fi
+ `endfield.local.json` stores `gameData` (the `Endfield_Data` path) and container keys (`keys.vfsKey`
+@@ -217,6 +232,19 @@ arrays and `UInt8` bools as booleans. code:
  [values.ts](../packages/formats/src/unity/values.ts),
  [plain-object.ts](../packages/formats/src/unity/plain-object.ts).
  
@@ -82,62 +62,7 @@ index c1d2bd16..3664341d 100644
 +
  ## decoders
  
- `formats` modules validate layouts while decoding and throw on a mismatch. the linked game-data
-@@ -299,6 +328,18 @@ mesh any swaying material draws is converted with the strongest of their sways,
- weights in position W and grows its bounds, and a mesh any material offsets by a texture with the
- farthest of their offsets ([swaying geometry](package-format.md#geometry-blob-mesh-efgm)).
- 
-+**collision mesh.** `asset collision <object> [-o file.json]` reads the cooked triangle bytes with
-+[collision-mesh.ts](../packages/formats/src/unity/collision-mesh.ts), separately from render
-+geometry. the supported layout is little-endian PhysX mesh version 15 with a quantized BV4 version 3
-+tree. triangle indices, optional material indices and original-face remaps are retained. bounds,
-+finite coordinates, counts and the complete payload framing are checked. GPU and other unsupported
-+cooks fail explicitly. `convex-mesh.ts` additionally handles version-13 convex cooks with a
-+version-9 hull and no support map or GPU data. it validates the supporting planes, outward winding
-+and closed edge topology before triangulating convex faces. JSON output is build-bound local Unity
-+geometry, without a world transform, collision-layer interpretation or claim of player passage.
-+streaming collider placement and capsule sweeps must still be resolved before this geometry can
-+validate movement links.
-+
- **skin pose.** [skin-pose.ts](../packages/formats/src/unity/skin-pose.ts) bakes linear blend
- skinning into a new static mesh: positions, normals, tangents and bounds move into the space of the
- supplied pose (bone matrix × bind pose per bone). it throws on missing influences, bad bone indices
-@@ -737,3 +778,23 @@ ignores:
- start from these when something is missing in the viewer: `instances.jsonl` maps a drawn block back
- to entities and chunk files, and `assets.json` says why an asset didn't convert. what the extractor
- lacks is listed in [status.md](status.md#packaging).
-+
-+`pnpm extract oem-views out/releases/<base> -o out/releases --cache out/framing/<base>` computes
-+every point's completed-profile view without WebGPU, sharing CPU decode jobs with the browser
-+workers. checkpoint files support resuming. the command writes a new immutable release, linking
-+archives from the immutable input on the same filesystem and writing its catalog last; never bake
-+into the input release. validate the result with `oem-check` before changing the OEM catalog URL.
-+see [offline framing](oem-precompute.md) for coverage, distance and network details.
-+
-+### destructible interactives
-+
-+placements with a destructible component receive an independent `destruction:<id>` control: intact
-+(0, the default) or destroyed (1). intact geometry keeps its authored rest pose and all existing
-+visibility requirements; destruction hides it. explicit `reward_entities` references replace the
-+generic created-during-play gate on those rewards, showing them only after their unique parent is
-+destroyed. ambiguous parent references are left unresolved. this models settled visibility only, not
-+damage, debris, physics or explosion effects.
-+
-+`traversal-devices <scene> -o <file>` exports build-bound rope pairing and movement-device parameter
-+scopes; see [movement devices](navigation.md#movement-devices). its candidate connections still
-+require grounded endpoints, active state and motion validation.
-diff --git a/docs/extraction/scene-controls.md b/docs/extraction/scene-controls.md
-index c610d3a5..c68d6881 100644
---- a/docs/extraction/scene-controls.md
-+++ b/docs/extraction/scene-controls.md
-@@ -34,6 +34,7 @@ the package side of [the selectors](../game-data/scene-states.md#the-selectors-a
- | growth chamber level       | `cabinLevel:<entity id>`, the table's levels       | level 1                                                           |
- | Dijiang region wall        | `controlNexus:<level id>`                          | level 1                                                           |
- | door                       | `door:<interactive id>`, closed / open             | closed; a cabin's follows its slot                                |
-+| destructible interactive   | `destruction:<interactive id>`, intact / destroyed | intact; reward entities show after destruction                    |
- | telescopic bridge          | `bridge:<interactive id>`, retracted / extended    | retracted                                                         |
- | tree harvest state         | `harvest:<level tag>`, standing / felled           | standing                                                          |
- | script group               | `script:<entity id>`                               | the stored default, or its scripts' quest checks on activation    |
+ `formats` modules validate layouts during decoding and throw on mismatch.
 diff --git a/docs/game-data/interaction.md b/docs/game-data/interaction.md
 new file mode 100644
 index 00000000..b75e4269
@@ -225,12 +150,12 @@ index 00000000..b75e4269
 +inputs. line-of-sight checks, active interaction state and unlock conditions are evaluated separately
 +before claiming that an endpoint can perform the interaction.
 diff --git a/docs/game-data/post-processing.md b/docs/game-data/post-processing.md
-index fe955bb9..7914e7f6 100644
+index 9e464a77..bacc0915 100644
 --- a/docs/game-data/post-processing.md
 +++ b/docs/game-data/post-processing.md
-@@ -134,6 +134,19 @@ every profile sets `tonemappingMode` 5, `ACES_modified`, and modes 1–4, `Neutr
- and `External`, are hidden from the game's inspector), and dithers the output by half an 8-bit step.
- no shipped profile enables the external lookup texture.
+@@ -141,6 +141,19 @@ the uber pass applies exposure, adds bloom, applies HDR vignette, then grades:
+   `Neutral`, `ACES`, `Custom`, `External` are hidden from the inspector; external LUT unused),
+   followed by ½ 8-bit step dithering.
  
 +### photo filters
 +
@@ -247,34 +172,10 @@ index fe955bb9..7914e7f6 100644
 +
  ## open
  
- - the vignette's extra mode and fields (above).
-@@ -141,3 +154,23 @@ no shipped profile enables the external lookup texture.
- - the flare component's own settings, which apply while the environment's flare is off.
- - unverified: at Origin Lodespring's overview the game's flare seems not to be occluded by the
-   crystal mountain behind the sun, as if the mountain weren't in its depth buffer.
-+
-+## photographic depth of field
-+
-+photography overrides the ordinary camera's depth-of-field defaults. its physical lens fits a 24 mm
-+sensor height to the display aspect ratio, with aperture controls spanning f/1.4–f/32. the
-+photography configuration requests full resolution, foreground and background radius limits of 10 at
-+the 1440-pixel reference height, and a temporal factor of 0.3. quality settings may further limit
-+the radius.
-+
-+physical defocus uses a signed thin-lens circle of confusion: foreground radii are negative and
-+background radii positive. the closest of scene and water depth supplies the optical distance.
-+foreground coverage is filtered separately from colour; background sampling rejects focused
-+neighbours to limit silhouette bleeding. temporal filtering clips reprojected colour against the
-+current neighbourhood and rejects opposite-sign focus history. the effect precedes motion blur,
-+after-DoF transparencies, lens flare and temporal antialiasing. see the
-+[viewer implementation and remaining differences](../viewer/post-processing.md#photography).
-+
-+post-focus transparency is selected by authored render queues 3660–3740 inclusive. it uses the
-+forward transparent shader passes and runs after depth of field, before lens flare and TAA; being
-+transparent alone does not select this stage.
+ - vignette's extra mode and fields (`mode`, `blink`, `opacity`).
 diff --git a/docs/navigation.md b/docs/navigation.md
 new file mode 100644
-index 00000000..e04651d0
+index 00000000..9f99622c
 --- /dev/null
 +++ b/docs/navigation.md
 @@ -0,0 +1,766 @@
@@ -1348,41 +1249,22 @@ index 00000000..37f79965
 +player passage semantics remain unverified; it is not an accepted route or final visual result.
 +ordinary-area-only routing has so far established only a short local approach. no all-point routing
 +bake, in-game traversal validation or browser screenshot comparison has been completed.
-diff --git a/docs/package-format.md b/docs/package-format.md
-index 391150c6..e7f3f8c7 100644
---- a/docs/package-format.md
-+++ b/docs/package-format.md
-@@ -547,6 +547,9 @@ material is ready or an `UnconvertedEntry`, as in the [asset tables](#asset-tabl
- 
- ### materials
- 
-+ready material records optionally retain the authored `renderQueue`. its absence in older version-49
-+packages means the queue is unknown; readers must not infer it from material names.
-+
- each material is its cull mode and its `surface`: the extractor's interpretation of its serialized
- state ([material and shader](game-data/assets.md#material-and-shader), decoded as
- [extraction.md](extraction.md#asset-classes) describes) into what it draws
 diff --git a/docs/status.md b/docs/status.md
-index 055739b3..ada2fc0e 100644
+index 24b09d4b..5ebc3ebf 100644
 --- a/docs/status.md
 +++ b/docs/status.md
-@@ -42,6 +42,14 @@ packs or renders correctly.
- 
- ## lighting and post-processing
- 
+@@ -98,6 +98,9 @@ only `map01` and `map02` are tested. other scenes listed by `scene list` are unv
+   - per-light curves use SRP core defaults; Unity RNG mapping is assumed.
+   - fainter than game at Origin Lodespring's overview (crystal mountain occludes it in viewer depth
+     buffer).
 +- photographic depth of field and authored post-focus transparency are available; moving-object
 +  reprojection, per-particle transparency sorting and packed intermediate precision still differ
 +  ([photography](viewer/post-processing.md#photography))
-+- photo filters: exported colour LUTs, vignette and high-quality bloom overrides render, along with
-+  Black and Gold's additive sprite particles. particle noise and character-specific lighting volumes
-+  remain unsupported. external-LUT colour-space parity still needs an in-game comparison
-+  ([photo filters](viewer/post-processing.md#photo-filters))
-+
- - ambient ([ambient](viewer/lighting.md#ambient)): checked against an in-game shot only at Jingyu's
-   cave arch; the volume's default SH isn't recovered ([open](game-data/lighting.md#open)); the
-   lookup has no jitter or forward-shifted clipmap centres; the AO multi-bounce fit uses the albedo's
-@@ -729,3 +737,77 @@ an entry when it's done or ruled out.
- - `world vars <scene>`: join AutoName, MapConfig, LevelData and DynamicStreaming variables
+ 
+ ## environment, sky and fog
+ 
+@@ -644,3 +647,77 @@ entries once resolved or ruled out.
+ - `world vars <scene>`: join AutoName, MapConfig, LevelData, and DynamicStreaming variables
  - `world scripts find <type>`: print level-script nodes of a type
  - `vfs table <name>`: dump a config table
 +
@@ -1460,115 +1342,19 @@ index 055739b3..ada2fc0e 100644
 +  corridor search and full player dynamics remain open. The English development route panel uses the
 +  existing host component.
 diff --git a/docs/viewer/frame.md b/docs/viewer/frame.md
-index e7b1f3e0..3ba55af5 100644
+index 6455c55b..f37c763a 100644
 --- a/docs/viewer/frame.md
 +++ b/docs/viewer/frame.md
-@@ -40,6 +40,12 @@ passes up to the lens flare run at the render size, the canvas's device-pixel si
- what each post pass computes is in [post-processing](post-processing.md) and
- [sky and fog](sky-and-fog.md).
- 
+@@ -60,6 +60,12 @@ for pass details.
+   using depth, packed surface, and ambient ([decals](materials.md#decals)).
+ - **lit decal pass.** albedo-writing lit decals draw over the composited scene (no depth test,
+   reading main-pass depth) before water so water covers riverbed decals
++
 +hosts can register `Viewer.addOverlay` callbacks after tonemapping. each callback receives the
 +output target and size, the current opaque/cutout reversed-Z depth view and its NDC projection
 +jitter, and the device/encoder for that frame. targets are transient; host renderers own their
 +buffers and pipelines. registration and removal invalidate the frame. depth sampling must account
 +for jitter and the difference between render and output size.
-+
- - **depth.** reversed-Z `depth32float`, cleared to 0 and tested with `greater`, with an infinite far
-   plane and a 0.25 m near plane; logarithmic depth is avoided because writing fragment depth
-   disables early-Z and, on tile-based GPUs, hidden-surface removal. where the GPU has the
-diff --git a/docs/viewer/post-processing.md b/docs/viewer/post-processing.md
-index a75ca71d..0cbe2b46 100644
---- a/docs/viewer/post-processing.md
-+++ b/docs/viewer/post-processing.md
-@@ -76,3 +76,91 @@ grading.
- without the colour curves, which the package doesn't carry. where the game bakes grading and curve
- into a LogC LUT, the viewer evaluates them per pixel. it also offers Khronos PBR Neutral and a
- clamp, for separating lighting errors from grading.
-+
-+display settings contains exposure compensation, automatic exposure, tonemapping, bloom and vignette.
-+the filters panel selects an exported game photo look and its LUT contribution. both use the existing
-+renderer options and the host's shared panel chrome.
-+
-+## photography
-+
-+[`render/depth-of-field.ts`](../../packages/viewer/src/render/depth-of-field.ts) adds optional
-+physical defocus before lens flare and temporal antialiasing. the photography panel controls
-+aperture (f/1.4–f/32) and focus-plane distance in metres; the existing lens controls still determine
-+focal length. `Viewer.focusAt` focuses on a world point along the camera's forward axis, rejecting
-+points behind the near plane. this changes photography settings, not the environment profile.
-+
-+photography uses a full-resolution circular filter, with separate foreground coverage and background
-+filtering. the 24 mm sensor height agrees with the focal-length readout at any aspect ratio.
-+foreground and background radius limits are 10 pixels at a 1440-pixel render height; the temporal
-+shaping input is 0.3. the shared scene water-depth pass prevents focusing through water to its bed.
-+camera-relative reprojection includes the current and previous antialiasing jitter. camera cuts,
-+lens edits, resizing and disabling the effect invalidate history; disabling it releases its render
-+targets. the lens effect itself needs no new scene resources.
-+
-+materials with an authored queue from 3660 through 3740 draw after focus blur and before lens flares
-+and TAA, including when focus blur is disabled. these layers leave the ordinary transparent pass;
-+they use the same fogged HDR premultiplied blending as ordinary transparency, retaining additive
-+emission. instances sort by authored sorting layer and order, then queue and descending camera
-+distance. particle instances currently share their emitter's sorting distance. multiply and
-+refraction retain their own blend modes. scene depth stays read-only, and refraction samples a
-+separate copy made after focus blur. unsupported materials keep their diagnostic appearance.
-+
-+the packer retains `renderQueue` in ready material records. no material name or shader-name
-+heuristic substitutes for the queue.
-+
-+current limits: reprojection accounts for camera motion, not moving-object motion. the viewer uses
-+half-float intermediates throughout, so rounding differs from packed colour intermediates.
-+validation is against recovered code and data plus GPU execution; it does not establish
-+pixel-identical output. these limits are independent of the existing differences in scene content,
-+lighting and other post effects.
-+
-+the bottom camera readout shows focal length in millimetres and the selected f-number. it marks
-+depth of field as off when disabled, and uses the same sensor-height conversion as the blur pass.
-+
-+### photo filters
-+
-+`pnpm extract filters --config endfield.local.json -o out/photo-filters.json` exports an optional
-+photo library from the same install. open the viewer with
-+`?package=map02&filters=/packages/photo-filters.json` to load its picker. `none` restores the
-+scene's grading. the LUT contribution slider multiplies the authored lookup contribution only; it
-+does not fade grading, bloom, vignette or particle effects. filters remain selected when changing
-+levels.
-+
-+hosts can supply the optional `filtersUrl` prop on `ViewerApp`. this library URL takes precedence
-+over the `filters` query parameter.
-+
-+the final pass samples the exported colour strip after grading and tonemapping, in sRGB display
-+space, interpolating adjacent blue slices. this follows URP's external-LUT convention; a pixel
-+comparison with the game's photo mode remains outstanding. the linear BC7 format does not cause an
-+automatic sRGB decode. only the selected LUT is allocated; changing contribution reuses it. debug
-+material views bypass the post chain as before.
-+
-+active grading sections replace scene grading after spatial volume blending. supported vignette and
-+high-quality bloom parameters keep the scene's non-overridden values, including bloom tint. the
-+scene's bloom and vignette toggles still apply. Warm and Pale now use their authored bloom
-+overrides; their character-only lighting volume needs a character shading path and remains
-+unsupported.
-+
-+Black and Gold also exports its additive particle emitter and BC7 sprite atlas. the viewer reuses
-+the scene particle evaluator for emission, lifetime curves, size, rotation, colour and atlas frames.
-+the effect is anchored at the camera's first selection pose; switching away and back resumes that
-+anchor rather than making the particles follow the camera. its clock is the viewer's rendered-frame
-+animation time; the Animate switch pauses it with the scene. it draws depth-tested HDR billboards
-+before temporal AA, bloom and grading, cancelling post exposure when the source material requests
-+it. only selected emitters allocate textures and buffers; animation reuses scene selection unless
-+visible scene particles need updating too. the shared evaluator's 1024-particle cap still applies.
-+Unity's noise module is not evaluated and remains in the filter's partial-support notice. this path
-+accepts only simple additive, view-aligned billboards without gravity, speed limits, bursts, pivot
-+offsets or extra motion modules; other materials and emitters are reported by the extractor.
-+
-+the underlying scene renderer's existing grading, bloom and vignette differences still apply.
-+
-+the library uses the separate `endfield-noclip.photo-filters` contract, version 4, in
-+`package-format/photo-filters.ts`. its JSON contains names, grading, vignette and optional bloom
-+overrides, optional particle emitters and texture mips, unsupported-feature notes and base64
-+GPU-ready LUT blocks. version 4 uses the v98 discriminated particle curve and gradient unions,
-+emission bounds, per-emitter delay and resolved scale. older libraries are rejected and must be
-+re-exported. the loader checks supported particle layouts and bounds texture dimensions, mip sizes
-+and samplers before GPU allocation. it does not alter scene archives or their package version.
-+extracted libraries are game content and remain outside git; a static host must serve the exported
-+JSON separately. the viewer never reads game files or imports decoders.
+   ([decals](materials.md#decals)).
+ - **transparent pass.** matches the game's
+   [transparent draw order](../game-data/materials.md#transparent-draw-order) and

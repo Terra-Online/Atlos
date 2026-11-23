@@ -1,5 +1,5 @@
 diff --git a/packages/extractor/src/commands/player-ground.ts b/packages/extractor/src/commands/player-ground.ts
-index 72dfd6a..2291f39 100644
+index 72dfd6ab..2291f392 100644
 --- a/packages/extractor/src/commands/player-ground.ts
 +++ b/packages/extractor/src/commands/player-ground.ts
 @@ -19,6 +19,7 @@ import {
@@ -38,7 +38,7 @@ index 72dfd6a..2291f39 100644
  			const catalog = JSON.parse(await readFile(values['static-supports'], 'utf8'));
  			if (catalog.scene !== scene || catalog.source?.buildGuid !== source.buildGuid || catalog.source?.contentHash !== source.contentHash) throw new Error('static support source mismatch');
 diff --git a/packages/extractor/src/game/collision-inputs.ts b/packages/extractor/src/game/collision-inputs.ts
-index b1acd6e..c425c2b 100644
+index b1acd6ec..c425c2b1 100644
 --- a/packages/extractor/src/game/collision-inputs.ts
 +++ b/packages/extractor/src/game/collision-inputs.ts
 @@ -1,7 +1,7 @@
@@ -166,10 +166,10 @@ index b1acd6e..c425c2b 100644
  	};
  };
 diff --git a/packages/extractor/src/game/dynamic/dynamic-structures.ts b/packages/extractor/src/game/dynamic/dynamic-structures.ts
-index 16810f5..89619da 100644
+index d70e2d5a..5e369006 100644
 --- a/packages/extractor/src/game/dynamic/dynamic-structures.ts
 +++ b/packages/extractor/src/game/dynamic/dynamic-structures.ts
-@@ -389,7 +389,7 @@ const noteOwnerConditions = (
+@@ -432,7 +432,7 @@ const noteOwnerConditions = (
  type EcsGroups = Map<string, Map<number, { visibility: Visibility; grid: number }>>;
  
  /** a scene's DynamicStreaming files */
@@ -178,7 +178,7 @@ index 16810f5..89619da 100644
  	readonly #vfs: Vfs;
  	readonly #prefix: string;
  
-@@ -427,6 +427,15 @@ class DynamicFiles {
+@@ -477,6 +477,15 @@ class DynamicFiles {
  		return { grids, owners };
  	}
  
@@ -194,23 +194,9 @@ index 16810f5..89619da 100644
  	/**
  	 * decodes the referenced ECS groups' entities and lights, each under every row's visibility that loads it
  	 *
-@@ -446,12 +455,7 @@ class DynamicFiles {
- 		const lights = new Map<number, { light: ChunkLight; visibility: Visibility }>();
- 		for (const [key, indices] of groups) {
- 			// oxlint-disable-next-line no-await-in-loop -- release each pair after its renderer groups are decoded
--			const [init, streaming] = await Promise.all([
--				this.#read(`fb_init_${key}.bytes`),
--				this.#read(`fb_streaming_${key}.bytes`),
--			]);
--			const initPayload = unpackHgPayload(init);
--			const streamingPayload = unpackHgPayload(streaming);
-+			const { init: initPayload, stream: streamingPayload } = await this.readEcsChunk(key);
- 			const chunk = parseDynamicChunk(initPayload, streamingPayload);
- 			const chunkLights = new Map(readChunkLights(initPayload, chunk).map((light) => [light.id, light]));
- 			// the streaming payload binds rect decals' materials as StreamingChunkData does
 diff --git a/packages/extractor/src/game/dynamic/ink-road-collision.test.ts b/packages/extractor/src/game/dynamic/ink-road-collision.test.ts
 new file mode 100644
-index 0000000..10806bd
+index 00000000..10806bd7
 --- /dev/null
 +++ b/packages/extractor/src/game/dynamic/ink-road-collision.test.ts
 @@ -0,0 +1,62 @@
@@ -278,7 +264,7 @@ index 0000000..10806bd
 +});
 diff --git a/packages/extractor/src/game/dynamic/ink-road-collision.ts b/packages/extractor/src/game/dynamic/ink-road-collision.ts
 new file mode 100644
-index 0000000..ce7de35
+index 00000000..ce7de352
 --- /dev/null
 +++ b/packages/extractor/src/game/dynamic/ink-road-collision.ts
 @@ -0,0 +1,140 @@
@@ -423,7 +409,7 @@ index 0000000..ce7de35
 +	};
 +}
 diff --git a/packages/extractor/src/game/ground-tile-cache.ts b/packages/extractor/src/game/ground-tile-cache.ts
-index f640591..1ed9e2a 100644
+index f640591f..1ed9e2a5 100644
 --- a/packages/extractor/src/game/ground-tile-cache.ts
 +++ b/packages/extractor/src/game/ground-tile-cache.ts
 @@ -30,6 +30,11 @@ export const groundGeneratorIdentity = async (
@@ -448,3 +434,194 @@ index f640591..1ed9e2a 100644
  			'unity/collision-mesh',
  			'unity/convex-mesh',
  			'unity/mesh',
+diff --git a/packages/extractor/src/game/collision-inputs.ts b/packages/extractor/src/game/collision-inputs.ts
+index c425c2b1..55406f2d 100644
+--- a/packages/extractor/src/game/collision-inputs.ts
++++ b/packages/extractor/src/game/collision-inputs.ts
+@@ -1,7 +1,7 @@
+ /* oxlint-disable no-await-in-loop -- retain one streamed payload at a time */
+ import { readCollisionHeightfield } from '@endfield-noclip/formats/endfield/collision-heightfield';
+ import { readEcsCollider } from '@endfield-noclip/formats/endfield/ecs-collider';
+-import { parseStreamingChunk, type StreamingRecord } from '@endfield-noclip/formats/endfield/streaming-chunk-data';
++import { parseStreamingChunk, type StreamingProperty } from '@endfield-noclip/formats/endfield/streaming-chunk-data';
+ import { readCollisionMesh } from '@endfield-noclip/formats/unity/collision-mesh';
+ import { readConvexMesh } from '@endfield-noclip/formats/unity/convex-mesh';
+ import type { TypeTreeObject } from '@endfield-noclip/formats/unity/type-tree';
+@@ -59,7 +59,10 @@ export const collisionChunkFiles = async (
+ };
+ 
+ type Selection = CollisionInputs['selection'] & { solidsOnly?: boolean };
+-type SourceRecords = { name: string; records: readonly StreamingRecord[] };
++type SourceRecords = {
++	name: string;
++	records: Iterable<{ id: number; kind: number; properties: StreamingProperty[] }>;
++};
+ 
+ /** Decode selected object rows with the same shape and asset rules as ordinary streamed collision. */
+ export const decodeCollisionRecords = async (
+@@ -200,7 +203,13 @@ export const collectCollisionInputs = async (
+ 		for (const file of files) {
+ 			const payload = await ctx.world.readStreamingPayload(file);
+ 			if (!payload) throw new Error(`missing streaming collision input for ${file.name}`);
+-			yield { name: file.name, records: parseStreamingChunk(payload).records };
++			const chunk = parseStreamingChunk(payload);
++			yield {
++				name: file.name,
++				records: chunk.rows.filter((row) => row.tag === 2).map((row) => ({
++					id: row.id, kind: row.tag, properties: chunk.properties(row),
++				})),
++			};
+ 		}
+ 	};
+ 	const inputs = await decodeCollisionRecords(ctx, selection, records());
+diff --git a/packages/extractor/src/game/dynamic/ink-road-collision.test.ts b/packages/extractor/src/game/dynamic/ink-road-collision.test.ts
+index 10806bd7..be56a6bb 100644
+--- a/packages/extractor/src/game/dynamic/ink-road-collision.test.ts
++++ b/packages/extractor/src/game/dynamic/ink-road-collision.test.ts
+@@ -1,37 +1,35 @@
+ import assert from 'node:assert/strict';
+ import { test } from 'node:test';
+ 
+-import type { DynamicResourceEntity } from '@endfield-noclip/formats/endfield/dynamic-resources';
++import type { DynamicEntity } from '@endfield-noclip/formats/endfield/dynamic-scene';
+ 
+ import { isInkRoadCollider, visibleInkRoadGroup } from './ink-road-collision.ts';
+ 
+-const owner = (): DynamicResourceEntity => ({
+-	entity: {
+-		grid: 1,
+-		uid: 123n,
+-		entityType: 0,
+-		components: [],
+-		controllers: [],
+-		gates: [],
+-		variables: [],
+-		viewState: null,
+-		resourceGroups: [
+-			{
+-				resources: { type: 7, grid: 1, index: 0, count: 1 },
+-				sceneState: 0,
+-				logicState: 0,
+-				levelNum: 1,
+-				factoryIndex: -1,
+-			},
+-		],
+-		extraScene: null,
+-		erosionCore: null,
+-		sludgeCore: null,
+-	},
++const owner = (): DynamicEntity => ({
++	grid: 1,
++	uid: 123n,
++	entityType: 0,
++	components: [],
++	controllers: [],
++	gates: [],
++	variables: [],
++	viewState: null,
++	resourceGroups: [
++		{
++			resources: { type: 7, grid: 1, index: 0, count: 1 },
++			sceneState: 0,
++			logicState: 0,
++			levelNum: 1,
++			factoryIndex: -1,
++			states: [4],
++			areas: [7],
++		},
++	],
++	extraScene: null,
++	erosionCore: null,
++	sludgeCore: null,
+ 	states: [3],
+-	groupStates: [[4]],
+ 	areas: [0],
+-	groupAreas: [[7]],
+ 	scriptDefaultLoad: false,
+ });
+ 
+@@ -47,7 +45,7 @@ test('completed script roads still require the owner and group scene states and
+ 
+ test('requires an ECS collision group with a resolved logic pose and the source ink-road mesh family', () => {
+ 	const road = owner();
+-	const group = road.entity.resourceGroups[0];
++	const group = road.resourceGroups[0];
+ 	group.logicState = 2;
+ 	assert.equal(visibleInkRoadGroup(road, 0, new Set([3, 4]), 7), false);
+ 	group.logicState = 0;
+diff --git a/packages/extractor/src/game/dynamic/ink-road-collision.ts b/packages/extractor/src/game/dynamic/ink-road-collision.ts
+index ce7de352..a6404ea1 100644
+--- a/packages/extractor/src/game/dynamic/ink-road-collision.ts
++++ b/packages/extractor/src/game/dynamic/ink-road-collision.ts
+@@ -1,7 +1,7 @@
+ import {
+ 	dynamicResourceSlice,
+-	type DynamicResourceEntity,
+-} from '@endfield-noclip/formats/endfield/dynamic-resources';
++	type DynamicEntity,
++} from '@endfield-noclip/formats/endfield/dynamic-scene';
+ import { parseDynamicChunk } from '@endfield-noclip/formats/endfield/init-chunk-data';
+ import { parseStreamingChunk } from '@endfield-noclip/formats/endfield/streaming-chunk-data';
+ import type { Rect } from '@endfield-noclip/package-format/values';
+@@ -20,7 +20,7 @@ export const isInkRoadCollider = (path: string | undefined): boolean =>
+ 	path?.toLowerCase().startsWith('assets/beyond/arts/gameplay/pcg/inkbridge/road/models/') ?? false;
+ 
+ export function visibleInkRoadGroup(
+-	owner: DynamicResourceEntity,
++	owner: DynamicEntity,
+ 	index: number,
+ 	states: ReadonlySet<number>,
+ 	area: number,
+@@ -29,12 +29,12 @@ export function visibleInkRoadGroup(
+ 	// Other entity gates and unresolved logic poses still constrain the geometry.
+ 	return (
+ 		owner.scriptDefaultLoad !== null &&
+-		owner.entity.resourceGroups[index].resources.type === 7 &&
+-		owner.entity.resourceGroups[index].logicState === 0 &&
+-		[owner.states, owner.groupStates[index]].every(
++		owner.resourceGroups[index].resources.type === 7 &&
++		owner.resourceGroups[index].logicState === 0 &&
++		[owner.states, owner.resourceGroups[index].states].every(
+ 			(row) => !row.length || row.some((state) => states.has(state)),
+ 		) &&
+-		[owner.areas, owner.groupAreas[index]].every(
++		[owner.areas, owner.resourceGroups[index].areas].every(
+ 			(row) => !row.length || row.includes(0) || row.includes(area),
+ 		)
+ 	);
+@@ -56,13 +56,13 @@ export async function collectInkRoadCollision(
+ 		(selection.sceneStates ?? [selection.sceneState]).filter((s) => s > 0).map((s) => s - 1),
+ 	);
+ 	const selected = owners.flatMap((owner) => {
+-		const entries = owner.entity.resourceGroups.filter(
++		const entries = owner.resourceGroups.filter(
+ 			({ resources }, index) =>
+ 				resources.count > 0 &&
+ 				visibleInkRoadGroup(owner, index, states, selection.area) &&
+ 				intersects(gridIdReach(resources.grid), bounds),
+ 		);
+-		return entries.length ? [{ gates: owner.entity.gates.map(gateCondition), entries }] : [];
++		return entries.length ? [{ gates: owner.gates.map(gateCondition), entries }] : [];
+ 	});
+ 	if (!selected.length) return null;
+ 	const game = new GameState({ variables: await loadMapVariables(ctx.world, scene) });
+@@ -104,11 +104,14 @@ export async function collectInkRoadCollision(
+ 				for (const id of group.ids) ids.add(id);
+ 			}
+ 			if (!ids.size) continue;
+-			const selectedRows = parseStreamingChunk(stream).records.filter(
+-				(row) =>
+-					ids.has(row.id) &&
+-					row.properties.some(({ value }) => value.type === 'asset' && isInkRoadCollider(paths(value.hash))),
+-			);
++			const streaming = parseStreamingChunk(stream);
++			const selectedRows = streaming.rows.flatMap((row) => {
++				if (row.tag !== 2 || !ids.has(row.id)) return [];
++				const properties = streaming.properties(row);
++				return properties.some(({ value }) => value.type === 'asset' && isInkRoadCollider(paths(value.hash)))
++					? [{ id: row.id, kind: row.tag, properties }]
++					: [];
++			});
+ 			if (!selectedRows.length) continue;
+ 			const name = `Data/DynamicStreaming/PC/Scene/${scene}/fb_streaming_${key}.bytes`;
+ 			sourceFiles.push(name);

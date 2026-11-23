@@ -11,7 +11,7 @@ index fa7c03a9..d3590cc4 100644
  	}
  }
 diff --git a/packages/extractor/src/cli.test.ts b/packages/extractor/src/cli.test.ts
-index a29e361e..f01f19db 100644
+index 2a4a23b2..d8b13d49 100644
 --- a/packages/extractor/src/cli.test.ts
 +++ b/packages/extractor/src/cli.test.ts
 @@ -16,7 +16,7 @@ test('every command provides help without an install or config', async () => {
@@ -221,87 +221,6 @@ index 00000000..4261d6c2
 +		);
 +	});
 +};
-diff --git a/packages/extractor/src/commands/asset.ts b/packages/extractor/src/commands/asset.ts
-index d6c3b0b1..ba67a3c3 100644
---- a/packages/extractor/src/commands/asset.ts
-+++ b/packages/extractor/src/commands/asset.ts
-@@ -2,10 +2,13 @@ import { parseArgs } from 'node:util';
- 
- import { writeKtx2 } from '@endfield-noclip/formats/binary/ktx2';
- import { DrawFlags } from '@endfield-noclip/formats/endfield/init-chunk-data';
-+import { readCollisionMesh } from '@endfield-noclip/formats/unity/collision-mesh';
-+import { readConvexMesh } from '@endfield-noclip/formats/unity/convex-mesh';
- import { ShaderPropertyFlags, ShaderPropertyType } from '@endfield-noclip/formats/unity/material';
- import type { DecodedMesh } from '@endfield-noclip/formats/unity/mesh';
- import { UnityClass } from '@endfield-noclip/formats/unity/serialized-file';
- import { type DecodedTexture, toKtx2Texture } from '@endfield-noclip/formats/unity/texture';
-+import { booleanField, bytesField } from '@endfield-noclip/formats/unity/values';
- 
- import { mapDefined } from '@mary-ext/array-fns';
- 
-@@ -23,7 +26,7 @@ import { withContext } from '../context.ts';
- import { errorText, failureReason } from '../errors.ts';
- import { type GlbScene, writeGlb } from '../export/glb.ts';
- import { loadMesh, loadTexture } from '../game/assets/asset-decode.ts';
--import { type AssetResolver, objectKey, type ObjectRef } from '../game/assets/assets.ts';
-+import { type AssetResolver, objectKey, locateObject, type ObjectRef } from '../game/assets/assets.ts';
- import { loadMaterial, type LoadedMaterial } from '../game/materials/material-load.ts';
- import type { IndexedEntity, WorldIndex } from '../game/world/world-index.ts';
- import { zstdSync } from '../zstd.ts';
-@@ -33,6 +36,7 @@ export const summary = 'decode meshes, textures and materials; trace entity draw
- /** command usage, available without opening the install */
- export const usage = `usage:
-   asset mesh <object> [-o file.glb]                   mesh summary; -o exports it alone as glTF
-+  asset collision <object> [-o file.json]             cooked triangle/convex collision geometry in local Unity coordinates
-   asset texture <object> [-o file.ktx2] [--zstd level]
-                                                       texture summary; -o writes KTX2 (zstd per level if given)
-   asset material <object>                             material record, classification and its textures
-@@ -92,6 +96,45 @@ export const run = async (args: string[]): Promise<void> => {
- 			return resolver.findUnique({ hash: hashes[0], path: target }, classId);
- 		};
- 		switch (sub) {
-+			case 'collision': {
-+				const ref = await objectArg(UnityClass.Mesh);
-+				const data = await resolver.read(ref);
-+				const convex = booleanField(data, 'm_CollisionMeshConvex');
-+				const mesh = convex
-+					? readConvexMesh(bytesField(data, 'm_BakedConvexCollisionMesh'))
-+					: readCollisionMesh(bytesField(data, 'm_BakedTriangleCollisionMesh'));
-+				const build = await world.manifest();
-+				console.log(
-+					JSON.stringify({
-+						vertices: mesh.vertices.length,
-+						convex,
-+						triangles: mesh.triangles.length,
-+						bounds: mesh.bounds,
-+					}),
-+				);
-+				if (output !== undefined) {
-+					await save(
-+						output,
-+						new TextEncoder().encode(
-+							JSON.stringify(
-+								{
-+									version: 1,
-+									source: {
-+										buildGuid: build.guid,
-+										contentHash: build.contentHash,
-+										object: locateObject(ref),
-+									},
-+									coordinates: 'local-unity',
-+									convex,
-+									mesh,
-+								},
-+								jsonReplacer,
-+							),
-+						),
-+					);
-+				}
-+				break;
-+			}
- 			case 'mesh': {
- 				const mesh = await loadMesh(resolver, await objectArg(UnityClass.Mesh));
- 				console.log(JSON.stringify(meshSummary(mesh), null, '\t'));
 diff --git a/packages/extractor/src/commands/collision-inputs.ts b/packages/extractor/src/commands/collision-inputs.ts
 new file mode 100644
 index 00000000..82e3a234
@@ -610,6 +529,88 @@ index 00000000..a3c0c9c2
 +		console.error(`wrote ${filters.length} photo filters to ${output}`);
 +	});
 +};
+diff --git a/packages/extractor/src/commands/inspect.ts b/packages/extractor/src/commands/inspect.ts
+index 130d3ce5..39bf782d 100644
+--- a/packages/extractor/src/commands/inspect.ts
++++ b/packages/extractor/src/commands/inspect.ts
+@@ -14,11 +14,13 @@ import {
+ 	ShaderPropertyType,
+ 	type ShaderSummary,
+ } from '@endfield-noclip/formats/unity/material';
++import { readCollisionMesh } from '@endfield-noclip/formats/unity/collision-mesh';
++import { readConvexMesh } from '@endfield-noclip/formats/unity/convex-mesh';
+ import type { DecodedMesh } from '@endfield-noclip/formats/unity/mesh';
+ import { isTextureClass, typeName, UnityClass } from '@endfield-noclip/formats/unity/serialized-file';
+ import { type DecodedTexture, toKtx2Texture } from '@endfield-noclip/formats/unity/texture';
+ import type { TypeTreeObject } from '@endfield-noclip/formats/unity/type-tree';
+-import { asPPtr, type PPtr } from '@endfield-noclip/formats/unity/values';
++import { asPPtr, booleanField, bytesField, type PPtr } from '@endfield-noclip/formats/unity/values';
+ 
+ import { definite, mapDefined } from '@mary-ext/array-fns';
+ 
+@@ -36,7 +38,7 @@ import { compareStrings } from '../compare.ts';
+ import { type Context, withContext } from '../context.ts';
+ import { errorText } from '../errors.ts';
+ import { loadMesh, loadShaderSummary, loadTexture } from '../game/assets/asset-decode.ts';
+-import { type AssetResolver, objectKey, type ObjectRef } from '../game/assets/assets.ts';
++import { type AssetResolver, locateObject, objectKey, type ObjectRef } from '../game/assets/assets.ts';
+ import { RENDER_PIPELINE_QUAD_PATH } from '../game/assets/builtin-resources.ts';
+ import { describeMaterial } from '../game/materials/material-describe.ts';
+ import { loadMaterial, type LoadedMaterial } from '../game/materials/material-load.ts';
+@@ -64,6 +66,7 @@ export const usage = `usage:
+   inspect shader <object|name-re> [--prop re] [--type t,…] [--flag f,…] [--group initial|main|all] [--json]
+                                                       shader tags and declared properties (defaults and flags)
+   inspect mesh <object> [--name re] [--vertices n]    vertex channels, submeshes, bounds, color/UV ranges, skinning
++  inspect collision <object> [-o file.json]        cooked triangle/convex collision geometry in local Unity coordinates
+   inspect texture <object> [--name re] [-o file.ktx2|file.dds] [--layer n] [--mip n] [--zstd n]
+                                                       format, dimensions, mips, sampler; -o writes KTX2 or DX10 DDS
+   inspect water-config <object> [--name re]           surface WaterConfig or Global_Water_Config as JSON
+@@ -153,6 +156,45 @@ export const run = async (args: string[]): Promise<void> => {
+ 				});
+ 				break;
+ 			}
++			case 'collision': {
++				const ref = await resolveTarget(UnityClass.Mesh);
++				const data = await resolver.read(ref);
++				const convex = booleanField(data, 'm_CollisionMeshConvex');
++				const mesh = convex
++					? readConvexMesh(bytesField(data, 'm_BakedConvexCollisionMesh'))
++					: readCollisionMesh(bytesField(data, 'm_BakedTriangleCollisionMesh'));
++				const build = await (await context.world()).manifest();
++				console.log(
++					JSON.stringify({
++						vertices: mesh.vertices.length,
++						convex,
++						triangles: mesh.triangles.length,
++						bounds: mesh.bounds,
++					}),
++				);
++				if (values.output !== undefined) {
++					await saveFile(
++						values.output,
++						new TextEncoder().encode(
++							JSON.stringify(
++								{
++									version: 1,
++									source: {
++										buildGuid: build.guid,
++										contentHash: build.contentHash,
++										object: locateObject(ref),
++									},
++									coordinates: 'local-unity',
++									convex,
++									mesh,
++								},
++								jsonReplacer,
++							),
++						),
++					);
++				}
++				break;
++			}
+ 			case 'mesh': {
+ 				const ref = await resolveTarget(UnityClass.Mesh);
+ 				const mesh = await loadMesh(resolver, ref);
 diff --git a/packages/extractor/src/commands/interaction-points.ts b/packages/extractor/src/commands/interaction-points.ts
 new file mode 100644
 index 00000000..03f8f70e
@@ -770,157 +771,6 @@ index 00000000..03f8f70e
 +		console.log(counts);
 +	});
 +};
-diff --git a/packages/extractor/src/game/coin-motion.ts b/packages/extractor/src/game/coin-motion.ts
-new file mode 100644
-index 00000000..5cc57fb0
---- /dev/null
-+++ b/packages/extractor/src/game/coin-motion.ts
-@@ -0,0 +1,87 @@
-+import { levelInteractiveFromValue } from '@endfield-noclip/formats/endfield/level-interactives';
-+import { type LevelSpline, splineCurves } from '@endfield-noclip/formats/endfield/level-splines';
-+import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
-+
-+import { componentOf, componentParams } from './interactives/component-params.ts';
-+import { atomFloat } from './interactives/template-data.ts';
-+
-+const COIN = {
-+	suffix: '_InteractiveCollectionCoinComponentDataForMemoryPack',
-+	diffKey: 'Comp_InteractiveCollectionCoin',
-+	type: 142,
-+};
-+const START_AREA = {
-+	suffix: '_InteractiveStartAreaComponentDataForMemoryPack',
-+	diffKey: 'Comp_InteractiveLogicStartArea',
-+	type: 36,
-+};
-+type Source = { buildGuid: string; contentHash: string; path: string };
-+
-+/** Retain the effective source motion separately from the placed interaction volume.
-+ * Runtime logic starts at the authored first knot even when the placed actor
-+ * begins elsewhere. A route still needs its own activation and time witness.
-+ */
-+export const coinMotion = (
-+	template: MemoryPackValue,
-+	placement: MemoryPackValue,
-+	id: string,
-+	loadSplines: () => LevelSpline[],
-+	source: Source,
-+) => {
-+	if (!componentOf(template, COIN.suffix)) return null;
-+	const row = levelInteractiveFromValue(placement, BigInt(id));
-+	const values = componentParams(template, row, COIN)!;
-+	const atoms = (key: string) => values.get(key)?.values.map((value) => value.bits) ?? [];
-+	const int = (key: string) => Number(BigInt.asIntN(32, atoms(key)[0] ?? 0n));
-+	const floats = (key: string) => atoms(key).map(atomFloat);
-+	if (int('movable') !== 1) return null;
-+	const splineId = int('spline_id');
-+	const matches = loadSplines().filter((spline) => spline.id === splineId);
-+	if (!Number.isInteger(splineId) || splineId <= 0 || matches.length !== 1 || matches[0].knots.length < 2)
-+		throw new Error('moving coin spline is missing or ambiguous in the placement source');
-+	const spline = matches[0];
-+	const curves = splineCurves(spline, spline.closed);
-+	const repeatFrom = spline.closed ? 0 : int('partly_loop') === 1 ? int('partly_loop_index') : null;
-+	if (repeatFrom !== null && (repeatFrom < 0 || repeatFrom >= curves.length))
-+		throw new Error('moving coin loop begins outside its authored curves');
-+	const speed = floats('speed')[0];
-+	const radius = floats('radius')[0];
-+	const speeds = floats('speed_list');
-+	const nearby = atoms('wait_for_nearby_list');
-+	const waits = floats('wait_time_list');
-+	const smooth = atoms('use_smooth_speed_list');
-+	const useSameSpeed = int('use_same_speed') === 1;
-+	if (
-+		!Number.isFinite(speed) || speed <= 0 ||
-+		!Number.isFinite(radius) || radius < 0 ||
-+		speeds.some((value) => !Number.isFinite(value) || value <= 0) ||
-+		waits.some((value) => !Number.isFinite(value) || value < 0) ||
-+		[nearby, waits, smooth].some((list) => list.length !== 0 && list.length !== curves.length) ||
-+		(!useSameSpeed && speeds.length !== curves.length)
-+	) throw new Error('invalid moving coin speed or per-segment gates');
-+	// The inactive start area raises its enter event on the loaded
-+	// entity's first tick without applying a spatial check.
-+	const spatial = componentParams(template, row, START_AREA);
-+	const automatic = spatial?.get('active')?.values[0]?.bits === 0n;
-+	return {
-+		activation: automatic ? 'loaded-entity-tick' : 'unresolved',
-+		model: 'source-coin-spline-v1' as const,
-+		source,
-+		splineId,
-+		closed: spline.closed,
-+		repeatFrom,
-+		placedPosition: row.position,
-+		startPosition: curves[0][0],
-+		nearbyWaitRadius: radius,
-+		camouflaged: int('camouflage') === 1,
-+		timeLimited: int('time_limited') === 1,
-+		countdownDuration: floats('countdown_duration')[0] ?? null,
-+		segments: curves.map((curve, index) => ({
-+			curve,
-+			speed: useSameSpeed ? speed : speeds[index],
-+			requiresNearby: (nearby[index] ?? 0n) !== 0n,
-+			waitSeconds: waits[index] ?? 0,
-+			smoothSpeed: (smooth[index] ?? 0n) !== 0n,
-+		})),
-+	};
-+};
-diff --git a/packages/extractor/src/game/coin-motion.test.ts b/packages/extractor/src/game/coin-motion.test.ts
-new file mode 100644
-index 00000000..04097185
---- /dev/null
-+++ b/packages/extractor/src/game/coin-motion.test.ts
-@@ -0,0 +1,52 @@
-+import assert from 'node:assert/strict';
-+import { test } from 'node:test';
-+
-+import type { LevelSpline } from '@endfield-noclip/formats/endfield/level-splines';
-+import { coinMotion } from './coin-motion.ts';
-+
-+const bits = (value: number): string => {
-+	const view = new DataView(new ArrayBuffer(4));
-+	view.setFloat32(0, value);
-+	return String(view.getUint32(0));
-+};
-+const param = (key: string, value: string | number) => ({
-+	key, value: { type: typeof value === 'string' ? 5 : 3, valueArray: [{ valueBit64: String(value), valueString: null }] },
-+});
-+const config = [
-+	param('spline_id', 0), param('movable', 0), param('radius', bits(10)),
-+	param('use_same_speed', 1), param('speed', bits(2)),
-+];
-+const template = {
-+	componentList: [{
-+		$type: 'Beyond_Gameplay_Core_InteractiveCollectionCoinComponentDataForMemoryPack',
-+		propertyList: config,
-+	}],
-+	templateVariant: [['coin_variant', { componentDiffProperties: [['Comp_InteractiveCollectionCoin', {
-+		value: [param('movable', 1), param('speed', bits(7))],
-+	}]] }]],
-+};
-+const row = {
-+	entityDataIdKey: 'coin_variant', createState: 0,
-+	position: [99, 2, 99], rotation: [0, 0, 0], scale: [1, 1, 1],
-+	componentProperties: [[142, [param('spline_id', 7), param('speed', bits(5)), param('partly_loop', 1)]]],
-+};
-+const spline: LevelSpline = {
-+	id: 7, position: [10, 20, 30], rotation: [0, 0, 0], closed: false,
-+	knots: [0, 2].map((x) => ({ position: [x, 0, 0], rotation: [0, 0, 0, 1], tangentIn: [0, 0, 0], tangentOut: [0, 0, 0] })),
-+};
-+const source = { buildGuid: 'build', contentHash: 'content', path: 'level.json' };
-+
-+test('motion binds the effective coin parameters and authored spline start', () => {
-+	const motion = coinMotion(template, row, '1', () => [spline], source);
-+	assert.ok(motion);
-+	assert.deepEqual(motion.placedPosition, [99, 2, 99]);
-+	assert.deepEqual(motion.startPosition, [10, 20, 30]);
-+	assert.equal(motion.segments[0].speed, 5);
-+	assert.equal(motion.repeatFrom, 0);
-+	assert.deepEqual(motion.source, source);
-+});
-+
-+test('static coins do not demand a spline and moving coins require an exact source match', () => {
-+	assert.equal(coinMotion(template, { ...row, entityDataIdKey: 'coin_static' }, '1', () => [], source), null);
-+	assert.throws(() => coinMotion(template, row, '1', () => [], source), /missing or ambiguous/);
-+});
 diff --git a/packages/extractor/src/commands/movement-settings.ts b/packages/extractor/src/commands/movement-settings.ts
 new file mode 100644
 index 00000000..ac97673c
@@ -4371,6 +4221,157 @@ index 00000000..8bfdb564
 +		throw new FormatError('no character capsules for default profile');
 +	}
 +	return { radius: selected.radius, height: selected.height };
++};
+diff --git a/packages/extractor/src/game/coin-motion.test.ts b/packages/extractor/src/game/coin-motion.test.ts
+new file mode 100644
+index 00000000..04097185
+--- /dev/null
++++ b/packages/extractor/src/game/coin-motion.test.ts
+@@ -0,0 +1,52 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++
++import type { LevelSpline } from '@endfield-noclip/formats/endfield/level-splines';
++import { coinMotion } from './coin-motion.ts';
++
++const bits = (value: number): string => {
++	const view = new DataView(new ArrayBuffer(4));
++	view.setFloat32(0, value);
++	return String(view.getUint32(0));
++};
++const param = (key: string, value: string | number) => ({
++	key, value: { type: typeof value === 'string' ? 5 : 3, valueArray: [{ valueBit64: String(value), valueString: null }] },
++});
++const config = [
++	param('spline_id', 0), param('movable', 0), param('radius', bits(10)),
++	param('use_same_speed', 1), param('speed', bits(2)),
++];
++const template = {
++	componentList: [{
++		$type: 'Beyond_Gameplay_Core_InteractiveCollectionCoinComponentDataForMemoryPack',
++		propertyList: config,
++	}],
++	templateVariant: [['coin_variant', { componentDiffProperties: [['Comp_InteractiveCollectionCoin', {
++		value: [param('movable', 1), param('speed', bits(7))],
++	}]] }]],
++};
++const row = {
++	entityDataIdKey: 'coin_variant', createState: 0,
++	position: [99, 2, 99], rotation: [0, 0, 0], scale: [1, 1, 1],
++	componentProperties: [[142, [param('spline_id', 7), param('speed', bits(5)), param('partly_loop', 1)]]],
++};
++const spline: LevelSpline = {
++	id: 7, position: [10, 20, 30], rotation: [0, 0, 0], closed: false,
++	knots: [0, 2].map((x) => ({ position: [x, 0, 0], rotation: [0, 0, 0, 1], tangentIn: [0, 0, 0], tangentOut: [0, 0, 0] })),
++};
++const source = { buildGuid: 'build', contentHash: 'content', path: 'level.json' };
++
++test('motion binds the effective coin parameters and authored spline start', () => {
++	const motion = coinMotion(template, row, '1', () => [spline], source);
++	assert.ok(motion);
++	assert.deepEqual(motion.placedPosition, [99, 2, 99]);
++	assert.deepEqual(motion.startPosition, [10, 20, 30]);
++	assert.equal(motion.segments[0].speed, 5);
++	assert.equal(motion.repeatFrom, 0);
++	assert.deepEqual(motion.source, source);
++});
++
++test('static coins do not demand a spline and moving coins require an exact source match', () => {
++	assert.equal(coinMotion(template, { ...row, entityDataIdKey: 'coin_static' }, '1', () => [], source), null);
++	assert.throws(() => coinMotion(template, row, '1', () => [], source), /missing or ambiguous/);
++});
+diff --git a/packages/extractor/src/game/coin-motion.ts b/packages/extractor/src/game/coin-motion.ts
+new file mode 100644
+index 00000000..5cc57fb0
+--- /dev/null
++++ b/packages/extractor/src/game/coin-motion.ts
+@@ -0,0 +1,87 @@
++import { levelInteractiveFromValue } from '@endfield-noclip/formats/endfield/level-interactives';
++import { type LevelSpline, splineCurves } from '@endfield-noclip/formats/endfield/level-splines';
++import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
++
++import { componentOf, componentParams } from './interactives/component-params.ts';
++import { atomFloat } from './interactives/template-data.ts';
++
++const COIN = {
++	suffix: '_InteractiveCollectionCoinComponentDataForMemoryPack',
++	diffKey: 'Comp_InteractiveCollectionCoin',
++	type: 142,
++};
++const START_AREA = {
++	suffix: '_InteractiveStartAreaComponentDataForMemoryPack',
++	diffKey: 'Comp_InteractiveLogicStartArea',
++	type: 36,
++};
++type Source = { buildGuid: string; contentHash: string; path: string };
++
++/** Retain the effective source motion separately from the placed interaction volume.
++ * Runtime logic starts at the authored first knot even when the placed actor
++ * begins elsewhere. A route still needs its own activation and time witness.
++ */
++export const coinMotion = (
++	template: MemoryPackValue,
++	placement: MemoryPackValue,
++	id: string,
++	loadSplines: () => LevelSpline[],
++	source: Source,
++) => {
++	if (!componentOf(template, COIN.suffix)) return null;
++	const row = levelInteractiveFromValue(placement, BigInt(id));
++	const values = componentParams(template, row, COIN)!;
++	const atoms = (key: string) => values.get(key)?.values.map((value) => value.bits) ?? [];
++	const int = (key: string) => Number(BigInt.asIntN(32, atoms(key)[0] ?? 0n));
++	const floats = (key: string) => atoms(key).map(atomFloat);
++	if (int('movable') !== 1) return null;
++	const splineId = int('spline_id');
++	const matches = loadSplines().filter((spline) => spline.id === splineId);
++	if (!Number.isInteger(splineId) || splineId <= 0 || matches.length !== 1 || matches[0].knots.length < 2)
++		throw new Error('moving coin spline is missing or ambiguous in the placement source');
++	const spline = matches[0];
++	const curves = splineCurves(spline, spline.closed);
++	const repeatFrom = spline.closed ? 0 : int('partly_loop') === 1 ? int('partly_loop_index') : null;
++	if (repeatFrom !== null && (repeatFrom < 0 || repeatFrom >= curves.length))
++		throw new Error('moving coin loop begins outside its authored curves');
++	const speed = floats('speed')[0];
++	const radius = floats('radius')[0];
++	const speeds = floats('speed_list');
++	const nearby = atoms('wait_for_nearby_list');
++	const waits = floats('wait_time_list');
++	const smooth = atoms('use_smooth_speed_list');
++	const useSameSpeed = int('use_same_speed') === 1;
++	if (
++		!Number.isFinite(speed) || speed <= 0 ||
++		!Number.isFinite(radius) || radius < 0 ||
++		speeds.some((value) => !Number.isFinite(value) || value <= 0) ||
++		waits.some((value) => !Number.isFinite(value) || value < 0) ||
++		[nearby, waits, smooth].some((list) => list.length !== 0 && list.length !== curves.length) ||
++		(!useSameSpeed && speeds.length !== curves.length)
++	) throw new Error('invalid moving coin speed or per-segment gates');
++	// The inactive start area raises its enter event on the loaded
++	// entity's first tick without applying a spatial check.
++	const spatial = componentParams(template, row, START_AREA);
++	const automatic = spatial?.get('active')?.values[0]?.bits === 0n;
++	return {
++		activation: automatic ? 'loaded-entity-tick' : 'unresolved',
++		model: 'source-coin-spline-v1' as const,
++		source,
++		splineId,
++		closed: spline.closed,
++		repeatFrom,
++		placedPosition: row.position,
++		startPosition: curves[0][0],
++		nearbyWaitRadius: radius,
++		camouflaged: int('camouflage') === 1,
++		timeLimited: int('time_limited') === 1,
++		countdownDuration: floats('countdown_duration')[0] ?? null,
++		segments: curves.map((curve, index) => ({
++			curve,
++			speed: useSameSpeed ? speed : speeds[index],
++			requiresNearby: (nearby[index] ?? 0n) !== 0n,
++			waitSeconds: waits[index] ?? 0,
++			smoothSpeed: (smooth[index] ?? 0n) !== 0n,
++		})),
++	};
 +};
 diff --git a/packages/extractor/src/game/collision-ground.test.ts b/packages/extractor/src/game/collision-ground.test.ts
 new file mode 100644
@@ -8237,7 +8238,7 @@ index 418803cc..b4a54172 100644
  // `state` itself
  const jumpPad: MemoryPackValue = {
 diff --git a/packages/extractor/src/game/interactives/interactive-facilities.ts b/packages/extractor/src/game/interactives/interactive-facilities.ts
-index 92cef19f..859f9617 100644
+index 16aa4f89..a4ae5c41 100644
 --- a/packages/extractor/src/game/interactives/interactive-facilities.ts
 +++ b/packages/extractor/src/game/interactives/interactive-facilities.ts
 @@ -3,7 +3,7 @@ import type { Vec3 } from '@endfield-noclip/package-format/values';
@@ -8249,14 +8250,14 @@ index 92cef19f..859f9617 100644
  
  import { AnimatorStarts } from './animator-starts.ts';
  import { TelescopicBridges } from './bridges.ts';
-@@ -136,6 +136,7 @@ export const loadInteractiveFacilities = async (
- 	// a row is drawn by the first of these that claims it, else as its plain model or facility forms
+@@ -137,6 +137,7 @@ export const loadInteractiveFacilities = async (
  	const kinds: InteractiveKind[] = [bridges, doors, restLooks, animatorStarts, regionWalls, cranes];
  	const readers: TemplateReader[] = [platforms, jumpPads, fences, ...kinds];
+ 	const traits = new TemplateTraitsReader(sources, templates.traits);
 +	const destructible = new Set<string>();
  	{
- 		const traits = new TemplateTraitsReader(sources, templates.traits);
  		for (const [key, template] of authored) {
+ 			if (template.model === null) {
 @@ -146,6 +147,7 @@ export const loadInteractiveFacilities = async (
  			}
  			const single = { ...template, model: template.model };
@@ -8265,8 +8266,8 @@ index 92cef19f..859f9617 100644
  			for (const reader of readers) {
  				// oxlint-disable-next-line no-await-in-loop -- a few view state files and one-frame clips per model
  				await reader.prepare(key, single, traitsOf);
-@@ -161,10 +163,51 @@ export const loadInteractiveFacilities = async (
- 	await cranes.hang(placed, authored, rows);
+@@ -163,10 +165,51 @@ export const loadInteractiveFacilities = async (
+ 	await grades.read(scene, placed, authored, traits);
  
  	const switches = new RowSwitches(scripted);
 +	const rewards = new Map<string, string>();
@@ -8319,10 +8320,10 @@ index 92cef19f..859f9617 100644
  		const ride = await platforms.rideOf(entry);
  		// oxlint-disable-next-line no-await-in-loop -- locks are read once per level
 diff --git a/packages/extractor/src/game/interactives/template-traits.ts b/packages/extractor/src/game/interactives/template-traits.ts
-index d60d08f6..6f730d05 100644
+index 8715110f..4bac7ecf 100644
 --- a/packages/extractor/src/game/interactives/template-traits.ts
 +++ b/packages/extractor/src/game/interactives/template-traits.ts
-@@ -30,6 +30,7 @@ export type TemplateTraits =
+@@ -31,6 +31,7 @@ export type TemplateTraits =
  	| { kind: 'telescopic'; pieces: number }
  	| {
  			kind: 'other';
@@ -8330,7 +8331,7 @@ index d60d08f6..6f730d05 100644
  			campfire: boolean;
  			keys: PlayerKey[];
  			animator: AnimatorStart | null;
-@@ -99,6 +100,7 @@ export const readTemplateTraits = (template: MemoryPackValue, path: string): Tra
+@@ -103,6 +104,7 @@ export const readTemplateTraits = (template: MemoryPackValue, path: string): Tra
  	}
  	return {
  		kind: 'other',
@@ -9406,10 +9407,10 @@ index 00000000..8bf497bc
 +};
 diff --git a/packages/extractor/src/game/photo-effects.ts b/packages/extractor/src/game/photo-effects.ts
 new file mode 100644
-index 00000000..eedcf100
+index 00000000..40521092
 --- /dev/null
 +++ b/packages/extractor/src/game/photo-effects.ts
-@@ -0,0 +1,170 @@
+@@ -0,0 +1,171 @@
 +/* oxlint-disable no-await-in-loop -- bounded prefab traversal and conversion */
 +import { UnityClass } from '@endfield-noclip/formats/unity/serialized-file';
 +import { arrayField, asPPtr, isObject, pptrField } from '@endfield-noclip/formats/unity/values';
@@ -9451,6 +9452,7 @@ index 00000000..eedcf100
 +	for (const draw of await readPrefabRenderers(resolver, root, {
 +		viewPose: null,
 +		particleQuad: quad,
++		decalCube: null,
 +		locked: false,
 +		effectLod: 'camera',
 +	})) {
@@ -10924,7 +10926,7 @@ index 00000000..505a6a54
 +	return { surfaces, transfers: [], poses, surfacePoses };
 +};
 diff --git a/packages/extractor/src/game/state/scene-control.ts b/packages/extractor/src/game/state/scene-control.ts
-index 22c27349..1a08c4bd 100644
+index fb80c5c0..fe84817d 100644
 --- a/packages/extractor/src/game/state/scene-control.ts
 +++ b/packages/extractor/src/game/state/scene-control.ts
 @@ -75,7 +75,7 @@ export const CONTROL_CATEGORIES: readonly ControlCategory[] = [
@@ -10936,7 +10938,7 @@ index 22c27349..1a08c4bd 100644
  	{ id: 'streaming', title: 'Stream areas', note: null },
  	{
  		id: 'nearby',
-@@ -108,6 +108,7 @@ const CATEGORY_OF_KIND: Readonly<Record<string, string>> = {
+@@ -109,6 +109,7 @@ const CATEGORY_OF_KIND: Readonly<Record<string, string>> = {
  	created: 'created',
  	activity: 'events',
  	door: 'doors',
@@ -10945,10 +10947,10 @@ index 22c27349..1a08c4bd 100644
  	area: 'streaming',
  	proximity: 'nearby',
 diff --git a/packages/extractor/src/game/state/story.ts b/packages/extractor/src/game/state/story.ts
-index 89c08f1c..18641769 100644
+index 8934838f..e6184abf 100644
 --- a/packages/extractor/src/game/state/story.ts
 +++ b/packages/extractor/src/game/state/story.ts
-@@ -35,14 +35,16 @@ const CHAPTERS = new Map([
+@@ -36,14 +36,16 @@ const CHAPTERS = new Map([
   *
   * @param world world index
   * @param controls the scene's controls
@@ -12218,10 +12220,10 @@ index 00000000..3a32cc99
 +	assert.equal(deviceConnections(input, setup([floor('floor', 0, 0)])).boosts.length, 0);
 +});
 diff --git a/packages/extractor/src/game/world/world-index.ts b/packages/extractor/src/game/world/world-index.ts
-index 3449a3ef..4688a99a 100644
+index 76055f00..9fb79652 100644
 --- a/packages/extractor/src/game/world/world-index.ts
 +++ b/packages/extractor/src/game/world/world-index.ts
-@@ -103,7 +103,7 @@ export class WorldIndex {
+@@ -137,7 +137,7 @@ export class WorldIndex {
  	#stringPool: Promise<StringPool> | undefined;
  	#names: Promise<Map<string, string>> | undefined;
  	#english: Promise<Map<bigint, string>> | undefined;
@@ -12230,7 +12232,7 @@ index 3449a3ef..4688a99a 100644
  	readonly #missions = new Map<string, Promise<MissionRuntime | undefined>>();
  	#chunkFiles: Promise<ChunkFile[]> | undefined;
  	readonly #mapConfigs = new Map<string, Promise<MapConfig | undefined>>();
-@@ -295,13 +295,29 @@ export class WorldIndex {
+@@ -338,13 +338,29 @@ export class WorldIndex {
  	}
  
  	/**
@@ -12263,7 +12265,7 @@ index 3449a3ef..4688a99a 100644
  			const ids = new Map<string, bigint>();
  			for (const [key, value] of parseSparkTable(
  				await this.#read(VfsGroup.Table, 'Data/TableCfg/TextTable.bytes'),
-@@ -312,10 +328,11 @@ export class WorldIndex {
+@@ -355,10 +371,11 @@ export class WorldIndex {
  			}
  			return (key: string) => {
  				const id = ids.get(key);
@@ -12277,19 +12279,6 @@ index 3449a3ef..4688a99a 100644
  	}
  
  	/**
-diff --git a/packages/extractor/src/pack/convert/assets.ts b/packages/extractor/src/pack/convert/assets.ts
-index 12c05220..15d7881a 100644
---- a/packages/extractor/src/pack/convert/assets.ts
-+++ b/packages/extractor/src/pack/convert/assets.ts
-@@ -509,7 +509,7 @@ const describeSurfaces = (
- 				motion = moving;
- 			}
- 		}
--		return { status: 'ready', cull: material.cull, surface, gaps, motion };
-+		return { status: 'ready', cull: material.cull, renderQueue: material.renderQueue, surface, gaps, motion };
- 	});
- 	return { entries, unsupported };
- };
 diff --git a/packages/extractor/src/route-worker.ts b/packages/extractor/src/route-worker.ts
 new file mode 100644
 index 00000000..4ca43fc5
@@ -12346,3 +12335,176 @@ index 00000000..4ca43fc5
 +	process.exit(0);
 +});
 +send({ type: 'ready', version: 1 });
+diff --git a/packages/extractor/src/commands/air-walls.ts b/packages/extractor/src/commands/air-walls.ts
+index 4261d6c2..c49378a4 100644
+--- a/packages/extractor/src/commands/air-walls.ts
++++ b/packages/extractor/src/commands/air-walls.ts
+@@ -68,7 +68,7 @@ export const run = async (args: string[]): Promise<void> => {
+ 				}
+ 				// oxlint-disable-next-line no-await-in-loop -- decode one level file at a time
+ 				const data = reader.decode(
+-					await ctx.vfs.readVerified(file),
++					await file.readVerified(),
+ 					'Beyond_Gameplay_LevelDataForMemoryPack',
+ 				);
+ 				if (!isObject(data) || !Array.isArray(data.airWalls)) {
+diff --git a/packages/extractor/src/commands/filters.ts b/packages/extractor/src/commands/filters.ts
+index a3c0c9c2..cbd81995 100644
+--- a/packages/extractor/src/commands/filters.ts
++++ b/packages/extractor/src/commands/filters.ts
+@@ -41,7 +41,7 @@ export const run = async (args: string[]): Promise<void> => {
+ 			if (file === undefined) {
+ 				throw new Error(`missing ${name}`);
+ 			}
+-			return parseSparkTable(await context.vfs.readVerified(file)).entries;
++			return parseSparkTable(await file.readVerified()).entries;
+ 		};
+ 		const text = new Map(await table('I18nTextTable_EN'));
+ 		const resolver = await context.resolver();
+diff --git a/packages/extractor/src/commands/inspect.ts b/packages/extractor/src/commands/inspect.ts
+index 39bf782d..f29f9fc6 100644
+--- a/packages/extractor/src/commands/inspect.ts
++++ b/packages/extractor/src/commands/inspect.ts
+@@ -163,7 +163,7 @@ export const run = async (args: string[]): Promise<void> => {
+ 				const mesh = convex
+ 					? readConvexMesh(bytesField(data, 'm_BakedConvexCollisionMesh'))
+ 					: readCollisionMesh(bytesField(data, 'm_BakedTriangleCollisionMesh'));
+-				const build = await (await context.world()).manifest();
++				const build = await context.world.manifest();
+ 				console.log(
+ 					JSON.stringify({
+ 						vertices: mesh.vertices.length,
+diff --git a/packages/extractor/src/commands/interaction-points.ts b/packages/extractor/src/commands/interaction-points.ts
+index 03f8f70e..36ccd64c 100644
+--- a/packages/extractor/src/commands/interaction-points.ts
++++ b/packages/extractor/src/commands/interaction-points.ts
+@@ -31,7 +31,7 @@ export const run = async (args: string[]): Promise<void> => {
+ 			if (!file) {
+ 				throw new Error(`missing ${path}`);
+ 			}
+-			return ctx.vfs.readVerified(file);
++			return file.readVerified();
+ 		};
+ 		const build = await ctx.world.manifest();
+ 		const source = { buildGuid: build.guid, contentHash: build.contentHash };
+diff --git a/packages/extractor/src/commands/movement-settings.ts b/packages/extractor/src/commands/movement-settings.ts
+index ac97673c..72a4d976 100644
+--- a/packages/extractor/src/commands/movement-settings.ts
++++ b/packages/extractor/src/commands/movement-settings.ts
+@@ -73,7 +73,7 @@ export const run = async (args: string[]): Promise<void> => {
+ 		if (!constantsFile) {
+ 			throw new Error('missing movement resource constants');
+ 		}
+-		const constants = parseSparkBean(await ctx.vfs.readVerified(constantsFile));
++		const constants = parseSparkBean(await constantsFile.readVerified());
+ 		if (constants.name !== 'GlobalConst') {
+ 			throw new Error('unexpected movement resource constants');
+ 		}
+diff --git a/packages/extractor/src/commands/navmesh.ts b/packages/extractor/src/commands/navmesh.ts
+index e183d3fb..97e481ac 100644
+--- a/packages/extractor/src/commands/navmesh.ts
++++ b/packages/extractor/src/commands/navmesh.ts
+@@ -50,7 +50,7 @@ export const run = async (args: string[]): Promise<void> => {
+ 			throw new Error('no navigation assets');
+ 		}
+ 		const stateFile = await ctx.vfs.find(VfsGroup.JsonData, `Data/Json/NavMesh/${positionals[0]}/NavMeshStateContainer.json`);
+-        const states = stateFile ? (await ctx.memoryPack()).decode(await ctx.vfs.readVerified(stateFile), 'Beyond_Gameplay_NavMeshStateContainerForMemoryPack') : undefined;
++        const states = stateFile ? (await ctx.memoryPack()).decode(await stateFile.readVerified(), 'Beyond_Gameplay_NavMeshStateContainerForMemoryPack') : undefined;
+         const rows = [];
+ 		for (const [hash, path] of assets.slice(0, limit)) {
+ 			const data = await resolver.read(await resolver.findUnique({ hash, path }, 238));
+diff --git a/packages/extractor/src/commands/oem-navigation.ts b/packages/extractor/src/commands/oem-navigation.ts
+index 86219bf7..12d388cb 100644
+--- a/packages/extractor/src/commands/oem-navigation.ts
++++ b/packages/extractor/src/commands/oem-navigation.ts
+@@ -48,7 +48,7 @@ export const run = async (args: string[]): Promise<void> => {
+ 		// Only normalized geometry is exported. The final validator rejects unsupported source fields/shapes.
+ 		// The local game table is normalized below and isNavigation validates every emitted number and shape.
+ 		// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- source table, strict output validation before writing
+-		const table = JSON.parse(new TextDecoder().decode(await ctx.vfs.readVerified(file))) as Record<
++		const table = JSON.parse(new TextDecoder().decode(await file.readVerified())) as Record<
+ 			string,
+ 			{
+ 				levelId: string;
+diff --git a/packages/extractor/src/commands/oem.ts b/packages/extractor/src/commands/oem.ts
+index a51178ce..be552850 100644
+--- a/packages/extractor/src/commands/oem.ts
++++ b/packages/extractor/src/commands/oem.ts
+@@ -184,14 +184,14 @@ export const run = async (args: string[]): Promise<void> => {
+ 			if (!f) {
+ 				throw new Error(`missing ${path}`);
+ 			}
+-			return ctx.vfs.readVerified(f);
++			return f.readVerified();
+ 		};
+ 		const placements = new Map<string, { row: Node; level: string; path: string; kind: string }>();
+ 		const locks = new Map<string, Node[]>();
+ 		const levels = await ctx.world.levelConfigs();
+ 		const sceneFor = (level: string): string =>
+ 			levels.get(level)?.defaultState.exportedSceneConfigPath?.split('/')[0] ?? '';
+-		for (const path of group.files.keys()) {
++		for (const path of group.catalog.names()) {
+ 			const match = /^Data\/Json\/LevelData\/([^/]+)\//.exec(path);
+ 			if (!match || !sceneIds.includes(sceneFor(match[1]))) {
+ 				continue;
+diff --git a/packages/extractor/src/commands/travel-points.ts b/packages/extractor/src/commands/travel-points.ts
+index a6f1f841..3adba4be 100644
+--- a/packages/extractor/src/commands/travel-points.ts
++++ b/packages/extractor/src/commands/travel-points.ts
+@@ -29,7 +29,7 @@ export const run = async (args: string[]): Promise<void> => {
+ 		}
+ 		const reader = await ctx.memoryPack();
+ 		const data = reader.decode(
+-			await ctx.vfs.readVerified(file),
++			await file.readVerified(),
+ 			'Beyond_Gameplay_TeleportValidationDataTableForMemoryPack',
+ 		);
+ 		if (!isObject(data) || !Array.isArray(data.teleportValidationDatas)) {
+@@ -85,7 +85,7 @@ export const run = async (args: string[]): Promise<void> => {
+ 					throw new Error(`missing ${path}`);
+ 				}
+ 				const levelData = reader.decode(
+-					await ctx.vfs.readVerified(levelFile),
++					await levelFile.readVerified(),
+ 					'Beyond_Gameplay_LevelDataForMemoryPack',
+ 				);
+ 				if (!isObject(levelData) || !Array.isArray(levelData.factoryRegions)) {
+diff --git a/packages/extractor/src/game/raft-transports.ts b/packages/extractor/src/game/raft-transports.ts
+index 12efc5be..493fbc23 100644
+--- a/packages/extractor/src/game/raft-transports.ts
++++ b/packages/extractor/src/game/raft-transports.ts
+@@ -108,7 +108,7 @@ export const collectRaftTransports = async (ctx: Context, scene: string) => {
+     const read = async (path: string) => {
+         const file = await ctx.vfs.find(VfsGroup.JsonData, path);
+         if (!file) throw new Error(`missing raft input ${path}`);
+-        return ctx.vfs.readVerified(file);
++        return file.readVerified();
+     };
+     const table = readInteractiveTable(await read('Data/Json/Interactive/InteractiveTable.json'), id => pool.get(id));
+     const templates = new Map<string, MemoryPackValue>();
+diff --git a/packages/extractor/src/game/steam-hazards.ts b/packages/extractor/src/game/steam-hazards.ts
+index c0aa21d9..c5d935af 100644
+--- a/packages/extractor/src/game/steam-hazards.ts
++++ b/packages/extractor/src/game/steam-hazards.ts
+@@ -116,7 +116,7 @@ export const createSteamHazardReader = async (context: Pick<Context, 'vfs' | 'wo
+ 		if (!file) {
+ 			throw new FormatError('missing steam template input');
+ 		}
+-		return context.vfs.readVerified(file);
++		return file.readVerified();
+ 	};
+ 	const table = readInteractiveTable(await read('Data/Json/Interactive/InteractiveTable.json'), (id) =>
+ 		pool.get(id),
+diff --git a/packages/extractor/src/game/world/world-index.ts b/packages/extractor/src/game/world/world-index.ts
+index 9fb79652..14574d68 100644
+--- a/packages/extractor/src/game/world/world-index.ts
++++ b/packages/extractor/src/game/world/world-index.ts
+@@ -354,7 +354,7 @@ export class WorldIndex {
+ 			if (language !== 'EN') {
+ 				const file = await this.vfs.find(VfsGroup.Table, `Data/TableCfg/I18nTextTable_${language}.bytes`);
+ 				if (file) {
+-					for (const [key, value] of parseSparkTable(await this.vfs.readVerified(file)).entries) {
++					for (const [key, value] of parseSparkTable(await file.readVerified()).entries) {
+ 						if (typeof key === 'bigint' && typeof value === 'string') {
+ 							localized.set(key, value);
+ 						}

@@ -119,7 +119,7 @@ index c6c83f3c..93e7dd5c 100644
  	const keys = new Map([
  		['left_opened', (side & 2n) === 0n ? 1 : 0],
 diff --git a/packages/extractor/src/game/moving-supports.ts b/packages/extractor/src/game/moving-supports.ts
-index 73c95a6c..5dfa227 100644
+index 73c95a6c..5dfa2275 100644
 --- a/packages/extractor/src/game/moving-supports.ts
 +++ b/packages/extractor/src/game/moving-supports.ts
 @@ -34,16 +34,20 @@ import type { Vec3 } from '@opendfieldmap/ganglia';
@@ -361,7 +361,7 @@ index 29964c51..6f7ad19d 100644
 +    assert.equal(representedSupport(placed,[witness,{...actual,level:'another-level'}],placements),null);
 +});
 diff --git a/packages/extractor/src/game/static-supports.ts b/packages/extractor/src/game/static-supports.ts
-index 7d12f703..958e0fc 100644
+index 7d12f703..958e0fcf 100644
 --- a/packages/extractor/src/game/static-supports.ts
 +++ b/packages/extractor/src/game/static-supports.ts
 @@ -30,7 +30,40 @@ type Support = {
@@ -434,7 +434,7 @@ index 7d12f703..958e0fc 100644
                  : 'no terminal physical model was resolved';
 diff --git a/packages/extractor/src/game/water-supports.test.ts b/packages/extractor/src/game/water-supports.test.ts
 new file mode 100644
-index 0000000..331ee52
+index 00000000..331ee529
 --- /dev/null
 +++ b/packages/extractor/src/game/water-supports.test.ts
 @@ -0,0 +1,170 @@
@@ -610,7 +610,7 @@ index 0000000..331ee52
 +});
 diff --git a/packages/extractor/src/game/water-supports.ts b/packages/extractor/src/game/water-supports.ts
 new file mode 100644
-index 0000000..5b89c24
+index 00000000..5b89c24d
 --- /dev/null
 +++ b/packages/extractor/src/game/water-supports.ts
 @@ -0,0 +1,169 @@
@@ -783,3 +783,70 @@ index 0000000..5b89c24
 +	for (const script of scripts) visit(script.data);
 +	return groups;
 +};
+diff --git a/packages/extractor/src/game/moving-supports.ts b/packages/extractor/src/game/moving-supports.ts
+index 5dfa2275..2c7652af 100644
+--- a/packages/extractor/src/game/moving-supports.ts
++++ b/packages/extractor/src/game/moving-supports.ts
+@@ -1,10 +1,10 @@
+ /* oxlint-disable no-await-in-loop -- offline catalogue reads each small prefab and template once */
+ import {
+-	readDynamicResources,
++	readDynamicScene,
+ 	dynamicResourceSlice,
++	type ConveyorPath,
+ 	type DynamicModel,
+-} from '@endfield-noclip/formats/endfield/dynamic-resources';
+-import type { ConveyorPath } from '@endfield-noclip/formats/endfield/dynamic-scene';
++} from '@endfield-noclip/formats/endfield/dynamic-scene';
+ import { readInteractiveTable } from '@endfield-noclip/formats/endfield/interactive-model';
+ import {
+ 	interactiveParamFromValue,
+@@ -134,7 +134,7 @@ const splinePath = (spline: LevelSpline, move: NonNullable<ReturnType<typeof cur
+ };
+ 
+ const conveyorPath = (paths: ConveyorPath[], offset: number): Vec3[] =>
+-	paths.flatMap((path) => {
++	paths.flatMap((path): Vec3[] => {
+ 		if (path.type === 0) {
+ 			const dx = path.end[0] - path.start[0],
+ 				dz = path.end[2] - path.start[2],
+@@ -189,7 +189,7 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+ 		if (!file) {
+ 			throw new Error(`missing moving support input ${path}`);
+ 		}
+-		return ctx.vfs.readVerified(file);
++		return file.readVerified();
+ 	};
+ 	const table = readInteractiveTable(await read('Data/Json/Interactive/InteractiveTable.json'), (id) =>
+ 		pool.get(id),
+@@ -502,24 +502,24 @@ export const collectMovingSupports = async (ctx: Context, scene: string) => {
+ 		}
+ 	}
+ 	// conveyor boxes are dynamic resource placements, not LevelData interactives.
+-	const grids = new Map<number, ReturnType<typeof readDynamicResources>['grids'][number]>();
+-	const entities: ReturnType<typeof readDynamicResources>['entities'] = [];
++	const grids = new Map<number, ReturnType<typeof readDynamicScene>['grids'][number]>();
++	const entities: ReturnType<typeof readDynamicScene>['entities'] = [];
+ 	const prefix = 'Data/DynamicStreaming/PC/Scene/' + scene + '/fb_main_';
+-	for (const name of [...(await ctx.vfs.group(VfsGroup.DynamicStreaming)).files.keys()]
++	for (const name of [...(await ctx.vfs.group(VfsGroup.DynamicStreaming)).catalog.names()]
+ 		.filter((candidate) => candidate.startsWith(prefix))
+ 		.toSorted()) {
+-		const data = readDynamicResources(await read(name, VfsGroup.DynamicStreaming));
++		const data = readDynamicScene(await read(name, VfsGroup.DynamicStreaming));
+ 		for (const grid of data.grids) {
+ 			grids.set(grid.id, grid);
+ 		}
+ 		entities.push(...data.entities);
+ 	}
+ 	const groups = new Map(
+-		entities.flatMap(({ entity }) =>
++		entities.flatMap((entity) =>
+ 			entity.conveyor?.kind === 'group' ? [[String(entity.uid), entity.conveyor] as const] : [],
+ 		),
+ 	);
+-	for (const { entity } of entities) {
++	for (const entity of entities) {
+ 		if (entity.conveyor?.kind !== 'box') {
+ 			continue;
+ 		}

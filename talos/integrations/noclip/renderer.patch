@@ -220,7 +220,7 @@ index 112457bd..624528c3 100644
   *
   * @module
 diff --git a/packages/viewer/src/environment/derive.ts b/packages/viewer/src/environment/derive.ts
-index 3dd31346..47f450e7 100644
+index 996e7e19..6237a779 100644
 --- a/packages/viewer/src/environment/derive.ts
 +++ b/packages/viewer/src/environment/derive.ts
 @@ -6,10 +6,12 @@
@@ -236,7 +236,7 @@ index 3dd31346..47f450e7 100644
  
  import { gradingLook } from './color-grading.ts';
  import { DEFAULT_POST, DEFAULT_PROFILE } from './default-profile.ts';
-@@ -321,10 +323,14 @@ const windLook = ({ speed, direction }: WindInput): Environment['wind'] => ({
+@@ -351,10 +353,14 @@ const windLook = ({ speed, direction }: WindInput): Environment['wind'] => ({
  
  /**
   * @param profile the level's environment profile, or `null` for the defaults
@@ -266,12 +266,12 @@ index 00000000..ed61d7ae
 +export { useViewerState } from './ui/use-viewer.ts';
 +export { Panel, PanelProvider, type PanelProps } from './ui/panel.tsx';
 diff --git a/packages/viewer/src/looks/lit-look.test.ts b/packages/viewer/src/looks/lit-look.test.ts
-index 1eeec747..c65cb62d 100644
+index 88a2741a..329a961e 100644
 --- a/packages/viewer/src/looks/lit-look.test.ts
 +++ b/packages/viewer/src/looks/lit-look.test.ts
-@@ -577,3 +577,23 @@ test('foliage: leaves and grass fill the foliage rows, and surfaces keeping lit
- 	assert.deepEqual(row(grass, LookRow.foliage2), [0.1, 3, 4, 0.25].map(Math.fround));
- 	assert.equal(grass.params[LookRow.detail2 + 3], 0);
+@@ -691,3 +691,23 @@ test('a non-depth-writing alpha-tested Lit surface draws in cutoutOverlay withou
+ 	assert.equal(normal.queue, 'cutout');
+ 	assert.equal(normal.castsShadows, true);
  });
 +
 +test('only authored post-focus queues move supported transparent surfaces after depth of field', () => {
@@ -294,7 +294,7 @@ index 1eeec747..c65cb62d 100644
 +	);
 +});
 diff --git a/packages/viewer/src/looks/look.ts b/packages/viewer/src/looks/look.ts
-index c94e2da8..b9bf0837 100644
+index 5089729e..08d629e5 100644
 --- a/packages/viewer/src/looks/look.ts
 +++ b/packages/viewer/src/looks/look.ts
 @@ -124,6 +124,8 @@ export interface MaterialLook {
@@ -306,16 +306,16 @@ index c94e2da8..b9bf0837 100644
  	/** the faces the game culls, for unmirrored instances */
  	cull: MaterialCull;
  	/** whether the material draws into shadow maps */
-@@ -360,6 +362,7 @@ export const emptyLook = ({ drawn }: { drawn: boolean }): MaterialLook => ({
+@@ -369,6 +371,7 @@ export const emptyLook = ({ drawn }: { drawn: boolean }): MaterialLook => ({
  	drawn,
  	unsupported: false,
  	queue: 'opaque',
 +	afterDof: null,
  	cull: 'none',
  	castsShadows: true,
- 	...emptySlots(),
+ 	readsBackground: false,
 diff --git a/packages/viewer/src/looks/material-looks.ts b/packages/viewer/src/looks/material-looks.ts
-index 8235e112..8d0461f6 100644
+index 41d2e8bc..08c1dfbf 100644
 --- a/packages/viewer/src/looks/material-looks.ts
 +++ b/packages/viewer/src/looks/material-looks.ts
 @@ -107,7 +107,7 @@ const stencilMaskLook = (mask: StencilMaskSurface, cull: MaterialCull): Material
@@ -327,7 +327,7 @@ index 8235e112..8d0461f6 100644
  	// a material that didn't convert (its reason is in debug/assets.json) has nothing to draw by
  	if (entry.status !== 'ready') {
  		return unsupportedLook();
-@@ -279,6 +279,31 @@ const surfaceLook = (entry: ReadyMaterial): MaterialLook => {
+@@ -280,6 +280,31 @@ const surfaceLook = (entry: ReadyMaterial): MaterialLook => {
   * @param materials the package's material table
   * @returns a look per material id
   */
@@ -359,14 +359,14 @@ index 8235e112..8d0461f6 100644
  export const materialLooks = (materials: MaterialTable): MaterialLook[] =>
  	materials.entries.map(materialLook);
  
-@@ -348,6 +373,7 @@ const effectMaterialLook = (
+@@ -361,6 +386,7 @@ const effectMaterialLook = (
  	drawn: true,
  	unsupported: false,
  	queue,
 +	afterDof: null,
  	cull: box ? 'front' : cull,
  	castsShadows: false,
- 	textures: effect.textures,
+ 	readsBackground,
 diff --git a/packages/viewer/src/package/decode-data.test.ts b/packages/viewer/src/package/decode-data.test.ts
 new file mode 100644
 index 00000000..a4b86d04
@@ -920,10 +920,10 @@ index 2cac49c2..b9b132b5 100644
  		throw new Error(`zstd frame decoded to ${raw.byteLength} bytes, expected ${rawLength ?? 'more'}`);
  	}
 diff --git a/packages/viewer/src/render/frame/frame-graph.ts b/packages/viewer/src/render/frame/frame-graph.ts
-index c07bf220..f8349da0 100644
+index f06a1f6e..2a9192e3 100644
 --- a/packages/viewer/src/render/frame/frame-graph.ts
 +++ b/packages/viewer/src/render/frame/frame-graph.ts
-@@ -462,6 +462,25 @@ export const encodeFrame = (
+@@ -475,6 +475,25 @@ export const encodeFrame = (
  		outputWidth,
  		outputHeight,
  		settings: settings.post,
@@ -950,10 +950,10 @@ index c07bf220..f8349da0 100644
  	return draws;
  };
 diff --git a/packages/viewer/src/render/frame/render-targets.ts b/packages/viewer/src/render/frame/render-targets.ts
-index d427d2ea..2a47d3e9 100644
+index 4b5d356f..e6f9074f 100644
 --- a/packages/viewer/src/render/frame/render-targets.ts
 +++ b/packages/viewer/src/render/frame/render-targets.ts
-@@ -350,7 +350,8 @@ export class RenderTargets {
+@@ -352,7 +352,8 @@ export class RenderTargets {
  		};
  		if (this.format.stencil) {
  			depth.stencilLoadOp = 'load';
@@ -964,22 +964,22 @@ index d427d2ea..2a47d3e9 100644
  		this.#transparentDepth = depth;
  		return depth;
 diff --git a/packages/viewer/src/render/meshes/draw-ranges.ts b/packages/viewer/src/render/meshes/draw-ranges.ts
-index de4e23a6..2149d78f 100644
+index efaed3a3..7acd77bb 100644
 --- a/packages/viewer/src/render/meshes/draw-ranges.ts
 +++ b/packages/viewer/src/render/meshes/draw-ranges.ts
-@@ -119,7 +119,7 @@ export const PHASES = {
+@@ -159,7 +159,7 @@ export const PHASES = {
  } as const satisfies Record<string, DrawPhase>;
  
  /** the passes that draw meshes */
--export type MeshPass = SurfacePass | EffectPass | 'shadow';
-+export type MeshPass = SurfacePass | EffectPass | 'shadow' | 'afterDof';
+-export type MeshPass = SurfacePass | EffectPass | 'shadow' | 'lightShadow';
++export type MeshPass = SurfacePass | EffectPass | 'shadow' | 'lightShadow' | 'afterDof';
  
  /** passes over the main pass's targets */
  export type SurfacePass = 'prepass' | 'main';
-@@ -158,6 +158,15 @@ export const PASS_PHASES: Record<MeshPass, readonly DrawPhase[]> = {
- 	// of the scene, then those it tests behind it, then those it doesn't test
+@@ -206,6 +206,15 @@ export const PASS_PHASES: Record<MeshPass, readonly DrawPhase[]> = {
  	waterFoam: [PHASES.waterFoam, PHASES.waterFoamBehind, PHASES.waterFoamThrough],
- 	shadow: [PHASES.shadowOpaque, PHASES.shadowCutout],
+ 	shadow: [PHASES.shadowOpaqueLit, PHASES.shadowOpaque, PHASES.shadowCutout],
+ 	lightShadow: [PHASES.lightShadowOpaqueLit, PHASES.lightShadowOpaque, PHASES.lightShadowCutout],
 +	afterDof: [
 +		PHASES.transparent,
 +		PHASES.effect,
@@ -993,10 +993,10 @@ index de4e23a6..2149d78f 100644
  
  /**
 diff --git a/packages/viewer/src/render/meshes/mesh-renderer.ts b/packages/viewer/src/render/meshes/mesh-renderer.ts
-index 46ed020e..df6c22bb 100644
+index 25d095ab..c376c5c6 100644
 --- a/packages/viewer/src/render/meshes/mesh-renderer.ts
 +++ b/packages/viewer/src/render/meshes/mesh-renderer.ts
-@@ -73,7 +73,17 @@ const createLookTable = (device: GPUDevice): GrowableBuffer =>
+@@ -79,7 +79,17 @@ const createLookTable = (device: GPUDevice): GrowableBuffer =>
  		usage: GPUBufferUsage.STORAGE,
  	});
  
@@ -1014,7 +1014,7 @@ index 46ed020e..df6c22bb 100644
  	geometry: ResidentGeometry;
  	indexCount: number;
  	firstIndex: number;
-@@ -196,6 +206,7 @@ export class MeshRenderer {
+@@ -207,6 +217,7 @@ export class MeshRenderer {
  	#entries: DrawEntry[] = [];
  	/** prepared draws in {@link DRAW_RANGES} order; entries past {@link #drawCount} are reused next frame */
  	#draws: PreparedDraw[] = [];
@@ -1022,7 +1022,7 @@ index 46ed020e..df6c22bb 100644
  	#drawCount = 0;
  	/**
  	 * the transparent pass's draw order, as `[draw, first, count, phase]` quads: the draws that write the
-@@ -493,6 +504,7 @@ export class MeshRenderer {
+@@ -509,6 +520,7 @@ export class MeshRenderer {
  
  	/** draws nothing this frame */
  	clear(): void {
@@ -1030,7 +1030,7 @@ index 46ed020e..df6c22bb 100644
  		this.#drawCount = 0;
  		this.#sortedRuns.length = 0;
  		this.instanceCount = 0;
-@@ -575,6 +587,7 @@ export class MeshRenderer {
+@@ -598,6 +610,7 @@ export class MeshRenderer {
  			}
  			range.end = d;
  		}
@@ -1038,7 +1038,7 @@ index 46ed020e..df6c22bb 100644
  		this.#drawCount = d;
  		this.#prepareSorted();
  		this.#flushLooks();
-@@ -608,6 +621,9 @@ export class MeshRenderer {
+@@ -631,6 +644,9 @@ export class MeshRenderer {
  			const range = this.#range(phase.range);
  			for (let i = range.castOnlyEnd; i < range.end; i++) {
  				const draw = this.#draws[i];
@@ -1048,7 +1048,7 @@ index 46ed020e..df6c22bb 100644
  				if (draw.stencil?.replace === true || draw.distances.length === 0) {
  					runs.push(i, 0, draw.count, p);
  					continue;
-@@ -782,6 +798,7 @@ export class MeshRenderer {
+@@ -809,6 +825,7 @@ export class MeshRenderer {
  		const draw = this.#draws[d];
  		if (draw === undefined) {
  			this.#draws[d] = {
@@ -1056,17 +1056,17 @@ index 46ed020e..df6c22bb 100644
  				geometry: resident,
  				indexCount: range.indexCount,
  				firstIndex: range.firstIndex,
-@@ -799,6 +816,7 @@ export class MeshRenderer {
- 				bands: bucket.bands,
+@@ -827,6 +844,7 @@ export class MeshRenderer {
+ 				fading: bucket.fading,
  			};
  		} else {
 +			draw.afterDof = look.afterDof !== null;
  			draw.geometry = resident;
  			draw.indexCount = range.indexCount;
  			draw.firstIndex = range.firstIndex;
-@@ -819,6 +837,21 @@ export class MeshRenderer {
- 			draw.distances = bucket.distances;
+@@ -848,6 +866,21 @@ export class MeshRenderer {
  			draw.bands = bucket.bands;
+ 			draw.fading = bucket.fading;
  		}
 +		if (look.afterDof !== null && !bucket.castOnly) {
 +			const phase = PASS_PHASES.afterDof.find((candidate) => candidate.range === info.range);
@@ -1086,7 +1086,7 @@ index 46ed020e..df6c22bb 100644
  		if (!bucket.castOnly && gpu === null) {
  			this.instanceCount += span.count;
  			this.triangles += (span.count * range.indexCount) / 3;
-@@ -891,6 +924,21 @@ export class MeshRenderer {
+@@ -920,6 +953,21 @@ export class MeshRenderer {
  		return this.#encode(which, pass, -1);
  	}
  
@@ -1108,7 +1108,7 @@ index 46ed020e..df6c22bb 100644
  	/** builds the groups of a pass's effect draws, which also bind the main pass's outputs */
  	#bindEffectGroups(which: MeshPass, inputs: EffectInputs): void {
  		for (const phase of PASS_PHASES[which]) {
-@@ -943,7 +991,7 @@ export class MeshRenderer {
+@@ -990,7 +1038,7 @@ export class MeshRenderer {
  	 * encodes a pass's phases in order; nothing if any of its or its paired pass's pipelines isn't ready.
  	 * `layer` limits each draw to the rows that shadow layer draws, or is -1 for all of them
  	 */
@@ -1117,7 +1117,7 @@ index 46ed020e..df6c22bb 100644
  		if (this.#drawCount === 0) {
  			return 0;
  		}
-@@ -967,6 +1015,14 @@ export class MeshRenderer {
+@@ -1015,6 +1063,14 @@ export class MeshRenderer {
  			material: null,
  		};
  		let draws = 0;
@@ -1132,7 +1132,7 @@ index 46ed020e..df6c22bb 100644
  		if (which === 'transparent') {
  			const phases = PASS_PHASES.transparent;
  			const runs = this.#sortedRuns;
-@@ -991,6 +1047,9 @@ export class MeshRenderer {
+@@ -1039,6 +1095,9 @@ export class MeshRenderer {
  			const to = phase.shadow ? range.castersEnd : range.end;
  			for (let i = from; i < to; i++) {
  				const draw = this.#draws[i];
@@ -1852,10 +1852,10 @@ index 00000000..f2f75f17
 +}
 diff --git a/packages/viewer/src/render/post/photo-filters.test.ts b/packages/viewer/src/render/post/photo-filters.test.ts
 new file mode 100644
-index 00000000..4ba48478
+index 00000000..ae8eff70
 --- /dev/null
 +++ b/packages/viewer/src/render/post/photo-filters.test.ts
-@@ -0,0 +1,249 @@
+@@ -0,0 +1,251 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
@@ -1898,6 +1898,8 @@ index 00000000..4ba48478
 +		sizeOverLifetime: null,
 +		rotationOverLifetime: null,
 +		shape: null,
++		emitterMotion: null,
++		trail: null,
 +		motion: {
 +			kind: 'free',
 +			startSpeed: constant(1),
@@ -2918,12 +2920,12 @@ index 00000000..36ee2d6c
 +	return vec4f(sample.rgb * in.color.rgb * sample.a * in.color.a, 0.0);
 +}
 diff --git a/packages/viewer/src/render/post/post-process.ts b/packages/viewer/src/render/post/post-process.ts
-index 891f266d..d6fae56c 100644
+index f1ec4fe9..57c64159 100644
 --- a/packages/viewer/src/render/post/post-process.ts
 +++ b/packages/viewer/src/render/post/post-process.ts
-@@ -18,8 +18,11 @@ import { AmbientOcclusion } from './ambient-occlusion.ts';
- import { AutoExposure } from './auto-exposure.ts';
+@@ -19,8 +19,11 @@ import { AutoExposure } from './auto-exposure.ts';
  import { Bloom } from './bloom.ts';
+ import { CAMERA_HISTORY_FLOATS } from './camera-history.ts';
  import { Composite } from './composite.ts';
 +import { DepthOfField } from './depth-of-field.ts';
  import { LensFlares } from './lens-flare.ts';
@@ -2933,7 +2935,7 @@ index 891f266d..d6fae56c 100644
  import { POST_BYTES, writeEnvironmentUniforms, writeFrameUniforms } from './post-uniforms.ts';
  import { ScreenSpaceReflections } from './screen-space-reflections.ts';
  import { type PostSettings, effectiveSettings, postExposure } from './settings.ts';
-@@ -50,6 +53,9 @@ export interface CompositedScene {
+@@ -51,6 +54,9 @@ export interface CompositedScene {
   * then the caller's passes over the composited scene, then {@link encodeAfterScene}
   */
  export class PostProcess {
@@ -2943,7 +2945,7 @@ index 891f266d..d6fae56c 100644
  	/**
  	 * explicit layouts of the post uniforms and of the sky's reads (the sky-view LUT, its sampler and the
  	 * volumetric fog, at their atmosphere.wgsl and sky.wgsl bindings), for passes that also bind the main
-@@ -122,6 +128,7 @@ export class PostProcess {
+@@ -124,6 +130,7 @@ export class PostProcess {
  		this.#taa = new TemporalAA(device, postUniforms);
  		this.#bloom = new Bloom(device, postUniforms, sampler);
  		this.#tonemap = new Tonemap(device, postUniforms, sampler, swapchainFormat);
@@ -2951,7 +2953,7 @@ index 891f266d..d6fae56c 100644
  		this.#environment = environment;
  		writeEnvironmentUniforms(this.#data, environment);
  
-@@ -171,10 +178,16 @@ export class PostProcess {
+@@ -173,10 +180,16 @@ export class PostProcess {
  			this.#bloom.bytes +
  			this.#taa.bytes +
  			this.#reflections.bytes +
@@ -2969,7 +2971,7 @@ index 891f266d..d6fae56c 100644
  	/**
  	 * binds the sky's textures as they stream in; what isn't resident yet doesn't draw.
  	 *
-@@ -232,6 +245,12 @@ export class PostProcess {
+@@ -234,6 +247,12 @@ export class PostProcess {
  	reset(): void {
  		this.#taa.reset();
  		this.#reflections.reset();
@@ -2982,7 +2984,7 @@ index 891f266d..d6fae56c 100644
  	}
  
  	/** @param enabled whether the temporal antialiasing jitters and accumulates; off passes the frame through */
-@@ -262,6 +281,11 @@ export class PostProcess {
+@@ -264,6 +283,11 @@ export class PostProcess {
  		return this.#taa.phase;
  	}
  
@@ -2994,7 +2996,7 @@ index 891f266d..d6fae56c 100644
  	/** jumps the auto exposure straight to its next reading (a new package or level) */
  	resetExposure(): void {
  		this.#autoExposure.reset();
-@@ -308,6 +332,7 @@ export class PostProcess {
+@@ -310,6 +334,7 @@ export class PostProcess {
  			return current;
  		}
  		this.#targets.destroy();
@@ -3002,7 +3004,7 @@ index 891f266d..d6fae56c 100644
  		const sceneTexture = this.#targets.create({
  			label: 'hdr scene',
  			size: [width, height],
-@@ -460,6 +485,11 @@ export class PostProcess {
+@@ -473,6 +498,11 @@ export class PostProcess {
  		encoder: GPUCommandEncoder,
  		input: {
  			swapchain: GPUTextureView;
@@ -3014,7 +3016,7 @@ index 891f266d..d6fae56c 100644
  			camera: Camera;
  			width: number;
  			height: number;
-@@ -476,10 +506,41 @@ export class PostProcess {
+@@ -489,10 +519,41 @@ export class PostProcess {
  			return;
  		}
  		if (settings.debugView === 'lit') {
@@ -3056,7 +3058,7 @@ index 891f266d..d6fae56c 100644
  		const resolved = this.#taa.encode(encoder, camera);
  		if (settings.autoExposure) {
  			this.#autoExposure.encode(
-@@ -507,5 +568,8 @@ export class PostProcess {
+@@ -520,5 +581,8 @@ export class PostProcess {
  		this.#reflections.destroy();
  		this.#lightShafts.destroy();
  		this.#lensFlares.destroy();
@@ -3166,31 +3168,8 @@ index cf017022..c041a5e6 100644
 +	return vec4f(display + noise, 1.0);
 +
  }
-diff --git a/packages/viewer/src/render/water/water-renderer.ts b/packages/viewer/src/render/water/water-renderer.ts
-index 6d147796..4c3a625b 100644
---- a/packages/viewer/src/render/water/water-renderer.ts
-+++ b/packages/viewer/src/render/water/water-renderer.ts
-@@ -214,6 +214,7 @@ export class WaterRenderer {
- 			primitive,
- 			depthStencil: { format: WATER_DEPTH_FORMAT, depthWriteEnabled: true, depthCompare: DEPTH_COMPARE },
- 		}));
-+
- 		this.#surfaces = device.createBuffer({
- 			label: 'water surfaces',
- 			size: this.#surfaceData.byteLength,
-@@ -507,6 +508,10 @@ export class WaterRenderer {
- 		pass.setBindGroup(1, context.sky);
- 		pass.setBindGroup(2, group);
- 		pass.setBindGroup(3, context.postUniforms);
-+		this.#draw(pass);
-+	}
-+
-+	#draw(pass: GPURenderPassEncoder): void {
- 		for (const { geometry, slot } of this.#draws) {
- 			// positions and normals, as the meshes bind them; without normals in the mesh the shader ignores slot 1
- 			const [position, normal] = geometry.vertices.streams;
 diff --git a/packages/viewer/src/scene/camera.ts b/packages/viewer/src/scene/camera.ts
-index 370b4433..a6444ca9 100644
+index 1d916c4c..92959038 100644
 --- a/packages/viewer/src/scene/camera.ts
 +++ b/packages/viewer/src/scene/camera.ts
 @@ -42,6 +42,11 @@ export class Camera {
@@ -4810,19 +4789,18 @@ index 00000000..0381eea2
 +	return score;
 +};
 diff --git a/packages/viewer/src/streaming/mesh-buckets.ts b/packages/viewer/src/streaming/mesh-buckets.ts
-index 2756bc66..b338a5df 100644
+index 7dbf4f05..5d53d074 100644
 --- a/packages/viewer/src/streaming/mesh-buckets.ts
 +++ b/packages/viewer/src/streaming/mesh-buckets.ts
-@@ -275,8 +275,9 @@ export class MeshBuckets {
- 					castsStatic: castsShadows && layers.static,
- 					hiddenBy: hiddenByOf(draw.role, look),
+@@ -312,8 +312,9 @@ export class MeshBuckets {
  					shadowOnly,
--					gpuCullable: draw.particles === null && (queue === 'opaque' || queue === 'cutout'),
+ 					gpuCullable:
+ 						draw.particles === null &&
++						look.afterDof === null &&
+ 						(queue === 'opaque' || queue === 'cutout' || queue === 'cutoutOverlay'),
 -					sorted: SORTED_RANGES.has(look.queue),
-+					gpuCullable:
-+						draw.particles === null && look.afterDof === null && (queue === 'opaque' || queue === 'cutout'),
 +					sorted: SORTED_RANGES.has(look.queue) || look.afterDof !== null,
- 					band: sortBand(draw.sortingLayer, draw.sortingOrder),
+ 					band: sortBand(draw.sortingLayer, draw.sortingOrder, this.#renderQueueOf(material)),
  					particles: draw.particles,
  					buckets: Array.from({ length: BUCKET_VARIANTS }, () => null),
 diff --git a/packages/viewer/src/ui/camera-readout.tsx b/packages/viewer/src/ui/camera-readout.tsx
@@ -5038,7 +5016,7 @@ index 022672d7..0cb0b542 100644
  			/>
  		);
 diff --git a/packages/viewer/src/ui/scene-controls/environment-volumes.tsx b/packages/viewer/src/ui/scene-controls/environment-volumes.tsx
-index d0405b79..9cd5bf91 100644
+index 0c99ff1e..01e77bd6 100644
 --- a/packages/viewer/src/ui/scene-controls/environment-volumes.tsx
 +++ b/packages/viewer/src/ui/scene-controls/environment-volumes.tsx
 @@ -80,14 +80,14 @@ export const EnvironmentVolumes = ({
@@ -5059,10 +5037,10 @@ index d0405b79..9cd5bf91 100644
  						if (control !== null) {
  							viewer.setSceneValue(control, Number(checked));
 diff --git a/packages/viewer/src/ui/scene-controls/scene-controls.tsx b/packages/viewer/src/ui/scene-controls/scene-controls.tsx
-index 2e27943e..a8f36835 100644
+index 0067d650..a890b26d 100644
 --- a/packages/viewer/src/ui/scene-controls/scene-controls.tsx
 +++ b/packages/viewer/src/ui/scene-controls/scene-controls.tsx
-@@ -15,6 +15,7 @@ import type { Viewer } from '../../viewer/viewer.ts';
+@@ -16,6 +16,7 @@ import type { Viewer } from '../../viewer/viewer.ts';
  import { ChoiceRow } from '../controls.tsx';
  import { ruleOf } from '../format.ts';
  import { LazyDetails } from '../lazy-details.tsx';
@@ -5070,7 +5048,7 @@ index 2e27943e..a8f36835 100644
  import { useCameraCell, useViewerState } from '../use-viewer.ts';
  
  import { ControlRow } from './control-row.tsx';
-@@ -79,7 +80,7 @@ export const SceneControls = ({ viewer }: { viewer: Viewer }) => {
+@@ -80,7 +81,7 @@ export const SceneControls = ({ viewer }: { viewer: Viewer }) => {
  				<ControlRow key={entry.index} viewer={viewer} entry={entry} describe={describe} />
  			))
  		);
@@ -5079,7 +5057,7 @@ index 2e27943e..a8f36835 100644
  	const picked = controls.filter(({ index }) => picks.has(index));
  	/** per category: the controls listed first, and the other levels' below them */
  	const listing = (inCategory: ListedControl[]) => {
-@@ -107,11 +108,16 @@ export const SceneControls = ({ viewer }: { viewer: Viewer }) => {
+@@ -102,11 +103,16 @@ export const SceneControls = ({ viewer }: { viewer: Viewer }) => {
  		}
  	};
  	return (
@@ -5101,7 +5079,7 @@ index 2e27943e..a8f36835 100644
  			<ChoiceRow label="Show">
  				<select
  					value={scope}
-@@ -166,6 +172,6 @@ export const SceneControls = ({ viewer }: { viewer: Viewer }) => {
+@@ -161,6 +167,6 @@ export const SceneControls = ({ viewer }: { viewer: Viewer }) => {
  			})}
  			<WaterLevels viewer={viewer} matches={matches} />
  			<EnvironmentVolumes viewer={viewer} scene={pkg} level={level} matches={matches} />
@@ -5110,10 +5088,10 @@ index 2e27943e..a8f36835 100644
  	);
  };
 diff --git a/packages/viewer/src/ui/scene-controls/story-controls.tsx b/packages/viewer/src/ui/scene-controls/story-controls.tsx
-index e0ee7ecf..d792166f 100644
+index e6013f06..a6a070d2 100644
 --- a/packages/viewer/src/ui/scene-controls/story-controls.tsx
 +++ b/packages/viewer/src/ui/scene-controls/story-controls.tsx
-@@ -77,7 +77,7 @@ const StoryProgress = ({
+@@ -78,7 +78,7 @@ const StoryProgress = ({
  			.entries()
  			.every(([index, value]) => {
  				const fallback = controls[index].default;
@@ -5366,7 +5344,7 @@ index d9a53e79..1a4cb5f7 100644
  	tonemapper: options.tonemapper,
  	sky: options.sky,
 diff --git a/packages/viewer/src/viewer/renderer.ts b/packages/viewer/src/viewer/renderer.ts
-index 1ffcde4a..c8a505d8 100644
+index e89b83fb..393ed218 100644
 --- a/packages/viewer/src/viewer/renderer.ts
 +++ b/packages/viewer/src/viewer/renderer.ts
 @@ -40,6 +40,22 @@ const INSTANCE_ROWS = 1_500_000;
@@ -5401,7 +5379,7 @@ index 1ffcde4a..c8a505d8 100644
  }
  
  /** the GPU side of the viewer: the device's renderers and targets, and the frame they encode together */
-@@ -186,6 +204,7 @@ export class Renderer {
+@@ -188,6 +206,7 @@ export class Renderer {
  
  	/** drops what the passes carry over from earlier frames, after a cut to somewhere else */
  	cut(): void {
@@ -5409,7 +5387,7 @@ index 1ffcde4a..c8a505d8 100644
  		for (const history of this.#histories) {
  			history.reset();
  		}
-@@ -304,6 +323,19 @@ export class Renderer {
+@@ -306,6 +325,19 @@ export class Renderer {
  			},
  			this.frame,
  		);
@@ -5430,7 +5408,7 @@ index 1ffcde4a..c8a505d8 100644
  		times.span('encode');
  		this.device.queue.submit([encoder.finish()]);
 diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/viewer.ts
-index 2ccf3830..577ef634 100644
+index 9742e57b..b94a02e5 100644
 --- a/packages/viewer/src/viewer/viewer.ts
 +++ b/packages/viewer/src/viewer/viewer.ts
 @@ -1,4 +1,19 @@
@@ -5453,7 +5431,7 @@ index 2ccf3830..577ef634 100644
  import type { Vec3 } from '@endfield-noclip/package-format/values';
  import type { WaterSurfaceEntry } from '@endfield-noclip/package-format/water';
  
-@@ -16,13 +31,16 @@ import { volumesForLevel } from '../scene-states/listing.ts';
+@@ -17,13 +32,16 @@ import { volumesForLevel } from '../scene-states/listing.ts';
  import { type GroupsConsumer, SceneState } from '../scene-states/scene-state.ts';
  import { WaterLevels, type WaterVolumeState } from '../scene-states/water-levels.ts';
  import { Camera } from '../scene/camera.ts';
@@ -5471,7 +5449,7 @@ index 2ccf3830..577ef634 100644
  import { type LevelEntry, type LoadedScene, openScene } from './scene-loader.ts';
  import { type ViewerStats, FrameTimes, STATS_INTERVAL, collectStats, emptyStats } from './stats.ts';
  import { Traversal } from './traversal.ts';
-@@ -30,8 +48,160 @@ import { Traversal } from './traversal.ts';
+@@ -31,8 +49,160 @@ import { Traversal } from './traversal.ts';
  /** the irradiance volume of a package without one */
  const EMPTY_IRRADIANCE = { keys: new Uint32Array(), blobs: new Uint32Array(), groups: new Uint32Array() };
  
@@ -5632,7 +5610,7 @@ index 2ccf3830..577ef634 100644
  	readonly camera = new Camera();
  	readonly controls: NoclipControls;
  	readonly options: ViewerOptions = structuredClone(DEFAULT_OPTIONS);
-@@ -173,10 +343,12 @@ export class Viewer {
+@@ -174,10 +344,12 @@ export class Viewer {
  		source: PackageSource,
  		initialLevel: string | null,
  		onProgress: (phase: string) => void,
@@ -5645,7 +5623,7 @@ index 2ccf3830..577ef634 100644
  		const renderer = this.#renderer;
  		renderer.setIrradiance(pkg.irradiance, manifest.irradianceRegions);
  		const scene = openScene(pkg, {
-@@ -204,7 +376,9 @@ export class Viewer {
+@@ -205,7 +377,9 @@ export class Viewer {
  		this.#updateVisibility();
  		this.#waterLevels.settle();
  		this.#applyEnvironment();
@@ -5656,7 +5634,7 @@ index 2ccf3830..577ef634 100644
  			this.#setPose(overviewPose(manifest));
  		} else {
  			this.#focusCells = levelCellIds(manifest, level);
-@@ -228,6 +402,7 @@ export class Viewer {
+@@ -231,6 +405,7 @@ export class Viewer {
  		renderer.bindings.setReflection(null, 1);
  		renderer.bindings.set('shadowRamp', null);
  		this.scene = null;
@@ -5664,7 +5642,7 @@ index 2ccf3830..577ef634 100644
  		this.#sceneState.setPackage(null, this.#groupsConsumers);
  		this.options.environmentPin = null;
  		this.#environment.fades.reset();
-@@ -320,6 +495,7 @@ export class Viewer {
+@@ -323,6 +498,7 @@ export class Viewer {
  				eye: this.camera.position,
  				volumes: this.options.environmentVolumes,
  				pinnedPhase: this.options.environmentPin,
@@ -5672,7 +5650,7 @@ index 2ccf3830..577ef634 100644
  				loaded: this.#sceneState.conditionResults,
  				dt,
  			},
-@@ -413,6 +589,9 @@ export class Viewer {
+@@ -426,6 +602,9 @@ export class Viewer {
  		this.camera.pitch = pitch;
  		// a cut: the last frames show somewhere else
  		this.#renderer.cut();
@@ -5682,7 +5660,7 @@ index 2ccf3830..577ef634 100644
  	}
  
  	/** re-poses the first view over the ground once the coarse terrain lands; drops it if the camera moved */
-@@ -501,15 +680,29 @@ export class Viewer {
+@@ -514,15 +693,29 @@ export class Viewer {
  	// #region scene states
  
  	/** @returns every scene control's current value, by index into the manifest's controls */
@@ -5714,7 +5692,7 @@ index 2ccf3830..577ef634 100644
  	/** @returns per conditional set of the loaded package, whether the selected scene values satisfy it */
  	get conditionResults(): readonly boolean[] {
  		return this.#sceneState.conditionResults;
-@@ -529,21 +722,35 @@ export class Viewer {
+@@ -542,21 +735,35 @@ export class Viewer {
  	}
  
  	/**
@@ -5757,7 +5735,7 @@ index 2ccf3830..577ef634 100644
  			return;
  		}
  		this.#updateVisibility();
-@@ -573,11 +780,50 @@ export class Viewer {
+@@ -587,11 +794,50 @@ export class Viewer {
  	/** @param patch options to change */
  	setOptions(patch: Partial<ViewerOptions>): void {
  		const { post, targets } = this.#renderer;
@@ -5808,7 +5786,7 @@ index 2ccf3830..577ef634 100644
  		}
  		if (patch.streamAreas !== undefined) {
  			this.#updateVisibility();
-@@ -651,7 +897,13 @@ export class Viewer {
+@@ -666,7 +912,13 @@ export class Viewer {
  		const renderer = this.#renderer;
  		const traversal = this.#traversal;
  
@@ -5821,8 +5799,8 @@ index 2ccf3830..577ef634 100644
 +		}
  		const watered = this.#waterLevels.update(dt, this.options.waterLevelRate);
  		this.#waterLevels.applyFloaters(this.#writeFloater);
- 		if (this.#sceneState.follow(this.camera.position)) {
-@@ -679,7 +931,7 @@ export class Viewer {
+ 		if (watered || this.#sceneState.follow(this.camera.position)) {
+@@ -696,7 +948,7 @@ export class Viewer {
  		// the temporal antialiasing converges over a few more jittered frames of the same view
  		let settling = false;
  		if (changed) {
@@ -5831,7 +5809,7 @@ index 2ccf3830..577ef634 100644
  		} else if (this.#settleFrames > 0) {
  			this.#settleFrames--;
  			settling = true;
-@@ -688,7 +940,12 @@ export class Viewer {
+@@ -705,7 +957,12 @@ export class Viewer {
  		// particles change what it meters every frame, so a meter that kept running would never let it settle
  		const settings = frameSettings(options, scene !== null, postSettings(options, scene !== null));
  		const adapting = renderer.post.adaptExposure(settings.post, dt, { metering: changed || settling });
@@ -5845,7 +5823,7 @@ index 2ccf3830..577ef634 100644
  		const look = this.#environment.look;
  		if (render && options.animate) {
  			this.#time += dt;
-@@ -735,6 +992,7 @@ export class Viewer {
+@@ -765,6 +1022,7 @@ export class Viewer {
  				content: { version: scene?.stream.version ?? 0, idle: scene?.stream.idle ?? true },
  				options,
  				times: this.#times,
@@ -5853,7 +5831,7 @@ index 2ccf3830..577ef634 100644
  			});
  			this.#times.rendered(dt);
  		}
-@@ -754,6 +1012,9 @@ export class Viewer {
+@@ -784,6 +1042,9 @@ export class Viewer {
  		document.removeEventListener('visibilitychange', this.#onVisibilityChange);
  		this.unload();
  		this.controls.destroy();
@@ -5864,12 +5842,12 @@ index 2ccf3830..577ef634 100644
  		this.#renderer.destroy();
  	}
 diff --git a/packages/viewer/vite-plugins/package-server.ts b/packages/viewer/vite-plugins/package-server.ts
-index 9420a17f..bfb217f3 100644
+index 91ed8566..4dc5c7b9 100644
 --- a/packages/viewer/vite-plugins/package-server.ts
 +++ b/packages/viewer/vite-plugins/package-server.ts
-@@ -5,6 +5,14 @@ import { join, resolve, sep } from 'node:path';
- import { CORE_ARCHIVE } from '@endfield-noclip/package-format/manifest';
+@@ -6,6 +6,14 @@ import { CORE_ARCHIVE } from '@endfield-noclip/package-format/manifest';
  
+ import { definite, mapDefined } from '@mary-ext/array-fns';
  import sirv from 'sirv';
 +
 +/** @param root immutable local OEM releases @returns a static mount shared by dev and preview */
@@ -5881,16 +5859,16 @@ index 9420a17f..bfb217f3 100644
 +};
  import type { Connect, Plugin } from 'vite';
  
- import { DEV_PACKAGES_INDEX, DEV_PACKAGES_PREFIX, type DevPackage } from '../src/package/dev-packages.ts';
-@@ -134,7 +142,7 @@ const listPackages = async (root: string, res: ServerResponse): Promise<void> =>
+ import { compareStrings } from '../src/compare.ts';
+@@ -136,7 +144,7 @@ const listPackages = async (root: string, res: ServerResponse): Promise<void> =>
  	const found = await Promise.all(
- 		entries
- 			// hidden directories are the packer's staging and replaced packages
--			.filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
-+			.filter((entry) => (entry.isDirectory() || entry.isSymbolicLink()) && !entry.name.startsWith('.'))
- 			.map(async (entry): Promise<DevPackage | null> => {
- 				const core = await stat(join(root, entry.name, CORE_ARCHIVE)).catch(() => null);
- 				return core?.isFile() ? { name: entry.name, coreSize: core.size } : null;
+ 		// hidden directories are the packer's staging and replaced packages
+ 		mapDefined(entries, (entry) => {
+-			if (!entry.isDirectory() || entry.name.startsWith('.')) {
++			if ((!entry.isDirectory() && !entry.isSymbolicLink()) || entry.name.startsWith('.')) {
+ 				return undefined;
+ 			}
+ 			return stat(join(root, entry.name, CORE_ARCHIVE))
 diff --git a/packages/viewer/vite.config.ts b/packages/viewer/vite.config.ts
 index d6866073..c3183a2e 100644
 --- a/packages/viewer/vite.config.ts
@@ -5917,3 +5895,100 @@ index d6866073..c3183a2e 100644
  	worker: {
  		format: 'es',
  	},
+diff --git a/packages/viewer/src/package/decode-data.ts b/packages/viewer/src/package/decode-data.ts
+index d0fd0ba8..f6091d21 100644
+--- a/packages/viewer/src/package/decode-data.ts
++++ b/packages/viewer/src/package/decode-data.ts
+@@ -19,7 +19,7 @@ import {
+ 
+ import { MeshoptDecoder } from 'meshoptimizer/decoder';
+ 
+-import { buildInstanceRows, movingRows } from '../content/instance-rows.ts';
++import { buildInstanceRows } from '../content/instance-rows.ts';
+ import { buildRowBounds } from '../streaming/row-groups.ts';
+ 
+ import type {
+@@ -243,7 +243,15 @@ const decodeGeometry = (
+ ): { response: DecodedGeometry; transfer: Transferable[] } => {
+ 	const blob = decodeGeometryBlob(raw);
+ 	const position = findStream(blob, VertexAttribute.Position);
+-	const positions = decodeAttribute(blob, VertexAttribute.Position, GeometryVertexFormat.Unorm16x4);
++	let positionFormat: DecodedGeometry['positionFormat'];
++	let positions: ArrayBuffer | null = null;
++	if (position?.format === GeometryVertexFormat.Float32x4) {
++		positionFormat = 'float32x4';
++		positions = decodeAttribute(blob, VertexAttribute.Position, GeometryVertexFormat.Float32x4);
++	} else {
++		positionFormat = 'unorm16x4';
++		positions = decodeAttribute(blob, VertexAttribute.Position, GeometryVertexFormat.Unorm16x4);
++	}
+ 	if (position === undefined || positions === null) {
+ 		throw new Error('geometry has no positions');
+ 	}
+@@ -275,6 +283,7 @@ const decodeGeometry = (
+ 			// an animation's output is quantized to the box its frames lie in
+ 			positionOffset: blob.animation?.offset ?? position.offset,
+ 			positionScale: blob.animation?.scale ?? position.scale,
++			positionFormat,
+ 			positions,
+ 			normals,
+ 			uvs,
+@@ -301,7 +310,12 @@ const decodeSkin = (
+ 	bind: { positions: ArrayBuffer; normals: ArrayBuffer | null; tangents: ArrayBuffer | null },
+ ): DecodedSkin => {
+ 	const weights = decodeAttribute(blob, VertexAttribute.BlendWeight, GeometryVertexFormat.Unorm16x4);
+-	const bones = decodeAttribute(blob, VertexAttribute.BlendIndices, GeometryVertexFormat.Uint8x4);
++	const wideBones = findStream(blob, VertexAttribute.BlendIndices)?.format === GeometryVertexFormat.Uint16x4;
++	const bones = decodeAttribute(
++		blob,
++		VertexAttribute.BlendIndices,
++		wideBones ? GeometryVertexFormat.Uint16x4 : GeometryVertexFormat.Uint8x4,
++	);
+ 	if (weights === null || bones === null) {
+ 		throw new Error('animated geometry has no bone weights or indices');
+ 	}
+@@ -324,6 +338,7 @@ const decodeSkin = (
+ 		tangentWord: words[2],
+ 		weightWord: words[3],
+ 		boneWord: words[4],
++		wideBones,
+ 		bindOffset: position.offset,
+ 		bindScale: position.scale,
+ 		boneCount: animation.boneCount,
+@@ -394,7 +409,8 @@ const handle = (
+ 				rowsF32: new Float32Array(built.rows.buffer),
+ 				cull: built.cull,
+ 				runs: built.runs,
+-				moving: movingRows(built.spins, built.rides),
++				spins: built.spins,
++				rides: built.rides,
+ 			});
+ 			return {
+ 				response: { id: request.id, kind: 'instances', ...built, bounds },
+diff --git a/packages/viewer/src/scene/point-view.ts b/packages/viewer/src/scene/point-view.ts
+index 0381eea2..38d55827 100644
+--- a/packages/viewer/src/scene/point-view.ts
++++ b/packages/viewer/src/scene/point-view.ts
+@@ -485,7 +485,12 @@ export const pointTriangles = async (
+ 					}
+ 					const geometry = await mesh;
+ 					remember(pkg, entry.blob, geometry);
+-					const vertices = new Uint16Array(geometry.positions),
++					const floatPositions = geometry.positionFormat === 'float32x4';
++					const vertices = floatPositions
++						? new Float32Array(geometry.positions)
++						: new Uint16Array(geometry.positions);
++					const positionDivisor = floatPositions ? 1 : 65535;
++					const
+ 						indices =
+ 							geometry.indexSize === 2
+ 								? new Uint16Array(geometry.indices)
+@@ -496,7 +501,7 @@ export const pointTriangles = async (
+ 					}
+ 					const vertex = (index: number): Vec3 => {
+ 						const local = geometry.positionOffset.map(
+-							(v, i) => v + (vertices[index * 4 + i] / 65535) * geometry.positionScale[i],
++							(v, i) => v + (vertices[index * 4 + i] / positionDivisor) * geometry.positionScale[i],
+ 						);
+ 						return [
+ 							block.origin[0] + dot([rows[at], rows[at + 1], rows[at + 2]], local) + rows[at + 3],

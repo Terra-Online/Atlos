@@ -1,8 +1,8 @@
 {
   "repository": "https://github.com/mary-ext/endfield-noclip.git",
-  "commit": "152a38a0aafb0a7815323c07ffc75560502f4d9b",
+  "commit": "22678cc4738ca1db18488e8d47cea969a38e1e0e",
   "archive": "upstream.tar.gz",
-  "sha256": "0e3d12786966b5187ff0599bbf01bbf81c22200df1c8068835d1d1e345150f6b",
+  "sha256": "f7b030c6e0be24e3870b9c33cb98f9462113cf284876b1bc9a35f099137d04fd",
   "patches": [
     "renderer.patch",
     "extractor.patch",
@@ -20,5 +20,5 @@
     "physical-pack.patch"
   ],
   "migratedFrom": "c986039f16d9037aefb5c21b10cac971b77ceef9",
-  "packageVersion": 119
+  "packageVersion": 131
 }

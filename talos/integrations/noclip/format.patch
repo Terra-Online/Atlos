@@ -143,10 +143,10 @@ index 00000000..cce8a7e0
 +	};
 +};
 diff --git a/packages/formats/src/endfield/dynamic-scene.test.ts b/packages/formats/src/endfield/dynamic-scene.test.ts
-index 482c748f..27f12ed3 100644
+index 5fe77239..09037c77 100644
 --- a/packages/formats/src/endfield/dynamic-scene.test.ts
 +++ b/packages/formats/src/endfield/dynamic-scene.test.ts
-@@ -342,3 +342,128 @@ test('reads the sludge core a sludge patch belongs to', () => {
+@@ -350,3 +350,128 @@ test('reads the sludge core a sludge patch belongs to', () => {
  	assert.equal(entities[2].erosionCore, null);
  	assert.equal(entities[0].sludgeCore, null);
  });
@@ -276,10 +276,10 @@ index 482c748f..27f12ed3 100644
 +	assert.throws(() => readDynamicEntities(bytes), /non-finite conveyor/);
 +});
 diff --git a/packages/formats/src/endfield/dynamic-scene.ts b/packages/formats/src/endfield/dynamic-scene.ts
-index bff8b7ae..760f44ca 100644
+index 0d3e1138..dfab8b81 100644
 --- a/packages/formats/src/endfield/dynamic-scene.ts
 +++ b/packages/formats/src/endfield/dynamic-scene.ts
-@@ -36,6 +36,10 @@ export const DynamicData = {
+@@ -26,6 +26,10 @@ export const DynamicData = {
  	ResourceComp: 30,
  	ErosionRootComp: 34,
  	ModelViewStateControllerNewComp: 35,
@@ -290,7 +290,7 @@ index bff8b7ae..760f44ca 100644
  	SludgeComp: 42,
  	ExtraSceneComp: 44,
  	MapVarControlComp: 51,
-@@ -120,6 +124,29 @@ export interface DynamicViewState {
+@@ -144,6 +148,29 @@ export interface DynamicViewState {
  	oldVersion: boolean;
  }
  
@@ -320,7 +320,7 @@ index bff8b7ae..760f44ca 100644
  /** a DynamicStreaming entity */
  export interface DynamicEntity {
  	/** grid unique id */
-@@ -146,6 +173,8 @@ export interface DynamicEntity {
+@@ -176,6 +203,8 @@ export interface DynamicEntity {
  	erosionCore: ErosionCoreLink | null;
  	/** the erosion sludge core whose sludge this entity is, `null` for other entities */
  	sludgeCore: SludgeCoreLink | null;
@@ -328,8 +328,8 @@ index bff8b7ae..760f44ca 100644
 +	conveyor?: Conveyor;
  }
  
- /** the blight core an erosion root belongs to */
-@@ -193,6 +222,10 @@ const Slot = {
+ /** decoded grids and entities of one `fb_main_*` file */
+@@ -234,6 +263,10 @@ const Slot = {
  	RootComp: 33,
  	ErosionRootComp: 36,
  	ModelViewStateControllerNewComp: 37,
@@ -340,7 +340,7 @@ index bff8b7ae..760f44ca 100644
  	SludgeComp: 44,
  	ExtraSceneComp: 46,
  	MapVarControlComp: 52,
-@@ -216,6 +249,10 @@ const Width = {
+@@ -261,6 +294,10 @@ const Width = {
  	ExtraSceneComp: 40,
  	ErosionRootComp: 48,
  	ModelViewStateControllerNewComp: 36,
@@ -351,7 +351,7 @@ index bff8b7ae..760f44ca 100644
  	SludgeComp: 264,
  } as const;
  
-@@ -269,6 +306,21 @@ export const readDynamicEntities = (bytes: Uint8Array): DynamicEntity[] => {
+@@ -380,6 +417,21 @@ export const readDynamicScene = (bytes: Uint8Array): DynamicScene => {
  		}
  		return vector.start + index * width;
  	};
@@ -373,7 +373,7 @@ index bff8b7ae..760f44ca 100644
  	/** reads a variable component: the variable it reads, and its load gate when it controls loading */
  	const variableComp = (
  		kind: 'globalVar' | 'mapVar',
-@@ -421,6 +473,80 @@ export const readDynamicEntities = (bytes: Uint8Array): DynamicEntity[] => {
+@@ -558,6 +610,80 @@ export const readDynamicScene = (bytes: Uint8Array): DynamicScene => {
  						entity.uid = fb.u64(id);
  						break;
  					}
@@ -809,10 +809,10 @@ index 00000000..10c756ec
 +	return result;
 +};
 diff --git a/packages/formats/src/endfield/memory-pack.test.ts b/packages/formats/src/endfield/memory-pack.test.ts
-index 4f1300f8..0abdd25c 100644
+index 61a05d36..d578cdcd 100644
 --- a/packages/formats/src/endfield/memory-pack.test.ts
 +++ b/packages/formats/src/endfield/memory-pack.test.ts
-@@ -225,3 +225,77 @@ test('reads compressed integers as IL2CPP metadata writes them', () => {
+@@ -267,3 +267,77 @@ test('reads compressed integers as IL2CPP metadata writes them', () => {
  	assert.equal(reader.compressedI32(), -0x80000000);
  	assert.throws(() => reader.byte(), FormatError);
  });
@@ -891,10 +891,10 @@ index 4f1300f8..0abdd25c 100644
 +	);
 +});
 diff --git a/packages/formats/src/endfield/memory-pack.ts b/packages/formats/src/endfield/memory-pack.ts
-index 76ec8e43..289de68c 100644
+index d050565f..bc4b6856 100644
 --- a/packages/formats/src/endfield/memory-pack.ts
 +++ b/packages/formats/src/endfield/memory-pack.ts
-@@ -75,6 +75,8 @@ const VECTORS = new Map<string, [string, number]>([
+@@ -154,6 +154,8 @@ const VECTORS = new Map<string, [string, number]>([
  
  /** structs serialized raw rather than through their wrapper (besides `*Ptr`) */
  const RAW_STRUCTS = new Set([
@@ -903,7 +903,7 @@ index 76ec8e43..289de68c 100644
  	'GameplayTag',
  	'CameraControlStateInitialParam',
  	'PosRot',
-@@ -440,6 +442,20 @@ export class MemoryPackReader {
+@@ -661,6 +663,20 @@ export class MemoryPackReader {
  		if (type.kind === 'generic') {
  			const [first, second] = type.args;
  			switch (base) {
@@ -922,9 +922,9 @@ index 76ec8e43..289de68c 100644
 +				}
 +				case 'HashSet':
  				case 'List': {
- 					return this.#list(() => this.#value(first, true));
+ 					return this.#list(c, () => this.#value(first, true, c));
  				}
-@@ -568,7 +584,7 @@ export class MemoryPackReader {
+@@ -955,7 +971,7 @@ export class MemoryPackReader {
  			return false;
  		}
  		const definition = this.schema.runtime.metadata.typeDefinition(type.definition);
@@ -934,19 +934,33 @@ index 76ec8e43..289de68c 100644
  
  	/** @returns the unmanaged layout of a type, or `null` if it holds references or is unknown */
 diff --git a/packages/formats/src/hg/spark-buffer.test.ts b/packages/formats/src/hg/spark-buffer.test.ts
-index 58a5cc22..4f0c2d95 100644
+index bce8a272..4f0c2d95 100644
 --- a/packages/formats/src/hg/spark-buffer.test.ts
 +++ b/packages/formats/src/hg/spark-buffer.test.ts
-@@ -1,7 +1,7 @@
+@@ -1,21 +1,7 @@
  import assert from 'node:assert/strict';
  import { test } from 'node:test';
  
--import { parseSparkTable, SparkType } from './spark-buffer.ts';
+-import { parseSparkTable } from './spark-buffer.ts';
+-
+-const SparkType = {
+-	Bool: 0,
+-	Byte: 1,
+-	Int: 2,
+-	Long: 3,
+-	Float: 4,
+-	Double: 5,
+-	Enum: 6,
+-	String: 7,
+-	Bean: 8,
+-	Array: 9,
+-	Map: 10,
+-} as const;
 +import { parseSparkBean, parseSparkTable, SparkType } from './spark-buffer.ts';
  
  /** little byte-buffer builder with natural alignment */
  class Buffer {
-@@ -308,3 +308,79 @@ test('decodes bool, byte, float and double fields with natural alignment', () =>
+@@ -322,3 +308,79 @@ test('decodes bool, byte, float and double fields with natural alignment', () =>
  test('rejects unsupported field types', () => {
  	assert.throws(() => parseSparkTable(buildBeanTable(42)), /unsupported spark type 42 in LevelDescData\.id/);
  });
@@ -1027,18 +1041,19 @@ index 58a5cc22..4f0c2d95 100644
 +	assert.throws(() => parseSparkBean(new Uint8Array(b.bytes)), /spark|bounds|range/i);
 +});
 diff --git a/packages/formats/src/hg/spark-buffer.ts b/packages/formats/src/hg/spark-buffer.ts
-index 041f239a..1e3f38a6 100644
+index 0bb993ae..6f197294 100644
 --- a/packages/formats/src/hg/spark-buffer.ts
 +++ b/packages/formats/src/hg/spark-buffer.ts
-@@ -10,6 +10,7 @@ import { ByteView } from '../binary/byte-view.ts';
- //   type ref: u8 type, then [pad4, u32 typeHash] for beans and enums, the element's type ref for arrays, or
- //             the key's and the value's type refs for maps
- //   root:  u8 0x0a (map), cstring name, key type ref, value type ref
-+//          or u8 0x08 (bean), cstring name, pad4, u32 bean type hash
- //   data:  u32 slotCount, slotCount × (u32 entriesOffset, u32 entryCount); entries are `key ‖ value` packed
- //          with natural alignment. bools and bytes are u8, enums i32, floats f32, doubles f64. strings, beans,
- //          arrays and maps are stored as u32 absolute offsets (0xFFFFFFFF = null); a bean's fields follow the
-@@ -73,14 +74,43 @@ export interface SparkTable {
+@@ -5,7 +5,7 @@ import { ByteView } from '../binary/byte-view.ts';
+ // docs/game-data/containers.md#sparkbuffer-config-tables).
+ 
+ /** value type codes (the game's `SparkType`) */
+-const SparkType = {
++export const SparkType = {
+ 	Bool: 0,
+ 	Byte: 1,
+ 	Int: 2,
+@@ -58,14 +58,43 @@ export interface SparkTable {
  	entries: [key: number | bigint | string, value: SparkValue][];
  }
  
@@ -1081,44 +1096,44 @@ index 041f239a..1e3f38a6 100644
 +
 +const parseSparkDocument = (bytes: Uint8Array): Document => {
  	const view = new ByteView(bytes, 'spark');
- 	const u32 = (at: number): number => view.u32(at);
- 	const u8 = (at: number): number => view.u8(at);
-@@ -155,18 +185,20 @@ export const parseSparkTable = (bytes: Uint8Array): SparkTable => {
+ 	let pos = 0;
  
- 	const rootAt = u32(4);
- 	const rootKind = u8(rootAt);
+@@ -145,18 +174,20 @@ export const parseSparkTable = (bytes: Uint8Array): SparkTable => {
+ 
+ 	pos = view.u32(4);
+ 	const rootKind = view.u8(pos++);
 -	if (rootKind !== SparkType.Map) {
 +	if (rootKind !== SparkType.Map && rootKind !== SparkType.Bean) {
  		throw new FormatError(`unsupported spark root kind ${rootKind}`);
  	}
- 	const [name, afterName] = cString(rootAt + 1);
--	const [keyRef, afterKeyRef] = readRef(afterName, `${name} key`);
--	const [valueRef] = readRef(afterKeyRef, `${name} value`);
+ 	const name = readCString();
+-	const keyRef = readRef(`${name} key`);
+-	const valueRef = readRef(`${name} value`);
  
- 	/** reads a value of type `ref` packed at or after `pos`; returns it and the position after it */
- 	const read = (ref: TypeRef, pos: number): [SparkValue, number] => {
+ 	/** reads a value of type `ref` packed at or after `pos`, advancing `pos` past it */
+ 	const read = (ref: TypeRef): SparkValue => {
  		switch (ref.type) {
  			case SparkType.Bool: {
--				return [u8(pos) !== 0, pos + 1];
-+				const value = u8(pos);
+-				return view.u8(pos++) !== 0;
++				const value = view.u8(pos++);
 +				if (value > 1) {
 +					throw new FormatError(`invalid spark boolean ${value}`);
 +				}
-+				return [value !== 0, pos + 1];
++				return value !== 0;
  			}
  			case SparkType.Byte: {
- 				return [u8(pos), pos + 1];
-@@ -279,7 +311,12 @@ export const parseSparkTable = (bytes: Uint8Array): SparkTable => {
+ 				return view.u8(pos++);
+@@ -280,7 +311,12 @@ export const parseSparkTable = (bytes: Uint8Array): SparkTable => {
  		return entries;
  	};
  
--	return { name, entries: readMap(keyRef, valueRef, u32(8), name) };
+-	return { name, entries: readMap(keyRef, valueRef, view.u32(8), name) };
 +	if (rootKind === SparkType.Bean) {
-+		return { kind: 'bean', name, value: readBean(u32(align(afterName, 4)), u32(8)) };
++		return { kind: 'bean', name, value: readBean(view.u32(align(pos, 4)), view.u32(8)) };
 +	}
-+	const [keyRef, afterKeyRef] = readRef(afterName, `${name} key`);
-+	const [valueRef] = readRef(afterKeyRef, `${name} value`);
-+	return { kind: 'map', name, entries: readMap(keyRef, valueRef, u32(8), name) };
++	const keyRef = readRef(`${name} key`);
++	const valueRef = readRef(`${name} value`);
++	return { kind: 'map', name, entries: readMap(keyRef, valueRef, view.u32(8), name) };
  };
  
  const align = (at: number, to: number): number => Math.ceil(at / to) * to;
@@ -1886,19 +1901,6 @@ index 00000000..5dbe61ba
 +	}
 +	return { x, z, vertices: points, polygons: faces };
 +};
-diff --git a/packages/package-format/src/materials.ts b/packages/package-format/src/materials.ts
-index 98be5e5e..a7447ce5 100644
---- a/packages/package-format/src/materials.ts
-+++ b/packages/package-format/src/materials.ts
-@@ -17,6 +17,8 @@ export interface ReadyMaterial {
- 	status: 'ready';
- 	/** the faces the game culls */
- 	cull: MaterialCull;
-+	/** authored draw queue, including the after-depth-of-field range; absent in earlier packages */
-+	renderQueue?: number;
- 	/** what the material draws, interpreted by the extractor */
- 	surface: MaterialSurface;
- 	/**
 diff --git a/packages/package-format/src/navigation.test.ts b/packages/package-format/src/navigation.test.ts
 new file mode 100644
 index 00000000..b275f914
@@ -2753,7 +2755,7 @@ index 5733e4ec..150cc42d 100644
 +	assert.deepEqual(completedProgressionPicksByIndex(controls), new Map());
 +});
 diff --git a/packages/package-format/src/story.ts b/packages/package-format/src/story.ts
-index f4bbf3bf..4548264f 100644
+index 97d740f1..1ea031cf 100644
 --- a/packages/package-format/src/story.ts
 +++ b/packages/package-format/src/story.ts
 @@ -11,6 +11,80 @@ const NONE = 0;
@@ -2837,3 +2839,77 @@ index f4bbf3bf..4548264f 100644
  /**
   * @param controls a package's controls
   * @param missions `StatesInfo.missions` indices in story order
+diff --git a/packages/formats/src/endfield/dynamic-scene.test.ts b/packages/formats/src/endfield/dynamic-scene.test.ts
+index 09037c77..97139239 100644
+--- a/packages/formats/src/endfield/dynamic-scene.test.ts
++++ b/packages/formats/src/endfield/dynamic-scene.test.ts
+@@ -379,7 +379,7 @@ const buildConveyors = (): Uint8Array => {
+ 		grid.get(33)!,
+ 		w.structs(
+ 			84,
+-			types.map((_, i) => [10 + i, 0].concat(ref(1, i, 1))),
++			types.map((_, i) => [10 + i, 0, ...ref(1, i, 1), 0, 1, 49, GRID, 0, 0, 0, 1, 49, GRID, 0, 0, 0]),
+ 		),
+ 	);
+ 	const groupId = 0x100000005n;
+@@ -420,7 +420,7 @@ const buildConveyors = (): Uint8Array => {
+ };
+ 
+ test('preserves conveyor identity, signed speed, box offsets and cross-grid path rows', () => {
+-	const conveyors = readDynamicEntities(buildConveyors()).map((entity) => entity.conveyor);
++	const conveyors = readDynamicScene(buildConveyors()).entities.map((entity) => entity.conveyor);
+ 	assert.deepEqual(conveyors.slice(0, 3), [
+ 		{ kind: 'belt', group: 0x100000005n, entry: true, exit: false },
+ 		{ kind: 'box', group: 0x100000005n, fixedProgress: -7, lateralOffset: -0.25 },
+@@ -450,7 +450,7 @@ test('preserves conveyor identity, signed speed, box offsets and cross-grid path
+ 			},
+ 		],
+ 	});
+-	assert.ok(readDynamicEntities(build()).every((entity) => entity.conveyor === undefined));
++	assert.ok(readDynamicScene(build()).entities.every((entity) => entity.conveyor === undefined));
+ });
+ 
+ test('rejects malformed conveyor references, flags and non-finite geometry', () => {
+@@ -466,12 +466,12 @@ test('rejects malformed conveyor references, flags and non-finite geometry', ()
+ 			rows = fb.vector(grid, slot);
+ 		const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+ 		view.setInt32(rows.start + offset, value, true);
+-		assert.throws(() => readDynamicEntities(bytes), expected);
++		assert.throws(() => readDynamicScene(bytes), expected);
+ 	}
+ 	const bytes = buildConveyors(),
+ 		fb = new FlatBuffer(bytes);
+ 	const grid = fb.tableAt(fb.vector(fb.root(), 3).start, 1),
+ 		paths = fb.vector(grid, 41);
+ 	new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).setFloat32(paths.start + 84 + 4, NaN, true);
+-	assert.throws(() => readDynamicEntities(bytes), /non-finite conveyor/);
++	assert.throws(() => readDynamicScene(bytes), /non-finite conveyor/);
+ });
+diff --git a/packages/formats/src/endfield/memory-pack.ts b/packages/formats/src/endfield/memory-pack.ts
+index bc4b6856..54d50a1c 100644
+--- a/packages/formats/src/endfield/memory-pack.ts
++++ b/packages/formats/src/endfield/memory-pack.ts
+@@ -672,9 +672,9 @@ export class MemoryPackReader {
+ 							(arg) => arg.kind === 'definition' && runtime.definitionName(arg.definition) === 'Vector3',
+ 						)
+ 					) {
+-						throw new FormatError(`unsupported tuple layout ${name}`);
++						throw new FormatError(`unsupported tuple layout ${runtime.typeName(type)}`);
+ 					}
+-					return [this.#value(first, false), this.#value(second, false)];
++					return [this.#value(first, false, c), this.#value(second, false, c)];
+ 				}
+ 				case 'HashSet':
+ 				case 'List': {
+@@ -778,6 +778,11 @@ export class MemoryPackReader {
+ 		if (type.kind === 'generic') {
+ 			const [first, second] = type.args;
+ 			switch (base) {
++				case 'ValueTuple': {
++					this.#value(type, listElement, c);
++					return;
++				}
++				case 'HashSet':
+ 				case 'List': {
+ 					const count = readListCount(c);
+ 					for (let i = 0; i < count; i++) {

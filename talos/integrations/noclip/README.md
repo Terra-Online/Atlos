@@ -27,9 +27,8 @@ configure route data and the private game configuration. Neither keys nor game c
 
 ## updating
 
-The current pin uses package format v119, including animated material parameters, material-gap
-diagnostics, updated particle emission and effect LOD data. Existing v106 archives must be repacked
-before using this viewer. Update all scenes in a catalog together; an OEM export validates each
+The current pin uses package format v131. Earlier archives require a repack.
+Update all scenes in a catalog together; an OEM export validates each
 package's format and source binding. Keep the deployed viewer and its immutable catalog paired until
 the replacement release is validated.
 Export companion and navigation metadata against the new states before rebaking point views with

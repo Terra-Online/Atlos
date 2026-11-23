@@ -1,6 +1,8 @@
+diff --git a/packages/extractor/src/commands/traversal-devices.ts b/packages/extractor/src/commands/traversal-devices.ts
+index caa6985e..b0cd80f1 100644
 --- a/packages/extractor/src/commands/traversal-devices.ts
 +++ b/packages/extractor/src/commands/traversal-devices.ts
-@@ -148,7 +148,7 @@
+@@ -148,7 +148,7 @@ export const run = async (args: string[]): Promise<void> => {
  				},
  				devices,
  				conveyors,
@@ -9,6 +11,9 @@
  				transports: rafts.transports,
  				unsupportedTransports: rafts.unsupported,
  				staticSupports: [...moving.staticSupports, ...structures.supports],
+diff --git a/packages/extractor/src/game/circular-rotations.test.ts b/packages/extractor/src/game/circular-rotations.test.ts
+new file mode 100644
+index 00000000..5e5f8b29
 --- /dev/null
 +++ b/packages/extractor/src/game/circular-rotations.test.ts
 @@ -0,0 +1,30 @@
@@ -20,7 +25,7 @@
 +import { circularRotations } from './circular-rotations.ts';
 +const path=bindingKey('Rotor');
 +const clip=():PoseClip=>({animator:null,transforms:new Map(),active:new Map(),materials:new Map(),renderers:new Map(),
-+    motion:{duration:8,sampleRate:60,loops:true,paths:[path],sample:t=>new Map([[path,[{kind:'rotation',value:[0,0,Math.sin(Math.PI*t/8),Math.cos(Math.PI*t/8)]}]]])}});
++    motion:{materials:()=>new Map(),duration:8,sampleRate:60,loops:true,paths:[path],sample:t=>new Map([[path,[{kind:'rotation',value:[0,0,Math.sin(Math.PI*t/8),Math.cos(Math.PI*t/8)]}]]])}});
 +const nodes=()=>[
 +    {key:'root',parent:null,matrix:trsMatrix([3,5,7],unityEulerQuaternion([0,90,0]),[1,1,1]),paths:[''],local:{position:[3,5,7]}},
 +    {key:'rotor',parent:'root',matrix:trsMatrix([0,0,0],[0,0,0,1],[1,1,1]),paths:['Rotor'],local:{position:[2,0,0]}},
@@ -42,6 +47,9 @@
 +    const half=clip(),sample=half.motion!.sample;half.motion!.sample=t=>sample(t/2);
 +    assert.throws(()=>circularRotations(nodes(),['rotor'],[half]),/complete revolution/);
 +});
+diff --git a/packages/extractor/src/game/circular-rotations.ts b/packages/extractor/src/game/circular-rotations.ts
+new file mode 100644
+index 00000000..8a175c87
 --- /dev/null
 +++ b/packages/extractor/src/game/circular-rotations.ts
 @@ -0,0 +1,71 @@
@@ -116,9 +124,11 @@
 +    }
 +    return result;
 +}
+diff --git a/packages/extractor/src/game/following-supports.test.ts b/packages/extractor/src/game/following-supports.test.ts
+index 52745255..50223102 100644
 --- a/packages/extractor/src/game/following-supports.test.ts
 +++ b/packages/extractor/src/game/following-supports.test.ts
-@@ -6,6 +6,8 @@
+@@ -6,6 +6,8 @@ import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-p
  
  import type { Vec3 } from '@opendfieldmap/ganglia';
  
@@ -127,7 +137,7 @@
  import { followingSupport, isFollowingBox } from './following-supports.ts';
  
  const bits = (v: number) => {
-@@ -37,7 +39,7 @@
+@@ -37,7 +39,7 @@ const row = {
  	componentProperties: new Map(),
  } as unknown as LevelInteractive;
  const bodies: Vec3[][] = [
@@ -136,7 +146,7 @@
  ];
  
  test('sources retain the authored activity range and actual solid without a transport state space', () => {
-@@ -45,7 +47,7 @@
+@@ -45,7 +47,7 @@ test('sources retain the authored activity range and actual solid without a tran
  	assert.equal(isFollowingBox(template(), row), true);
  	assert.deepEqual(data.spawn, row.position);
  	assert.equal(data.maxDistance, 65);
@@ -145,7 +155,7 @@
  	assert.equal(data.assumption, 'placement-within-activity-range');
  	assert.equal('surfaces' in data, false);
  	assert.equal('activation' in data, false);
-@@ -82,3 +84,22 @@
+@@ -82,3 +84,22 @@ test('controller declaration is a fallback, while effective placement properties
  	} as LevelInteractive;
  	assert.equal(isFollowingBox(source, changed), false);
  });
@@ -168,9 +178,11 @@
 +    const convex=followingSupport('x','level','model',template(),row,source,'convex');
 +    assert.equal(convex.geometryKind,'convex');assert.deepEqual(convex.bodies,source);
 +});
+diff --git a/packages/extractor/src/game/following-supports.ts b/packages/extractor/src/game/following-supports.ts
+index d8783c2e..dc4931a4 100644
 --- a/packages/extractor/src/game/following-supports.ts
 +++ b/packages/extractor/src/game/following-supports.ts
-@@ -43,7 +43,7 @@
+@@ -43,7 +43,7 @@ export const isFollowingBox = (template: MemoryPackValue, row: LevelInteractive)
   * @param model source model
   * @param template decoded effective interactive template
   * @param row placed box
@@ -179,7 +191,7 @@
   * @param geometryKind decoded solid provenance
   * @returns an activity-range source; the solver must still validate each stationary placement
   * @throws on invalid collision geometry, saved state or activity range
-@@ -81,7 +81,7 @@
+@@ -81,7 +81,7 @@ export const followingSupport = (
  	if (
  		!spawn.every(Number.isFinite) ||
  		!bodies.length ||
@@ -188,7 +200,7 @@
  	) {
  		throw new Error('following box solid geometry unresolved');
  	}
-@@ -92,10 +92,12 @@
+@@ -92,10 +92,12 @@ export const followingSupport = (
  		spawn,
  		geometryKind,
  		bodies: bodies.map((body) =>
@@ -205,9 +217,11 @@
  			]),
  		),
  		maxDistance,
+diff --git a/packages/extractor/src/game/ground-tile-cache.ts b/packages/extractor/src/game/ground-tile-cache.ts
+index 6f9e1d74..7a9e5900 100644
 --- a/packages/extractor/src/game/ground-tile-cache.ts
 +++ b/packages/extractor/src/game/ground-tile-cache.ts
-@@ -31,8 +31,10 @@
+@@ -31,8 +31,10 @@ export const groundGeneratorIdentity = async (
  			'./collision-inputs.ts',
  			'./collision-ground.ts',
  			'./prefab-support.ts',
@@ -218,9 +232,11 @@
  			'./floor-supports.ts',
  			'./prefabs/pose-paths.ts',
  			'./assets/asset-decode.ts',
+diff --git a/packages/extractor/src/game/prefab-support.ts b/packages/extractor/src/game/prefab-support.ts
+index 273e89e1..6c260e04 100644
 --- a/packages/extractor/src/game/prefab-support.ts
 +++ b/packages/extractor/src/game/prefab-support.ts
-@@ -21,6 +21,7 @@
+@@ -21,6 +21,7 @@ import { readColliderGeometry } from './collision-inputs.ts';
  import { collisionBox } from './collision-ground.ts';
  import { bindingKey, clipPaths, posedLocal, type ClipPaths } from './prefabs/pose-paths.ts';
  import type { PrefabPose } from './prefabs/prefab.ts';
@@ -228,7 +244,7 @@
  
  type Vec3 = [number, number, number];
  const xyz = (v: TypeTreeObject): Vec3 => [numberField(v, 'x'), numberField(v, 'y'), numberField(v, 'z')];
-@@ -37,7 +38,7 @@
+@@ -37,7 +38,7 @@ const corners = (center: Vec3, size: Vec3): Vec3[] =>
   * @throws for malformed references, unsupported nonempty collision cooks or absent solid support
   */
  export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef,
@@ -237,7 +253,7 @@
   const clips = options.pose?.clips ?? [];
   const transforms = clips.map(clip => clip.transforms);
  	const nodes: {
-@@ -45,6 +46,7 @@
+@@ -45,6 +46,7 @@ export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef
  		paths: ClipPaths;
  		parent: string | null;
  		matrix: Float32Array;
@@ -245,7 +261,7 @@
  		active: boolean;
  		components: { ref: ObjectRef; data: TypeTreeObject }[];
  	}[] = [];
-@@ -91,7 +93,7 @@
+@@ -91,7 +93,7 @@ export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef
              const path = paths[i];
              if (path !== null && path !== undefined && path !== '') enabled = clip.active.get(bindingKey(path)) ?? enabled;
          }
@@ -254,7 +270,7 @@
              active: (parent?.active ?? true) && options.pose?.hidden !== true &&
                  (enabled ?? (data.m_IsActive !== false && data.m_IsActive !== 0)), components };
  
-@@ -136,17 +138,21 @@
+@@ -136,17 +138,21 @@ export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef
  	}
  	const belongs = (node: (typeof nodes)[number]): boolean =>
  		!selected || node.key === selected || (node.parent !== null && belongs(byKey.get(node.parent)!));
@@ -278,7 +294,7 @@
  		if (!node.active || !belongs(node)) {
  			continue;
  		}
-@@ -261,6 +267,7 @@
+@@ -261,6 +267,7 @@ export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef
  	if (!vertices.length) throw new FormatError('prefab has no decoded solid support');
      if (vertices.some(point => !point.every(Number.isFinite))) throw new FormatError('prefab collider contains nonfinite vertices');
  	return {
@@ -286,6 +302,8 @@
  		bodies,
  		bodyKinds,
  		bodyTriangles,
+diff --git a/packages/extractor/src/game/static-supports.ts b/packages/extractor/src/game/static-supports.ts
+index 631c9b71..7d12f703 100644
 --- a/packages/extractor/src/game/static-supports.ts
 +++ b/packages/extractor/src/game/static-supports.ts
 @@ -1,3 +1,5 @@
@@ -294,7 +312,7 @@
  /* oxlint-disable no-await-in-loop -- offline export follows authored placement order */
  import { levelInteractiveFromValue, type LevelInteractive } from '@endfield-noclip/formats/endfield/level-interactives';
  import { isMemoryPackObject } from '@endfield-noclip/formats/endfield/memory-pack';
-@@ -103,6 +105,7 @@
+@@ -103,6 +105,7 @@ const visibility = (condition: Visibility, values: Record<string, number>): 'vis
  export const collectStaticSupports = async (ctx: Context, scene: string, knownIds: ReadonlySet<string>) => {
      const objects: ObjectRecord[] = [], unsupported: { id: string; template: string; reason: string }[] = [];
      const supports = new Map<string, Support>();
@@ -302,7 +320,7 @@
      const rows = new Map<string, Row>(), byOwner = new Map<string, Row[]>();
      const paths = await ctx.world.pathLookup(), reader = await ctx.memoryPack();
      const levels = [...(await ctx.world.levelConfigs()).values()].filter(level => level.mapId === scene);
-@@ -155,14 +158,41 @@
+@@ -155,14 +158,41 @@ export const collectStaticSupports = async (ctx: Context, scene: string, knownId
          const path = paths(model.model.pathHash)?.toLowerCase();
          if (!path) throw new Error('static-support prefab path unavailable');
          const pose = model.pose?.key ?? 'authored-rest';
@@ -348,7 +366,7 @@
          const motion = supportMotion(model.pose);
          let support = supports.get(item.id);
          if (!support) {
-@@ -175,6 +205,7 @@
+@@ -175,6 +205,7 @@ export const collectStaticSupports = async (ctx: Context, scene: string, knownId
          for (const index of geometry.indices) support.indices.push(index + first);
          support.parts.push({ model: { pathHash: String(model.model.pathHash), position: model.model.position,
              rotation: model.model.rotation, scale: model.model.scale }, path, pose, source: model.source, motion });
@@ -356,7 +374,7 @@
          if (motion.length) support.motion = 'animated-terminal-pose';
          if (item.status !== 'unresolved') item.status = motion.length || support.motion === 'animated-terminal-pose' ? 'animated' : 'exported';
      };
-@@ -243,8 +274,9 @@
+@@ -243,8 +274,9 @@ export const collectStaticSupports = async (ctx: Context, scene: string, knownId
          }
          if (item.status === 'unresolved') {
              supports.delete(item.id);
@@ -365,18 +383,18 @@
          }
      }
 -    return { supports: [...supports.values()], objects, unsupported };
--};
 +    return { supports: [...supports.values()], circularSupports: [...circular.values()], objects, unsupported };
-+};
-diff --git a/packages/extractor/src/game/circular-rotations.test.ts b/packages/extractor/src/game/circular-rotations.test.ts
---- a/packages/extractor/src/game/circular-rotations.test.ts
-+++ b/packages/extractor/src/game/circular-rotations.test.ts
-@@ -6,7 +6,7 @@
- import { circularRotations } from './circular-rotations.ts';
- const path=bindingKey('Rotor');
- const clip=():PoseClip=>({animator:null,transforms:new Map(),active:new Map(),materials:new Map(),renderers:new Map(),
--    motion:{duration:8,sampleRate:60,loops:true,paths:[path],sample:t=>new Map([[path,[{kind:'rotation',value:[0,0,Math.sin(Math.PI*t/8),Math.cos(Math.PI*t/8)]}]]])}});
-+    motion:{materials:()=>new Map(),duration:8,sampleRate:60,loops:true,paths:[path],sample:t=>new Map([[path,[{kind:'rotation',value:[0,0,Math.sin(Math.PI*t/8),Math.cos(Math.PI*t/8)]}]]])}});
- const nodes=()=>[
-     {key:'root',parent:null,matrix:trsMatrix([3,5,7],unityEulerQuaternion([0,90,0]),[1,1,1]),paths:[''],local:{position:[3,5,7]}},
-     {key:'rotor',parent:'root',matrix:trsMatrix([0,0,0],[0,0,0,1],[1,1,1]),paths:['Rotor'],local:{position:[2,0,0]}},
+ };
+diff --git a/packages/extractor/src/commands/traversal-devices.ts b/packages/extractor/src/commands/traversal-devices.ts
+index b0cd80f1..ff7a776a 100644
+--- a/packages/extractor/src/commands/traversal-devices.ts
++++ b/packages/extractor/src/commands/traversal-devices.ts
+@@ -33,7 +33,7 @@ export const run = async (args: string[]): Promise<void> => {
+ 			if (!file) {
+ 				throw new Error(`missing ${path}`);
+ 			}
+-			return ctx.vfs.readVerified(file);
++			return file.readVerified();
+ 		};
+ 		const pool = await ctx.world.stringPool(),
+ 			reader = await ctx.memoryPack();
