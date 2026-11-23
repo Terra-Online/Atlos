@@ -366,6 +366,8 @@
       } else {
         renderer.render(mapObjects());
       }
+      if (root.dataset.renderedView !== String(selected))
+        root.dataset.renderedView = String(selected);
     }
 
     function recordTiming(started, contourMs, moving) {
@@ -779,6 +781,6 @@
     window.addEventListener('blur', stopMoving);
     new ResizeObserver(schedule).observe(canvas);
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', schedule);
-    select(0);
+    select(data.initialView);
   })();
 </script>

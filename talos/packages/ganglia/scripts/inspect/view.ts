@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'node:fs/promises';
+import { extname } from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { z } from 'zod';
@@ -65,13 +66,17 @@ const { values } = parseArgs({
     output: { type: 'string' },
     annotations: { type: 'string' },
     layout: { type: 'string', default: '0' },
+    view: { type: 'string' },
     fragment: { type: 'boolean' },
+    chrome: { type: 'boolean' },
   },
 });
 if (!values.result || !values.output)
   throw new Error(
-    'Usage: node scripts/inspect/view.ts --result <case artifact.json> --output <view.html> [--layout 0] [--annotations <annotations.json>] [--fragment]',
+    'Usage: node scripts/inspect/view.ts --result <case artifact.json> --output <view.html|view.png> [--view overview|1|2|...] [--layout 0] [--annotations <annotations.json>] [--fragment | --chrome]',
   );
+const png = extname(values.output).toLowerCase() === '.png';
+if (png && values.fragment) throw new Error('--fragment requires HTML output.');
 
 const artifact = JSON.parse(await readFile(values.result, 'utf8')) as {
   query: RouteQuery;
@@ -80,9 +85,19 @@ const artifact = JSON.parse(await readFile(values.result, 'utf8')) as {
   };
 };
 const capture =
-  artifact.result.diagnostics.v2?.initialization.layouts[Number(values.layout)]?.inspection;
+  artifact.result.diagnostics?.v2?.initialization?.layouts?.[Number(values.layout)]?.inspection;
 if (!capture?.views.length)
   throw new Error('No inspection windows in this layout. Run with GANGLIA_V2_INSPECT_BOUNDS.');
+
+let initialView = 0;
+if (values.view === 'overview') {
+  if (!capture.coverage) throw new Error('This capture has no corridor overview.');
+} else if (values.view !== undefined) {
+  const window = Number(values.view);
+  if (!/^[1-9]\d*$/.test(values.view) || window > capture.views.length)
+    throw new Error(`Choose an inspection window from 1 to ${capture.views.length}.`);
+  initialView = window - 1 + Number(Boolean(capture.coverage));
+}
 
 const annotations: { title?: string; overview?: string; views?: Annotation[] } = values.annotations
   ? JSON.parse(await readFile(values.annotations, 'utf8'))
@@ -99,6 +114,7 @@ const trace: Trace[] =
       }))
     : [];
 const data = {
+  initialView,
   title: annotations.title ?? 'Ganglia 骨干网络',
   overview: annotations.overview,
   start: artifact.query.starts[0]?.position,
@@ -159,4 +175,36 @@ const fragment = template
 const output = values.fragment
   ? fragment
   : `<!doctype html>\n<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Ganglia 骨干查看器</title><style>body{max-width:1100px;margin:24px auto;padding:0 12px;background:#10161e;color:#e7eef5;font:15px system-ui,sans-serif}</style></head><body>\n${fragment}\n</body></html>\n`;
-await writeFile(values.output, output);
+if (png) {
+  const { chromium } = await import('playwright');
+  const browser = await chromium.launch({
+    headless: true,
+    channel: values.chrome ? 'chrome' : undefined,
+  });
+  try {
+    const page = await browser.newPage({
+      viewport: { width: 1200, height: 800 },
+      colorScheme: 'dark',
+      offline: true,
+    });
+    let pageError: Error | undefined;
+    page.on('pageerror', (error) => {
+      pageError ??= error;
+    });
+    await page.setContent(output);
+    try {
+      if (pageError) throw pageError;
+      await page.locator(`#ganglia-viewer[data-rendered-view="${initialView}"]`).screenshot({
+        path: values.output,
+        timeout: 10_000,
+        style: '[data-render-timing] { display: none }',
+      });
+    } catch (error) {
+      throw pageError ?? error;
+    }
+  } finally {
+    await browser.close();
+  }
+} else {
+  await writeFile(values.output, output);
+}
