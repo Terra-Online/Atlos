@@ -119,6 +119,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
     // Query-scoped cache prevents retaining a second copy of large snapshot
     // indices across queries or while solvePhysicalRoute holds its own cache.
     const airbornePrepCache = createAirbornePrepCache();
+    let goalWindow: Promise<AirborneWindow<Job> | undefined> | undefined;
     try {
       const terminals = query.interaction?.airborne
         ? await resources.terminals?.(query)
@@ -128,7 +129,6 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         query.starts,
         locomotion.sprintSpeed ?? locomotion.speed,
       );
-      let goalWindow: Promise<AirborneWindow<Job> | undefined> | undefined;
       const loadGoalWindow = () =>
         (goalWindow ??= loadAirborneWindow(scene, resources, config, query, options));
       if (!terminal && query.interaction?.airborne && resources.physical) {
@@ -156,15 +156,20 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         if (incumbent || (terminal && !bind) || !query.interaction?.airborne) return false;
         if (!discoveryTried) {
           discoveryTried = true;
-          entries = await discoverAirborneEntries(
-            scene,
-            resources,
-            config,
-            query,
-            options,
-            loadGoalWindow,
-            airbornePrepCache,
-          );
+          try {
+            entries = await discoverAirborneEntries(
+              scene,
+              resources,
+              config,
+              query,
+              options,
+              loadGoalWindow,
+              airbornePrepCache,
+            );
+          } finally {
+            goalWindow = undefined;
+            airbornePrepCache.clear();
+          }
         }
         // Entry proximity alone can favor a roof that the original arrivals
         // cannot approach. Rank current entry proposals through the scene graph;
@@ -471,6 +476,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         return stopped(error instanceof Error ? error.message : String(error), true);
       throw error;
     } finally {
+      goalWindow = undefined;
       airbornePrepCache.clear();
     }
   };
@@ -518,6 +524,7 @@ export function prepareSceneRouteSolver<Source, Job extends WindowJob>(
         closed = true;
         await Promise.allSettled(batches);
         await Promise.allSettled(active);
+        projectGoal = undefined;
         groundCache.clear();
         if (--openSceneSolvers === 0) clearActionCatalog();
         await resources.close?.();

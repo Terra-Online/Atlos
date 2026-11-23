@@ -172,3 +172,23 @@ test('vertical bounds retain barycentric edge extrapolation and ill-conditioned 
     );
   }
 });
+
+test('vertical candidates merge uncertain faces with spatial hits in input order', () => {
+  const narrow = (id: string): Surface => ({
+    id,
+    vertices: [
+      [0, 0, 0],
+      [1e6, 1, 1e6],
+      [1e6 + 1, 2, 1e6 + 1 + 2e-10],
+    ],
+  });
+  const first = narrow('uncertain-first');
+  const last = narrow('uncertain-last');
+  const hit = floor('hit', 0);
+  const surfaces = [first, floor('outside', 1), hit, last];
+  const candidates = verticalProjectionCandidates(surfaces, [-1, 0, -1], 0);
+  assert.equal(candidates.length, 3);
+  assert.equal(candidates[0], first);
+  assert.equal(candidates[1], hit);
+  assert.equal(candidates[2], last);
+});

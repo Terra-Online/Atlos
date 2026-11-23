@@ -205,6 +205,21 @@ test('straightens through split portals and stays inside their overlap', () => {
   assert.deepEqual(createGroundStraightener([a, b, c], options)(input), [input[0], input.at(-1)]);
 });
 
+test('shared portals admit both directions only within the clipped interval', () => {
+  const ground = createGroundStraightener(
+    [rectangle('wide', 0, 0, 1, 2), rectangle('upper', 1, 1)],
+    options,
+  );
+  const start: Vec3 = [0.25, 0, 1.25],
+    end: Vec3 = [1.75, 0, 1.25],
+    below: Vec3 = [0.25, 0, 0.25];
+  assert.deepEqual(ground.trace(start, end), [start, end]);
+  assert.deepEqual(ground.trace(end, start), [end, start]);
+  assert.equal(ground.mayConnect(below, end), true);
+  assert.equal(ground.trace(below, end), null);
+  assert.equal(ground.trace(end, below), null);
+});
+
 test('shared support primitives rebuild independent portal neighbours and global traversal order', () => {
   const base: Surface[] = [];
   for (let group = 0; group < 8; group++) {
@@ -283,7 +298,7 @@ test('shared primitives retain one-way imported steps without sharing planner ne
       },
     ],
   });
-  assert.ok(forward.trace(start, end));
+  assert.deepEqual(forward.trace(start, end), [start, portal.points[0], portal.points[1], end]);
   assert.equal(forward.mayConnect(start, end), true);
   assert.equal(forward.mayConnect(end, start), true);
   assert.equal(forward.trace(end, start), null);
@@ -344,6 +359,43 @@ test('fan neighbours stay local to each face when identical polygons overlap', (
   assert.deepEqual(trace(input), [input[0], input.at(-1)]);
 });
 
+test('overlapping supports retain the first trace in bounds traversal order', () => {
+  const crease: Surface = {
+    id: 'crease',
+    portals: [],
+    vertices: [
+      [0, 2, 0],
+      [2, 0, 0],
+      [2, 2, 2],
+      [0, 0, 2],
+    ],
+  };
+  const flat = { ...rectangle('flat', 0, 0, 2, 2), portals: [] };
+  const start: Vec3 = [2, 0, 0],
+    end: Vec3 = [0, 0, 2];
+  assert.deepEqual(createGroundStraightener([crease, flat], options).trace(start, end), [
+    start,
+    [1, 2, 1],
+    end,
+  ]);
+  assert.deepEqual(createGroundStraightener([flat, crease], options).trace(start, end), [
+    start,
+    end,
+  ]);
+});
+
+test('support tolerance applies barycentric tests to the entire selected leaf', () => {
+  const floor = rectangle('floor', 0, 0, 10, 2);
+  const overlapping = rectangle('above', -1, 0, 10, 2, () => 4);
+  const start: Vec3 = [-5e-7, 0, 0.5],
+    end: Vec3 = [9, 0, 0.5];
+  assert.equal(createGroundStraightener([floor], options).trace(start, end), null);
+  assert.deepEqual(createGroundStraightener([floor, overlapping], options).trace(start, end), [
+    start,
+    end,
+  ]);
+});
+
 test('duplicate IDs are rejected even when the first face has no support triangles', () => {
   const empty: Surface = {
     id: 'floor',
@@ -401,4 +453,26 @@ test('prepareGroundStraightenerMesh shares static mesh while each straightener e
   assert.deepEqual(centerBlocked(upperBend), freshCenter(upperBend));
   assert.deepEqual(topBlocked(upperBend), freshTop(upperBend));
   assert.deepEqual(topBlocked(lowerBend), freshTop(lowerBend));
+});
+
+test('direct fans preserve exact crease heights and skip an initial degenerate fan', () => {
+  const surface: Surface = {
+    id: 'crease',
+    vertices: [
+      [-0, -0, -0],
+      [1, 0, 0],
+      [2, 0, 0],
+      [2, 2, 2],
+      [0, 0, 2],
+    ],
+  };
+  const mesh = prepareGroundStraightenerMesh([surface], []);
+  assert.ok(Object.is(mesh.vertCoords[0], -0));
+  const straighten = createGroundStraightenerFromMesh(mesh, createWallChecker([], options.profile));
+  const start: Vec3 = [0.25, 0.25, 0.75];
+  const end: Vec3 = [1.75, 0.75, 0.75];
+  const expected: Vec3[] = [start, [0.75, 0.75, 0.75], end];
+  assert.deepEqual(straighten.trace(start, end), expected);
+  for (const point of surface.vertices) point[1] += 10;
+  assert.deepEqual(straighten.trace(start, end), expected);
 });

@@ -35,6 +35,8 @@ export interface BoundsIndex<T extends Bounds, G = unknown> {
 
 // Median partitioning avoids sorting every subtree. Equal centres form one
 // partition, so coincident or elongated bounds still terminate in balanced leaves.
+const leafSize = 8;
+
 const selectMedian = (
   order: Uint32Array,
   minima: Float64Array,
@@ -75,6 +77,54 @@ const selectMedian = (
     else return;
   }
 };
+
+const selectMedianBoxes = (
+  order: Uint32Array,
+  boxes: Float64Array,
+  axis: number,
+  start: number,
+  end: number,
+  middle: number,
+) => {
+  const hiAxis = axis + 3;
+  while (end - start > 1) {
+    const firstOff = order[start] * 6;
+    const first = boxes[firstOff + axis] + boxes[firstOff + hiAxis];
+    const lastOff = order[end - 1] * 6;
+    const last = boxes[lastOff + axis] + boxes[lastOff + hiAxis];
+    const midOff = order[(start + end) >>> 1] * 6;
+    const mid = boxes[midOff + axis] + boxes[midOff + hiAxis];
+    const lo = first < last ? first : last;
+    const hi = first > last ? first : last;
+    const pivot = lo > (hi < mid ? hi : mid) ? lo : hi < mid ? hi : mid;
+    let lower = start;
+    let current = start;
+    let upper = end;
+    while (current < upper) {
+      const id = order[current];
+      const off = id * 6;
+      const value = boxes[off + axis] + boxes[off + hiAxis];
+      if (value < pivot) {
+        order[current] = order[lower];
+        order[lower] = id;
+        lower++;
+        current++;
+      } else if (value > pivot) {
+        upper--;
+        order[current] = order[upper];
+        order[upper] = id;
+      } else {
+        current++;
+      }
+    }
+    if (middle < lower) end = lower;
+    else if (middle >= upper) start = upper;
+    else return;
+  }
+};
+
+const longestAxis = (s0: number, s1: number, s2: number) =>
+  s0 >= s1 && s0 >= s2 ? 0 : s1 >= s2 ? 1 : 2;
 
 export const createBoundsTree = <T extends Bounds, G = unknown>(
   surfaces: readonly T[],
@@ -126,7 +176,7 @@ export const createBoundsTree = <T extends Bounds, G = unknown>(
     const min = [min0, min1, min2];
     const max = [max0, max1, max2];
     const size = end - start;
-    if (size <= 8) {
+    if (size <= leafSize) {
       const leaf = new Array<T>(size);
       for (let i = 0; i < size; i++) leaf[i] = entries[order[start + i]];
       return { min, max, entries: leaf };
@@ -135,8 +185,9 @@ export const createBoundsTree = <T extends Bounds, G = unknown>(
     const s1 = max1 - min1;
     const s2 = max2 - min2;
     const middle = (start + end) >>> 1;
-    if (s0 >= s1 && s0 >= s2) selectMedian(order, lower0, upper0, start, end, middle);
-    else if (s1 >= s2) selectMedian(order, lower1, upper1, start, end, middle);
+    const axis = longestAxis(s0, s1, s2);
+    if (axis === 0) selectMedian(order, lower0, upper0, start, end, middle);
+    else if (axis === 1) selectMedian(order, lower1, upper1, start, end, middle);
     else selectMedian(order, lower2, upper2, start, end, middle);
     return { min, max, left: build(start, middle), right: build(middle, end) };
   };
@@ -191,6 +242,233 @@ const boxDistSq3 = (
   return dx * dx + dy * dy + dz * dz;
 };
 
+/** Shared median layout. Bounds remain in original ordinal order. */
+function buildFlatTree(boxes: Float64Array) {
+  const count = boxes.length / 6;
+  const order = new Uint32Array(count);
+  for (let index = 0; index < count; index++) order[index] = index;
+
+  // At the last full level, ranges differ in size by at most one. Split
+  // precisely those with more than eight entries to size all node columns.
+  const width = 2 ** Math.floor(Math.log2(Math.max(1, count / leafSize)));
+  const leaves = width + Math.min(width, Math.max(0, count - leafSize * width));
+  const nodeCount = count ? 2 * leaves - 1 : 0;
+  const nodeBoxes = new Float64Array(nodeCount * 6);
+  const nodeLeft = new Int32Array(nodeCount);
+  const nodeRight = new Int32Array(nodeCount);
+  let nextNode = 0;
+  const build = (start: number, end: number): number => {
+    const node = nextNode++;
+    let min0 = Infinity,
+      min1 = Infinity,
+      min2 = Infinity;
+    let max0 = -Infinity,
+      max1 = -Infinity,
+      max2 = -Infinity;
+    for (let index = start; index < end; index++) {
+      const id = order[index] * 6;
+      const l0 = boxes[id],
+        u0 = boxes[id + 3];
+      const l1 = boxes[id + 1],
+        u1 = boxes[id + 4];
+      const l2 = boxes[id + 2],
+        u2 = boxes[id + 5];
+      if (l0 < min0) min0 = l0;
+      if (u0 > max0) max0 = u0;
+      if (l1 < min1) min1 = l1;
+      if (u1 > max1) max1 = u1;
+      if (l2 < min2) min2 = l2;
+      if (u2 > max2) max2 = u2;
+    }
+    const nOff = node * 6;
+    nodeBoxes[nOff] = min0;
+    nodeBoxes[nOff + 1] = min1;
+    nodeBoxes[nOff + 2] = min2;
+    nodeBoxes[nOff + 3] = max0;
+    nodeBoxes[nOff + 4] = max1;
+    nodeBoxes[nOff + 5] = max2;
+
+    if (end - start <= leafSize) {
+      nodeLeft[node] = ~start;
+      nodeRight[node] = end;
+      return node;
+    }
+
+    const s0 = max0 - min0;
+    const s1 = max1 - min1;
+    const s2 = max2 - min2;
+    const middle = (start + end) >>> 1;
+    selectMedianBoxes(order, boxes, longestAxis(s0, s1, s2), start, end, middle);
+
+    const left = build(start, middle);
+    const right = build(middle, end);
+    nodeLeft[node] = left;
+    nodeRight[node] = right;
+    return node;
+  };
+
+  if (count) build(0, count);
+  return { order, nodeCount, nodeBoxes, nodeLeft, nodeRight };
+}
+
+// Parallel heap columns avoid wrappers. Preserve left-child and parent ties.
+function createNearestHeap() {
+  const ids: number[] = [];
+  const kinds: number[] = [];
+  const costs: number[] = [];
+
+  const pushHeap = (id: number, kind: number, cost: number) => {
+    let index = ids.length;
+    ids.push(id);
+    kinds.push(kind);
+    costs.push(cost);
+    while (index > 0) {
+      const parent = (index - 1) >> 1;
+      if (costs[parent] <= cost) break;
+      ids[index] = ids[parent];
+      kinds[index] = kinds[parent];
+      costs[index] = costs[parent];
+      index = parent;
+    }
+    ids[index] = id;
+    kinds[index] = kind;
+    costs[index] = cost;
+  };
+
+  const popHeap = () => {
+    const lastId = ids.pop()!;
+    const lastKind = kinds.pop()!;
+    const lastCost = costs.pop()!;
+    if (ids.length > 0) {
+      let index = 0;
+      const len = ids.length;
+      while (index * 2 + 1 < len) {
+        let child = index * 2 + 1;
+        if (child + 1 < len && costs[child + 1] < costs[child]) child++;
+        if (costs[child] >= lastCost) break;
+        ids[index] = ids[child];
+        kinds[index] = kinds[child];
+        costs[index] = costs[child];
+        index = child;
+      }
+      ids[index] = lastId;
+      kinds[index] = lastKind;
+      costs[index] = lastCost;
+    }
+  };
+  return { ids, kinds, costs, pushHeap, popHeap };
+}
+
+/** Internal index over caller-owned packed AABBs. Visitors receive original ordinals. */
+export function createOrdinalBoundsIndex(boxes: Float64Array, leafTolerance?: number) {
+  const { order, nodeBoxes, nodeLeft, nodeRight } = buildFlatTree(boxes);
+
+  const overlaps = (bounds: Bounds, data: Float64Array, offset: number) =>
+    !(
+      data[offset] > bounds.max[0] ||
+      data[offset + 3] < bounds.min[0] ||
+      data[offset + 1] > bounds.max[1] ||
+      data[offset + 4] < bounds.min[1] ||
+      data[offset + 2] > bounds.max[2] ||
+      data[offset + 5] < bounds.min[2]
+    );
+  const lowerBound = (data: Float64Array, offset: number, target: readonly number[]) =>
+    boxDistSq3(
+      data[offset],
+      data[offset + 1],
+      data[offset + 2],
+      data[offset + 3],
+      data[offset + 4],
+      data[offset + 5],
+      target[0],
+      target[1],
+      target[2],
+    );
+
+  return {
+    forEach(
+      bounds: Bounds,
+      visit: (ordinal: number) => void,
+      target?: readonly number[],
+      radius?: number,
+    ) {
+      if (!order.length) return;
+      const radiusSquared = radius === undefined ? Infinity : radius * radius;
+      const stack = [0];
+      while (stack.length) {
+        const node = stack.pop()!;
+        const offset = node * 6;
+        // Leaf scans let the visitor apply a geometric tolerance that can
+        // accept entries beyond their individual AABBs. Expand node bounds
+        // before comparison to preserve rounding at the tolerance boundary.
+        const nodeOverlaps =
+          leafTolerance === undefined
+            ? overlaps(bounds, nodeBoxes, offset)
+            : !(
+                nodeBoxes[offset] - leafTolerance > bounds.max[0] ||
+                nodeBoxes[offset + 3] + leafTolerance < bounds.min[0] ||
+                nodeBoxes[offset + 1] - leafTolerance > bounds.max[1] ||
+                nodeBoxes[offset + 4] + leafTolerance < bounds.min[1] ||
+                nodeBoxes[offset + 2] - leafTolerance > bounds.max[2] ||
+                nodeBoxes[offset + 5] + leafTolerance < bounds.min[2]
+              );
+        if (!nodeOverlaps || (target && lowerBound(nodeBoxes, offset, target) > radiusSquared))
+          continue;
+        const left = nodeLeft[node];
+        const right = nodeRight[node];
+        if (left >= 0) {
+          stack.push(left, right);
+          continue;
+        }
+        for (let slot = ~left; slot < right; slot++) {
+          const ordinal = order[slot];
+          const offset = ordinal * 6;
+          if (
+            (leafTolerance !== undefined || overlaps(bounds, boxes, offset)) &&
+            (!target || !(lowerBound(boxes, offset, target) > radiusSquared))
+          )
+            visit(ordinal);
+        }
+      }
+    },
+    nearest(
+      bounds: Bounds,
+      target: readonly number[],
+      radius: number,
+      visit: (ordinal: number, squared: number) => boolean,
+    ) {
+      if (!order.length) return;
+      const radiusSquared = radius * radius;
+      const { ids, kinds, costs, pushHeap, popHeap } = createNearestHeap();
+      const enqueue = (id: number, kind: number, data: Float64Array) => {
+        const offset = id * 6;
+        if (!overlaps(bounds, data, offset)) return;
+        const cost = lowerBound(data, offset, target);
+        if (cost <= radiusSquared) pushHeap(id, kind, cost);
+      };
+      enqueue(0, 0, nodeBoxes);
+      while (ids.length) {
+        const id = ids[0];
+        const kind = kinds[0];
+        const cost = costs[0];
+        popHeap();
+        if (kind === 1) {
+          if (!visit(id, cost)) return;
+          continue;
+        }
+        const left = nodeLeft[id];
+        const right = nodeRight[id];
+        if (left < 0) {
+          for (let slot = ~left; slot < right; slot++) enqueue(order[slot], 1, boxes);
+        } else {
+          enqueue(left, 0, nodeBoxes);
+          enqueue(right, 0, nodeBoxes);
+        }
+      }
+    },
+  };
+}
+
 export const createBoundsIndex = <T extends Bounds, G = unknown>(
   surfaces: readonly T[],
   groupOf?: (entry: T) => G,
@@ -211,125 +489,50 @@ export const createBoundsIndex = <T extends Bounds, G = unknown>(
     return fromFlat(emptyBase, -1, null);
   }
 
-  const order = new Uint32Array(count);
-  const lower0 = new Float64Array(count);
-  const lower1 = new Float64Array(count);
-  const lower2 = new Float64Array(count);
-  const upper0 = new Float64Array(count);
-  const upper1 = new Float64Array(count);
-  const upper2 = new Float64Array(count);
+  const boxes = new Float64Array(count * 6);
   for (let index = 0; index < count; index++) {
-    order[index] = index;
+    const offset = index * 6;
     const entry = surfaces[index];
-    lower0[index] = entry.min[0];
-    lower1[index] = entry.min[1];
-    lower2[index] = entry.min[2];
-    upper0[index] = entry.max[0];
-    upper1[index] = entry.max[1];
-    upper2[index] = entry.max[2];
+    for (let axis = 0; axis < 3; axis++) boxes[offset + axis] = entry.min[axis];
+    for (let axis = 0; axis < 3; axis++) boxes[offset + axis + 3] = entry.max[axis];
   }
 
-  // Median splits of any range > 8 leave halves >= 4, so total nodes <= ceil(count/2) + 2.
-  const maxNodes = Math.max(1, Math.ceil(count / 2) + 2);
-  let nodeBoxes = new Float64Array(maxNodes * 6);
-  let nodeLeft = new Int32Array(maxNodes);
-  let nodeRight = new Int32Array(maxNodes);
-  let nodeUniform = groupOf ? new Uint8Array(maxNodes) : null;
-  const nodeGroup: (G | undefined)[] | null = groupOf ? new Array(maxNodes) : null;
-  let nodeCount = 0;
-
-  const build = (start: number, end: number): number => {
-    const node = nodeCount++;
-    let min0 = Infinity,
-      min1 = Infinity,
-      min2 = Infinity;
-    let max0 = -Infinity,
-      max1 = -Infinity,
-      max2 = -Infinity;
-    for (let index = start; index < end; index++) {
-      const id = order[index];
-      const l0 = lower0[id],
-        u0 = upper0[id];
-      const l1 = lower1[id],
-        u1 = upper1[id];
-      const l2 = lower2[id],
-        u2 = upper2[id];
-      if (l0 < min0) min0 = l0;
-      if (u0 > max0) max0 = u0;
-      if (l1 < min1) min1 = l1;
-      if (u1 > max1) max1 = u1;
-      if (l2 < min2) min2 = l2;
-      if (u2 > max2) max2 = u2;
-    }
-    const nOff = node * 6;
-    nodeBoxes[nOff] = min0;
-    nodeBoxes[nOff + 1] = min1;
-    nodeBoxes[nOff + 2] = min2;
-    nodeBoxes[nOff + 3] = max0;
-    nodeBoxes[nOff + 4] = max1;
-    nodeBoxes[nOff + 5] = max2;
-
-    if (end - start <= 8) {
-      nodeLeft[node] = ~start;
-      nodeRight[node] = end;
-      if (groupOf) {
-        const firstGroup = groupOf(surfaces[order[start]]);
-        let uniform = 1;
-        for (let index = start + 1; index < end; index++) {
-          if (groupOf(surfaces[order[index]]) !== firstGroup) {
-            uniform = 0;
+  const { order, nodeCount, nodeBoxes, nodeLeft, nodeRight } = buildFlatTree(boxes);
+  const nodeUniform = groupOf ? new Uint8Array(nodeCount) : null;
+  const nodeGroup: (G | undefined)[] | null = groupOf ? new Array(nodeCount) : null;
+  if (groupOf) {
+    const assignGroups = (node: number) => {
+      const left = nodeLeft[node];
+      const right = nodeRight[node];
+      if (left < 0) {
+        const start = ~left;
+        const first = groupOf(surfaces[order[start]]);
+        nodeGroup![node] = first;
+        nodeUniform![node] = 1;
+        for (let index = start + 1; index < right; index++) {
+          if (groupOf(surfaces[order[index]]) !== first) {
+            nodeUniform![node] = 0;
             break;
           }
         }
-        nodeGroup![node] = firstGroup;
-        nodeUniform![node] = uniform;
+        return;
       }
-      return node;
-    }
-
-    const s0 = max0 - min0;
-    const s1 = max1 - min1;
-    const s2 = max2 - min2;
-    const middle = (start + end) >>> 1;
-    if (s0 >= s1 && s0 >= s2) selectMedian(order, lower0, upper0, start, end, middle);
-    else if (s1 >= s2) selectMedian(order, lower1, upper1, start, end, middle);
-    else selectMedian(order, lower2, upper2, start, end, middle);
-
-    const left = build(start, middle);
-    const right = build(middle, end);
-    nodeLeft[node] = left;
-    nodeRight[node] = right;
-    if (groupOf) {
+      assignGroups(left);
+      assignGroups(right);
       nodeGroup![node] = nodeGroup![left];
       nodeUniform![node] =
         nodeUniform![left] && nodeUniform![right] && nodeGroup![left] === nodeGroup![right] ? 1 : 0;
-    }
-    return node;
-  };
-
-  build(0, count);
-
-  if (nodeCount < maxNodes) {
-    nodeBoxes = nodeBoxes.slice(0, nodeCount * 6);
-    nodeLeft = nodeLeft.slice(0, nodeCount);
-    nodeRight = nodeRight.slice(0, nodeCount);
-    if (nodeUniform) nodeUniform = nodeUniform.slice(0, nodeCount);
-    if (nodeGroup) nodeGroup.length = nodeCount;
+    };
+    assignGroups(0);
   }
 
-  // Pack entries and their 3D AABBs in leaf order for contiguous traversal.
+  // Pack entries and AABBs together for contiguous traversal of public indices.
   const packedEntries = new Array<T>(count);
   const entryBoxes = new Float64Array(count * 6);
   for (let slot = 0; slot < count; slot++) {
-    const id = order[slot];
-    packedEntries[slot] = surfaces[id];
-    const eOff = slot * 6;
-    entryBoxes[eOff] = lower0[id];
-    entryBoxes[eOff + 1] = lower1[id];
-    entryBoxes[eOff + 2] = lower2[id];
-    entryBoxes[eOff + 3] = upper0[id];
-    entryBoxes[eOff + 4] = upper1[id];
-    entryBoxes[eOff + 5] = upper2[id];
+    const ordinal = order[slot];
+    packedEntries[slot] = surfaces[ordinal];
+    for (let axis = 0; axis < 6; axis++) entryBoxes[slot * 6 + axis] = boxes[ordinal * 6 + axis];
   }
 
   const base: FlatBoundsBase<T, G> = {
@@ -677,30 +880,8 @@ const fromFlat = <T extends Bounds, G>(
     const nodeMax = intersects ? [0, 0, 0] : null;
     const nodeBounds: Bounds | null = intersects ? { min: nodeMin!, max: nodeMax! } : null;
 
-    // Parallel heap columns retain the original comparisons and tie order without
-    // allocating wrapper objects for visited nodes or candidate entries.
-    // kind: 0 = tree node (id = node), 1 = base entry (id = slot), 2 = overlay entry (id = slot).
-    const ids: number[] = [];
-    const kinds: number[] = [];
-    const costs: number[] = [];
-
-    const pushHeap = (id: number, kind: number, cost: number) => {
-      let index = ids.length;
-      ids.push(id);
-      kinds.push(kind);
-      costs.push(cost);
-      while (index > 0) {
-        const parent = (index - 1) >> 1;
-        if (costs[parent] <= cost) break;
-        ids[index] = ids[parent];
-        kinds[index] = kinds[parent];
-        costs[index] = costs[parent];
-        index = parent;
-      }
-      ids[index] = id;
-      kinds[index] = kind;
-      costs[index] = cost;
-    };
+    // kind: 0 = tree node, 1 = base entry, 2 = overlay entry.
+    const { ids, kinds, pushHeap, popHeap } = createNearestHeap();
 
     const enqueueNode = (node: number) => {
       const isBase = node < baseCount;
@@ -767,25 +948,7 @@ const fromFlat = <T extends Bounds, G>(
     while (ids.length > 0) {
       const id = ids[0];
       const kind = kinds[0];
-      const lastId = ids.pop()!;
-      const lastKind = kinds.pop()!;
-      const lastCost = costs.pop()!;
-      if (ids.length > 0) {
-        let index = 0;
-        const len = ids.length;
-        while (index * 2 + 1 < len) {
-          let child = index * 2 + 1;
-          if (child + 1 < len && costs[child + 1] < costs[child]) child++;
-          if (costs[child] >= lastCost) break;
-          ids[index] = ids[child];
-          kinds[index] = kinds[child];
-          costs[index] = costs[child];
-          index = child;
-        }
-        ids[index] = lastId;
-        kinds[index] = lastKind;
-        costs[index] = lastCost;
-      }
+      popHeap();
       if (kind === 1) {
         yield baseEntries[id];
         continue;

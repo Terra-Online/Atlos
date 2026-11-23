@@ -1,10 +1,6 @@
 import type { Vec3, Surface } from '#@/src/geometry.ts';
-import { createBoundsTree } from '#@/src/model/bounds.ts';
-import {
-  type SupportTriangle,
-  supportSnapshot,
-  supportTriangles,
-} from '#@/src/model/support-snapshot.ts';
+import { createOrdinalBoundsIndex } from '#@/src/model/bounds.ts';
+import { isSupportVertex, supportVertices } from '#@/src/model/support-snapshot.ts';
 import { type WallChecker, createWallChecker } from '#@/src/model/walls.ts';
 import type { GroundOptions } from '#@/src/route.ts';
 import {
@@ -14,18 +10,20 @@ import {
   directedPortals,
 } from '#@/src/v1/geo/surfaces.ts';
 
-interface Triangle extends Pick<SupportTriangle, 'vertices' | 'min' | 'max' | 'determinant'> {
-  id: number;
-  neighbours: { triangle: Triangle; opposite: number; portal?: SharedPortal }[];
+interface Geometry {
+  readonly vertCoords: Float64Array;
+  readonly triVerts: Uint32Array;
+  readonly triDet: Float64Array;
 }
-interface Owner {
-  triangle: Triangle;
-  edge: number;
-  from?: string;
-  to?: string;
+interface Adjacency {
+  readonly adjOffset: Uint32Array;
+  readonly adjTarget: Int32Array;
+  readonly adjOpposite: Uint8Array;
+  readonly adjPortal: Int32Array;
+  readonly portalCoords: Float64Array;
 }
 interface Entry {
-  triangle: Triangle;
+  triangle: number;
   fraction: number;
   previous: Entry | null;
 }
@@ -40,34 +38,56 @@ export interface GroundStraightener {
   trace(start: Vec3, end: Vec3): Vec3[] | null;
   mayConnect(start: Vec3, end: Vec3): boolean;
 }
-export interface GroundStraightenerMesh {
-  readonly triangles: readonly Triangle[];
-  readonly supporting: (point: Vec3) => Triangle[];
+export interface GroundStraightenerMesh extends Geometry, Adjacency {
+  readonly supporting: (point: Vec3) => number[];
   readonly groupsAt: (point: Vec3) => Set<number>;
 }
 
-const pointKey = (point: Vec3) => point.map((value) => Math.round(value * 10000)).join(',');
+const pointKey = (coords: Float64Array, offset: number) =>
+  `${Math.round(coords[offset] * 10000)},${Math.round(coords[offset + 1] * 10000)},${Math.round(coords[offset + 2] * 10000)}`;
 const distance = (a: readonly number[], b: readonly number[]) =>
   Math.hypot(...a.map((value, axis) => value - b[axis]));
 const finitePoint = (point: unknown) =>
   Array.isArray(point) && point.length === 3 && point.every(Number.isFinite);
 const tolerance = 1e-7;
-const weightsAt = (triangle: Triangle, point: Vec3): Vec3 => {
-  const [a, b, c] = triangle.vertices;
-  const x = point[0] - a[0],
-    z = point[2] - a[2];
-  const u = (x * (c[2] - a[2]) - z * (c[0] - a[0])) / triangle.determinant;
-  const v = ((b[0] - a[0]) * z - (b[2] - a[2]) * x) / triangle.determinant;
+const weightsAt = (
+  { vertCoords, triVerts, triDet }: Geometry,
+  triangle: number,
+  point: Vec3,
+): Vec3 => {
+  const offset = triangle * 3;
+  const a = triVerts[offset] * 3,
+    b = triVerts[offset + 1] * 3,
+    c = triVerts[offset + 2] * 3;
+  const ax = vertCoords[a],
+    az = vertCoords[a + 2];
+  const bx = vertCoords[b],
+    bz = vertCoords[b + 2];
+  const cx = vertCoords[c],
+    cz = vertCoords[c + 2];
+  const x = point[0] - ax,
+    z = point[2] - az;
+  const u = (x * (cz - az) - z * (cx - ax)) / triDet[triangle];
+  const v = ((bx - ax) * z - (bz - az) * x) / triDet[triangle];
   return [1 - u - v, u, v];
 };
-const heightAt = (triangle: Triangle, point: Vec3) =>
-  weightsAt(triangle, point).reduce(
-    (height, weight, index) => height + weight * triangle.vertices[index][1],
-    0,
-  );
-const clipTriangle = (triangle: Triangle, start: Vec3, end: Vec3): Clip | null => {
-  const first = weightsAt(triangle, start),
-    last = weightsAt(triangle, end);
+const heightAt = (geometry: Geometry, triangle: number, point: Vec3) => {
+  const { vertCoords, triVerts } = geometry;
+  const offset = triangle * 3;
+  const weights = weightsAt(geometry, triangle, point);
+  let height = 0;
+  for (let index = 0; index < 3; index++)
+    height += weights[index] * vertCoords[triVerts[offset + index] * 3 + 1];
+  return height;
+};
+const clipTriangle = (
+  geometry: Geometry,
+  triangle: number,
+  start: Vec3,
+  end: Vec3,
+): Clip | null => {
+  const first = weightsAt(geometry, triangle, start),
+    last = weightsAt(geometry, triangle, end);
   let near = 0,
     far = 1;
   for (let index = 0; index < 3; index++) {
@@ -110,34 +130,193 @@ const simplifyCollinear = (points: Vec3[]): Vec3[] => {
   }
   return result;
 };
-const makeIndex = (triangles: Triangle[]) => {
-  const root = createBoundsTree(triangles);
-  return (point: Vec3): Triangle[] => {
-    const result: Triangle[] = [],
-      stack = root ? [root] : [];
-    while (stack.length) {
-      const node = stack.pop()!;
-      if (
-        point.some(
-          (value, axis) => value < node.min[axis] - tolerance || value > node.max[axis] + tolerance,
-        )
-      )
-        continue;
-      if (node.entries) {
-        for (const triangle of node.entries) {
-          if (
-            weightsAt(triangle, point).every((weight) => weight >= -tolerance) &&
-            Math.abs(heightAt(triangle, point) - point[1]) <= tolerance
-          )
-            result.push(triangle);
+// Build-only ownership tables stay outside the scope of the returned queries.
+function buildMesh(
+  surfaces: Surface[],
+  portals: SharedPortal[],
+  preparedDirected: DirectedPortal[] | undefined,
+  importedPortals: GroundOptions['portals'],
+) {
+  const vertexOffset = new Uint32Array(surfaces.length + 1);
+  for (let face = 0; face < surfaces.length; face++) {
+    const source = supportVertices(surfaces[face]);
+    if (!source) throw new Error('Invalid surface');
+    vertexOffset[face + 1] = vertexOffset[face] + source.length;
+  }
+
+  const vertexCount = vertexOffset[surfaces.length];
+  const triangleCapacity = vertexCount - 2 * surfaces.length;
+  const vertCoords = new Float64Array(vertexCount * 3);
+  const triVerts = new Uint32Array(triangleCapacity * 3);
+  const triDet = new Float64Array(triangleCapacity);
+  const triBoxes = new Float64Array(triangleCapacity * 6);
+  const boundaryOwners = new Map<string, number>();
+  // Each polygon boundary slot stores the owning triangle edge plus one.
+  const boundaryEdges = new Uint32Array(vertexCount);
+  const edgeOwners = new Map<string, { edge: number; from: string; to: string }[]>();
+  const fanLinks = new Uint32Array(2 * (triangleCapacity - surfaces.length));
+  let triangleCount = 0,
+    fanLinkCount = 0;
+
+  for (let face = 0; face < surfaces.length; face++) {
+    const surface = surfaces[face];
+    if (boundaryOwners.has(surface.id)) throw new Error('Invalid surface');
+    const source = surface.vertices;
+    const first = vertexOffset[face];
+    const a = first * 3;
+    for (let vertex = 0; vertex < source.length; vertex++) {
+      const point = source[vertex];
+      if (!isSupportVertex(point)) throw new Error('Invalid surface');
+      vertCoords.set(point, a + vertex * 3);
+    }
+    if (
+      surface.portals !== undefined &&
+      (!Array.isArray(surface.portals) ||
+        surface.portals.some(
+          (index) => !Number.isInteger(index) || index < 0 || index >= source.length,
+        ))
+    )
+      throw new Error('Invalid surface portals');
+    // Keep the ID even when every fan triangle is degenerate.
+    boundaryOwners.set(surface.id, face);
+
+    for (let fan = 1; fan + 1 < source.length; fan++) {
+      const b = a + fan * 3,
+        c = b + 3;
+      const determinant =
+        (vertCoords[b] - vertCoords[a]) * (vertCoords[c + 2] - vertCoords[a + 2]) -
+        (vertCoords[b + 2] - vertCoords[a + 2]) * (vertCoords[c] - vertCoords[a]);
+      if (Math.abs(determinant) < 1e-12) continue;
+      const triangle = triangleCount++;
+      const offset = triangle * 3;
+      triVerts[offset] = first;
+      triVerts[offset + 1] = first + fan;
+      triVerts[offset + 2] = first + fan + 1;
+      triDet[triangle] = determinant;
+      const box = triangle * 6;
+      for (let axis = 0; axis < 3; axis++) {
+        const av = vertCoords[a + axis],
+          bv = vertCoords[b + axis],
+          cv = vertCoords[c + axis];
+        triBoxes[box + axis] = Math.min(av, bv, cv);
+        triBoxes[box + axis + 3] = Math.max(av, bv, cv);
+      }
+      for (let edge = 0; edge < 3; edge++) {
+        const polygonEdge =
+          edge === 1 || (edge === 0 && fan === 1) || (edge === 2 && fan + 2 === source.length)
+            ? edge === 0
+              ? 0
+              : fan + edge - 1
+            : null;
+        if (polygonEdge !== null) {
+          boundaryEdges[first + polygonEdge] = offset + edge + 1;
+          continue;
         }
-      } else {
-        stack.push(node.left, node.right);
+        const from = pointKey(vertCoords, triVerts[offset + edge] * 3),
+          to = pointKey(vertCoords, triVerts[offset + ((edge + 1) % 3)] * 3);
+        if (from === to) continue;
+        const edgeKey = from < to ? from + '/' + to : to + '/' + from;
+        const owners = edgeOwners.get(edgeKey) ?? [];
+        owners.push({ edge: offset + edge, from, to });
+        edgeOwners.set(edgeKey, owners);
       }
     }
-    return result;
+    for (const owners of edgeOwners.values()) {
+      if (owners.length !== 2) continue;
+      const [a, b] = owners;
+      if (a.from !== b.to || a.to !== b.from || Math.floor(a.edge / 3) === Math.floor(b.edge / 3))
+        continue;
+      fanLinks[fanLinkCount++] = a.edge;
+      fanLinks[fanLinkCount++] = b.edge;
+    }
+    edgeOwners.clear();
+  }
+
+  const adjOffset = new Uint32Array(triangleCount + 1);
+  for (let index = 0; index < fanLinkCount; index++)
+    adjOffset[Math.floor(fanLinks[index] / 3) + 1]++;
+
+  const ownerEdge = (surface: string, edge: number) => {
+    const face = boundaryOwners.get(surface);
+    if (face === undefined || !Number.isInteger(edge) || edge < 0) return -1;
+    const vertex = vertexOffset[face] + edge;
+    return vertex < vertexOffset[face + 1] ? boundaryEdges[vertex] - 1 : -1;
   };
-};
+  const directed = preparedDirected ?? directedPortals(surfaces, importedPortals);
+  const portalCapacity = portals.length + directed.length;
+  const portalLinks = new Int32Array(portalCapacity * 2);
+  const portalCoords = new Float64Array(portalCapacity * 4);
+  let portalCount = 0;
+  // Encode a directed target by complementing its edge so one staged record
+  // represents either kind of portal while preserving insertion order.
+  for (const [list, shared] of [
+    [portals, true],
+    [directed, false],
+  ] as const) {
+    for (const portal of list) {
+      const from = ownerEdge(portal.from, portal.fromEdge);
+      const to = ownerEdge(portal.to, portal.toEdge);
+      if (from < 0 || to < 0) continue;
+      adjOffset[Math.floor(from / 3) + 1]++;
+      if (shared) adjOffset[Math.floor(to / 3) + 1]++;
+      portalLinks[portalCount * 2] = from;
+      portalLinks[portalCount * 2 + 1] = shared ? to : ~to;
+      const offset = portalCount++ * 4;
+      portalCoords[offset] = portal.start[0];
+      portalCoords[offset + 1] = portal.start[2];
+      portalCoords[offset + 2] = portal.end[0];
+      portalCoords[offset + 3] = portal.end[2];
+    }
+  }
+
+  for (let triangle = 0; triangle < triangleCount; triangle++)
+    adjOffset[triangle + 1] += adjOffset[triangle];
+  const edgeCount = adjOffset[triangleCount];
+  const adjTarget = new Int32Array(edgeCount);
+  const adjOpposite = new Uint8Array(edgeCount);
+  const adjPortal = new Int32Array(edgeCount);
+  const cursor = adjOffset.slice(0, triangleCount);
+  const add = (from: number, to: number, portal: number) => {
+    const slot = cursor[Math.floor(from / 3)]++;
+    adjTarget[slot] = Math.floor(to / 3);
+    adjOpposite[slot] = (from + 2) % 3;
+    adjPortal[slot] = portal;
+  };
+  for (let index = 0; index < fanLinkCount; index += 2) {
+    const a = fanLinks[index],
+      b = fanLinks[index + 1];
+    add(a, b, -1);
+    add(b, a, -1);
+  }
+  for (let portal = 0; portal < portalCount; portal++) {
+    const from = portalLinks[portal * 2],
+      to = portalLinks[portal * 2 + 1];
+    if (to < 0) add(from, ~to, portal);
+    else {
+      add(from, to, portal);
+      add(to, from, portal);
+    }
+  }
+
+  return {
+    geometry: {
+      vertCoords,
+      triVerts:
+        triangleCount === triangleCapacity ? triVerts : triVerts.slice(0, triangleCount * 3),
+      triDet: triangleCount === triangleCapacity ? triDet : triDet.slice(0, triangleCount),
+    },
+    triBoxes: triangleCount === triangleCapacity ? triBoxes : triBoxes.slice(0, triangleCount * 6),
+    adjacency: {
+      adjOffset,
+      adjTarget,
+      adjOpposite,
+      adjPortal,
+      portalCoords:
+        portalCount === portalCapacity ? portalCoords : portalCoords.slice(0, portalCount * 4),
+    },
+  };
+}
+
 /** Prepare reusable wall-independent triangulation, adjacency, spatial index,
  * and lazy weak-connectivity state for ground visibility queries.
  */
@@ -147,74 +326,26 @@ export function prepareGroundStraightenerMesh(
   preparedDirected?: DirectedPortal[],
   importedPortals: GroundOptions['portals'] = [],
 ): GroundStraightenerMesh {
-  const portals = sharedPortals ?? surfacePortals(surfaces);
-  const triangles: Triangle[] = [],
-    boundaryOwners = new Map<string, Owner[]>();
-  for (const surface of surfaces) {
-    const owned = supportSnapshot(surface);
-    if (!owned || boundaryOwners.has(owned.id)) throw new Error('Invalid surface');
-    if (
-      surface.portals !== undefined &&
-      (!Array.isArray(surface.portals) ||
-        surface.portals.some(
-          (index) => !Number.isInteger(index) || index < 0 || index >= owned.vertices.length,
-        ))
-    )
-      throw new Error('Invalid surface portals');
-    // Polygon boundary edges already have integer ordinals. Avoid a serialized
-    // [surface, edge] key per triangle edge; internal fan edges never join faces.
-    const boundary: Owner[] = [];
-    let edgeOwners: Map<string, Owner[]> | undefined;
-    boundaryOwners.set(owned.id, boundary);
-    for (const primitive of supportTriangles(owned)) {
-      const triangle: Triangle = {
-        id: triangles.length,
-        vertices: primitive.vertices,
-        neighbours: [],
-        determinant: primitive.determinant,
-        min: primitive.min,
-        max: primitive.max,
-      };
-      triangles.push(triangle);
-      const polygonEdges = primitive.polygonEdges;
-      for (let edge = 0; edge < 3; edge++) {
-        const polygonEdge = polygonEdges[edge];
-        if (polygonEdge !== null) {
-          boundary[polygonEdge] = { triangle, edge };
-          continue;
-        }
-        const from = pointKey(triangle.vertices[edge]),
-          to = pointKey(triangle.vertices[(edge + 1) % 3]);
-        if (from === to) continue;
-        const edgeKey = from < to ? from + '/' + to : to + '/' + from;
-        const owners = edgeOwners?.get(edgeKey) ?? [];
-        owners.push({ triangle, edge, from, to });
-        (edgeOwners ??= new Map<string, Owner[]>()).set(edgeKey, owners);
-      }
-    }
-    if (edgeOwners)
-      for (const owners of edgeOwners.values()) {
-        if (owners.length !== 2) continue;
-        const [a, b] = owners;
-        if (a.from !== b.to || a.to !== b.from || a.triangle === b.triangle) continue;
-        a.triangle.neighbours.push({ triangle: b.triangle, opposite: (a.edge + 2) % 3 });
-        b.triangle.neighbours.push({ triangle: a.triangle, opposite: (b.edge + 2) % 3 });
-      }
-  }
-  for (const portal of portals) {
-    const a = boundaryOwners.get(portal.from)?.[portal.fromEdge];
-    const b = boundaryOwners.get(portal.to)?.[portal.toEdge];
-    if (!a || !b) continue;
-    a.triangle.neighbours.push({ triangle: b.triangle, opposite: (a.edge + 2) % 3, portal });
-    b.triangle.neighbours.push({ triangle: a.triangle, opposite: (b.edge + 2) % 3, portal });
-  }
-  for (const portal of preparedDirected ?? directedPortals(surfaces, importedPortals)) {
-    const a = boundaryOwners.get(portal.from)?.[portal.fromEdge];
-    const b = boundaryOwners.get(portal.to)?.[portal.toEdge];
-    if (a && b)
-      a.triangle.neighbours.push({ triangle: b.triangle, opposite: (a.edge + 2) % 3, portal });
-  }
-  const supporting = makeIndex(triangles);
+  const { geometry, triBoxes, adjacency } = buildMesh(
+    surfaces,
+    sharedPortals ?? surfacePortals(surfaces),
+    preparedDirected,
+    importedPortals,
+  );
+  const { adjOffset, adjTarget } = adjacency;
+  const count = geometry.triDet.length;
+  const index = createOrdinalBoundsIndex(triBoxes, tolerance);
+  const supporting = (point: Vec3): number[] => {
+    const result: number[] = [];
+    index.forEach({ min: point, max: point }, (triangle) => {
+      if (
+        weightsAt(geometry, triangle, point).every((weight) => weight >= -tolerance) &&
+        Math.abs(heightAt(geometry, triangle, point) - point[1]) <= tolerance
+      )
+        result.push(triangle);
+    });
+    return result;
+  };
   let components: Int32Array | undefined;
   const endpointComponents = new WeakMap<Vec3, { position: Vec3; groups: Set<number> }>();
   const componentRoot = (index: number): number => {
@@ -226,24 +357,22 @@ export function prepareGroundStraightenerMesh(
   };
   const groupsAt = (point: Vec3): Set<number> => {
     if (!components) {
-      components = Int32Array.from(triangles, (triangle: Triangle) => triangle.id);
-      for (const triangle of triangles)
-        for (const neighbour of triangle.neighbours) {
-          components![componentRoot(neighbour.triangle.id)] = componentRoot(triangle.id);
-        }
+      components = new Int32Array(count);
+      for (let triangle = 0; triangle < count; triangle++) components[triangle] = triangle;
+      for (let triangle = 0; triangle < count; triangle++)
+        for (let slot = adjOffset[triangle]; slot < adjOffset[triangle + 1]; slot++)
+          components[componentRoot(adjTarget[slot])] = componentRoot(triangle);
     }
     const previous = endpointComponents.get(point);
     if (previous && previous.position.every((value, axis) => value === point[axis]))
       return previous.groups;
     // A point may lie on several overlapping supports. Keep every component
     // accepted by the same locator that trace uses, including masked faces.
-    const groups = new Set<number>(
-      supporting(point).map((triangle: Triangle) => componentRoot(triangle.id)),
-    );
+    const groups = new Set(supporting(point).map(componentRoot));
     endpointComponents.set(point, { position: [...point], groups });
     return groups;
   };
-  return { triangles, supporting, groupsAt };
+  return { ...geometry, ...adjacency, supporting, groupsAt };
 }
 
 /** Bind a wall checker to a prebuilt wall-independent straightener mesh. */
@@ -251,8 +380,8 @@ export function createGroundStraightenerFromMesh(
   mesh: GroundStraightenerMesh,
   blocked: WallChecker,
 ): GroundStraightener {
-  const { supporting, groupsAt } = mesh;
-  const trace = (start: Vec3, end: Vec3, supports: Triangle[]): Vec3[] | null => {
+  const { supporting, groupsAt, adjOffset, adjTarget, adjOpposite, adjPortal, portalCoords } = mesh;
+  const trace = (start: Vec3, end: Vec3, supports: number[]): Vec3[] | null => {
     if (Math.hypot(end[0] - start[0], end[2] - start[2]) < 1e-10) {
       return distance(start, end) < tolerance ? [[...start], [...end]] : null;
     }
@@ -262,9 +391,9 @@ export function createGroundStraightenerFromMesh(
       start[2] + fraction * (end[2] - start[2]),
     ];
     const clips = new Map<number, Clip | null>();
-    const clipped = (triangle: Triangle) => {
-      if (!clips.has(triangle.id)) clips.set(triangle.id, clipTriangle(triangle, start, end));
-      return clips.get(triangle.id)!;
+    const clipped = (triangle: number) => {
+      if (!clips.has(triangle)) clips.set(triangle, clipTriangle(mesh, triangle, start, end));
+      return clips.get(triangle)!;
     };
     const reached = new Map<number, Entry>(),
       queue: Entry[] = [];
@@ -272,7 +401,7 @@ export function createGroundStraightenerFromMesh(
       const interval = clipped(triangle);
       if (interval && interval.near <= tolerance) {
         const entry = { triangle, fraction: 0, previous: null };
-        reached.set(triangle.id, entry);
+        reached.set(triangle, entry);
         queue.push(entry);
       }
     }
@@ -280,28 +409,30 @@ export function createGroundStraightenerFromMesh(
       const entry = queue[head],
         triangle = entry.triangle,
         interval = clipped(triangle)!;
-      if (reached.get(triangle.id) !== entry) continue;
+      if (reached.get(triangle) !== entry) continue;
       if (
         interval.far >= 1 - tolerance &&
-        Math.abs(heightAt(triangle, end) - end[1]) <= tolerance
+        Math.abs(heightAt(mesh, triangle, end) - end[1]) <= tolerance
       ) {
         const crossings: Vec3[] = [];
         for (let current = entry; current.previous; current = current.previous) {
           const point = interpolate(current.fraction);
           crossings.push(
-            [point[0], heightAt(current.triangle, point), point[2]],
-            [point[0], heightAt(current.previous.triangle, point), point[2]],
+            [point[0], heightAt(mesh, current.triangle, point), point[2]],
+            [point[0], heightAt(mesh, current.previous.triangle, point), point[2]],
           );
         }
         const points = simplifyCollinear([[...start], ...crossings.reverse(), [...end]]);
         if (points.slice(1).some((point, index) => blocked(points[index], point))) return null;
         return points;
       }
-      for (const neighbour of triangle.neighbours) {
-        const next = clipped(neighbour.triangle);
+      for (let slot = adjOffset[triangle]; slot < adjOffset[triangle + 1]; slot++) {
+        const target = adjTarget[slot];
+        const next = clipped(target);
         if (!next) continue;
-        const first = interval.first[neighbour.opposite],
-          delta = interval.last[neighbour.opposite] - first;
+        const opposite = adjOpposite[slot];
+        const first = interval.first[opposite],
+          delta = interval.last[opposite] - first;
         let fraction;
         if (Math.abs(delta) < 1e-14) {
           if (Math.abs(first) > tolerance) continue;
@@ -317,27 +448,30 @@ export function createGroundStraightenerFromMesh(
         )
           continue;
         fraction = Math.max(0, fraction);
-        if (neighbour.portal) {
-          const point = interpolate(fraction),
-            { start, end } = neighbour.portal;
-          const dx = end[0] - start[0],
-            dz = end[2] - start[2],
+        const portal = adjPortal[slot];
+        if (portal >= 0) {
+          const point = interpolate(fraction);
+          const offset = portal * 4;
+          const sx = portalCoords[offset],
+            sz = portalCoords[offset + 1];
+          const dx = portalCoords[offset + 2] - sx,
+            dz = portalCoords[offset + 3] - sz,
             lengthSquared = dx * dx + dz * dz;
           const t =
             lengthSquared < 1e-16
               ? 0
-              : ((point[0] - start[0]) * dx + (point[2] - start[2]) * dz) / lengthSquared;
+              : ((point[0] - sx) * dx + (point[2] - sz) * dz) / lengthSquared;
           if (
             t < -tolerance ||
             t > 1 + tolerance ||
-            Math.hypot(point[0] - start[0] - t * dx, point[2] - start[2] - t * dz) > 1e-4
+            Math.hypot(point[0] - sx - t * dx, point[2] - sz - t * dz) > 1e-4
           )
             continue;
         }
-        const previous = reached.get(neighbour.triangle.id);
+        const previous = reached.get(target);
         if (previous && previous.fraction <= fraction + tolerance) continue;
-        const reachedEntry: Entry = { triangle: neighbour.triangle, fraction, previous: entry };
-        reached.set(neighbour.triangle.id, reachedEntry);
+        const reachedEntry: Entry = { triangle: target, fraction, previous: entry };
+        reached.set(target, reachedEntry);
         queue.push(reachedEntry);
       }
     }
@@ -347,7 +481,7 @@ export function createGroundStraightenerFromMesh(
     if (!Array.isArray(points) || !points.length || !points.every(finitePoint))
       throw new Error('Invalid ground path');
     const output: Vec3[] = [[...points[0]]],
-      supportCache = new Map<number, Triangle[]>(),
+      supportCache = new Map<number, number[]>(),
       lengths = [0];
     for (let index = 1; index < points.length; index++)
       lengths.push(lengths.at(-1)! + distance(points[index - 1], points[index]));

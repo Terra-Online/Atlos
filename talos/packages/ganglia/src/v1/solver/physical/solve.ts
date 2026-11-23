@@ -13,7 +13,12 @@ import { jumpDuration } from '#@/src/v1/motion/jumps.ts';
 import { actionCatalogStats } from '#@/src/v1/route/action-catalog.ts';
 import { registerCatalogSurfaces } from '#@/src/v1/route/action-catalog.ts';
 import { pruneGroundDetours } from '#@/src/v1/route/ground-detours.ts';
-import { createGroundPlanner, createOverlayGroundPlanner } from '#@/src/v1/route/ground.ts';
+import {
+  createGroundPlanner,
+  createOverlayGroundPlanner,
+  createScopedGroundPlanner,
+  type groundPlannerTopology,
+} from '#@/src/v1/route/ground.ts';
 import { planJumpRoute, type InitialGroundProof } from '#@/src/v1/route/jump-planner.ts';
 import { narrowGoalSupports, refineGoalGround } from '#@/src/v1/solver/ground-refinement.ts';
 import {
@@ -44,11 +49,17 @@ export type PhysicalQuery = {
   waypoints?: Vec3[];
 };
 
+type GroundTopologyLookup = (surfaces: Surface[]) => ReturnType<typeof groundPlannerTopology>;
+type Prepare<T> = (
+  reserve?: (surfaces: number) => void,
+  topologyFor?: GroundTopologyLookup,
+) => T | Promise<T>;
+
 export interface PhysicalCache {
   memo<T>(
     slot: 'ground' | 'collision' | 'devices' | 'moving' | 'refinement',
     key: string,
-    create: (reserve?: (surfaces: number) => void) => T | Promise<T>,
+    create: Prepare<T>,
     scope?: CacheScope,
   ): Promise<{ value: T; reused: boolean }>;
   release(slot: 'ground' | 'moving'): void;
@@ -115,7 +126,7 @@ export const solvePhysicalRoute = async (
   const memo = async <T>(
     slot: Parameters<PhysicalCache['memo']>[0],
     key: string,
-    create: (reserve?: (surfaces: number) => void) => T | Promise<T>,
+    create: Prepare<T>,
     parent?: object,
   ) =>
     context.cache
@@ -148,11 +159,19 @@ export const solvePhysicalRoute = async (
   let incumbent: PhysicalResult | undefined;
   let hasCompleteCandidate = false;
   let contact: Extract<ReturnType<typeof admitSourceContact>, { status: 'accepted' }> | undefined;
-  const plannerFor = (surfaces: Surface[], settings: GroundOptions) =>
-    createGroundPlanner(
-      surfaces,
-      contact && context.effort === 'walking' ? { ...settings, connections: [] } : settings,
-    );
+  const plannerFor = (
+    surfaces: Surface[],
+    settings: GroundOptions,
+    topology?: ReturnType<typeof groundPlannerTopology>,
+  ) => {
+    const resolved =
+      contact && context.effort === 'walking' ? { ...settings, connections: [] } : settings;
+    // Host-managed base surfaces already retire via releaseSupportCaches and are
+    // shared with window-route and across cache trims; derived arrays stay scoped.
+    return surfaces === input.ground.surfaces
+      ? createGroundPlanner(surfaces, resolved)
+      : createScopedGroundPlanner(surfaces, resolved, topology);
+  };
   const prepareTerrain = async (extent: { min: [number, number]; max: [number, number] }) => {
     const model = config.model;
     const curveInflationMargin =
@@ -363,11 +382,13 @@ export const solvePhysicalRoute = async (
   await context.checkpoint?.();
   progress({ phase: 'ground-search', surfaces: ground.surfaces.length });
   const groundStart = performance.now();
-  let groundPlanner: ReturnType<typeof createGroundPlanner> | undefined;
+  let groundPlanner: ReturnType<typeof createScopedGroundPlanner> | undefined;
   {
-    const preparedGround = await memo('ground', groundKey, (reserve) => {
+    const preparedGround = await memo('ground', groundKey, (reserve, topologyFor) => {
+      const topology =
+        ground.surfaces === input.ground.surfaces ? undefined : topologyFor?.(ground.surfaces);
       reserve?.(ground.surfaces.length);
-      return plannerFor(ground.surfaces, { ...options });
+      return plannerFor(ground.surfaces, { ...options }, topology);
     });
     prepareReuse.ground = preparedGround.reused;
     groundPlanner = preparedGround.value;
@@ -397,9 +418,11 @@ export const solvePhysicalRoute = async (
       options.walls = rounded;
       groundKey = groundView(rounded);
       groundPlanner = undefined;
-      const prepared = await memo('ground', groundKey, (reserve) => {
+      const prepared = await memo('ground', groundKey, (reserve, topologyFor) => {
+        const topology =
+          ground.surfaces === input.ground.surfaces ? undefined : topologyFor?.(ground.surfaces);
         reserve?.(ground.surfaces.length);
-        return plannerFor(ground.surfaces, { ...options });
+        return plannerFor(ground.surfaces, { ...options }, topology);
       });
       groundPlanner = prepared.value;
       prepareReuse.roundGround = prepared.reused;
@@ -1145,7 +1168,7 @@ export const solvePhysicalRoute = async (
               reserve?.(combined.length);
               return {
                 surfaces: combined,
-                planner: createGroundPlanner(combined, fallbackOptions),
+                planner: createScopedGroundPlanner(combined, fallbackOptions),
               };
             },
             surfaces,

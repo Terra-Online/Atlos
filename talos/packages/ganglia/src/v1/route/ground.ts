@@ -82,6 +82,7 @@ interface Preparation {
   peakSpeed: number;
   importedPortals?: GroundOptions['portals'];
   overlay?: OverlayMeta;
+  topology?: GroundTopologyEntry;
 }
 interface Projection {
   surface: string;
@@ -132,6 +133,12 @@ interface GroundTopologyEntry {
 }
 const topologyCache = new WeakMap<Surface[], GroundTopologyEntry>();
 
+/** A physical cache consults only its currently owned ground planners. */
+export function groundPlannerTopology(planner: unknown, surfaces: Surface[]) {
+  const preparation = preparations.get(planner as GroundPlanner);
+  return preparation?.surfaces === surfaces ? preparation.topology : undefined;
+}
+
 /** Release cached wall-independent topology when a surface array retires. */
 export const releaseGroundTopologyCache = (surfaces: Surface[]) => topologyCache.delete(surfaces);
 
@@ -180,15 +187,14 @@ function groundTopologyFor(
   surfaces: Surface[],
   searchSpeed: number,
   importedPortals: GroundOptions['portals'],
+  entry?: GroundTopologyEntry,
 ) {
-  let entry = topologyCache.get(surfaces);
   if (!entry || entry.length !== surfaces.length) {
     const portals = surfacePortals(surfaces);
     const byId = new Map<string, Surface>();
     for (let i = 0; i < surfaces.length; i++) byId.set(surfaces[i].id, surfaces[i]);
     const projectGoal = createGoalProjector(surfaces);
     entry = { length: surfaces.length, portals, byId, projectGoal };
-    topologyCache.set(surfaces, entry);
   }
   const importedLength = importedPortals?.length ?? 0;
   const sameStraightenerPortals =
@@ -228,6 +234,7 @@ function groundTopologyFor(
   }
   const straightenerEntry = entry.straightener!;
   return {
+    topology: entry,
     portals: entry.portals,
     byId: entry.byId,
     projectGoal: entry.projectGoal,
@@ -335,7 +342,7 @@ interface PlannerParts {
   overlay?: OverlayMeta;
 }
 
-function assembleGroundPlanner(parts: PlannerParts): GroundPlanner {
+function assembleGroundPlanner(parts: PlannerParts, topology?: GroundTopologyEntry): GroundPlanner {
   const {
     surfaces,
     options,
@@ -814,6 +821,7 @@ function assembleGroundPlanner(parts: PlannerParts): GroundPlanner {
     peakSpeed,
     importedPortals: options.portals,
     overlay,
+    topology,
   });
   return planner;
 }
@@ -890,6 +898,17 @@ function collectAffectedFromIds(
  * This does not establish a globally shortest path across every possible corridor.
  */
 export function createGroundPlanner(surfaces: Surface[], options: GroundOptions): GroundPlanner {
+  const planner = createScopedGroundPlanner(surfaces, options, topologyCache.get(surfaces));
+  topologyCache.set(surfaces, groundPlannerTopology(planner, surfaces)!);
+  return planner;
+}
+
+/** Build without a module-level topology owner. A resident sibling can lend its topology. */
+export function createScopedGroundPlanner(
+  surfaces: Surface[],
+  options: GroundOptions,
+  sharedTopology?: GroundTopologyEntry,
+): GroundPlanner {
   const { speed, walls, profile } = options;
   // Compare action times at the fastest permitted ground gait. The existing
   // resource scheduler verifies the complete selected motion sequence afterwards.
@@ -901,6 +920,7 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
     options.locomotion?.dash?.speed ?? 0,
   );
   const {
+    topology,
     portals,
     byId,
     projectGoal,
@@ -910,7 +930,7 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
     getUnwalledRouteBase,
     getWeakComponents,
     getStraightenerMesh,
-  } = groundTopologyFor(surfaces, searchSpeed, options.portals);
+  } = groundTopologyFor(surfaces, searchSpeed, options.portals, sharedTopology);
   const blocked = createWallChecker(walls, profile);
   const hasActiveWall = walls.some((wall) => wall.state !== 'inactive');
   let routeBase: ReturnType<typeof prepareRoutePlanner>;
@@ -1005,23 +1025,26 @@ export function createGroundPlanner(surfaces: Surface[], options: GroundOptions)
       },
     },
   );
-  return assembleGroundPlanner({
-    surfaces,
-    options,
-    searchSpeed,
-    peakSpeed,
-    portals,
-    directed,
-    byId,
-    centers: baseCenters,
-    projectGoal,
-    projectSupport,
-    graph: base,
-    routeBase,
-    getUnwalledRouteBase: () => getUnwalledRouteBase(profile),
-    straighten,
-    constraintsSignature,
-  });
+  return assembleGroundPlanner(
+    {
+      surfaces,
+      options,
+      searchSpeed,
+      peakSpeed,
+      portals,
+      directed,
+      byId,
+      centers: baseCenters,
+      projectGoal,
+      projectSupport,
+      graph: base,
+      routeBase,
+      getUnwalledRouteBase: () => getUnwalledRouteBase(profile),
+      straighten,
+      constraintsSignature,
+    },
+    topology,
+  );
 }
 
 /**
@@ -1066,20 +1089,20 @@ export function createOverlayGroundPlanner(
     basePrep.profile.radius !== options.profile.radius ||
     basePrep.profile.height !== options.profile.height
   ) {
-    return createGroundPlanner(layoutSurfaces, options);
+    return createScopedGroundPlanner(layoutSurfaces, options);
   }
   const extraById = new Map<string, Surface>();
   for (let i = 0; i < extraSurfaces.length; i++) {
     const s = extraSurfaces[i];
     if (basePrep.byId.has(s.id) || extraById.has(s.id)) {
-      return createGroundPlanner(layoutSurfaces, options);
+      return createScopedGroundPlanner(layoutSurfaces, options);
     }
     extraById.set(s.id, s);
   }
   for (let i = 0; i < extraImportedPortals.length; i++) {
     const p = extraImportedPortals[i];
     if (!extraById.has(p.from) || !extraById.has(p.to)) {
-      return createGroundPlanner(layoutSurfaces, options);
+      return createScopedGroundPlanner(layoutSurfaces, options);
     }
   }
 
@@ -1154,7 +1177,7 @@ export function createOverlayGroundPlanner(
     const mergedPortals = surfacePortals([...localStatic, ...extraSurfaces]);
     if (mergedPortals.length !== staticPortals.length + roofPortals.length) {
       // Rare flush-contact case where a roof edge joins or splits a static portal.
-      return createGroundPlanner(layoutSurfaces, options);
+      return createScopedGroundPlanner(layoutSurfaces, options);
     }
   }
 

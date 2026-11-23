@@ -21,11 +21,67 @@ export interface Entry extends SceneTerminal {
   bind(route: Complete): boolean;
 }
 
+function bindActivation({
+  goal,
+  deviceId,
+  duration,
+}: {
+  goal: { position: Vec3; interaction: NonNullable<RouteQuery['interaction']> };
+  deviceId: string;
+  duration: number;
+}): Entry['bind'] {
+  return (route) => {
+    let elapsed = 0;
+    let pickup: { time: number; position: Vec3 } | undefined;
+    for (const segment of route.segments) {
+      const hit = findGoalHit(segment.points, goal.position, goal.interaction);
+      if (hit) {
+        pickup = {
+          time:
+            elapsed +
+            segment.times[hit.index - 1] +
+            hit.fraction * (segment.times[hit.index] - segment.times[hit.index - 1]),
+          position: hit.position,
+        };
+        break;
+      }
+      elapsed += segment.times.at(-1)!;
+    }
+    if (!pickup) return false;
+    elapsed = 0;
+    let activeEnd = pickup.time;
+    for (const segment of route.segments) {
+      const end = elapsed + segment.times.at(-1)!;
+      if (segment.boost?.id === deviceId) {
+        if (
+          elapsed < pickup.time - 1e-6 ||
+          elapsed >= pickup.time + duration - 1e-6 ||
+          (segment.boostExpiry === undefined
+            ? end > pickup.time + duration + 1e-6
+            : Math.abs(elapsed + segment.boostExpiry - pickup.time - duration) > 1e-6)
+        )
+          return false;
+        activeEnd = Math.max(
+          activeEnd,
+          segment.boostExpiry === undefined ? end : elapsed + segment.boostExpiry,
+        );
+      }
+      elapsed = end;
+    }
+    route.boosts = route.boosts?.map((boost) =>
+      boost.id === deviceId
+        ? { ...boost, position: pickup!.position, elapsed: activeEnd - pickup!.time }
+        : boost,
+    );
+    return true;
+  };
+}
+
 /** Query-scoped preparation cache shared between discoverRopeTerminal and
  * discoverAirborneEntries so the same immutable PhysicalSnapshot never
  * rebuilds 2M+ triangle collision BVHs or GoalProjectors twice in one query.
  * Deliberately excludes GroundPlanner (which can consume >1.5 GiB on 400k-surface
- * regions) and is cleared in runLeg's finally block to keep V8 heap bounded.
+ * regions) and is cleared after discovery to keep V8 heap bounded.
  */
 export interface AirbornePrepCache {
   getPrepared(
@@ -317,51 +373,7 @@ export async function discoverAirborneEntries<Source, Job extends WindowJob>(
         id: `discovered/${device.id}/${entry.id}`,
         route: result.route,
         supportBoxes: result.supportBoxes,
-        bind(route) {
-          let elapsed = 0;
-          let pickup: { time: number; position: Vec3 } | undefined;
-          for (const segment of route.segments) {
-            const hit = findGoalHit(segment.points, goal.position, goal.interaction);
-            if (hit) {
-              pickup = {
-                time:
-                  elapsed +
-                  segment.times[hit.index - 1] +
-                  hit.fraction * (segment.times[hit.index] - segment.times[hit.index - 1]),
-                position: hit.position,
-              };
-              break;
-            }
-            elapsed += segment.times.at(-1)!;
-          }
-          if (!pickup) return false;
-          elapsed = 0;
-          let activeEnd = pickup.time;
-          for (const segment of route.segments) {
-            const end = elapsed + segment.times.at(-1)!;
-            if (segment.boost?.id === device.id) {
-              if (
-                elapsed < pickup.time - 1e-6 ||
-                elapsed >= pickup.time + duration - 1e-6 ||
-                (segment.boostExpiry === undefined
-                  ? end > pickup.time + duration + 1e-6
-                  : Math.abs(elapsed + segment.boostExpiry - pickup.time - duration) > 1e-6)
-              )
-                return false;
-              activeEnd = Math.max(
-                activeEnd,
-                segment.boostExpiry === undefined ? end : elapsed + segment.boostExpiry,
-              );
-            }
-            elapsed = end;
-          }
-          route.boosts = route.boosts?.map((boost) =>
-            boost.id === device.id
-              ? { ...boost, position: pickup!.position, elapsed: activeEnd - pickup!.time }
-              : boost,
-          );
-          return true;
-        },
+        bind: bindActivation({ goal, deviceId: device.id, duration }),
       });
     }
   }

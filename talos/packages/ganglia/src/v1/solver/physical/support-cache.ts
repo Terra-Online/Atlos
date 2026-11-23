@@ -1,5 +1,4 @@
 import type { Surface } from '#@/src/geometry.ts';
-import { releaseSupportSnapshot } from '#@/src/model/support-snapshot.ts';
 import { releaseVerticalProjectionIndex } from '#@/src/v1/geo/support-projector.ts';
 import { releaseLandingMetadata } from '#@/src/v1/motion/landings.ts';
 import { releaseGroundTopologyCache } from '#@/src/v1/route/ground.ts';
@@ -9,8 +8,5 @@ import { releaseGroundTopologyCache } from '#@/src/v1/route/ground.ts';
 export function releaseSupportCaches(surfaces: Surface[]) {
   releaseVerticalProjectionIndex(surfaces);
   releaseGroundTopologyCache(surfaces);
-  for (const surface of surfaces) {
-    releaseSupportSnapshot(surface);
-    releaseLandingMetadata(surface);
-  }
+  for (const surface of surfaces) releaseLandingMetadata(surface);
 }

@@ -917,7 +917,9 @@ test('discovers a source rope approach to a fresh airborne terminal from the sce
     goal: [5, 6, 0] as Vec3,
     interaction: { radius: 0.25, airborne: true },
   };
+  const publicPlanner = createGroundPlanner(surfaces, rules);
   const result = await solver.solve(query);
+  assert.equal(createGroundPlanner(surfaces, rules).project, publicPlanner.project);
   await solver.close();
   assert.equal(result.route.status, 'complete');
   if (result.route.status !== 'complete') return;

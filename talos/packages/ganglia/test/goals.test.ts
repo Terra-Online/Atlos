@@ -5,6 +5,7 @@ import type { Surface, Vec3 } from '#@/src/geometry.ts';
 import {
   type GoalProjectionOptions,
   createGoalProjector,
+  closestOnSurface,
   projectGoal,
   findGoalHit,
   trimGoalFlight,
@@ -471,4 +472,73 @@ test('clipped flight endpoints satisfy the unchanged goal predicate after entry-
       interaction,
     ),
   );
+});
+
+test('packed projection matches the callback clipping path through fan, cone and height boundaries', () => {
+  const degenerateFan: Surface = {
+    id: 'slope',
+    vertices: [
+      [-0, -0, -0],
+      [1, 0.5, 0],
+      [2, 1, 0],
+      [2, 1, 2],
+      [0, 0, 2],
+    ],
+  };
+  const surfaces = [
+    degenerateFan,
+    { ...degenerateFan, id: 'same-distance' },
+    ground('zero', -0, 2, -0, 2, -0),
+    ...Array.from({ length: 12 }, (_, i) => ground(`far/${i}`, i + 4, i + 5)),
+  ];
+  const project = createGoalProjector(surfaces);
+  for (const target of [
+    [-0, -0, -0],
+    [1, 0.5, 0],
+    [2, 1, 1],
+    [0, 0, 2],
+  ] satisfies Vec3[]) {
+    const clips = [
+      [],
+      [(p: Vec3) => p[1] - target[1] + 0, (p: Vec3) => target[1] + 0 - p[1]],
+      [
+        (p: Vec3) => p[1] - target[1] + 0,
+        (p: Vec3) => target[1] + 0 - p[1],
+        (p: Vec3) =>
+          ((p[0] - target[0]) * 1 + (p[2] - target[2]) * 0) * 1 +
+          ((p[0] - target[0]) * 0 - (p[2] - target[2]) * 1) * 0,
+        (p: Vec3) =>
+          ((p[0] - target[0]) * 1 + (p[2] - target[2]) * 0) * 1 -
+          ((p[0] - target[0]) * 0 - (p[2] - target[2]) * 1) * 0,
+      ],
+    ];
+    for (const [index, planes] of clips.entries()) {
+      const options: GoalProjectionOptions = {
+        interaction: {
+          radius: 3,
+          ...(index > 0 ? { maxVertical: 0 } : {}),
+          ...(index === 2 ? { facing: [1, 0, 0], halfAngle: 90 } : {}),
+        },
+      };
+      const expected = surfaces
+        .map((surface) => closestOnSurface(surface, target, planes))
+        .filter((projection) => projection !== null)
+        .filter((projection) => projection.distance <= 3)
+        .sort((a, b) => a.distance - b.distance);
+      const full = project(target, options);
+      const nearest = project.closest(target, options);
+      assert.deepEqual(full, expected);
+      assert.deepEqual(nearest, expected[0]);
+      if (full[0]) full[0].position[0] = 123;
+      if (nearest) nearest.position[0] = 123;
+      assert.deepEqual(project(target, options), expected);
+      assert.deepEqual(project.closest(target, options), expected[0]);
+    }
+  }
+  assert.deepEqual(project([-0, -0, -0], { maxVertical: 0 }), [
+    { surface: 'slope', position: [-0, 0, -0], distance: 0 },
+  ]);
+  assert.deepEqual(project([0, 0, 0], { maxVertical: 0 }), [
+    { surface: 'slope', position: [0, 0, 0], distance: 0 },
+  ]);
 });

@@ -1,5 +1,5 @@
 import type { Surface, Vec3 } from '#@/src/geometry.ts';
-import { createBoundsIndex } from '#@/src/model/bounds.ts';
+import { createOrdinalBoundsIndex } from '#@/src/model/bounds.ts';
 import { projectPoint } from '#@/src/v1/geo/surfaces.ts';
 
 type Projection = ReturnType<typeof projectPoint>;
@@ -8,9 +8,16 @@ const verticalIndices = new WeakMap<Surface[], ReturnType<typeof indexVerticalSu
 export const releaseVerticalProjectionIndex = (surfaces: Surface[]) =>
   verticalIndices.delete(surfaces);
 function indexVerticalSupports(surfaces: Surface[]) {
-  const entries = surfaces.map((surface, ordinal) => {
-    const min: Vec3 = [Infinity, Infinity, Infinity],
-      max: Vec3 = [-Infinity, -Infinity, -Infinity];
+  const boxes = new Float64Array(surfaces.length * 6);
+  const ordinals = new Uint32Array(surfaces.length);
+  const fallback: number[] = [];
+  const min: Vec3 = [0, 0, 0],
+    max: Vec3 = [0, 0, 0];
+  let count = 0;
+  for (let ordinal = 0; ordinal < surfaces.length; ordinal++) {
+    const surface = surfaces[ordinal];
+    min.fill(Infinity);
+    max.fill(-Infinity);
     for (const point of surface.vertices)
       for (let axis = 0; axis < 3; axis++) {
         min[axis] = Math.min(min[axis], point[axis]);
@@ -30,22 +37,28 @@ function indexVerticalSupports(surfaces: Surface[]) {
           Math.abs(determinant),
       );
     }
-    const uncertain = !Number.isFinite(condition) || 64 * Number.EPSILON * condition >= 0.25;
+    // Near-singular fans do not provide a trustworthy finite spatial exclusion.
+    if (!Number.isFinite(condition) || 64 * Number.EPSILON * condition >= 0.25) {
+      fallback.push(ordinal);
+      continue;
+    }
+    ordinals[count] = ordinal;
+    const offset = count++ * 6;
     for (let axis = 0; axis < 3; axis++) {
       // projectPoint admits slightly negative barycentric weights. Include the
       // resulting extrapolation and coordinate roundoff before pruning a face.
       const padding =
         3e-8 * (max[axis] - min[axis]) +
         128 * Number.EPSILON * Math.max(1, Math.abs(min[axis]), Math.abs(max[axis])) * condition;
-      min[axis] -= padding;
-      max[axis] += padding;
+      boxes[offset + axis] = min[axis] - padding;
+      boxes[offset + axis + 3] = max[axis] + padding;
     }
-    return { surface, ordinal, min, max, uncertain };
-  });
-  // Near-singular fans do not provide a trustworthy finite spatial exclusion.
-  const fallback = entries.filter((entry) => entry.uncertain);
-  const query = createBoundsIndex(entries.filter((entry) => !entry.uncertain));
-  return { fallback, query };
+  }
+  const certainBoxes = count === surfaces.length ? boxes : boxes.slice(0, count * 6);
+  const certainOrdinals = count === surfaces.length ? ordinals : ordinals.slice(0, count);
+  const fallbackOrdinals = Uint32Array.from(fallback);
+  const query = createOrdinalBoundsIndex(certainBoxes);
+  return { certainOrdinals, fallbackOrdinals, query };
 }
 
 /** Candidate faces from one immutable support mesh, in original input order. */
@@ -68,9 +81,11 @@ export function verticalProjectionCandidates(
     min: [position[0] - horizontal, position[1] - maxVertical, position[2] - horizontal],
     max: [position[0] + horizontal, position[1] + maxVertical, position[2] + horizontal],
   };
-  return [...index.query(bounds), ...index.fallback]
-    .sort((a, b) => a.ordinal - b.ordinal)
-    .map((entry) => entry.surface);
+  const { certainOrdinals, fallbackOrdinals, query } = index;
+  const hits = Array.from(fallbackOrdinals);
+  query.forEach(bounds, (ordinal) => hits.push(certainOrdinals[ordinal]));
+  hits.sort((a, b) => a - b);
+  return hits.map((ordinal) => surfaces[ordinal]);
 }
 
 // Device endpoints recur throughout action discovery. This cache belongs to one

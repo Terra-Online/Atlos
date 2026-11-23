@@ -191,6 +191,9 @@ for (const connected of [true, false])
         .reduce((total, s) => total + (s.boostExpiry ?? s.times.at(-1)!), 0);
       assert.ok(result.route.boosts![0].elapsed > boostedDuration);
       assert.deepEqual(verifyRoute(query, result.route, { maxVertical: 0.5 }).issues, []);
+      const repeated = await solver.solve(query);
+      assert.equal(snapshots, 2, 'each leg loads its own discovery window');
+      assert.deepEqual(repeated.route, result.route);
     } finally {
       await solver.close();
     }

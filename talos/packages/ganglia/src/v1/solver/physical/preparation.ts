@@ -1,3 +1,4 @@
+import { groundPlannerTopology } from '#@/src/v1/route/ground.ts';
 import type { PhysicalCache } from '#@/src/v1/solver/physical/solve.ts';
 
 export type CacheScope = { view: string; parent?: object };
@@ -31,6 +32,7 @@ type View = {
   ground?: Entry;
   devices?: Entry;
   moving?: Entry;
+  builds: Partial<Record<'ground' | 'devices' | 'moving' | 'refinement', symbol>>;
   pending: Partial<Record<'ground' | 'devices' | 'moving' | 'refinement', Reason>>;
 };
 type Refinement = Entry & { view: View; parent?: object };
@@ -53,6 +55,7 @@ export function createPhysicalCache() {
   let generation: string | undefined;
   let epoch = 0;
   let active: string | undefined;
+  let collisionBuild: symbol | undefined;
   let resetReason: Reason = 'cold';
   let clock = 0;
   const hits: Record<string, number> = {},
@@ -68,11 +71,13 @@ export function createPhysicalCache() {
       refinements.splice(i, 1);
       count(evictions, 'refinement', reason);
     }
+    view.builds.refinement = Symbol();
     view.pending.refinement = reason;
   };
   const drop = (view: View, slot: 'devices' | 'moving', reason: Reason) => {
     if (view[slot]) count(evictions, slot, reason);
     delete view[slot];
+    delete view.builds[slot];
     view.pending[slot] = reason;
   };
   const dropView = (key: string, view: View, reason: Reason) => {
@@ -112,6 +117,7 @@ export function createPhysicalCache() {
     for (const [key, view] of views) dropView(key, view, reason);
     for (const slot of shared.keys()) count(evictions, slot, reason);
     shared.clear();
+    collisionBuild = undefined;
     reservations.clear();
     active = undefined;
     resetReason = reason;
@@ -160,21 +166,38 @@ export function createPhysicalCache() {
     async memo<T>(
       slot: Parameters<PhysicalCache['memo']>[0],
       key: string,
-      create: (reserve?: (surfaces: number) => void) => T | Promise<T>,
+      create: (
+        reserve?: (surfaces: number) => void,
+        topologyFor?: (
+          surfaces: Parameters<typeof groundPlannerTopology>[1],
+        ) => ReturnType<typeof groundPlannerTopology>,
+      ) => T | Promise<T>,
       scope?: CacheScope,
     ) {
       const version = epoch;
-      const build = async () => {
+      const build = async (current = () => version === epoch, shareTopology = false) => {
         const reservation = { surfaces: 0 };
         reservations.add(reservation);
         try {
-          const value = await create((surfaces) => {
-            if (!Number.isSafeInteger(surfaces) || surfaces < 0)
-              throw new Error('Invalid preparation surface reservation');
-            if (version !== epoch) return;
-            reservation.surfaces = surfaces;
-            trim();
-          });
+          const value = await create(
+            (surfaces) => {
+              if (!Number.isSafeInteger(surfaces) || surfaces < 0)
+                throw new Error('Invalid preparation surface reservation');
+              if (!current()) return;
+              reservation.surfaces = surfaces;
+              trim();
+            },
+            shareTopology
+              ? (surfaces) => {
+                  if (!current()) return undefined;
+                  for (const view of views.values()) {
+                    const topology = groundPlannerTopology(view.ground?.value, surfaces);
+                    if (topology) return topology;
+                  }
+                  return undefined;
+                }
+              : undefined,
+          );
           return { key, value, surfaces: reservation.surfaces, used: ++clock };
         } finally {
           reservations.delete(reservation);
@@ -197,8 +220,9 @@ export function createPhysicalCache() {
             dropRefinements(view, 'dependency');
           }
         }
+        const token = (collisionBuild = Symbol());
         const value = await create();
-        if (version === epoch) shared.set(slot, { key, value });
+        if (version === epoch && collisionBuild === token) shared.set(slot, { key, value });
         return { value, reused: false };
       }
       if (slot === 'ground') {
@@ -220,20 +244,23 @@ export function createPhysicalCache() {
             dropView(oldKey, oldView, 'capacity');
             reason = 'capacity';
           }
-          view = { pending: {} };
+          view = { pending: {}, builds: {} };
           views.set(key, view);
         }
         count(misses, slot, reason);
         delete view.pending.ground;
+        const token = (view.builds.ground = Symbol());
+        const current = () =>
+          version === epoch && views.get(key) === view && view.builds.ground === token;
         try {
-          const entry = await build();
-          if (version === epoch && views.get(key) === view) {
+          const entry = await build(current, true);
+          if (current()) {
             view.ground = entry;
             trim();
           }
           return { value: entry.value, reused: false };
         } catch (error) {
-          if (views.get(key) === view && !view.ground) dropView(key, view, 'dependency');
+          if (current() && !view.ground) dropView(key, view, 'dependency');
           throw error;
         }
       }
@@ -243,7 +270,7 @@ export function createPhysicalCache() {
       // valid for that caller, but cannot be attached to another query's view.
       if (!view) {
         count(misses, slot, 'capacity');
-        return { value: (await build()).value, reused: false };
+        return { value: (await build(() => false)).value, reused: false };
       }
       if (slot === 'refinement') {
         const found = refinements.find(
@@ -267,8 +294,11 @@ export function createPhysicalCache() {
           refinements.shift();
           count(evictions, slot, 'capacity');
         }
-        const entry = await build();
-        if (version === epoch && views.get(viewKey!) === view) {
+        const revision = view.builds.refinement;
+        const current = () =>
+          version === epoch && views.get(viewKey!) === view && view.builds.refinement === revision;
+        const entry = await build(current);
+        if (current()) {
           if (refinements.length >= 2) {
             refinements.shift();
             count(evictions, slot, 'capacity');
@@ -294,8 +324,11 @@ export function createPhysicalCache() {
       }
       // Do not keep a replaced graph alive in this async frame during its rebuild.
       found = undefined;
-      const entry = await build();
-      if (version === epoch && views.get(viewKey!) === view) {
+      const token = (view.builds[slot] = Symbol());
+      const current = () =>
+        version === epoch && views.get(viewKey!) === view && view.builds[slot] === token;
+      const entry = await build(current);
+      if (current()) {
         view[slot] = entry;
         trim();
       }

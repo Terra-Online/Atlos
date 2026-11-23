@@ -1,7 +1,7 @@
 import type { Vec3, Surface } from '#@/src/geometry.ts';
-import { type Bounds, createBoundsIndex } from '#@/src/model/bounds.ts';
-import { supportSnapshot } from '#@/src/model/support-snapshot.ts';
-import { projectPoint } from '#@/src/model/support.ts';
+import { createOrdinalBoundsIndex } from '#@/src/model/bounds.ts';
+import { isSupportVertex, supportVertices } from '#@/src/model/support-snapshot.ts';
+import { verticalFanHeight } from '#@/src/model/support.ts';
 import type { InteractionGoal } from '#@/src/movement.ts';
 import type { Route } from '#@/src/route.ts';
 
@@ -32,14 +32,6 @@ const distanceSquared = (a: readonly number[], b: readonly number[]) => {
   for (let axis = 0; axis < a.length; axis++) squared += (a[axis] - b[axis]) ** 2;
   return squared;
 };
-const boundsDistanceSquared = (bounds: Bounds, target: Vec3) => {
-  let squared = 0;
-  for (let axis = 0; axis < 3; axis++) {
-    const distance = Math.max(bounds.min[axis] - target[axis], 0, target[axis] - bounds.max[axis]);
-    squared += distance * distance;
-  }
-  return squared;
-};
 // Keep dot-product accumulation in the original coordinate order. Scalar
 // intermediates avoid transient vectors during repeated landing projections.
 const dot3 = (ax: number, ay: number, az: number, bx: number, by: number, bz: number) => {
@@ -49,10 +41,22 @@ const dot3 = (ax: number, ay: number, az: number, bx: number, by: number, bz: nu
   sum += az * bz;
   return sum;
 };
-const closestOnEdge = (target: Vec3, a: Vec3, b: Vec3): Vec3 => {
-  const dx = b[0] - a[0],
-    dy = b[1] - a[1],
-    dz = b[2] - a[2];
+const copyPoint = (to: Vec3, from: Vec3) => {
+  to[0] = from[0];
+  to[1] = from[1];
+  to[2] = from[2];
+};
+const closestEdge = (
+  target: Vec3,
+  a: ArrayLike<number>,
+  ai: number,
+  b: ArrayLike<number>,
+  bi: number,
+  out: Vec3,
+) => {
+  const dx = b[bi] - a[ai],
+    dy = b[bi + 1] - a[ai + 1],
+    dz = b[bi + 2] - a[ai + 2];
   const lengthSquared = dot3(dx, dy, dz, dx, dy, dz);
   const fraction =
     lengthSquared === 0
@@ -61,21 +65,34 @@ const closestOnEdge = (target: Vec3, a: Vec3, b: Vec3): Vec3 => {
           0,
           Math.min(
             1,
-            dot3(target[0] - a[0], target[1] - a[1], target[2] - a[2], dx, dy, dz) / lengthSquared,
+            dot3(target[0] - a[ai], target[1] - a[ai + 1], target[2] - a[ai + 2], dx, dy, dz) /
+              lengthSquared,
           ),
         );
-  return [a[0] + fraction * dx, a[1] + fraction * dy, a[2] + fraction * dz];
+  out[0] = a[ai] + fraction * dx;
+  out[1] = a[ai + 1] + fraction * dy;
+  out[2] = a[ai + 2] + fraction * dz;
 };
-const closestOnTriangle = (target: Vec3, a: Vec3, b: Vec3, c: Vec3): Vec3 => {
-  const abx = b[0] - a[0],
-    aby = b[1] - a[1],
-    abz = b[2] - a[2];
-  const acx = c[0] - a[0],
-    acy = c[1] - a[1],
-    acz = c[2] - a[2];
-  const atx = target[0] - a[0],
-    aty = target[1] - a[1],
-    atz = target[2] - a[2];
+const closestTriangle = (
+  target: Vec3,
+  a: ArrayLike<number>,
+  ai: number,
+  b: ArrayLike<number>,
+  bi: number,
+  c: ArrayLike<number>,
+  ci: number,
+  out: Vec3,
+  edge: Vec3,
+) => {
+  const abx = b[bi] - a[ai],
+    aby = b[bi + 1] - a[ai + 1],
+    abz = b[bi + 2] - a[ai + 2];
+  const acx = c[ci] - a[ai],
+    acy = c[ci + 1] - a[ai + 1],
+    acz = c[ci + 2] - a[ai + 2];
+  const atx = target[0] - a[ai],
+    aty = target[1] - a[ai + 1],
+    atz = target[2] - a[ai + 2];
   const aa = dot3(abx, aby, abz, abx, aby, abz),
     bb = dot3(acx, acy, acz, acx, acy, acz);
   const cross = dot3(abx, aby, abz, acx, acy, acz);
@@ -86,20 +103,22 @@ const closestOnTriangle = (target: Vec3, a: Vec3, b: Vec3, c: Vec3): Vec3 => {
     const u = (bb * atab - cross * atac) / determinant;
     const v = (aa * atac - cross * atab) / determinant;
     if (u >= 0 && v >= 0 && u + v <= 1) {
-      return [a[0] + u * abx + v * acx, a[1] + u * aby + v * acy, a[2] + u * abz + v * acz];
+      out[0] = a[ai] + u * abx + v * acx;
+      out[1] = a[ai + 1] + u * aby + v * acy;
+      out[2] = a[ai + 2] + u * abz + v * acz;
+      return;
     }
   }
-  let best = closestOnEdge(target, a, b),
-    squared = distanceSquared(target, best);
-  const second = closestOnEdge(target, b, c),
-    secondSquared = distanceSquared(target, second);
+  closestEdge(target, a, ai, b, bi, out);
+  let squared = distanceSquared(target, out);
+  closestEdge(target, b, bi, c, ci, edge);
+  const secondSquared = distanceSquared(target, edge);
   if (secondSquared < squared) {
-    best = second;
+    copyPoint(out, edge);
     squared = secondSquared;
   }
-  const third = closestOnEdge(target, c, a);
-  if (distanceSquared(target, third) < squared) best = third;
-  return best;
+  closestEdge(target, c, ci, a, ai, edge);
+  if (distanceSquared(target, edge) < squared) copyPoint(out, edge);
 };
 const clipPolygon = (vertices: Vec3[], signedDistance: Plane): Vec3[] => {
   const output: Vec3[] = [];
@@ -130,13 +149,15 @@ export const closestOnSurface = (
   let best: Vec3 | null = null,
     shortest = Infinity;
   const a = surface.vertices[0];
+  const edge: Vec3 = [0, 0, 0];
   for (let fan = 1; fan + 1 < surface.vertices.length; fan++) {
     const b = surface.vertices[fan],
       c = surface.vertices[fan + 1];
     const areaXZ = (b[0] - a[0]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[0] - a[0]);
     if (Math.abs(areaXZ) < 1e-10) continue;
     if (!planes.length) {
-      const point = closestOnTriangle(target, a, b, c);
+      const point: Vec3 = [0, 0, 0];
+      closestTriangle(target, a, 0, b, 0, c, 0, point, edge);
       const squared = distanceSquared(target, point);
       if (squared < shortest) {
         best = point;
@@ -149,10 +170,24 @@ export const closestOnSurface = (
     if (!polygon.length) continue;
     const candidates = [];
     if (polygon.length < 3) {
-      candidates.push(closestOnEdge(target, polygon[0], polygon.at(-1)!));
+      const point: Vec3 = [0, 0, 0];
+      closestEdge(target, polygon[0], 0, polygon.at(-1)!, 0, point);
+      candidates.push(point);
     } else {
       for (let index = 1; index + 1 < polygon.length; index++) {
-        candidates.push(closestOnTriangle(target, polygon[0], polygon[index], polygon[index + 1]));
+        const point: Vec3 = [0, 0, 0];
+        closestTriangle(
+          target,
+          polygon[0],
+          0,
+          polygon[index],
+          0,
+          polygon[index + 1],
+          0,
+          point,
+          edge,
+        );
+        candidates.push(point);
       }
     }
     for (const point of candidates) {
@@ -165,6 +200,49 @@ export const closestOnSurface = (
   }
   return best && { surface: surface.id, position: best, distance: Math.sqrt(shortest) };
 };
+function snapshotSurfaces(surfaces: Surface[]) {
+  if (!Array.isArray(surfaces)) throw new Error('Invalid goal surfaces');
+  const ids: string[] = [];
+  const seen = new Set<string>();
+  const vertOffsets = new Uint32Array(surfaces.length + 1);
+  let vertices = 0;
+  for (let ordinal = 0; ordinal < surfaces.length; ordinal++) {
+    const surface = surfaces[ordinal];
+    const points = supportVertices(surface);
+    if (!points || seen.has(surface.id)) throw new Error('Invalid goal surface');
+    for (const point of points) {
+      if (!isSupportVertex(point)) throw new Error('Invalid goal surface');
+    }
+    ids.push(surface.id);
+    seen.add(surface.id);
+    vertices += points.length;
+    vertOffsets[ordinal + 1] = vertices;
+  }
+
+  const coords = new Float64Array(vertices * 3);
+  const boxes = new Float64Array(ids.length * 6);
+  let coordinateScale = 1;
+  for (let ordinal = 0; ordinal < ids.length; ordinal++) {
+    const box = ordinal * 6;
+    boxes[box] = boxes[box + 1] = boxes[box + 2] = Infinity;
+    boxes[box + 3] = boxes[box + 4] = boxes[box + 5] = -Infinity;
+    const points = surfaces[ordinal].vertices;
+    for (let vertex = 0; vertex < points.length; vertex++) {
+      const point = points[vertex];
+      const offset = (vertOffsets[ordinal] + vertex) * 3;
+      for (let axis = 0; axis < 3; axis++) {
+        const value = point[axis];
+        coords[offset + axis] = value;
+        boxes[box + axis] = Math.min(boxes[box + axis], value);
+        boxes[box + axis + 3] = Math.max(boxes[box + axis + 3], value);
+      }
+    }
+    for (let axis = 0; axis < 6; axis++)
+      coordinateScale = Math.max(coordinateScale, Math.abs(boxes[box + axis]));
+  }
+  return { ids, vertOffsets, coords, boxes, coordinateScale };
+}
+
 /** Prepare repeated foot-position or interaction-region goal queries.
  * Surfaces must be selected convex ground polygons for one scene, state and body.
  * The index owns a snapshot. Rebuild it when the ground changes.
@@ -179,22 +257,17 @@ export const closestOnSurface = (
  * Callers must check reachability, wall state and interaction line of sight.
  */
 export function createGoalProjector(surfaces: Surface[]): GoalProjector {
-  if (!Array.isArray(surfaces)) throw new Error('Invalid goal surfaces');
-  const ids = new Set<string>();
-  let coordinateScale = 1;
-  const snapshot = surfaces.map((surface, index) => {
-    const owned = supportSnapshot(surface);
-    if (!owned || ids.has(owned.id)) throw new Error('Invalid goal surface');
-    ids.add(owned.id);
-    for (let axis = 0; axis < 3; axis++)
-      coordinateScale = Math.max(
-        coordinateScale,
-        Math.abs(owned.min[axis]),
-        Math.abs(owned.max[axis]),
-      );
-    return { id: owned.id, vertices: owned.vertices, index, min: owned.min, max: owned.max };
-  });
-  const query = createBoundsIndex(snapshot);
+  return projectorFromSnapshot(snapshotSurfaces(surfaces));
+}
+
+function projectorFromSnapshot({
+  ids,
+  vertOffsets,
+  coords,
+  boxes,
+  coordinateScale,
+}: ReturnType<typeof snapshotSurfaces>): GoalProjector {
+  const query = createOrdinalBoundsIndex(boxes);
   // Repeated action endpoints share only immutable geometric projection proofs.
   // Keep ownership separate from returned witnesses and bound arbitrary query history.
   const projections = new Map<string, GoalProjection[]>();
@@ -250,34 +323,71 @@ export function createGoalProjector(surfaces: Surface[]): GoalProjector {
         min: [target[0], target[1] - maxVertical!, target[2]],
         max: [target[0], target[1] + maxVertical!, target[2]],
       };
-      const candidates = [...query(bounds)].sort((a, b) => a.index - b.index);
-      let best: GoalProjection | null = null;
-      for (const surface of candidates) {
-        const projected = projectPoint([surface], target, { maxVertical: maxVertical! });
-        if (!projected) continue;
-        const distance = Math.abs(projected.position[1] - target[1]);
-        if (!best || distance < best.distance) best = { ...projected, distance };
-      }
-      return remember(key, best ? [best] : []);
+      let bestIndex = Infinity,
+        bestDistance = Infinity,
+        bestY = NaN;
+      query.forEach(bounds, (ordinal) => {
+        const a = vertOffsets[ordinal] * 3;
+        const end = vertOffsets[ordinal + 1] * 3;
+        for (let b = a + 3; b + 3 < end; b += 3) {
+          const y = verticalFanHeight(
+            target[0],
+            target[2],
+            coords[a],
+            coords[a + 1],
+            coords[a + 2],
+            coords[b],
+            coords[b + 1],
+            coords[b + 2],
+            coords[b + 3],
+            coords[b + 4],
+            coords[b + 5],
+          );
+          const distance = Math.abs(y - target[1]);
+          if (
+            distance <= maxVertical! &&
+            (distance < bestDistance || (distance === bestDistance && ordinal < bestIndex))
+          ) {
+            bestIndex = ordinal;
+            bestDistance = distance;
+            bestY = y;
+          }
+        }
+      });
+      return remember(
+        key,
+        bestIndex === Infinity
+          ? []
+          : [
+              {
+                surface: ids[bestIndex],
+                position: [target[0], bestY, target[2]],
+                distance: bestDistance,
+              },
+            ],
+      );
     }
     const clip = interactionClip(interaction);
     if (cached) return copy(cached);
-    const radius = interaction.radius;
-    const bounds = {
-      min: target.map((value) => value - radius),
-      max: target.map((value) => value + radius),
-    };
-    if (interaction.maxVertical !== undefined) {
-      bounds.min[1] = Math.max(bounds.min[1], target[1] - interaction.maxVertical);
-      bounds.max[1] = Math.min(bounds.max[1], target[1] + interaction.maxVertical);
-    }
+    const { radius } = interaction;
+    const bounds = interactionBounds(target, interaction);
     const candidates: (GoalProjection & { index: number })[] = [];
-    const planes = planesFromClip(target, clip);
-    for (const surface of query(bounds, target, radius)) {
-      const candidate = closestOnSurface(surface, target, planes);
-      if (candidate && candidate.distance <= radius)
-        candidates.push({ ...candidate, index: surface.index });
-    }
+    const closest = surfaceClipper(target, clip);
+    query.forEach(
+      bounds,
+      (ordinal) => {
+        const candidate = closest(
+          ids[ordinal],
+          coords,
+          vertOffsets[ordinal] * 3,
+          vertOffsets[ordinal + 1] * 3,
+        );
+        if (candidate && candidate.distance <= radius)
+          candidates.push({ ...candidate, index: ordinal });
+      },
+      target,
+      radius,
+    );
     candidates.sort((a, b) => a.distance - b.distance || a.index - b.index);
     return remember(
       key,
@@ -292,42 +402,35 @@ export function createGoalProjector(surfaces: Surface[]): GoalProjector {
     const key = projectionKey(target, options);
     const cached = closestProjections.get(key);
     if (cached !== undefined) return cached ? copyValue(cached) : undefined;
-    const radius = interaction.radius;
-    const bounds = {
-      min: target.map((value) => value - radius),
-      max: target.map((value) => value + radius),
-    };
-    if (interaction.maxVertical !== undefined) {
-      bounds.min[1] = Math.max(bounds.min[1], target[1] - interaction.maxVertical);
-      bounds.max[1] = Math.min(bounds.max[1], target[1] + interaction.maxVertical);
-    }
-    const planes = planesFromClip(target, clip);
+    const { radius } = interaction;
+    const bounds = interactionBounds(target, interaction);
+    const closest = surfaceClipper(target, clip);
     let best: GoalProjection | undefined;
     let bestIndex = Infinity;
     // Clipping and triangle projection can round a witness just beyond its box.
     // Use the entire snapshot's scale so even later boxes with larger coordinates
     // retain that allowance. This relaxes pruning only, never witness acceptance.
     const roundoff = 128 * Number.EPSILON * Math.max(coordinateScale, ...target.map(Math.abs));
-    const touches = (candidate: Bounds) =>
-      boundsDistanceSquared(candidate, target) <= radius * radius;
-    for (const surface of query.nearest(bounds, target, touches)) {
-      if (best && Math.sqrt(boundsDistanceSquared(surface, target)) > best.distance + roundoff)
-        break;
-      const candidate = closestOnSurface(surface, target, planes);
-      if (!candidate || !(candidate.distance <= radius)) continue;
+    query.nearest(bounds, target, radius, (ordinal, squared) => {
+      if (best && Math.sqrt(squared) > best.distance + roundoff) return false;
+      const candidate = closest(
+        ids[ordinal],
+        coords,
+        vertOffsets[ordinal] * 3,
+        vertOffsets[ordinal + 1] * 3,
+      );
       if (
-        !best ||
-        candidate.distance < best.distance ||
-        (candidate.distance === best.distance && surface.index < bestIndex)
+        candidate &&
+        candidate.distance <= radius &&
+        (!best ||
+          candidate.distance < best.distance ||
+          (candidate.distance === best.distance && ordinal < bestIndex))
       ) {
-        best = {
-          surface: candidate.surface,
-          position: candidate.position,
-          distance: candidate.distance,
-        };
-        bestIndex = surface.index;
+        best = candidate;
+        bestIndex = ordinal;
       }
-    }
+      return true;
+    });
     if (closestProjections.size >= 4096) {
       closestProjections.delete(closestOrder[closestHead]!);
       closestOrder[closestHead] = undefined;
@@ -348,7 +451,9 @@ export function projectGoal(
   return createGoalProjector(surfaces)(target, options);
 }
 function interactionPlanes(target: Vec3, interaction: InteractionGoal): Plane[] {
-  return planesFromClip(target, interactionClip(interaction));
+  return planesFromClip(target, interactionClip(interaction)).map(
+    (plane) => (point) => plane(...point),
+  );
 }
 function interactionClip(interaction: InteractionGoal): GoalClip {
   if (
@@ -381,27 +486,128 @@ function interactionClip(interaction: InteractionGoal): GoalClip {
   }
   return clip;
 }
-function planesFromClip(target: Vec3, clip: GoalClip): Plane[] {
-  const planes: Plane[] = [];
+type ScalarPlane = (x: number, y: number, z: number) => number;
+function planesFromClip(target: Vec3, clip: GoalClip): ScalarPlane[] {
+  const planes: ScalarPlane[] = [];
   if (clip.maxVertical !== undefined) {
     planes.push(
-      (point: Vec3) => point[1] - target[1] + clip.maxVertical!,
-      (point: Vec3) => target[1] + clip.maxVertical! - point[1],
+      (_x, y) => y - target[1] + clip.maxVertical!,
+      (_x, y) => target[1] + clip.maxVertical! - y,
     );
   }
   if (clip.facing) {
     const { forwardX, forwardZ, sine, cosine } = clip.facing;
-    const forward = (point: Vec3) =>
-      (point[0] - target[0]) * forwardX + (point[2] - target[2]) * forwardZ;
-    const side = (point: Vec3) =>
-      (point[0] - target[0]) * forwardZ - (point[2] - target[2]) * forwardX;
+    const forward = (x: number, z: number) =>
+      (x - target[0]) * forwardX + (z - target[2]) * forwardZ;
+    const side = (x: number, z: number) => (x - target[0]) * forwardZ - (z - target[2]) * forwardX;
     planes.push(
-      (point: Vec3) => forward(point) * sine + side(point) * cosine,
-      (point: Vec3) => forward(point) * sine - side(point) * cosine,
+      (x, _y, z) => forward(x, z) * sine + side(x, z) * cosine,
+      (x, _y, z) => forward(x, z) * sine - side(x, z) * cosine,
     );
   }
   return planes;
 }
+function interactionBounds(target: Vec3, { radius, maxVertical }: InteractionGoal) {
+  const min = target.map((value) => value - radius);
+  const max = target.map((value) => value + radius);
+  if (maxVertical !== undefined) {
+    min[1] = Math.max(min[1], target[1] - maxVertical);
+    max[1] = Math.min(max[1], target[1] + maxVertical);
+  }
+  return { min, max };
+}
+
+function clipFan(input: Float64Array, length: number, output: Float64Array, plane: ScalarPlane) {
+  let written = 0;
+  for (let a = 0; a < length; a += 3) {
+    const b = (a + 3) % length;
+    const ax = input[a],
+      ay = input[a + 1],
+      az = input[a + 2];
+    const bx = input[b],
+      by = input[b + 1],
+      bz = input[b + 2];
+    const aDistance = plane(ax, ay, az);
+    const bDistance = plane(bx, by, bz);
+    const aInside = aDistance >= 0;
+    const bInside = bDistance >= 0;
+    if (aInside) {
+      output[written++] = ax;
+      output[written++] = ay;
+      output[written++] = az;
+    }
+    if (aInside !== bInside) {
+      const fraction = aDistance / (aDistance - bDistance);
+      output[written++] = ax + fraction * (bx - ax);
+      output[written++] = ay + fraction * (by - ay);
+      output[written++] = az + fraction * (bz - az);
+    }
+  }
+  return written;
+}
+
+function surfaceClipper(target: Vec3, clip: GoalClip) {
+  const planes = planesFromClip(target, clip);
+  // Each of up to four planes can emit at most two vertices per input vertex.
+  const capacity = 9 * 2 ** planes.length;
+  const first = planes.length ? new Float64Array(capacity) : undefined;
+  const second = planes.length ? new Float64Array(capacity) : undefined;
+  const point: Vec3 = [0, 0, 0],
+    edge: Vec3 = [0, 0, 0],
+    best: Vec3 = [0, 0, 0];
+  return (surface: string, coords: Float64Array, a: number, end: number): GoalProjection | null => {
+    let shortest = Infinity;
+    for (let b = a + 3; b + 3 < end; b += 3) {
+      const c = b + 3;
+      const areaXZ =
+        (coords[b] - coords[a]) * (coords[c + 2] - coords[a + 2]) -
+        (coords[b + 2] - coords[a + 2]) * (coords[c] - coords[a]);
+      if (Math.abs(areaXZ) < 1e-10) continue;
+      if (!first || !second) {
+        closestTriangle(target, coords, a, coords, b, coords, c, point, edge);
+      } else {
+        for (let axis = 0; axis < 3; axis++) {
+          first[axis] = coords[a + axis];
+          first[axis + 3] = coords[b + axis];
+          first[axis + 6] = coords[c + axis];
+        }
+        let polygon = first,
+          output = second,
+          length = 9;
+        for (const plane of planes) {
+          length = clipFan(polygon, length, output, plane);
+          const previous = polygon;
+          polygon = output;
+          output = previous;
+          if (!length) break;
+        }
+        if (!length) continue;
+        if (length < 9) {
+          closestEdge(target, polygon, 0, polygon, length - 3, point);
+        } else {
+          for (let index = 3; index + 3 < length; index += 3) {
+            closestTriangle(target, polygon, 0, polygon, index, polygon, index + 3, point, edge);
+            const squared = distanceSquared(target, point);
+            if (squared < shortest) {
+              shortest = squared;
+              copyPoint(best, point);
+            }
+          }
+          continue;
+        }
+      }
+      const squared = distanceSquared(target, point);
+      if (squared < shortest) {
+        shortest = squared;
+        copyPoint(best, point);
+      }
+    }
+    return shortest < Infinity
+      ? { surface, position: [...best], distance: Math.sqrt(shortest) }
+      : null;
+  };
+}
+
 /** Locate a hit along a supplied piecewise-linear trajectory. The caller owns
  * collision validation and safe termination after the hit. */
 export function findGoalHit(

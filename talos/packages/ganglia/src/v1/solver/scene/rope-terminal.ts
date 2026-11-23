@@ -16,7 +16,7 @@ import type {
 } from '#@/src/solver/resources.ts';
 import { jumpDuration } from '#@/src/v1/motion/jumps.ts';
 import { findGoalFlights } from '#@/src/v1/route/airborne-goal.ts';
-import { createGroundPlanner } from '#@/src/v1/route/ground.ts';
+import { createScopedGroundPlanner } from '#@/src/v1/route/ground.ts';
 import { planJumpRoute, type JumpRouteOptions } from '#@/src/v1/route/jump-planner.ts';
 import { createCandidatePlanner } from '#@/src/v1/search/candidate-planner.ts';
 import { createDeviceConnections } from '#@/src/v1/solver/physical/devices.ts';
@@ -135,7 +135,7 @@ function movement(
     locomotion: input.locomotion,
     maxVertical: 0.5,
   };
-  const planner = createGroundPlanner(surfaces, options);
+  const planner = createScopedGroundPlanner(surfaces, options);
   let min = Infinity,
     max = -Infinity;
   for (const surface of surfaces)
@@ -165,6 +165,31 @@ function movement(
 
 function waypoints(points: Vec3[]) {
   return points.slice(1, -1).slice(0, 128);
+}
+
+function findGoalContact(
+  terminal: PhysicalSnapshot,
+  config: GangliaV1Config,
+  starts: GroundArrival[],
+  goal: Vec3,
+  interaction: NonNullable<RouteQuery['interaction']>,
+  projection: GoalProjector,
+  prepCache?: AirbornePrepCache,
+): Vec3 | undefined {
+  const local = movement(terminal, config, prepCache);
+  if (!local) return;
+  const terminalFlights = findGoalFlights(local.surfaces, local.world, starts, goal, {
+    ...local.params,
+    interaction,
+    maxCandidates: Math.min(local.params.maxCandidates, 1400),
+  });
+  return terminalFlights.candidates
+    .map((flight) => ({
+      point: flight.start.position,
+      projection: projection.closest(flight.start.position, { interaction: { radius: 0.5 } }),
+    }))
+    .filter((flight) => flight.projection)
+    .sort((a, b) => a.projection!.distance - b.projection!.distance)[0]?.point;
 }
 
 /** Probe a source rope as an intermediate destination before committing the
@@ -208,20 +233,15 @@ export async function discoverRopeTerminal<Source, Job extends WindowJob>(
     .sort((a, b) => distance(a.top.position, query.goal) - distance(b.top.position, query.goal))
     .slice(0, config.maxAttempts);
   if (!ropes.length) return;
-  const local = movement(terminal, config, prepCache);
-  if (!local) return;
-  const terminalFlights = findGoalFlights(local.surfaces, local.world, starts, query.goal, {
-    ...local.params,
+  const goalContact = findGoalContact(
+    terminal,
+    config,
+    starts,
+    query.goal,
     interaction,
-    maxCandidates: Math.min(local.params.maxCandidates, 1400),
-  });
-  const goalContact = terminalFlights.candidates
-    .map((flight) => ({
-      point: flight.start.position,
-      projection: projection.closest(flight.start.position, { interaction: { radius: 0.5 } }),
-    }))
-    .filter((flight) => flight.projection)
-    .sort((a, b) => a.projection!.distance - b.projection!.distance)[0];
+    projection,
+    prepCache,
+  );
   if (!goalContact) return;
   await checkpoint(options.signal);
   // Localize only the proposal graph. Physical windows and proofs are still
@@ -253,7 +273,7 @@ export async function discoverRopeTerminal<Source, Job extends WindowJob>(
       const head = coarse.plan(candidates, bottom.position, { interaction: bottom.interaction });
       const tail = coarse.plan(
         [{ id: pair.top, position: exit.position, cost: 0, state: 'available' }],
-        goalContact.point,
+        goalContact,
         { interaction: { radius: 0.5 } },
       );
       return head.status === 'candidate' && tail.status === 'candidate'
@@ -316,7 +336,7 @@ export async function discoverRopeTerminal<Source, Job extends WindowJob>(
           (entry) => entry.bottom === pair.bottom && entry.top === pair.top,
         ),
       },
-      { ...params, surfaces, world },
+      { ...params, surfaces, world, project: planner.project },
     ).connections.find((edge) => edge.points.every((p) => covered(p, p)));
     const start = planner.project(arrival.position, { maxVertical: params.maxVertical })[0];
     if (!rope || !start || !covered(start.position, start.position)) continue;

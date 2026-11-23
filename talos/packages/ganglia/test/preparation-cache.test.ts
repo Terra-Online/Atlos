@@ -285,3 +285,26 @@ test('an oversized graph remains usable without displacing the retained-memory b
   assert.equal((await cache.memo('ground', 'small', () => 'wrong')).value, 'small');
   assert.equal(cache.stats().resident.plannerSurfaces, 10);
 });
+
+test('obsolete moving and refinement builds cannot restore released slots in the same wall view', async () => {
+  const cache = createPhysicalCache();
+  await cache.memo('ground', 'raw', () => 'ground');
+  const scope = { view: 'raw' };
+  const pending = (['moving', 'refinement'] as const).map((slot) =>
+    cache.memo(
+      slot,
+      'old',
+      async () => {
+        await Promise.resolve();
+        return 'old';
+      },
+      scope,
+    ),
+  );
+  cache.release('moving');
+  for (const result of await Promise.all(pending)) assert.equal(result.value, 'old');
+  assert.equal(cache.stats().resident.moving, 0);
+  assert.equal(cache.stats().resident.refinement, 0);
+  assert.equal((await cache.memo('moving', 'old', () => 'new', scope)).value, 'new');
+  assert.equal((await cache.memo('refinement', 'old', () => 'new', scope)).value, 'new');
+});

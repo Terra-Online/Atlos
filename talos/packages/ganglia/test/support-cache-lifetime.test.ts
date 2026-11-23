@@ -7,7 +7,13 @@ import { gangliaV1Defaults } from '#@/src/solver/ganglia-v1.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 import { verticalProjectionCandidates } from '#@/src/v1/geo/support-projector.ts';
 import { landingCandidates } from '#@/src/v1/motion/landings.ts';
+import {
+  createGroundPlanner,
+  createScopedGroundPlanner,
+  groundPreparation,
+} from '#@/src/v1/route/ground.ts';
 import { createPhysicalPreparation } from '#@/src/v1/solver/physical/host.ts';
+import { createPhysicalCache } from '#@/src/v1/solver/physical/preparation.ts';
 import { preparePhysicalSolver } from '#@/src/v1/solver/physical/prepared.ts';
 import { releaseSupportCaches } from '#@/src/v1/solver/physical/support-cache.ts';
 import { physicalWork } from '#@/src/v1/solver/physical/work.ts';
@@ -161,4 +167,43 @@ test('retiring a failed window load permits a later valid load', async () => {
   const rebuilt = await cache.get('a', async () => region(0).ground);
   assert.equal(rebuilt.project([1, 0, 1], { maxVertical: 0.5 })[0].surface, 'floor');
   cache.clear();
+});
+
+test('probes cannot publish topology or evict the public wall-independent planner', () => {
+  const { surfaces, options } = region(0).ground;
+  const probe = createScopedGroundPlanner(surfaces, options);
+  const formal = createGroundPlanner(surfaces, options);
+  assert.notEqual(formal.project, probe.project);
+  const nextProbe = createScopedGroundPlanner(surfaces, options);
+  assert.notEqual(nextProbe.project, formal.project);
+  assert.equal(createGroundPlanner(surfaces, options).project, formal.project);
+  releaseSupportCaches(surfaces);
+});
+
+test('resident physical ground views lend topology until the last slot retires', async () => {
+  const { surfaces, options } = region(0).ground;
+  const cache = createPhysicalCache();
+  const build = (key: string) =>
+    cache.memo('ground', key, (reserve, topologyFor) => {
+      const shared = topologyFor?.(surfaces);
+      // Reserving the rounded view evicts the old one, including its planner.
+      reserve!(300_000);
+      return createScopedGroundPlanner(surfaces, options, shared);
+    });
+  cache.begin('first');
+  const raw = (await build('raw')).value;
+  const rounded = (await build('rounded')).value;
+  assert.equal(cache.stats().resident.ground, 1);
+  assert.equal(raw.project, rounded.project);
+  assert.equal(groundPreparation(raw)!.graph, groundPreparation(rounded)!.graph);
+  assert.equal(groundPreparation(raw)!.portals, groundPreparation(rounded)!.portals);
+  assert.notEqual(createGroundPlanner(surfaces, options).project, raw.project);
+  cache.release('ground');
+  assert.notEqual((await build('raw')).value.project, raw.project);
+  cache.begin('second');
+  const afterGeneration = (await build('raw')).value;
+  cache.clear();
+  assert.notEqual((await build('raw')).value.project, afterGeneration.project);
+  cache.clear();
+  releaseSupportCaches(surfaces);
 });
