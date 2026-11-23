@@ -18,6 +18,8 @@ pub struct World {
     ground_index: Arc<Index>,
     collision: Arc<Vec<[Point; 3]>>,
     collision_index: Arc<Index>,
+    static_boxes: Arc<Vec<[Point; 8]>>,
+    static_box_index: Arc<Index>,
     moving: Arc<Vec<[Point; 3]>>,
     moving_index: Arc<Index>,
     circular: Arc<Vec<[Point; 3]>>,
@@ -36,6 +38,53 @@ pub struct World {
 struct TileCoverage {
     span: f64,
     tiles: HashSet<(i64, i64)>,
+}
+
+// Exported primitive boxes include their entire solid volume. A triangle-only
+// sweep can otherwise accept a stationary capsule enclosed by their faces.
+fn static_boxes(collision: &Collision) -> Vec<[Point; 8]> {
+    collision
+        .box_starts
+        .iter()
+        .filter_map(|first| {
+            let start = first.checked_mul(3)?;
+            let indices = collision.indices.get(start..start.checked_add(36)?)?;
+            let mut vertices = indices.to_vec();
+            vertices.sort_unstable();
+            vertices.dedup();
+            if vertices.len() != 8 {
+                return None;
+            }
+            // The collision export lists corners around each Z face. Rearrange
+            // them so each bit corresponds to an edge from the first corner.
+            let body = [0, 1, 3, 2, 4, 5, 7, 6].map(|i| {
+                let at = vertices[i] * 3;
+                std::array::from_fn(|j| collision.positions[at + j])
+            });
+            let axes = [1, 2, 4].map(|i| sub(body[i], body[0]));
+            let lengths = axes.map(|a| dot(a, a).sqrt());
+            if lengths.into_iter().any(|len| len < 1e-6)
+                || [(0, 1), (0, 2), (1, 2)]
+                    .into_iter()
+                    .any(|(i, j)| dot(axes[i], axes[j]).abs() > 1e-6 * lengths[i] * lengths[j])
+            {
+                return None;
+            }
+            for (bits, &p) in body.iter().enumerate() {
+                let expected = axes.iter().enumerate().fold(body[0], |old, (i, &axis)| {
+                    if bits & (1 << i) == 0 {
+                        old
+                    } else {
+                        add(old, axis)
+                    }
+                });
+                if distance(p, expected) > 1e-5 {
+                    return None;
+                }
+            }
+            Some(body)
+        })
+        .collect()
 }
 
 impl World {
@@ -175,6 +224,14 @@ impl World {
                 })
             })
             .collect();
+        let static_boxes = static_boxes(&physical.collision);
+        let static_box_index = Index::new(
+            &static_boxes
+                .iter()
+                .map(|body| Bounds::points(body))
+                .collect::<Vec<_>>(),
+        );
+        physical.collision.box_starts = Vec::new();
         // The spatial index owns decoded triangles; retaining the serialized
         // buffers here would keep a second full collision mesh alive.
         physical.collision.positions = Vec::new();
@@ -196,6 +253,8 @@ impl World {
             ground_index: Arc::new(ground_index),
             collision: Arc::new(collision),
             collision_index: Arc::new(collision_index),
+            static_boxes: Arc::new(static_boxes),
+            static_box_index: Arc::new(static_box_index),
             moving: Arc::new(moving),
             moving_index: Arc::new(moving_index),
             circular: Arc::new(circular),
@@ -489,7 +548,8 @@ impl World {
             add(b, [0., profile.height - profile.radius, 0.]),
             add(b, [0., profile.radius, 0.]),
         ];
-        let bounds = Bounds::points(&axis).expand(radius);
+        let axis_bounds = Bounds::points(&axis);
+        let bounds = axis_bounds.expand(radius);
         if let Some(coverage) = self
             .physical
             .ground
@@ -518,6 +578,12 @@ impl World {
                     }
                 }
             }
+        }
+        if self.static_box_index.query(axis_bounds, |i| {
+            axis.iter()
+                .any(|p| crate::placement::contains(self.static_boxes[i], *p))
+        }) {
+            return true;
         }
         if self.box_body_index.query(bounds, |i| {
             axis.iter()

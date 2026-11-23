@@ -75,13 +75,16 @@ export async function prepareGangliaV2(
   for (let start = 0; start < physical.ground.surfaces.length; start += 1024) {
     surfaces.push(encode(physical.ground.surfaces.slice(start, start + 1024)));
   }
-  const { positions, indices } = physical.collision;
+  const { positions, indices, records } = physical.collision;
+  const boxStarts = records
+    ?.filter(({ kind, count }) => kind === 'box' && count === 12)
+    .map(({ first }) => first);
   let engine: NativeEngine | undefined = new NativeEngine(
     encode({
       physical: {
         ...physical,
         ground: { ...physical.ground, surfaces: [] },
-        collision: { positions: [], indices: [] },
+        collision: { positions: [], indices: [], boxStarts },
       },
       marks,
       anchors,
