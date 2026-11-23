@@ -67,6 +67,24 @@ fn bodies(support: &FollowingSupport, position: Point) -> Option<Vec<Body>> {
         .map(|b| source_body(b).map(|b| b.map(|p| add(p, delta))))
         .collect()
 }
+
+pub(super) fn placed_bounds(physical: &Physical, placements: &[Placement]) -> Vec<Bounds> {
+    let Some(facts) = &physical.devices else {
+        return Vec::new();
+    };
+    placements
+        .iter()
+        .filter_map(|placement| {
+            let support = facts
+                .following_supports
+                .iter()
+                .find(|s| s.id == placement.device)?;
+            bodies(support, placement.position)
+        })
+        .flatten()
+        .map(|body| Bounds::points(&body))
+        .collect()
+}
 fn faces(body: Body) -> Vec<[Point; 4]> {
     let center = scale(add(body[0], body[7]), 0.5);
     FACES

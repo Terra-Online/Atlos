@@ -73,11 +73,6 @@ export const anchors: Record<string, { position: Vec3; source: string }[]> = {
   ],
 };
 
-const enclosedStreetBoxRoof: FlightRegionLink['from'] = {
-  min: [-442, 93.9, -538.7],
-  max: [-440, 94.2, -536.7],
-};
-
 const scopeHints: Record<
   string,
   {
@@ -140,17 +135,6 @@ const scopeHints: Record<
       scenario: 'map01-034',
       scope: { min: [-608, -640], max: [-352, -416] },
       layout: [{ device: '2100390859', position: [-441, 92.51199645362794, -537.7] }],
-      // Reach the placed box from the outer street, then vault the fence.
-      flights: [
-        {
-          from: { min: [-440, 92.5, -538.6], max: [-438.7, 92.9, -536.8] },
-          to: enclosedStreetBoxRoof,
-        },
-        {
-          from: enclosedStreetBoxRoof,
-          to: { min: [-442.6, 92.5, -535.2], max: [-439.4, 92.9, -533.6] },
-        },
-      ],
       paths: [
         [
           [-439, 92.66699642285687, -530],

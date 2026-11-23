@@ -1,4 +1,6 @@
 use crate::{flight::PreparedFlight, geometry::*, region_flight, types::*, world::World};
+#[path = "bridges.rs"]
+mod bridges;
 use std::{
     collections::{BTreeMap, HashMap},
     hash::{DefaultHasher, Hash, Hasher},
@@ -104,6 +106,7 @@ pub(super) struct Backbone {
     pub preparation_ms: [f64; 4],
     pub proved_link_count: usize,
     pub region_flights: Vec<region_flight::Search>,
+    pub automatic_bridges: bridges::Discovery,
     pub terminals: Vec<(Mark, Vec<(usize, Segment)>)>,
 }
 impl Backbone {
@@ -113,6 +116,7 @@ impl Backbone {
         anchors: Vec<Point>,
         links: &[Link],
         proofs: &Proofs,
+        placements: &[Placement],
     ) -> Self {
         let profile = std::env::var_os("GANGLIA_PROFILE").is_some();
         let started = std::time::Instant::now();
@@ -168,14 +172,28 @@ impl Backbone {
                 ledges.entry(key(point, 2.)).or_insert(point);
             }
         }
+        let interior_count = interior.len();
+        let ledge_count = ledges.len();
+        let mut ledge_nodes = Vec::new();
         let mut nodes: Vec<_> = interior
             .into_values()
             .chain(ledges.into_values())
             .chain(anchors)
             .chain(world.box_contacts())
-            .filter_map(|p| world.standing(p))
-            .filter(|p| !world.blocked(*p, *p, 0.))
+            .enumerate()
+            .filter_map(|(sample, p)| {
+                let point = world.standing(p)?;
+                (!world.blocked(point, point, 0.)).then_some((sample, point))
+            })
+            .enumerate()
+            .map(|(node, (sample, point))| {
+                if (interior_count..interior_count + ledge_count).contains(&sample) {
+                    ledge_nodes.push(node);
+                }
+                point
+            })
             .collect();
+        let support_count = nodes.len();
         let samples_ms = started.elapsed().as_secs_f64() * 1000.;
         let ports_started = Instant::now();
         // Authored traversal ports are critical nodes even when lattice
@@ -339,6 +357,27 @@ impl Backbone {
             }
         });
         let edges_ms = edges_started.elapsed().as_secs_f64() * 1000.;
+        let count_before_bridges = nodes.len();
+        let automatic_bridges = bridges::discover(
+            world,
+            placements,
+            &mut nodes,
+            &mut edges,
+            &index,
+            &ledge_nodes,
+            support_count,
+        );
+        conditional.resize_with(nodes.len(), Vec::new);
+        let index = if !marks.is_empty() && nodes.len() != count_before_bridges {
+            Index::new(
+                &nodes
+                    .iter()
+                    .map(|p| Bounds::points(&[*p]))
+                    .collect::<Vec<_>>(),
+            )
+        } else {
+            index
+        };
         let terminals_started = Instant::now();
         let proved_link_count = annotated.len();
         for (from, to, actions) in annotated {
@@ -404,6 +443,7 @@ impl Backbone {
             boost_uses,
             proved_link_count,
             region_flights,
+            automatic_bridges,
             preparation_ms: [
                 samples_ms,
                 ports_ms,

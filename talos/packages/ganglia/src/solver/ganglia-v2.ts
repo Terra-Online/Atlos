@@ -47,6 +47,12 @@ export interface V2Diagnostics {
     goalPositions: number;
     goalAttachments: number;
     reachedNodes: number;
+    failureStage?:
+      | 'start-contact'
+      | 'start-attachment'
+      | 'goal-attachment'
+      | 'ordinary-connectivity'
+      | 'route-composition';
     nodesReachingGoal?: number;
     nearestReached?: Vec3[];
     nearestGaps?: { from: Vec3; to: Vec3; distance: number; action: string | null }[];

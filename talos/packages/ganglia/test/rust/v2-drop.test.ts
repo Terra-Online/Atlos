@@ -101,6 +101,35 @@ test('v2 finds a directed drop between support regions without an annotated take
   }
 });
 
+test('v2 discovers a flight across a drop during preparation', async () => {
+  const from: Vec3 = [-1, 16.005, 0];
+  const to: Vec3 = [4, 0.005, 0];
+  const solver = await prepareGangliaV2(gangliaV2Defaults, ledge(16), []);
+  try {
+    const before = solver.preparationStats();
+    const result = await solver.solve({
+      starts: [{ id: 'upper', position: from, cost: 0, state: 'available' }],
+      goal: to,
+    });
+    assert.equal(result.route.status, 'complete');
+    if (result.route.status === 'complete') {
+      assert.ok(
+        result.route.segments.some((segment) => segment.mode === 'drop' || segment.mode === 'jump'),
+      );
+    }
+
+    const reverse = await solver.solve({
+      starts: [{ id: 'lower', position: to, cost: 0, state: 'available' }],
+      goal: from,
+    });
+    assert.equal(reverse.route.status, 'no-verified-route');
+    assert.equal(reverse.diagnostics?.v2?.initialization?.failureStage, 'ordinary-connectivity');
+    assert.deepEqual(solver.preparationStats(), before);
+  } finally {
+    await solver.close();
+  }
+});
+
 test('v2 falls from a supported ledge with no jump rise and keeps the prepared backbone fixed', async () => {
   const input = ledge();
   const solver = await prepareGangliaV2(

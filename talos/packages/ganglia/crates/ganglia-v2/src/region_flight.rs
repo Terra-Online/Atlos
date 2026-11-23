@@ -14,6 +14,7 @@ pub(super) struct Search {
     landing_contacts: usize,
     candidates: usize,
     sweeps: usize,
+    attachment_rejections: usize,
     elapsed_ms: f64,
     witness: Option<Witness>,
 }
@@ -72,7 +73,19 @@ fn contacts(world: &World, bounds: Bounds) -> Vec<Point> {
 }
 
 pub(super) fn find(world: &World, from_bounds: Bounds, to: Bounds) -> (Option<Segment>, Search) {
+    let (action, search) = find_attached(world, from_bounds, to, |_| Some(()));
+    (action.map(|(action, ())| action), search)
+}
+
+pub(super) fn find_attached<T>(
+    world: &World,
+    from_bounds: Bounds,
+    to: Bounds,
+    mut attach: impl FnMut(&Segment) -> Option<T>,
+) -> (Option<(Segment, T)>, Search) {
     let started = Instant::now();
+    let departure_center = lerp(from_bounds.min, from_bounds.max, 0.5);
+    let landing_center = lerp(to.min, to.max, 0.5);
     let starts = contacts(world, from_bounds);
     let ends = contacts(world, to);
     let model = &world.physical.movement.model;
@@ -127,7 +140,12 @@ pub(super) fn find(world: &World, from_bounds: Bounds, to: Bounds) -> (Option<Se
                             ];
                             (horizontal(from, lip), -required_speed)
                         }
-                        Motion::Jump => (time, required_speed),
+                        // Samples at both facing edges can run into a barrier
+                        // before gaining height. Start inside the patches.
+                        Motion::Jump => (
+                            horizontal(from, departure_center) + horizontal(to, landing_center),
+                            time,
+                        ),
                     };
                     candidates[kind].push((rank, motion, from, to));
                 }
@@ -143,20 +161,25 @@ pub(super) fn find(world: &World, from_bounds: Bounds, to: Bounds) -> (Option<Se
     // before either can exhaust the collision budget.
     let [mut drops, mut jumps] = candidates.each_ref().map(|group| group.iter());
     let mut sweeps = 0;
+    let mut attachment_rejections = 0;
     let action = (0..SWEEPS)
         .flat_map(|_| [drops.next(), jumps.next()].into_iter().flatten())
         .take(SWEEPS)
         .find_map(|&(_, motion, from, to)| {
             sweeps += 1;
-            motion.prove(world, from, to)
+            let flight = motion.prove(world, from, to)?;
+            let attachment = attach(&flight);
+            attachment_rejections += usize::from(attachment.is_none());
+            attachment.map(|value| (flight, value))
         });
     let stats = Search {
         departure_contacts: starts.len(),
         landing_contacts: ends.len(),
         candidates: candidate_count,
         sweeps,
+        attachment_rejections,
         elapsed_ms: started.elapsed().as_secs_f64() * 1000.,
-        witness: action.as_ref().map(|action| Witness {
+        witness: action.as_ref().map(|(action, _)| Witness {
             from: action.start(),
             to: action.end(),
             mode: action.mode,

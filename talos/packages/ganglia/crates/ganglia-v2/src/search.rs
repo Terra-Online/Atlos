@@ -14,6 +14,9 @@ impl Engine {
             reports.push(report);
         }
         *diagnostics = reports.first().cloned().unwrap_or_else(|| json!({}));
+        if !result.is_empty() {
+            diagnostics.as_object_mut().unwrap().remove("failureStage");
+        }
         diagnostics["layouts"] = json!(reports);
         result
     }
@@ -110,6 +113,7 @@ impl Engine {
         let mut contact_labels = 0;
         let mut population = Vec::new();
         let mut origins = Vec::new();
+        let mut projected_starts = 0;
         let mut reached = vec![false; backbone.nodes.len()];
         for arrival in &query.starts {
             if arrival.state != "available" || self.cancelled.load(Ordering::Relaxed) {
@@ -121,6 +125,7 @@ impl Engine {
                 origins.push(json!({"id":arrival.id,"projected":null,"attachments":0}));
                 continue;
             };
+            projected_starts += 1;
             for &goal in &goals {
                 if let Some(action) = world.walk(start, goal) {
                     if let Some(candidate) = self.candidate(layout, arrival.clone(), vec![action]) {
@@ -253,6 +258,24 @@ impl Engine {
             }
         }
         *diagnostics = json!({"starts":origins,"goalPositions":goals.len(),"goalAttachments":endings.iter().map(Vec::len).sum::<usize>(),"reachedNodes":reached.iter().filter(|&&v|v).count()});
+        if population.is_empty() && !self.cancelled.load(Ordering::Relaxed) {
+            let stage = if projected_starts == 0 {
+                "start-contact"
+            } else if endings.iter().all(Vec::is_empty) {
+                "goal-attachment"
+            } else if !reached.iter().any(|&value| value) {
+                "start-attachment"
+            } else if reached
+                .iter()
+                .zip(&endings)
+                .any(|(&yes, actions)| yes && !actions.is_empty())
+            {
+                "route-composition"
+            } else {
+                "ordinary-connectivity"
+            };
+            diagnostics["failureStage"] = json!(stage);
+        }
         if contact_labels > 0 {
             diagnostics["contactLabels"] = json!(contact_labels);
         }
