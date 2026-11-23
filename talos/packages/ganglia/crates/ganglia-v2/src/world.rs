@@ -1,6 +1,6 @@
 #[path = "contacts.rs"]
 mod contacts;
-use crate::{geometry::*, types::*, walls::Walls};
+use crate::{devices::RopeDrop, geometry::*, types::*, walls::Walls};
 pub(super) use contacts::Contact;
 use std::{collections::HashSet, sync::Arc};
 
@@ -13,6 +13,7 @@ const WALK_SAMPLE_MIN: f64 = 0.025;
 pub struct World {
     pub physical: Arc<Physical>,
     contacts: Arc<contacts::Catalog>,
+    rope_drops: Arc<Vec<RopeDrop>>,
     ground: Arc<Vec<[Point; 3]>>,
     ground_index: Arc<Index>,
     collision: Arc<Vec<[Point; 3]>>,
@@ -189,6 +190,7 @@ impl World {
         let contacts = Arc::new(contacts::Catalog::new(&physical));
         Ok(Self {
             contacts,
+            rope_drops: Arc::new(RopeDrop::catalog(&physical)),
             physical: Arc::new(physical),
             ground: Arc::new(ground),
             ground_index: Arc::new(ground_index),
@@ -238,6 +240,12 @@ impl World {
     }
     pub(super) fn has_static_collision(&self) -> bool {
         !self.collision.is_empty()
+    }
+    pub(super) fn drop_source(&self, start: Point, end: Point) -> Option<String> {
+        self.rope_drops
+            .iter()
+            .find_map(|rope| rope.source(start, end))
+            .map(str::to_owned)
     }
     pub(super) fn box_bounds(&self) -> Vec<Bounds> {
         self.box_bodies
@@ -528,9 +536,9 @@ impl World {
         .any(|(index, triangles)| {
             index.query(bounds, |i| {
                 let t = triangles[i];
-                triangle_distance([axis[0], axis[1], axis[2]], t)
-                    .min(triangle_distance([axis[0], axis[2], axis[3]], t))
-                    < radius - 1e-6
+                let limit = radius - 1e-6;
+                triangles_within([axis[0], axis[1], axis[2]], t, limit)
+                    || triangles_within([axis[0], axis[2], axis[3]], t, limit)
             })
         })
     }

@@ -1,6 +1,6 @@
 use crate::{
     flight::hit,
-    geometry::{distance, horizontal},
+    geometry::{distance, dot, horizontal, sub},
     types::*,
     world::World,
 };
@@ -135,25 +135,38 @@ pub fn ropes(world: &World) -> Vec<Segment> {
         .collect()
 }
 
-pub fn drop_source(world: &World, start: Point, end: Point) -> Option<String> {
-    let facts = world.physical.devices.as_ref()?;
-    facts.ropes.iter().find_map(|rope| {
-        let lower = facts
+pub(super) struct RopeDrop {
+    lower: Mark,
+    upper: Mark,
+    connection: String,
+}
+
+impl RopeDrop {
+    pub(super) fn catalog(physical: &Physical) -> Vec<Self> {
+        physical
             .devices
             .iter()
-            .find(|d| d.id == rope.bottom)?
-            .goal
-            .as_ref()?;
-        let upper = facts
-            .devices
-            .iter()
-            .find(|d| d.id == rope.top)?
-            .goal
-            .as_ref()?;
-        hit(start, start, upper.position, &upper.interaction)?;
-        hit(end, end, lower.position, &lower.interaction)?;
-        Some(format!("drop/{}/{}", rope.bottom, rope.top))
-    })
+            .flat_map(|facts| {
+                facts.ropes.iter().filter_map(|rope| {
+                    let goal = |id: &str| facts.devices.iter().find(|d| d.id == id)?.goal.clone();
+                    Some(Self {
+                        lower: goal(&rope.bottom)?,
+                        upper: goal(&rope.top)?,
+                        connection: format!("drop/{}/{}", rope.bottom, rope.top),
+                    })
+                })
+            })
+            .collect()
+    }
+
+    pub(super) fn source(&self, start: Point, end: Point) -> Option<&str> {
+        let inside = |point, mark: &Mark| {
+            let offset = sub(point, mark.position);
+            dot(offset, offset) <= mark.interaction.radius * mark.interaction.radius
+                && hit(point, point, mark.position, &mark.interaction).is_some()
+        };
+        (inside(start, &self.upper) && inside(end, &self.lower)).then_some(self.connection.as_str())
+    }
 }
 
 // Rope pairs are discovery hints for independently swept falls, never reverse climbs.

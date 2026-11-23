@@ -378,7 +378,7 @@ impl World {
             let mut action =
                 self.flight_mode(start, end, None, requirement.model(base, modifier), mode)?;
             if mode == "drop" {
-                action.connection = crate::devices::drop_source(self, start, end);
+                action.connection = self.drop_source(start, end);
             }
             Some(PreparedFlight {
                 action,
@@ -431,7 +431,7 @@ impl World {
         let mut action = self.flight_mode(start, end, None, model, "drop")?;
         // Optimized falls retain source provenance only when both endpoints
         // still satisfy that authored pair's actual interaction volumes.
-        action.connection = crate::devices::drop_source(self, start, end);
+        action.connection = self.drop_source(start, end);
         Some(action)
     }
 

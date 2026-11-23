@@ -330,7 +330,14 @@ pub fn point_segment(p: Point, a: Point, b: Point) -> f64 {
         ),
     )
 }
-fn segment_segment(a: Point, b: Point, c: Point, d: Point) -> f64 {
+fn segments_within(a: Point, b: Point, c: Point, d: Point, limit: f64) -> bool {
+    if point_segment(a, c, d) < limit
+        || point_segment(b, c, d) < limit
+        || point_segment(c, a, b) < limit
+        || point_segment(d, a, b) < limit
+    {
+        return true;
+    }
     let u = sub(b, a);
     let v = sub(d, c);
     let w = sub(a, c);
@@ -340,18 +347,14 @@ fn segment_segment(a: Point, b: Point, c: Point, d: Point) -> f64 {
     let dd = dot(u, w);
     let ee = dot(v, w);
     let den = aa * cc - bb * bb;
-    let mut result = point_segment(a, c, d)
-        .min(point_segment(b, c, d))
-        .min(point_segment(c, a, b))
-        .min(point_segment(d, a, b));
     if den > 1e-20 {
         let s = (bb * ee - cc * dd) / den;
         let t = (aa * ee - bb * dd) / den;
         if (0. ..=1.).contains(&s) && (0. ..=1.).contains(&t) {
-            result = result.min(distance(lerp(a, b, s), lerp(c, d, t)));
+            return distance(lerp(a, b, s), lerp(c, d, t)) < limit;
         }
     }
-    result
+    false
 }
 pub fn point_triangle(p: Point, t: [Point; 3]) -> f64 {
     let [a, b, c] = t;
@@ -373,27 +376,30 @@ pub fn point_triangle(p: Point, t: [Point; 3]) -> f64 {
     }
     result
 }
-fn segment_triangle(a: Point, b: Point, t: [Point; 3]) -> f64 {
+fn pierces_triangle(a: Point, b: Point, t: [Point; 3]) -> bool {
     let n = cross(sub(t[1], t[0]), sub(t[2], t[0]));
     let den = dot(sub(b, a), n);
     if den.abs() > 1e-15 {
         let f = dot(sub(t[0], a), n) / den;
-        if (0. ..=1.).contains(&f) && point_triangle(lerp(a, b, f), t) < 1e-9 {
-            return 0.;
+        return (0. ..=1.).contains(&f) && point_triangle(lerp(a, b, f), t) < 1e-9;
+    }
+    false
+}
+pub fn triangles_within(a: [Point; 3], b: [Point; 3], limit: f64) -> bool {
+    if limit <= 0. {
+        return false;
+    }
+    // Each vertex and edge pair contributes to the same minimum from either
+    // direction. Evaluate it once and stop as soon as the body is obstructed.
+    for i in 0..3 {
+        if pierces_triangle(a[i], a[(i + 1) % 3], b)
+            || pierces_triangle(b[i], b[(i + 1) % 3], a)
+            || point_triangle(a[i], b) < limit
+            || point_triangle(b[i], a) < limit
+        {
+            return true;
         }
     }
-    let mut result = point_triangle(a, t).min(point_triangle(b, t));
-    for i in 0..3 {
-        result = result.min(segment_segment(a, b, t[i], t[(i + 1) % 3]));
-    }
-    result
-}
-pub fn triangle_distance(a: [Point; 3], b: [Point; 3]) -> f64 {
-    let mut result = f64::INFINITY;
-    for i in 0..3 {
-        result = result
-            .min(segment_triangle(a[i], a[(i + 1) % 3], b))
-            .min(segment_triangle(b[i], b[(i + 1) % 3], a));
-    }
-    result
+    (0..3)
+        .any(|i| (0..3).any(|j| segments_within(a[i], a[(i + 1) % 3], b[j], b[(j + 1) % 3], limit)))
 }
