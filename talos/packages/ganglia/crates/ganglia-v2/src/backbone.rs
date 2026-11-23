@@ -97,6 +97,7 @@ pub(super) struct ConditionalEdge {
     pub to: usize,
     pub flight: Arc<PreparedFlight>,
 }
+pub(super) const LOCAL_EDGE_RANGE: f64 = 12.;
 pub(super) struct Backbone {
     pub nodes: Vec<Point>,
     pub edges: Vec<Vec<Edge>>,
@@ -331,7 +332,7 @@ impl Backbone {
                             let i = chunk * CHUNK + row;
                             let a = nodes[i];
                             nearby.clear();
-                            index.query(Bounds::points(&[a]).expand(12.), |j| {
+                            index.query(Bounds::points(&[a]).expand(LOCAL_EDGE_RANGE), |j| {
                                 if i != j {
                                     nearby.push(j);
                                 }
@@ -358,7 +359,7 @@ impl Backbone {
         });
         let edges_ms = edges_started.elapsed().as_secs_f64() * 1000.;
         let count_before_bridges = nodes.len();
-        let automatic_bridges = bridges::discover(
+        let mut automatic_bridges = bridges::discover(
             world,
             placements,
             &mut nodes,
@@ -368,6 +369,13 @@ impl Backbone {
             support_count,
         );
         conditional.resize_with(nodes.len(), Vec::new);
+        automatic_bridges.discover_sprint(
+            world,
+            &nodes[..support_count],
+            &edges,
+            &mut conditional,
+            &index,
+        );
         let index = if !marks.is_empty() && nodes.len() != count_before_bridges {
             Index::new(
                 &nodes

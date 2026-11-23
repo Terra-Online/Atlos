@@ -5,6 +5,7 @@ mod contact_search;
 mod devices;
 mod flight;
 mod geometry;
+mod inspect;
 mod locomotion;
 #[cfg(feature = "napi")]
 mod native;
@@ -185,9 +186,10 @@ impl Engine {
     }
     pub fn solve(&self, query: &str) -> Result<Value, String> {
         let query: Query = serde_json::from_str(query).map_err(|e| e.to_string())?;
+        let inspection = inspect::windows()?;
         let started = Instant::now();
         let mut initialization = json!({});
-        let mut population = self.initialize(&query, &mut initialization);
+        let mut population = self.initialize(&query, &mut initialization, &inspection);
         let initialization_ms = started.elapsed().as_secs_f64() * 1000.;
         optimize::select(&mut population, self.config.population_size);
         let initial_cost = population.first().map(Candidate::cost);

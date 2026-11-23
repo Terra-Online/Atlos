@@ -1,8 +1,13 @@
-use crate::{Candidate, Engine, flight, geometry::*, types::*};
+use crate::{Candidate, Engine, conditional, flight, geometry::*, inspect, types::*};
 use serde_json::{Value, json};
 use std::sync::atomic::Ordering;
 impl Engine {
-    pub(super) fn initialize(&self, query: &Query, diagnostics: &mut Value) -> Vec<Candidate> {
+    pub(super) fn initialize(
+        &self,
+        query: &Query,
+        diagnostics: &mut Value,
+        inspection: &[Bounds],
+    ) -> Vec<Candidate> {
         let mut result = Vec::new();
         let mut reports = Vec::new();
         for layout in 0..self.layouts.len() {
@@ -10,10 +15,11 @@ impl Engine {
                 break;
             }
             let mut report = json!({});
-            result.extend(self.initialize_layout(layout, query, &mut report));
+            result.extend(self.initialize_layout(layout, query, &mut report, inspection));
             reports.push(report);
         }
         *diagnostics = reports.first().cloned().unwrap_or_else(|| json!({}));
+        diagnostics.as_object_mut().unwrap().remove("inspection");
         if !result.is_empty() {
             diagnostics.as_object_mut().unwrap().remove("failureStage");
         }
@@ -25,6 +31,7 @@ impl Engine {
         layout: usize,
         query: &Query,
         diagnostics: &mut Value,
+        inspection: &[Bounds],
     ) -> Vec<Candidate> {
         let world = self.world_for(layout);
         let backbone = self.backbone_for(layout);
@@ -246,14 +253,24 @@ impl Engine {
                 population.extend(candidates);
                 contact_labels += labels;
             }
-            if population.is_empty() && !self.cancelled.load(Ordering::Relaxed) {
+            if !suffix_costs.is_empty() && !self.cancelled.load(Ordering::Relaxed) {
+                let incumbent = population
+                    .iter()
+                    .map(Candidate::cost)
+                    .min_by(f64::total_cmp);
                 population.extend(self.conditional_seeds(
                     layout,
                     arrival,
                     query,
-                    &previous,
-                    &suffix,
-                    sprint_terminal.then_some((costs.as_slice(), suffix_costs.as_slice())),
+                    conditional::Paths {
+                        previous: &previous,
+                        suffix: &suffix,
+                        prefix_costs: &costs,
+                        suffix_costs: &suffix_costs,
+                        settled: &done,
+                    },
+                    incumbent,
+                    sprint_terminal,
                 ));
             }
         }
@@ -279,12 +296,8 @@ impl Engine {
         if contact_labels > 0 {
             diagnostics["contactLabels"] = json!(contact_labels);
         }
-        if population.is_empty()
-            && !self.cancelled.load(Ordering::Relaxed)
-            && std::env::var_os("GANGLIA_PROFILE").is_some()
-        {
-            // Explain which prepared connection is missing without exporting
-            // the physical snapshot or a complete graph dump.
+        let profile_gaps = population.is_empty() && std::env::var_os("GANGLIA_PROFILE").is_some();
+        if (profile_gaps || !inspection.is_empty()) && !self.cancelled.load(Ordering::Relaxed) {
             let mut reverse = vec![Vec::new(); backbone.nodes.len()];
             for (from, edges) in backbone.edges.iter().enumerate() {
                 if self.cancelled.load(Ordering::Relaxed) {
@@ -309,6 +322,18 @@ impl Engine {
                 }
                 to_goal[node] = true;
                 pending.extend(reverse[node].iter().copied());
+            }
+            if !inspection.is_empty() && !self.cancelled.load(Ordering::Relaxed) {
+                diagnostics["inspection"] = json!({
+                    "coverage": inspect::coverage(world, backbone, &reached, &to_goal),
+                    "views": inspection
+                        .iter()
+                        .map(|&bounds| inspect::capture(bounds, world, backbone, &reached, &to_goal))
+                        .collect::<Vec<_>>()
+                });
+            }
+            if !profile_gaps {
+                return population;
             }
             diagnostics["nodesReachingGoal"] = json!(to_goal.iter().filter(|&&v| v).count());
             let mut nearby: Vec<_> = (0..reached.len()).filter(|&i| reached[i]).collect();

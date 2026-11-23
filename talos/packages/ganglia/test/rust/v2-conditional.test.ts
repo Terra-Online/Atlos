@@ -169,6 +169,58 @@ function replaceSurfaces(input: PhysicalInput, surfaces: PhysicalInput['ground']
   return input;
 }
 
+test('v2 finds a high sprint shortcut even when an ordinary detour reaches the goal', async () => {
+  const surface = (
+    id: string,
+    x0: number,
+    x1: number,
+    z0: number,
+    z1: number,
+    y0: number,
+    y1 = y0,
+  ): PhysicalInput['ground']['surfaces'][number] => ({
+    id,
+    vertices: [
+      [x0, y0, z0],
+      [x0, y0, z1],
+      [x1, y1, z1],
+      [x1, y1, z0],
+    ],
+  });
+  async function route(stamina: number) {
+    const input = scene(-14, 17, stamina);
+    replaceSurfaces(input, [
+      surface('upper', -12, 0, -2, 2, 25),
+      surface('ramp', -52, -12, -2, 2, 0, 25),
+      surface('west', -60, -52, -2, 40, 0),
+      surface('far', -52, 21, 36, 40, 0),
+      surface('landing', 17, 21, -2, 36, 0),
+    ]);
+    const solver = await prepareGangliaV2(gangliaV2Defaults, input, []);
+    try {
+      return (
+        await solver.solve({
+          starts: [{ id: 'player', position: [-9, 25, 0], cost: 0, state: 'available' }],
+          goal: [19, 0, 0],
+        })
+      ).route;
+    } finally {
+      await solver.close();
+    }
+  }
+  const detour = await route(0);
+  const shortcut = await route(8);
+  assert.equal(detour.status, 'complete');
+  assert.equal(shortcut.status, 'complete');
+  assert.ok(shortcut.cost < detour.cost / 2);
+  assert.ok(
+    shortcut.segments.some(
+      (segment) =>
+        segment.requiredGait === 'sprint' && segment.points[0][1] - segment.points.at(-1)![1] > 12,
+    ),
+  );
+});
+
 test('v2 cannot carry a perpendicular sprint into a fast-flight gap', async () => {
   const input = scene(-10);
   replaceSurfaces(input, [

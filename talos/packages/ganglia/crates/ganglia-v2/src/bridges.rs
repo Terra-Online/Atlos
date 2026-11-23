@@ -1,7 +1,7 @@
 #[path = "bridge_regions.rs"]
 mod regions;
 
-use super::Edge;
+use super::{ConditionalEdge, Edge, LOCAL_EDGE_RANGE};
 use crate::{flight, geometry::*, placement, region_flight, types::*, world::World};
 use regions::Regions;
 use serde::Serialize;
@@ -31,8 +31,113 @@ pub(crate) struct Discovery {
     ledge_enumeration_ms: f64,
     ledge_trials: usize,
     ledge_flights: usize,
+    sprint_bridge_trials: usize,
+    sprint_bridges: usize,
+    sprint_bridge_ms: f64,
     box_searches: Vec<region_flight::Search>,
     elapsed_ms: f64,
+}
+
+impl Discovery {
+    pub(super) fn discover_sprint(
+        &mut self,
+        world: &World,
+        nodes: &[Point],
+        edges: &[Vec<Edge>],
+        conditional: &mut [Vec<ConditionalEdge>],
+        index: &Index,
+    ) {
+        const TRIALS_PER_DEPARTURE: usize = 6;
+        let started = Instant::now();
+        let model = &world.physical.movement.model;
+        let run = world.physical.movement.run_air_speed;
+        let sprint = model.max_horizontal_speed;
+        if sprint <= run {
+            return;
+        }
+        let mut approaches = vec![Vec::new(); nodes.len()];
+        for (from, outgoing) in edges.iter().take(nodes.len()).enumerate() {
+            for edge in outgoing {
+                if edge.to < nodes.len() && edge.action.mode == "walk" {
+                    let delta = sub(nodes[edge.to], nodes[from]);
+                    let span = delta[0].hypot(delta[2]);
+                    if span > 1e-9 {
+                        approaches[edge.to].push(scale(delta, 1. / span));
+                    }
+                }
+            }
+        }
+        let mut candidates = Vec::new();
+        for (from, &start) in nodes.iter().enumerate() {
+            if approaches[from].is_empty() {
+                continue;
+            }
+            candidates.clear();
+            let origin = Bounds::points(&[start]);
+            index.query_where(
+                |bounds| {
+                    start[1] - bounds.min[1] > LOCAL_EDGE_RANGE
+                        && reaches(model, sprint, origin, bounds)
+                },
+                |to| {
+                    let Some(&end) = nodes.get(to) else {
+                        return false;
+                    };
+                    let delta = sub(end, start);
+                    let span = delta[0].hypot(delta[2]);
+                    let speed = [
+                        flight::duration(model, start[1], end[1]),
+                        flight::drop_duration(model, start[1], end[1]),
+                    ]
+                    .into_iter()
+                    .flatten()
+                    .find(|&time| time <= 60. && span > run * time && span <= sprint * time + 1e-9)
+                    .map(|time| span / time);
+                    if let Some(speed) = speed
+                        && approaches[from].iter().any(|approach| {
+                            approach[0] * delta[0] + approach[2] * delta[2]
+                                >= span * (std::f64::consts::PI / 6.).cos()
+                        })
+                    {
+                        candidates.push((speed, to));
+                    }
+                    false
+                },
+            );
+            // All candidates have a compatible run-up. Prefer flights that
+            // move away from the takeoff terrain quickly, then bound sweeps
+            // and retained landing sites independently of local mesh density.
+            let rank = |a: &(f64, usize), b: &(f64, usize)| b.0.total_cmp(&a.0).then(a.1.cmp(&b.1));
+            if candidates.len() > TRIALS_PER_DEPARTURE {
+                candidates.select_nth_unstable_by(TRIALS_PER_DEPARTURE, rank);
+                candidates.truncate(TRIALS_PER_DEPARTURE);
+            }
+            candidates.sort_unstable_by(rank);
+            let mut landings = 0;
+            for &(_, to) in &candidates {
+                self.sprint_bridge_trials += 1;
+                let mut proved = false;
+                for flight in world
+                    .conditional_flights(start, nodes[to], &[])
+                    .into_iter()
+                    .flatten()
+                {
+                    conditional[from].push(ConditionalEdge {
+                        to,
+                        flight: Arc::new(flight),
+                    });
+                    self.sprint_bridges += 1;
+                    proved = true;
+                }
+                landings += usize::from(proved);
+                if landings == 2 {
+                    break;
+                }
+            }
+        }
+        self.sprint_bridge_ms = started.elapsed().as_secs_f64() * 1000.;
+        self.elapsed_ms += self.sprint_bridge_ms;
+    }
 }
 
 fn root(parents: &mut [usize], mut node: usize) -> usize {

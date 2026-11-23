@@ -1,4 +1,6 @@
-use crate::{Candidate, Engine, backbone::Backbone, flight, geometry::*, search::Label, types::*};
+use crate::{
+    Candidate, Engine, backbone::Backbone, flight, geometry::*, optimize, search::Label, types::*,
+};
 use std::{
     collections::{BinaryHeap, HashMap},
     sync::{
@@ -6,6 +8,16 @@ use std::{
         atomic::{AtomicBool, Ordering},
     },
 };
+
+type Links = [Option<(usize, Segment)>];
+
+pub(super) struct Paths<'a> {
+    pub previous: &'a Links,
+    pub suffix: &'a Links,
+    pub prefix_costs: &'a [f64],
+    pub suffix_costs: &'a [f64],
+    pub settled: &'a [bool],
+}
 
 // Each seed uses one conditional flight. Its prefixes and suffixes come only
 // from ordinary prepared edges; whole-route replay proves the resource entry.
@@ -16,65 +28,88 @@ impl Engine {
         layout: usize,
         arrival: &Arrival,
         query: &Query,
-        previous: &[Option<(usize, Segment)>],
-        suffix: &[Option<(usize, Segment)>],
-        rank: Option<(&[f64], &[f64])>,
+        paths: Paths<'_>,
+        incumbent: Option<f64>,
+        sprint_terminal: bool,
     ) -> Vec<Candidate> {
+        const IMPROVEMENT_TRIALS: usize = 48;
         let backbone = self.backbone_for(layout);
-        let base = &self.world_for(layout).physical.movement.model;
-        if !backbone.conditional.iter().any(|edges| !edges.is_empty()) {
+        let physical = &self.world_for(layout).physical;
+        let base = &physical.movement.model;
+        let Paths {
+            previous,
+            suffix,
+            prefix_costs,
+            suffix_costs,
+            settled,
+        } = paths;
+        let locomotion = &physical.locomotion;
+        let top_speed = locomotion.dash.as_ref().map_or(
+            locomotion.sprint_speed.unwrap_or(locomotion.speed),
+            |dash| dash.speed,
+        );
+        let max_boost = backbone
+            .boost_uses
+            .iter()
+            .map(|boost| boost.multiplier)
+            .fold(1., f64::max);
+        let time_ratio = locomotion.speed / (top_speed * max_boost);
+        let mut connections: Vec<_> = backbone
+            .conditional
+            .iter()
+            .enumerate()
+            .flat_map(|(from, edges)| {
+                edges.iter().filter_map(move |edge| {
+                    if previous[from].is_none() || suffix[edge.to].is_none() {
+                        return None;
+                    }
+                    let flight = edge.flight.action.cost();
+                    let end = suffix_costs[edge.to];
+                    let start = prefix_costs[from];
+                    // Ordinary labels price walking at run speed. Even if every walk
+                    // used the fastest gait and boost, it could only save this fraction.
+                    // An unsettled prefix has no final shortest-path cost yet.
+                    let prefix_bound = if settled[from] { start } else { 0. };
+                    let bound = arrival.cost + flight + (prefix_bound + end) * time_ratio;
+                    incumbent.is_none_or(|best| bound < best).then_some((
+                        start + flight + end,
+                        from,
+                        edge,
+                    ))
+                })
+            })
+            .collect();
+        if connections.is_empty() {
             return Vec::new();
         }
+        if incumbent.is_some() || sprint_terminal {
+            connections.sort_by(|a, b| a.0.total_cmp(&b.0));
+        }
+        if incumbent.is_some() {
+            connections.truncate(IMPROVEMENT_TRIALS);
+        }
         let mut incoming = vec![Vec::new(); backbone.nodes.len()];
+        let mut departures = vec![false; backbone.nodes.len()];
+        for &(_, from, _) in &connections {
+            departures[from] = true;
+        }
         for (from, edges) in backbone.edges.iter().enumerate() {
             for edge in edges {
-                if edge.action.mode == "walk" && !backbone.conditional[edge.to].is_empty() {
+                if edge.action.mode == "walk" && departures[edge.to] {
                     incoming[edge.to].push((from, &edge.action));
                 }
             }
         }
         let mut trees: HashMap<usize, Tree> = HashMap::new();
         let mut result = Vec::new();
-        let connections = || {
-            backbone
-                .conditional
-                .iter()
-                .enumerate()
-                .flat_map(|(from, edges)| {
-                    edges.iter().filter_map(move |edge| {
-                        (previous[from].is_some() && suffix[edge.to].is_some())
-                            .then_some((from, edge))
-                    })
-                })
-        };
-        // A fast terminal can require a second fast flight earlier in the
-        // route. Try short complete prefixes and suffixes first so irrelevant
-        // boost alternatives do not consume the query cutoff.
-        let ranked = rank.map(|(prefix_cost, suffix_cost)| {
-            let mut edges: Vec<_> = connections()
-                .map(|(from, edge)| {
-                    (
-                        prefix_cost[from] + edge.flight.action.cost() + suffix_cost[edge.to],
-                        from,
-                        edge,
-                    )
-                })
-                .collect();
-            edges.sort_by(|a, b| a.0.total_cmp(&b.0));
-            edges
-        });
-        let ordered = ranked
-            .iter()
-            .flatten()
-            .map(|&(_, from, edge)| (from, edge))
-            .chain(connections().filter(|_| ranked.is_none()));
-        for (from, edge) in ordered {
+        for (_, from, edge) in connections {
             if self.cancelled.load(Ordering::Relaxed) {
                 return result;
             }
             let Some(ending) = chain(suffix, edge.to, false) else {
                 continue;
             };
+            let mut best_for_edge: Option<Candidate> = None;
             for flight in edge.flight.variants(base, &backbone.boost_uses) {
                 let axis = sub(flight.end(), flight.start());
                 let span = axis[0].hypot(axis[2]);
@@ -151,15 +186,29 @@ impl Engine {
                         path.push(flight.clone());
                         path.extend(ending.iter().cloned());
                         if let Some(candidate) = self.candidate(layout, arrival.clone(), path) {
-                            if candidate.finishes_at_first_goal(query) {
+                            if !candidate.finishes_at_first_goal(query) {
+                                continue;
+                            }
+                            if let Some(best) = incumbent {
+                                let limit = best_for_edge.as_ref().map_or(best, Candidate::cost);
+                                if candidate.cost() < limit {
+                                    best_for_edge = Some(candidate);
+                                }
+                            } else {
                                 result.push(candidate);
-                                if result.len() >= self.config.population_size {
+                                if result.len() == self.config.population_size {
                                     return result;
                                 }
                             }
                         }
                     }
                 }
+            }
+            // Vary the flight among improving seeds. Repeating the same
+            // departure and landing with different run-ups crowds out shortcuts.
+            if let Some(candidate) = best_for_edge {
+                result.push(candidate);
+                optimize::select(&mut result, self.config.population_size);
             }
         }
         result

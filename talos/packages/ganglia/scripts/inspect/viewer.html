@@ -1,0 +1,555 @@
+<section
+  id="ganglia-viewer"
+  aria-label="Ganglia 骨干查看器"
+>
+  <style>
+    #ganglia-viewer {
+      --scene: var(--card, #15202b);
+      --ink: var(--foreground, #e6edf5);
+      --dim: var(--muted-foreground, #9cabb8);
+      --stroke: var(--border, #354453);
+      --start: var(--blue, var(--info, #58b5f7));
+      --goal: var(--green, var(--success, #55d6ab));
+      --path: var(--orange, var(--warning, #f5b95e));
+      --barrier: var(--red, var(--destructive, #f17d88));
+      color: var(--ink);
+      display: grid;
+      gap: 10px;
+    }
+    #ganglia-viewer .toolbar,
+    #ganglia-viewer .layers,
+    #ganglia-viewer .legend {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 13px;
+    }
+    #ganglia-viewer .layers {
+      justify-content: space-between;
+    }
+    #ganglia-viewer .layers label {
+      white-space: nowrap;
+    }
+    #ganglia-viewer label,
+    #ganglia-viewer .legend,
+    #ganglia-viewer .detail {
+      color: var(--dim);
+    }
+    #ganglia-viewer nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    #ganglia-viewer button {
+      font: inherit;
+      color: var(--ink);
+      background: transparent;
+      border: 1px solid var(--stroke);
+      border-radius: 6px;
+      padding: 4px 9px;
+      cursor: pointer;
+    }
+    #ganglia-viewer button[aria-pressed='true'] {
+      background: var(--secondary, #2a3c4e);
+      color: var(--secondary-foreground, var(--ink));
+    }
+    #ganglia-viewer [hidden] {
+      display: none;
+    }
+    #ganglia-viewer canvas {
+      display: block;
+      width: 100%;
+      height: 408px;
+      background: var(--scene);
+      border-radius: 8px;
+    }
+    #ganglia-viewer canvas.is-3d {
+      cursor: grab;
+      touch-action: none;
+    }
+    #ganglia-viewer canvas.is-3d:active {
+      cursor: grabbing;
+    }
+    #ganglia-viewer .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    #ganglia-viewer .key {
+      width: 9px;
+      height: 9px;
+      border-radius: 2px;
+      background: currentColor;
+    }
+    #ganglia-viewer .detail {
+      margin: 0;
+    }
+    @media (max-width: 520px) {
+      #ganglia-viewer canvas {
+        height: 340px;
+      }
+    }
+  </style>
+
+  <div class="toolbar">
+    <strong data-title></strong>
+    <nav aria-label="视角"></nav>
+  </div>
+  <canvas
+    role="img"
+    aria-label="固定走廊与三维碰撞白模"
+  ></canvas>
+  <div class="layers">
+    <div
+      class="toolbar"
+      data-layers
+    >
+      <label
+        ><input
+          type="checkbox"
+          data-layer="mesh"
+          checked
+        />
+        白模</label
+      >
+      <label
+        ><input
+          type="checkbox"
+          data-layer="graph"
+          checked
+        />
+        骨干</label
+      >
+      <label
+        ><input
+          type="checkbox"
+          data-layer="trace"
+          checked
+        />
+        轨迹 / 断点</label
+      >
+      <button
+        type="button"
+        data-top
+        aria-pressed="false"
+      >
+        俯视
+      </button>
+    </div>
+    <div
+      class="legend"
+      aria-label="图例"
+    >
+      <span
+        ><i
+          class="key"
+          style="color: var(--start)"
+        ></i
+        >起点可达</span
+      >
+      <span
+        ><i
+          class="key"
+          style="color: var(--goal)"
+        ></i
+        >可到目标</span
+      >
+      <span
+        ><i
+          class="key"
+          style="color: var(--path)"
+        ></i
+        >实测轨迹</span
+      >
+      <span
+        ><i
+          class="key"
+          style="color: var(--barrier)"
+        ></i
+        >碰撞阻挡</span
+      >
+    </div>
+  </div>
+  <p
+    class="detail"
+    aria-live="polite"
+  ></p>
+</section>
+<script
+  type="application/json"
+  id="ganglia-viewer-data"
+>
+  /* SCENE_DATA */
+</script>
+<script>
+  (() => {
+    const data = JSON.parse(document.getElementById('ganglia-viewer-data').textContent);
+    const root = document.getElementById('ganglia-viewer');
+    const canvas = root.querySelector('canvas');
+    const ctx = canvas.getContext('2d');
+    const detail = root.querySelector('.detail');
+    const layers = root.querySelector('[data-layers]');
+    const topButton = root.querySelector('[data-top]');
+    const settings = { mesh: true, graph: true, trace: true };
+    const views = data.coverage ? [null, ...data.views] : data.views;
+    let selected = 0,
+      yaw,
+      pitch,
+      zoom,
+      topView,
+      pointer,
+      pending = false;
+    let width, height, colors;
+    const fallbackAngle = [-0.7, 0.68];
+    const coverage = data.coverage;
+    root.querySelector('[data-title]').textContent = data.title;
+
+    const interpolate = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+    // Clip large scene faces at the inspection box, including faces with no vertex inside it.
+    function clip(face, { min, max }) {
+      let points = face;
+      for (let axis = 0; axis < 3; axis++) {
+        for (const [boundary, direction] of [
+          [min[axis], 1],
+          [max[axis], -1],
+        ]) {
+          const next = [];
+          for (let i = 0; i < points.length; i++) {
+            const a = points[i],
+              b = points[(i + 1) % points.length];
+            const inside = (a[axis] - boundary) * direction >= 0;
+            const otherInside = (b[axis] - boundary) * direction >= 0;
+            if (inside) next.push(a);
+            if (inside !== otherInside) {
+              next.push(interpolate(a, b, (boundary - a[axis]) / (b[axis] - a[axis])));
+            }
+          }
+          points = next;
+        }
+      }
+      return points;
+    }
+
+    function shade([a, b, c]) {
+      const u = b.map((v, i) => v - a[i]),
+        v = c.map((v, i) => v - a[i]);
+      const n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+      return (
+        0.55 + (0.4 * Math.abs(n[0] * 0.3 + n[1] * 0.89 - n[2] * 0.34)) / (Math.hypot(...n) || 1)
+      );
+    }
+
+    for (const view of data.views) {
+      view.mesh = view.triangles
+        .map((face) => [clip(face, view), shade(face)])
+        .filter(([p]) => p.length >= 3);
+      view.wall = view.obstruction && clip(view.obstruction, view);
+    }
+    const buttons = views.map((view, i) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = view
+        ? (view.title ?? `窗口 ${data.views.indexOf(view) + 1}`)
+        : '走廊总览';
+      button.addEventListener('click', () => select(i));
+      root.querySelector('nav').append(button);
+      return button;
+    });
+
+    function select(index) {
+      selected = index;
+      const view = views[index];
+      [yaw, pitch] = view?.angle ?? fallbackAngle;
+      zoom = 1;
+      topView = false;
+      topButton.setAttribute('aria-pressed', 'false');
+      buttons.forEach((button, i) => button.setAttribute('aria-pressed', String(i === index)));
+      layers.hidden = !view;
+      canvas.classList.toggle('is-3d', Boolean(view));
+      canvas.setAttribute('aria-label', buttons[index].textContent);
+      detail.textContent = view
+        ? (view.detail ?? `${view.nodes.length} 节点 · ${view.edges.length} 条有向边`)
+        : (data.overview ?? `${coverage.tiles.length} 个 tile · 每个 tile ${coverage.span} 米`);
+      schedule();
+    }
+
+    function color(name) {
+      const probe = document.createElement('span');
+      probe.style.color = `var(--${name})`;
+      root.append(probe);
+      const value = getComputedStyle(probe).color;
+      probe.remove();
+      return value;
+    }
+
+    function schedule() {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => {
+        pending = false;
+        paint();
+      });
+    }
+
+    function paint() {
+      width = canvas.clientWidth;
+      height = canvas.clientHeight;
+      if (!width || !height) return;
+      const ratio = Math.min(devicePixelRatio || 1, 2);
+      if (
+        canvas.width !== Math.round(width * ratio) ||
+        canvas.height !== Math.round(height * ratio)
+      ) {
+        canvas.width = Math.round(width * ratio);
+        canvas.height = Math.round(height * ratio);
+      }
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      colors = Object.fromEntries(
+        ['scene', 'ink', 'dim', 'stroke', 'start', 'goal', 'path', 'barrier'].map((name) => [
+          name,
+          color(name),
+        ]),
+      );
+      const view = views[selected];
+      if (view) drawScene(view);
+      else drawMap();
+    }
+
+    function line(points, color, weight = 1, alpha = 1, dash = []) {
+      if (points.length < 2) return;
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = weight;
+      ctx.setLineDash(dash);
+      ctx.beginPath();
+      ctx.moveTo(...points[0].slice(0, 2));
+      points.slice(1).forEach(([x, y]) => ctx.lineTo(x, y));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+    }
+
+    function dot(x, y, radius, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function mark(x, y, label, color, align = 'left') {
+      if (x < 0 || x > width || y < 0 || y > height) return;
+      dot(x, y, 5, colors.scene);
+      dot(x, y, 3.5, color);
+      ctx.font = '600 12px system-ui';
+      const textWidth = ctx.measureText(label).width;
+      const tx = Math.max(
+        5,
+        Math.min(width - textWidth - 5, align === 'right' ? x - textWidth - 9 : x + 9),
+      );
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = colors.scene;
+      const ty = y < 21 ? y + 17 : y - 8;
+      ctx.strokeText(label, tx, ty);
+      ctx.fillStyle = colors.ink;
+      ctx.fillText(label, tx, ty);
+    }
+
+    function scaleBar(scale, meters) {
+      const x = 13,
+        y = height - 16,
+        size = scale * meters;
+      line(
+        [
+          [x, y - 8],
+          [x, y],
+          [x + size, y],
+          [x + size, y - 8],
+        ],
+        colors.dim,
+      );
+      ctx.font = '12px system-ui';
+      ctx.fillStyle = colors.dim;
+      ctx.fillText(`${meters} m`, x + size + 6, y);
+    }
+
+    function drawMap() {
+      const { tiles, span } = coverage;
+      if (!tiles.length) return;
+      const x0 = Math.min(...tiles.map((t) => t[0])),
+        x1 = Math.max(...tiles.map((t) => t[0])) + 1;
+      const z0 = Math.min(...tiles.map((t) => t[1])),
+        z1 = Math.max(...tiles.map((t) => t[1])) + 1;
+      const scale = Math.min((width - 42) / (x1 - x0), (height - 48) / (z1 - z0));
+      const plot = (x, z) => [
+        width / 2 + (x - (x0 + x1) / 2) * scale,
+        height / 2 + (z - (z0 + z1) / 2) * scale,
+      ];
+      const at = (p) => plot(p[0] / span, p[2] / span);
+      for (const [x, z, total, start, goal] of tiles) {
+        ctx.fillStyle = start ? colors.start : goal ? colors.goal : colors.dim;
+        ctx.globalAlpha = start || goal ? 0.85 : total ? 0.38 : 0.15;
+        ctx.fillRect(...plot(x, z), Math.max(1, scale - 0.9), Math.max(1, scale - 0.9));
+        if (start && goal) {
+          ctx.fillStyle = colors.goal;
+          ctx.fillRect(...plot(x + 0.5, z), Math.max(1, scale / 2 - 0.9), Math.max(1, scale - 0.9));
+        }
+      }
+      ctx.globalAlpha = 1;
+      for (const route of data.route) line(route.points.map(at), colors.path, 2);
+      if (data.start) mark(...at(data.start), '起点', colors.start, 'right');
+      mark(...at(data.goal), '目标', colors.goal);
+      for (const [i, view] of data.views.entries()) {
+        mark(
+          ...at(view.center),
+          view.title ?? `窗口 ${i + 1}`,
+          colors.path,
+          i === 0 ? 'right' : 'left',
+        );
+      }
+      scaleBar(scale / span, 250);
+      ctx.fillStyle = colors.dim;
+      ctx.fillText('XZ 俯视', width - 64, height - 16);
+    }
+
+    function drawScene(view) {
+      const cy = Math.cos(yaw),
+        sy = Math.sin(yaw),
+        cp = Math.cos(pitch),
+        sp = Math.sin(pitch);
+      const rotate = ([x, y, z]) => {
+        const d = sy * x + cy * z;
+        return [cy * x - sy * z, sp * d - cp * y, cp * d + sp * y];
+      };
+      const corners = [view.min[0], view.max[0]].flatMap((x) =>
+        [view.min[1], view.max[1]].flatMap((y) =>
+          [view.min[2], view.max[2]].map((z) => rotate([x, y, z])),
+        ),
+      );
+      const extent = (axis) => 2 * Math.max(...corners.map((p) => Math.abs(p[axis])));
+      const scale = zoom * Math.min((width - 42) / extent(0), (height - 43) / extent(1));
+      const project = (point) => {
+        const [x, y, z] = rotate(point);
+        return [width / 2 + x * scale, height / 2 + y * scale, z];
+      };
+      function polygon(points, color, opacity) {
+        ctx.beginPath();
+        ctx.moveTo(points[0][0], points[0][1]);
+        points.slice(1).forEach(([x, y]) => ctx.lineTo(x, y));
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.globalAlpha = opacity;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+      if (settings.mesh) {
+        const faces = view.mesh.map(([face, light]) => {
+          const points = face.map(project);
+          return {
+            points,
+            light,
+            depth: points.reduce((sum, point) => sum + point[2], 0) / points.length,
+          };
+        });
+        faces.sort((a, b) => a.depth - b.depth);
+        for (const { points, light } of faces) {
+          const gray = Math.round(135 + light * 112);
+          polygon(points, `rgb(${gray},${gray},${gray})`, 0.95);
+        }
+      }
+      if (settings.graph) {
+        const nodes = view.nodes.map(([point]) => project(point));
+        const palette = [colors.stroke, colors.start, colors.goal, colors.path];
+        for (const [from, to, kind] of view.edges) {
+          const state = view.nodes[from][1] & view.nodes[to][1];
+          line(
+            [nodes[from], nodes[to]],
+            palette[state],
+            state ? 0.95 : 0.6,
+            kind === 2 ? 0.18 : state ? 0.6 : 0.22,
+            kind === 2 ? [2, 3] : [],
+          );
+        }
+        view.nodes.forEach(([, state], i) => {
+          const [x, y] = nodes[i];
+          ctx.globalAlpha = state ? 0.9 : 0.45;
+          dot(x, y, state ? 1.8 : 1.2, palette[state]);
+        });
+        ctx.globalAlpha = 1;
+      }
+      if (settings.trace) {
+        if (view.wall?.length >= 3) {
+          const wall = view.wall.map(project);
+          polygon(wall, colors.barrier, 0.46);
+          line([...wall, wall[0]], colors.barrier, 1.5);
+        }
+        if (view.gap) line(view.gap.map(project), colors.barrier, 2, 1, [5, 5]);
+        let jump = 0;
+        for (const segment of view.trace) {
+          const points = segment.points.map(project);
+          const walking = segment.mode === 'walk';
+          line(points, colors.scene, walking ? 3 : 5, 0.9);
+          line(points, colors.path, walking ? 1.6 : 3, 1, walking ? [4, 3] : []);
+          if (segment.mode === 'jump' && points.length) {
+            const [x, y] = points[Math.floor(points.length / 2)];
+            mark(x, y, `跳 ${++jump}`, colors.path);
+          }
+        }
+        for (const [position, label] of view.labels ?? [])
+          mark(...project(position).slice(0, 2), label, colors.ink);
+      }
+      scaleBar(scale, scale > 50 ? 1 : 5);
+      ctx.fillStyle = colors.dim;
+      ctx.fillText(
+        topView ? 'XZ 俯视' : '拖动旋转 · 滚动缩放',
+        Math.max(8, width - (topView ? 64 : 127)),
+        height - 16,
+      );
+    }
+
+    for (const control of root.querySelectorAll('[data-layer]')) {
+      control.addEventListener('change', () => {
+        settings[control.dataset.layer] = control.checked;
+        schedule();
+      });
+    }
+    topButton.addEventListener('click', () => {
+      topView = !topView;
+      [yaw, pitch] = topView ? [0, Math.PI / 2] : (views[selected].angle ?? fallbackAngle);
+      topButton.setAttribute('aria-pressed', String(topView));
+      schedule();
+    });
+    canvas.addEventListener('pointerdown', (event) => {
+      if (!views[selected]) return;
+      pointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
+      canvas.setPointerCapture(event.pointerId);
+    });
+    canvas.addEventListener('pointermove', (event) => {
+      if (pointer?.id !== event.pointerId) return;
+      yaw += (event.clientX - pointer.x) * 0.009;
+      pitch = Math.max(-0.4, Math.min(Math.PI / 2, pitch + (event.clientY - pointer.y) * 0.009));
+      pointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
+      topView = false;
+      topButton.setAttribute('aria-pressed', 'false');
+      schedule();
+    });
+    canvas.addEventListener('lostpointercapture', () => {
+      pointer = undefined;
+    });
+    canvas.addEventListener(
+      'wheel',
+      (event) => {
+        if (!views[selected]) return;
+        event.preventDefault();
+        zoom = Math.max(0.65, Math.min(4, zoom * Math.exp(-event.deltaY * 0.002)));
+        schedule();
+      },
+      { passive: false },
+    );
+    new ResizeObserver(schedule).observe(canvas);
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', schedule);
+    select(0);
+  })();
+</script>
