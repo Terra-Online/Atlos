@@ -99,6 +99,14 @@ pub fn duration(model: &Model, start_y: f64, end_y: f64) -> Option<f64> {
     Some(lift_off_speed(model) / model.gravity + model.apex_time + descent + coast)
 }
 
+pub(super) fn drop_duration(model: &Model, start_y: f64, end_y: f64) -> Option<f64> {
+    if end_y >= start_y - 1e-6 {
+        return None;
+    }
+    let (descent, coast) = descent_times(model, start_y - end_y);
+    Some(descent + coast)
+}
+
 fn collection_targets(start: Point, goal: Point, y: f64, interaction: &Interaction) -> Vec<Point> {
     let center = [goal[0], y, goal[2]];
     let radius = (interaction.radius.powi(2) - (y - goal[1]).powi(2))
@@ -357,11 +365,8 @@ impl World {
         ["jump", "drop"].map(|mode| {
             let duration = if mode == "jump" {
                 duration(base, start[1], end[1])
-            } else if end[1] < start[1] - 1e-6 {
-                let (fall, coast) = descent_times(base, start[1] - end[1]);
-                Some(fall + coast)
             } else {
-                None
+                drop_duration(base, start[1], end[1])
             }
             .filter(|time| *time > 0. && *time <= 60.)?;
             let speed = span / duration;

@@ -1,4 +1,4 @@
-use crate::{flight::PreparedFlight, geometry::*, types::*, world::World};
+use crate::{flight::PreparedFlight, geometry::*, region_flight, types::*, world::World};
 use std::{
     collections::{BTreeMap, HashMap},
     hash::{DefaultHasher, Hash, Hasher},
@@ -103,6 +103,7 @@ pub(super) struct Backbone {
     pub boost_uses: Vec<BoostUse>,
     pub preparation_ms: [f64; 4],
     pub proved_link_count: usize,
+    pub region_flights: Vec<region_flight::Search>,
     pub terminals: Vec<(Mark, Vec<(usize, Segment)>)>,
 }
 impl Backbone {
@@ -223,12 +224,26 @@ impl Backbone {
         // Landmarks can still be crowded out by nearby generated samples.
         // Authored links nominate a pair directly, with the same standing and
         // resource-aware motion proofs as automatically discovered edges.
+        let mut region_flights = Vec::new();
         let annotated: Vec<_> = links
             .iter()
             .filter_map(|link| {
+                let (from, to) = match *link {
+                    Link::Points { from, to } => (from, to),
+                    Link::FlightRegions { from, to } => {
+                        let (action, search) = region_flight::find(world, from, to);
+                        region_flights.push(search);
+                        let action = action?;
+                        return Some((
+                            port(action.start()),
+                            port(action.end()),
+                            Actions::Ordinary(Arc::new(action)),
+                        ));
+                    }
+                };
                 let prove = || {
-                    let from = world.standing(link.from)?;
-                    let to = world.standing(link.to)?;
+                    let from = world.standing(from)?;
+                    let to = world.standing(to)?;
                     if world.blocked(from, from, 0.) || world.blocked(to, to, 0.) {
                         return None;
                     }
@@ -241,7 +256,7 @@ impl Backbone {
                 };
                 let proof = prove();
                 if profile && proof.is_none() {
-                    eprintln!("ganglia-v2 rejected link {:?} to {:?}", link.from, link.to);
+                    eprintln!("ganglia-v2 rejected link {from:?} to {to:?}");
                 }
                 let (from, to, actions) = proof?;
                 Some((port(from), port(to), actions))
@@ -388,6 +403,7 @@ impl Backbone {
             conditional,
             boost_uses,
             proved_link_count,
+            region_flights,
             preparation_ms: [
                 samples_ms,
                 ports_ms,

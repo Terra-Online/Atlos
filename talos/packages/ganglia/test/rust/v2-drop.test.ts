@@ -60,6 +60,47 @@ test('v2 proves an annotated drop beyond its automatic neighbour range', async (
   }
 });
 
+test('v2 finds a directed drop between support regions without an annotated takeoff', async () => {
+  const from: Vec3 = [-1, 16.005, 0];
+  const to: Vec3 = [4, 0.005, 0];
+  for (const obstructed of [false, true]) {
+    const input = ledge(16);
+    if (obstructed) {
+      input.ground.options = {
+        ...input.ground.options,
+        walls: [{ min: [-3, 4, -3], max: [9, 6, 3], state: 'active' }],
+      };
+    }
+    const solver = await prepareGangliaV2(
+      gangliaV2Defaults,
+      input,
+      [],
+      [],
+      [],
+      [
+        {
+          from: { min: [-0.6, 15.9, -0.6], max: [0, 16.1, 0.6] },
+          to: { min: [2.1, -0.1, -0.6], max: [3.5, 0.1, 0.6] },
+        },
+      ],
+    );
+    try {
+      const before = solver.preparationStats();
+      const result = await solver.solve({
+        starts: [{ id: 'p', position: from, cost: 0, state: 'available' }],
+        goal: to,
+      });
+      assert.equal(result.route.status, obstructed ? 'no-verified-route' : 'complete');
+      if (result.route.status === 'complete') {
+        assert.ok(result.route.segments.some((segment) => segment.mode === 'drop'));
+      }
+      assert.deepEqual(solver.preparationStats(), before);
+    } finally {
+      await solver.close();
+    }
+  }
+});
+
 test('v2 falls from a supported ledge with no jump rise and keeps the prepared backbone fixed', async () => {
   const input = ledge();
   const solver = await prepareGangliaV2(

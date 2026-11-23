@@ -248,7 +248,7 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
                     ...landmarks.map(({ position }) => position),
                     ...hints.flatMap((hint) => hint.anchors),
                   ],
-                  hints.map((hint) => hint.layout),
+                  hints.map((hint) => hint.layout).filter((layout) => layout.length > 0),
                   hints.flatMap((hint) => hint.links),
                 );
               });

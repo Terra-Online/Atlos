@@ -3,6 +3,7 @@ import { createCoverage, physicalTileSpan } from '#@/src/model/coverage.ts';
 import { shifted, vector } from '#@/src/model/placement.ts';
 import { supportBounds } from '#@/src/model/supports.ts';
 import type { Bounds } from '#@/src/scene-pack.ts';
+import type { FlightRegionLink } from '#@/src/solver/ganglia-v2.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 
 /** Fixed preparation scopes, independent of query selection. The southern
@@ -72,14 +73,20 @@ export const anchors: Record<string, { position: Vec3; source: string }[]> = {
   ],
 };
 
+const enclosedStreetBoxRoof: FlightRegionLink['from'] = {
+  min: [-442, 93.9, -538.7],
+  max: [-440, 94.2, -536.7],
+};
+
 const scopeHints: Record<
   string,
   {
     scenario?: string;
     scope?: Bounds;
-    layout: { device: string; position: Vec3 }[];
+    layout?: { device: string; position: Vec3 }[];
     anchors?: Vec3[];
     paths?: Vec3[][];
+    flights?: FlightRegionLink[];
     source: string;
   }[]
 > = {
@@ -133,14 +140,19 @@ const scopeHints: Record<
       scenario: 'map01-034',
       scope: { min: [-608, -640], max: [-352, -416] },
       layout: [{ device: '2100390859', position: [-441, 92.51199645362794, -537.7] }],
-      // Use the box to enter the enclosed street, then reach the roof via
-      // three narrow support faces along the northern wall.
+      // Reach the placed box from the outer street, then vault the fence.
+      flights: [
+        {
+          from: { min: [-440, 92.5, -538.6], max: [-438.7, 92.9, -536.8] },
+          to: enclosedStreetBoxRoof,
+        },
+        {
+          from: enclosedStreetBoxRoof,
+          to: { min: [-442.6, 92.5, -535.2], max: [-439.4, 92.9, -533.6] },
+        },
+      ],
       paths: [
         [
-          [-439.64063408852155, 92.66699637631487, -536.8687261962891],
-          [-439.15000000596046, 92.66699636030334, -537.7],
-          [-441, 94.01699648343026, -537.7],
-          [-441, 92.6669964220809, -534.4],
           [-439, 92.66699642285687, -530],
           [-439.0575198716132, 92.6669964439848, -523.5002545077234],
           [-439.1000000000002, 92.6669964595884, -515.899999999999],
@@ -204,10 +216,14 @@ export function scopeAnnotations(
   if (!tiles) return [];
   const covered = createCoverage({ bounds, tiles, tileSpan: physicalTileSpan });
   return (scopeHints[scene] ?? [])
-    .map(({ anchors = [], paths = [], ...hint }) => ({
+    .map(({ anchors = [], paths = [], flights = [], layout = [], ...hint }) => ({
       ...hint,
+      layout,
       anchors: [...anchors, ...paths.flat()],
-      links: paths.flatMap((path) => path.slice(1).map((to, index) => ({ from: path[index], to }))),
+      links: [
+        ...paths.flatMap((path) => path.slice(1).map((to, index) => ({ from: path[index], to }))),
+        ...flights,
+      ],
     }))
     .filter(
       (hint) =>

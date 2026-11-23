@@ -17,6 +17,20 @@ export interface NavigationMark {
   interaction: InteractionGoal;
 }
 
+interface NavigationRegion {
+  min: Vec3;
+  max: Vec3;
+}
+
+export interface FlightRegionLink {
+  from: NavigationRegion;
+  to: NavigationRegion;
+}
+
+/** Points nominate an exact link. Regions ask preparation to find a flight
+ * between supported contacts inside the two volumes. Both links are directed. */
+export type NavigationLink = { from: Vec3; to: Vec3 } | FlightRegionLink;
+
 export interface OptimizationRound {
   elapsedMs: number;
   attempts: number;

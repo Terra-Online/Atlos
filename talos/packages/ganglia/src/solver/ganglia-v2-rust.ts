@@ -8,11 +8,16 @@ import type {
   RouteResult,
   SolveOptions,
 } from '#@/src/solver/contract.ts';
-import type { GangliaV2Config, NavigationMark, V2Diagnostics } from '#@/src/solver/ganglia-v2.ts';
+import type {
+  GangliaV2Config,
+  NavigationLink,
+  NavigationMark,
+  V2Diagnostics,
+} from '#@/src/solver/ganglia-v2.ts';
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 
 export { gangliaV2Defaults } from '#@/src/solver/ganglia-v2.ts';
-export type { GangliaV2Config, NavigationMark } from '#@/src/solver/ganglia-v2.ts';
+export type { GangliaV2Config, NavigationLink, NavigationMark } from '#@/src/solver/ganglia-v2.ts';
 
 interface NativeEngine {
   solve(query: string): Promise<string>;
@@ -53,7 +58,7 @@ export async function prepareGangliaV2(
   marks: readonly NavigationMark[],
   anchors: readonly Vec3[] = [],
   layouts: readonly (readonly { device: string; position: Vec3 }[])[] = [],
-  links: readonly { from: Vec3; to: Vec3 }[] = [],
+  links: readonly NavigationLink[] = [],
 ): Promise<V2PreparedSolver> {
   const { NativeEngine } = createRequire(import.meta.url)(gangliaV2LibraryPath()) as {
     NativeEngine: new (

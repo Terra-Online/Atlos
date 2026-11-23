@@ -29,7 +29,7 @@ pub fn horizontal(a: Point, b: Point) -> f64 {
     (a[0] - b[0]).hypot(a[2] - b[2])
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, serde::Deserialize)]
 pub struct Bounds {
     pub min: Point,
     pub max: Point,

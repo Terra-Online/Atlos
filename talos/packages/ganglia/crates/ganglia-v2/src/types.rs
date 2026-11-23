@@ -16,9 +16,16 @@ pub struct Input {
     pub config: Config,
 }
 #[derive(Clone, Deserialize)]
-pub struct Link {
-    pub from: Point,
-    pub to: Point,
+#[serde(untagged)]
+pub enum Link {
+    Points {
+        from: Point,
+        to: Point,
+    },
+    FlightRegions {
+        from: crate::geometry::Bounds,
+        to: crate::geometry::Bounds,
+    },
 }
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
