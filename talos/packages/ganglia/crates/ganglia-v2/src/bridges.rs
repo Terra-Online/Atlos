@@ -8,7 +8,8 @@ use serde::Serialize;
 use std::{
     cmp::Reverse,
     collections::{BTreeMap, HashMap, HashSet},
-    sync::Arc,
+    sync::{Arc, Mutex},
+    thread,
     time::Instant,
 };
 
@@ -67,11 +68,12 @@ impl Discovery {
                 }
             }
         }
-        let mut candidates = Vec::new();
-        for (from, &start) in nodes.iter().enumerate() {
-            if approaches[from].is_empty() {
-                continue;
-            }
+        let prove = |from: usize,
+                     outgoing: &mut Vec<ConditionalEdge>,
+                     candidates: &mut Vec<(f64, usize)>| {
+            let start = nodes[from];
+            let mut trials = 0;
+            let mut bridges = 0;
             candidates.clear();
             let origin = Bounds::points(&[start]);
             index.query_where(
@@ -114,19 +116,19 @@ impl Discovery {
             }
             candidates.sort_unstable_by(rank);
             let mut landings = 0;
-            for &(_, to) in &candidates {
-                self.sprint_bridge_trials += 1;
+            for &(_, to) in candidates.iter() {
+                trials += 1;
                 let mut proved = false;
                 for flight in world
                     .conditional_flights(start, nodes[to], &[])
                     .into_iter()
                     .flatten()
                 {
-                    conditional[from].push(ConditionalEdge {
+                    outgoing.push(ConditionalEdge {
                         to,
                         flight: Arc::new(flight),
                     });
-                    self.sprint_bridges += 1;
+                    bridges += 1;
                     proved = true;
                 }
                 landings += usize::from(proved);
@@ -134,7 +136,48 @@ impl Discovery {
                     break;
                 }
             }
-        }
+            (trials, bridges)
+        };
+        // Each departure selects and proves its own edges. Assign disjoint
+        // rows in batches to balance dense cliffs against open terrain.
+        const CHUNK: usize = 128;
+        let rows = Mutex::new(conditional[..nodes.len()].chunks_mut(CHUNK).enumerate());
+        let workers =
+            thread::available_parallelism().map_or(1, |count| (count.get() / 2).clamp(1, 6));
+        let (trials, bridges) = thread::scope(|scope| {
+            let handles: Vec<_> = (0..workers.min(nodes.len().div_ceil(CHUNK)))
+                .map(|_| {
+                    scope.spawn(|| {
+                        let mut candidates = Vec::new();
+                        let mut trials = 0;
+                        let mut bridges = 0;
+                        loop {
+                            let Some((chunk, rows)) = rows.lock().unwrap().next() else {
+                                break;
+                            };
+                            for (offset, outgoing) in rows.iter_mut().enumerate() {
+                                let from = chunk * CHUNK + offset;
+                                if !approaches[from].is_empty() {
+                                    let (row_trials, row_bridges) =
+                                        prove(from, outgoing, &mut candidates);
+                                    trials += row_trials;
+                                    bridges += row_bridges;
+                                }
+                            }
+                        }
+                        (trials, bridges)
+                    })
+                })
+                .collect();
+            handles
+                .into_iter()
+                .fold((0, 0), |(trials, bridges), handle| {
+                    let (worker_trials, worker_bridges) = handle.join().unwrap();
+                    (trials + worker_trials, bridges + worker_bridges)
+                })
+        });
+        self.sprint_bridge_trials = trials;
+        self.sprint_bridges = bridges;
         self.sprint_bridge_ms = started.elapsed().as_secs_f64() * 1000.;
         self.elapsed_ms += self.sprint_bridge_ms;
     }
