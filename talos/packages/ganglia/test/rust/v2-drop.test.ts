@@ -6,12 +6,12 @@ import { prepareGangliaV2, gangliaV2Defaults } from '#@/src/solver/ganglia-v2-ru
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 import { physical } from '#@/test/fixtures/v2-scene.ts';
 
-function ledge(): PhysicalInput {
+function ledge(height = 10): PhysicalInput {
   const upper: Vec3[] = [
-    [-2, 10, -2],
-    [-2, 10, 2],
-    [0, 10, 2],
-    [0, 10, -2],
+    [-2, height, -2],
+    [-2, height, 2],
+    [0, height, 2],
+    [0, height, -2],
   ];
   const lower: Vec3[] = [
     [2, 0, -2],
@@ -32,6 +32,33 @@ function ledge(): PhysicalInput {
     collision: { positions: triangles.flat(), indices: triangles.map((_, i) => i) },
   };
 }
+
+test('v2 proves an annotated drop beyond its automatic neighbour range', async () => {
+  const from: Vec3 = [0, 16.005, 0];
+  const to: Vec3 = [3, 0.005, 0];
+  for (const obstructed of [false, true]) {
+    const input = ledge(16);
+    if (obstructed) {
+      input.ground.options = {
+        ...input.ground.options,
+        walls: [{ min: [-3, 4, -3], max: [9, 6, 3], state: 'active' }],
+      };
+    }
+    const solver = await prepareGangliaV2(gangliaV2Defaults, input, [], [], [], [{ from, to }]);
+    try {
+      const result = await solver.solve({
+        starts: [{ id: 'p', position: from, cost: 0, state: 'available' }],
+        goal: to,
+      });
+      assert.equal(result.route.status, obstructed ? 'no-verified-route' : 'complete');
+      if (result.route.status === 'complete') {
+        assert.ok(result.route.segments.some((segment) => segment.mode === 'drop'));
+      }
+    } finally {
+      await solver.close();
+    }
+  }
+});
 
 test('v2 falls from a supported ledge with no jump rise and keeps the prepared backbone fixed', async () => {
   const input = ledge();

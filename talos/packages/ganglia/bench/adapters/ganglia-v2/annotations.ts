@@ -72,13 +72,14 @@ export const anchors: Record<string, { position: Vec3; source: string }[]> = {
   ],
 };
 
-const placementHints: Record<
+const scopeHints: Record<
   string,
   {
     scenario?: string;
     scope?: Bounds;
     layout: { device: string; position: Vec3 }[];
-    anchors: Vec3[];
+    anchors?: Vec3[];
+    paths?: Vec3[][];
     source: string;
   }[]
 > = {
@@ -89,6 +90,67 @@ const placementHints: Record<
       // Flat terrain 4279771580 supports the translated source box; mesh
       // 474682448 supplies the upper ledge. The anchor is the placed box edge contact.
       source: 'collision/4279771580+474682448;following/300001708',
+    },
+    {
+      scenario: 'map01-019',
+      scope: { min: [-576, -640], max: [-448, -448] },
+      layout: [
+        { device: '2100390859', position: [-513.5, 92.51199645362794, -526.5] },
+        { device: '2100390488', position: [-518.4, 92.51199645362794, -533] },
+      ],
+      // The west box reaches the outer ledge. The inner box and existing
+      // upper support continue the ascent to the roof.
+      paths: [
+        [
+          [-519.3424875895182, 92.6669964595884, -530.4912562052409],
+          [-520.6, 92.6669964595884, -531.8],
+          [-517.9499999999999, 94.01699645362794, -532.23],
+          [-515.2100000000002, 95.32904853626677, -531.2099999999998],
+          [-514.9233333333335, 95.33390105955978, -531.0566666666665],
+          [-514.3500000000003, 95.32808306017553, -530.7499999999998],
+          [-513.3, 92.67, -529.6499999999999],
+          [-513.5, 94.01699648343026, -527.45],
+          [-513.5, 94.01699648343026, -525.55],
+          [-512.9999877929688, 95.64000368595121, -522.0700073242188],
+          [-514.7894868456436, 96.5696714413893, -524.5438239614614],
+          [-514.7753249439254, 96.56967156384307, -525.2913430574124],
+        ],
+      ],
+      source: 'collision/185026747;following/2100390488+2100390859/roof-approach',
+    },
+    {
+      scenario: 'map01-019',
+      scope: { min: [-576, -640], max: [-448, -448] },
+      layout: [
+        {
+          device: '2100021143',
+          position: [-541.47998046875, 92.51199673329485, -609.239990234375],
+        },
+      ],
+      source: 'following/2100021143/south-roof',
+    },
+    {
+      scenario: 'map01-034',
+      scope: { min: [-608, -640], max: [-352, -416] },
+      layout: [{ device: '2100390859', position: [-441, 92.51199645362794, -537.7] }],
+      // Use the box to enter the enclosed street, then reach the roof via
+      // three narrow support faces along the northern wall.
+      paths: [
+        [
+          [-439.64063408852155, 92.66699637631487, -536.8687261962891],
+          [-439.15000000596046, 92.66699636030334, -537.7],
+          [-441, 94.01699648343026, -537.7],
+          [-441, 92.6669964220809, -534.4],
+          [-439, 92.66699642285687, -530],
+          [-439.0575198716132, 92.6669964439848, -523.5002545077234],
+          [-439.1000000000002, 92.6669964595884, -515.899999999999],
+          [-440.644752107858, 94.03385079395568, -515.9205518180665],
+          [-441.324583875268, 95.31853118580821, -516.4846846671692],
+          [-442.07324372270955, 96.705680017608, -518.0882513755295],
+          [-442.23815409362953, 96.70568001747097, -518.5271678043072],
+        ],
+      ],
+      source: 'collision/206182586;following/2100390859/north-steps',
     },
     {
       scenario: 'map01-037',
@@ -130,9 +192,9 @@ const placementHints: Record<
   ],
 };
 
-/** Admit fixed scene annotations only when original and selected box bodies
- * are fully covered. Native construction still proves placement and motion. */
-export function placementAnnotations(
+/** Admit fixed landmarks and layouts only within complete coverage.
+ * Native construction still proves support, placement and motion. */
+export function scopeAnnotations(
   scene: string,
   scenario: string,
   physical: PhysicalInput,
@@ -141,22 +203,32 @@ export function placementAnnotations(
   const tiles = physical.ground.tiles;
   if (!tiles) return [];
   const covered = createCoverage({ bounds, tiles, tileSpan: physicalTileSpan });
-  return (placementHints[scene] ?? []).filter(
-    (hint) =>
-      (!hint.scenario || hint.scenario === scenario) &&
-      (!hint.scope ||
-        (hint.scope.min.every((value, axis) => value === bounds.min[axis]) &&
-          hint.scope.max.every((value, axis) => value === bounds.max[axis]))) &&
-      hint.layout.every((placement) => {
-        const support = physical.devices?.followingSupports?.find((s) => s.id === placement.device);
-        if (!support) return false;
-        const delta = vector((axis) => placement.position[axis] - support.spawn[axis]);
-        return support.bodies.every((body) => {
-          const original = supportBounds([body]);
-          const selected = supportBounds([body.map((point) => shifted(point, delta))]);
-          return covered(original.min, original.max) && covered(selected.min, selected.max);
-        });
-      }) &&
-      hint.anchors.every((point) => covered(point, point, physical.ground.options.profile.radius)),
-  );
+  return (scopeHints[scene] ?? [])
+    .map(({ anchors = [], paths = [], ...hint }) => ({
+      ...hint,
+      anchors: [...anchors, ...paths.flat()],
+      links: paths.flatMap((path) => path.slice(1).map((to, index) => ({ from: path[index], to }))),
+    }))
+    .filter(
+      (hint) =>
+        (!hint.scenario || hint.scenario === scenario) &&
+        (!hint.scope ||
+          (hint.scope.min.every((value, axis) => value === bounds.min[axis]) &&
+            hint.scope.max.every((value, axis) => value === bounds.max[axis]))) &&
+        hint.layout.every((placement) => {
+          const support = physical.devices?.followingSupports?.find(
+            (s) => s.id === placement.device,
+          );
+          if (!support) return false;
+          const delta = vector((axis) => placement.position[axis] - support.spawn[axis]);
+          return support.bodies.every((body) => {
+            const original = supportBounds([body]);
+            const selected = supportBounds([body.map((point) => shifted(point, delta))]);
+            return covered(original.min, original.max) && covered(selected.min, selected.max);
+          });
+        }) &&
+        hint.anchors.every((point) =>
+          covered(point, point, physical.ground.options.profile.radius),
+        ),
+    );
 }

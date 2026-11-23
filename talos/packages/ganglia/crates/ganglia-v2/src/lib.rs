@@ -144,10 +144,11 @@ impl Engine {
                 &world,
                 input.marks.clone(),
                 input.anchors.clone(),
+                &input.links,
                 &proofs,
             );
             let after = proofs.stats();
-            layout_stats.push(json!({"layout":layouts.len(),"placements":picks,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),"conditionalEdgeCount":backbone.conditional.iter().map(Vec::len).sum::<usize>(),"buildMs":layout_started.elapsed().as_secs_f64()*1000.,"phasesMs":{"samples":backbone.preparation_ms[0],"portsAndIndex":backbone.preparation_ms[1],"edges":backbone.preparation_ms[2],"terminals":backbone.preparation_ms[3]},"pairProofsStored":after.0-before.0,"pairProofHits":after.1-before.1}));
+            layout_stats.push(json!({"layout":layouts.len(),"placements":picks,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),"conditionalEdgeCount":backbone.conditional.iter().map(Vec::len).sum::<usize>(),"provedLinkCount":backbone.proved_link_count,"buildMs":layout_started.elapsed().as_secs_f64()*1000.,"phasesMs":{"samples":backbone.preparation_ms[0],"portsAndIndex":backbone.preparation_ms[1],"edges":backbone.preparation_ms[2],"terminals":backbone.preparation_ms[3]},"pairProofsStored":after.0-before.0,"pairProofHits":after.1-before.1}));
             layouts.push(PreparedLayout {
                 world,
                 backbone,

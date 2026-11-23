@@ -11,7 +11,14 @@ pub struct Input {
     #[serde(default)]
     pub layouts: Vec<Vec<Placement>>,
     #[serde(default)]
+    pub links: Vec<Link>,
+    #[serde(default)]
     pub config: Config,
+}
+#[derive(Clone, Deserialize)]
+pub struct Link {
+    pub from: Point,
+    pub to: Point,
 }
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase", default)]

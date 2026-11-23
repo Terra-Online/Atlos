@@ -53,6 +53,7 @@ export async function prepareGangliaV2(
   marks: readonly NavigationMark[],
   anchors: readonly Vec3[] = [],
   layouts: readonly (readonly { device: string; position: Vec3 }[])[] = [],
+  links: readonly { from: Vec3; to: Vec3 }[] = [],
 ): Promise<V2PreparedSolver> {
   const { NativeEngine } = createRequire(import.meta.url)(gangliaV2LibraryPath()) as {
     NativeEngine: new (
@@ -80,6 +81,7 @@ export async function prepareGangliaV2(
       marks,
       anchors,
       layouts,
+      links,
       config: settings,
     }),
     surfaces,

@@ -102,10 +102,17 @@ pub(super) struct Backbone {
     pub conditional: Vec<Vec<ConditionalEdge>>,
     pub boost_uses: Vec<BoostUse>,
     pub preparation_ms: [f64; 4],
+    pub proved_link_count: usize,
     pub terminals: Vec<(Mark, Vec<(usize, Segment)>)>,
 }
 impl Backbone {
-    pub fn build(world: &World, marks: Vec<Mark>, anchors: Vec<Point>, proofs: &Proofs) -> Self {
+    pub fn build(
+        world: &World,
+        marks: Vec<Mark>,
+        anchors: Vec<Point>,
+        links: &[Link],
+        proofs: &Proofs,
+    ) -> Self {
         let profile = std::env::var_os("GANGLIA_PROFILE").is_some();
         let started = std::time::Instant::now();
         // Sparse interior representatives plus ledge samples. The lattice is a
@@ -206,13 +213,6 @@ impl Backbone {
             .into_iter()
             .map(&mut port)
             .collect();
-        let index = Index::new(
-            &nodes
-                .iter()
-                .map(|p| Bounds::points(&[*p]))
-                .collect::<Vec<_>>(),
-        );
-        let ports_ms = ports_started.elapsed().as_secs_f64() * 1000.;
         let boost_uses: Vec<_> = world
             .physical
             .devices
@@ -220,6 +220,40 @@ impl Backbone {
             .flat_map(|facts| &facts.devices)
             .filter_map(crate::devices::boost_usage)
             .collect();
+        // Landmarks can still be crowded out by nearby generated samples.
+        // Authored links nominate a pair directly, with the same standing and
+        // resource-aware motion proofs as automatically discovered edges.
+        let annotated: Vec<_> = links
+            .iter()
+            .filter_map(|link| {
+                let prove = || {
+                    let from = world.standing(link.from)?;
+                    let to = world.standing(link.to)?;
+                    if world.blocked(from, from, 0.) || world.blocked(to, to, 0.) {
+                        return None;
+                    }
+                    let actions = proofs.actions(world, from, to, &boost_uses);
+                    if matches!(&actions, Actions::Conditional(flights) if flights.iter().all(Option::is_none))
+                    {
+                        return None;
+                    }
+                    Some((from, to, actions))
+                };
+                let proof = prove();
+                if profile && proof.is_none() {
+                    eprintln!("ganglia-v2 rejected link {:?} to {:?}", link.from, link.to);
+                }
+                let (from, to, actions) = proof?;
+                Some((port(from), port(to), actions))
+            })
+            .collect();
+        let index = Index::new(
+            &nodes
+                .iter()
+                .map(|p| Bounds::points(&[*p]))
+                .collect::<Vec<_>>(),
+        );
+        let ports_ms = ports_started.elapsed().as_secs_f64() * 1000.;
         let mut edges: Vec<Vec<Edge>> = (0..nodes.len()).map(|_| Vec::new()).collect();
         let mut conditional: Vec<Vec<ConditionalEdge>> =
             (0..nodes.len()).map(|_| Vec::new()).collect();
@@ -291,6 +325,25 @@ impl Backbone {
         });
         let edges_ms = edges_started.elapsed().as_secs_f64() * 1000.;
         let terminals_started = Instant::now();
+        let proved_link_count = annotated.len();
+        for (from, to, actions) in annotated {
+            match actions {
+                Actions::Ordinary(action) if !edges[from].iter().any(|edge| edge.to == to) => {
+                    edges[from].push(Edge { to, action });
+                }
+                Actions::Conditional(flights)
+                    if !conditional[from].iter().any(|edge| edge.to == to) =>
+                {
+                    conditional[from].extend(
+                        flights
+                            .into_iter()
+                            .flatten()
+                            .map(|flight| ConditionalEdge { to, flight }),
+                    );
+                }
+                _ => {}
+            }
+        }
         for (from, to, action) in devices {
             edges[from].push(Edge {
                 to,
@@ -334,6 +387,7 @@ impl Backbone {
             boosts,
             conditional,
             boost_uses,
+            proved_link_count,
             preparation_ms: [
                 samples_ms,
                 ports_ms,
