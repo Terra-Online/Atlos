@@ -6,6 +6,10 @@ pub(super) struct PreparedFlight {
 }
 
 impl PreparedFlight {
+    pub(super) fn supports_unboosted(&self) -> bool {
+        self.requirement.speed <= self.requirement.base_cap + 1e-9
+    }
+
     pub fn variants<'a>(
         &'a self,
         base: &'a Model,

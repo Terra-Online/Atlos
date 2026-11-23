@@ -97,6 +97,40 @@ test('v2 proves the sprint approach before crossing a prepared fast-flight gap',
   assert.equal((await solve(scene(-10, 9, 0), -8)).route.status, 'no-verified-route');
 });
 
+test('v2 schedules two sprint gaps separated by a new run-up', async () => {
+  const input = scene(-10);
+  const middle = input.ground.surfaces[1];
+  input.ground.surfaces = [
+    input.ground.surfaces[0],
+    { ...middle, vertices: middle.vertices.map(([x, y, z]) => [x === 9 ? 9 : 21, y, z]) },
+    { id: 'second-landing', vertices: middle.vertices.map(([x, y, z]) => [x + 21, y, z]) },
+  ];
+  const triangles = input.ground.surfaces.flatMap(({ vertices: v }) => [
+    v[0],
+    v[1],
+    v[2],
+    v[0],
+    v[2],
+    v[3],
+  ]);
+  input.collision = { positions: triangles.flat(), indices: triangles.map((_, i) => i) };
+  const anchors: Vec3[] = [
+    [0, 0, 0],
+    [9, 0, 0],
+    [21, 0, 0],
+    [30, 0, 0],
+  ];
+  const result = await solve(input, -8, 30, anchors);
+  assert.equal(result.route.status, 'complete');
+  if (result.route.status !== 'complete') return;
+  assert.equal(
+    result.route.segments.filter(
+      (segment) => segment.mode === 'jump' && segment.requiredGait === 'sprint',
+    ).length,
+    2,
+  );
+});
+
 function boosted(duration: number, gap = 12): PhysicalInput {
   const input = scene(-5, gap, 0);
   input.devices = {
