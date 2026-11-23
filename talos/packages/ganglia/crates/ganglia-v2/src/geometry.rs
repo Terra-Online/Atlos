@@ -114,22 +114,37 @@ impl Index {
         }
         id
     }
-    pub fn query(&self, bounds: Bounds, mut visit: impl FnMut(usize) -> bool) -> bool {
-        !self.nodes.is_empty() && self.visit(0, bounds, &mut visit)
+    pub fn query(&self, bounds: Bounds, visit: impl FnMut(usize) -> bool) -> bool {
+        self.query_where(|candidate| candidate.overlaps(bounds), visit)
     }
-    fn visit(&self, id: usize, bounds: Bounds, visit: &mut impl FnMut(usize) -> bool) -> bool {
+
+    /// A rejected bounds test must exclude every item enclosed by those bounds.
+    pub fn query_where(
+        &self,
+        mut intersects: impl FnMut(Bounds) -> bool,
+        mut visit: impl FnMut(usize) -> bool,
+    ) -> bool {
+        !self.nodes.is_empty() && self.visit(0, &mut intersects, &mut visit)
+    }
+
+    fn visit(
+        &self,
+        id: usize,
+        intersects: &mut impl FnMut(Bounds) -> bool,
+        visit: &mut impl FnMut(usize) -> bool,
+    ) -> bool {
         let node = &self.nodes[id];
-        if !node.bounds.overlaps(bounds) {
+        if !intersects(node.bounds) {
             return false;
         }
         // Median splits bound recursion depth. Visit right first to preserve
         // the order used by support projection when candidates tie.
         if let Some((a, b)) = node.children {
-            self.visit(b, bounds, visit) || self.visit(a, bounds, visit)
+            self.visit(b, intersects, visit) || self.visit(a, intersects, visit)
         } else {
             node.items
                 .iter()
-                .any(|&item| self.item_bounds[item].overlaps(bounds) && visit(item))
+                .any(|&item| intersects(self.item_bounds[item]) && visit(item))
         }
     }
 }

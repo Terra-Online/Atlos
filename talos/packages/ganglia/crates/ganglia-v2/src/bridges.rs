@@ -1,8 +1,13 @@
+#[path = "bridge_regions.rs"]
+mod regions;
+
 use super::Edge;
 use crate::{flight, geometry::*, placement, region_flight, types::*, world::World};
+use regions::Regions;
 use serde::Serialize;
 use std::{
-    collections::{BTreeMap, HashSet},
+    cmp::Reverse,
+    collections::{BTreeMap, HashMap, HashSet},
     sync::Arc,
     time::Instant,
 };
@@ -15,7 +20,15 @@ const BOX_REGION_TRIALS: usize = 24;
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Discovery {
     walk_groups: usize,
+    ledge_regions: usize,
+    ledge_bounds_checks: usize,
+    ledge_bounds_pruned: usize,
+    ledge_patch_pairs: usize,
+    ledge_contact_checks: usize,
+    ledge_contact_pairs: usize,
     ledge_pairs: usize,
+    ledge_tried_pairs: usize,
+    ledge_enumeration_ms: f64,
     ledge_trials: usize,
     ledge_flights: usize,
     box_searches: Vec<region_flight::Search>,
@@ -91,61 +104,10 @@ pub(super) fn discover(
             }
         }
     }
-    let mut proposed = BTreeMap::<_, Vec<(f64, usize, usize)>>::new();
-    for &from in ledges {
-        let start = nodes[from];
-        let mut bounds = Bounds::points(&[start]).expand(local_radius);
-        bounds.min[1] = f64::NEG_INFINITY;
-        bounds.max[1] = start[1] + model.max_jump_height;
-        index.query(bounds, |to| {
-            if to >= support_count {
-                return false;
-            }
-            let pair = (groups[from], groups[to]);
-            if pair.0 == pair.1 || connected.contains(&pair) {
-                return false;
-            }
-            let end = nodes[to];
-            let span = horizontal(start, end);
-            if [
-                flight::duration(model, start[1], end[1]),
-                flight::drop_duration(model, start[1], end[1]),
-            ]
-            .into_iter()
-            .flatten()
-            .any(|time| time <= 60. && span <= time * speed + 1e-9)
-            {
-                let choices = proposed.entry(pair).or_default();
-                choices.push((distance(start, end), from, to));
-                choices
-                    .sort_unstable_by(|a, b| a.0.total_cmp(&b.0).then((a.1, a.2).cmp(&(b.1, b.2))));
-                choices.truncate(4);
-            }
-            false
-        });
-    }
-    stats.ledge_pairs = proposed.len();
-    let mut proposals: Vec<_> = proposed.into_iter().collect();
-    proposals.sort_by_key(|&((a, b), _)| std::cmp::Reverse(sizes[a].min(sizes[b])));
-    for (pair, choices) in proposals {
-        for (_, from, to) in choices {
-            if stats.ledge_trials == LEDGE_TRIALS {
-                break;
-            }
-            stats.ledge_trials += 1;
-            if let Some(action) = world
-                .drop(nodes[from], nodes[to])
-                .or_else(|| world.jump(nodes[from], nodes[to], None))
-            {
-                add_edge(edges, from, to, action);
-                connected.insert(pair);
-                stats.ledge_flights += 1;
-                break;
-            }
-        }
-        if stats.ledge_trials == LEDGE_TRIALS {
-            break;
-        }
+    for (from, to, action) in ledge_flights(world, nodes, edges, ledges, support_count, &mut stats)
+    {
+        add_edge(edges, from, to, action);
+        connected.insert((groups[from], groups[to]));
     }
 
     let vertical = world.physical.ground.options.max_vertical;
@@ -242,6 +204,164 @@ pub(super) fn discover(
     }
     stats.elapsed_ms = started.elapsed().as_secs_f64() * 1000.;
     stats
+}
+
+struct Patch {
+    region: usize,
+    bounds: Bounds,
+    contacts: Vec<usize>,
+}
+
+fn patches(
+    nodes: &[Point],
+    contacts: impl Iterator<Item = usize>,
+    regions: &Regions,
+) -> Vec<Patch> {
+    let mut cells = BTreeMap::<_, Vec<_>>::new();
+    for node in contacts {
+        let [x, y, z] = nodes[node];
+        // Match the ground sampling scale while keeping stacked supports in
+        // narrow height ranges. Every patch belongs to one directed region.
+        let cell = (
+            (x / 4.).floor() as i64,
+            y.floor() as i64,
+            (z / 4.).floor() as i64,
+        );
+        cells
+            .entry((regions.node[node], cell))
+            .or_default()
+            .push(node);
+    }
+    cells
+        .into_iter()
+        .map(|((region, _), contacts)| {
+            let bounds =
+                Bounds::points(&contacts.iter().map(|&node| nodes[node]).collect::<Vec<_>>());
+            Patch {
+                region,
+                bounds,
+                contacts,
+            }
+        })
+        .collect()
+}
+
+/// Reject a whole index branch using its highest possible departure, the
+/// lowest landing, and the closest possible horizontal span.
+fn reaches(model: &Model, speed: f64, from: Bounds, to: Bounds) -> bool {
+    let duration = flight::duration(model, from.max[1], to.min[1])
+        .or_else(|| flight::drop_duration(model, from.max[1], to.min[1]));
+    duration.is_some_and(|time| {
+        let dx = (from.min[0] - to.max[0])
+            .max(to.min[0] - from.max[0])
+            .max(0.);
+        let dz = (from.min[2] - to.max[2])
+            .max(to.min[2] - from.max[2])
+            .max(0.);
+        dx * dx + dz * dz <= (time.min(60.) * speed + 1e-9).powi(2)
+    })
+}
+
+fn ledge_flights(
+    world: &World,
+    nodes: &[Point],
+    edges: &[Vec<Edge>],
+    ledges: &[usize],
+    support_count: usize,
+    stats: &mut Discovery,
+) -> Vec<(usize, usize, Segment)> {
+    if ledges.is_empty() {
+        return Vec::new();
+    }
+    let started = Instant::now();
+    let regions = Regions::new(edges);
+    stats.ledge_regions = regions.count();
+    let model = &world.physical.movement.model;
+    let speed = model
+        .max_horizontal_speed
+        .min(world.physical.movement.run_air_speed);
+    let departures = patches(nodes, ledges.iter().copied(), &regions);
+    let index = Index::new(
+        &departures
+            .iter()
+            .map(|patch| patch.bounds)
+            .collect::<Vec<_>>(),
+    );
+    let landings = patches(nodes, 0..support_count, &regions);
+    let mut proposed = HashMap::<_, Vec<(f64, usize, usize)>>::new();
+    for landing in landings {
+        index.query_where(
+            |bounds| {
+                stats.ledge_bounds_checks += 1;
+                let possible = reaches(model, speed, bounds, landing.bounds);
+                stats.ledge_bounds_pruned += usize::from(!possible);
+                possible
+            },
+            |candidate| {
+                stats.ledge_patch_pairs += 1;
+                let departure = &departures[candidate];
+                let pair = (departure.region, landing.region);
+                if regions.has_connection(pair) {
+                    return false;
+                }
+                // Refine only across patches whose regions still need a
+                // directed connection. Exact contacts keep the bounds safe.
+                for &from in &departure.contacts {
+                    let origin = Bounds::points(&[nodes[from]]);
+                    if !reaches(model, speed, origin, landing.bounds) {
+                        continue;
+                    }
+                    for &to in &landing.contacts {
+                        stats.ledge_contact_checks += 1;
+                        if !reaches(model, speed, origin, Bounds::points(&[nodes[to]])) {
+                            continue;
+                        }
+                        stats.ledge_contact_pairs += 1;
+                        let choices = proposed.entry(pair).or_default();
+                        choices.push((distance(nodes[from], nodes[to]), from, to));
+                        choices.sort_unstable_by(|a, b| {
+                            a.0.total_cmp(&b.0).then((a.1, a.2).cmp(&(b.1, b.2)))
+                        });
+                        choices.truncate(4);
+                    }
+                }
+                false
+            },
+        );
+    }
+    stats.ledge_pairs = proposed.len();
+    let mut proposals: Vec<_> = proposed.into_iter().collect();
+    proposals.sort_by(|a, b| {
+        Reverse(regions.influence(a.0))
+            .cmp(&Reverse(regions.influence(b.0)))
+            .then_with(|| a.1[0].0.total_cmp(&b.1[0].0))
+            .then_with(|| a.0.cmp(&b.0))
+    });
+    stats.ledge_enumeration_ms = started.elapsed().as_secs_f64() * 1000.;
+    let mut flights = Vec::new();
+    let mut solved = HashSet::new();
+    for attempt in 0..4 {
+        for (pair, choices) in &proposals {
+            let Some(&(_, from, to)) = choices.get(attempt).filter(|_| !solved.contains(pair))
+            else {
+                continue;
+            };
+            if stats.ledge_trials == LEDGE_TRIALS {
+                return flights;
+            }
+            stats.ledge_trials += 1;
+            stats.ledge_tried_pairs += usize::from(attempt == 0);
+            if let Some(action) = world
+                .drop(nodes[from], nodes[to])
+                .or_else(|| world.jump(nodes[from], nodes[to], None))
+            {
+                flights.push((from, to, action));
+                solved.insert(*pair);
+                stats.ledge_flights += 1;
+            }
+        }
+    }
+    flights
 }
 
 fn port(nodes: &mut Vec<Point>, edges: &mut Vec<Vec<Edge>>, point: Point) -> usize {

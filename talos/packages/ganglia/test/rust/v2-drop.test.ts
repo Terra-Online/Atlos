@@ -6,7 +6,7 @@ import { prepareGangliaV2, gangliaV2Defaults } from '#@/src/solver/ganglia-v2-ru
 import type { PhysicalInput } from '#@/src/solver/physical.ts';
 import { physical } from '#@/test/fixtures/v2-scene.ts';
 
-function ledge(height = 10): PhysicalInput {
+function ledge(height = 10, gap = 2): PhysicalInput {
   const upper: Vec3[] = [
     [-2, height, -2],
     [-2, height, 2],
@@ -14,10 +14,10 @@ function ledge(height = 10): PhysicalInput {
     [0, height, -2],
   ];
   const lower: Vec3[] = [
-    [2, 0, -2],
-    [2, 0, 2],
-    [8, 0, 2],
-    [8, 0, -2],
+    [gap, 0, -2],
+    [gap, 0, 2],
+    [gap + 6, 0, 2],
+    [gap + 6, 0, -2],
   ];
   const triangles = [upper, lower].flatMap((v) => [v[0], v[1], v[2], v[0], v[2], v[3]]);
   return {
@@ -101,10 +101,10 @@ test('v2 finds a directed drop between support regions without an annotated take
   }
 });
 
-test('v2 discovers a flight across a drop during preparation', async () => {
-  const from: Vec3 = [-1, 16.005, 0];
-  const to: Vec3 = [4, 0.005, 0];
-  const solver = await prepareGangliaV2(gangliaV2Defaults, ledge(16), []);
+test('v2 discovers a directed flight beyond level-jump range during preparation', async () => {
+  const from: Vec3 = [-1, 24.005, 0];
+  const to: Vec3 = [10, 0.005, 0];
+  const solver = await prepareGangliaV2(gangliaV2Defaults, ledge(24, 9), []);
   try {
     const before = solver.preparationStats();
     const result = await solver.solve({
