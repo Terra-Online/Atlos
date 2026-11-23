@@ -1,6 +1,9 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
 
+import { z } from 'zod';
+
+import { createRenderer } from '#@/scripts/inspect/renderer.ts';
 import type { Vec3 } from '#@/src/geometry.ts';
 import type { RouteQuery, RouteResult } from '#@/src/solver/contract.ts';
 
@@ -13,7 +16,7 @@ interface Capture {
     min: Vec3;
     max: Vec3;
     triangles: [Vec3, Vec3, Vec3][];
-    nodes: [position: Vec3, fromStart: boolean, toGoal: boolean][];
+    nodes: [position: Vec3, fromStart: boolean, toGoal: boolean, component?: number][];
     edges: [from: number, to: number, mode: string, conditional: boolean][];
   }[];
 }
@@ -23,10 +26,33 @@ interface Trace {
   points: readonly Vec3[];
 }
 
+const point = z.tuple([z.number(), z.number(), z.number()]);
+const tone = z.enum(['ink', 'path', 'barrier', 'start', 'goal']).optional();
+// Overlay positions are world-space XYZ, so the same object can appear in several windows.
+const overlay = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('label'),
+    at: point,
+    text: z.string(),
+    align: z.enum(['left', 'right']).optional(),
+    tone,
+  }),
+  z.object({
+    kind: z.literal('line'),
+    points: z.array(point).min(2),
+    dashed: z.boolean().optional(),
+    alwaysRender: z.boolean().optional(),
+    tone,
+  }),
+  z.object({ kind: z.literal('face'), points: z.array(point).min(3), tone }),
+]);
+type Overlay = z.infer<typeof overlay>;
+
 interface Annotation {
   title?: string;
   detail?: string;
   angle?: [yaw: number, pitch: number];
+  objects?: Overlay[];
   labels?: [position: Vec3, label: string][];
   gap?: [Vec3, Vec3];
   obstruction?: [Vec3, Vec3, Vec3];
@@ -73,6 +99,15 @@ const data = {
   coverage: capture.coverage,
   views: capture.views.map((view, index) => {
     const note = annotations.views?.[index] ?? {};
+    // Older captures can still be annotated with their existing fields.
+    const objects: Overlay[] = [
+      ...(note.obstruction ? [{ kind: 'face' as const, points: note.obstruction }] : []),
+      ...(note.gap
+        ? [{ kind: 'line' as const, points: note.gap, tone: 'barrier' as const, dashed: true }]
+        : []),
+      ...(note.labels ?? []).map(([at, text]): Overlay => ({ kind: 'label', at, text })),
+      ...z.array(overlay).parse(note.objects ?? []),
+    ];
     const center = view.min.map((value, axis) => (value + view.max[axis]) / 2);
     const local = (point: Vec3): Vec3 => [
       Math.round((point[0] - center[0]) * 100) / 100,
@@ -80,14 +115,17 @@ const data = {
       Math.round((point[2] - center[2]) * 100) / 100,
     ];
     return {
-      ...note,
+      title: note.title,
+      detail: note.detail,
+      angle: note.angle,
       min: local(view.min),
       max: local(view.max),
       center,
       triangles: view.triangles.map((triangle) => triangle.map(local)),
-      nodes: view.nodes.map(([point, start, goal]) => [
+      nodes: view.nodes.map(([point, start, goal, component]) => [
         local(point),
         Number(start) + 2 * Number(goal),
+        component ?? null,
       ]),
       edges: view.edges.map(([from, to, mode, conditional]) => [
         from,
@@ -95,16 +133,18 @@ const data = {
         conditional ? 2 : Number(mode !== 'walk'),
       ]),
       trace: (note.trace ?? trace).map(({ mode, points }) => ({ mode, points: points.map(local) })),
-      labels: note.labels?.map(([position, label]) => [local(position), label]),
-      gap: note.gap?.map(local),
-      obstruction: note.obstruction?.map(local),
+      objects: objects.map((object) =>
+        object.kind === 'label'
+          ? { ...object, at: local(object.at) }
+          : { ...object, points: object.points.map(local) },
+      ),
     };
   }),
 };
 const template = await readFile(new URL('viewer.html', import.meta.url), 'utf8');
-const fragment = template.replace('/* SCENE_DATA */', () =>
-  JSON.stringify(data).replaceAll('<', '\\u003c'),
-);
+const fragment = template
+  .replace('/* CANVAS_RENDERER */', () => createRenderer.toString())
+  .replace('/* SCENE_DATA */', () => JSON.stringify(data).replaceAll('<', '\\u003c'));
 const output = values.fragment
   ? fragment
   : `<!doctype html>\n<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Ganglia 骨干查看器</title><style>body{max-width:1100px;margin:24px auto;padding:0 12px;background:#10161e;color:#e7eef5;font:15px system-ui,sans-serif}</style></head><body>\n${fragment}\n</body></html>\n`;

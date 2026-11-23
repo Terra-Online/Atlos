@@ -5,6 +5,7 @@ mod contact_search;
 mod devices;
 mod flight;
 mod geometry;
+mod graph;
 mod inspect;
 mod locomotion;
 #[cfg(feature = "napi")]
