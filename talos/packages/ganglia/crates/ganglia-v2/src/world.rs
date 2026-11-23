@@ -537,6 +537,18 @@ impl World {
             index.query(bounds, |i| {
                 let t = triangles[i];
                 let limit = radius - 1e-6;
+                let normal = cross(sub(t[1], t[0]), sub(t[2], t[0]));
+                let normal_squared = dot(normal, normal);
+                if normal_squared > 1e-20 {
+                    // A triangle lies within its plane. If the entire capsule
+                    // axis sweep is farther from that plane than the radius,
+                    // the exact triangle distance cannot obstruct the motion.
+                    let span = axis.map(|p| dot(sub(p, t[0]), normal));
+                    let limit = (limit + 1e-8) * normal_squared.sqrt();
+                    if span.iter().all(|&d| d > limit) || span.iter().all(|&d| d < -limit) {
+                        return false;
+                    }
+                }
                 triangles_within([axis[0], axis[1], axis[2]], t, limit)
                     || triangles_within([axis[0], axis[2], axis[3]], t, limit)
             })
