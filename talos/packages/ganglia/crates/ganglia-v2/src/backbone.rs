@@ -173,27 +173,44 @@ impl Backbone {
                 ledges.entry(key(point, 2.)).or_insert(point);
             }
         }
-        let interior_count = interior.len();
-        let ledge_count = ledges.len();
-        let mut ledge_nodes = Vec::new();
-        let mut nodes: Vec<_> = interior
-            .into_values()
-            .chain(ledges.into_values())
-            .chain(anchors)
-            .chain(world.box_contacts())
-            .enumerate()
-            .filter_map(|(sample, p)| {
-                let point = world.standing(p)?;
-                (!world.blocked(point, point, 0.)).then_some((sample, point))
-            })
-            .enumerate()
-            .map(|(node, (sample, point))| {
-                if (interior_count..interior_count + ledge_count).contains(&sample) {
-                    ledge_nodes.push(node);
-                }
-                point
-            })
+        // Reduce work on large windows. Height bins and the separate, denser
+        // ledge lattice preserve samples for stacked floors and takeoffs.
+        const SAMPLE_TARGET: f64 = 85_000.;
+        let spacing_scale =
+            (((interior.len() + ledges.len()) as f64 / SAMPLE_TARGET).sqrt()).clamp(1., 2.);
+        let standing = |p| {
+            world
+                .standing(p)
+                .filter(|&point| !world.blocked(point, point, 0.))
+        };
+        let representatives = |samples: BTreeMap<_, Point>, spacing| {
+            let mut retained = BTreeMap::new();
+            for (cell, sample) in samples {
+                let Some(feet) = standing(sample) else {
+                    continue;
+                };
+                let group = if spacing_scale > 1. {
+                    key(feet, spacing)
+                } else {
+                    cell
+                };
+                retained.entry(group).or_insert(feet);
+            }
+            retained.into_values()
+        };
+        let interiors = representatives(interior, 4. * spacing_scale);
+        let ledges = representatives(ledges, 2. * spacing_scale);
+        let ledge_nodes: Vec<_> = (interiors.len()..interiors.len() + ledges.len()).collect();
+        let mut nodes: Vec<_> = interiors
+            .chain(ledges)
+            .chain(
+                anchors
+                    .into_iter()
+                    .chain(world.box_contacts())
+                    .filter_map(standing),
+            )
             .collect();
+        let neighbour_count = (24. / spacing_scale).round() as usize;
         let support_count = nodes.len();
         let samples_ms = started.elapsed().as_secs_f64() * 1000.;
         let ports_started = Instant::now();
@@ -341,7 +358,7 @@ impl Backbone {
                             nearby.sort_unstable_by(|&j, &k| {
                                 distance(a, nodes[j]).total_cmp(&distance(a, nodes[k]))
                             });
-                            for &j in nearby.iter().take(24) {
+                            for &j in nearby.iter().take(neighbour_count) {
                                 match proofs.actions(world, a, nodes[j], boost_uses) {
                                     Actions::Ordinary(action) => edges.push(Edge { to: j, action }),
                                     Actions::Conditional(flights) => conditional.extend(
