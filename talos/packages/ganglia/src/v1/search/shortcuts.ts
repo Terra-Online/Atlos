@@ -142,6 +142,8 @@ interface Takeoff extends Witness {
   cell: string;
   exit?: [number, number];
   walk: number;
+  lastLandingBoundary: IndexedBoundary | undefined;
+  lastLandingFace: LandingFace | undefined;
 }
 interface Candidate {
   start: Takeoff;
@@ -1166,32 +1168,36 @@ function findConnections(
       walk: approach.has(nav.surface)
         ? approach.get(nav.surface)! + distance(centers.get(nav.surface)!, nav.position)
         : distance(from, nav.position),
+      lastLandingBoundary: undefined,
+      lastLandingFace: undefined,
     });
   }
-  const eligible = (id: string) => !frontier || (reverse ? departure.has(id) : !approach.has(id));
-  const landingQueries: LandingQuery[] =
-    cursor?.landingQueries ??
-    [
+  let landingQueries: LandingQuery[] | undefined = cursor?.landingQueries;
+  if (!landingQueries) {
+    // Both BVHs share the same component rules. Classify each representative
+    // once, including components whose entries are split across many leaves.
+    const groupKind = new Uint8Array(prepared.representatives.length);
+    for (let group = 0; group < groupKind.length; group++) {
+      const id = prepared.representatives[group];
+      const connected = departure.has(id);
+      if (!frontier || (reverse ? connected : !approach.has(id))) {
+        groupKind[group] = connected ? 1 : 2;
+      }
+    }
+    landingQueries = [
       ...(frontier
-        ? [true, false].map((connected): LandingQuery => ({
+        ? [1, 2].map((kind): LandingQuery => ({
             boundary: true,
-            query: prepared.boundaryIndex.filterGroups(
-              (group: number) =>
-                eligible(prepared.representatives[group]) &&
-                departure.has(prepared.representatives[group]) === connected,
-            ),
+            query: prepared.boundaryIndex.filterGroups((group) => groupKind[group] === kind),
           }))
         : []),
-      ...[true, false].map((connected): LandingQuery => ({
+      ...[1, 2].map((kind): LandingQuery => ({
         boundary: false,
-        query: prepared.landingIndex.filterGroups(
-          (group: number) =>
-            eligible(prepared.representatives[group]) &&
-            departure.has(prepared.representatives[group]) === connected,
-        ),
+        query: prepared.landingIndex.filterGroups((group) => groupKind[group] === kind),
       })),
     ].filter(({ query }) => !query.empty);
-  if (cursor) cursor.landingQueries = landingQueries;
+    if (cursor) cursor.landingQueries = landingQueries;
+  }
   const rejectedPairs = cursor?.rejected ?? new Set<string>();
   const startKeys = new WeakMap<Takeoff, string>();
   const pairKey = (start: Takeoff, end: Witness) => {
@@ -1310,6 +1316,13 @@ function findConnections(
         continue;
       }
       diagnostics.neighbourChecks++;
+      // The two ranking heights may produce the same boundary consecutively.
+      // Retain the original neighbour slot. Frontier witnesses that passed
+      // discovery already occupy pairSeen; the remaining tests are identical.
+      if (cursor) {
+        if (start.lastLandingBoundary === next.value) continue;
+        start.lastLandingBoundary = next.value;
+      }
       ends = project(boundaryLanding(next.value, start.position, profile.radius / 2), {
         maxVertical,
       });
@@ -1321,6 +1334,10 @@ function findConnections(
         continue;
       }
       diagnostics.neighbourChecks++;
+      if (cursor) {
+        if (start.lastLandingFace === next.value) continue;
+        start.lastLandingFace = next.value;
+      }
       if (dominated && fullSources.has(start.cell) && dominated(start, next.value)) {
         diagnostics.dominatedFaces++;
         continue;
