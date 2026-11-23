@@ -33,6 +33,12 @@ From the Ganglia package, render an inspection window to PNG.
 node scripts/inspect/view.ts --result path/to/case.json --view 1 --output path/to/view.png
 ```
 
+PNG output contains only the rendered canvas and defaults to 600 × 800. Use `--render-config config.json`
+to set `width`, `height`, `layers` (`mesh`, `graph`, `trace`, `components`),
+`occlusion` (`dash` or `hide`), `contourSamples` (1 or 2), or `hud` (scale and view labels).
+For a numbered window, `camera` accepts `center` (world XYZ), `yaw` and `pitch` (radians),
+and `distance` and `focalLength`.
+
 Use `--view overview` for the corridor overview when captured and `--annotations <notes.json>`
 for overlays. Use an `.html` output for interactive inspection. PNG output uses Playwright
 Chromium (`pnpm exec playwright install chromium` from `talos`), or installed Google Chrome

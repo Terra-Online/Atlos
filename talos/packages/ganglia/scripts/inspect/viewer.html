@@ -214,9 +214,13 @@
     const data = JSON.parse(document.getElementById('ganglia-viewer-data').textContent);
     const root = document.getElementById('ganglia-viewer');
     const canvas = root.querySelector('canvas');
+    const renderOptions = data.render;
+    const cameraOptions = renderOptions?.camera;
+    const showHud = renderOptions?.hud ?? !renderOptions;
     const renderer = createRenderer(canvas, {
       viewport: { width: 0, height: 0, pixelRatio: 1 },
       camera: { center: [0, 0, 0], yaw: 0, pitch: 0, distance: 1, focalLength: 1 },
+      occlusion: renderOptions?.occlusion,
     });
     const { camera, viewport } = renderer.state;
     const detail = root.querySelector('.detail');
@@ -226,7 +230,13 @@
     const motionSamples = [];
     let lastTimingUpdate = -Infinity;
     let wheelTimer;
-    const settings = { mesh: true, graph: true, components: true, trace: true };
+    const settings = {
+      mesh: true,
+      graph: true,
+      components: true,
+      trace: true,
+      ...renderOptions?.layers,
+    };
     const componentToggle = root.querySelector('[data-layer="components"]');
     const reachabilityLegend = root.querySelectorAll('[data-reachability]');
     const componentPalette = [
@@ -287,14 +297,19 @@
       selected = index;
       const view = views[index];
       [camera.yaw, camera.pitch] = view?.angle ?? fallbackAngle;
-      camera.center = [0, 0, 0];
+      camera.yaw = cameraOptions?.yaw ?? camera.yaw;
+      camera.pitch = cameraOptions?.pitch ?? camera.pitch;
+      camera.center =
+        view && cameraOptions?.center
+          ? cameraOptions.center.map((value, axis) => value - view.center[axis])
+          : [0, 0, 0];
       sceneObjects = undefined;
       motionSamples.length = 0;
       lastTimingUpdate = -Infinity;
       initialArmLength = view
         ? Math.hypot(...view.max.map((value, axis) => value - view.min[axis])) || 1
         : 1;
-      camera.distance = initialArmLength;
+      camera.distance = cameraOptions?.distance ?? initialArmLength;
       stopMoving();
       topView = false;
       topButton.setAttribute('aria-pressed', 'false');
@@ -360,7 +375,7 @@
       const view = views[selected];
       if (view) {
         const moving = Boolean(pointer || heldKeys.size || wheelTimer);
-        renderer.state.contourSamples = moving ? 1 : 2;
+        renderer.state.contourSamples = moving ? 1 : (renderOptions?.contourSamples ?? 2);
         const { contourMs } = drawScene(view, elapsed);
         recordTiming(started, contourMs, moving);
       } else {
@@ -478,8 +493,10 @@
         );
         if (start && goal) tile(x + 0.5, z, 0.5, colors.goal, 0.85);
       }
-      for (const route of data.route)
-        objects.push(screen(stroke(route.points.map(at), colors.path, 2)));
+      if (settings.trace) {
+        for (const route of data.route)
+          objects.push(screen(stroke(route.points.map(at), colors.path, 2)));
+      }
       if (data.start) objects.push(screen(marker(at(data.start), '起点', colors.start, 'right')));
       objects.push(screen(marker(at(data.goal), '目标', colors.goal)));
       for (const [i, view] of data.views.entries()) {
@@ -494,11 +511,9 @@
           ),
         );
       }
-      return [
-        ...objects,
-        ...scaleBar(scale / span, 250),
-        caption(width - 64, height - 16, 'XZ 俯视'),
-      ];
+      return showHud
+        ? [...objects, ...scaleBar(scale / span, 250), caption(width - 64, height - 16, 'XZ 俯视')]
+        : objects;
     }
 
     function changeArmLength(factor) {
@@ -517,7 +532,7 @@
           0,
         );
       const fit = Math.min((width - 42) / extent(frame.right), (height - 43) / extent(frame.up));
-      camera.focalLength = fit * initialArmLength;
+      camera.focalLength = cameraOptions?.focalLength ?? fit * initialArmLength;
       const pressed = (key) => Number(heldKeys.has(key));
       const dolly = pressed('KeyE') - pressed('KeyQ');
       if (dolly) changeArmLength(Math.exp(dolly * 1.4 * elapsed));
@@ -532,6 +547,7 @@
         );
       }
       sceneObjects ??= localObjects(view);
+      if (!showHud) return renderer.render(sceneObjects);
       const hud = scaleBar(scale, scale > 50 ? 1 : 5);
       if (topView) hud.push(caption(width - 64, height - 16, 'XZ 俯视'));
       return renderer.render([...sceneObjects, ...hud]);

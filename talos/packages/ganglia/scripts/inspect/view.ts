@@ -49,6 +49,31 @@ const overlay = z.discriminatedUnion('kind', [
 ]);
 type Overlay = z.infer<typeof overlay>;
 
+const renderConfig = z.strictObject({
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  camera: z
+    .strictObject({
+      center: point.optional(),
+      yaw: z.number().optional(),
+      pitch: z.number().optional(),
+      distance: z.number().positive().optional(),
+      focalLength: z.number().positive().optional(),
+    })
+    .optional(),
+  layers: z
+    .strictObject({
+      mesh: z.boolean().optional(),
+      graph: z.boolean().optional(),
+      trace: z.boolean().optional(),
+      components: z.boolean().optional(),
+    })
+    .optional(),
+  occlusion: z.enum(['dash', 'hide']).optional(),
+  contourSamples: z.union([z.literal(1), z.literal(2)]).optional(),
+  hud: z.boolean().optional(),
+});
+
 interface Annotation {
   title?: string;
   detail?: string;
@@ -67,16 +92,21 @@ const { values } = parseArgs({
     annotations: { type: 'string' },
     layout: { type: 'string', default: '0' },
     view: { type: 'string' },
+    'render-config': { type: 'string' },
     fragment: { type: 'boolean' },
     chrome: { type: 'boolean' },
   },
 });
 if (!values.result || !values.output)
   throw new Error(
-    'Usage: node scripts/inspect/view.ts --result <case artifact.json> --output <view.html|view.png> [--view overview|1|2|...] [--layout 0] [--annotations <annotations.json>] [--fragment | --chrome]',
+    'Usage: node scripts/inspect/view.ts --result <case artifact.json> --output <view.html|view.png> [--view overview|1|2|...] [--layout 0] [--annotations <annotations.json>] [--render-config <render.json>] [--fragment | --chrome]',
   );
 const png = extname(values.output).toLowerCase() === '.png';
 if (png && values.fragment) throw new Error('--fragment requires HTML output.');
+if (!png && values['render-config']) throw new Error('--render-config requires PNG output.');
+const render = values['render-config']
+  ? renderConfig.parse(JSON.parse(await readFile(values['render-config'], 'utf8')))
+  : {};
 
 const artifact = JSON.parse(await readFile(values.result, 'utf8')) as {
   query: RouteQuery;
@@ -98,6 +128,8 @@ if (values.view === 'overview') {
     throw new Error(`Choose an inspection window from 1 to ${capture.views.length}.`);
   initialView = window - 1 + Number(Boolean(capture.coverage));
 }
+if (render.camera && capture.coverage && initialView === 0)
+  throw new Error('Camera parameters require a numbered inspection window.');
 
 const annotations: { title?: string; overview?: string; views?: Annotation[] } = values.annotations
   ? JSON.parse(await readFile(values.annotations, 'utf8'))
@@ -115,6 +147,7 @@ const trace: Trace[] =
     : [];
 const data = {
   initialView,
+  render: png ? render : undefined,
   title: annotations.title ?? 'Ganglia 骨干网络',
   overview: annotations.overview,
   start: artifact.query.starts[0]?.position,
@@ -172,9 +205,12 @@ const template = await readFile(new URL('viewer.html', import.meta.url), 'utf8')
 const fragment = template
   .replace('/* CANVAS_RENDERER */', () => createRenderer.toString())
   .replace('/* SCENE_DATA */', () => JSON.stringify(data).replaceAll('<', '\\u003c'));
+const captureStyle = png
+  ? 'body{max-width:none;margin:0;padding:0}body #ganglia-viewer{display:block}body #ganglia-viewer > :not(canvas){display:none}body #ganglia-viewer canvas{width:100vw;height:100vh;border-radius:0}'
+  : '';
 const output = values.fragment
   ? fragment
-  : `<!doctype html>\n<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Ganglia 骨干查看器</title><style>body{max-width:1100px;margin:24px auto;padding:0 12px;background:#10161e;color:#e7eef5;font:15px system-ui,sans-serif}</style></head><body>\n${fragment}\n</body></html>\n`;
+  : `<!doctype html>\n<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Ganglia 骨干查看器</title><style>body{max-width:1100px;margin:24px auto;padding:0 12px;background:#10161e;color:#e7eef5;font:15px system-ui,sans-serif}${captureStyle}</style></head><body>\n${fragment}\n</body></html>\n`;
 if (png) {
   const { chromium } = await import('playwright');
   const browser = await chromium.launch({
@@ -183,7 +219,7 @@ if (png) {
   });
   try {
     const page = await browser.newPage({
-      viewport: { width: 1200, height: 800 },
+      viewport: { width: render.width ?? 600, height: render.height ?? 800 },
       colorScheme: 'dark',
       offline: true,
     });
@@ -194,10 +230,9 @@ if (png) {
     await page.setContent(output);
     try {
       if (pageError) throw pageError;
-      await page.locator(`#ganglia-viewer[data-rendered-view="${initialView}"]`).screenshot({
+      await page.locator(`#ganglia-viewer[data-rendered-view="${initialView}"] canvas`).screenshot({
         path: values.output,
         timeout: 10_000,
-        style: '[data-render-timing] { display: none }',
       });
     } catch (error) {
       throw pageError ?? error;
