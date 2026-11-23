@@ -75,6 +75,7 @@ export const anchors: Record<string, { position: Vec3; source: string }[]> = {
 const placementHints: Record<
   string,
   {
+    scenario?: string;
     layout: { device: string; position: Vec3 }[];
     anchors: Vec3[];
     source: string;
@@ -88,17 +89,41 @@ const placementHints: Record<
       // 474682448 supplies the upper ledge. The anchor is the placed box edge contact.
       source: 'collision/4279771580+474682448;following/300001708',
     },
+    {
+      scenario: 'map01-037',
+      layout: [
+        {
+          device: '2100390488',
+          position: [-434.8389892578125, 92.51199627673695, -537.5650024414062],
+        },
+      ],
+      // The translated roof breaks the rise between the basin and the upper
+      // ledge. Keep both roof contacts visible to the prepared jump search.
+      anchors: [
+        [-437.1, 92.66699636490041, -537.5650024414062],
+        [-435.03900146484375, 94.01699630653927, -537.3650309244791],
+        [-434.6390075683594, 94.01699630653927, -537.7650349934896],
+        [-433.8000183105469, 95.33148283294871, -535.0499877929688],
+      ],
+      source: 'following/2100390488/basin-ledge',
+    },
   ],
 };
 
 /** Admit fixed scene annotations only when original and selected box bodies
  * are fully covered. Native construction still proves placement and motion. */
-export function placementAnnotations(scene: string, physical: PhysicalInput, bounds: Bounds) {
+export function placementAnnotations(
+  scene: string,
+  scenario: string,
+  physical: PhysicalInput,
+  bounds: Bounds,
+) {
   const tiles = physical.ground.tiles;
   if (!tiles) return [];
   const covered = createCoverage({ bounds, tiles, tileSpan: physicalTileSpan });
   return (placementHints[scene] ?? []).filter(
     (hint) =>
+      (!hint.scenario || hint.scenario === scenario) &&
       hint.layout.every((placement) => {
         const support = physical.devices?.followingSupports?.find((s) => s.id === placement.device);
         if (!support) return false;

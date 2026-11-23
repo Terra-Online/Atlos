@@ -233,7 +233,12 @@ export async function loadScenario(setup: WorkerSetup, checkpoint: () => void) {
               if (!preparationBounds)
                 throw new Error('ganglia-v2 requires an authored preparation scope');
               prepared = await scene.prepareSnapshot(preparationBounds, (physical) => {
-                const hints = placementAnnotations(source.scene, physical, preparationBounds);
+                const hints = placementAnnotations(
+                  source.scene,
+                  spec.id,
+                  physical,
+                  preparationBounds,
+                );
                 return prepareGangliaV2(
                   setup.config as GangliaV2Config,
                   physical,
