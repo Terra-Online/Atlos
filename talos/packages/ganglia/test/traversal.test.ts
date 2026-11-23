@@ -5,7 +5,7 @@ import { createCollisionWorld, type Capsule, type CollisionWorld } from '#@/src/
 import type { Portal, Surface, Vec3, Wall } from '#@/src/geometry.ts';
 import { createGoalProjector } from '#@/src/model/goals.ts';
 import type { GroundConnection } from '#@/src/route.ts';
-import { jumpConnection } from '#@/src/v1/motion/jumps.ts';
+import { jumpConnection, jumpDuration, jumpTravel } from '#@/src/v1/motion/jumps.ts';
 import { planGroundRoute, createGroundPlanner } from '#@/src/v1/route/ground.ts';
 import {
   type DiscoveryOptions,
@@ -449,6 +449,65 @@ test('keeps useful local jumps when sampling is denser and the distant reach bou
       );
       assert.equal(result.diagnostics.targetReached, true);
     }
+});
+
+test('admits exact regional reach at the apex, terminal-speed and capped-drop boundaries', () => {
+  const model = {
+    ...options.model,
+    gravity: 8,
+    fallingGravity: 8,
+    maxFallingSpeed: 4,
+    apexTime: 0.25,
+    maxHorizontalSpeed: 2,
+  };
+  const world: CollisionWorld = { groundAt: () => null, sweepCapsule: () => null };
+  const cases: ['jump' | 'drop', number, number, Partial<DiscoveryOptions['model']>?][] = [
+    ['jump', -2, 4],
+    ['jump', -1, 4, { startHorizontalSpeed: 4, airOverspeedDeceleration: 1 }],
+    ['drop', 0.5, 4],
+    ['drop', 1, 4],
+    ['drop', 3, 4],
+    ['drop', 3, 3],
+    // The terminal-speed formula rounds down at the capped drop, even though
+    // it is one representable value above the accelerating descent boundary.
+    [
+      'drop',
+      5.857438016528925,
+      5.857438016528926,
+      { fallingGravity: 10 / 7, maxFallingSpeed: 45 / 11 },
+    ],
+  ];
+  for (const [mode, drop, maxDrop, override] of cases) {
+    const movement = {
+      ...model,
+      maxJumpHeight: mode === 'jump' ? 2 : 0,
+      ...override,
+    };
+    const duration = jumpDuration(drop, 0, { ...movement, mode });
+    assert.ok(duration !== null);
+    const reach = jumpTravel(
+      movement.startHorizontalSpeed ?? movement.maxHorizontalSpeed,
+      duration,
+      movement,
+    );
+    for (const gap of [reach * (1 - Number.EPSILON), reach, reach * (1 + Number.EPSILON)]) {
+      const surfaces = [floor('source', -4, 0, drop), floor('goal', gap, gap + 4, 0)];
+      const { diagnostics } = findJumpConnections(
+        surfaces,
+        world,
+        {
+          ...options,
+          from: [-2, drop, 0],
+          to: [gap + 2, 0, 0],
+          maxVertical: 0,
+          maxDrop,
+          model: movement,
+        },
+        { regionSearches: 1 },
+      );
+      assert.equal(diagnostics.regionPairs, Number(gap <= reach), `${mode}/${drop}/${gap}`);
+    }
+  }
 });
 
 test('retains local routes when connected ground extends beyond the requested approach', () => {

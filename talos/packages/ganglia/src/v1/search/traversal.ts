@@ -28,7 +28,6 @@ import {
 import { landingCandidates } from '#@/src/v1/motion/landings.ts';
 import type { GroundPlanner } from '#@/src/v1/route/ground.ts';
 import { movementGeometry } from '#@/src/v1/route/movement-geometry.ts';
-import { createMinHeap } from '#@/src/v1/search/heap.ts';
 
 export interface DiscoveryOptions {
   profile: { radius: number; height: number };
@@ -122,15 +121,9 @@ interface Candidate extends Pair {
   uncertain: boolean;
   score: number;
 }
-interface Transfer {
-  a: Region;
-  b: Region;
-  ground: boolean;
-  reach: number;
-  closed: boolean;
-  cost: number;
+interface EdgeState {
   generation?: { pairs: Generator<Pair>; pending: Candidate[]; cursor: number; done: boolean };
-  search?: { candidates: Candidate[]; cursor: number; tried: Set<string> };
+  search: { candidates: Candidate[]; cursor: number; tried: Set<string> };
 }
 type Standing = { position: Vec3; surface: string; reason?: never };
 type Rejection = {
@@ -152,6 +145,14 @@ const distance = (a: readonly number[], b: readonly number[]) =>
   Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 const horizontal = (a: readonly number[], b: readonly number[]) =>
   Math.hypot(a[0] - b[0], a[2] - b[2]);
+const doubleColumn = <T extends Int32Array | Float64Array | Uint8Array>(
+  column: T,
+  Column: new (length: number) => T,
+): T => {
+  const grown = new Column(column.length * 2);
+  grown.set(column);
+  return grown;
+};
 export const exposedBoundaries = (
   surfaces: Surface[],
   portals: Portal[],
@@ -574,9 +575,6 @@ export function findJumpConnections(
         reachable.add(next);
         queue.push(next);
       }
-  const sourceComponents = new Set<number>(
-    [...reachable].map((index) => topology.components[index]),
-  );
   diagnostics.sourceComponent = sourceComponent;
   diagnostics.targetComponent = componentOf(targets[0].surface);
   diagnostics.goalFaces = targets.length;
@@ -628,6 +626,9 @@ export function findJumpConnections(
     return { regions, boundaries, queryRegions: createBoundsIndex(regions), groundTransfers };
   })();
   const { regions, boundaries, queryRegions, groundTransfers } = geometry.regions;
+  const regionCount = regions.length;
+  const sourceMask = new Uint8Array(regionCount);
+  for (const node of reachable) sourceMask[topology.components[node]] = 1;
   diagnostics.boundaryEdges = boundaries.length;
   const endpointTolerance = Math.min(maxVertical, profile.radius);
   // A sprint jump can launch above the sustained air cap. Candidate bounds
@@ -645,22 +646,98 @@ export function findJumpConnections(
     const duration = jumpDuration(drop, 0, jumpOptions);
     return duration === null ? null : Math.min(maxHorizontalDistance, travelAt(duration));
   };
-  let cappedReach: number | null | undefined;
+  const { gravity, fallingGravity, maxJumpHeight, maxFallingSpeed, apexTime, maxHorizontalSpeed } =
+    jumpOptions;
+  const jump = jumpOptions.mode === 'jump';
+  const lift = jump ? maxJumpHeight : 0;
+  let jumpBaseDuration = 0;
+  if (jump) {
+    jumpBaseDuration += Math.sqrt(2 * gravity * maxJumpHeight) / gravity;
+    if (apexTime > 0) jumpBaseDuration += apexTime;
+  }
+  const terminalTime = maxFallingSpeed / fallingGravity;
+  const terminalDistance = (maxFallingSpeed * terminalTime) / 2;
+  // Match verticalDuration(drop, 0, jumpOptions), including each separately
+  // rounded addition. Discovery already validated the model and mode.
+  const durationAtDrop = (drop: number) => {
+    const peak = drop + lift;
+    if (!Number.isFinite(peak)) return NaN;
+    if (peak < 0) return 0;
+    let duration = jumpBaseDuration;
+    const fallDistance = peak - 0;
+    if (fallDistance > 0) {
+      if (fallDistance <= terminalDistance) {
+        duration += Math.sqrt((2 * fallDistance) / fallingGravity);
+      } else {
+        duration += terminalTime;
+        duration += (fallDistance - terminalDistance) / maxFallingSpeed;
+      }
+    }
+    return duration;
+  };
+  const expires = 'expireAfter' in model && model.expireAfter !== undefined;
+  const overspeed = initialSpeed > maxHorizontalSpeed;
+  const deceleration = model.airOverspeedDeceleration!;
+  const brakingTime = overspeed ? (initialSpeed - maxHorizontalSpeed) / deceleration : 0;
+  const fastReachAtDrop = (drop: number) => {
+    const duration = durationAtDrop(drop);
+    if (!Number.isFinite(duration)) return reachAtDrop(drop);
+    if (duration <= 0) return null;
+    if (expires) return Math.min(maxHorizontalDistance, travelAt(duration));
+    if (!overspeed) return Math.min(maxHorizontalDistance, initialSpeed * duration);
+    const braking = Math.min(duration, brakingTime);
+    return Math.min(
+      maxHorizontalDistance,
+      initialSpeed * braking -
+        (deceleration * braking * braking) / 2 +
+        maxHorizontalSpeed * (duration - braking),
+    );
+  };
+  // An artificial upper drop can overflow for extreme models even when all
+  // actual region drops are finite. In that case check each actual pair.
+  const cappedDuration = durationAtDrop(maxDrop);
+  const cappedReach = Number.isFinite(cappedDuration) ? reachAtDrop(maxDrop) : undefined;
+  // The accelerating descent and terminal-speed formulas can round in
+  // opposite directions at the crossover. Include both sides in the bound.
+  const maxDuration =
+    maxDrop + lift > terminalDistance
+      ? Math.max(
+          cappedDuration,
+          jumpBaseDuration + Math.sqrt((2 * terminalDistance) / fallingGravity),
+        )
+      : cappedDuration;
+  const canDeferReach =
+    !expires && cappedReach != null && cappedReach >= 0 && Number.isFinite(maxDuration);
+  const variableBraking = jumpBaseDuration < brakingTime;
+  const maxBraking = Math.min(maxDuration, brakingTime);
+  // Once braking ends, its distance is constant and reach grows with coast
+  // time. While still braking, rounding can break monotonicity. Bound that
+  // phase by its largest launch term, before subtracting any braking loss.
+  let reachBound = maxHorizontalDistance;
+  if (canDeferReach) {
+    const upperReach = maxDuration === cappedDuration ? cappedReach : travelAt(maxDuration);
+    if (upperReach >= 0)
+      reachBound = Math.min(
+        maxHorizontalDistance,
+        variableBraking ? Math.max(upperReach, initialSpeed * maxBraking) : upperReach,
+      );
+  }
+  const queryHalfWidth = Math.min(maxHorizontalDistance, reachBound + 1e-6);
+  let minReach = canDeferReach && jump && jumpBaseDuration > 0 ? reachAtDrop(-maxJumpHeight) : null;
+  if (minReach !== null && variableBraking) {
+    // Use the smallest launch term and largest braking loss. Coast only
+    // adds distance for these bounds, even if the actual drop ends braking.
+    const maxLoss = (deceleration * maxBraking * maxBraking) / 2;
+    minReach = Math.min(minReach, initialSpeed * jumpBaseDuration - maxLoss);
+  }
   // Costs order optimistic chains. Every airborne step still needs motion validation.
-  const orderingSpeed = Math.max(1, model.maxHorizontalSpeed);
+  const orderingSpeed = Math.max(1, maxHorizontalSpeed);
   let regionPairs = 0;
-  const groundIncoming: (Map<number, Transfer> | undefined)[] = [];
+  const groundIncoming = new Array<number[] | undefined>(regionCount);
   const addGroundTransfer = (from: number, to: number) => {
-    const entries = (groundIncoming[to] ??= new Map());
-    if (entries.has(from)) return;
-    entries.set(from, {
-      a: regions[from],
-      b: regions[to],
-      ground: true,
-      reach: 0,
-      closed: false,
-      cost: 0,
-    });
+    const entries = (groundIncoming[to] ??= []);
+    if (entries.includes(from)) return;
+    entries.push(from);
     regionPairs++;
   };
   for (const [from, to] of groundTransfers) addGroundTransfer(from, to);
@@ -674,97 +751,168 @@ export function findJumpConnections(
           target = topology.components[to];
         if (source !== target) addGroundTransfer(source, target);
       }
-  const incoming: (Transfer[] | undefined)[] = [],
-    preparedIncoming: (Transfer[] | undefined)[] = [];
+  const airStart = new Int32Array(regionCount).fill(-1);
+  const airEnd = new Int32Array(regionCount);
+  const preparedIncoming = new Array<number[] | undefined>(regionCount);
+  const edgeStates = new Map<number, EdgeState>();
+  const initialCapacity = Math.min(65536, Math.max(1, regionCount * (regionCount - 1)));
+  let edgeFrom = new Int32Array(initialCapacity);
+  let edgeTo = new Int32Array(initialCapacity);
+  let edgeCost = new Float64Array(initialCapacity);
+  let edgeReach = new Float64Array(initialCapacity);
+  let edgeClosed = new Uint8Array(initialCapacity);
+  let edgeValidated = new Uint8Array(initialCapacity);
+  let edgeCount = 0;
   const pairingAvailable = () =>
     diagnostics.neighbourChecks < diagnostics.limits.neighbourChecks &&
     diagnostics.pairChecks < diagnostics.limits.pairChecks;
   const generationAvailable = () =>
     diagnostics.seedChecks < diagnostics.limits.seedChecks && pairingAvailable();
-  const neighbours = (b: Region): Transfer[] => {
+  const dropBetween = (a: Region, b: Region) =>
+    Math.min(maxDrop, a.max[1] - b.min[1] + 2 * endpointTolerance);
+  const scanIncoming = (b: Region) => {
     const component = b.component;
     const ground = groundIncoming[component];
-    if (!generationAvailable())
-      return [...(ground?.values() ?? []), ...(preparedIncoming[component] ?? [])];
-    const cached = incoming[component];
-    if (cached) return cached;
-    const entries = [...(ground?.values() ?? [])];
+    airStart[component] = edgeCount;
     // Keep the original tree and hit order: tied chains can spend the search
     // budget on different candidates if boundary-less regions are removed before indexing.
-    if (b.boundaries.length)
+    if (cappedReach !== null && b.boundaries.length)
       queryRegions.forEachBox(
-        b.min[0] - maxHorizontalDistance,
-        b.min[1] - model.maxJumpHeight - 2 * endpointTolerance,
-        b.min[2] - maxHorizontalDistance,
-        b.max[0] + maxHorizontalDistance,
+        b.min[0] - queryHalfWidth,
+        b.min[1] - maxJumpHeight - 2 * endpointTolerance,
+        b.min[2] - queryHalfWidth,
+        b.max[0] + queryHalfWidth,
         b.max[1] + maxDrop + 2 * endpointTolerance,
-        b.max[2] + maxHorizontalDistance,
+        b.max[2] + queryHalfWidth,
         (a) => {
           if (a === b || !a.boundaries.length) return;
-          const drop = Math.min(maxDrop, a.max[1] - b.min[1] + 2 * endpointTolerance);
-          if (-drop > model.maxJumpHeight || a.min[1] - b.max[1] - 2 * endpointTolerance > maxDrop)
+          const drop = dropBetween(a, b);
+          if (-drop > maxJumpHeight || a.min[1] - b.max[1] - 2 * endpointTolerance > maxDrop)
             return;
-          // Many pairs share the capped drop. Keep the exact reach for seed admission.
+          const dx = Math.max(a.min[0] - b.max[0], b.min[0] - a.max[0], 0);
+          const dz = Math.max(a.min[2] - b.max[2], b.min[2] - a.max[2], 0);
+          if (dx > reachBound || dz > reachBound) return;
+          const gap = dx === 0 && dz === 0 ? 0 : Math.hypot(dx, dz);
+          if (!(gap <= reachBound) || ground?.includes(a.component)) return;
+
           let reach: number | null;
-          if (Object.is(drop, maxDrop)) {
-            if (cappedReach === undefined) cappedReach = reachAtDrop(drop);
+          if (cappedReach !== undefined && Object.is(drop, maxDrop)) {
             reach = cappedReach;
+            if (reach === null || !(gap <= reach)) return;
+          } else if (
+            canDeferReach &&
+            ((gap === 0 &&
+              ((minReach !== null && minReach >= 0) ||
+                (!jump && drop > 0 && (2 * drop) / fallingGravity > 0))) ||
+              (minReach !== null && gap < minReach * (1 - 1e-12)))
+          ) {
+            // Seed admission uses the precise reach, so calculate it only if
+            // the edge reaches pair generation.
+            reach = NaN;
           } else {
-            reach = reachAtDrop(drop);
+            reach = fastReachAtDrop(drop);
+            if (reach === null || !(gap <= reach)) return;
           }
-          if (reach === null) return;
-          const gap = horizontalGap(a, b);
-          if (!(gap <= reach)) return;
-          // Each destination is scanned once. Reuse any directed ground transfer
-          // already admitted for the pair, otherwise the incoming list owns it.
-          const existing = ground?.get(a.component);
-          if (existing) entries.push(existing);
-          else {
-            entries.push({
-              a,
-              b,
-              ground: false,
-              reach,
-              closed: false,
-              cost: 1 + gap / orderingSpeed,
-            });
-            regionPairs++;
+
+          if (edgeCount === edgeFrom.length) {
+            edgeFrom = doubleColumn(edgeFrom, Int32Array);
+            edgeTo = doubleColumn(edgeTo, Int32Array);
+            edgeCost = doubleColumn(edgeCost, Float64Array);
+            edgeReach = doubleColumn(edgeReach, Float64Array);
+            edgeClosed = doubleColumn(edgeClosed, Uint8Array);
+            edgeValidated = doubleColumn(edgeValidated, Uint8Array);
           }
+          edgeFrom[edgeCount] = a.component;
+          edgeTo[edgeCount] = component;
+          edgeCost[edgeCount] = 1 + gap / orderingSpeed;
+          edgeReach[edgeCount] = reach;
+          edgeCount++;
+          regionPairs++;
         },
       );
-    incoming[component] = entries;
+    airEnd[component] = edgeCount;
     diagnostics.regionPairs = regionPairs;
-    return entries;
   };
-  const costs = new Float64Array(regions.length);
-  const next: (Transfer | undefined)[] = [];
-  const findChain = (): Transfer[] | null => {
-    const pending = createMinHeap<{ region: Region; cost: number }>();
+  const costs = new Float64Array(regionCount);
+  const nextEdge = new Int32Array(regionCount);
+  const nextDest = new Int32Array(regionCount);
+  let heapComp = new Int32Array(Math.min(1024, regionCount));
+  let heapCost = new Float64Array(heapComp.length);
+  let heapSize = 0;
+  const pushHeap = (component: number, cost: number) => {
+    if (heapSize === heapComp.length) {
+      heapComp = doubleColumn(heapComp, Int32Array);
+      heapCost = doubleColumn(heapCost, Float64Array);
+    }
+    let index = heapSize++;
+    while (index > 0) {
+      const parent = (index - 1) >> 1;
+      if (heapCost[parent] <= cost) break;
+      heapComp[index] = heapComp[parent];
+      heapCost[index] = heapCost[parent];
+      index = parent;
+    }
+    heapComp[index] = component;
+    heapCost[index] = cost;
+  };
+  const relax = (component: number, dest: number, edgeId: number, cost: number) => {
+    if (cost >= costs[component]) return;
+    costs[component] = cost;
+    nextEdge[component] = edgeId;
+    nextDest[component] = dest;
+    pushHeap(component, cost);
+  };
+  const relaxAir = (edgeId: number, dest: number, travelled: number) => {
+    if (edgeClosed[edgeId]) return;
+    relax(edgeFrom[edgeId], dest, edgeId, travelled + edgeCost[edgeId]);
+  };
+  const findChain = (): number[] | null => {
+    heapSize = 0;
     costs.fill(Infinity);
-    // Every reached component overwrites its successor on insertion. Reset
-    // target roots as well so chains cannot follow successors from an earlier search.
+    // Every insertion overwrites its successor. Reset the target roots as
+    // well: -2 terminates the chain, while -1 follows a ground transfer.
     for (const component of targetComponents) {
       costs[component] = 0;
-      next[component] = undefined;
-      pending.push({ region: regions[component], cost: 0 });
+      nextEdge[component] = -2;
+      pushHeap(component, 0);
     }
-    while (pending.size) {
-      const { region, cost: travelled } = pending.pop()!;
-      if (travelled !== costs[region.component]) continue;
-      if (sourceComponents.has(region.component)) {
-        const chain: Transfer[] = [];
-        for (let entry = next[region.component]; entry; entry = next[entry.b.component])
-          chain.push(entry);
+    while (heapSize > 0) {
+      const dest = heapComp[0];
+      const travelled = heapCost[0];
+      // Keep the same tie order as createMinHeap, including equal children.
+      const lastComp = heapComp[--heapSize];
+      const lastCost = heapCost[heapSize];
+      if (heapSize > 0) {
+        let index = 0;
+        while (index * 2 + 1 < heapSize) {
+          let child = index * 2 + 1;
+          if (child + 1 < heapSize && heapCost[child + 1] < heapCost[child]) child++;
+          if (heapCost[child] >= lastCost) break;
+          heapComp[index] = heapComp[child];
+          heapCost[index] = heapCost[child];
+          index = child;
+        }
+        heapComp[index] = lastComp;
+        heapCost[index] = lastCost;
+      }
+
+      if (travelled !== costs[dest]) continue;
+      if (sourceMask[dest]) {
+        const chain: number[] = [];
+        for (let component = dest; nextEdge[component] !== -2; component = nextDest[component]) {
+          const id = nextEdge[component];
+          if (id >= 0) chain.push(id);
+        }
         return chain;
       }
-      for (const entry of neighbours(region)) {
-        if (entry.closed) continue;
-        const cost = travelled + entry.cost;
-        const component = entry.a.component;
-        if (cost >= costs[component]) continue;
-        costs[component] = cost;
-        next[component] = entry;
-        pending.push({ region: entry.a, cost });
+      const ground = groundIncoming[dest];
+      if (ground) for (const component of ground) relax(component, dest, -1, travelled);
+      if (generationAvailable()) {
+        if (airStart[dest] === -1) scanIncoming(regions[dest]);
+        for (let id = airStart[dest]; id < airEnd[dest]; id++) relaxAir(id, dest, travelled);
+      } else {
+        const prepared = preparedIncoming[dest];
+        if (prepared) for (const id of prepared) relaxAir(id, dest, travelled);
       }
     }
     return null;
@@ -908,10 +1056,15 @@ export function findJumpConnections(
     }
     return interleave([...cells.values()], seeds.length);
   };
-  const pairsFor = function* ({ a, b, reach }: Transfer): Generator<Pair> {
+  const pairsFor = function* (edgeId: number, a: Region, b: Region): Generator<Pair> {
     if (diagnostics.seedChecks >= diagnostics.limits.seedChecks) {
       diagnostics.truncated = true;
       return;
+    }
+    let reach = edgeReach[edgeId];
+    if (Number.isNaN(reach)) {
+      reach = reachAtDrop(dropBetween(a, b))!;
+      edgeReach[edgeId] = reach;
     }
     const available = diagnostics.limits.seedChecks - diagnostics.seedChecks;
     const endpointBudget = Math.min(4096, Math.max(64, maxCandidates * 2));
@@ -992,10 +1145,9 @@ export function findJumpConnections(
       active = pending;
     }
   };
-  const candidatesFor = (entry: Transfer): Candidate[] => {
-    const { a, b } = entry;
-    const generation = (entry.generation ??= {
-      pairs: pairsFor(entry),
+  const candidatesFor = (edgeId: number, state: EdgeState, a: Region, b: Region): Candidate[] => {
+    const generation = (state.generation ??= {
+      pairs: pairsFor(edgeId, a, b),
       pending: [],
       cursor: 0,
       done: false,
@@ -1106,16 +1258,19 @@ export function findJumpConnections(
     sweep: world.sweepCapsule.bind(world),
     funnelWorld: world,
   };
-  const validate = (entry: Transfer): DiscoveredConnection | null | undefined => {
-    const { a, b } = entry;
-    if (!entry.search) {
-      entry.search = { candidates: [], cursor: 0, tried: new Set<string>() };
-      (preparedIncoming[b.component] ??= []).push(entry);
+  const validate = (edgeId: number): DiscoveredConnection | null | undefined => {
+    const a = regions[edgeFrom[edgeId]],
+      b = regions[edgeTo[edgeId]];
+    let state = edgeStates.get(edgeId);
+    if (!state) {
+      state = { search: { candidates: [], cursor: 0, tried: new Set<string>() } };
+      edgeStates.set(edgeId, state);
+      (preparedIncoming[b.component] ??= []).push(edgeId);
     }
-    const search = entry.search,
+    const search = state.search,
       firstAttempt = diagnostics.attempted;
     if (search.cursor >= search.candidates.length) {
-      search.candidates = candidatesFor(entry);
+      search.candidates = candidatesFor(edgeId, state, a, b);
       search.cursor = 0;
     }
     while (search.cursor < search.candidates.length) {
@@ -1195,20 +1350,19 @@ export function findJumpConnections(
       // nearby multi-hop chain is tried. Deferred batches retain their cursor
       // and remain searchable; this is scheduling, not an extra coverage limit.
       if (diagnostics.attempted - firstAttempt >= 32 && search.cursor < search.candidates.length) {
-        entry.cost += 1;
+        edgeCost[edgeId] += 1;
         diagnostics.deferredPairs++;
         return undefined;
       }
     }
-    const generation = entry.generation!;
+    const generation = state.generation!;
     if (generation.cursor < generation.pending.length || (!generation.done && pairingAvailable())) {
-      entry.cost += 1;
+      edgeCost[edgeId] += 1;
       diagnostics.deferredPairs++;
       return undefined;
     }
     return null;
   };
-  const validated = new Set<Transfer>();
   let goalFirst = false;
   while (
     connections.length < maxLinks &&
@@ -1222,13 +1376,14 @@ export function findJumpConnections(
     // across chains once motion validation starts. Earlier unsupported contacts
     // keep source-first admission; later zero-arc failures must also rotate so
     // one side cannot consume every remaining region search.
-    for (const entry of goalFirst ? [...chain].reverse() : chain) {
-      if (entry.ground || validated.has(entry)) continue;
-      const connection = validate(entry);
+    for (let index = 0; index < chain.length; index++) {
+      const edgeId = chain[goalFirst ? chain.length - 1 - index : index];
+      if (edgeValidated[edgeId]) continue;
+      const connection = validate(edgeId);
       diagnostics.pairBatches++;
       if (!connection) {
         if (connection === null) {
-          entry.closed = true;
+          edgeClosed[edgeId] = 1;
           diagnostics.validatedPairs++;
         }
         complete = false;
@@ -1236,12 +1391,12 @@ export function findJumpConnections(
         break;
       }
       diagnostics.validatedPairs++;
-      validated.add(entry);
+      edgeValidated[edgeId] = 1;
       connections.push(connection);
       diagnostics.accepted++;
       if (connections.length >= maxLinks) break;
     }
-    if (complete && chain.every((entry) => entry.ground || validated.has(entry))) {
+    if (complete && chain.every((edgeId) => edgeValidated[edgeId])) {
       diagnostics.targetReached = true;
       break;
     }
