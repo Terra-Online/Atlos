@@ -2,12 +2,12 @@
 mod regions;
 
 use super::{ConditionalEdge, Edge, LOCAL_EDGE_RANGE, Proofs};
-use crate::{flight, geometry::*, placement, region_flight, types::*, world::World};
+use crate::{flight, geometry::*, placement, region_flight, search::Label, types::*, world::World};
 use regions::Regions;
 use serde::Serialize;
 use std::{
     cmp::Reverse,
-    collections::{BTreeMap, HashMap, HashSet},
+    collections::{BTreeMap, BinaryHeap, HashMap, HashSet},
     sync::{Arc, Mutex},
     thread,
     time::Instant,
@@ -32,6 +32,7 @@ pub(crate) struct Discovery {
     ledge_enumeration_ms: f64,
     ledge_trials: usize,
     ledge_flights: usize,
+    ledge_detours_ranked: usize,
     sprint_bridge_trials: usize,
     sprint_bridges: usize,
     sprint_bridge_ms: f64,
@@ -421,6 +422,45 @@ fn reaches(model: &Model, span: impl FnOnce(f64) -> f64, from: Bounds, to: Bound
     })
 }
 
+enum Detour {
+    Unreachable,
+    Known(f64),
+    Unmeasured,
+}
+
+fn detour(edges: &[Vec<Edge>], from: usize, to: usize) -> Detour {
+    let mut costs = HashMap::from([(from, 0.)]);
+    let mut queue = BinaryHeap::from([Label {
+        node: from,
+        cost: 0.,
+    }]);
+    // This ranking probe shares none of the physics proof budget. Leave
+    // large searches unmeasured instead of mistaking them for disconnections.
+    for _ in 0..64 {
+        let Some(Label { node, cost }) = queue.pop() else {
+            return Detour::Unreachable;
+        };
+        if node == to {
+            return Detour::Known(cost);
+        }
+        if cost > costs[&node] {
+            continue;
+        }
+        for edge in &edges[node] {
+            let next = cost + edge.action.cost();
+            let old = costs.entry(edge.to).or_insert(f64::INFINITY);
+            if next < *old {
+                *old = next;
+                queue.push(Label {
+                    node: edge.to,
+                    cost: next,
+                });
+            }
+        }
+    }
+    Detour::Unmeasured
+}
+
 fn ledge_flights(
     world: &World,
     nodes: &[Point],
@@ -496,6 +536,49 @@ fn ledge_flights(
             .cmp(&Reverse(regions.influence(b.0)))
             .then_with(|| a.1[0].0.total_cmp(&b.1[0].0))
             .then_with(|| a.0.cmp(&b.0))
+    });
+    // Refine a bounded shortlist at its actual launch and landing contacts.
+    // Costs here use ordinary graph actions before whole-route scheduling.
+    let shortlist = proposals.len().min(LEDGE_TRIALS * 2);
+    let mut priorities = HashMap::with_capacity(shortlist);
+    for (pair, choices) in &proposals[..shortlist] {
+        let (_, from, to) = choices[0];
+        let result = if pair.0 > pair.1 {
+            Detour::Unreachable
+        } else {
+            detour(edges, from, to)
+        };
+        let score = match result {
+            Detour::Unreachable => (0, 0.),
+            Detour::Known(cost) => {
+                let departure = nodes[from];
+                let landing = nodes[to];
+                let distance = horizontal(departure, landing);
+                let flight = [
+                    flight::drop_duration(model, departure[1], landing[1]),
+                    flight::duration(model, departure[1], landing[1]),
+                ]
+                .into_iter()
+                .flatten()
+                .find(|&time| distance <= span(time) + 1e-9);
+                let saved = flight.map_or(0., |time| (cost - time).max(0.));
+                if saved > 0. {
+                    stats.ledge_detours_ranked += 1;
+                    (1, saved)
+                } else {
+                    (3, 0.)
+                }
+            }
+            Detour::Unmeasured => (2, 0.),
+        };
+        priorities.insert(*pair, score);
+    }
+    proposals[..shortlist].sort_by(|a, b| {
+        let (tier_a, saved_a) = priorities[&a.0];
+        let (tier_b, saved_b) = priorities[&b.0];
+        tier_a
+            .cmp(&tier_b)
+            .then_with(|| saved_b.total_cmp(&saved_a))
     });
     stats.ledge_enumeration_ms = started.elapsed().as_secs_f64() * 1000.;
     let mut flights = Vec::new();
