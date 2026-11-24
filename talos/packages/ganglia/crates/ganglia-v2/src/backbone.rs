@@ -1,8 +1,8 @@
 use crate::{flight::PreparedFlight, geometry::*, region_flight, types::*, world::World};
 #[path = "bridges.rs"]
 mod bridges;
-#[path = "walk_forest.rs"]
-mod walk_forest;
+#[path = "local_graph.rs"]
+mod local_graph;
 use std::{
     collections::{BTreeMap, HashMap},
     hash::{DefaultHasher, Hash, Hasher},
@@ -109,23 +109,9 @@ impl Proofs {
         flights
     }
 
-    fn actions(&self, world: &World, from: Point, to: Point, boosts: &[BoostUse]) -> Actions {
-        let prove = |walk: Option<Segment>| match walk
-            .or_else(|| world.drop(from, to))
-            .or_else(|| world.jump(from, to, None))
-        {
-            Some(action) => Actions::Ordinary(Arc::new(action)),
-            None => Actions::Conditional(
-                world
-                    .conditional_flights(from, to, boosts)
-                    .map(|a| a.map(Arc::new)),
-            ),
-        };
-        if self.shards.is_empty() {
-            return prove(world.walk(from, to));
-        }
-        if self.varies(&[from, to]) {
-            return prove(world.walk(from, to));
+    fn walk(&self, world: &World, from: Point, to: Point) -> (Option<Arc<Segment>>, bool) {
+        if self.shards.is_empty() || self.varies(&[from, to]) {
+            return (world.walk(from, to).map(Arc::new), true);
         }
         let mut key = [from.map(f64::to_bits), to.map(f64::to_bits)];
         let direction = usize::from(key[0] > key[1]);
@@ -133,36 +119,85 @@ impl Proofs {
             key.swap(0, 1);
         }
         let shard = self.shard(&key);
-        let needs_walk = {
+        {
             let mut saved = shard.lock().unwrap();
             if let Some(pair) = saved.pairs.get(&key) {
-                if let Some(actions) = pair[direction].clone() {
-                    saved.hits += 1;
-                    return actions;
-                }
-                false
-            } else {
-                true
+                let walk = match &pair[direction] {
+                    Some(Actions::Ordinary(action)) if action.mode == "walk" => {
+                        Some(action.clone())
+                    }
+                    _ => None,
+                };
+                saved.hits += 1;
+                return (walk, false);
             }
-        };
+        }
         // The swept body and support of a walk are reversible. Always prove
         // its canonical direction so concurrent rows choose the same trace.
-        // Drops, jumps and their conditional alternatives remain directed.
-        if needs_walk
-            && let Some(walk) = world.walk(key[0].map(f64::from_bits), key[1].map(f64::from_bits))
+        let walk = if let Some(walk) =
+            world.walk(key[0].map(f64::from_bits), key[1].map(f64::from_bits))
         {
             let reverse = world.walk_segment(walk.points.iter().rev().copied().collect());
-            let pair = [
-                Actions::Ordinary(Arc::new(walk)),
-                Actions::Ordinary(Arc::new(reverse)),
-            ];
+            let pair = [Arc::new(walk), Arc::new(reverse)];
             let result = pair[direction].clone();
-            shard.lock().unwrap().pairs.insert(key, pair.map(Some));
-            return result;
+            shard
+                .lock()
+                .unwrap()
+                .pairs
+                .insert(key, pair.map(|a| Some(Actions::Ordinary(a))));
+            Some(result)
+        } else {
+            shard.lock().unwrap().pairs.entry(key).or_default();
+            None
+        };
+        (walk, true)
+    }
+
+    fn flying(
+        &self,
+        world: &World,
+        from: Point,
+        to: Point,
+        boosts: &[BoostUse],
+    ) -> (Actions, bool) {
+        let prove = || match world.drop(from, to).or_else(|| world.jump(from, to, None)) {
+            Some(action) => Actions::Ordinary(Arc::new(action)),
+            None => Actions::Conditional(
+                world
+                    .conditional_flights(from, to, boosts)
+                    .map(|a| a.map(Arc::new)),
+            ),
+        };
+        if self.shards.is_empty() || self.varies(&[from, to]) {
+            return (prove(), true);
         }
-        let actions = prove(None);
+        let mut key = [from.map(f64::to_bits), to.map(f64::to_bits)];
+        let direction = usize::from(key[0] > key[1]);
+        if direction == 1 {
+            key.swap(0, 1);
+        }
+        let shard = self.shard(&key);
+        {
+            let mut saved = shard.lock().unwrap();
+            if let Some(actions) = saved
+                .pairs
+                .get(&key)
+                .and_then(|pair| pair[direction].clone())
+            {
+                saved.hits += 1;
+                return (actions, false);
+            }
+        }
+        let actions = prove();
         shard.lock().unwrap().pairs.entry(key).or_default()[direction] = Some(actions.clone());
-        actions
+        (actions, true)
+    }
+
+    fn actions(&self, world: &World, from: Point, to: Point, boosts: &[BoostUse]) -> Actions {
+        match self.walk(world, from, to).0 {
+            Some(action) => Actions::Ordinary(action),
+            None => self.flying(world, from, to, boosts).0,
+        }
     }
 
     pub fn stats(&self) -> (usize, usize) {
@@ -186,13 +221,6 @@ pub(super) struct ConditionalEdge {
 struct LocalEdges {
     ordinary: Vec<Edge>,
     conditional: Vec<ConditionalEdge>,
-}
-
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum Seed {
-    Primary,
-    Alternate,
-    Deferred,
 }
 
 impl LocalEdges {
@@ -240,7 +268,7 @@ pub(super) struct Backbone {
     pub boosts: Vec<usize>,
     pub sample_candidates: usize,
     pub spacing_scale: f64,
-    pub walk_forest: walk_forest::Stats,
+    pub local_graph: local_graph::Stats,
     pub conditional: Vec<Vec<ConditionalEdge>>,
     pub boost_uses: Vec<BoostUse>,
     pub preparation_ms: [f64; 4],
@@ -354,6 +382,7 @@ impl Backbone {
         let interiors = representatives(interior, 4. * spacing_scale);
         let ledges = representatives(ledges, 2. * spacing_scale);
         let ledge_nodes: Vec<_> = (interiors.len()..interiors.len() + ledges.len()).collect();
+        let first_port = interiors.len() + ledges.len();
         let mut nodes: Vec<_> = interiors
             .chain(ledges)
             .chain(
@@ -467,131 +496,19 @@ impl Backbone {
             );
         }
 
-        let sparse = nodes.len() > 20_000;
-        let mut requested = vec![Vec::new(); nodes.len()];
-        parallel_rows(&mut requested, |i, nearby| {
-            let a = nodes[i];
-            index.query(Bounds::points(&[a]).expand(LOCAL_EDGE_RANGE), |j| {
-                if i != j {
-                    nearby.push((j, Seed::Deferred));
-                }
-                false
-            });
-            nearby.sort_unstable_by(|&(j, _), &(k, _)| {
-                distance(a, nodes[j]).total_cmp(&distance(a, nodes[k]))
-            });
-            nearby.truncate(neighbour_count);
-            let mut headings = 0_u16;
-            let mut octants = 0_u16;
-            for (rank, (j, seed)) in nearby.iter_mut().enumerate() {
-                let [x, _, z] = sub(nodes[*j], a);
-                let sector = if x.abs() >= z.abs() {
-                    usize::from(x < 0.)
-                } else {
-                    2 + usize::from(z < 0.)
-                };
-                let bit = 1 << sector;
-                let primary = !sparse || rank < 2 || headings & bit == 0;
-                headings |= bit;
-                let octant = (usize::from(x < 0.) << 2)
-                    | (usize::from(z < 0.) << 1)
-                    | usize::from(z.abs() > x.abs());
-                let bit = 1 << octant;
-                *seed = if primary {
-                    Seed::Primary
-                } else if octants & bit == 0 {
-                    Seed::Alternate
-                } else {
-                    Seed::Deferred
-                };
-                octants |= bit;
-            }
-        });
-        let mut graph: Vec<_> = (0..nodes.len()).map(|_| LocalEdges::default()).collect();
-        parallel_rows(&mut graph, |i, row| {
-            for &(j, seed) in &requested[i] {
-                if seed == Seed::Primary {
-                    row.push(j, proofs.actions(world, nodes[i], nodes[j], &boost_uses));
-                }
-            }
-        });
-
-        let (mut edges, mut conditional): (Vec<_>, Vec<_>) = graph
-            .into_iter()
-            .map(|row| (row.ordinary, row.conditional))
-            .unzip();
-        if sparse {
-            // Complete the walk region seeds before using their components to
-            // decide which gaps warrant action proofs.
-            let mut alternates: Vec<_> = (0..nodes.len()).map(|_| LocalEdges::default()).collect();
-            parallel_rows(&mut alternates, |i, row| {
-                let a = nodes[i];
-                for &(j, seed) in &requested[i] {
-                    if seed != Seed::Alternate {
-                        continue;
-                    }
-                    let b = nodes[j];
-                    let limit =
-                        distance(a, b) / world.physical.locomotion.speed * walk_forest::MAX_STRETCH;
-                    // The direct walk cannot run faster than its straight line.
-                    // Reuse two verified walks when they already cover this heading.
-                    if !edges[i].iter().any(|first| {
-                        first.action.mode == "walk"
-                            && first.action.cost() <= limit
-                            && edges[first.to].iter().any(|second| {
-                                second.to == j
-                                    && second.action.mode == "walk"
-                                    && first.action.cost() + second.action.cost() <= limit
-                            })
-                    }) {
-                        row.push(j, proofs.actions(world, a, b, &boost_uses));
-                    }
-                }
-            });
-            for (i, row) in alternates.into_iter().enumerate() {
-                edges[i].extend(row.ordinary);
-                conditional[i].extend(row.conditional);
-            }
-            // A walk is reversible. Publish its reverse before identifying
-            // regions so that each region has a proved round trip throughout.
-            let mut reverse = Vec::new();
-            for (from, outgoing) in edges.iter().enumerate() {
-                for edge in outgoing.iter().filter(|edge| edge.action.mode == "walk") {
-                    if !edges[edge.to].iter().any(|back| back.to == from) {
-                        reverse.push((edge.to, from, edge.action.clone()));
-                    }
-                }
-            }
-            for (from, to, action) in reverse {
-                edges[from].push(Edge {
-                    to,
-                    action: Arc::new(
-                        world.walk_segment(action.points.iter().rev().copied().collect()),
-                    ),
-                });
-            }
-            let (groups, _) = bridges::walk_groups(&edges);
-            let mut extra: Vec<_> = (0..nodes.len()).map(|_| LocalEdges::default()).collect();
-            parallel_rows(&mut extra, |i, row| {
-                let a = nodes[i];
-                for &(j, seed) in &requested[i] {
-                    let b = nodes[j];
-                    let relief = (a[1] - b[1]).abs();
-                    let steep = relief > 0.6 * horizontal(a, b);
-                    if seed != Seed::Deferred || (groups[i] == groups[j] && !steep) {
-                        continue;
-                    }
-                    if edges[i].iter().any(|edge| edge.to == j) {
-                        continue;
-                    }
-                    row.push(j, proofs.actions(world, a, b, &boost_uses));
-                }
-            });
-            for (i, row) in extra.into_iter().enumerate() {
-                edges[i].extend(row.ordinary);
-                conditional[i].extend(row.conditional);
-            }
-        }
+        let local_graph::Graph {
+            mut edges,
+            mut conditional,
+            stats: mut local_graph,
+        } = local_graph::build(
+            world,
+            &nodes,
+            &index,
+            neighbour_count,
+            first_port,
+            proofs,
+            &boost_uses,
+        );
         let edges_ms = edges_started.elapsed().as_secs_f64() * 1000.;
         let count_before_bridges = nodes.len();
         let mut automatic_bridges = bridges::discover(
@@ -679,7 +596,16 @@ impl Backbone {
             })
             .collect();
         let terminals_ms = terminals_started.elapsed().as_secs_f64() * 1000.;
-        let walk_forest = walk_forest::thin(&mut edges, &conditional, &boosts, &terminals);
+        local_graph::terminal_runups(
+            &world,
+            &nodes,
+            &index,
+            &terminals,
+            proofs,
+            &mut edges,
+            &mut local_graph,
+        );
+        local_graph.measure(&nodes, &edges, &conditional);
         Self {
             nodes,
             edges,
@@ -687,7 +613,7 @@ impl Backbone {
             boosts,
             sample_candidates,
             spacing_scale,
-            walk_forest,
+            local_graph,
             conditional,
             boost_uses,
             proved_link_count,
