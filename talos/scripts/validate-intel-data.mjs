@@ -21,6 +21,10 @@ const contract = decodeArchiveContract(await readJson(path.resolve(GENERATED, 'a
 const archiveVersion = await readJson(path.resolve(GENERATED, 'archive_version.json'));
 assert(typeof archiveVersion.gameVersion === 'string' && archiveVersion.gameVersion.trim(), 'Missing Intel archive game version.');
 assert(typeof archiveVersion.gameBuild === 'string' && archiveVersion.gameBuild.trim(), 'Missing Intel archive game build.');
+const { newArchiveIds = [] } = archiveVersion;
+const archiveIds = new Set(contract.map((row) => row.id));
+assert(Array.isArray(newArchiveIds) && newArchiveIds.every((id) => archiveIds.has(id))
+  && new Set(newArchiveIds).size === newArchiveIds.length, 'Invalid new Intel archive IDs.');
 
 const markerById = new Map();
 const effectiveMarkers = await loadEffectiveMarkers({

@@ -1,4 +1,5 @@
 import contractJson from './generated/archive_contract.json';
+import archiveVersion from './generated/archive_version.json';
 import { decodeArchiveContract } from './archiveContract.mjs';
 
 export type ArchiveCategory = 'paper' | 'digital' | 'collection' | 'document' | 'report' | 'media';
@@ -51,3 +52,6 @@ export const intelArchives: IntelArchive[] = decodeArchiveContract(contractJson)
 });
 
 export const archiveById = new Map(intelArchives.map((archive) => [archive.id, archive]));
+
+const version: { gameVersion: string; newArchiveIds?: string[] } = archiveVersion;
+export const newArchiveIds = new Set(version.newArchiveIds);

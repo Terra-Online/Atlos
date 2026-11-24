@@ -119,9 +119,10 @@ const gameRichLabel = (tGame: (key: string) => string, id: string) => parse(tGam
 const usesStoryFallback = (archive: IntelArchive) => archive.categoryId === 'document'
   && (archive.acquisition.method === 'auto' || archive.acquisition.method === 'unknown');
 
-const methodLabel = (archive: IntelArchive, tUI: (key: string) => string) => (
-  tUI(`intel.method.${usesStoryFallback(archive) ? 'auto' : archive.acquisition.method}`)
-);
+const methodLabel = (archive: IntelArchive, tUI: (key: string) => string) => {
+  const { method } = archive.acquisition;
+  return tUI(`intel.method.${method === 'unknown' ? 'auto' : method}`);
+};
 
 const InterpolatedTemplate = ({
   template,

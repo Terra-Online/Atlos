@@ -4,6 +4,7 @@
     "collecting": "Collecting",
     "collectionComplete": "Complete",
     "collected": "Collected",
+    "newThisVersion": "New This Version",
     "uncollected": "Not Collected",
     "search": "Search intels",
     "noResults": "No matching intel",
