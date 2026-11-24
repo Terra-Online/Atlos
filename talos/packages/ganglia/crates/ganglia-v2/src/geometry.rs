@@ -78,17 +78,15 @@ struct Node {
 }
 impl Index {
     pub fn new(bounds: &[Bounds]) -> Self {
-        Self::with_items(Arc::from(bounds), (0..bounds.len()).collect())
+        Self::all(Arc::from(bounds))
     }
 
-    pub fn select(&self, include: impl FnMut(&usize) -> bool) -> Self {
-        Self::with_items(
-            self.item_bounds.clone(),
-            (0..self.item_bounds.len()).filter(include).collect(),
-        )
+    pub fn all(bounds: Arc<[Bounds]>) -> Self {
+        let items = (0..bounds.len()).collect();
+        Self::with_items(bounds, items)
     }
 
-    fn with_items(bounds: Arc<[Bounds]>, items: Vec<usize>) -> Self {
+    pub fn with_items(bounds: Arc<[Bounds]>, items: Vec<usize>) -> Self {
         let mut result = Self {
             nodes: Vec::new(),
             item_bounds: bounds.clone(),

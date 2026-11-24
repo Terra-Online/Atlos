@@ -2,7 +2,7 @@
 mod contacts;
 use crate::{devices::RopeDrop, geometry::*, types::*, walls::Walls};
 pub(super) use contacts::Contact;
-use std::{collections::HashSet, sync::Arc};
+use std::{collections::HashSet, sync::Arc, thread};
 
 const STANDING_OFFSET: f64 = 0.005;
 const WALK_CLEARANCE: f64 = 0.01;
@@ -238,20 +238,35 @@ impl World {
         // buffers here would keep a second full collision mesh alive.
         physical.collision.positions = Vec::new();
         physical.collision.indices = Vec::new();
-        let ground_index =
-            Index::new(&ground.iter().map(|t| Bounds::points(t)).collect::<Vec<_>>());
-        let collision_index = Index::new(
-            &collision
+        let collision_bounds: Arc<[Bounds]> = collision.iter().map(|t| Bounds::points(t)).collect();
+        let build_ground =
+            || Index::new(&ground.iter().map(|t| Bounds::points(t)).collect::<Vec<_>>());
+        let build_collision = || Index::all(collision_bounds.clone());
+        let build_support = || {
+            let minimum_up = physical.movement.max_slope.to_radians().cos();
+            let normals: Vec<_> = collision
                 .iter()
-                .map(|t| Bounds::points(t))
-                .collect::<Vec<_>>(),
-        );
-        let minimum_up = physical.movement.max_slope.to_radians().cos();
-        let static_support_normals: Vec<_> = collision
-            .iter()
-            .map(|&triangle| support_normal(triangle, minimum_up, true))
-            .collect();
-        let static_support_index = collision_index.select(|&i| static_support_normals[i].is_some());
+                .map(|&triangle| support_normal(triangle, minimum_up, true))
+                .collect();
+            let items = normals
+                .iter()
+                .enumerate()
+                .filter_map(|(i, normal)| normal.is_some().then_some(i))
+                .collect();
+            let index = Index::with_items(collision_bounds.clone(), items);
+            (index, normals)
+        };
+        let (ground_index, collision_index, (static_support_index, static_support_normals)) =
+            if ground.len() + collision.len() >= 20_000 {
+                thread::scope(|scope| {
+                    let ground = scope.spawn(build_ground);
+                    let collision = scope.spawn(build_collision);
+                    let support = build_support();
+                    (ground.join().unwrap(), collision.join().unwrap(), support)
+                })
+            } else {
+                (build_ground(), build_collision(), build_support())
+            };
         let contacts = Arc::new(contacts::Catalog::new(&physical));
         Ok(Self {
             contacts,
