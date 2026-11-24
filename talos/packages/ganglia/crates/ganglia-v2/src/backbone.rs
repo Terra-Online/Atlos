@@ -229,6 +229,8 @@ pub(super) struct Backbone {
     pub nodes: Vec<Point>,
     pub edges: Vec<Vec<Edge>>,
     pub boosts: Vec<usize>,
+    pub sample_candidates: usize,
+    pub spacing_scale: f64,
     pub conditional: Vec<Vec<ConditionalEdge>>,
     pub boost_uses: Vec<BoostUse>,
     pub preparation_ms: [f64; 4],
@@ -306,9 +308,13 @@ impl Backbone {
         }
         // Reduce work on large windows. Height bins and the separate, denser
         // ledge lattice preserve samples for stacked floors and takeoffs.
-        const SAMPLE_TARGET: f64 = 85_000.;
+        const SAMPLE_TARGET: f64 = 56_000.;
+        let sample_candidates = interior.len() + ledges.len();
+        let pressure = sample_candidates as f64 / SAMPLE_TARGET;
+        // More samples also crowd the local proof neighbourhoods. Scale
+        // more rapidly on the largest snapshots where both effects compound.
         let spacing_scale =
-            (((interior.len() + ledges.len()) as f64 / SAMPLE_TARGET).sqrt()).clamp(1., 2.);
+            (pressure.sqrt() * (pressure / 3.).max(1.).powf(2. / 3.)).clamp(1., 3.5);
         let standing = |p| proofs.standing(world, p);
         let representatives = |samples: BTreeMap<_, Point>, spacing| {
             let mut retained = BTreeMap::new();
@@ -611,6 +617,8 @@ impl Backbone {
             edges,
             terminals,
             boosts,
+            sample_candidates,
+            spacing_scale,
             conditional,
             boost_uses,
             proved_link_count,
