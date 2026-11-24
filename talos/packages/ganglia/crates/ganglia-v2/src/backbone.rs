@@ -260,8 +260,8 @@ impl Backbone {
         };
         let vertex_key = |p: Point| p.map(|v| (v * 10000.).round() as i64);
         let mut interior = BTreeMap::new();
-        let mut boundaries: BTreeMap<([i64; 3], [i64; 3]), (usize, Point, Point, Point)> =
-            BTreeMap::new();
+        let mut boundaries: HashMap<([i64; 3], [i64; 3]), (usize, Point, Point, Point)> =
+            HashMap::new();
         for surface in world
             .physical
             .ground
@@ -289,10 +289,14 @@ impl Backbone {
             }
         }
         let mut ledges = BTreeMap::new();
-        for (_, (count, a, b, center)) in boundaries {
-            if count != 1 {
-                continue;
-            }
+        // Shared mesh edges never supply ledge samples. Sort only the
+        // remaining boundary edges to preserve representative selection.
+        let mut boundaries: Vec<_> = boundaries
+            .into_iter()
+            .filter(|(_, edge)| edge.0 == 1)
+            .collect();
+        boundaries.sort_unstable_by_key(|(key, _)| *key);
+        for (_, (_, a, b, center)) in boundaries {
             let steps = (horizontal(a, b) / 3.).ceil().max(1.) as usize;
             for i in 0..steps {
                 let edge = lerp(a, b, (i as f64 + 0.5) / steps as f64);
