@@ -357,14 +357,7 @@ pub fn point_segment(p: Point, a: Point, b: Point) -> f64 {
         ),
     )
 }
-fn segments_within(a: Point, b: Point, c: Point, d: Point, limit: f64) -> bool {
-    if point_segment(a, c, d) < limit
-        || point_segment(b, c, d) < limit
-        || point_segment(c, a, b) < limit
-        || point_segment(d, a, b) < limit
-    {
-        return true;
-    }
+fn edge_interiors_within(a: Point, b: Point, c: Point, d: Point, limit: f64) -> bool {
     let u = sub(b, a);
     let v = sub(d, c);
     let w = sub(a, c);
@@ -387,9 +380,6 @@ pub fn point_triangle(p: Point, t: [Point; 3]) -> f64 {
     let [a, b, c] = t;
     let n = cross(sub(b, a), sub(c, a));
     let nn = dot(n, n);
-    let mut result = point_segment(p, a, b)
-        .min(point_segment(p, b, c))
-        .min(point_segment(p, c, a));
     if nn > 1e-20 {
         let q = sub(p, scale(n, dot(sub(p, a), n) / nn));
         let signs = [
@@ -398,10 +388,12 @@ pub fn point_triangle(p: Point, t: [Point; 3]) -> f64 {
             dot(cross(sub(a, c), sub(q, c)), n),
         ];
         if signs.iter().all(|v| *v >= -1e-12) {
-            result = result.min(distance(p, q));
+            return distance(p, q);
         }
     }
-    result
+    point_segment(p, a, b)
+        .min(point_segment(p, b, c))
+        .min(point_segment(p, c, a))
 }
 fn pierces_triangle(a: Point, b: Point, t: [Point; 3]) -> bool {
     let n = cross(sub(t[1], t[0]), sub(t[2], t[0]));
@@ -427,6 +419,9 @@ pub fn triangles_within(a: [Point; 3], b: [Point; 3], limit: f64) -> bool {
             return true;
         }
     }
-    (0..3)
-        .any(|i| (0..3).any(|j| segments_within(a[i], a[(i + 1) % 3], b[j], b[(j + 1) % 3], limit)))
+    // The vertex-to-triangle checks already cover all edge endpoints.
+    // Only a closest pair in the interiors of both edges can add a hit.
+    (0..3).any(|i| {
+        (0..3).any(|j| edge_interiors_within(a[i], a[(i + 1) % 3], b[j], b[(j + 1) % 3], limit))
+    })
 }
