@@ -126,6 +126,7 @@ impl Engine {
                 .collect(),
             &base.physical.ground.options.profile,
             base.has_static_collision(),
+            worlds.len(),
         );
         let anchor_supports: Vec<_> = input
             .anchors

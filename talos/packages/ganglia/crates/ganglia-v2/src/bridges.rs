@@ -1,7 +1,7 @@
 #[path = "bridge_regions.rs"]
 mod regions;
 
-use super::{ConditionalEdge, Edge, LOCAL_EDGE_RANGE};
+use super::{ConditionalEdge, Edge, LOCAL_EDGE_RANGE, Proofs};
 use crate::{flight, geometry::*, placement, region_flight, types::*, world::World};
 use regions::Regions;
 use serde::Serialize;
@@ -47,6 +47,7 @@ impl Discovery {
         edges: &[Vec<Edge>],
         conditional: &mut [Vec<ConditionalEdge>],
         index: &Index,
+        proofs: &Proofs,
     ) {
         const TRIALS_PER_DEPARTURE: usize = 6;
         let started = Instant::now();
@@ -131,15 +132,12 @@ impl Discovery {
                 for &(_, to) in candidates.iter() {
                     trials += 1;
                     let mut proved = false;
-                    for flight in world
-                        .conditional_flights(start, nodes[to], &[])
+                    for flight in proofs
+                        .sprint_bridge(world, start, nodes[to])
                         .into_iter()
                         .flatten()
                     {
-                        outgoing.push(ConditionalEdge {
-                            to,
-                            flight: Arc::new(flight),
-                        });
+                        outgoing.push(ConditionalEdge { to, flight });
                         bridges += 1;
                         proved = true;
                     }

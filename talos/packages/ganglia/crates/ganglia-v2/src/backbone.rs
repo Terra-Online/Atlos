@@ -10,15 +10,17 @@ use std::{
 };
 
 type Pair = [[u64; 3]; 2];
+type Flights = [Option<Arc<PreparedFlight>>; 3];
 
 #[derive(Clone)]
 enum Actions {
     Ordinary(Arc<Segment>),
-    Conditional([Option<Arc<PreparedFlight>>; 3]),
+    Conditional(Flights),
 }
 
 struct ProofShard {
     pairs: HashMap<Pair, [Option<Actions>; 2]>,
+    sprint_bridges: HashMap<Pair, Flights>,
     hits: usize,
 }
 
@@ -29,9 +31,10 @@ pub(super) struct Proofs {
     affected: Index,
     padding: f64,
     shards: Vec<Mutex<ProofShard>>,
+    projections: Option<Mutex<HashMap<[u64; 3], Option<Point>>>>,
 }
 impl Proofs {
-    pub fn new(bounds: Vec<Bounds>, profile: &Profile, reuse: bool) -> Self {
+    pub fn new(bounds: Vec<Bounds>, profile: &Profile, reuse: bool, layouts: usize) -> Self {
         Self {
             affected: Index::new(&bounds),
             // Larger than the capsule sweep, support and projection margins.
@@ -40,11 +43,68 @@ impl Proofs {
                 .map(|_| {
                     Mutex::new(ProofShard {
                         pairs: HashMap::new(),
+                        sprint_bridges: HashMap::new(),
                         hits: 0,
                     })
                 })
                 .collect(),
+            projections: (reuse && layouts > 1).then(|| Mutex::new(HashMap::new())),
         }
+    }
+
+    fn varies(&self, points: &[Point]) -> bool {
+        let mut bounds = Bounds::points(points).expand(self.padding);
+        bounds.min[1] = f64::NEG_INFINITY;
+        bounds.max[1] = f64::INFINITY;
+        self.affected.query(bounds, |_| true)
+    }
+
+    fn standing(&self, world: &World, point: Point) -> Option<Point> {
+        let prove = || {
+            world
+                .standing(point)
+                .filter(|&feet| !world.blocked(feet, feet, 0.))
+        };
+        let Some(projections) = &self.projections else {
+            return prove();
+        };
+        if self.varies(&[point]) {
+            return prove();
+        }
+        *projections
+            .lock()
+            .unwrap()
+            .entry(point.map(f64::to_bits))
+            .or_insert_with(prove)
+    }
+
+    fn shard(&self, key: &Pair) -> &Mutex<ProofShard> {
+        let mut hash = DefaultHasher::new();
+        key.hash(&mut hash);
+        &self.shards[hash.finish() as usize % self.shards.len()]
+    }
+
+    fn sprint_bridge(&self, world: &World, from: Point, to: Point) -> Flights {
+        let prove = || {
+            world
+                .conditional_flights(from, to, &[])
+                .map(|flight| flight.map(Arc::new))
+        };
+        if self.projections.is_none() || self.varies(&[from, to]) {
+            return prove();
+        }
+        let key = [from.map(f64::to_bits), to.map(f64::to_bits)];
+        let shard = self.shard(&key);
+        if let Some(flights) = shard.lock().unwrap().sprint_bridges.get(&key).cloned() {
+            return flights;
+        }
+        let flights = prove();
+        shard
+            .lock()
+            .unwrap()
+            .sprint_bridges
+            .insert(key, flights.clone());
+        flights
     }
 
     fn actions(&self, world: &World, from: Point, to: Point, boosts: &[BoostUse]) -> Actions {
@@ -62,10 +122,7 @@ impl Proofs {
         if self.shards.is_empty() {
             return prove(world.walk(from, to));
         }
-        let mut bounds = Bounds::points(&[from, to]).expand(self.padding);
-        bounds.min[1] = f64::NEG_INFINITY;
-        bounds.max[1] = f64::INFINITY;
-        if self.affected.query(bounds, |_| true) {
+        if self.varies(&[from, to]) {
             return prove(world.walk(from, to));
         }
         let mut key = [from.map(f64::to_bits), to.map(f64::to_bits)];
@@ -73,9 +130,7 @@ impl Proofs {
         if direction == 1 {
             key.swap(0, 1);
         }
-        let mut hash = DefaultHasher::new();
-        key.hash(&mut hash);
-        let shard = &self.shards[hash.finish() as usize % self.shards.len()];
+        let shard = self.shard(&key);
         let needs_walk = {
             let mut saved = shard.lock().unwrap();
             if let Some(pair) = saved.pairs.get(&key) {
@@ -205,11 +260,7 @@ impl Backbone {
         const SAMPLE_TARGET: f64 = 85_000.;
         let spacing_scale =
             (((interior.len() + ledges.len()) as f64 / SAMPLE_TARGET).sqrt()).clamp(1., 2.);
-        let standing = |p| {
-            world
-                .standing(p)
-                .filter(|&point| !world.blocked(point, point, 0.))
-        };
+        let standing = |p| proofs.standing(world, p);
         let representatives = |samples: BTreeMap<_, Point>, spacing| {
             let mut retained = BTreeMap::new();
             for (cell, sample) in samples {
@@ -419,6 +470,7 @@ impl Backbone {
             &edges,
             &mut conditional,
             &index,
+            proofs,
         );
         let index = if !marks.is_empty() && nodes.len() != count_before_bridges {
             Index::new(
