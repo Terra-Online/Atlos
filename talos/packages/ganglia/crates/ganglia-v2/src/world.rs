@@ -851,6 +851,9 @@ impl World {
                 self.append_walk_span(*points.last().unwrap(), point, &mut points)?;
             }
         }
+        Some(self.walk_segment(points))
+    }
+    pub(super) fn walk_segment(&self, points: Vec<Point>) -> Segment {
         let mut times = vec![0.];
         for pair in points.windows(2) {
             let length = distance(pair[0], pair[1]);
@@ -863,7 +866,7 @@ impl World {
             };
             times.push(times.last().unwrap() + duration);
         }
-        Some(Segment {
+        Segment {
             required_gait: None,
             boost: None,
             mode: "walk",
@@ -873,7 +876,7 @@ impl World {
             flight: None,
             gait: Some("run"),
             traversal: None,
-        })
+        }
     }
     pub fn action(&self, a: Point, b: Point) -> Option<Segment> {
         self.walk(a, b)

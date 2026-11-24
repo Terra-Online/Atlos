@@ -125,7 +125,7 @@ impl Engine {
                 .flat_map(|(world, _)| world.box_bounds())
                 .collect(),
             &base.physical.ground.options.profile,
-            worlds.len() > 1 && base.has_static_collision(),
+            base.has_static_collision(),
         );
         let anchor_supports: Vec<_> = input
             .anchors

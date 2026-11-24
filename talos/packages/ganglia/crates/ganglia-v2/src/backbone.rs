@@ -18,7 +18,7 @@ enum Actions {
 }
 
 struct ProofShard {
-    pairs: HashMap<Pair, Actions>,
+    pairs: HashMap<Pair, [Option<Actions>; 2]>,
     hits: usize,
 }
 
@@ -48,7 +48,10 @@ impl Proofs {
     }
 
     fn actions(&self, world: &World, from: Point, to: Point, boosts: &[BoostUse]) -> Actions {
-        let prove = || match world.action(from, to) {
+        let prove = |walk: Option<Segment>| match walk
+            .or_else(|| world.drop(from, to))
+            .or_else(|| world.jump(from, to, None))
+        {
             Some(action) => Actions::Ordinary(Arc::new(action)),
             None => Actions::Conditional(
                 world
@@ -57,27 +60,51 @@ impl Proofs {
             ),
         };
         if self.shards.is_empty() {
-            return prove();
+            return prove(world.walk(from, to));
         }
         let mut bounds = Bounds::points(&[from, to]).expand(self.padding);
         bounds.min[1] = f64::NEG_INFINITY;
         bounds.max[1] = f64::INFINITY;
         if self.affected.query(bounds, |_| true) {
-            return prove();
+            return prove(world.walk(from, to));
         }
-        let key = [from.map(f64::to_bits), to.map(f64::to_bits)];
+        let mut key = [from.map(f64::to_bits), to.map(f64::to_bits)];
+        let direction = usize::from(key[0] > key[1]);
+        if direction == 1 {
+            key.swap(0, 1);
+        }
         let mut hash = DefaultHasher::new();
         key.hash(&mut hash);
         let shard = &self.shards[hash.finish() as usize % self.shards.len()];
-        {
+        let needs_walk = {
             let mut saved = shard.lock().unwrap();
-            if let Some(actions) = saved.pairs.get(&key).cloned() {
-                saved.hits += 1;
-                return actions;
+            if let Some(pair) = saved.pairs.get(&key) {
+                if let Some(actions) = pair[direction].clone() {
+                    saved.hits += 1;
+                    return actions;
+                }
+                false
+            } else {
+                true
             }
+        };
+        // The swept body and support of a walk are reversible. Always prove
+        // its canonical direction so concurrent rows choose the same trace.
+        // Drops, jumps and their conditional alternatives remain directed.
+        if needs_walk
+            && let Some(walk) = world.walk(key[0].map(f64::from_bits), key[1].map(f64::from_bits))
+        {
+            let reverse = world.walk_segment(walk.points.iter().rev().copied().collect());
+            let pair = [
+                Actions::Ordinary(Arc::new(walk)),
+                Actions::Ordinary(Arc::new(reverse)),
+            ];
+            let result = pair[direction].clone();
+            shard.lock().unwrap().pairs.insert(key, pair.map(Some));
+            return result;
         }
-        let actions = prove();
-        shard.lock().unwrap().pairs.insert(key, actions.clone());
+        let actions = prove(None);
+        shard.lock().unwrap().pairs.entry(key).or_default()[direction] = Some(actions.clone());
         actions
     }
 
