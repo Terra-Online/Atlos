@@ -68,11 +68,13 @@ impl Bounds {
 pub struct Index {
     nodes: Vec<Node>,
     item_bounds: Arc<[Bounds]>,
+    items: Vec<usize>,
 }
 struct Node {
     bounds: Bounds,
-    children: Option<(usize, usize)>,
-    items: Vec<usize>,
+    next: usize,
+    item_start: usize,
+    item_count: usize,
 }
 impl Index {
     pub fn new(bounds: &[Bounds]) -> Self {
@@ -90,24 +92,27 @@ impl Index {
         let mut result = Self {
             nodes: Vec::new(),
             item_bounds: bounds.clone(),
+            items: Vec::with_capacity(items.len()),
         };
         if !items.is_empty() {
             result.build(items, &bounds);
         }
         result
     }
-    fn build(&mut self, mut items: Vec<usize>, bounds: &[Bounds]) -> usize {
+    fn build(&mut self, mut items: Vec<usize>, bounds: &[Bounds]) {
         let envelope = items
             .iter()
             .fold(bounds[items[0]], |a, &i| a.union(bounds[i]));
         let id = self.nodes.len();
         self.nodes.push(Node {
             bounds: envelope,
-            children: None,
-            items: Vec::new(),
+            next: 0,
+            item_start: self.items.len(),
+            item_count: 0,
         });
         if items.len() <= 8 {
-            self.nodes[id].items = items;
+            self.nodes[id].item_count = items.len();
+            self.items.extend(items);
         } else {
             let axis = (0..3)
                 .max_by(|&a, &b| {
@@ -120,11 +125,12 @@ impl Index {
                     .total_cmp(&(bounds[b].min[axis] + bounds[b].max[axis]))
             });
             let right = items.split_off(items.len() / 2);
-            let a = self.build(items, bounds);
-            let b = self.build(right, bounds);
-            self.nodes[id].children = Some((a, b));
+            // Keep the established right-first query order, including ties in
+            // support projection. Write a subtree in the order it is visited.
+            self.build(right, bounds);
+            self.build(items, bounds);
         }
-        id
+        self.nodes[id].next = self.nodes.len();
     }
     pub fn query(&self, bounds: Bounds, visit: impl FnMut(usize) -> bool) -> bool {
         self.query_where(|candidate| candidate.overlaps(bounds), visit)
@@ -136,28 +142,21 @@ impl Index {
         mut intersects: impl FnMut(Bounds) -> bool,
         mut visit: impl FnMut(usize) -> bool,
     ) -> bool {
-        !self.nodes.is_empty() && self.visit(0, &mut intersects, &mut visit)
-    }
-
-    fn visit(
-        &self,
-        id: usize,
-        intersects: &mut impl FnMut(Bounds) -> bool,
-        visit: &mut impl FnMut(usize) -> bool,
-    ) -> bool {
-        let node = &self.nodes[id];
-        if !intersects(node.bounds) {
-            return false;
-        }
-        // Median splits bound recursion depth. Visit right first to preserve
-        // the order used by support projection when candidates tie.
-        if let Some((a, b)) = node.children {
-            self.visit(b, intersects, visit) || self.visit(a, intersects, visit)
-        } else {
-            node.items
+        let mut id = 0;
+        while let Some(node) = self.nodes.get(id) {
+            if !intersects(node.bounds) {
+                id = node.next;
+                continue;
+            }
+            if self.items[node.item_start..node.item_start + node.item_count]
                 .iter()
                 .any(|&item| intersects(self.item_bounds[item]) && visit(item))
+            {
+                return true;
+            }
+            id += 1;
         }
+        false
     }
 }
 pub fn triangle_height(p: Point, t: [Point; 3]) -> Option<f64> {
