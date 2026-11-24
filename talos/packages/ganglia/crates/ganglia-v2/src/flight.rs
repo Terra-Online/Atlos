@@ -2,12 +2,16 @@ use crate::{geometry::*, types::*, world::World};
 
 pub(super) struct PreparedFlight {
     pub action: Segment,
-    requirement: FlightRequirement,
+    // A sprint impulse owns its trajectory. Constant-speed modifiers can
+    // share samples, but substituting a boost model would change this trace.
+    constant: Option<FlightRequirement>,
 }
 
 impl PreparedFlight {
     pub(super) fn supports_unboosted(&self) -> bool {
-        self.requirement.speed <= self.requirement.base_cap + 1e-9
+        self.constant
+            .as_ref()
+            .is_none_or(|flight| flight.speed <= flight.base_cap + 1e-9)
     }
 
     pub fn variants<'a>(
@@ -15,14 +19,24 @@ impl PreparedFlight {
         base: &'a Model,
         boosts: &'a [BoostUse],
     ) -> impl Iterator<Item = Segment> + 'a {
-        self.requirement.modifiers(boosts).map(|boost| {
-            let mut action = self.action.clone();
-            let flight = action.flight.as_mut().unwrap();
-            flight.model = self.requirement.model(base, boost);
-            action.required_gait = self.requirement.sprints(boost).then_some("sprint");
-            action.boost = boost.cloned();
-            action
-        })
+        self.constant
+            .iter()
+            .flat_map(move |requirement| {
+                requirement.modifiers(boosts).map(move |boost| {
+                    let mut action = self.action.clone();
+                    action.flight.as_mut().unwrap().model = requirement.model(base, boost);
+                    action.required_gait = requirement.sprints(boost).then_some("sprint");
+                    action.boost = boost.cloned();
+                    action
+                })
+            })
+            .chain(
+                self.constant
+                    .is_none()
+                    .then_some(&self.action)
+                    .into_iter()
+                    .cloned(),
+            )
     }
 }
 
@@ -69,6 +83,55 @@ impl FlightRequirement {
             .start_horizontal_speed
             .map(|speed| (speed * multiplier).min(model.max_horizontal_speed));
         model
+    }
+}
+
+#[derive(Clone, Copy)]
+pub(super) struct SprintImpulse {
+    initial: f64,
+    cap: f64,
+    braking: f64,
+}
+
+impl SprintImpulse {
+    pub(super) fn limit(model: &Model) -> Option<Self> {
+        let cap = model.max_horizontal_speed;
+        let initial = model
+            .start_horizontal_speed
+            .filter(|&v| v.is_finite() && v > cap)?;
+        let braking = model
+            .air_overspeed_deceleration
+            .filter(|&v| v.is_finite() && v > 0.)?;
+        Some(Self {
+            initial,
+            cap,
+            braking,
+        })
+    }
+
+    pub(super) fn distance(self, time: f64) -> f64 {
+        let excess = self.initial - self.cap;
+        let braking_time = time.min(excess / self.braking);
+        self.cap * time + braking_time * (excess - self.braking * braking_time / 2.)
+    }
+
+    // Invert the extra distance above the sustained cap. The two cases
+    // distinguish braking throughout the flight from reaching the cap early.
+    fn fit(self, span: f64, time: f64) -> Option<Self> {
+        if span > self.distance(time) + 1e-9 {
+            return None;
+        }
+        let excess_distance = span - self.cap * time;
+        let braking_threshold = self.braking * time * time / 2.;
+        let excess_speed = if excess_distance > braking_threshold {
+            (excess_distance + braking_threshold) / time
+        } else {
+            (2. * self.braking * excess_distance).sqrt()
+        };
+        Some(Self {
+            initial: (self.cap + excess_speed).min(self.initial),
+            ..self
+        })
     }
 }
 
@@ -226,7 +289,7 @@ impl World {
     ) -> Option<Segment> {
         let model = &self.physical.movement.model;
         let run = self.physical.movement.run_air_speed;
-        if model.max_horizontal_speed <= run + 1e-9 {
+        if model.max_horizontal_speed <= run + 1e-9 && SprintImpulse::limit(model).is_none() {
             return None;
         }
         let mut action = self
@@ -298,6 +361,7 @@ impl World {
             return None;
         }
         let speed = model.max_horizontal_speed;
+        let impulse = SprintImpulse::limit(&model);
         let lift_off = lift_off_speed(&model);
         let apex_end = lift_off / model.gravity + model.apex_time;
         // A sampled point in the goal volume can occur on ascent or descent.
@@ -331,7 +395,8 @@ impl World {
                     let dx = target[0] - start[0];
                     let dz = target[2] - start[2];
                     let distance = dx.hypot(dz);
-                    let reachable = (1. - 1e-12) * speed * time;
+                    let reachable =
+                        (1. - 1e-12) * impulse.map_or(speed * time, |i| i.distance(time));
                     let fraction = if distance > reachable {
                         reachable / distance
                     } else {
@@ -339,7 +404,15 @@ impl World {
                     };
                     let point = [start[0] + dx * fraction, y, start[2] + dz * fraction];
                     if hit(point, point, goal, interaction).is_some() {
-                        let scale = fraction * (duration / time);
+                        let at_hit = fraction * distance;
+                        let scale = if at_hit > speed * time + 1e-9 {
+                            let Some(fitted) = impulse.and_then(|i| i.fit(at_hit, time)) else {
+                                continue;
+                            };
+                            fitted.distance(duration) / distance
+                        } else {
+                            fraction * (duration / time)
+                        };
                         let end = [start[0] + dx * scale, end_y, start[2] + dz * scale];
                         witnesses.push((time, end));
                     }
@@ -353,22 +426,22 @@ impl World {
             .find_map(|(_, end)| self.flight(start, end, Some((&goal, interaction)), model.clone()))
     }
 
-    /// Prove one trace per motion. The source modifiers share its points and
-    /// times, and are materialized only for reachable edges during search.
+    /// Prove constant-speed jump/drop traces and any forward sprint impulse.
     pub fn conditional_flights(
         &self,
         start: Point,
         end: Point,
         boosts: &[BoostUse],
-    ) -> [Option<PreparedFlight>; 2] {
+    ) -> [Option<PreparedFlight>; 3] {
         let base = &self.physical.movement.model;
         let run = base
             .max_horizontal_speed
             .min(self.physical.movement.run_air_speed);
         let span = horizontal(start, end);
-        ["jump", "drop"].map(|mode| {
+        let jump_time = duration(base, start[1], end[1]);
+        let [jump, drop] = ["jump", "drop"].map(|mode| {
             let duration = if mode == "jump" {
-                duration(base, start[1], end[1])
+                jump_time
             } else {
                 drop_duration(base, start[1], end[1])
             }
@@ -391,9 +464,24 @@ impl World {
             }
             Some(PreparedFlight {
                 action,
-                requirement,
+                constant: Some(requirement),
             })
-        })
+        });
+        let impulse = (|| {
+            let time = jump_time.filter(|&t| t > 0. && t <= 60.)?;
+            if span <= base.max_horizontal_speed * time + 1e-9
+                || span > SprintImpulse::limit(base)?.distance(time) + 1e-9
+            {
+                return None;
+            }
+            let mut action = self.flight(start, end, None, base.clone())?;
+            action.required_gait = Some("sprint");
+            Some(PreparedFlight {
+                action,
+                constant: None,
+            })
+        })();
+        [jump, drop, impulse]
     }
 
     pub fn jump(
@@ -497,12 +585,18 @@ impl World {
             }
         }
         let duration: f64 = phases.iter().map(|p| p.duration).sum();
-        if duration <= 0.
-            || duration > 60.
-            || horizontal(start, end) > duration * model.max_horizontal_speed + 1e-9
-        {
+        if duration <= 0. || duration > 60. {
             return None;
         }
+        let span = horizontal(start, end);
+        let impulse = if span > duration * model.max_horizontal_speed + 1e-9 {
+            if !jumping {
+                return None;
+            }
+            Some(SprintImpulse::limit(&model)?.fit(span, duration)?)
+        } else {
+            None
+        };
         let mut points = vec![start];
         let mut times = vec![0.];
         let mut elapsed = 0.;
@@ -512,6 +606,8 @@ impl World {
             start: Point,
             end: Point,
             duration: f64,
+            span: f64,
+            impulse: Option<SprintImpulse>,
             collection: Option<(&'a Point, &'a Interaction)>,
         }
         impl Sweep<'_> {
@@ -526,7 +622,10 @@ impl World {
                 times: &mut Vec<f64>,
             ) -> Option<bool> {
                 let mut time = elapsed + to;
-                let mut point = lerp(self.start, self.end, time / self.duration);
+                let fraction = self.impulse.map_or(time / self.duration, |impulse| {
+                    impulse.distance(time) / self.span
+                });
+                let mut point = lerp(self.start, self.end, fraction);
                 point[1] = phase.y + phase.velocity * to + phase.acceleration * to * to / 2.;
                 if last {
                     point = self.end;
@@ -566,7 +665,12 @@ impl World {
                         hit_goal = true;
                     }
                 }
-                let inflation = phase.acceleration.abs() * (to - from).powi(2) / 8.;
+                let acceleration = if let Some(impulse) = self.impulse {
+                    phase.acceleration.hypot(impulse.braking)
+                } else {
+                    phase.acceleration.abs()
+                };
+                let inflation = acceleration * (to - from).powi(2) / 8.;
                 if self.world.blocked(previous, point, inflation) {
                     if to - from <= 0.025 / 16. {
                         return None;
@@ -587,6 +691,8 @@ impl World {
             start,
             end,
             duration,
+            span,
+            impulse,
             collection,
         };
         for (i, phase) in phases.iter().enumerate() {

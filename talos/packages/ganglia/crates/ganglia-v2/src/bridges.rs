@@ -53,9 +53,11 @@ impl Discovery {
         let model = &world.physical.movement.model;
         let run = world.physical.movement.run_air_speed;
         let sprint = model.max_horizontal_speed;
-        if sprint <= run {
+        let impulse = flight::SprintImpulse::limit(model);
+        if sprint <= run && impulse.is_none() {
             return;
         }
+        let jump_span = |time| impulse.map_or(sprint * time, |i| i.distance(time));
         let mut approaches = vec![Vec::new(); nodes.len()];
         for (from, outgoing) in edges.iter().take(nodes.len()).enumerate() {
             for edge in outgoing {
@@ -70,16 +72,16 @@ impl Discovery {
         }
         let prove = |from: usize,
                      outgoing: &mut Vec<ConditionalEdge>,
-                     candidates: &mut Vec<(f64, usize)>| {
+                     candidates: &mut [Vec<(f64, usize)>; 2]| {
             let start = nodes[from];
             let mut trials = 0;
             let mut bridges = 0;
-            candidates.clear();
+            candidates.iter_mut().for_each(Vec::clear);
             let origin = Bounds::points(&[start]);
             index.query_where(
                 |bounds| {
                     start[1] - bounds.min[1] > LOCAL_EDGE_RANGE
-                        && reaches(model, sprint, origin, bounds)
+                        && reaches(model, jump_span, origin, bounds)
                 },
                 |to| {
                     let Some(&end) = nodes.get(to) else {
@@ -87,53 +89,64 @@ impl Discovery {
                     };
                     let delta = sub(end, start);
                     let span = delta[0].hypot(delta[2]);
-                    let speed = [
-                        flight::duration(model, start[1], end[1]),
-                        flight::drop_duration(model, start[1], end[1]),
-                    ]
-                    .into_iter()
-                    .flatten()
-                    .find(|&time| time <= 60. && span > run * time && span <= sprint * time + 1e-9)
-                    .map(|time| span / time);
-                    if let Some(speed) = speed
+                    let jump_time = flight::duration(model, start[1], end[1]);
+                    let constant = [jump_time, flight::drop_duration(model, start[1], end[1])]
+                        .into_iter()
+                        .flatten()
+                        .find(|&time| time <= 60. && span > run * time && span <= sprint * time);
+                    let candidate = constant.map(|time| (0, time)).or_else(|| {
+                        jump_time
+                            .filter(|&time| {
+                                time <= 60.
+                                    && span > run.max(sprint) * time + 1e-9
+                                    && span <= jump_span(time) + 1e-9
+                            })
+                            .map(|time| (1, time))
+                    });
+                    if let Some((family, time)) = candidate
                         && approaches[from].iter().any(|approach| {
                             approach[0] * delta[0] + approach[2] * delta[2]
                                 >= span * (std::f64::consts::PI / 6.).cos()
                         })
                     {
-                        candidates.push((speed, to));
+                        candidates[family].push((span / time, to));
                     }
                     false
                 },
             );
-            // All candidates have a compatible run-up. Prefer flights that
-            // move away from the takeoff terrain quickly, then bound sweeps
-            // and retained landing sites independently of local mesh density.
+            // Prefer rapid clearance from takeoff terrain. Give the wider
+            // impulse envelope its own small budget so that it cannot crowd
+            // existing long drops and jumps out of the sweep.
             let rank = |a: &(f64, usize), b: &(f64, usize)| b.0.total_cmp(&a.0).then(a.1.cmp(&b.1));
-            if candidates.len() > TRIALS_PER_DEPARTURE {
-                candidates.select_nth_unstable_by(TRIALS_PER_DEPARTURE, rank);
-                candidates.truncate(TRIALS_PER_DEPARTURE);
-            }
-            candidates.sort_unstable_by(rank);
-            let mut landings = 0;
-            for &(_, to) in candidates.iter() {
-                trials += 1;
-                let mut proved = false;
-                for flight in world
-                    .conditional_flights(start, nodes[to], &[])
-                    .into_iter()
-                    .flatten()
-                {
-                    outgoing.push(ConditionalEdge {
-                        to,
-                        flight: Arc::new(flight),
-                    });
-                    bridges += 1;
-                    proved = true;
+            for (candidates, (trial_limit, landing_limit)) in candidates
+                .iter_mut()
+                .zip([(TRIALS_PER_DEPARTURE, 2), (2, 1)])
+            {
+                if candidates.len() > trial_limit {
+                    candidates.select_nth_unstable_by(trial_limit, rank);
+                    candidates.truncate(trial_limit);
                 }
-                landings += usize::from(proved);
-                if landings == 2 {
-                    break;
+                candidates.sort_unstable_by(rank);
+                let mut landings = 0;
+                for &(_, to) in candidates.iter() {
+                    trials += 1;
+                    let mut proved = false;
+                    for flight in world
+                        .conditional_flights(start, nodes[to], &[])
+                        .into_iter()
+                        .flatten()
+                    {
+                        outgoing.push(ConditionalEdge {
+                            to,
+                            flight: Arc::new(flight),
+                        });
+                        bridges += 1;
+                        proved = true;
+                    }
+                    landings += usize::from(proved);
+                    if landings == landing_limit {
+                        break;
+                    }
                 }
             }
             (trials, bridges)
@@ -148,7 +161,7 @@ impl Discovery {
             let handles: Vec<_> = (0..workers.min(nodes.len().div_ceil(CHUNK)))
                 .map(|_| {
                     scope.spawn(|| {
-                        let mut candidates = Vec::new();
+                        let mut candidates = [Vec::new(), Vec::new()];
                         let mut trials = 0;
                         let mut bridges = 0;
                         loop {
@@ -396,7 +409,7 @@ fn patches(
 
 /// Reject a whole index branch using its highest possible departure, the
 /// lowest landing, and the closest possible horizontal span.
-fn reaches(model: &Model, speed: f64, from: Bounds, to: Bounds) -> bool {
+fn reaches(model: &Model, span: impl FnOnce(f64) -> f64, from: Bounds, to: Bounds) -> bool {
     let duration = flight::duration(model, from.max[1], to.min[1])
         .or_else(|| flight::drop_duration(model, from.max[1], to.min[1]));
     duration.is_some_and(|time| {
@@ -406,7 +419,7 @@ fn reaches(model: &Model, speed: f64, from: Bounds, to: Bounds) -> bool {
         let dz = (from.min[2] - to.max[2])
             .max(to.min[2] - from.max[2])
             .max(0.);
-        dx * dx + dz * dz <= (time.min(60.) * speed + 1e-9).powi(2)
+        dx * dx + dz * dz <= (span(time.min(60.)) + 1e-9).powi(2)
     })
 }
 
@@ -428,6 +441,7 @@ fn ledge_flights(
     let speed = model
         .max_horizontal_speed
         .min(world.physical.movement.run_air_speed);
+    let span = |time| time * speed;
     let departures = patches(nodes, ledges.iter().copied(), &regions);
     let index = Index::new(
         &departures
@@ -441,7 +455,7 @@ fn ledge_flights(
         index.query_where(
             |bounds| {
                 stats.ledge_bounds_checks += 1;
-                let possible = reaches(model, speed, bounds, landing.bounds);
+                let possible = reaches(model, span, bounds, landing.bounds);
                 stats.ledge_bounds_pruned += usize::from(!possible);
                 possible
             },
@@ -456,12 +470,12 @@ fn ledge_flights(
                 // directed connection. Exact contacts keep the bounds safe.
                 for &from in &departure.contacts {
                     let origin = Bounds::points(&[nodes[from]]);
-                    if !reaches(model, speed, origin, landing.bounds) {
+                    if !reaches(model, span, origin, landing.bounds) {
                         continue;
                     }
                     for &to in &landing.contacts {
                         stats.ledge_contact_checks += 1;
-                        if !reaches(model, speed, origin, Bounds::points(&[nodes[to]])) {
+                        if !reaches(model, span, origin, Bounds::points(&[nodes[to]])) {
                             continue;
                         }
                         stats.ledge_contact_pairs += 1;

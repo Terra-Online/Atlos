@@ -14,7 +14,7 @@ type Pair = [[u64; 3]; 2];
 #[derive(Clone)]
 enum Actions {
     Ordinary(Arc<Segment>),
-    Conditional([Option<Arc<PreparedFlight>>; 2]),
+    Conditional([Option<Arc<PreparedFlight>>; 3]),
 }
 
 struct ProofShard {
