@@ -1,6 +1,8 @@
 use crate::{flight::PreparedFlight, geometry::*, region_flight, types::*, world::World};
 #[path = "bridges.rs"]
 mod bridges;
+#[path = "walk_forest.rs"]
+mod walk_forest;
 use std::{
     collections::{BTreeMap, HashMap},
     hash::{DefaultHasher, Hash, Hasher},
@@ -186,6 +188,13 @@ struct LocalEdges {
     conditional: Vec<ConditionalEdge>,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Seed {
+    Primary,
+    Alternate,
+    Deferred,
+}
+
 impl LocalEdges {
     fn push(&mut self, to: usize, actions: Actions) {
         match actions {
@@ -231,6 +240,7 @@ pub(super) struct Backbone {
     pub boosts: Vec<usize>,
     pub sample_candidates: usize,
     pub spacing_scale: f64,
+    pub walk_forest: walk_forest::Stats,
     pub conditional: Vec<Vec<ConditionalEdge>>,
     pub boost_uses: Vec<BoostUse>,
     pub preparation_ms: [f64; 4],
@@ -389,7 +399,7 @@ impl Backbone {
             .into_iter()
             .map(|(mark, action)| (mark, port(action.start()), action))
             .collect();
-        let boosts = crate::devices::boost_contacts(world)
+        let boosts: Vec<_> = crate::devices::boost_contacts(world)
             .into_iter()
             .map(&mut port)
             .collect();
@@ -463,7 +473,7 @@ impl Backbone {
             let a = nodes[i];
             index.query(Bounds::points(&[a]).expand(LOCAL_EDGE_RANGE), |j| {
                 if i != j {
-                    nearby.push((j, false));
+                    nearby.push((j, Seed::Deferred));
                 }
                 false
             });
@@ -472,20 +482,35 @@ impl Backbone {
             });
             nearby.truncate(neighbour_count);
             let mut headings = 0_u16;
+            let mut octants = 0_u16;
             for (rank, (j, seed)) in nearby.iter_mut().enumerate() {
                 let [x, _, z] = sub(nodes[*j], a);
-                let sector = (usize::from(x < 0.) << 2)
+                let sector = if x.abs() >= z.abs() {
+                    usize::from(x < 0.)
+                } else {
+                    2 + usize::from(z < 0.)
+                };
+                let bit = 1 << sector;
+                let primary = !sparse || rank < 2 || headings & bit == 0;
+                headings |= bit;
+                let octant = (usize::from(x < 0.) << 2)
                     | (usize::from(z < 0.) << 1)
                     | usize::from(z.abs() > x.abs());
-                let bit = 1 << sector;
-                *seed = !sparse || rank < 2 || headings & bit == 0;
-                headings |= bit;
+                let bit = 1 << octant;
+                *seed = if primary {
+                    Seed::Primary
+                } else if octants & bit == 0 {
+                    Seed::Alternate
+                } else {
+                    Seed::Deferred
+                };
+                octants |= bit;
             }
         });
         let mut graph: Vec<_> = (0..nodes.len()).map(|_| LocalEdges::default()).collect();
         parallel_rows(&mut graph, |i, row| {
             for &(j, seed) in &requested[i] {
-                if seed {
+                if seed == Seed::Primary {
                     row.push(j, proofs.actions(world, nodes[i], nodes[j], &boost_uses));
                 }
             }
@@ -496,6 +521,37 @@ impl Backbone {
             .map(|row| (row.ordinary, row.conditional))
             .unzip();
         if sparse {
+            // Complete the walk region seeds before using their components to
+            // decide which gaps warrant action proofs.
+            let mut alternates: Vec<_> = (0..nodes.len()).map(|_| LocalEdges::default()).collect();
+            parallel_rows(&mut alternates, |i, row| {
+                let a = nodes[i];
+                for &(j, seed) in &requested[i] {
+                    if seed != Seed::Alternate {
+                        continue;
+                    }
+                    let b = nodes[j];
+                    let limit =
+                        distance(a, b) / world.physical.locomotion.speed * walk_forest::MAX_STRETCH;
+                    // The direct walk cannot run faster than its straight line.
+                    // Reuse two verified walks when they already cover this heading.
+                    if !edges[i].iter().any(|first| {
+                        first.action.mode == "walk"
+                            && first.action.cost() <= limit
+                            && edges[first.to].iter().any(|second| {
+                                second.to == j
+                                    && second.action.mode == "walk"
+                                    && first.action.cost() + second.action.cost() <= limit
+                            })
+                    }) {
+                        row.push(j, proofs.actions(world, a, b, &boost_uses));
+                    }
+                }
+            });
+            for (i, row) in alternates.into_iter().enumerate() {
+                edges[i].extend(row.ordinary);
+                conditional[i].extend(row.conditional);
+            }
             // A walk is reversible. Publish its reverse before identifying
             // regions so that each region has a proved round trip throughout.
             let mut reverse = Vec::new();
@@ -522,7 +578,7 @@ impl Backbone {
                     let b = nodes[j];
                     let relief = (a[1] - b[1]).abs();
                     let steep = relief > 0.6 * horizontal(a, b);
-                    if seed || (groups[i] == groups[j] && !steep) {
+                    if seed != Seed::Deferred || (groups[i] == groups[j] && !steep) {
                         continue;
                     }
                     if edges[i].iter().any(|edge| edge.to == j) {
@@ -592,7 +648,7 @@ impl Backbone {
                 action: Arc::new(action),
             });
         }
-        let terminals = marks
+        let terminals: Vec<_> = marks
             .into_iter()
             .enumerate()
             .map(|(mark_index, mark)| {
@@ -622,6 +678,8 @@ impl Backbone {
                 (mark, connections)
             })
             .collect();
+        let terminals_ms = terminals_started.elapsed().as_secs_f64() * 1000.;
+        let walk_forest = walk_forest::thin(&mut edges, &conditional, &boosts, &terminals);
         Self {
             nodes,
             edges,
@@ -629,17 +687,13 @@ impl Backbone {
             boosts,
             sample_candidates,
             spacing_scale,
+            walk_forest,
             conditional,
             boost_uses,
             proved_link_count,
             region_flights,
             automatic_bridges,
-            preparation_ms: [
-                samples_ms,
-                ports_ms,
-                edges_ms,
-                terminals_started.elapsed().as_secs_f64() * 1000.,
-            ],
+            preparation_ms: [samples_ms, ports_ms, edges_ms, terminals_ms],
         }
     }
 }

@@ -194,7 +194,7 @@ impl Discovery {
     }
 }
 
-fn root(parents: &mut [usize], mut node: usize) -> usize {
+pub(super) fn root(parents: &mut [usize], mut node: usize) -> usize {
     while parents[node] != node {
         parents[node] = parents[parents[node]];
         node = parents[node];
