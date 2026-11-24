@@ -1,4 +1,5 @@
 use crate::types::Point;
+use std::sync::Arc;
 
 pub fn add(a: Point, b: Point) -> Point {
     [a[0] + b[0], a[1] + b[1], a[2] + b[2]]
@@ -66,7 +67,7 @@ impl Bounds {
 }
 pub struct Index {
     nodes: Vec<Node>,
-    item_bounds: Vec<Bounds>,
+    item_bounds: Arc<[Bounds]>,
 }
 struct Node {
     bounds: Bounds,
@@ -75,12 +76,23 @@ struct Node {
 }
 impl Index {
     pub fn new(bounds: &[Bounds]) -> Self {
+        Self::with_items(Arc::from(bounds), (0..bounds.len()).collect())
+    }
+
+    pub fn select(&self, include: impl FnMut(&usize) -> bool) -> Self {
+        Self::with_items(
+            self.item_bounds.clone(),
+            (0..self.item_bounds.len()).filter(include).collect(),
+        )
+    }
+
+    fn with_items(bounds: Arc<[Bounds]>, items: Vec<usize>) -> Self {
         let mut result = Self {
             nodes: Vec::new(),
-            item_bounds: bounds.to_vec(),
+            item_bounds: bounds.clone(),
         };
-        if !bounds.is_empty() {
-            result.build((0..bounds.len()).collect(), bounds);
+        if !items.is_empty() {
+            result.build(items, &bounds);
         }
         result
     }
