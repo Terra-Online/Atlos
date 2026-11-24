@@ -5,6 +5,8 @@ pub(super) use contacts::Contact;
 use std::{collections::HashSet, sync::Arc, thread};
 
 const STANDING_OFFSET: f64 = 0.005;
+const SUPPORT_SEARCH: f64 = 0.31;
+pub(super) const STANDING_HEIGHT_DRIFT: f64 = SUPPORT_SEARCH + crate::circular::CLEARANCE;
 const WALK_CLEARANCE: f64 = 0.01;
 const WALK_TRACE_TOLERANCE: f64 = 0.025;
 const WALK_SAMPLE_MIN: f64 = 0.025;
@@ -516,7 +518,7 @@ impl World {
         circular
     }
     fn support_height(&self, p: Point) -> Option<f64> {
-        self.support_height_range(p, p[1] - 0.31, p[1] + 0.31)
+        self.support_height_range(p, p[1] - SUPPORT_SEARCH, p[1] + SUPPORT_SEARCH)
     }
     fn support_height_range(&self, p: Point, minimum: f64, maximum: f64) -> Option<f64> {
         if let Some(height) = self.circular_height(p) {

@@ -319,6 +319,16 @@ impl Backbone {
         let representatives = |samples: BTreeMap<_, Point>, spacing| {
             let mut retained = BTreeMap::new();
             for (cell, sample) in samples {
+                if spacing_scale > 1. {
+                    // Standing preserves XZ. A sample cannot introduce a new
+                    // representative if all its possible height bins are full.
+                    let drift = crate::world::STANDING_HEIGHT_DRIFT;
+                    let [x, low, z] = key(add(sample, [0., -drift, 0.]), spacing);
+                    let high = (sample[1] + drift).floor() as i64;
+                    if (low..=high).all(|y| retained.contains_key(&[x, y, z])) {
+                        continue;
+                    }
+                }
                 let Some(feet) = standing(sample) else {
                     continue;
                 };
