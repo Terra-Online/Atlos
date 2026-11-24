@@ -620,31 +620,7 @@ impl World {
         if self.walls.blocked(axis, bounds, radius) {
             return true;
         }
-        let [dx, _, dz] = sub(b, a);
-        let span = (dx * dx + dz * dz).sqrt();
-        // The vertical capsule spine sweeps a plane. Its AABB can include
-        // large pockets outside the swept band, especially on diagonal walks.
-        // Reject those pockets at the spatial index before visiting triangles.
-        let nx = dz;
-        let nz = -dx;
-        let limit = (radius + 1e-8) * span;
-        let intersects = |candidate: Bounds| {
-            if !candidate.overlaps(bounds) {
-                return false;
-            }
-            let (x0, x1) = if nx >= 0. {
-                (candidate.min[0], candidate.max[0])
-            } else {
-                (candidate.max[0], candidate.min[0])
-            };
-            let (z0, z1) = if nz >= 0. {
-                (candidate.min[2], candidate.max[2])
-            } else {
-                (candidate.max[2], candidate.min[2])
-            };
-            (x0 - a[0]) * nx + (z0 - a[2]) * nz <= limit
-                && (x1 - a[0]) * nx + (z1 - a[2]) * nz >= -limit
-        };
+        let intersects = swept_band([a, b], bounds, radius);
         [
             (&self.collision_index, &self.collision),
             (&self.box_index, &self.boxes),
@@ -711,6 +687,7 @@ impl World {
         let mut bounds = Bounds::points(&path).expand(radius + CONTACT_ENVELOPE);
         bounds.min[1] += radius;
         bounds.max[1] += radius;
+        let intersects = swept_band(path, bounds, radius + CONTACT_ENVELOPE);
         for (index, triangles, physical, normals) in [
             static_source,
             (moving_index, moving, true, None),
@@ -727,7 +704,7 @@ impl World {
                 None,
             ),
         ] {
-            if index.query(bounds, |i| {
+            if index.query_where(intersects, |i| {
                 let triangle = triangles[i];
                 let normal = normals.map_or_else(
                     || support_normal(triangle, minimum_up, physical),
@@ -842,9 +819,22 @@ impl World {
             // Start with coarse projections and subdivide where a straight
             // span cannot follow the standing height around a slope or edge.
             let count = (distance_xz / 0.4).ceil().max(1.) as usize;
+            // A longer chord over a gap can spend many support and collision
+            // checks reaching the first hole. Probe one of the same mandatory
+            // samples out of order, then reuse it during the trace build.
+            let middle = count / 2;
+            let midpoint = if count >= 8 {
+                Some(self.walk_projection(lerp(a, b, middle as f64 / count as f64))?)
+            } else {
+                None
+            };
             for i in 1..=count {
                 let point = if i == count {
                     b
+                } else if i == middle
+                    && let Some(midpoint) = midpoint
+                {
+                    midpoint
                 } else {
                     self.walk_projection(lerp(a, b, i as f64 / count as f64))?
                 };
@@ -955,6 +945,33 @@ impl World {
         result.sort_by(|a, b| distance(*a, query.goal).total_cmp(&distance(*b, query.goal)));
         result.dedup_by(|a, b| distance(*a, *b) < 1e-6);
         result
+    }
+}
+
+fn swept_band([a, b]: [Point; 2], bounds: Bounds, radius: f64) -> impl Fn(Bounds) -> bool + Copy {
+    let [dx, _, dz] = sub(b, a);
+    let span = (dx * dx + dz * dz).sqrt();
+    // A chord's AABB can include large pockets outside its capsule or
+    // support footprint. Reject them before visiting individual triangles.
+    let nx = dz;
+    let nz = -dx;
+    let limit = (radius + 1e-8) * span;
+    move |candidate: Bounds| {
+        if !candidate.overlaps(bounds) {
+            return false;
+        }
+        let (x0, x1) = if nx >= 0. {
+            (candidate.min[0], candidate.max[0])
+        } else {
+            (candidate.max[0], candidate.min[0])
+        };
+        let (z0, z1) = if nz >= 0. {
+            (candidate.min[2], candidate.max[2])
+        } else {
+            (candidate.max[2], candidate.min[2])
+        };
+        (x0 - a[0]) * nx + (z0 - a[2]) * nz <= limit
+            && (x1 - a[0]) * nx + (z1 - a[2]) * nz >= -limit
     }
 }
 

@@ -311,10 +311,15 @@ pub fn support_intervals(
     let centers = path.map(|p| add(p, [0., radius, 0.]));
     let distances = centers.map(|p| dot(sub(p, triangle[0]), normal));
     let [first, last] = distances;
+    let reach = radius + tolerance;
+    // Every face, edge and vertex is in the same plane. Its nearest
+    // feature is out of reach when the whole span stays outside the band.
+    if first.min(last) > reach + 1e-9 || first.max(last) < -reach - 1e-9 {
+        return;
+    }
     let projected = std::array::from_fn(|i| sub(centers[i], scale(normal, distances[i])));
     let mut plane = face_interval(projected, triangle);
     clip_positive(&mut plane, first, last);
-    let reach = radius + tolerance;
     clip_positive(&mut plane, reach - first, reach - last);
     let projected_path = face_interval(path, triangle);
     if projected_path == SPAN && plane == SPAN {
