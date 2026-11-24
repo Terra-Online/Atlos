@@ -179,6 +179,51 @@ pub(super) struct ConditionalEdge {
     pub to: usize,
     pub flight: Arc<PreparedFlight>,
 }
+
+#[derive(Default)]
+struct LocalEdges {
+    ordinary: Vec<Edge>,
+    conditional: Vec<ConditionalEdge>,
+}
+
+impl LocalEdges {
+    fn push(&mut self, to: usize, actions: Actions) {
+        match actions {
+            Actions::Ordinary(action) => self.ordinary.push(Edge { to, action }),
+            Actions::Conditional(flights) => self.conditional.extend(
+                flights
+                    .into_iter()
+                    .flatten()
+                    .map(|flight| ConditionalEdge { to, flight }),
+            ),
+        }
+    }
+}
+
+fn parallel_rows<T: Send>(rows: &mut [T], visit: impl Fn(usize, &mut T) + Sync) {
+    const CHUNK: usize = 256;
+    let workers = thread::available_parallelism()
+        .map_or(1, |count| (count.get() / 2).clamp(1, 6))
+        .min(rows.len().div_ceil(CHUNK));
+    let chunks = Mutex::new(rows.chunks_mut(CHUNK).enumerate());
+    thread::scope(|scope| {
+        for _ in 0..workers {
+            let chunks = &chunks;
+            let visit = &visit;
+            scope.spawn(move || {
+                loop {
+                    let Some((chunk, rows)) = chunks.lock().unwrap().next() else {
+                        break;
+                    };
+                    for (offset, row) in rows.iter_mut().enumerate() {
+                        visit(chunk * CHUNK + offset, row);
+                    }
+                }
+            });
+        }
+    });
+}
+
 pub(super) const LOCAL_EDGE_RANGE: f64 = 12.;
 pub(super) struct Backbone {
     pub nodes: Vec<Point>,
@@ -383,9 +428,6 @@ impl Backbone {
                 .collect::<Vec<_>>(),
         );
         let ports_ms = ports_started.elapsed().as_secs_f64() * 1000.;
-        let mut edges: Vec<Vec<Edge>> = (0..nodes.len()).map(|_| Vec::new()).collect();
-        let mut conditional: Vec<Vec<ConditionalEdge>> =
-            (0..nodes.len()).map(|_| Vec::new()).collect();
         let edges_started = Instant::now();
         if profile {
             eprintln!(
@@ -394,64 +436,86 @@ impl Backbone {
                 devices.len()
             );
         }
-        // Scenario benchmark workers already run concurrently. Leave half the
-        // machine available to the other worker. Write disjoint adjacency rows
-        // so scheduling cannot change discovery order within a row.
-        let workers =
-            thread::available_parallelism().map_or(1, |count| (count.get() / 2).clamp(1, 6));
-        const CHUNK: usize = 256;
-        let chunks = Mutex::new(
-            edges
-                .chunks_mut(CHUNK)
-                .zip(conditional.chunks_mut(CHUNK))
-                .enumerate(),
-        );
-        thread::scope(|scope| {
-            for _ in 0..workers.min(nodes.len().div_ceil(CHUNK)) {
-                let nodes = &nodes;
-                let index = &index;
-                let boost_uses = &boost_uses;
-                let chunks = &chunks;
-                scope.spawn(move || {
-                    let mut nearby = Vec::new();
-                    loop {
-                        // Dense geometry makes adjacent rows very different
-                        // in cost. Draw another batch when a worker finishes.
-                        let Some((chunk, (edges, conditional))) = chunks.lock().unwrap().next()
-                        else {
-                            break;
-                        };
-                        for (row, (edges, conditional)) in
-                            edges.iter_mut().zip(conditional).enumerate()
-                        {
-                            let i = chunk * CHUNK + row;
-                            let a = nodes[i];
-                            nearby.clear();
-                            index.query(Bounds::points(&[a]).expand(LOCAL_EDGE_RANGE), |j| {
-                                if i != j {
-                                    nearby.push(j);
-                                }
-                                false
-                            });
-                            nearby.sort_unstable_by(|&j, &k| {
-                                distance(a, nodes[j]).total_cmp(&distance(a, nodes[k]))
-                            });
-                            for &j in nearby.iter().take(neighbour_count) {
-                                match proofs.actions(world, a, nodes[j], boost_uses) {
-                                    Actions::Ordinary(action) => edges.push(Edge { to: j, action }),
-                                    Actions::Conditional(flights) => conditional.extend(
-                                        flights
-                                            .into_iter()
-                                            .flatten()
-                                            .map(|flight| ConditionalEdge { to: j, flight }),
-                                    ),
-                                }
-                            }
-                        }
-                    }
-                });
+
+        let sparse = nodes.len() > 20_000;
+        let mut requested = vec![Vec::new(); nodes.len()];
+        parallel_rows(&mut requested, |i, nearby| {
+            let a = nodes[i];
+            index.query(Bounds::points(&[a]).expand(LOCAL_EDGE_RANGE), |j| {
+                if i != j {
+                    nearby.push((j, false));
+                }
+                false
+            });
+            nearby.sort_unstable_by(|&(j, _), &(k, _)| {
+                distance(a, nodes[j]).total_cmp(&distance(a, nodes[k]))
+            });
+            nearby.truncate(neighbour_count);
+            let mut headings = 0_u16;
+            for (rank, (j, seed)) in nearby.iter_mut().enumerate() {
+                let [x, _, z] = sub(nodes[*j], a);
+                let sector = (usize::from(x < 0.) << 2)
+                    | (usize::from(z < 0.) << 1)
+                    | usize::from(z.abs() > x.abs());
+                let bit = 1 << sector;
+                *seed = !sparse || rank < 2 || headings & bit == 0;
+                headings |= bit;
             }
         });
+        let mut graph: Vec<_> = (0..nodes.len()).map(|_| LocalEdges::default()).collect();
+        parallel_rows(&mut graph, |i, row| {
+            for &(j, seed) in &requested[i] {
+                if seed {
+                    row.push(j, proofs.actions(world, nodes[i], nodes[j], &boost_uses));
+                }
+            }
+        });
+
+        let (mut edges, mut conditional): (Vec<_>, Vec<_>) = graph
+            .into_iter()
+            .map(|row| (row.ordinary, row.conditional))
+            .unzip();
+        if sparse {
+            // A walk is reversible. Publish its reverse before identifying
+            // regions so that each region has a proved round trip throughout.
+            let mut reverse = Vec::new();
+            for (from, outgoing) in edges.iter().enumerate() {
+                for edge in outgoing.iter().filter(|edge| edge.action.mode == "walk") {
+                    if !edges[edge.to].iter().any(|back| back.to == from) {
+                        reverse.push((edge.to, from, edge.action.clone()));
+                    }
+                }
+            }
+            for (from, to, action) in reverse {
+                edges[from].push(Edge {
+                    to,
+                    action: Arc::new(
+                        world.walk_segment(action.points.iter().rev().copied().collect()),
+                    ),
+                });
+            }
+            let (groups, _) = bridges::walk_groups(&edges);
+            let mut extra: Vec<_> = (0..nodes.len()).map(|_| LocalEdges::default()).collect();
+            parallel_rows(&mut extra, |i, row| {
+                let a = nodes[i];
+                for &(j, seed) in &requested[i] {
+                    let b = nodes[j];
+                    let relief = (a[1] - b[1]).abs();
+                    let steep = relief > 0.6 * horizontal(a, b);
+                    if seed || (groups[i] == groups[j] && !steep) {
+                        continue;
+                    }
+                    if edges[i].iter().any(|edge| edge.to == j) {
+                        continue;
+                    }
+                    row.push(j, proofs.actions(world, a, b, &boost_uses));
+                }
+            });
+            for (i, row) in extra.into_iter().enumerate() {
+                edges[i].extend(row.ordinary);
+                conditional[i].extend(row.conditional);
+            }
+        }
         let edges_ms = edges_started.elapsed().as_secs_f64() * 1000.;
         let count_before_bridges = nodes.len();
         let mut automatic_bridges = bridges::discover(

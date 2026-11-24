@@ -202,7 +202,7 @@ fn root(parents: &mut [usize], mut node: usize) -> usize {
     node
 }
 
-fn walk_groups(edges: &[Vec<Edge>]) -> (Vec<usize>, Vec<usize>) {
+pub(super) fn walk_groups(edges: &[Vec<Edge>]) -> (Vec<usize>, Vec<usize>) {
     let mut parents: Vec<_> = (0..edges.len()).collect();
     let mut sizes = vec![1; edges.len()];
     // Walk groups only prioritize proposals. Every admitted edge is directed
