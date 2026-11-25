@@ -71,16 +71,27 @@ function getAllFiles(dirPath, arrayOfFiles) {
 
 const remoteObjectListPromiseMap = new Map();
 
+const listRemotePage = async (prefix, continuationToken) => {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      // Ali OSS expects the wire parameter name and otherwise defaults to 100.
+      return await client.listV2({ prefix, continuationToken, 'max-keys': 250 }, { timeout: 30000 });
+    } catch (error) {
+      const transient = ['ResponseTimeoutError', 'ConnectionTimeoutError'].includes(error.name)
+        || ['ECONNRESET', 'ETIMEDOUT', 'EPIPE'].includes(error.code);
+      if (!transient || attempt >= MAX_RETRIES) throw error;
+      console.warn(`[publish-oss] retrying object list for ${prefix} (${attempt + 1}/${MAX_RETRIES}, ${error.name})`);
+      await new Promise((resolve) => setTimeout(resolve, 2000 * 2 ** attempt));
+    }
+  }
+};
+
 const fetchRemoteObjects = async (prefixToList) => {
   const remoteObjects = [];
   let continuationToken;
 
   do {
-    const response = await client.listV2({
-      prefix: prefixToList,
-      continuationToken,
-      maxKeys: 1000,
-    });
+    const response = await listRemotePage(prefixToList, continuationToken);
 
     const objects = response.objects || [];
     for (const item of objects) {
