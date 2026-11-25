@@ -1,5 +1,6 @@
 use crate::{
-    Candidate, Engine, backbone::Backbone, flight, geometry::*, optimize, search::Label, types::*,
+    Candidate, Engine, backbone::Backbone, flight, flight::PreparedFlight, geometry::*, optimize,
+    search::Label, types::*,
 };
 use std::{
     collections::{BinaryHeap, HashMap},
@@ -11,12 +12,134 @@ use std::{
 
 type Links = [Option<(usize, Segment)>];
 
+#[derive(Clone, Copy)]
 pub(super) struct Paths<'a> {
     pub previous: &'a Links,
     pub suffix: &'a Links,
     pub prefix_costs: &'a [f64],
     pub suffix_costs: &'a [f64],
     pub settled: &'a [bool],
+}
+
+#[derive(Clone, Copy)]
+enum Hop<'a> {
+    Edge(&'a Segment),
+    Sprint(&'a PreparedFlight),
+}
+
+impl Engine {
+    /// Try a bounded chain of prepared sprint flights when neither ordinary
+    /// routing nor a single conditional gap provided a scheduled route.
+    pub(super) fn chained_sprints(
+        &self,
+        layout: usize,
+        arrival: &Arrival,
+        query: &Query,
+        paths: Paths<'_>,
+    ) -> Option<Candidate> {
+        const MAX_FLIGHTS: usize = 3;
+        const LABEL_LIMIT: usize = 65_536;
+        const ROUTE_TRIALS: usize = 32;
+        let backbone = self.backbone_for(layout);
+        let model = &self.world_for(layout).physical.movement.model;
+        let count = backbone.nodes.len();
+        // A label identifies both a node and the number of flights already
+        // used. A cheaper one-flight chain must not overwrite a two-flight
+        // chain that reached the same supported contact.
+        let mut costs = vec![f64::INFINITY; count * MAX_FLIGHTS];
+        let mut links = vec![None; costs.len()];
+        let mut queue = BinaryHeap::new();
+        for (from, edges) in backbone.conditional.iter().enumerate() {
+            if self.cancelled.load(Ordering::Relaxed) {
+                return None;
+            }
+            if !paths.settled[from] {
+                continue;
+            }
+            for edge in edges.iter().filter(|edge| edge.flight.supports_unboosted()) {
+                if paths.settled[edge.to] {
+                    continue;
+                }
+                let cost = paths.prefix_costs[from] + edge.flight.action.cost();
+                if cost < costs[edge.to] {
+                    costs[edge.to] = cost;
+                    links[edge.to] = Some((count * MAX_FLIGHTS + from, Hop::Sprint(&edge.flight)));
+                    queue.push(Label {
+                        node: edge.to,
+                        cost,
+                    });
+                }
+            }
+        }
+
+        let mut labels = 0;
+        let mut trials = 0;
+        while let Some(Label { node: label, cost }) = queue.pop() {
+            if self.cancelled.load(Ordering::Relaxed) || labels == LABEL_LIMIT {
+                return None;
+            }
+            if cost > costs[label] {
+                continue;
+            }
+            labels += 1;
+            let node = label % count;
+            let layer = label / count;
+            if layer > 0 && paths.suffix[node].is_some() {
+                trials += 1;
+                let mut middle = Vec::new();
+                let mut cursor = label;
+                while cursor < count * MAX_FLIGHTS {
+                    let (parent, hop) = links[cursor]?;
+                    middle.push(match hop {
+                        Hop::Edge(action) => action.clone(),
+                        Hop::Sprint(flight) => flight.variants(model, &[]).next()?,
+                    });
+                    cursor = parent;
+                }
+                let mut route = chain(paths.previous, cursor % count, true)?;
+                route.extend(middle.into_iter().rev());
+                route.extend(chain(paths.suffix, node, false)?);
+                if let Some(candidate) = self.candidate(layout, arrival.clone(), route) {
+                    if candidate.finishes_at_first_goal(query) {
+                        return Some(candidate);
+                    }
+                }
+                if trials == ROUTE_TRIALS {
+                    return None;
+                }
+            }
+            let mut relax = |to, next, hop| {
+                if next < costs[to] {
+                    costs[to] = next;
+                    links[to] = Some((label, hop));
+                    queue.push(Label {
+                        node: to,
+                        cost: next,
+                    });
+                }
+            };
+            for edge in &backbone.edges[node] {
+                relax(
+                    layer * count + edge.to,
+                    cost + edge.action.cost(),
+                    Hop::Edge(&edge.action),
+                );
+            }
+            if layer + 1 < MAX_FLIGHTS {
+                for edge in backbone.conditional[node]
+                    .iter()
+                    .filter(|edge| edge.flight.supports_unboosted())
+                {
+                    relax(
+                        (layer + 1) * count + edge.to,
+                        cost + edge.flight.action.cost(),
+                        Hop::Sprint(&edge.flight),
+                    );
+                }
+            }
+        }
+        None
+    }
 }
 
 // Each seed uses one conditional flight. Its prefixes and suffixes come only

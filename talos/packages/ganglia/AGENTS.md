@@ -48,6 +48,8 @@ acceptance; retain their diagnostics and continue the benchmark.
 
 ## Mechanism benchmark
 
+For quick visualization or route debugging, use the [Ganglia v2 case viewer](bench/scenes/mechanisms/README.md#visualize-a-case).
+
 Use Node 26. For input preparation, follow the
 [mechanism input recipe](bench/scenes/mechanisms/README.md#generate-service-inputs).
 Run from this package:

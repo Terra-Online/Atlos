@@ -32,7 +32,10 @@ export interface PhysicalMovement {
 
 export interface PhysicalInput {
   ground: PhysicalGround;
-  collision: CollisionGeometry;
+  collision: CollisionGeometry & {
+    /** Optional source collider ranges in triangle order. */
+    records?: readonly { kind?: string; first: number; count: number }[];
+  };
   roundedWalls?: Wall[];
   movement: PhysicalMovement;
   locomotion: LocomotionOptions;

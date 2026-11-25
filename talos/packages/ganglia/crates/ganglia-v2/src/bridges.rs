@@ -1,14 +1,15 @@
 #[path = "bridge_regions.rs"]
 mod regions;
 
-use super::{ConditionalEdge, Edge, LOCAL_EDGE_RANGE};
-use crate::{flight, geometry::*, placement, region_flight, types::*, world::World};
+use super::{ConditionalEdge, Edge, LOCAL_EDGE_RANGE, Proofs};
+use crate::{flight, geometry::*, placement, region_flight, search::Label, types::*, world::World};
 use regions::Regions;
 use serde::Serialize;
 use std::{
     cmp::Reverse,
-    collections::{BTreeMap, HashMap, HashSet},
-    sync::Arc,
+    collections::{BTreeMap, BinaryHeap, HashMap, HashSet},
+    sync::{Arc, Mutex},
+    thread,
     time::Instant,
 };
 
@@ -31,6 +32,7 @@ pub(crate) struct Discovery {
     ledge_enumeration_ms: f64,
     ledge_trials: usize,
     ledge_flights: usize,
+    ledge_detours_ranked: usize,
     sprint_bridge_trials: usize,
     sprint_bridges: usize,
     sprint_bridge_ms: f64,
@@ -46,15 +48,18 @@ impl Discovery {
         edges: &[Vec<Edge>],
         conditional: &mut [Vec<ConditionalEdge>],
         index: &Index,
+        proofs: &Proofs,
     ) {
         const TRIALS_PER_DEPARTURE: usize = 6;
         let started = Instant::now();
         let model = &world.physical.movement.model;
         let run = world.physical.movement.run_air_speed;
         let sprint = model.max_horizontal_speed;
-        if sprint <= run {
+        let impulse = flight::SprintImpulse::limit(model);
+        if sprint <= run && impulse.is_none() {
             return;
         }
+        let jump_span = |time| impulse.map_or(sprint * time, |i| i.distance(time));
         let mut approaches = vec![Vec::new(); nodes.len()];
         for (from, outgoing) in edges.iter().take(nodes.len()).enumerate() {
             for edge in outgoing {
@@ -67,17 +72,18 @@ impl Discovery {
                 }
             }
         }
-        let mut candidates = Vec::new();
-        for (from, &start) in nodes.iter().enumerate() {
-            if approaches[from].is_empty() {
-                continue;
-            }
-            candidates.clear();
+        let prove = |from: usize,
+                     outgoing: &mut Vec<ConditionalEdge>,
+                     candidates: &mut [Vec<(f64, usize)>; 2]| {
+            let start = nodes[from];
+            let mut trials = 0;
+            let mut bridges = 0;
+            candidates.iter_mut().for_each(Vec::clear);
             let origin = Bounds::points(&[start]);
             index.query_where(
                 |bounds| {
                     start[1] - bounds.min[1] > LOCAL_EDGE_RANGE
-                        && reaches(model, sprint, origin, bounds)
+                        && reaches(model, jump_span, origin, bounds)
                 },
                 |to| {
                     let Some(&end) = nodes.get(to) else {
@@ -85,62 +91,111 @@ impl Discovery {
                     };
                     let delta = sub(end, start);
                     let span = delta[0].hypot(delta[2]);
-                    let speed = [
-                        flight::duration(model, start[1], end[1]),
-                        flight::drop_duration(model, start[1], end[1]),
-                    ]
-                    .into_iter()
-                    .flatten()
-                    .find(|&time| time <= 60. && span > run * time && span <= sprint * time + 1e-9)
-                    .map(|time| span / time);
-                    if let Some(speed) = speed
+                    let jump_time = flight::duration(model, start[1], end[1]);
+                    let constant = [jump_time, flight::drop_duration(model, start[1], end[1])]
+                        .into_iter()
+                        .flatten()
+                        .find(|&time| time <= 60. && span > run * time && span <= sprint * time);
+                    let candidate = constant.map(|time| (0, time)).or_else(|| {
+                        jump_time
+                            .filter(|&time| {
+                                time <= 60.
+                                    && span > run.max(sprint) * time + 1e-9
+                                    && span <= jump_span(time) + 1e-9
+                            })
+                            .map(|time| (1, time))
+                    });
+                    if let Some((family, time)) = candidate
                         && approaches[from].iter().any(|approach| {
                             approach[0] * delta[0] + approach[2] * delta[2]
                                 >= span * (std::f64::consts::PI / 6.).cos()
                         })
                     {
-                        candidates.push((speed, to));
+                        candidates[family].push((span / time, to));
                     }
                     false
                 },
             );
-            // All candidates have a compatible run-up. Prefer flights that
-            // move away from the takeoff terrain quickly, then bound sweeps
-            // and retained landing sites independently of local mesh density.
+            // Prefer rapid clearance from takeoff terrain. Give the wider
+            // impulse envelope its own small budget so that it cannot crowd
+            // existing long drops and jumps out of the sweep.
             let rank = |a: &(f64, usize), b: &(f64, usize)| b.0.total_cmp(&a.0).then(a.1.cmp(&b.1));
-            if candidates.len() > TRIALS_PER_DEPARTURE {
-                candidates.select_nth_unstable_by(TRIALS_PER_DEPARTURE, rank);
-                candidates.truncate(TRIALS_PER_DEPARTURE);
-            }
-            candidates.sort_unstable_by(rank);
-            let mut landings = 0;
-            for &(_, to) in &candidates {
-                self.sprint_bridge_trials += 1;
-                let mut proved = false;
-                for flight in world
-                    .conditional_flights(start, nodes[to], &[])
-                    .into_iter()
-                    .flatten()
-                {
-                    conditional[from].push(ConditionalEdge {
-                        to,
-                        flight: Arc::new(flight),
-                    });
-                    self.sprint_bridges += 1;
-                    proved = true;
+            for (candidates, (trial_limit, landing_limit)) in candidates
+                .iter_mut()
+                .zip([(TRIALS_PER_DEPARTURE, 2), (2, 1)])
+            {
+                if candidates.len() > trial_limit {
+                    candidates.select_nth_unstable_by(trial_limit, rank);
+                    candidates.truncate(trial_limit);
                 }
-                landings += usize::from(proved);
-                if landings == 2 {
-                    break;
+                candidates.sort_unstable_by(rank);
+                let mut landings = 0;
+                for &(_, to) in candidates.iter() {
+                    trials += 1;
+                    let mut proved = false;
+                    for flight in proofs
+                        .sprint_bridge(world, start, nodes[to])
+                        .into_iter()
+                        .flatten()
+                    {
+                        outgoing.push(ConditionalEdge { to, flight });
+                        bridges += 1;
+                        proved = true;
+                    }
+                    landings += usize::from(proved);
+                    if landings == landing_limit {
+                        break;
+                    }
                 }
             }
-        }
+            (trials, bridges)
+        };
+        // Each departure selects and proves its own edges. Assign disjoint
+        // rows in batches to balance dense cliffs against open terrain.
+        const CHUNK: usize = 128;
+        let rows = Mutex::new(conditional[..nodes.len()].chunks_mut(CHUNK).enumerate());
+        let workers =
+            thread::available_parallelism().map_or(1, |count| (count.get() / 2).clamp(1, 6));
+        let (trials, bridges) = thread::scope(|scope| {
+            let handles: Vec<_> = (0..workers.min(nodes.len().div_ceil(CHUNK)))
+                .map(|_| {
+                    scope.spawn(|| {
+                        let mut candidates = [Vec::new(), Vec::new()];
+                        let mut trials = 0;
+                        let mut bridges = 0;
+                        loop {
+                            let Some((chunk, rows)) = rows.lock().unwrap().next() else {
+                                break;
+                            };
+                            for (offset, outgoing) in rows.iter_mut().enumerate() {
+                                let from = chunk * CHUNK + offset;
+                                if !approaches[from].is_empty() {
+                                    let (row_trials, row_bridges) =
+                                        prove(from, outgoing, &mut candidates);
+                                    trials += row_trials;
+                                    bridges += row_bridges;
+                                }
+                            }
+                        }
+                        (trials, bridges)
+                    })
+                })
+                .collect();
+            handles
+                .into_iter()
+                .fold((0, 0), |(trials, bridges), handle| {
+                    let (worker_trials, worker_bridges) = handle.join().unwrap();
+                    (trials + worker_trials, bridges + worker_bridges)
+                })
+        });
+        self.sprint_bridge_trials = trials;
+        self.sprint_bridges = bridges;
         self.sprint_bridge_ms = started.elapsed().as_secs_f64() * 1000.;
         self.elapsed_ms += self.sprint_bridge_ms;
     }
 }
 
-fn root(parents: &mut [usize], mut node: usize) -> usize {
+pub(super) fn root(parents: &mut [usize], mut node: usize) -> usize {
     while parents[node] != node {
         parents[node] = parents[parents[node]];
         node = parents[node];
@@ -148,7 +203,7 @@ fn root(parents: &mut [usize], mut node: usize) -> usize {
     node
 }
 
-fn walk_groups(edges: &[Vec<Edge>]) -> (Vec<usize>, Vec<usize>) {
+pub(super) fn walk_groups(edges: &[Vec<Edge>]) -> (Vec<usize>, Vec<usize>) {
     let mut parents: Vec<_> = (0..edges.len()).collect();
     let mut sizes = vec![1; edges.len()];
     // Walk groups only prioritize proposals. Every admitted edge is directed
@@ -353,7 +408,7 @@ fn patches(
 
 /// Reject a whole index branch using its highest possible departure, the
 /// lowest landing, and the closest possible horizontal span.
-fn reaches(model: &Model, speed: f64, from: Bounds, to: Bounds) -> bool {
+fn reaches(model: &Model, span: impl FnOnce(f64) -> f64, from: Bounds, to: Bounds) -> bool {
     let duration = flight::duration(model, from.max[1], to.min[1])
         .or_else(|| flight::drop_duration(model, from.max[1], to.min[1]));
     duration.is_some_and(|time| {
@@ -363,8 +418,47 @@ fn reaches(model: &Model, speed: f64, from: Bounds, to: Bounds) -> bool {
         let dz = (from.min[2] - to.max[2])
             .max(to.min[2] - from.max[2])
             .max(0.);
-        dx * dx + dz * dz <= (time.min(60.) * speed + 1e-9).powi(2)
+        dx * dx + dz * dz <= (span(time.min(60.)) + 1e-9).powi(2)
     })
+}
+
+enum Detour {
+    Unreachable,
+    Known(f64),
+    Unmeasured,
+}
+
+fn detour(edges: &[Vec<Edge>], from: usize, to: usize) -> Detour {
+    let mut costs = HashMap::from([(from, 0.)]);
+    let mut queue = BinaryHeap::from([Label {
+        node: from,
+        cost: 0.,
+    }]);
+    // This ranking probe shares none of the physics proof budget. Leave
+    // large searches unmeasured instead of mistaking them for disconnections.
+    for _ in 0..64 {
+        let Some(Label { node, cost }) = queue.pop() else {
+            return Detour::Unreachable;
+        };
+        if node == to {
+            return Detour::Known(cost);
+        }
+        if cost > costs[&node] {
+            continue;
+        }
+        for edge in &edges[node] {
+            let next = cost + edge.action.cost();
+            let old = costs.entry(edge.to).or_insert(f64::INFINITY);
+            if next < *old {
+                *old = next;
+                queue.push(Label {
+                    node: edge.to,
+                    cost: next,
+                });
+            }
+        }
+    }
+    Detour::Unmeasured
 }
 
 fn ledge_flights(
@@ -385,6 +479,7 @@ fn ledge_flights(
     let speed = model
         .max_horizontal_speed
         .min(world.physical.movement.run_air_speed);
+    let span = |time| time * speed;
     let departures = patches(nodes, ledges.iter().copied(), &regions);
     let index = Index::new(
         &departures
@@ -398,7 +493,7 @@ fn ledge_flights(
         index.query_where(
             |bounds| {
                 stats.ledge_bounds_checks += 1;
-                let possible = reaches(model, speed, bounds, landing.bounds);
+                let possible = reaches(model, span, bounds, landing.bounds);
                 stats.ledge_bounds_pruned += usize::from(!possible);
                 possible
             },
@@ -413,12 +508,12 @@ fn ledge_flights(
                 // directed connection. Exact contacts keep the bounds safe.
                 for &from in &departure.contacts {
                     let origin = Bounds::points(&[nodes[from]]);
-                    if !reaches(model, speed, origin, landing.bounds) {
+                    if !reaches(model, span, origin, landing.bounds) {
                         continue;
                     }
                     for &to in &landing.contacts {
                         stats.ledge_contact_checks += 1;
-                        if !reaches(model, speed, origin, Bounds::points(&[nodes[to]])) {
+                        if !reaches(model, span, origin, Bounds::points(&[nodes[to]])) {
                             continue;
                         }
                         stats.ledge_contact_pairs += 1;
@@ -441,6 +536,49 @@ fn ledge_flights(
             .cmp(&Reverse(regions.influence(b.0)))
             .then_with(|| a.1[0].0.total_cmp(&b.1[0].0))
             .then_with(|| a.0.cmp(&b.0))
+    });
+    // Refine a bounded shortlist at its actual launch and landing contacts.
+    // Costs here use ordinary graph actions before whole-route scheduling.
+    let shortlist = proposals.len().min(LEDGE_TRIALS * 2);
+    let mut priorities = HashMap::with_capacity(shortlist);
+    for (pair, choices) in &proposals[..shortlist] {
+        let (_, from, to) = choices[0];
+        let result = if pair.0 > pair.1 {
+            Detour::Unreachable
+        } else {
+            detour(edges, from, to)
+        };
+        let score = match result {
+            Detour::Unreachable => (0, 0.),
+            Detour::Known(cost) => {
+                let departure = nodes[from];
+                let landing = nodes[to];
+                let distance = horizontal(departure, landing);
+                let flight = [
+                    flight::drop_duration(model, departure[1], landing[1]),
+                    flight::duration(model, departure[1], landing[1]),
+                ]
+                .into_iter()
+                .flatten()
+                .find(|&time| distance <= span(time) + 1e-9);
+                let saved = flight.map_or(0., |time| (cost - time).max(0.));
+                if saved > 0. {
+                    stats.ledge_detours_ranked += 1;
+                    (1, saved)
+                } else {
+                    (3, 0.)
+                }
+            }
+            Detour::Unmeasured => (2, 0.),
+        };
+        priorities.insert(*pair, score);
+    }
+    proposals[..shortlist].sort_by(|a, b| {
+        let (tier_a, saved_a) = priorities[&a.0];
+        let (tier_b, saved_b) = priorities[&b.0];
+        tier_a
+            .cmp(&tier_b)
+            .then_with(|| saved_b.total_cmp(&saved_a))
     });
     stats.ledge_enumeration_ms = started.elapsed().as_secs_f64() * 1000.;
     let mut flights = Vec::new();

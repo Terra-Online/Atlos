@@ -5,6 +5,7 @@ mod contact_search;
 mod devices;
 mod flight;
 mod geometry;
+mod graph;
 mod inspect;
 mod locomotion;
 #[cfg(feature = "napi")]
@@ -124,7 +125,8 @@ impl Engine {
                 .flat_map(|(world, _)| world.box_bounds())
                 .collect(),
             &base.physical.ground.options.profile,
-            worlds.len() > 1 && base.has_static_collision(),
+            base.has_static_collision(),
+            worlds.len(),
         );
         let anchor_supports: Vec<_> = input
             .anchors
@@ -151,7 +153,7 @@ impl Engine {
                 &picks,
             );
             let after = proofs.stats();
-            layout_stats.push(json!({"layout":layouts.len(),"placements":picks,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),"conditionalEdgeCount":backbone.conditional.iter().map(Vec::len).sum::<usize>(),"provedLinkCount":backbone.proved_link_count,"regionFlightSearches":backbone.region_flights,"automaticBridges":backbone.automatic_bridges,"buildMs":layout_started.elapsed().as_secs_f64()*1000.,"phasesMs":{"samples":backbone.preparation_ms[0],"portsAndIndex":backbone.preparation_ms[1],"edges":backbone.preparation_ms[2],"terminals":backbone.preparation_ms[3]},"pairProofsStored":after.0-before.0,"pairProofHits":after.1-before.1}));
+            layout_stats.push(json!({"layout":layouts.len(),"placements":picks,"nodeCount":backbone.nodes.len(),"edgeCount":backbone.edges.iter().map(Vec::len).sum::<usize>(),"conditionalEdgeCount":backbone.conditional.iter().map(Vec::len).sum::<usize>(),"provedLinkCount":backbone.proved_link_count,"regionFlightSearches":backbone.region_flights,"automaticBridges":backbone.automatic_bridges,"buildMs":layout_started.elapsed().as_secs_f64()*1000.,"phasesMs":{"samples":backbone.preparation_ms[0],"portsAndIndex":backbone.preparation_ms[1],"edges":backbone.preparation_ms[2],"terminals":backbone.preparation_ms[3]},"localGraph":backbone.local_graph,"sampleCandidates":backbone.sample_candidates,"sampleSpacingScale":backbone.spacing_scale,"pairProofsStored":after.0-before.0,"pairProofHits":after.1-before.1}));
             layouts.push(PreparedLayout {
                 world,
                 backbone,

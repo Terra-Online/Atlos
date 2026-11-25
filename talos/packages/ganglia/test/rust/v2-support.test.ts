@@ -103,3 +103,47 @@ test('v2 projects onto physical support throughout the public vertical tolerance
     await solver.close();
   }
 });
+
+test('v2 rejects enclosed contacts inside a source box and keeps its open corners', async () => {
+  const terrain = floor(-8, 8, 0, -8, 8);
+  const corners: Vec3[] = [
+    [-4, -1, -4],
+    [4, -1, -4],
+    [4, 4, -4],
+    [-4, 4, -4],
+    [-4, -1, 4],
+    [4, -1, 4],
+    [4, 4, 4],
+    [-4, 4, 4],
+  ];
+  const box = corners.map(([x, y, z]) => [(x + z) * Math.SQRT1_2, y, (z - x) * Math.SQRT1_2]);
+  const faces = [
+    [0, 2, 1, 0, 3, 2],
+    [4, 5, 6, 4, 6, 7],
+    [0, 1, 5, 0, 5, 4],
+    [3, 7, 6, 3, 6, 2],
+    [0, 4, 7, 0, 7, 3],
+    [1, 2, 6, 1, 6, 5],
+  ];
+  const solver = await prepareGangliaV2(
+    gangliaV2Defaults,
+    {
+      ...physical,
+      ground: { ...physical.ground, surfaces: [{ id: 'floor', vertices: terrain }] },
+      collision: {
+        positions: [...terrain, ...box].flat(),
+        indices: [0, 1, 2, 0, 2, 3, ...faces.flat().map((vertex) => vertex + terrain.length)],
+        records: [{ kind: 'box', first: 2, count: 12 }],
+      },
+    },
+    [],
+  );
+  try {
+    const solve = (position: Vec3, goal: Vec3) =>
+      solver.solve({ starts: [{ id: 'arrival', position, cost: 0, state: 'available' }], goal });
+    assert.equal((await solve([0, 0, 0], [1, 0, 0])).route.status, 'no-verified-route');
+    assert.equal((await solve([4.9, 0, 4.9], [5.15, 0, 4.9])).route.status, 'complete');
+  } finally {
+    await solver.close();
+  }
+});

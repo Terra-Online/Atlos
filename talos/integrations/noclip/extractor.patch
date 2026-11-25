@@ -10209,10 +10209,10 @@ index 00000000..547e2506
 +};
 diff --git a/packages/extractor/src/game/route-hazards.test.ts b/packages/extractor/src/game/route-hazards.test.ts
 new file mode 100644
-index 00000000..9bea41f9
+index 00000000..9efd903f
 --- /dev/null
 +++ b/packages/extractor/src/game/route-hazards.test.ts
-@@ -0,0 +1,117 @@
+@@ -0,0 +1,150 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
@@ -10330,12 +10330,45 @@ index 00000000..9bea41f9
 +		/disagrees/,
 +	);
 +});
++
++test('keeps the rotated footprint of an upright box reset zone', () => {
++	const shape = {
++		functionType: 1,
++		index: 0,
++		shapeType: 1,
++		uniqueId: 0n,
++		hasCondition: false,
++		postion: [10, 2, 20],
++		euler: [0, 45, 0],
++		offset: [0, 0, 0],
++		bufferDistance: 0,
++		size: [8, 5, 4],
++	};
++	const center = shape.postion;
++	const horizontalSize = 12 / Math.sqrt(2);
++	const area = {
++		baseData: [shape],
++		ranges: [{ m_center: center, m_size: [horizontalSize, 5, horizontalSize] }],
++		specificDatas: [payload],
++		functionAreaConditions: [],
++	};
++	const [zone] = routeHazards({ functionArea: area });
++	assert.equal(zone.state, 'active');
++	assert.equal(zone.polygon?.length, 4);
++	const [corner] = zone.polygon!;
++	assert.ok(Math.abs(corner[0] - (10 - 6 / Math.sqrt(2))) < 1e-5);
++	assert.ok(Math.abs(corner[1] - (20 + 2 / Math.sqrt(2))) < 1e-5);
++	const [differentHeight] = routeHazards({
++		functionArea: { ...area, ranges: [{ m_center: center, m_size: [horizontalSize, 6, horizontalSize] }] },
++	});
++	assert.equal(differentHeight.polygon, undefined);
++});
 diff --git a/packages/extractor/src/game/route-hazards.ts b/packages/extractor/src/game/route-hazards.ts
 new file mode 100644
-index 00000000..a703072c
+index 00000000..dff6417e
 --- /dev/null
 +++ b/packages/extractor/src/game/route-hazards.ts
-@@ -0,0 +1,110 @@
+@@ -0,0 +1,141 @@
 +import { FormatError } from '@endfield-noclip/formats/binary/binary-reader';
 +import { trsMatrix, transformPoint, unityEulerQuaternion } from '@endfield-noclip/formats/unity/transform';
 +import type { TypeTreeObject } from '@endfield-noclip/formats/unity/type-tree';
@@ -10353,21 +10386,51 @@ index 00000000..a703072c
 +};
 +
 +const polygonOf = (shape: TypeTreeObject, min: number[], max: number[]) => {
-+	if (shape.shapeType !== 3) {
++	const box = shape.shapeType === 1;
++	if (!box && shape.shapeType !== 3) {
 +		return undefined;
 +	}
 +	const rotation = vector(shape.euler),
 +		offset = vector(shape.offset);
-+	// tilted or offset prisms need their full shape semantics; keep their conservative bounds.
++	// Tilted and offset volumes need their full 3D semantics.
 +	if (rotation[0] !== 0 || rotation[2] !== 0 || offset.some((v) => v !== 0) || shape.bufferDistance !== 0) {
 +		return undefined;
 +	}
-+	const matrix = trsMatrix(vector(shape.postion), unityEulerQuaternion(rotation), [1, 1, 1]);
-+	const polygon = arrayField(shape, 'posList').map((p): [number, number] => {
-+		if (!Array.isArray(p) || p.length !== 2 || !p.every((v) => typeof v === 'number' && Number.isFinite(v))) {
-+			throw new FormatError('invalid hazard polygon');
++	const origin = vector(shape.postion);
++	let footprint: [number, number][];
++	if (box) {
++		const [x, y, z] = vector(shape.size);
++		if (
++			rotation[1] % 90 === 0 ||
++			Math.min(x, y, z) <= 0 ||
++			Math.abs(origin[1] - y / 2 - min[1]) > 0.001 ||
++			Math.abs(origin[1] + y / 2 - max[1]) > 0.001
++		) {
++			return undefined;
 +		}
-+		const world = transformPoint(matrix, [Number(p[0]), 0, Number(p[1])]);
++		// Keep the authored box footprint. Its broad-phase AABB can cover
++		// otherwise usable ground and devices near the rotated corners.
++		footprint = [
++			[-x / 2, -z / 2],
++			[x / 2, -z / 2],
++			[x / 2, z / 2],
++			[-x / 2, z / 2],
++		];
++	} else {
++		footprint = arrayField(shape, 'posList').map((p) => {
++			if (
++				!Array.isArray(p) ||
++				p.length !== 2 ||
++				!p.every((v) => typeof v === 'number' && Number.isFinite(v))
++			) {
++				throw new FormatError('invalid hazard polygon');
++			}
++			return [Number(p[0]), Number(p[1])];
++		});
++	}
++	const matrix = trsMatrix(origin, unityEulerQuaternion(rotation), [1, 1, 1]);
++	const polygon = footprint.map(([x, z]): [number, number] => {
++		const world = transformPoint(matrix, [x, 0, z]);
 +		return [world[0], world[2]];
 +	});
 +	if (
@@ -10378,6 +10441,7 @@ index 00000000..a703072c
 +				Math.abs(Math.max(...polygon.map((p) => p[i])) - max[i * 2]) > 0.001,
 +		)
 +	) {
++		if (box) return undefined;
 +		throw new FormatError('hazard polygon disagrees with exported bounds');
 +	}
 +	return polygon;

@@ -4,7 +4,7 @@ use crate::{
 };
 use napi::{
     Env, Result, Task,
-    bindgen_prelude::{AsyncTask, Float64Array},
+    bindgen_prelude::{AsyncTask, Float64Array, Uint32Array},
 };
 use napi_derive::napi;
 use std::{
@@ -21,18 +21,33 @@ impl NativeEngine {
     #[napi(constructor)]
     pub fn new(
         input: String,
-        surfaces: Vec<String>,
+        surface_vertices: Float64Array,
+        surface_ends: Uint32Array,
         positions: Float64Array,
         indices: Float64Array,
     ) -> Result<Self> {
         let started = Instant::now();
         let mut input: Input = serde_json::from_str(&input)
             .map_err(|error| napi::Error::from_reason(error.to_string()))?;
-        for chunk in surfaces {
-            input.physical.ground.surfaces.extend(
-                serde_json::from_str::<Vec<Surface>>(&chunk)
-                    .map_err(|error| napi::Error::from_reason(error.to_string()))?,
-            );
+        let mut start = 0;
+        for &end in surface_ends.iter() {
+            let end = end as usize * 3;
+            let Some(coords) = surface_vertices.get(start..end) else {
+                return Err(napi::Error::from_reason("Invalid navigation surface"));
+            };
+            let mut vertices = Vec::with_capacity(coords.len() / 3);
+            for xyz in coords.chunks_exact(3) {
+                let [x, y, z] = [xyz[0], xyz[1], xyz[2]];
+                if !x.is_finite() || !y.is_finite() || !z.is_finite() {
+                    return Err(napi::Error::from_reason("Invalid navigation vertex"));
+                }
+                vertices.push([x, y, z]);
+            }
+            input.physical.ground.surfaces.push(Surface { vertices });
+            start = end;
+        }
+        if start != surface_vertices.len() {
+            return Err(napi::Error::from_reason("Invalid navigation vertices"));
         }
         // JSON used to reject non-finite coordinates and non-integer indices.
         // Validate before casting so binary transport cannot silently repair

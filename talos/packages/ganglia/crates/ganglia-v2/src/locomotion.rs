@@ -305,12 +305,23 @@ fn schedule(
                     // Walking speed is measured along the 3D support path;
                     // only its horizontal component can authorize air speed.
                     let carried = state.velocity.clamp(run, sprint) * previous_span;
-                    let available = if alignment < (std::f64::consts::PI / 6.).cos() {
-                        run.min(carried)
-                    } else {
-                        carried
-                    };
-                    if available + EPSILON < span / duration {
+                    let aligned = alignment >= (std::f64::consts::PI / 6.).cos();
+                    let available = if aligned { carried } else { run.min(carried) };
+                    // The authored launch impulse is available from an aligned
+                    // sprint at the sustained air cap. Only the jump supplies
+                    // the excess speed, not the ground approach.
+                    let mut required = span / duration;
+                    if segment.mode == "jump"
+                        && segment.required_gait == Some("sprint")
+                        && let Some(flight) = &segment.flight
+                        && required > flight.model.max_horizontal_speed + EPSILON
+                    {
+                        if !aligned {
+                            return None;
+                        }
+                        required = flight.model.max_horizontal_speed;
+                    }
+                    if available + EPSILON < required {
                         return None;
                     }
                 }

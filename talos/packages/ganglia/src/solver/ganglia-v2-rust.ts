@@ -63,25 +63,40 @@ export async function prepareGangliaV2(
   const { NativeEngine } = createRequire(import.meta.url)(gangliaV2LibraryPath()) as {
     NativeEngine: new (
       input: string,
-      surfaces: string[],
+      surfaceVertices: Float64Array,
+      surfaceEnds: Uint32Array,
       positions: Float64Array,
       indices: Float64Array,
     ) => NativeEngine;
   };
   const settings = Object.freeze({ ...config });
-  // A physical snapshot can exceed V8's single-string limit. Keep mesh buffers
-  // binary and bound each navigation JSON allocation independently of map size.
-  const surfaces: string[] = [];
-  for (let start = 0; start < physical.ground.surfaces.length; start += 1024) {
-    surfaces.push(encode(physical.ground.surfaces.slice(start, start + 1024)));
+  const surfaces = physical.ground.surfaces;
+  const surfaceEnds = new Uint32Array(surfaces.length);
+  let vertices = 0;
+  for (const [index, surface] of surfaces.entries()) {
+    vertices += surface.vertices.length;
+    surfaceEnds[index] = vertices;
   }
-  const { positions, indices } = physical.collision;
+  const surfaceVertices = new Float64Array(vertices * 3);
+  let offset = 0;
+  for (const surface of surfaces) {
+    for (const vertex of surface.vertices) {
+      if (vertex.length !== 3 || vertex.some((coordinate) => !Number.isFinite(coordinate)))
+        throw new Error('Invalid navigation vertex');
+      surfaceVertices.set(vertex, offset);
+      offset += 3;
+    }
+  }
+  const { positions, indices, records } = physical.collision;
+  const boxStarts = records
+    ?.filter(({ kind, count }) => kind === 'box' && count === 12)
+    .map(({ first }) => first);
   let engine: NativeEngine | undefined = new NativeEngine(
     encode({
       physical: {
         ...physical,
         ground: { ...physical.ground, surfaces: [] },
-        collision: { positions: [], indices: [] },
+        collision: { positions: [], indices: [], boxStarts },
       },
       marks,
       anchors,
@@ -89,7 +104,8 @@ export async function prepareGangliaV2(
       links,
       config: settings,
     }),
-    surfaces,
+    surfaceVertices,
+    surfaceEnds,
     positions instanceof Float64Array ? positions : Float64Array.from(positions),
     Float64Array.from(indices),
   );

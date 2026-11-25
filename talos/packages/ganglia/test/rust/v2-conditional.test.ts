@@ -97,6 +97,57 @@ test('v2 proves the sprint approach before crossing a prepared fast-flight gap',
   assert.equal((await solve(scene(-10, 9, 0), -8)).route.status, 'no-verified-route');
 });
 
+test('v2 crosses a longer gap using forward sprint takeoff and airborne braking', async () => {
+  const gap = 10;
+  const input = scene(-14, gap);
+  const result = await solve(input, -12, gap);
+  assert.equal(result.route.status, 'complete');
+  if (result.route.status !== 'complete') return;
+  const jump = result.route.segments.find((segment) => segment.mode === 'jump')!;
+  assert.equal(jump.requiredGait, 'sprint');
+  const firstSpeed = (jump.points[1][0] - jump.points[0][0]) / jump.times[1];
+  const lastSpeed =
+    (jump.points.at(-1)![0] - jump.points.at(-2)![0]) / (jump.times.at(-1)! - jump.times.at(-2)!);
+  assert.ok(firstSpeed > 6.5 && firstSpeed <= 9);
+  assert.ok(Math.abs(lastSpeed - 6.5) < 1e-6);
+  assert.equal((await solve(scene(-0.1, gap), -0.05, gap)).route.status, 'no-verified-route');
+  assert.equal((await solve(scene(-14, 10.4), -12, 10.4)).route.status, 'no-verified-route');
+});
+
+test('v2 schedules two sprint gaps separated by a new run-up', async () => {
+  const input = scene(-10);
+  const middle = input.ground.surfaces[1];
+  input.ground.surfaces = [
+    input.ground.surfaces[0],
+    { ...middle, vertices: middle.vertices.map(([x, y, z]) => [x === 9 ? 9 : 21, y, z]) },
+    { id: 'second-landing', vertices: middle.vertices.map(([x, y, z]) => [x + 21, y, z]) },
+  ];
+  const triangles = input.ground.surfaces.flatMap(({ vertices: v }) => [
+    v[0],
+    v[1],
+    v[2],
+    v[0],
+    v[2],
+    v[3],
+  ]);
+  input.collision = { positions: triangles.flat(), indices: triangles.map((_, i) => i) };
+  const anchors: Vec3[] = [
+    [0, 0, 0],
+    [9, 0, 0],
+    [21, 0, 0],
+    [30, 0, 0],
+  ];
+  const result = await solve(input, -8, 30, anchors);
+  assert.equal(result.route.status, 'complete');
+  if (result.route.status !== 'complete') return;
+  assert.equal(
+    result.route.segments.filter(
+      (segment) => segment.mode === 'jump' && segment.requiredGait === 'sprint',
+    ).length,
+    2,
+  );
+});
+
 function boosted(duration: number, gap = 12): PhysicalInput {
   const input = scene(-5, gap, 0);
   input.devices = {
@@ -302,5 +353,35 @@ test('v2 requires a proven sprint approach to collect a prepared airborne target
     } finally {
       await solver.close();
     }
+  }
+});
+
+test('v2 collects a target near the apex beyond sustained sprint reach', async () => {
+  const goal: Vec3 = [5.92, 2, 0];
+  const interaction = { radius: 0.08, maxVertical: 0.002, airborne: true };
+  const solver = await prepareGangliaV2(
+    gangliaV2Defaults,
+    scene(-14, 100),
+    [{ position: goal, interaction }],
+    [[0, 0, 0]],
+  );
+  try {
+    const { route } = await solver.solve({
+      starts: [{ id: 'player', position: [-12, 0, 0], cost: 0, state: 'available' }],
+      goal,
+      interaction,
+    });
+    assert.equal(route.status, 'complete');
+    if (route.status === 'complete') {
+      const jump = route.segments.at(-1)!;
+      assert.equal(jump.mode, 'jump');
+      assert.equal(jump.requiredGait, 'sprint');
+      const last = jump.points.at(-1)!;
+      assert.ok(Math.abs(last[0] - goal[0]) <= interaction.radius + 1e-9);
+      assert.ok(Math.abs(last[1] - goal[1]) <= interaction.maxVertical + 1e-9);
+      assert.ok(last[0] - jump.points[0][0] > 6.5 * jump.times.at(-1)!);
+    }
+  } finally {
+    await solver.close();
   }
 });

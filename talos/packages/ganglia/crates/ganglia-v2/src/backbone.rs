@@ -1,6 +1,8 @@
 use crate::{flight::PreparedFlight, geometry::*, region_flight, types::*, world::World};
 #[path = "bridges.rs"]
 mod bridges;
+#[path = "local_graph.rs"]
+mod local_graph;
 use std::{
     collections::{BTreeMap, HashMap},
     hash::{DefaultHasher, Hash, Hasher},
@@ -10,15 +12,17 @@ use std::{
 };
 
 type Pair = [[u64; 3]; 2];
+type Flights = [Option<Arc<PreparedFlight>>; 3];
 
 #[derive(Clone)]
 enum Actions {
     Ordinary(Arc<Segment>),
-    Conditional([Option<Arc<PreparedFlight>>; 2]),
+    Conditional(Flights),
 }
 
 struct ProofShard {
-    pairs: HashMap<Pair, Actions>,
+    pairs: HashMap<Pair, [Option<Actions>; 2]>,
+    sprint_bridges: HashMap<Pair, Flights>,
     hits: usize,
 }
 
@@ -29,9 +33,10 @@ pub(super) struct Proofs {
     affected: Index,
     padding: f64,
     shards: Vec<Mutex<ProofShard>>,
+    projections: Option<Mutex<HashMap<[u64; 3], Option<Point>>>>,
 }
 impl Proofs {
-    pub fn new(bounds: Vec<Bounds>, profile: &Profile, reuse: bool) -> Self {
+    pub fn new(bounds: Vec<Bounds>, profile: &Profile, reuse: bool, layouts: usize) -> Self {
         Self {
             affected: Index::new(&bounds),
             // Larger than the capsule sweep, support and projection margins.
@@ -40,15 +45,122 @@ impl Proofs {
                 .map(|_| {
                     Mutex::new(ProofShard {
                         pairs: HashMap::new(),
+                        sprint_bridges: HashMap::new(),
                         hits: 0,
                     })
                 })
                 .collect(),
+            projections: (reuse && layouts > 1).then(|| Mutex::new(HashMap::new())),
         }
     }
 
-    fn actions(&self, world: &World, from: Point, to: Point, boosts: &[BoostUse]) -> Actions {
-        let prove = || match world.action(from, to) {
+    fn varies(&self, points: &[Point]) -> bool {
+        let mut bounds = Bounds::points(points).expand(self.padding);
+        bounds.min[1] = f64::NEG_INFINITY;
+        bounds.max[1] = f64::INFINITY;
+        self.affected.query(bounds, |_| true)
+    }
+
+    fn standing(&self, world: &World, point: Point) -> Option<Point> {
+        let prove = || {
+            world
+                .standing(point)
+                .filter(|&feet| !world.blocked(feet, feet, 0.))
+        };
+        let Some(projections) = &self.projections else {
+            return prove();
+        };
+        if self.varies(&[point]) {
+            return prove();
+        }
+        *projections
+            .lock()
+            .unwrap()
+            .entry(point.map(f64::to_bits))
+            .or_insert_with(prove)
+    }
+
+    fn shard(&self, key: &Pair) -> &Mutex<ProofShard> {
+        let mut hash = DefaultHasher::new();
+        key.hash(&mut hash);
+        &self.shards[hash.finish() as usize % self.shards.len()]
+    }
+
+    fn sprint_bridge(&self, world: &World, from: Point, to: Point) -> Flights {
+        let prove = || {
+            world
+                .conditional_flights(from, to, &[])
+                .map(|flight| flight.map(Arc::new))
+        };
+        if self.projections.is_none() || self.varies(&[from, to]) {
+            return prove();
+        }
+        let key = [from.map(f64::to_bits), to.map(f64::to_bits)];
+        let shard = self.shard(&key);
+        if let Some(flights) = shard.lock().unwrap().sprint_bridges.get(&key).cloned() {
+            return flights;
+        }
+        let flights = prove();
+        shard
+            .lock()
+            .unwrap()
+            .sprint_bridges
+            .insert(key, flights.clone());
+        flights
+    }
+
+    fn walk(&self, world: &World, from: Point, to: Point) -> (Option<Arc<Segment>>, bool) {
+        if self.shards.is_empty() || self.varies(&[from, to]) {
+            return (world.walk(from, to).map(Arc::new), true);
+        }
+        let mut key = [from.map(f64::to_bits), to.map(f64::to_bits)];
+        let direction = usize::from(key[0] > key[1]);
+        if direction == 1 {
+            key.swap(0, 1);
+        }
+        let shard = self.shard(&key);
+        {
+            let mut saved = shard.lock().unwrap();
+            if let Some(pair) = saved.pairs.get(&key) {
+                let walk = match &pair[direction] {
+                    Some(Actions::Ordinary(action)) if action.mode == "walk" => {
+                        Some(action.clone())
+                    }
+                    _ => None,
+                };
+                saved.hits += 1;
+                return (walk, false);
+            }
+        }
+        // The swept body and support of a walk are reversible. Always prove
+        // its canonical direction so concurrent rows choose the same trace.
+        let walk = if let Some(walk) =
+            world.walk(key[0].map(f64::from_bits), key[1].map(f64::from_bits))
+        {
+            let reverse = world.walk_segment(walk.points.iter().rev().copied().collect());
+            let pair = [Arc::new(walk), Arc::new(reverse)];
+            let result = pair[direction].clone();
+            shard
+                .lock()
+                .unwrap()
+                .pairs
+                .insert(key, pair.map(|a| Some(Actions::Ordinary(a))));
+            Some(result)
+        } else {
+            shard.lock().unwrap().pairs.entry(key).or_default();
+            None
+        };
+        (walk, true)
+    }
+
+    fn flying(
+        &self,
+        world: &World,
+        from: Point,
+        to: Point,
+        boosts: &[BoostUse],
+    ) -> (Actions, bool) {
+        let prove = || match world.drop(from, to).or_else(|| world.jump(from, to, None)) {
             Some(action) => Actions::Ordinary(Arc::new(action)),
             None => Actions::Conditional(
                 world
@@ -56,29 +168,36 @@ impl Proofs {
                     .map(|a| a.map(Arc::new)),
             ),
         };
-        if self.shards.is_empty() {
-            return prove();
+        if self.shards.is_empty() || self.varies(&[from, to]) {
+            return (prove(), true);
         }
-        let mut bounds = Bounds::points(&[from, to]).expand(self.padding);
-        bounds.min[1] = f64::NEG_INFINITY;
-        bounds.max[1] = f64::INFINITY;
-        if self.affected.query(bounds, |_| true) {
-            return prove();
+        let mut key = [from.map(f64::to_bits), to.map(f64::to_bits)];
+        let direction = usize::from(key[0] > key[1]);
+        if direction == 1 {
+            key.swap(0, 1);
         }
-        let key = [from.map(f64::to_bits), to.map(f64::to_bits)];
-        let mut hash = DefaultHasher::new();
-        key.hash(&mut hash);
-        let shard = &self.shards[hash.finish() as usize % self.shards.len()];
+        let shard = self.shard(&key);
         {
             let mut saved = shard.lock().unwrap();
-            if let Some(actions) = saved.pairs.get(&key).cloned() {
+            if let Some(actions) = saved
+                .pairs
+                .get(&key)
+                .and_then(|pair| pair[direction].clone())
+            {
                 saved.hits += 1;
-                return actions;
+                return (actions, false);
             }
         }
         let actions = prove();
-        shard.lock().unwrap().pairs.insert(key, actions.clone());
-        actions
+        shard.lock().unwrap().pairs.entry(key).or_default()[direction] = Some(actions.clone());
+        (actions, true)
+    }
+
+    fn actions(&self, world: &World, from: Point, to: Point, boosts: &[BoostUse]) -> Actions {
+        match self.walk(world, from, to).0 {
+            Some(action) => Actions::Ordinary(action),
+            None => self.flying(world, from, to, boosts).0,
+        }
     }
 
     pub fn stats(&self) -> (usize, usize) {
@@ -97,11 +216,59 @@ pub(super) struct ConditionalEdge {
     pub to: usize,
     pub flight: Arc<PreparedFlight>,
 }
+
+#[derive(Default)]
+struct LocalEdges {
+    ordinary: Vec<Edge>,
+    conditional: Vec<ConditionalEdge>,
+}
+
+impl LocalEdges {
+    fn push(&mut self, to: usize, actions: Actions) {
+        match actions {
+            Actions::Ordinary(action) => self.ordinary.push(Edge { to, action }),
+            Actions::Conditional(flights) => self.conditional.extend(
+                flights
+                    .into_iter()
+                    .flatten()
+                    .map(|flight| ConditionalEdge { to, flight }),
+            ),
+        }
+    }
+}
+
+fn parallel_rows<T: Send>(rows: &mut [T], visit: impl Fn(usize, &mut T) + Sync) {
+    const CHUNK: usize = 256;
+    let workers = thread::available_parallelism()
+        .map_or(1, |count| (count.get() / 2).clamp(1, 6))
+        .min(rows.len().div_ceil(CHUNK));
+    let chunks = Mutex::new(rows.chunks_mut(CHUNK).enumerate());
+    thread::scope(|scope| {
+        for _ in 0..workers {
+            let chunks = &chunks;
+            let visit = &visit;
+            scope.spawn(move || {
+                loop {
+                    let Some((chunk, rows)) = chunks.lock().unwrap().next() else {
+                        break;
+                    };
+                    for (offset, row) in rows.iter_mut().enumerate() {
+                        visit(chunk * CHUNK + offset, row);
+                    }
+                }
+            });
+        }
+    });
+}
+
 pub(super) const LOCAL_EDGE_RANGE: f64 = 12.;
 pub(super) struct Backbone {
     pub nodes: Vec<Point>,
     pub edges: Vec<Vec<Edge>>,
     pub boosts: Vec<usize>,
+    pub sample_candidates: usize,
+    pub spacing_scale: f64,
+    pub local_graph: local_graph::Stats,
     pub conditional: Vec<Vec<ConditionalEdge>>,
     pub boost_uses: Vec<BoostUse>,
     pub preparation_ms: [f64; 4],
@@ -133,8 +300,8 @@ impl Backbone {
         };
         let vertex_key = |p: Point| p.map(|v| (v * 10000.).round() as i64);
         let mut interior = BTreeMap::new();
-        let mut boundaries: BTreeMap<([i64; 3], [i64; 3]), (usize, Point, Point, Point)> =
-            BTreeMap::new();
+        let mut boundaries: HashMap<([i64; 3], [i64; 3]), (usize, Point, Point, Point)> =
+            HashMap::new();
         for surface in world
             .physical
             .ground
@@ -162,10 +329,14 @@ impl Backbone {
             }
         }
         let mut ledges = BTreeMap::new();
-        for (_, (count, a, b, center)) in boundaries {
-            if count != 1 {
-                continue;
-            }
+        // Shared mesh edges never supply ledge samples. Sort only the
+        // remaining boundary edges to preserve representative selection.
+        let mut boundaries: Vec<_> = boundaries
+            .into_iter()
+            .filter(|(_, edge)| edge.0 == 1)
+            .collect();
+        boundaries.sort_unstable_by_key(|(key, _)| *key);
+        for (_, (_, a, b, center)) in boundaries {
             let steps = (horizontal(a, b) / 3.).ceil().max(1.) as usize;
             for i in 0..steps {
                 let edge = lerp(a, b, (i as f64 + 0.5) / steps as f64);
@@ -173,27 +344,55 @@ impl Backbone {
                 ledges.entry(key(point, 2.)).or_insert(point);
             }
         }
-        let interior_count = interior.len();
-        let ledge_count = ledges.len();
-        let mut ledge_nodes = Vec::new();
-        let mut nodes: Vec<_> = interior
-            .into_values()
-            .chain(ledges.into_values())
-            .chain(anchors)
-            .chain(world.box_contacts())
-            .enumerate()
-            .filter_map(|(sample, p)| {
-                let point = world.standing(p)?;
-                (!world.blocked(point, point, 0.)).then_some((sample, point))
-            })
-            .enumerate()
-            .map(|(node, (sample, point))| {
-                if (interior_count..interior_count + ledge_count).contains(&sample) {
-                    ledge_nodes.push(node);
+        // Reduce work on large windows. Height bins and the separate, denser
+        // ledge lattice preserve samples for stacked floors and takeoffs.
+        const SAMPLE_TARGET: f64 = 56_000.;
+        let sample_candidates = interior.len() + ledges.len();
+        let pressure = sample_candidates as f64 / SAMPLE_TARGET;
+        // More samples also crowd the local proof neighbourhoods. Scale
+        // more rapidly on the largest snapshots where both effects compound.
+        let spacing_scale =
+            (pressure.sqrt() * (pressure / 3.).max(1.).powf(2. / 3.)).clamp(1., 3.5);
+        let standing = |p| proofs.standing(world, p);
+        let representatives = |samples: BTreeMap<_, Point>, spacing| {
+            let mut retained = BTreeMap::new();
+            for (cell, sample) in samples {
+                if spacing_scale > 1. {
+                    // Standing preserves XZ. A sample cannot introduce a new
+                    // representative if all its possible height bins are full.
+                    let drift = crate::world::STANDING_HEIGHT_DRIFT;
+                    let [x, low, z] = key(add(sample, [0., -drift, 0.]), spacing);
+                    let high = (sample[1] + drift).floor() as i64;
+                    if (low..=high).all(|y| retained.contains_key(&[x, y, z])) {
+                        continue;
+                    }
                 }
-                point
-            })
+                let Some(feet) = standing(sample) else {
+                    continue;
+                };
+                let group = if spacing_scale > 1. {
+                    key(feet, spacing)
+                } else {
+                    cell
+                };
+                retained.entry(group).or_insert(feet);
+            }
+            retained.into_values()
+        };
+        let interiors = representatives(interior, 4. * spacing_scale);
+        let ledges = representatives(ledges, 2. * spacing_scale);
+        let ledge_nodes: Vec<_> = (interiors.len()..interiors.len() + ledges.len()).collect();
+        let first_port = interiors.len() + ledges.len();
+        let mut nodes: Vec<_> = interiors
+            .chain(ledges)
+            .chain(
+                anchors
+                    .into_iter()
+                    .chain(world.box_contacts())
+                    .filter_map(standing),
+            )
             .collect();
+        let neighbour_count = (24. / spacing_scale).round() as usize;
         let support_count = nodes.len();
         let samples_ms = started.elapsed().as_secs_f64() * 1000.;
         let ports_started = Instant::now();
@@ -229,7 +428,7 @@ impl Backbone {
             .into_iter()
             .map(|(mark, action)| (mark, port(action.start()), action))
             .collect();
-        let boosts = crate::devices::boost_contacts(world)
+        let boosts: Vec<_> = crate::devices::boost_contacts(world)
             .into_iter()
             .map(&mut port)
             .collect();
@@ -288,9 +487,6 @@ impl Backbone {
                 .collect::<Vec<_>>(),
         );
         let ports_ms = ports_started.elapsed().as_secs_f64() * 1000.;
-        let mut edges: Vec<Vec<Edge>> = (0..nodes.len()).map(|_| Vec::new()).collect();
-        let mut conditional: Vec<Vec<ConditionalEdge>> =
-            (0..nodes.len()).map(|_| Vec::new()).collect();
         let edges_started = Instant::now();
         if profile {
             eprintln!(
@@ -299,64 +495,20 @@ impl Backbone {
                 devices.len()
             );
         }
-        // Scenario benchmark workers already run concurrently. Leave half the
-        // machine available to the other worker. Write disjoint adjacency rows
-        // so scheduling cannot change discovery order within a row.
-        let workers =
-            thread::available_parallelism().map_or(1, |count| (count.get() / 2).clamp(1, 6));
-        const CHUNK: usize = 256;
-        let chunks = Mutex::new(
-            edges
-                .chunks_mut(CHUNK)
-                .zip(conditional.chunks_mut(CHUNK))
-                .enumerate(),
+
+        let local_graph::Graph {
+            mut edges,
+            mut conditional,
+            stats: mut local_graph,
+        } = local_graph::build(
+            world,
+            &nodes,
+            &index,
+            neighbour_count,
+            first_port,
+            proofs,
+            &boost_uses,
         );
-        thread::scope(|scope| {
-            for _ in 0..workers.min(nodes.len().div_ceil(CHUNK)) {
-                let nodes = &nodes;
-                let index = &index;
-                let boost_uses = &boost_uses;
-                let chunks = &chunks;
-                scope.spawn(move || {
-                    let mut nearby = Vec::new();
-                    loop {
-                        // Dense geometry makes adjacent rows very different
-                        // in cost. Draw another batch when a worker finishes.
-                        let Some((chunk, (edges, conditional))) = chunks.lock().unwrap().next()
-                        else {
-                            break;
-                        };
-                        for (row, (edges, conditional)) in
-                            edges.iter_mut().zip(conditional).enumerate()
-                        {
-                            let i = chunk * CHUNK + row;
-                            let a = nodes[i];
-                            nearby.clear();
-                            index.query(Bounds::points(&[a]).expand(LOCAL_EDGE_RANGE), |j| {
-                                if i != j {
-                                    nearby.push(j);
-                                }
-                                false
-                            });
-                            nearby.sort_unstable_by(|&j, &k| {
-                                distance(a, nodes[j]).total_cmp(&distance(a, nodes[k]))
-                            });
-                            for &j in nearby.iter().take(24) {
-                                match proofs.actions(world, a, nodes[j], boost_uses) {
-                                    Actions::Ordinary(action) => edges.push(Edge { to: j, action }),
-                                    Actions::Conditional(flights) => conditional.extend(
-                                        flights
-                                            .into_iter()
-                                            .flatten()
-                                            .map(|flight| ConditionalEdge { to: j, flight }),
-                                    ),
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        });
         let edges_ms = edges_started.elapsed().as_secs_f64() * 1000.;
         let count_before_bridges = nodes.len();
         let mut automatic_bridges = bridges::discover(
@@ -375,6 +527,7 @@ impl Backbone {
             &edges,
             &mut conditional,
             &index,
+            proofs,
         );
         let index = if !marks.is_empty() && nodes.len() != count_before_bridges {
             Index::new(
@@ -412,7 +565,7 @@ impl Backbone {
                 action: Arc::new(action),
             });
         }
-        let terminals = marks
+        let terminals: Vec<_> = marks
             .into_iter()
             .enumerate()
             .map(|(mark_index, mark)| {
@@ -442,22 +595,31 @@ impl Backbone {
                 (mark, connections)
             })
             .collect();
+        let terminals_ms = terminals_started.elapsed().as_secs_f64() * 1000.;
+        local_graph::terminal_runups(
+            &world,
+            &nodes,
+            &index,
+            &terminals,
+            proofs,
+            &mut edges,
+            &mut local_graph,
+        );
+        local_graph.measure(&nodes, &edges, &conditional);
         Self {
             nodes,
             edges,
             terminals,
             boosts,
+            sample_candidates,
+            spacing_scale,
+            local_graph,
             conditional,
             boost_uses,
             proved_link_count,
             region_flights,
             automatic_bridges,
-            preparation_ms: [
-                samples_ms,
-                ports_ms,
-                edges_ms,
-                terminals_started.elapsed().as_secs_f64() * 1000.,
-            ],
+            preparation_ms: [samples_ms, ports_ms, edges_ms, terminals_ms],
         }
     }
 }

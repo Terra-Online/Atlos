@@ -1,4 +1,5 @@
 use crate::types::Point;
+use std::sync::Arc;
 
 pub fn add(a: Point, b: Point) -> Point {
     [a[0] + b[0], a[1] + b[1], a[2] + b[2]]
@@ -66,36 +67,50 @@ impl Bounds {
 }
 pub struct Index {
     nodes: Vec<Node>,
-    item_bounds: Vec<Bounds>,
+    item_bounds: Arc<[Bounds]>,
+    items: Vec<usize>,
 }
 struct Node {
     bounds: Bounds,
-    children: Option<(usize, usize)>,
-    items: Vec<usize>,
+    next: usize,
+    item_start: usize,
+    item_count: usize,
 }
 impl Index {
     pub fn new(bounds: &[Bounds]) -> Self {
+        Self::all(Arc::from(bounds))
+    }
+
+    pub fn all(bounds: Arc<[Bounds]>) -> Self {
+        let items = (0..bounds.len()).collect();
+        Self::with_items(bounds, items)
+    }
+
+    pub fn with_items(bounds: Arc<[Bounds]>, items: Vec<usize>) -> Self {
         let mut result = Self {
             nodes: Vec::new(),
-            item_bounds: bounds.to_vec(),
+            item_bounds: bounds.clone(),
+            items: Vec::with_capacity(items.len()),
         };
-        if !bounds.is_empty() {
-            result.build((0..bounds.len()).collect(), bounds);
+        if !items.is_empty() {
+            result.build(items, &bounds);
         }
         result
     }
-    fn build(&mut self, mut items: Vec<usize>, bounds: &[Bounds]) -> usize {
+    fn build(&mut self, mut items: Vec<usize>, bounds: &[Bounds]) {
         let envelope = items
             .iter()
             .fold(bounds[items[0]], |a, &i| a.union(bounds[i]));
         let id = self.nodes.len();
         self.nodes.push(Node {
             bounds: envelope,
-            children: None,
-            items: Vec::new(),
+            next: 0,
+            item_start: self.items.len(),
+            item_count: 0,
         });
         if items.len() <= 8 {
-            self.nodes[id].items = items;
+            self.nodes[id].item_count = items.len();
+            self.items.extend(items);
         } else {
             let axis = (0..3)
                 .max_by(|&a, &b| {
@@ -108,11 +123,12 @@ impl Index {
                     .total_cmp(&(bounds[b].min[axis] + bounds[b].max[axis]))
             });
             let right = items.split_off(items.len() / 2);
-            let a = self.build(items, bounds);
-            let b = self.build(right, bounds);
-            self.nodes[id].children = Some((a, b));
+            // Keep the established right-first query order, including ties in
+            // support projection. Write a subtree in the order it is visited.
+            self.build(right, bounds);
+            self.build(items, bounds);
         }
-        id
+        self.nodes[id].next = self.nodes.len();
     }
     pub fn query(&self, bounds: Bounds, visit: impl FnMut(usize) -> bool) -> bool {
         self.query_where(|candidate| candidate.overlaps(bounds), visit)
@@ -124,28 +140,21 @@ impl Index {
         mut intersects: impl FnMut(Bounds) -> bool,
         mut visit: impl FnMut(usize) -> bool,
     ) -> bool {
-        !self.nodes.is_empty() && self.visit(0, &mut intersects, &mut visit)
-    }
-
-    fn visit(
-        &self,
-        id: usize,
-        intersects: &mut impl FnMut(Bounds) -> bool,
-        visit: &mut impl FnMut(usize) -> bool,
-    ) -> bool {
-        let node = &self.nodes[id];
-        if !intersects(node.bounds) {
-            return false;
-        }
-        // Median splits bound recursion depth. Visit right first to preserve
-        // the order used by support projection when candidates tie.
-        if let Some((a, b)) = node.children {
-            self.visit(b, intersects, visit) || self.visit(a, intersects, visit)
-        } else {
-            node.items
+        let mut id = 0;
+        while let Some(node) = self.nodes.get(id) {
+            if !intersects(node.bounds) {
+                id = node.next;
+                continue;
+            }
+            if self.items[node.item_start..node.item_start + node.item_count]
                 .iter()
                 .any(|&item| intersects(self.item_bounds[item]) && visit(item))
+            {
+                return true;
+            }
+            id += 1;
         }
+        false
     }
 }
 pub fn triangle_height(p: Point, t: [Point; 3]) -> Option<f64> {
@@ -299,10 +308,15 @@ pub fn support_intervals(
     let centers = path.map(|p| add(p, [0., radius, 0.]));
     let distances = centers.map(|p| dot(sub(p, triangle[0]), normal));
     let [first, last] = distances;
+    let reach = radius + tolerance;
+    // Every face, edge and vertex is in the same plane. Its nearest
+    // feature is out of reach when the whole span stays outside the band.
+    if first.min(last) > reach + 1e-9 || first.max(last) < -reach - 1e-9 {
+        return;
+    }
     let projected = std::array::from_fn(|i| sub(centers[i], scale(normal, distances[i])));
     let mut plane = face_interval(projected, triangle);
     clip_positive(&mut plane, first, last);
-    let reach = radius + tolerance;
     clip_positive(&mut plane, reach - first, reach - last);
     let projected_path = face_interval(path, triangle);
     if projected_path == SPAN && plane == SPAN {
@@ -345,14 +359,7 @@ pub fn point_segment(p: Point, a: Point, b: Point) -> f64 {
         ),
     )
 }
-fn segments_within(a: Point, b: Point, c: Point, d: Point, limit: f64) -> bool {
-    if point_segment(a, c, d) < limit
-        || point_segment(b, c, d) < limit
-        || point_segment(c, a, b) < limit
-        || point_segment(d, a, b) < limit
-    {
-        return true;
-    }
+fn edge_interiors_within(a: Point, b: Point, c: Point, d: Point, limit: f64) -> bool {
     let u = sub(b, a);
     let v = sub(d, c);
     let w = sub(a, c);
@@ -375,9 +382,6 @@ pub fn point_triangle(p: Point, t: [Point; 3]) -> f64 {
     let [a, b, c] = t;
     let n = cross(sub(b, a), sub(c, a));
     let nn = dot(n, n);
-    let mut result = point_segment(p, a, b)
-        .min(point_segment(p, b, c))
-        .min(point_segment(p, c, a));
     if nn > 1e-20 {
         let q = sub(p, scale(n, dot(sub(p, a), n) / nn));
         let signs = [
@@ -386,10 +390,12 @@ pub fn point_triangle(p: Point, t: [Point; 3]) -> f64 {
             dot(cross(sub(a, c), sub(q, c)), n),
         ];
         if signs.iter().all(|v| *v >= -1e-12) {
-            result = result.min(distance(p, q));
+            return distance(p, q);
         }
     }
-    result
+    point_segment(p, a, b)
+        .min(point_segment(p, b, c))
+        .min(point_segment(p, c, a))
 }
 fn pierces_triangle(a: Point, b: Point, t: [Point; 3]) -> bool {
     let n = cross(sub(t[1], t[0]), sub(t[2], t[0]));
@@ -415,6 +421,9 @@ pub fn triangles_within(a: [Point; 3], b: [Point; 3], limit: f64) -> bool {
             return true;
         }
     }
-    (0..3)
-        .any(|i| (0..3).any(|j| segments_within(a[i], a[(i + 1) % 3], b[j], b[(j + 1) % 3], limit)))
+    // The vertex-to-triangle checks already cover all edge endpoints.
+    // Only a closest pair in the interiors of both edges can add a hit.
+    (0..3).any(|i| {
+        (0..3).any(|j| edge_interiors_within(a[i], a[(i + 1) % 3], b[j], b[(j + 1) % 3], limit))
+    })
 }

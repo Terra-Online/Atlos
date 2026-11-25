@@ -258,20 +258,24 @@ impl Engine {
                     .iter()
                     .map(Candidate::cost)
                     .min_by(f64::total_cmp);
+                let paths = conditional::Paths {
+                    previous: &previous,
+                    suffix: &suffix,
+                    prefix_costs: &costs,
+                    suffix_costs: &suffix_costs,
+                    settled: &done,
+                };
                 population.extend(self.conditional_seeds(
                     layout,
                     arrival,
                     query,
-                    conditional::Paths {
-                        previous: &previous,
-                        suffix: &suffix,
-                        prefix_costs: &costs,
-                        suffix_costs: &suffix_costs,
-                        settled: &done,
-                    },
+                    paths,
                     incumbent,
                     sprint_terminal,
                 ));
+                if population.is_empty() && !self.cancelled.load(Ordering::Relaxed) {
+                    population.extend(self.chained_sprints(layout, arrival, query, paths));
+                }
             }
         }
         *diagnostics = json!({"starts":origins,"goalPositions":goals.len(),"goalAttachments":endings.iter().map(Vec::len).sum::<usize>(),"reachedNodes":reached.iter().filter(|&&v|v).count()});
@@ -326,10 +330,7 @@ impl Engine {
             if !inspection.is_empty() && !self.cancelled.load(Ordering::Relaxed) {
                 diagnostics["inspection"] = json!({
                     "coverage": inspect::coverage(world, backbone, &reached, &to_goal),
-                    "views": inspection
-                        .iter()
-                        .map(|&bounds| inspect::capture(bounds, world, backbone, &reached, &to_goal))
-                        .collect::<Vec<_>>()
+                    "views": inspect::views(inspection, world, backbone, &reached, &to_goal)
                 });
             }
             if !profile_gaps {

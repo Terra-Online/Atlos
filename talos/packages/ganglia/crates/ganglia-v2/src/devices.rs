@@ -1,5 +1,5 @@
 use crate::{
-    flight::hit,
+    flight::{drop_duration, hit},
     geometry::{distance, dot, horizontal, sub},
     types::*,
     world::World,
@@ -187,18 +187,43 @@ pub fn rope_drops(world: &World) -> Vec<Segment> {
         };
         let starts = endpoints(world, upper, top);
         let ends = endpoints(world, lower, bottom);
-        let mut best: Option<Segment> = None;
-        for start in starts {
-            for &end in &ends {
-                if let Some(mut action) = world.drop(start, end) {
-                    if best.as_ref().is_none_or(|old| action.cost() < old.cost()) {
-                        action.connection = Some(format!("drop/{}/{}", lower.id, upper.id));
-                        best = Some(action);
-                    }
+        let model = &world.physical.movement.model;
+        let speed = model
+            .max_horizontal_speed
+            .min(world.physical.movement.run_air_speed);
+        let mut pairs = Vec::new();
+        for (i, &start) in starts.iter().enumerate() {
+            for (j, &end) in ends.iter().enumerate() {
+                if let Some(time) = drop_duration(model, start[1], end[1])
+                    && time <= 60.
+                    && horizontal(start, end) <= time * speed + 1e-9
+                {
+                    pairs.push((time, i, j));
                 }
             }
         }
-        result.extend(best);
+        pairs.sort_unstable_by(|a, b| a.0.total_cmp(&b.0).then((a.1, a.2).cmp(&(b.1, b.2))));
+        let mut best: Option<(Segment, usize, usize)> = None;
+        for (time, i, j) in pairs {
+            // The drop's end height fixes its duration. Keep ties out to the
+            // rounding tolerance because the sampled trace stores its own clock.
+            if best
+                .as_ref()
+                .is_some_and(|(action, ..)| time > action.cost() + 1e-9)
+            {
+                break;
+            }
+            if let Some(mut action) = world.drop(starts[i], ends[j])
+                && best.as_ref().is_none_or(|(other, a, b)| {
+                    action.cost() < other.cost()
+                        || (action.cost() == other.cost() && (i, j) < (*a, *b))
+                })
+            {
+                action.connection = Some(format!("drop/{}/{}", lower.id, upper.id));
+                best = Some((action, i, j));
+            }
+        }
+        result.extend(best.map(|(action, ..)| action));
     }
     result
 }

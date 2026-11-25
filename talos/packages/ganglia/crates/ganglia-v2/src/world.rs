@@ -2,9 +2,11 @@
 mod contacts;
 use crate::{devices::RopeDrop, geometry::*, types::*, walls::Walls};
 pub(super) use contacts::Contact;
-use std::{collections::HashSet, sync::Arc};
+use std::{collections::HashSet, sync::Arc, thread};
 
 const STANDING_OFFSET: f64 = 0.005;
+const SUPPORT_SEARCH: f64 = 0.31;
+pub(super) const STANDING_HEIGHT_DRIFT: f64 = SUPPORT_SEARCH + crate::circular::CLEARANCE;
 const WALK_CLEARANCE: f64 = 0.01;
 const WALK_TRACE_TOLERANCE: f64 = 0.025;
 const WALK_SAMPLE_MIN: f64 = 0.025;
@@ -18,6 +20,10 @@ pub struct World {
     ground_index: Arc<Index>,
     collision: Arc<Vec<[Point; 3]>>,
     collision_index: Arc<Index>,
+    static_support_index: Arc<Index>,
+    static_support_normals: Arc<Vec<Option<Point>>>,
+    static_boxes: Arc<Vec<[Point; 8]>>,
+    static_box_index: Arc<Index>,
     moving: Arc<Vec<[Point; 3]>>,
     moving_index: Arc<Index>,
     circular: Arc<Vec<[Point; 3]>>,
@@ -36,6 +42,53 @@ pub struct World {
 struct TileCoverage {
     span: f64,
     tiles: HashSet<(i64, i64)>,
+}
+
+// Exported primitive boxes include their entire solid volume. A triangle-only
+// sweep can otherwise accept a stationary capsule enclosed by their faces.
+fn static_boxes(collision: &Collision) -> Vec<[Point; 8]> {
+    collision
+        .box_starts
+        .iter()
+        .filter_map(|first| {
+            let start = first.checked_mul(3)?;
+            let indices = collision.indices.get(start..start.checked_add(36)?)?;
+            let mut vertices = indices.to_vec();
+            vertices.sort_unstable();
+            vertices.dedup();
+            if vertices.len() != 8 {
+                return None;
+            }
+            // The collision export lists corners around each Z face. Rearrange
+            // them so each bit corresponds to an edge from the first corner.
+            let body = [0, 1, 3, 2, 4, 5, 7, 6].map(|i| {
+                let at = vertices[i] * 3;
+                std::array::from_fn(|j| collision.positions[at + j])
+            });
+            let axes = [1, 2, 4].map(|i| sub(body[i], body[0]));
+            let lengths = axes.map(|a| dot(a, a).sqrt());
+            if lengths.into_iter().any(|len| len < 1e-6)
+                || [(0, 1), (0, 2), (1, 2)]
+                    .into_iter()
+                    .any(|(i, j)| dot(axes[i], axes[j]).abs() > 1e-6 * lengths[i] * lengths[j])
+            {
+                return None;
+            }
+            for (bits, &p) in body.iter().enumerate() {
+                let expected = axes.iter().enumerate().fold(body[0], |old, (i, &axis)| {
+                    if bits & (1 << i) == 0 {
+                        old
+                    } else {
+                        add(old, axis)
+                    }
+                });
+                if distance(p, expected) > 1e-5 {
+                    return None;
+                }
+            }
+            Some(body)
+        })
+        .collect()
 }
 
 impl World {
@@ -175,18 +228,47 @@ impl World {
                 })
             })
             .collect();
+        let static_boxes = static_boxes(&physical.collision);
+        let static_box_index = Index::new(
+            &static_boxes
+                .iter()
+                .map(|body| Bounds::points(body))
+                .collect::<Vec<_>>(),
+        );
+        physical.collision.box_starts = Vec::new();
         // The spatial index owns decoded triangles; retaining the serialized
         // buffers here would keep a second full collision mesh alive.
         physical.collision.positions = Vec::new();
         physical.collision.indices = Vec::new();
-        let ground_index =
-            Index::new(&ground.iter().map(|t| Bounds::points(t)).collect::<Vec<_>>());
-        let collision_index = Index::new(
-            &collision
+        let collision_bounds: Arc<[Bounds]> = collision.iter().map(|t| Bounds::points(t)).collect();
+        let build_ground =
+            || Index::new(&ground.iter().map(|t| Bounds::points(t)).collect::<Vec<_>>());
+        let build_collision = || Index::all(collision_bounds.clone());
+        let build_support = || {
+            let minimum_up = physical.movement.max_slope.to_radians().cos();
+            let normals: Vec<_> = collision
                 .iter()
-                .map(|t| Bounds::points(t))
-                .collect::<Vec<_>>(),
-        );
+                .map(|&triangle| support_normal(triangle, minimum_up, true))
+                .collect();
+            let items = normals
+                .iter()
+                .enumerate()
+                .filter_map(|(i, normal)| normal.is_some().then_some(i))
+                .collect();
+            let index = Index::with_items(collision_bounds.clone(), items);
+            (index, normals)
+        };
+        let (ground_index, collision_index, (static_support_index, static_support_normals)) =
+            if ground.len() + collision.len() >= 20_000 {
+                thread::scope(|scope| {
+                    let ground = scope.spawn(build_ground);
+                    let collision = scope.spawn(build_collision);
+                    let support = build_support();
+                    (ground.join().unwrap(), collision.join().unwrap(), support)
+                })
+            } else {
+                (build_ground(), build_collision(), build_support())
+            };
         let contacts = Arc::new(contacts::Catalog::new(&physical));
         Ok(Self {
             contacts,
@@ -196,6 +278,10 @@ impl World {
             ground_index: Arc::new(ground_index),
             collision: Arc::new(collision),
             collision_index: Arc::new(collision_index),
+            static_support_index: Arc::new(static_support_index),
+            static_support_normals: Arc::new(static_support_normals),
+            static_boxes: Arc::new(static_boxes),
+            static_box_index: Arc::new(static_box_index),
             moving: Arc::new(moving),
             moving_index: Arc::new(moving_index),
             circular: Arc::new(circular),
@@ -432,7 +518,7 @@ impl World {
         circular
     }
     fn support_height(&self, p: Point) -> Option<f64> {
-        self.support_height_range(p, p[1] - 0.31, p[1] + 0.31)
+        self.support_height_range(p, p[1] - SUPPORT_SEARCH, p[1] + SUPPORT_SEARCH)
     }
     fn support_height_range(&self, p: Point, minimum: f64, maximum: f64) -> Option<f64> {
         if let Some(height) = self.circular_height(p) {
@@ -446,14 +532,30 @@ impl World {
             min: [p[0] - radius - 1e-8, minimum - radius, p[2] - radius - 1e-8],
             max: [p[0] + radius + 1e-8, maximum + radius, p[2] + radius + 1e-8],
         };
-        for (index, triangles, moving) in [
-            (&self.collision_index, &self.collision, false),
-            (&self.moving_index, &self.moving, true),
-            (&self.box_support_index, &self.box_support, false),
+        // A point body chooses nearest height. Preserve the original index's
+        // tie order for that degenerate profile; a capsule picks highest.
+        let static_index = if radius == 0. {
+            &self.collision_index
+        } else {
+            &self.static_support_index
+        };
+        for (index, triangles, moving, normals) in [
+            (
+                static_index,
+                &self.collision,
+                false,
+                Some(&self.static_support_normals),
+            ),
+            (&self.moving_index, &self.moving, true, None),
+            (&self.box_support_index, &self.box_support, false, None),
         ] {
             index.query(bounds, |i| {
                 let triangle = triangles[i];
-                if let Some(normal) = support_normal(triangle, minimum_up, true)
+                let normal = normals.map_or_else(
+                    || support_normal(triangle, minimum_up, true),
+                    |normals| normals[i],
+                );
+                if let Some(normal) = normal
                     && let Some(height) = sphere_support(p, triangle, normal, radius)
                     && (minimum..=maximum).contains(&height)
                 {
@@ -489,7 +591,8 @@ impl World {
             add(b, [0., profile.height - profile.radius, 0.]),
             add(b, [0., profile.radius, 0.]),
         ];
-        let bounds = Bounds::points(&axis).expand(radius);
+        let axis_bounds = Bounds::points(&axis);
+        let bounds = axis_bounds.expand(radius);
         if let Some(coverage) = self
             .physical
             .ground
@@ -519,6 +622,12 @@ impl World {
                 }
             }
         }
+        if self.static_box_index.query(axis_bounds, |i| {
+            axis.iter()
+                .any(|p| crate::placement::contains(self.static_boxes[i], *p))
+        }) {
+            return true;
+        }
         if self.box_body_index.query(bounds, |i| {
             axis.iter()
                 .any(|p| crate::placement::contains(self.box_bodies[i], *p))
@@ -528,15 +637,28 @@ impl World {
         if self.walls.blocked(axis, bounds, radius) {
             return true;
         }
+        let intersects = swept_band([a, b], bounds, radius);
         [
             (&self.collision_index, &self.collision),
             (&self.box_index, &self.boxes),
         ]
         .into_iter()
         .any(|(index, triangles)| {
-            index.query(bounds, |i| {
+            index.query_where(intersects, |i| {
                 let t = triangles[i];
                 let limit = radius - 1e-6;
+                let normal = cross(sub(t[1], t[0]), sub(t[2], t[0]));
+                let normal_squared = dot(normal, normal);
+                if normal_squared > 1e-20 {
+                    // A triangle lies within its plane. If the entire capsule
+                    // axis sweep is farther from that plane than the radius,
+                    // the exact triangle distance cannot obstruct the motion.
+                    let span = axis.map(|p| dot(sub(p, t[0]), normal));
+                    let limit = (limit + 1e-8) * normal_squared.sqrt();
+                    if span.iter().all(|&d| d > limit) || span.iter().all(|&d| d < -limit) {
+                        return false;
+                    }
+                }
                 triangles_within([axis[0], axis[1], axis[2]], t, limit)
                     || triangles_within([axis[0], axis[2], axis[3]], t, limit)
             })
@@ -563,41 +685,49 @@ impl World {
         } else {
             0.
         };
-        let sources = if physical {
-            [
-                (
-                    self.collision_index.as_ref(),
-                    self.collision.as_slice(),
-                    true,
-                ),
-                (moving_index, moving, true),
-                (self.circular_index.as_ref(), self.circular.as_slice(), true),
-                (
-                    self.box_support_index.as_ref(),
-                    self.box_support.as_slice(),
-                    true,
-                ),
-            ]
+        let static_source = if physical {
+            (
+                self.static_support_index.as_ref(),
+                self.collision.as_slice(),
+                true,
+                Some(self.static_support_normals.as_slice()),
+            )
         } else {
-            [
-                (self.ground_index.as_ref(), self.ground.as_slice(), false),
-                (moving_index, moving, true),
-                (self.circular_index.as_ref(), self.circular.as_slice(), true),
-                (
-                    self.box_support_index.as_ref(),
-                    self.box_support.as_slice(),
-                    true,
-                ),
-            ]
+            (
+                self.ground_index.as_ref(),
+                self.ground.as_slice(),
+                false,
+                None,
+            )
         };
         let minimum_up = self.physical.movement.max_slope.to_radians().cos();
         let mut bounds = Bounds::points(&path).expand(radius + CONTACT_ENVELOPE);
         bounds.min[1] += radius;
         bounds.max[1] += radius;
-        for (index, triangles, physical) in sources {
-            if index.query(bounds, |i| {
+        let intersects = swept_band(path, bounds, radius + CONTACT_ENVELOPE);
+        for (index, triangles, physical, normals) in [
+            static_source,
+            (moving_index, moving, true, None),
+            (
+                self.circular_index.as_ref(),
+                self.circular.as_slice(),
+                true,
+                None,
+            ),
+            (
+                self.box_support_index.as_ref(),
+                self.box_support.as_slice(),
+                true,
+                None,
+            ),
+        ] {
+            if index.query_where(intersects, |i| {
                 let triangle = triangles[i];
-                let Some(normal) = support_normal(triangle, minimum_up, physical) else {
+                let normal = normals.map_or_else(
+                    || support_normal(triangle, minimum_up, physical),
+                    |normals| normals[i],
+                );
+                let Some(normal) = normal else {
                     return false;
                 };
                 if faces_only {
@@ -706,15 +836,31 @@ impl World {
             // Start with coarse projections and subdivide where a straight
             // span cannot follow the standing height around a slope or edge.
             let count = (distance_xz / 0.4).ceil().max(1.) as usize;
+            // A longer chord over a gap can spend many support and collision
+            // checks reaching the first hole. Probe one of the same mandatory
+            // samples out of order, then reuse it during the trace build.
+            let middle = count / 2;
+            let midpoint = if count >= 8 {
+                Some(self.walk_projection(lerp(a, b, middle as f64 / count as f64))?)
+            } else {
+                None
+            };
             for i in 1..=count {
                 let point = if i == count {
                     b
+                } else if i == middle
+                    && let Some(midpoint) = midpoint
+                {
+                    midpoint
                 } else {
                     self.walk_projection(lerp(a, b, i as f64 / count as f64))?
                 };
                 self.append_walk_span(*points.last().unwrap(), point, &mut points)?;
             }
         }
+        Some(self.walk_segment(points))
+    }
+    pub(super) fn walk_segment(&self, points: Vec<Point>) -> Segment {
         let mut times = vec![0.];
         for pair in points.windows(2) {
             let length = distance(pair[0], pair[1]);
@@ -727,7 +873,7 @@ impl World {
             };
             times.push(times.last().unwrap() + duration);
         }
-        Some(Segment {
+        Segment {
             required_gait: None,
             boost: None,
             mode: "walk",
@@ -737,7 +883,7 @@ impl World {
             flight: None,
             gait: Some("run"),
             traversal: None,
-        })
+        }
     }
     pub fn action(&self, a: Point, b: Point) -> Option<Segment> {
         self.walk(a, b)
@@ -816,6 +962,33 @@ impl World {
         result.sort_by(|a, b| distance(*a, query.goal).total_cmp(&distance(*b, query.goal)));
         result.dedup_by(|a, b| distance(*a, *b) < 1e-6);
         result
+    }
+}
+
+fn swept_band([a, b]: [Point; 2], bounds: Bounds, radius: f64) -> impl Fn(Bounds) -> bool + Copy {
+    let [dx, _, dz] = sub(b, a);
+    let span = (dx * dx + dz * dz).sqrt();
+    // A chord's AABB can include large pockets outside its capsule or
+    // support footprint. Reject them before visiting individual triangles.
+    let nx = dz;
+    let nz = -dx;
+    let limit = (radius + 1e-8) * span;
+    move |candidate: Bounds| {
+        if !candidate.overlaps(bounds) {
+            return false;
+        }
+        let (x0, x1) = if nx >= 0. {
+            (candidate.min[0], candidate.max[0])
+        } else {
+            (candidate.max[0], candidate.min[0])
+        };
+        let (z0, z1) = if nz >= 0. {
+            (candidate.min[2], candidate.max[2])
+        } else {
+            (candidate.max[2], candidate.min[2])
+        };
+        (x0 - a[0]) * nx + (z0 - a[2]) * nz <= limit
+            && (x1 - a[0]) * nx + (z1 - a[2]) * nz >= -limit
     }
 }
 
