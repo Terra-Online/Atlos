@@ -1,11 +1,15 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { exportMarkerData, importMarkerData } from './markerDataTransfer';
 import { replacePointProgressFromExternal } from '@/store/history';
+import { useUiPrefsStore } from '@/store/uiPrefs';
 import { useUserRecordStore } from '@/store/userRecord';
 
 const original = useUserRecordStore.getState();
+const originalProgressPreference = useUiPrefsStore.getState().prefsMarkerProgressEnabled;
 afterEach(() => {
     useUserRecordStore.setState(original);
+    useUiPrefsStore.setState({ prefsMarkerProgressEnabled: originalProgressPreference });
+    localStorage.clear();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
 });
@@ -17,13 +21,13 @@ const importBackup = (data: string) => importMarkerData(data, {
     setSelected: vi.fn(),
 });
 
-it('exports and restores non-map Intel alongside map progress, merging both with existing records', async () => {
+const downloadBackup = (activePoints: string[], activeArchives: string[]) => {
     const createObjectURL = vi.fn<(backup: Blob) => string>(() => 'blob:backup');
     vi.stubGlobal('URL', { createObjectURL, revokeObjectURL: vi.fn() });
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-    exportMarkerData(['42'], [], [], ['nar_mission', 'nar_shop']);
+    exportMarkerData(activePoints, [], [], activeArchives);
     const [[backup]] = createObjectURL.mock.calls;
-    const content = await new Promise<string>((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
             if (typeof reader.result === 'string') resolve(reader.result);
@@ -32,6 +36,10 @@ it('exports and restores non-map Intel alongside map progress, merging both with
         reader.onerror = reject;
         reader.readAsText(backup);
     });
+};
+
+it('exports and restores non-map Intel alongside map progress, merging both with existing records', async () => {
+    const content = await downloadBackup(['42'], ['nar_mission', 'nar_shop']);
 
     useUserRecordStore.setState({ activePoints: ['existing'], activeArchives: ['nar_existing', 'nar_shop'] });
     expect(importBackup(content)).toBe(true);
@@ -40,6 +48,22 @@ it('exports and restores non-map Intel alongside map progress, merging both with
         activePoints: ['existing', '42'],
         activeArchives: ['nar_existing', 'nar_shop', 'nar_mission'],
     });
+});
+
+it('restores an Intel-only backup from browser storage after the progress store reloads', async () => {
+    useUiPrefsStore.setState({ prefsMarkerProgressEnabled: true });
+    const activeArchives = ['nar_mission', 'nar_shop'];
+    const content = await downloadBackup([], activeArchives);
+
+    useUserRecordStore.setState({ activePoints: [], activeArchives: [] });
+    expect(importBackup(content)).toBe(true);
+
+    // Reload the store module with the same browser storage, as on page reload.
+    vi.resetModules();
+    const { useUserRecordStore: reloaded } = await import('@/store/userRecord');
+    expect(reloaded).not.toBe(useUserRecordStore);
+    await reloaded.persist.rehydrate();
+    expect(reloaded.getState()).toMatchObject({ activePoints: [], activeArchives });
 });
 
 it('keeps existing Intel on legacy imports and rejects malformed Intel before writing progress', () => {
