@@ -1191,6 +1191,82 @@
                 "ctgr": "paper",
                 "rsch": "research_010prts"
             },
+            "nar_paper_map02_17009_1": {
+                "icon": "prts_read_notebook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_17010_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_17011_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_17012_1": {
+                "icon": "prts_read_notebook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_17013_1": {
+                "icon": "prts_read_file",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_17014_1": {
+                "icon": "prts_read_oldbook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_17016_1": {
+                "icon": "prts_read_file",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_17018_1": {
+                "icon": "prts_read_file",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_17019_1": {
+                "icon": "prts_e4m1_docs",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_17020_1": {
+                "icon": "prts_read_expensivebook",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_17021_1": {
+                "icon": "prts_read_file",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_17022_1": {
+                "icon": "prts_read_file",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_17023_1": {
+                "icon": "prts_read_file",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_17024_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper"
+            },
+            "nar_paper_map02_research14_1_1": {
+                "icon": "prts_read_notebook",
+                "ctgr": "paper",
+                "rsch": "research_011prts"
+            },
+            "nar_paper_map02_research14_2_1": {
+                "icon": "prts_read_file",
+                "ctgr": "paper",
+                "rsch": "research_011prts"
+            },
+            "nar_paper_map02_research14_3_1": {
+                "icon": "prts_c13m3_letter",
+                "ctgr": "paper",
+                "rsch": "research_011prts"
+            },
+            "nar_paper_map02_research14_4_1": {
+                "icon": "prts_read_note",
+                "ctgr": "paper",
+                "rsch": "research_011prts"
+            },
             "nar_col_lv003_9d1": {
                 "icon": "prts_general_pic",
                 "ctgr": "digital"
@@ -1399,6 +1475,14 @@
                 "ctgr": "digital",
                 "rsch": "research_gm02m27"
             },
+            "nar_digital_map02_17015_1": {
+                "icon": "prts_read_electronicscreen",
+                "ctgr": "digital"
+            },
+            "nar_digital_map02_17017_1": {
+                "icon": "prts_read_electronicscreen",
+                "ctgr": "digital"
+            },
             "nar_sm1l1m2_3": {
                 "icon": "prts_read_note",
                 "ctgr": "collection"
@@ -1417,6 +1501,30 @@
             },
             "nar_collection_map02_15020_1": {
                 "icon": "prts_c34m_forestmap",
+                "ctgr": "collection"
+            },
+            "nar_collection_map02_17028_1": {
+                "icon": "prts_general_pic",
+                "ctgr": "collection"
+            },
+            "nar_collection_map02_17029_1": {
+                "icon": "prts_general_pic",
+                "ctgr": "collection"
+            },
+            "nar_collection_map02_17030_1": {
+                "icon": "prts_general_pic",
+                "ctgr": "collection"
+            },
+            "nar_collection_map02_17031_1": {
+                "icon": "prts_general_pic",
+                "ctgr": "collection"
+            },
+            "nar_collection_map02_17032_1": {
+                "icon": "prts_general_pic",
+                "ctgr": "collection"
+            },
+            "nar_collection_map02_17033_1": {
+                "icon": "prts_general_pic",
                 "ctgr": "collection"
             },
             "nar_media_map01_117_1": {
