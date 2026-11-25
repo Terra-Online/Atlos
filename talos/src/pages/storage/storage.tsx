@@ -120,9 +120,9 @@ export const StorageSection: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExport = useCallback(() => {
-    const activePoints = useUserRecordStore.getState().activePoints;
+    const { activePoints, activeArchives } = useUserRecordStore.getState();
     const markerState = useMarkerStore.getState();
-    exportMarkerData(activePoints, markerState.filter, markerState.selectedPoints);
+    exportMarkerData(activePoints, markerState.filter, markerState.selectedPoints, activeArchives);
   }, []);
 
   const handleImport = useCallback(() => {
