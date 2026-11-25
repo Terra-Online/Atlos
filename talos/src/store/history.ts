@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { filterMarkerTypes, useMarkerStore } from '@/store/marker';
 import { publishProgressChange, useUserRecordStore } from '@/store/userRecord';
+import { useUiPrefsStore } from '@/store/uiPrefs';
 
 export type PointProgressDelta = {
     collect?: Iterable<string>;
@@ -222,7 +223,9 @@ export const commitMarkerFilter = (label: string, delta: MarkerFilterDelta): boo
 export const replacePointProgressFromExternal = (ids: Iterable<string>, archiveIds?: string[]): void => {
     const changed = replaceActivePoints(ids, archiveIds);
     useHistoryStore.getState().clear();
-    if (changed && archiveIds !== undefined) publishProgressChange();
+    if (changed && archiveIds !== undefined && useUiPrefsStore.getState().prefsMarkerProgressEnabled) {
+        publishProgressChange();
+    }
 };
 
 export const useCanUndo = () => useHistoryStore((state) => state.past.length > 0);

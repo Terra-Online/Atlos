@@ -10,6 +10,7 @@ import { useDevice } from '@/platform/device';
 import { useUserRecordStore } from '@/store/userRecord';
 import { replacePointProgressFromExternal } from '@/store/history';
 import { useMarkerStore } from '@/store/marker';
+import { useUiPrefsStore } from '@/store/uiPrefs';
 
 export const StorageSection: React.FC = () => {
   const t = useTranslateUI();
@@ -144,7 +145,7 @@ export const StorageSection: React.FC = () => {
         getFilter: () => useMarkerStore.getState().filter,
       });
 
-      if (success && typeof window !== 'undefined') {
+      if (success && useUiPrefsStore.getState().prefsMarkerProgressEnabled && typeof window !== 'undefined') {
         window.location.reload();
       }
     };

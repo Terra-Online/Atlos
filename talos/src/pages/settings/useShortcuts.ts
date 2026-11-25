@@ -90,7 +90,7 @@ export function useKeyboardShortcuts(
             getActivePoints: () => useUserRecordStore.getState().activePoints,
             getFilter: () => useMarkerStore.getState().filter,
         });
-        if (success) {
+        if (success && useUiPrefsStore.getState().prefsMarkerProgressEnabled) {
             window.location.reload();
         }
     }, []);
