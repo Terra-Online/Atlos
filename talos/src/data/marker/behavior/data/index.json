@@ -14,7 +14,7 @@
       "multiline": 2
     }
   },
-  "generatedAt": "2026-10-15T04:25:39.604099+00:00",
+  "generatedAt": "2026-11-25T01:25:49.031631+00:00",
   "files": [
     "VL_1.json",
     "VL_2.json",
@@ -24,6 +24,7 @@
     "VL_7.json",
     "WL_1.json",
     "WL_10.json",
+    "WL_11.json",
     "WL_2.json",
     "WL_3.json",
     "WL_4.json",
@@ -34,13 +35,13 @@
     "WL_9.json"
   ],
   "stats": {
-    "butterflyV1": 59,
+    "butterflyV1": 61,
     "butterflyV2": 4,
-    "butterflyRelations": 63,
-    "butterflyPaths": 61,
-    "lockedCrates": 60,
-    "coins": 406,
-    "trajectories": 205
+    "butterflyRelations": 65,
+    "butterflyPaths": 63,
+    "lockedCrates": 62,
+    "coins": 423,
+    "trajectories": 218
   },
   "diagnostics": {
     "v2WithoutChest": [],
