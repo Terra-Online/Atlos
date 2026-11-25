@@ -7,6 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
 const markerRoot = path.join(root, 'src/data/marker');
 const dataDir = path.join(markerRoot, 'data');
+const baselineDir = path.join(__dirname, 'marker-version-baselines');
 const logDir = path.join(root, 'scripts/logs/marker-version-new');
 const outputPath = path.join(markerRoot, 'diff.generated.json');
 const typePath = path.join(markerRoot, 'type.json');
@@ -115,6 +116,8 @@ const markerMapToSnapshot = (version, source, markers) => ({
 const snapshotPathFor = (version) => path.join(logDir, `${version}.snapshot.json`);
 
 const readSnapshotByVersion = (version) => {
+  const baselinePath = path.join(baselineDir, `${version}.snapshot.json`);
+  if (fs.existsSync(baselinePath)) return loadSnapshotFile(baselinePath);
   const snapshotPath = snapshotPathFor(version);
   if (!fs.existsSync(snapshotPath)) return null;
   return loadSnapshotFile(snapshotPath);
