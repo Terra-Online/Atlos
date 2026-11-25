@@ -17,15 +17,25 @@ test('ICU extraction collects literal branches without argument/selector identif
 
 test('region variables preserve family precedence and face definitions', async () => {
     const result = await postcss([regionFontStyles()]).process(
-        `@font-face{font-family:'HMSans';src:url(h.woff2)} .a{font-family:'Novecento Medium','HMSans_EN',HMSans,'UD_ShinGo Regular',sans-serif}.b{font-family:"UD_ShinGo Bold"}`,
+        `@font-face{font-family:'Novecento Medium';src:url(m.woff2)}
+        @font-face{font-family:'HMSans';src:url(h.woff2)}
+        .a{font-family:'Novecento Medium','HMSans_EN',HMSans,'UD_ShinGo Regular',sans-serif}
+        .b{font-family:"UD_ShinGo Bold","Novecento Bold"}
+        .c{font-family:"Novecento DemiBold",sans-serif}
+        .d{font-family:"Novecento Bold",sans-serif}`,
         { from: undefined },
     );
+    assert.match(result.css, /@font-face\{font-family:'Novecento Medium'/);
     assert.match(result.css, /@font-face\{font-family:'HMSans'/);
-    assert.match(
-        result.css,
-        /'Novecento Medium','HMSans_EN',var\(--font-h, "OEM-pending-h"\),var\(--font-r, "OEM-pending-r"\),sans-serif/,
+    assert.deepEqual(
+        result.root.nodes.filter((node) => node.type === 'rule').map((rule) => rule.first.value),
+        [
+            `var(--font-novecento-medium, 'Novecento Medium'),'HMSans_EN',var(--font-h, "OEM-pending-h"),var(--font-r, "OEM-pending-r"),sans-serif`,
+            `var(--font-b, "OEM-pending-b"),"Novecento Bold"`,
+            `var(--font-novecento-heading, "Novecento DemiBold"),sans-serif`,
+            `var(--font-novecento-heading, "Novecento Bold"),sans-serif`,
+        ],
     );
-    assert.match(result.css, /var\(--font-b, "OEM-pending-b"\)/);
 });
 
 test('build validation rejects modified immutable resources and partial diagnostics', async (t) => {
