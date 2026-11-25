@@ -8,10 +8,10 @@ import { useUserRecordStore } from '@main/store/userRecord';
 import { archives, deferred, flush, translate } from './fixtures';
 import App from './App';
 
-const runtime = vi.hoisted(() => ({ mobile: false, decode: vi.fn() }));
+const runtime = vi.hoisted(() => ({ mobile: false, decode: vi.fn(), newArchiveIds: new Set<string>() }));
 vi.mock('@intel/data/types', async () => {
     const { archives } = await import('./fixtures');
-    return { intelArchives: archives, archiveById: new Map(archives.map((item) => [item.id, item])) };
+    return { intelArchives: archives, archiveById: new Map(archives.map((item) => [item.id, item])), newArchiveIds: runtime.newArchiveIds };
 });
 vi.mock('@intel/locale', async () => {
     const { translate } = await import('./fixtures');
@@ -37,6 +37,7 @@ beforeEach(() => {
     window.history.replaceState(null, '', '/intel/');
     runtime.mobile = false;
     runtime.decode.mockReset();
+    runtime.newArchiveIds.clear();
     useUiPrefsStore.setState({ intelCardsExpanded: false, mobileDrawerSnapIndex: 0 });
     useUserRecordStore.setState({ activePoints: [], activeArchives: ['nar_auto'], updatedAt: 1 });
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('fixture: SDK offline')));
@@ -68,6 +69,26 @@ it('combines categories and normalized title search, keeps collection buckets st
     expect(cards().map((card) => card.dataset.intelArchive)).toEqual(['nar_map']);
     fireEvent.click(screen.getByRole('button', { name: 'intel.showDetails' }));
     expect(document.querySelector('[data-app="intel"]')?.getAttribute('data-cards-expanded')).toBe('true');
+});
+
+it('lists new archives separately without duplicating search counts or collection state', async () => {
+    runtime.newArchiveIds.add('nar_map');
+    runtime.newArchiveIds.add('nar_auto');
+    await mount();
+    const latest = screen.getByRole('region', { name: /intel\.newThisVersion/ });
+    const uncollected = screen.getByRole('region', { name: /intel\.uncollected/ });
+    const collected = screen.getByRole('region', { name: /intel\.collected/ });
+    const newMap = within(latest).getByRole('button', { name: /Ore report/ });
+    const existingMap = within(uncollected).getByRole('button', { name: /Ore report/ });
+    expect(within(latest).getByRole('button', { name: /Central document/ }).getAttribute('aria-pressed')).toBe('true');
+    expect(within(collected).getByRole('button', { name: /Central document/ })).toBeTruthy();
+    fireEvent.click(newMap);
+    expect(newMap.getAttribute('aria-pressed')).toBe('true');
+    expect(existingMap.getAttribute('aria-pressed')).toBe('true');
+    expect(useUserRecordStore.getState().activePoints).toEqual(['42']);
+    fireEvent.change(screen.getByPlaceholderText(translate('intel.search')), { target: { value: 'ore report' } });
+    expect(cards().map((card) => card.dataset.intelArchive)).toEqual(['nar_map', 'nar_map']);
+    expect(screen.getByText('1 result')).toBeTruthy();
 });
 
 it('expands the mobile drawer once per new nonblank search instead of stealing later drawer gestures', async () => {

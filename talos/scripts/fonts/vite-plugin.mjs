@@ -27,7 +27,6 @@ const resolveFontAssetUrl = (file, manifestUrl) => {
     return new URL(file, manifestUrl).href;
 };
 
-// Preserve each declaration's existing family order, including Latin faces.
 // Rewriting only font-family avoids changing @font-face definitions or strings.
 export const regionFontStyles = () => ({
     postcssPlugin: 'atlos-region-fonts',
@@ -38,13 +37,21 @@ export const regionFontStyles = () => ({
         )
             return;
         const original = declaration.value;
-        declaration.value = declaration.value.replace(
-            /(['"])(UD_ShinGo (?:Bold|DemiBold|Medium|Regular)|HMSans)\1|\bHMSans\b(?![\w-])/g,
-            (_match, _quote, family) => {
-                const face = fontVariables[family || 'HMSans'];
-                return `var(--font-${face}, "OEM-pending-${face}")`;
-            },
-        );
+        declaration.value = original
+            .replace(
+                /^(['"])Novecento (Medium|DemiBold|Bold)\1/i,
+                (family, _quote, weight) => {
+                    const face = weight.toLowerCase() === 'medium' ? 'medium' : 'heading';
+                    return `var(--font-novecento-${face}, ${family})`;
+                },
+            )
+            .replace(
+                /(['"])(UD_ShinGo (?:Bold|DemiBold|Medium|Regular)|HMSans)\1|\bHMSans\b(?![\w-])/g,
+                (_match, _quote, family) => {
+                    const face = fontVariables[family || 'HMSans'];
+                    return `var(--font-${face}, "OEM-pending-${face}")`;
+                },
+            );
         // Inherited font-family is already resolved. Rebind the app's body
         // stack at explicit boundaries so local aliases isolate inherited text.
         if (

@@ -25,24 +25,43 @@
         url('../assets/fonts/Novecento/NWMed+Grek+Cyrl.otf') format('opentype');
     font-display: swap;
 }
-@font-face {
-    font-family: 'Novecento Vietnamese DemiBold';
+$novecento-vietnamese-faces: (
+    'Medium': ('NWMed+Viet', 400 500),
+    'DemiBold': ('NWBold+Viet', 600 900),
+);
+
+@mixin novecento-vietnamese-source($file) {
     src:
-        url('../assets/fonts/Novecento/NWBold+Viet.woff2')
-            format('woff2'),
-        url('../assets/fonts/Novecento/NWBold+Viet.woff') format('woff'),
-        url('../assets/fonts/Novecento/NWBold+Viet.otf')
-            format('opentype');
+        url('../assets/fonts/Novecento/#{$file}.woff2') format('woff2'),
+        url('../assets/fonts/Novecento/#{$file}.woff') format('woff'),
+        url('../assets/fonts/Novecento/#{$file}.otf') format('opentype');
     font-display: swap;
 }
-@font-face {
-    font-family: 'Novecento Vietnamese Medium';
-    src: 
-        url('../assets/fonts/Novecento/NWMed+Viet.woff2') format('woff2'),
-        url('../assets/fonts/Novecento/NWMed+Viet.woff') format('woff'),
-        url('../assets/fonts/Novecento/NWMed+Viet.otf') format('opentype');
-    font-display: swap;
+
+@each $face, $meta in $novecento-vietnamese-faces {
+    @font-face {
+        font-family: 'Novecento Vietnamese #{$face}';
+        @include novecento-vietnamese-source(list.nth($meta, 1));
+    }
+
+    @font-face {
+        font-family: 'Novecento Vietnamese';
+        @include novecento-vietnamese-source(list.nth($meta, 1));
+        font-weight: list.nth($meta, 2);
+    }
 }
+
+:where([lang]) {
+    --font-novecento-medium: initial;
+    --font-novecento-heading: initial;
+}
+
+[lang]:lang(vi) {
+    // The Vietnamese faces cover the full Latin run, including unaccented letters.
+    --font-novecento-medium: 'Novecento Vietnamese', 'HMSans_EN';
+    --font-novecento-heading: 'Novecento Vietnamese DemiBold', 'HMSans_EN';
+}
+
 @font-face {
     font-family: 'Novecento Bold';
     src:

@@ -14,7 +14,7 @@ import {
   useSetIntelCardsExpanded,
   useSetMobileDrawerSnapIndex,
 } from '@main/store/uiPrefs';
-import { archiveById, intelArchives, type ArchiveCategory, type IntelArchive } from '@intel/data/types';
+import { archiveById, intelArchives, newArchiveIds, type ArchiveCategory, type IntelArchive } from '@intel/data/types';
 import {
   decodeIntelImportToken,
   getIntelImportToken,
@@ -77,15 +77,18 @@ const getInitialTypeTarget = () => {
   return typeCandidates.find((value) => value.startsWith('nar_') && archiveById.has(value)) ?? null;
 };
 
+type Bucket = 'newThisVersion' | 'uncollected' | 'collected';
+
 const bucketCount = (
   archives: IntelArchive[],
   categoryId: ArchiveCategory | null,
-  bucket: 'uncollected' | 'collected',
+  bucket: Bucket,
   collectedIds: Set<string>,
 ) => {
   const scoped = categoryId
     ? archives.filter((archive) => archive.categoryId === categoryId)
     : archives;
+  if (bucket === 'newThisVersion') return { initial: scoped.length, removed: 0 };
   const current = scoped.filter((archive) => {
     const isCollected = collectedIds.has(archive.id);
     return bucket === 'uncollected' ? !isCollected : isCollected;
@@ -362,6 +365,8 @@ function App() {
     if (!normalizedQuery) return true;
     return cleanTitle(tGame(archive.id)).toLocaleLowerCase().includes(normalizedQuery);
   }), [categories, normalizedQuery, tGame]);
+  const newThisVersion = visible.filter((archive) => newArchiveIds.has(archive.id));
+  const cardCount = visible.length + newThisVersion.length;
   const uncollected = collectedAtLoad ? visible.filter((archive) => !collectedAtLoad.has(archive.id)) : [];
   const collected = collectedAtLoad ? visible.filter((archive) => collectedAtLoad.has(archive.id)) : [];
 
@@ -440,7 +445,7 @@ function App() {
   );
 
   const renderBucket = (
-    bucket: 'uncollected' | 'collected',
+    bucket: Bucket,
     archives: IntelArchive[],
     stackOffset: number,
   ) => {
@@ -495,7 +500,7 @@ function App() {
                     archive={archive}
                     collected={collectedIds.has(archive.id)}
                     isTypeTarget={archive.id === typeTargetId}
-                    stackOrder={visible.length - stackOffset - categoryStackOffset - archiveIndex}
+                    stackOrder={cardCount - stackOffset - categoryStackOffset - archiveIndex}
                     onToggle={toggleArchive}
                     onTypeTargetHover={dismissTypeTarget}
                     virtualize={virtualizationReady && !cardsExpansionSettling}
@@ -550,7 +555,13 @@ function App() {
               <strong>{tUI('intel.noResults')}</strong>
               <span>{tUI('intel.noResultsHint')}</span>
             </div>
-          ) : <>{uncollected.length > 0 && renderBucket('uncollected', uncollected, 0)}{collected.length > 0 && renderBucket('collected', collected, uncollected.length)}</>}
+          ) : (
+            <>
+              {newThisVersion.length > 0 && renderBucket('newThisVersion', newThisVersion, 0)}
+              {uncollected.length > 0 && renderBucket('uncollected', uncollected, newThisVersion.length)}
+              {collected.length > 0 && renderBucket('collected', collected, newThisVersion.length + uncollected.length)}
+            </>
+          )}
         </div>
       </main>
     </IntelCardsExpansionScope>

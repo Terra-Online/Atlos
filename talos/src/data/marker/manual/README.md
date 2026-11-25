@@ -15,5 +15,6 @@ Keep one row here for every entry in `overrides.json`. The validator requires al
 | ID | Operation | Reason | Source | Updated at |
 | --- | --- | --- | --- | --- |
 | `36100210195` | `update` | Player Feedback: Misplaced Marker | [oem.re/0UOzJyG](https://oem.re/0UOzJyG) | `2026-09-02` |
+| `42200240016` | `delete` | Quest clue in Giga-Shroom Up Close | `map02_lv011` and `gm02m28_q#15` | `2026-11-25` |
 
 Run `pnpm data overrides` after editing. The build preparation step runs this validation automatically.

@@ -74,7 +74,6 @@
       color 0.3s ease;
     will-change: filter, outline, box-shadow, background, color;
     text-align: end;
-    padding-right: calc(var(--btn-height) * 3 / 4 + 0.1rem);
     position: relative;
     overflow: hidden;
     z-index: 2;
@@ -304,22 +303,33 @@
 /* Button type variants - different icons */
 .button[data-type='next'] .icon {
     mask-image: url('../../assets/images/UI/next.svg');
-    width: 11%;
+    --btn-icon-scale: .44;
 }
 
 .button[data-type='prev'] .icon {
     mask-image: url('../../assets/images/UI/prev.svg');
-    width: 11%;
-}
-
-.button[data-type='close'] .icon {
-    mask-image: url('../../assets/images/UI/close.svg');
-    width: 15%;
+    --btn-icon-scale: .44;
 }
 
 .button[data-type='confirm'] .icon {
     mask-image: url('../../assets/images/UI/confirm.svg');
-    width: 13%;
+    --btn-icon-scale: .52;
+}
+
+.button[data-button-style='normal'] {
+    width: max-content;
+    min-width: var(--btn-width, 6rem);
+    padding-right: calc(var(--btn-height) / 5);
+
+    .deco {
+        min-width: .75rem;
+    }
+
+    .icon {
+        position: static;
+        flex: none;
+        width: calc(var(--btn-height) * var(--btn-icon-scale, .6));
+    }
 }
 
 .button[data-button-style='icon'] {

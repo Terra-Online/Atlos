@@ -210,7 +210,7 @@
     box-shadow: 0 0 2px rgba($black-0, 0.35);
 }
 
-@for $i from 1 through 40 {
+@for $i from 1 through 41 {
     .commentAvatar[data-avt="#{$i}"] {
         background-image: url('@/assets/images/avatar/avt_#{$i}.webp');
     }

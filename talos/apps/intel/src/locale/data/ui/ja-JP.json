@@ -4,6 +4,7 @@
     "collecting": "収集中",
     "collectionComplete": "収集完了",
     "collected": "収集済み",
+    "newThisVersion": "今バージョンの新規アーカイブ",
     "uncollected": "未収集",
     "search": "アーカイブ名を検索",
     "noResults": "一致するアーカイブはありません",

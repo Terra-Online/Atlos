@@ -308,6 +308,25 @@
           "physical_training_field": "Physical Training Field",
           "blight_monitoring_zone": "Blight Monitoring Zone"
         }
+      },
+      "OD": {
+        "name": "Old Dam",
+        "short": "OD",
+        "site": {
+          "control_room": "Control Room",
+          "dam_exterior": "Dam Exterior",
+          "old_offices": "Old Offices",
+          "construction_floor": "Construction Floor",
+          "testing_floor": "Testing Floor",
+          "spillway_floor": "Spillway Floor",
+          "hyphae_trail": "Hyphae Trail",
+          "abandoned_work_shacks": "Abandoned Work Shacks",
+          "factory_area": "Factory Area",
+          "maintenance_corridor": "Maintenance Corridor",
+          "dam_hollow": "Dam Hollow",
+          "turbine_room": "Turbine Room",
+          "giant_hyphal_system": "Giant Hyphal System"
+        }
       }
     }
   },

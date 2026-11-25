@@ -308,6 +308,25 @@
           "physical_training_field": "Тренировочное поле",
           "blight_monitoring_zone": "Зона наблюдения за мором"
         }
+      },
+      "OD": {
+        "name": "Старая дамба",
+        "short": "СД",
+        "site": {
+          "control_room": "Комната управления",
+          "dam_exterior": "Внешняя часть дамбы",
+          "old_offices": "Старые офисы",
+          "construction_floor": "Строительный этаж",
+          "testing_floor": "Испытательный этаж",
+          "spillway_floor": "Водосбросный этаж",
+          "hyphae_trail": "Тропа гифов",
+          "abandoned_work_shacks": "Заброшенные рабочие бараки",
+          "factory_area": "Территория завода",
+          "maintenance_corridor": "Коридор обслуживания",
+          "dam_hollow": "Каверна дамбы",
+          "turbine_room": "Турбинный зал",
+          "giant_hyphal_system": "Гигантская система гифов"
+        }
       }
     }
   },

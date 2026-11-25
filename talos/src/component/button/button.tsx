@@ -13,7 +13,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   schema?: ButtonSchema;
   deco?: boolean; // Control whether to show decorative elements
   // Size params: width/height for 'normal', size for 'icon'
-  width?: string | number; // Only for buttonStyle='normal' | 'square', e.g., '6rem' | 96
+  width?: string | number; // Minimum width for normal buttons, width for square buttons
   height?: string | number; // Only for buttonStyle='normal' | 'square', e.g., '1.5rem' | 24
   size?: string | number; // Only for buttonStyle='icon', creates square button, e.g., '2rem' | 32
 }

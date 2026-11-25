@@ -308,6 +308,25 @@
           "physical_training_field": "Sportplatz",
           "blight_monitoring_zone": "Verderbnis-Überwachungszone"
         }
+      },
+      "OD": {
+        "name": "Alter Damm",
+        "short": "AD",
+        "site": {
+          "control_room": "Kontrollraum",
+          "dam_exterior": "Damm-Außenbereich",
+          "old_offices": "Alte Büros",
+          "construction_floor": "Baustellenetage",
+          "testing_floor": "Prüfetage",
+          "spillway_floor": "Hochwasserüberlaufetage",
+          "hyphae_trail": "Hyphenpfad",
+          "abandoned_work_shacks": "Verlassene Baubuden",
+          "factory_area": "Fabrikbereich",
+          "maintenance_corridor": "Wartungskorridor",
+          "dam_hollow": "Damm-Hohlraum",
+          "turbine_room": "Turbinenraum",
+          "giant_hyphal_system": "Riesiges Hyphensystem"
+        }
       }
     }
   },

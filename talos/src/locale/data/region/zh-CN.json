@@ -308,6 +308,25 @@
           "physical_training_field": "体能训练场",
           "blight_monitoring_zone": "侵蚀监控区"
         }
+      },
+      "OD": {
+        "name": "旧水坝",
+        "short": "坝",
+        "site": {
+          "control_room": "控制室",
+          "dam_exterior": "大坝外侧",
+          "old_offices": "旧办公区",
+          "construction_floor": "建设层",
+          "testing_floor": "试验层",
+          "spillway_floor": "排水层",
+          "hyphae_trail": "菌根小径",
+          "abandoned_work_shacks": "废弃工棚",
+          "factory_area": "工业区",
+          "maintenance_corridor": "检修通道",
+          "dam_hollow": "坝体空腔",
+          "turbine_room": "轮机室",
+          "giant_hyphal_system": "巨大根系"
+        }
       }
     }
   },

@@ -308,6 +308,25 @@
           "physical_training_field": "Campo di addestramento fisico",
           "blight_monitoring_zone": "Zona di monitoraggio contaminazione"
         }
+      },
+      "OD": {
+        "name": "Diga vecchia",
+        "short": "DV",
+        "site": {
+          "control_room": "Sala comandi",
+          "dam_exterior": "Esterno della diga",
+          "old_offices": "Vecchi uffici",
+          "construction_floor": "Piano di costruzione",
+          "testing_floor": "Piano di test",
+          "spillway_floor": "Piano di scarico",
+          "hyphae_trail": "Sentiero ifale",
+          "abandoned_work_shacks": "Capanni abbandonati",
+          "factory_area": "Area industriale",
+          "maintenance_corridor": "Corridoio di manutenzione",
+          "dam_hollow": "Cavità della diga",
+          "turbine_room": "Sala turbine",
+          "giant_hyphal_system": "Sistema ifale gigante"
+        }
       }
     }
   },

@@ -92,7 +92,7 @@ it('defers map previews until near the viewport and cleans up visibility ownersh
 it.each([
     { archive: archives[1], text: ['First mission', 'Final stage'] },
     { archive: archives[2], text: ['Automatically unlocked', 'Unlocks through the main story'] },
-    { archive: archives[5], text: ['Unlock condition unconfirmed'] },
+    { archive: archives[5], text: ['Automatically unlocked'] },
     { archive: archives[3], text: ['Valley - Hub', 'Trader', 'Trading post'] },
     { archive: archives[4], text: ['Investigate ore'] },
 ])('renders acquisition instructions for $archive.id', ({ archive, text }) => {
@@ -100,6 +100,7 @@ it.each([
     text.forEach((value) => expect(screen.getByRole('button').textContent).toContain(value));
     expect(screen.getByRole('button').textContent).not.toMatch(/<\/?(?:b|em)>/);
     expect(screen.getByRole('button').textContent).not.toContain('intel.centralUnlock');
+    expect(screen.getByRole('button').textContent).not.toContain('Unlock condition unconfirmed');
     if (archive.acquisition.method === 'shop') expect(screen.getAllByRole('link')).toHaveLength(2);
 });
 
