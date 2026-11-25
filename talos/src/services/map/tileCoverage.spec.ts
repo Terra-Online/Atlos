@@ -31,7 +31,7 @@ describe('tile coverage', () => {
         expect(getTileLayers({ zooms: { '0': { _b1: { '0': [0, 0] }, _l2: { '1': [1, 1] } },
             '3': { _b2: { '0': [] }, _l1: {} } } })).toEqual(['L2', 'M', 'B1']);
         expect(getAvailableLayers('Valley_4')).toEqual(['L2', 'L1', 'M', 'B1', 'B2']);
-        expect(getAvailableLayers('Wuling')).toEqual(['L4', 'L3', 'L2', 'L1', 'M', 'B1', 'B2', 'B3', 'B4']);
+        expect(getAvailableLayers('Wuling')).toEqual(['L6', 'L5', 'L4', 'L3', 'L2', 'L1', 'M', 'B1', 'B2', 'B3', 'B4']);
         expect(getAvailableLayers('Weekraid_1')).toEqual(['L1', 'M', 'B1', 'B2', 'B3']);
         expect(getAvailableLayers('Dijiang')).toEqual(['M']);
         expect(getAvailableLayers('missing-region')).toEqual(['M']);

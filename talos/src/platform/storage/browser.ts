@@ -353,6 +353,7 @@ export interface MarkerExportData {
   activePoints: string[];
   filter: string[];
   selectedPoints: string[];
+  activeArchives: string[];
 }
 
 interface LegacyMarkerExportData {
@@ -361,6 +362,7 @@ interface LegacyMarkerExportData {
   activePoints: (string | number)[];  // May contain numbers in old exports
   filter: string[];
   selectedPoints: (string | number)[];
+  activeArchives?: string[];
 }
 
 const formatDateTime = (): string => {
@@ -381,21 +383,25 @@ export const isValidMarkerExportData = (data: unknown): data is MarkerExportData
     typeof obj.version === 'number' &&
     Array.isArray(obj.activePoints) &&
     Array.isArray(obj.filter) &&
-    Array.isArray(obj.selectedPoints)
+    Array.isArray(obj.selectedPoints) &&
+    (obj.activeArchives === undefined || (Array.isArray(obj.activeArchives) &&
+      obj.activeArchives.every(id => typeof id === 'string' && id.trim() === id && id.length > 0)))
   );
 };
 
 export const exportMarkerData = (
   activePoints: string[],
   filter: string[],
-  selectedPoints: string[]
+  selectedPoints: string[],
+  activeArchives: string[],
 ): void => {
   const exportData: MarkerExportData = {
-    version: 3,
+    version: 4,
     timestamp: Date.now(),
     activePoints: activePoints.map(id => String(id)),
     filter,
     selectedPoints: selectedPoints.map(id => String(id)),
+    activeArchives,
   };
 
   const json = JSON.stringify(exportData, null, 2);
@@ -411,7 +417,7 @@ export const exportMarkerData = (
 export const importMarkerData = (
   content: string,
   callbacks: {
-    replacePoints: (ids: string[]) => void;
+    replacePoints: (ids: string[], archiveIds?: string[]) => void;
     setFilter: (filter: string[]) => void;
     setSelected: (id: string, value: boolean) => void;
     getActivePoints?: () => string[];
@@ -430,20 +436,11 @@ export const importMarkerData = (
     const rawActivePoints = data.activePoints.map(id => String(id));
     const rawSelectedPoints = data.selectedPoints.map(id => String(id));
 
-    const exportData = data as MarkerExportData;
-
-    console.log(`[Import] version=${exportData.version}, activePoints=${rawActivePoints.length}, selectedPoints=${rawSelectedPoints.length}`);
-
-    let effectiveActivePoints = rawActivePoints;
-    if (rawSelectedPoints.length > 0 && rawActivePoints.length < rawSelectedPoints.length * 0.3) {
-      const mergedSet = new Set([...rawActivePoints, ...rawSelectedPoints]);
-      effectiveActivePoints = [...mergedSet];
-      console.warn(`[Import] activePoints (${rawActivePoints.length}) < 30% of selectedPoints (${rawSelectedPoints.length}) — recovered to ${effectiveActivePoints.length} entries by merging`);
-    }
+    console.log(`[Import] version=${data.version}, activePoints=${rawActivePoints.length}, selectedPoints=${rawSelectedPoints.length}`);
 
     // Merge active points (add new ones, keep existing) as one external replacement.
     const existingActivePoints = callbacks.getActivePoints?.() ?? [];
-    callbacks.replacePoints([...existingActivePoints, ...effectiveActivePoints]);
+    callbacks.replacePoints([...existingActivePoints, ...rawActivePoints], data.activeArchives);
 
     // Merge filter (combine and deduplicate)
     if (callbacks.getFilter) {
@@ -461,7 +458,7 @@ export const importMarkerData = (
     });
     
     // Ensure all active points are also selected (consistency)
-    effectiveActivePoints.forEach((id: string) => {
+    rawActivePoints.forEach((id: string) => {
       callbacks.setSelected(id, true);
     });
 

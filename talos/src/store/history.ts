@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { filterMarkerTypes, useMarkerStore } from '@/store/marker';
-import { useUserRecordStore } from '@/store/userRecord';
+import { publishProgressChange, useUserRecordStore } from '@/store/userRecord';
+import { useUiPrefsStore } from '@/store/uiPrefs';
 
 export type PointProgressDelta = {
     collect?: Iterable<string>;
@@ -65,13 +66,21 @@ const pushHistoryEntry = (entry: HistoryEntry): void => {
     }));
 };
 
-const replaceActivePoints = (ids: Iterable<string>): boolean => {
-    const next = normalizePointIds(ids);
-    const current = useUserRecordStore.getState().activePoints;
-    if (current.length === next.length && current.every((id, index) => id === next[index])) {
-        return false;
-    }
-    useUserRecordStore.setState({ activePoints: next, updatedAt: Date.now() });
+const replaceActivePoints = (ids: Iterable<string>, archiveIds?: string[]): boolean => {
+    const { activePoints, activeArchives } = useUserRecordStore.getState();
+    const nextPoints = normalizePointIds(ids);
+    const pointsChanged = activePoints.length !== nextPoints.length
+        || activePoints.some((id, index) => id !== nextPoints[index]);
+    const mergedArchives = archiveIds?.length ? [...new Set([...activeArchives, ...archiveIds])] : activeArchives;
+    const archivesChanged = mergedArchives.length !== activeArchives.length
+        || mergedArchives.some((id, index) => id !== activeArchives[index]);
+    if (!pointsChanged && !archivesChanged) return false;
+
+    useUserRecordStore.setState({
+        activePoints: pointsChanged ? nextPoints : activePoints,
+        activeArchives: archivesChanged ? mergedArchives : activeArchives,
+        updatedAt: Date.now(),
+    });
     return true;
 };
 
@@ -211,9 +220,12 @@ export const commitMarkerFilter = (label: string, delta: MarkerFilterDelta): boo
     return true;
 };
 
-export const replacePointProgressFromExternal = (ids: Iterable<string>): void => {
-    replaceActivePoints(ids);
+export const replacePointProgressFromExternal = (ids: Iterable<string>, archiveIds?: string[]): void => {
+    const changed = replaceActivePoints(ids, archiveIds);
     useHistoryStore.getState().clear();
+    if (changed && archiveIds !== undefined && useUiPrefsStore.getState().prefsMarkerProgressEnabled) {
+        publishProgressChange();
+    }
 };
 
 export const useCanUndo = () => useHistoryStore((state) => state.past.length > 0);

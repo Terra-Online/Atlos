@@ -6,6 +6,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import App from './App';
 import type { Contribution, Overview } from './types';
 import { useAuthStore } from '@main/store/auth';
+import { AVATAR_MAX_INDEX } from '@main/component/shared/account/avatarConfig';
 
 const api = vi.hoisted(() => ({
     clearReadCache: vi.fn(),
@@ -213,7 +214,9 @@ it('opens contributions by default and keeps the two navigation destinations dis
         await flush(() => profile?.click());
         expect(window.location.pathname).toBe('/me/profile');
         expect(profile?.getAttribute('aria-current')).toBe('page');
-        expect(node.querySelectorAll('input[name="avatar"]')).toHaveLength(40);
+        const avatarOptions = node.querySelectorAll<HTMLInputElement>('input[name="avatar"]');
+        expect(avatarOptions).toHaveLength(AVATAR_MAX_INDEX);
+        expect(avatarOptions.item(AVATAR_MAX_INDEX - 1)?.value).toBe(String(AVATAR_MAX_INDEX));
         expect(node.textContent).not.toContain('userHub.emptyContributions');
         const content = node.querySelector<HTMLAnchorElement>(
             'nav a[href="/me/content"]',
