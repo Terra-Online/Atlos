@@ -1,5 +1,6 @@
 /// <reference lib="es2021.weakref" />
 import { MarkerMotion, curves, ease } from '@/services/map/core/canvas/canvasMarkerMotion';
+import palette from './canvasMarkerPalette.module.scss';
 
 export interface MarkerArt {
   image: string; subImage: string; noFrame: boolean; tier: string; count?: string;
@@ -18,18 +19,18 @@ const isRaster = (url: string) => !url || /^data:image\/(?:png|jpe?g|webp|avif)[
   || /\.(?:png|jpe?g|webp|avif)$/i.test(url.split(/[?#]/, 1)[0]);
 const FRAME_ART: MarkerArt = { image: '', subImage: '', noFrame: false, tier: '' };
 const accent = (value: number) => `rgb(${248 + 7 * value},${248 - 52 * value},${248 - 208 * value})`;
-const DARK_TEXT = '#333';
+const { darkText, lightText } = palette;
 const tierColors: Record<string, { background: string; text: string }> = {
-  L1: { background: '#fdff95', text: DARK_TEXT },
-  L2: { background: '#ffe524', text: DARK_TEXT },
-  L3: { background: '#ff8b38', text: DARK_TEXT },
-  L4: { background: '#e66a2e', text: '#1e130d' },
-  L5: { background: '#b64029', text: WHITE },
-  L6: { background: '#802a44', text: WHITE },
-  B1: { background: '#3262c9', text: WHITE },
-  B2: { background: '#1d48bd', text: WHITE },
-  B3: { background: '#3427bc', text: WHITE },
-  B4: { background: '#431dbe', text: WHITE },
+  L1: { background: palette.l1, text: darkText },
+  L2: { background: palette.l2, text: darkText },
+  L3: { background: palette.l3, text: darkText },
+  L4: { background: palette.l4, text: darkText },
+  L5: { background: palette.l5, text: darkText },
+  L6: { background: palette.l6, text: lightText },
+  B1: { background: palette.b1, text: lightText },
+  B2: { background: palette.b2, text: lightText },
+  B3: { background: palette.b3, text: lightText },
+  B4: { background: palette.b4, text: lightText },
 };
 
 /** Instance-owned assets. A state change never clears assets or another point's pixels. */
@@ -193,7 +194,7 @@ export class MarkerPainter {
       ctx.beginPath(); ctx.roundRect(x, y, width, 16, 8);
       ctx.fillStyle = colors?.background ?? 'transparent'; ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 4 * this.ratio; ctx.shadowOffsetY = this.ratio;
       ctx.fill(); ctx.shadowColor = 'transparent';
-      ctx.fillStyle = colors?.text ?? (art.tier.startsWith('B') ? WHITE : DARK_TEXT); ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = colors?.text ?? (art.tier.startsWith('B') ? lightText : darkText); ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
       ctx.fillText(art.tier, x + width / 2, y + (16 + metrics.fontBoundingBoxAscent - metrics.fontBoundingBoxDescent) / 2); ctx.restore();
     }
     if (layer !== 'body') this.paintCount(ctx, art);

@@ -1,0 +1,17 @@
+@use 'sass:color';
+@use '@/styles/palette.scss' as palette;
+
+:export {
+    l1: palette.$primary-accent-1;
+    l2: palette.$primary-accent-3;
+    l3: palette.$primary-accent-5;
+    l4: color.mix(palette.$primary-accent-5, palette.$primary-accent-6);
+    l5: palette.$primary-accent-6;
+    l6: palette.$primary-accent-7;
+    b1: palette.$secondary-accent-3;
+    b2: palette.$secondary-accent-4;
+    b3: palette.$secondary-accent-5;
+    b4: palette.$secondary-accent-6;
+    darkText: palette.$black-0;
+    lightText: palette.$white-1;
+}
