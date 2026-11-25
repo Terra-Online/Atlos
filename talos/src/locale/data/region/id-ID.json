@@ -308,6 +308,25 @@
           "physical_training_field": "Lapangan Latihan Fisik",
           "blight_monitoring_zone": "Zona Pantau Hawar"
         }
+      },
+      "OD": {
+        "name": "Bendungan Lama",
+        "short": "BL",
+        "site": {
+          "control_room": "Ruang Kontrol",
+          "dam_exterior": "Eksterior Bendungan",
+          "old_offices": "Kantor Lama",
+          "construction_floor": "Lantai Konstruksi",
+          "testing_floor": "Lantai Uji",
+          "spillway_floor": "Lantai Pelimpah",
+          "hyphae_trail": "Jalur Hifa",
+          "abandoned_work_shacks": "Barak Kerja Terbengkalai",
+          "factory_area": "Area Pabrik",
+          "maintenance_corridor": "Koridor Pemeliharaan",
+          "dam_hollow": "Rongga Bendungan",
+          "turbine_room": "Ruang Turbin",
+          "giant_hyphal_system": "Sistem Hifa Raksasa"
+        }
       }
     }
   },

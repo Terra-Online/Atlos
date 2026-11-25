@@ -308,6 +308,25 @@
           "physical_training_field": "體能訓練場",
           "blight_monitoring_zone": "侵蝕監控區"
         }
+      },
+      "OD": {
+        "name": "舊水壩",
+        "short": "壩",
+        "site": {
+          "control_room": "控制室",
+          "dam_exterior": "大壩外側",
+          "old_offices": "舊辦公區",
+          "construction_floor": "建設層",
+          "testing_floor": "試驗層",
+          "spillway_floor": "排水層",
+          "hyphae_trail": "菌根小徑",
+          "abandoned_work_shacks": "廢棄工棚",
+          "factory_area": "工業區",
+          "maintenance_corridor": "檢修通道",
+          "dam_hollow": "壩體空腔",
+          "turbine_room": "輪機室",
+          "giant_hyphal_system": "巨大根系"
+        }
       }
     }
   },

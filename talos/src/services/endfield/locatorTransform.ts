@@ -105,6 +105,7 @@ const MAP_ID_TO_REGION_KEY: Record<string, string> = {
 
 const SCENE_ID_TO_SUBREGION_KEY: Record<string, string> = {
     map02_lv010: 'WL_10',
+    map02_lv011: 'WL_11',
     indie_dg005: 'WL_2',
     indie_dg007: 'WL_4',
     indie_dg016: 'WL_16',

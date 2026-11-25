@@ -308,6 +308,25 @@
           "physical_training_field": "Sân Rèn Luyện Thể Chất",
           "blight_monitoring_zone": "Khu Giám Sát Nhiễm Khuẩn"
         }
+      },
+      "OD": {
+        "name": "Đập Nước Cũ",
+        "short": "ĐNC",
+        "site": {
+          "control_room": "Phòng Điều Khiển",
+          "dam_exterior": "Bên Ngoài Đập Nước",
+          "old_offices": "Văn Phòng Cũ",
+          "construction_floor": "Tầng Thi Công",
+          "testing_floor": "Tầng Kiểm Tra",
+          "spillway_floor": "Tầng Xả Lũ",
+          "hyphae_trail": "Đường Mòn Rễ Nấm",
+          "abandoned_work_shacks": "Lán Công Nhân Bỏ Hoang",
+          "factory_area": "Khu Vực Nhà Máy",
+          "maintenance_corridor": "Hành Lang Bảo Trì",
+          "dam_hollow": "Khoang Đập",
+          "turbine_room": "Phòng Tuabin",
+          "giant_hyphal_system": "Hệ Thống Rễ Nấm Khổng Lồ"
+        }
       }
     }
   },

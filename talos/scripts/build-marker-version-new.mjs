@@ -13,12 +13,12 @@ const typePath = path.join(markerRoot, 'type.json');
 
 const VERSION_NEW_BUILD_CONFIG = {
   snapshot: {
-    version: '1.5',
-    source: '1.5',
+    version: '1.7',
+    source: 'current',
   },
-  from: '1.5',
+  from: '1.6',
   to: 'current',
-  toLabel: '1.6',
+  toLabel: '1.7',
   include: [
     'collection.*',
     'exploration.*',

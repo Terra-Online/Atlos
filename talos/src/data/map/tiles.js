@@ -1,7 +1,7 @@
 /** Logical CSS pixels per tile, independent of the image's encoded dimensions. */
 export const TILE_SIZE = 200;
 
-export const LAYER_ORDER = /** @type {const} */ (['L4', 'L3', 'L2', 'L1', 'M', 'B1', 'B2', 'B3', 'B4']);
+export const LAYER_ORDER = /** @type {const} */ (['L6', 'L5', 'L4', 'L3', 'L2', 'L1', 'M', 'B1', 'B2', 'B3', 'B4']);
 
 /** @typedef {{ zooms: Record<string, Record<string, Record<string, number[]>>> }} Coverage */
 

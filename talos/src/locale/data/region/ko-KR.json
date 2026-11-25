@@ -308,6 +308,25 @@
           "physical_training_field": "체력 훈련장",
           "blight_monitoring_zone": "침식 관제 구역"
         }
+      },
+      "OD": {
+        "name": "옛 댐",
+        "short": "OD",
+        "site": {
+          "control_room": "제어실",
+          "dam_exterior": "댐 외부",
+          "old_offices": "옛 사무 구역",
+          "construction_floor": "건설층",
+          "testing_floor": "실험층",
+          "spillway_floor": "배수층",
+          "hyphae_trail": "버섯 오솔길",
+          "abandoned_work_shacks": "폐기된 작업장",
+          "factory_area": "공업 구역",
+          "maintenance_corridor": "점검 통로",
+          "dam_hollow": "댐 내부 공동",
+          "turbine_room": "터빈실",
+          "giant_hyphal_system": "거대한 뿌리"
+        }
       }
     }
   },

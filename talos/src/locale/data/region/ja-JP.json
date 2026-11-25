@@ -308,6 +308,25 @@
           "physical_training_field": "トレーニング場",
           "blight_monitoring_zone": "侵蝕監視区域"
         }
+      },
+      "OD": {
+        "name": "廃ダム",
+        "short": "廃",
+        "site": {
+          "control_room": "コントロール室",
+          "dam_exterior": "ダムのそと",
+          "old_offices": "ふるい事務室",
+          "construction_floor": "構造フロア",
+          "testing_floor": "実験フロア",
+          "spillway_floor": "排水フロア",
+          "hyphae_trail": "根っこのぬけ道",
+          "abandoned_work_shacks": "ボロボロの作業場",
+          "factory_area": "こうぎょう区画",
+          "maintenance_corridor": "ダムのうらぐち",
+          "dam_hollow": "ダムのふきぬけ",
+          "turbine_room": "タービン室",
+          "giant_hyphal_system": "大きな根っこ"
+        }
       }
     }
   },

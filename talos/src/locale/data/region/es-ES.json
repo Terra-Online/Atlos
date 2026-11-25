@@ -308,6 +308,25 @@
           "physical_training_field": "Campo de Entrenamiento físico",
           "blight_monitoring_zone": "Zona de monitoreo de la Plaga"
         }
+      },
+      "OD": {
+        "name": "Presa Antigua",
+        "short": "PA",
+        "site": {
+          "control_room": "Sala de control",
+          "dam_exterior": "Exterior de la presa",
+          "old_offices": "Oficinas antiguas",
+          "construction_floor": "Planta de construcción",
+          "testing_floor": "Planta de pruebas",
+          "spillway_floor": "Planta del aliviadero",
+          "hyphae_trail": "Sendero de Hifas",
+          "abandoned_work_shacks": "Cobertizos de trabajo abandonados",
+          "factory_area": "Área de la fábrica",
+          "maintenance_corridor": "Pasillo de mantenimiento",
+          "dam_hollow": "Hueco de la presa",
+          "turbine_room": "Sala de turbinas",
+          "giant_hyphal_system": "Sistema Hifal Gigante"
+        }
       }
     }
   },

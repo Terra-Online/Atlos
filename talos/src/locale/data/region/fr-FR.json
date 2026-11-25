@@ -308,6 +308,25 @@
           "physical_training_field": "Terrain d'entraînement physique",
           "blight_monitoring_zone": "Zone de surveillance de la Gangrène"
         }
+      },
+      "OD": {
+        "name": "Ancien barrage",
+        "short": "AB",
+        "site": {
+          "control_room": "Salle de contrôle",
+          "dam_exterior": "Extérieur du barrage",
+          "old_offices": "Anciens bureaux",
+          "construction_floor": "Étage de construction",
+          "testing_floor": "Étage de test",
+          "spillway_floor": "Étage du déversoir",
+          "hyphae_trail": "Sentier des hyphes",
+          "abandoned_work_shacks": "Baraquements abandonnés",
+          "factory_area": "Zone industrielle",
+          "maintenance_corridor": "Couloir de maintenance",
+          "dam_hollow": "Cavité du barrage",
+          "turbine_room": "Salle des turbines",
+          "giant_hyphal_system": "Système hyphal géant"
+        }
       }
     }
   },

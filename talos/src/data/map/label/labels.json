@@ -1469,6 +1469,159 @@
             11134.727000888866,
             5252.020943486368
           ]
+        },
+        "WL/OD": {
+          "id": "WL/OD",
+          "type": "sub",
+          "region": "WL",
+          "sub": "OD",
+          "point": [
+            2038.182,
+            13587.204
+          ]
+        },
+        "WL/OD/control_room": {
+          "id": "WL/OD/control_room",
+          "type": "site",
+          "region": "WL",
+          "sub": "OD",
+          "site": "control_room",
+          "point": [
+            1608.036,
+            13692.318
+          ]
+        },
+        "WL/OD/dam_exterior": {
+          "id": "WL/OD/dam_exterior",
+          "type": "site",
+          "region": "WL",
+          "sub": "OD",
+          "site": "dam_exterior",
+          "point": [
+            1508.666,
+            13461.882
+          ]
+        },
+        "WL/OD/old_offices": {
+          "id": "WL/OD/old_offices",
+          "type": "site",
+          "region": "WL",
+          "sub": "OD",
+          "site": "old_offices",
+          "point": [
+            1593.251,
+            14148.262
+          ]
+        },
+        "WL/OD/construction_floor": {
+          "id": "WL/OD/construction_floor",
+          "type": "site",
+          "region": "WL",
+          "sub": "OD",
+          "site": "construction_floor",
+          "point": [
+            2280.324,
+            13646.492
+          ]
+        },
+        "WL/OD/testing_floor": {
+          "id": "WL/OD/testing_floor",
+          "type": "site",
+          "region": "WL",
+          "sub": "OD",
+          "site": "testing_floor",
+          "point": [
+            1216.219,
+            13645.115
+          ]
+        },
+        "WL/OD/spillway_floor": {
+          "id": "WL/OD/spillway_floor",
+          "type": "site",
+          "region": "WL",
+          "sub": "OD",
+          "site": "spillway_floor",
+          "point": [
+            1279.654,
+            14021.425
+          ]
+        },
+        "WL/OD/hyphae_trail": {
+          "id": "WL/OD/hyphae_trail",
+          "type": "site",
+          "region": "WL",
+          "sub": "OD",
+          "site": "hyphae_trail",
+          "point": [
+            2690.45,
+            13265.234
+          ]
+        },
+        "WL/OD/abandoned_work_shacks": {
+          "id": "WL/OD/abandoned_work_shacks",
+          "type": "site",
+          "region": "WL",
+          "sub": "OD",
+          "site": "abandoned_work_shacks",
+          "point": [
+            2319.766,
+            12943.899
+          ]
+        },
+        "WL/OD/factory_area": {
+          "id": "WL/OD/factory_area",
+          "type": "site",
+          "region": "WL",
+          "sub": "OD",
+          "site": "factory_area",
+          "point": [
+            1764.459,
+            12986.903
+          ]
+        },
+        "WL/OD/maintenance_corridor": {
+          "id": "WL/OD/maintenance_corridor",
+          "type": "site",
+          "region": "WL",
+          "sub": "OD",
+          "site": "maintenance_corridor",
+          "point": [
+            2596.034,
+            13726.818
+          ]
+        },
+        "WL/OD/dam_hollow": {
+          "id": "WL/OD/dam_hollow",
+          "type": "site",
+          "region": "WL",
+          "sub": "OD",
+          "site": "dam_hollow",
+          "point": [
+            2288.083,
+            13903.004
+          ]
+        },
+        "WL/OD/turbine_room": {
+          "id": "WL/OD/turbine_room",
+          "type": "site",
+          "region": "WL",
+          "sub": "OD",
+          "site": "turbine_room",
+          "point": [
+            2137.988,
+            14110.192
+          ]
+        },
+        "WL/OD/giant_hyphal_system": {
+          "id": "WL/OD/giant_hyphal_system",
+          "type": "site",
+          "region": "WL",
+          "sub": "OD",
+          "site": "giant_hyphal_system",
+          "point": [
+            1932.911,
+            13866.37
+          ]
         }
       }
     },

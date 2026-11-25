@@ -308,6 +308,25 @@
           "physical_training_field": "สนาม​ฝึกฝน​ร่างกาย",
           "blight_monitoring_zone": "โซน​ตรวจวัด​ไบ​ล​ท์"
         }
+      },
+      "OD": {
+        "name": "เขื่อน​เก่า",
+        "short": "OD",
+        "site": {
+          "control_room": "ห้อง​ควบคุม",
+          "dam_exterior": "ด้านนอก​เขื่อน",
+          "old_offices": "สำนักงาน​เก่า",
+          "construction_floor": "ชั้น​ก่อสร้าง",
+          "testing_floor": "ชั้น​ทดสอบ",
+          "spillway_floor": "ชั้น​ทาง​ระบาย​น้ำ​ล้น",
+          "hyphae_trail": "เส้นทาง​เส้นใย​รา",
+          "abandoned_work_shacks": "กระท่อม​คนงาน​ร้าง",
+          "factory_area": "พื้นที่​โรงงาน",
+          "maintenance_corridor": "ทางเดิน​ซ่อมบำรุง",
+          "dam_hollow": "โพรง​ภายใน​เขื่อน",
+          "turbine_room": "ห้อง​กังหัน",
+          "giant_hyphal_system": "ระบบ​เส้นใย​รา​ขนาด​ยักษ์"
+        }
       }
     }
   },

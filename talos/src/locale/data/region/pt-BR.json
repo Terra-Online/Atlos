@@ -308,6 +308,25 @@
           "physical_training_field": "Campo de Treinamento Físico",
           "blight_monitoring_zone": "Zona de Monitoramento da Praga"
         }
+      },
+      "OD": {
+        "name": "Barragem Antiga",
+        "short": "AB",
+        "site": {
+          "control_room": "Sala de Controle",
+          "dam_exterior": "Exterior da Barragem",
+          "old_offices": "Escritórios Antigos",
+          "construction_floor": "Nível de Construção",
+          "testing_floor": "Nível de Testes",
+          "spillway_floor": "Nível do Vertedouro",
+          "hyphae_trail": "Trilha das Hifas",
+          "abandoned_work_shacks": "Barracões de Obra Abandonados",
+          "factory_area": "Área da Fábrica",
+          "maintenance_corridor": "Corredor de Manutenção",
+          "dam_hollow": "Galeria da Barragem",
+          "turbine_room": "Sala de Turbinas",
+          "giant_hyphal_system": "Sistema Hifal Gigante"
+        }
       }
     }
   },
