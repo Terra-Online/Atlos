@@ -353,6 +353,7 @@ export interface MarkerExportData {
   activePoints: string[];
   filter: string[];
   selectedPoints: string[];
+  activeArchives: string[];
 }
 
 interface LegacyMarkerExportData {
@@ -361,6 +362,7 @@ interface LegacyMarkerExportData {
   activePoints: (string | number)[];  // May contain numbers in old exports
   filter: string[];
   selectedPoints: (string | number)[];
+  activeArchives?: string[];
 }
 
 const formatDateTime = (): string => {
@@ -381,21 +383,25 @@ export const isValidMarkerExportData = (data: unknown): data is MarkerExportData
     typeof obj.version === 'number' &&
     Array.isArray(obj.activePoints) &&
     Array.isArray(obj.filter) &&
-    Array.isArray(obj.selectedPoints)
+    Array.isArray(obj.selectedPoints) &&
+    (obj.activeArchives === undefined || (Array.isArray(obj.activeArchives) &&
+      obj.activeArchives.every(id => typeof id === 'string' && id.trim() === id && id.length > 0)))
   );
 };
 
 export const exportMarkerData = (
   activePoints: string[],
   filter: string[],
-  selectedPoints: string[]
+  selectedPoints: string[],
+  activeArchives: string[],
 ): void => {
   const exportData: MarkerExportData = {
-    version: 3,
+    version: 4,
     timestamp: Date.now(),
     activePoints: activePoints.map(id => String(id)),
     filter,
     selectedPoints: selectedPoints.map(id => String(id)),
+    activeArchives,
   };
 
   const json = JSON.stringify(exportData, null, 2);
@@ -411,7 +417,7 @@ export const exportMarkerData = (
 export const importMarkerData = (
   content: string,
   callbacks: {
-    replacePoints: (ids: string[]) => void;
+    replacePoints: (ids: string[], archiveIds?: string[]) => void;
     setFilter: (filter: string[]) => void;
     setSelected: (id: string, value: boolean) => void;
     getActivePoints?: () => string[];
@@ -443,7 +449,7 @@ export const importMarkerData = (
 
     // Merge active points (add new ones, keep existing) as one external replacement.
     const existingActivePoints = callbacks.getActivePoints?.() ?? [];
-    callbacks.replacePoints([...existingActivePoints, ...effectiveActivePoints]);
+    callbacks.replacePoints([...existingActivePoints, ...effectiveActivePoints], data.activeArchives);
 
     // Merge filter (combine and deduplicate)
     if (callbacks.getFilter) {

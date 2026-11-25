@@ -76,9 +76,10 @@ it('passes raw storage ids from the real D3 tree into selected deletion and expo
     const clear = screen.getByRole('button', { name: 'common.clear MarkerFilter' });
     fireEvent.click(clear); act(() => { vi.advanceTimersByTime(800); }); fireEvent.click(clear);
     expect(api.clear).toHaveBeenCalledExactlyOnceWith(['marker-filter']);
-    useMarkerStore.setState({ filter: ['ore'], selectedPoints: ['point'] }); useUserRecordStore.setState({ activePoints: ['collected'] });
+    useMarkerStore.setState({ filter: ['ore'], selectedPoints: ['point'] });
+    useUserRecordStore.setState({ activePoints: ['collected'], activeArchives: ['nar_mission'] });
     fireEvent.click(screen.getByRole('button', { name: 'storage.export' }));
-    expect(api.export).toHaveBeenCalledExactlyOnceWith(['collected'], ['ore'], ['point']);
+    expect(api.export).toHaveBeenCalledExactlyOnceWith(['collected'], ['ore'], ['point'], ['nar_mission']);
 });
 
 it('keeps original URL ids and byte totals while navigating a nested storage tree', async () => {
@@ -104,14 +105,14 @@ it('keeps original URL ids and byte totals while navigating a nested storage tre
 it('reads import files and wires parsed data to the real progress and filter stores', async () => {
     mount(); await act(async () => { await Promise.resolve(); });
     api.import.mockImplementation((content: string, callbacks: {
-        replacePoints: (points: string[]) => void;
+        replacePoints: (points: string[], archives?: string[]) => void;
         setFilter: (filter: string[]) => void;
         setSelected: (id: string, value: boolean) => void;
         getActivePoints: () => string[];
         getFilter: () => string[];
     }) => {
         expect(content).toBe('{"source":"fixture"}');
-        callbacks.replacePoints(['restored']); callbacks.setFilter(['ore']); callbacks.setSelected('selected', true);
+        callbacks.replacePoints(['restored'], ['nar_shop']); callbacks.setFilter(['ore']); callbacks.setSelected('selected', true);
         expect(callbacks.getActivePoints()).toEqual(['restored']); expect(callbacks.getFilter()).toEqual(['ore']);
         // Parsing/merge confirmation is the transfer service boundary; no browser reload here.
         return false;
@@ -122,6 +123,7 @@ it('reads import files and wires parsed data to the real progress and filter sto
     fireEvent.change(input, { target: { files: [new File(['{"source":"fixture"}'], 'markers.json', { type: 'application/json' })] } });
     await waitFor(() => { expect(api.import).toHaveBeenCalledOnce(); }); expect(input.value).toBe('');
     expect(useMarkerStore.getState().selectedPoints).toContain('selected');
+    expect(useUserRecordStore.getState().activeArchives).toContain('nar_shop');
 });
 
 it('keeps the latest storage inventory when an earlier refresh finishes late', async () => {

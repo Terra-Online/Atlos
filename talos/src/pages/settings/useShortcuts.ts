@@ -70,9 +70,9 @@ export function useKeyboardShortcuts(
 
     // ── Export ──
     const handleExport = useCallback(() => {
-        const activePoints = useUserRecordStore.getState().activePoints;
+        const { activePoints, activeArchives } = useUserRecordStore.getState();
         const { filter, selectedPoints } = useMarkerStore.getState();
-        exportMarkerData(activePoints, filter, selectedPoints);
+        exportMarkerData(activePoints, filter, selectedPoints, activeArchives);
     }, []);
 
     useHotkeys(hotkeyFor('exportData'), (e) => {
