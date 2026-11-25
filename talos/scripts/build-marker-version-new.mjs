@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadEffectiveMarkers } from './marker-data.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
@@ -111,11 +112,6 @@ const markerMapToSnapshot = (version, source, markers) => ({
   markers: Array.from(markers.entries()).sort(([a], [b]) => a.localeCompare(b)),
 });
 
-const resolveSourceDirectory = (source) => {
-  if (source === 'current') return dataDir;
-  return path.join(dataDir, source);
-};
-
 const snapshotPathFor = (version) => path.join(logDir, `${version}.snapshot.json`);
 
 const readSnapshotByVersion = (version) => {
@@ -125,12 +121,13 @@ const readSnapshotByVersion = (version) => {
 };
 
 const loadRef = (ref) => {
+  if (ref === 'current') return effectiveMarkerMap;
   const snapshot = readSnapshotByVersion(ref);
   if (snapshot) {
     return snapshot;
   }
 
-  const sourceDir = resolveSourceDirectory(ref);
+  const sourceDir = path.join(dataDir, ref);
   if (fs.existsSync(sourceDir) && fs.statSync(sourceDir).isDirectory()) {
     return readMarkerDirectory(sourceDir);
   }
@@ -147,6 +144,8 @@ const ensureSnapshot = ({ version, source }) => {
 };
 
 const typeDict = readJson(typePath);
+const effectiveMarkerMap = new Map((await loadEffectiveMarkers({ typeMap: typeDict }))
+  .map(({ id, type }) => [id, type]));
 if (VERSION_NEW_BUILD_CONFIG.snapshot) {
   ensureSnapshot(VERSION_NEW_BUILD_CONFIG.snapshot);
 }
