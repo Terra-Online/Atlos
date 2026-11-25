@@ -121,6 +121,14 @@ Do not merge incompatible state variants or invent player area masks. Every
 source export must identify the same build. Retaining an already verified local
 dataset is preferable to regenerating it with guessed settings.
 
+For Old Dam, export `traversal-devices map02` alongside the navigation data. The
+completed traversal snapshot disables authored Old Dam air walls and opens the
+controllable gates. Bounce mushrooms use their authored aims and solid cap contact
+points. Manual rail platforms use their authored splines and instance speeds.
+Rainbow bridges use a smooth deck fitted to the rails of the active effect mesh.
+The game generates rainbow bridge collision at runtime, so the fitted deck is a
+phase-free route model. Other scene collision and reset volumes still apply.
+
 World creates physical ground and route caches on demand with `WORLD_GAME_CONFIG`.
 Offline `player-ground` and camera-view precomputation are optional; consult generated
 `talos/.cache/noclip/docs/navigation.md` for those commands.

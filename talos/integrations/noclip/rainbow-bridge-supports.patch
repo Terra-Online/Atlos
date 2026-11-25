@@ -1,0 +1,198 @@
+diff --git a/packages/extractor/src/commands/player-ground.ts b/packages/extractor/src/commands/player-ground.ts
+index 37f30e85..a2bec12a 100644
+--- a/packages/extractor/src/commands/player-ground.ts
++++ b/packages/extractor/src/commands/player-ground.ts
+@@ -307,7 +307,7 @@ export const buildPlayerGround = async (
+ 				for (const value of support.positions) geometry.positions.push(value);
+ 				for (const index of support.indices) geometry.indices.push(base + index);
+ 				geometry.records.push({
+-					id: Number(support.id),
++					id: Number(support.sourceId ?? support.id),
+ 					component: 0,
+ 					index: 0,
+ 					kind: 'mesh',
+diff --git a/packages/extractor/src/game/rainbow-bridge-support.ts b/packages/extractor/src/game/rainbow-bridge-support.ts
+new file mode 100644
+index 00000000..3becf1b4
+--- /dev/null
++++ b/packages/extractor/src/game/rainbow-bridge-support.ts
+@@ -0,0 +1,105 @@
++import { UnityClass } from '@endfield-noclip/formats/unity/serialized-file';
++import { transformPoint } from '@endfield-noclip/formats/unity/transform';
++
++import type { Vec3 } from '@opendfieldmap/ganglia';
++
++import type { Context } from '../context.ts';
++
++import { loadMesh } from './assets/asset-decode.ts';
++import { readPrefabRenderers } from './prefabs/prefab.ts';
++
++const effectRoot = 'Assets/Beyond/DynamicAssets/Gameplay/Effects/Prefabs';
++const effectMesh = 's_fx_ch_qiao_03';
++
++const spanFor = (template: string): 15 | 25 | 35 | null => {
++	switch (template) {
++		case 'int_rainbow_mushroom':
++			return 15;
++		case 'int_rainbow_mushroom_25m':
++			return 25;
++		case 'int_rainbow_mushroom_35m':
++			return 35;
++		default:
++			return null;
++	}
++};
++
++/**
++ * Models the passable completed-state ribbon between the effect mesh's two upper rails. The game generates
++ * its collision at runtime. The authored effect supplies width, height and orientation for this phase-free
++ * route model. Ordinary body/obstacle sweeps still apply.
++ */
++export const rainbowBridgeRibbon = (vertices: readonly Vec3[]) => {
++	const sections = new Map<number, { x: number; y: number; low: number; high: number }>();
++	for (const [x, y, z] of vertices) {
++		const key = Math.round(x * 4);
++		const previous = sections.get(key);
++		if (previous) {
++			previous.y = Math.max(previous.y, y);
++			previous.low = Math.min(previous.low, z);
++			previous.high = Math.max(previous.high, z);
++		} else {
++			sections.set(key, { x, y, low: z, high: z });
++		}
++	}
++	const pairs = [...sections.values()]
++		.filter(({ low, high }) => high - low > 1)
++		.toSorted((a, b) => a.x - b.x);
++	if (pairs.length < 5) {
++		throw new Error('rainbow bridge effect has no paired deck rails');
++	}
++	const start = pairs[0],
++		end = pairs.at(-1)!;
++	const rise = Math.max(...pairs.map((pair) => pair.y)) - (start.y + end.y) / 2;
++	const positions: Vec3[] = [];
++	const indices: number[] = [];
++	for (const { x, low, high } of pairs) {
++		const t = (x - start.x) / (end.x - start.x);
++		const y = start.y + (end.y - start.y) * t + 4 * rise * t * (1 - t);
++		const next = positions.length;
++		positions.push([x, y, low], [x, y, high]);
++		if (next > 0) indices.push(next - 2, next - 1, next + 1, next - 2, next + 1, next);
++	}
++	return { positions, indices };
++};
++
++const load = async (context: Context, length: 15 | 25 | 35) => {
++	const path = `${effectRoot}/P_fxint_l_map02_lv011_rainbowbridge_${length}m_801.prefab`;
++	const [hash] = await context.world.hashesOf(path);
++	if (hash === undefined) {
++		throw new Error(`missing Old Dam rainbow bridge effect: ${path}`);
++	}
++	const resolver = await context.resolver();
++	const root = await resolver.findUnique({ hash, path }, UnityClass.GameObject);
++	const draws = await readPrefabRenderers(resolver, root, {
++		viewPose: null,
++		particleQuad: null,
++		decalCube: null,
++		locked: false,
++		effectLod: 'camera',
++	});
++	for (const draw of draws) {
++		if ((await draw.mesh.file.peekName(draw.mesh.info)) !== effectMesh) continue;
++		const mesh = await loadMesh(resolver, draw.mesh);
++		const vertices = Array.from(
++			{ length: mesh.positions.length / 3 },
++			(_, i) =>
++				transformPoint(draw.matrix, [
++					mesh.positions[3 * i],
++					mesh.positions[3 * i + 1],
++					mesh.positions[3 * i + 2],
++				]) as Vec3,
++		);
++		return { path, hash: String(hash), ...rainbowBridgeRibbon(vertices) };
++	}
++	throw new Error(`missing authored rainbow bridge rails: ${path}`);
++};
++
++/** @param context source game build @returns a cache of the three supported Old Dam bridge effect meshes */
++export const rainbowBridgeDecks = (context: Context) => {
++	const models = new Map<number, ReturnType<typeof load>>();
++	return (template: string) => {
++		const span = spanFor(template);
++		return span === null ? null : models.getOrInsertComputed(span, () => load(context, span));
++	};
++};
+diff --git a/packages/extractor/src/game/static-supports.ts b/packages/extractor/src/game/static-supports.ts
+index ee55a1f9..ad481dbb 100644
+--- a/packages/extractor/src/game/static-supports.ts
++++ b/packages/extractor/src/game/static-supports.ts
+@@ -17,6 +17,7 @@ import { loadDynamicStructures, type StructureModel } from './dynamic/dynamic-st
+ import { loadInteractiveFacilities } from './interactives/interactive-facilities.ts';
+ import { readPrefabSupport } from './prefab-support.ts';
+ import type { PrefabPose } from './prefabs/prefab.ts';
++import { rainbowBridgeDecks } from './rainbow-bridge-support.ts';
+ import { GameState, type MapVariables } from './state/game-state.ts';
+ import { loadMapVariables, loadSceneStates, defaultSceneStates } from './state/scene-conditions.ts';
+ import type { DraftControl, Visibility } from './state/scene-control.ts';
+@@ -32,6 +33,7 @@ type Motion = {
+ 	frames: { time: number; transforms: [number, unknown][] }[];
+ };
+ type Support = {
++	sourceId?: string;
+ 	id: string;
+ 	level: string;
+ 	template: string;
+@@ -594,5 +596,53 @@ export const collectStaticSupports = async (ctx: Context, scene: string, knownId
+ 			});
+ 		}
+ 	}
++	const bridgeDeck = rainbowBridgeDecks(ctx);
++	for (const [owner, { row, level, source }] of rows) {
++		if (level !== 'map02_lv011' || !row.template.startsWith('int_rainbow_mushroom')) continue;
++		const id = `rainbow-bridge/${owner}`;
++		try {
++			const deck = await bridgeDeck(row.template);
++			if (!deck) continue;
++			const scale = row.scale.map((value) => value * (row.modelScale > 0 ? row.modelScale : 1));
++			const transform = trsMatrix(row.position, unityEulerQuaternion(row.rotation), scale);
++			const pose = 'connected-effect-deck';
++			supports.set(id, {
++				sourceId: owner,
++				id,
++				level,
++				template: row.template,
++				source,
++				model: deck.path,
++				pose,
++				positions: deck.positions.flatMap((point) => transformPoint(transform, point)),
++				indices: deck.indices,
++				parts: [
++					{
++						model: { pathHash: deck.hash, position: row.position, rotation: row.rotation, scale },
++						path: deck.path,
++						pose,
++						source,
++						motion: [],
++					},
++				],
++				motion: 'fixed-terminal-pose',
++			});
++			objects.push({
++				id,
++				level,
++				template: row.template,
++				source,
++				owners: [owner],
++				category: 'bridge-deck',
++				status: 'exported',
++			});
++		} catch (error) {
++			unsupported.push({
++				id,
++				template: row.template,
++				reason: error instanceof Error ? error.message : String(error),
++			});
++		}
++	}
+ 	return { supports: [...supports.values()], circularSupports: [...circular.values()], objects, unsupported };
+ };
