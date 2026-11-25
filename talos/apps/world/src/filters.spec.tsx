@@ -36,7 +36,7 @@ it('puts game looks in Filters and keeps renderer controls in Display with the h
         get stateRevision() {
             return revision;
         },
-        subscribe: (listener: () => void) => {
+        subscribe: (_topic: Parameters<Viewer['subscribe']>[0], listener: () => void) => {
             listeners.add(listener);
             return () => listeners.delete(listener);
         },

@@ -1,16 +1,176 @@
 diff --git a/packages/extractor/src/commands/traversal-devices.ts b/packages/extractor/src/commands/traversal-devices.ts
-index caa6985e..b0cd80f1 100644
---- a/packages/extractor/src/commands/traversal-devices.ts
+new file mode 100644
+index 00000000..ff7a776a
+--- /dev/null
 +++ b/packages/extractor/src/commands/traversal-devices.ts
-@@ -148,7 +148,7 @@ export const run = async (args: string[]): Promise<void> => {
- 				},
- 				devices,
- 				conveyors,
--				movingSupports: moving.supports,
+@@ -0,0 +1,167 @@
++/* oxlint-disable no-await-in-loop -- decode and release level files, caching each small template once */
++import { writeFile } from 'node:fs/promises';
++import { parseArgs } from 'node:util';
++
++import { readInteractiveTable } from '@endfield-noclip/formats/endfield/interactive-model';
++import { isObject } from '@endfield-noclip/formats/unity/values';
++
++import { withContext } from '../context.ts';
++import { groundGeneratorIdentity } from '../game/ground-tile-cache.ts';
++import { collectRaftTransports } from '../game/raft-transports.ts';
++import { collectStaticSupports } from '../game/static-supports.ts';
++import { collectMovingSupports } from '../game/moving-supports.ts';
++import { ropePairs, traversalDevice } from '../game/traversal-devices.ts';
++import { VfsGroup } from '../hg/vfs.ts';
++
++export const summary = 'export rope references, movement-device parameters and conveyor authoring';
++export const usage = 'usage: endfield-extract traversal-devices <scene> -o <file> --config <config>';
++
++/** @param args scene, output and install config @returns after exporting build-bound device inputs */
++export const run = async (args: string[]): Promise<void> => {
++	const { values, positionals } = parseArgs({
++		args,
++		allowPositionals: true,
++		options: { output: { type: 'string', short: 'o' }, config: { type: 'string' } },
++	});
++	if (positionals.length !== 1 || !values.output) {
++		throw new Error(usage);
++	}
++	const scene = positionals[0];
++	await withContext(values.config, async (ctx) => {
++		const read = async (path: string) => {
++			const file = await ctx.vfs.find(VfsGroup.JsonData, path);
++			if (!file) {
++				throw new Error(`missing ${path}`);
++			}
++			return file.readVerified();
++		};
++		const pool = await ctx.world.stringPool(),
++			reader = await ctx.memoryPack();
++		const table = readInteractiveTable(await read('Data/Json/Interactive/InteractiveTable.json'), (id) =>
++			pool.get(id),
++		);
++		const paths = await ctx.world.pathLookup();
++		const levels = [...(await ctx.world.levelConfigs()).values()].filter((level) => level.mapId === scene);
++		if (levels.length === 0) {
++			throw new Error(`unknown scene ${scene}`);
++		}
++		const devices = [],
++			templates = new Map<string, unknown>();
++		let files = 0,
++			autoSpawnedReferences = 0;
++		for (const level of levels) {
++			for (const hash of level.levelDataPathHashes ?? []) {
++				const path = paths(hash);
++				if (!path) {
++					throw new Error('missing level path');
++				}
++				const data = reader.decode(await read(path), 'Beyond_Gameplay_LevelDataForMemoryPack');
++				if (
++					!isObject(data) ||
++					!Array.isArray(data.interactives) ||
++					!Array.isArray(data.autoSpawnedInteractives)
++				) {
++					throw new Error('invalid level interactives');
++				}
++				files++;
++				autoSpawnedReferences += data.autoSpawnedInteractives.length;
++				const spawned = new Set<string>();
++				for (const id of data.autoSpawnedInteractives) {
++					if (typeof id !== 'string' || !/^[1-9]\d*$/.test(id)) {
++						throw new Error('invalid automatic spawn reference');
++					}
++					spawned.add(id);
++				}
++				for (const row of data.interactives) {
++					const device = traversalDevice(row, level.id);
++					if (!device) {
++						continue;
++					}
++					devices.push({ ...device, source: path, autoSpawned: spawned.has(device.id) });
++					if (!templates.has(device.template)) {
++						const templateId = table.templates.get(device.template);
++						const templatePath = templateId === undefined ? undefined : table.templatePaths.get(templateId);
++						if (!templatePath) {
++							throw new Error(`missing device template ${device.template}`);
++						}
++						const template = reader.decode(
++							await read(templatePath),
++							'Beyond_Gameplay_InteractiveTemplateDataForMemoryPack',
++						);
++						if (!isObject(template) || !Array.isArray(template.componentList)) {
++							throw new Error('invalid device template');
++						}
++						const components = [];
++						for (const component of template.componentList) {
++							if (isObject(component) && Array.isArray(component.propertyList)) {
++								components.push({ type: component.$type, properties: component.propertyList });
++							}
++						}
++						templates.set(device.template, {
++							source: templatePath,
++							config: template.configProperties,
++							saved: template.saveProperties,
++							temporary: template.tempProperties,
++							variants: template.templateVariant,
++							components,
++						});
++					}
++				}
++			}
++		}
++		const ropes = ropePairs(devices),
++			build = await ctx.world.manifest();
++		const conveyors = (await ctx.world.dynamicEntities(scene)).flatMap((entity) => {
++			const conveyor = entity.conveyor;
++			if (!conveyor) {
++				return [];
++			}
++			return [
++				{
++					id: entity.uid?.toString() ?? null,
++					grid: entity.grid,
++					...conveyor,
++					...(conveyor.kind === 'group' ? {} : { group: conveyor.group.toString() }),
++					resources: entity.resourceGroups,
++					gates: entity.gates,
++					motionValidation: 'unresolved',
++				},
++			];
++		});
++		const moving = await collectMovingSupports(ctx, scene);
++		const structures = await collectStaticSupports(ctx, scene, new Set([...moving.supports, ...moving.following, ...moving.staticSupports].map(value => value.id)));
++		const rafts = await collectRaftTransports(ctx, scene);
++		await writeFile(
++			values.output!,
++			JSON.stringify({
++				version: 1,
++				exportRevision: 2,
++				generator: await groundGeneratorIdentity(),
++				scene,
++				source: { buildGuid: build.guid, contentHash: build.contentHash },
++				coverage: {
++					levels: levels.length,
++					files,
++					autoSpawnedReferences,
++					scope: 'authored-interactives',
++					conveyorRecords: conveyors.length,
++				},
++				devices,
++				conveyors,
 +				movingSupports: [...moving.supports, ...structures.circularSupports],
- 				transports: rafts.transports,
- 				unsupportedTransports: rafts.unsupported,
- 				staticSupports: [...moving.staticSupports, ...structures.supports],
++				transports: rafts.transports,
++				unsupportedTransports: rafts.unsupported,
++				staticSupports: [...moving.staticSupports, ...structures.supports],
++				structuralObjects: structures.objects,
++				unsupportedStructures: structures.unsupported,
++				followingSupports: moving.following,
++				unsupportedMovingSupports: moving.unsupported,
++				templates: Object.fromEntries(templates),
++				ropes,
++			}),
++		);
++		console.log(
++			`${devices.length} devices, ${ropes.pairs.length} reciprocal rope pairs, ${ropes.unpaired.length} unpaired rope endpoints, ${conveyors.length} conveyor records, ${moving.supports.length} moving supports`,
++		);
++	});
++};
 diff --git a/packages/extractor/src/game/circular-rotations.test.ts b/packages/extractor/src/game/circular-rotations.test.ts
 new file mode 100644
 index 00000000..5e5f8b29
@@ -125,40 +285,97 @@ index 00000000..8a175c87
 +    return result;
 +}
 diff --git a/packages/extractor/src/game/following-supports.test.ts b/packages/extractor/src/game/following-supports.test.ts
-index 52745255..50223102 100644
---- a/packages/extractor/src/game/following-supports.test.ts
+new file mode 100644
+index 00000000..50223102
+--- /dev/null
 +++ b/packages/extractor/src/game/following-supports.test.ts
-@@ -6,6 +6,8 @@ import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-p
- 
- import type { Vec3 } from '@opendfieldmap/ganglia';
- 
+@@ -0,0 +1,105 @@
++import assert from 'node:assert/strict';
++import { test } from 'node:test';
++
++import type { LevelInteractive } from '@endfield-noclip/formats/endfield/level-interactives';
++import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
++
++import type { Vec3 } from '@opendfieldmap/ganglia';
++
 +import { collisionBox } from './collision-ground.ts';
 +import { transformPoint, trsMatrix, unityEulerQuaternion } from '@endfield-noclip/formats/unity/transform';
- import { followingSupport, isFollowingBox } from './following-supports.ts';
- 
- const bits = (v: number) => {
-@@ -37,7 +39,7 @@ const row = {
- 	componentProperties: new Map(),
- } as unknown as LevelInteractive;
- const bodies: Vec3[][] = [
--	Array.from({ length: 8 }, (_, i) => [10 + (i & 1 ? 1 : -1), i & 2 ? 2 : 0, 20 + (i & 4 ? 1 : -1)]),
++import { followingSupport, isFollowingBox } from './following-supports.ts';
++
++const bits = (v: number) => {
++	const data = new DataView(new ArrayBuffer(4));
++	data.setFloat32(0, v);
++	return String(data.getUint32(0));
++};
++const param = (key: string, values: number[], type = 5) => ({
++	key,
++	value: {
++		type,
++		valueArray: values.map((v) => ({ valueBit64: type === 3 ? String(v) : bits(v), valueString: null })),
++	},
++});
++const template = (): MemoryPackValue => ({
++	componentList: [
++		{
++			$type: '_InteractiveLogicControllerComponentDataForMemoryPack',
++			propertyList: [param('logic_type', [12], 3)],
++		},
++	],
++	configProperties: [param('box_max_distance', [65]), param('end_pos', [100, 2, 300], 11)],
++	saveProperties: [param('state', [0], 3)],
++});
++const row = {
++	template: 'box',
++	position: [10, 0, 20],
++	properties: [],
++	componentProperties: new Map(),
++} as unknown as LevelInteractive;
++const bodies: Vec3[][] = [
 +	collisionBox([1, 1, 1]).vertices.map((p): Vec3 => [p[0]+10,p[1]+1,p[2]+20]),
- ];
- 
- test('sources retain the authored activity range and actual solid without a transport state space', () => {
-@@ -45,7 +47,7 @@ test('sources retain the authored activity range and actual solid without a tran
- 	assert.equal(isFollowingBox(template(), row), true);
- 	assert.deepEqual(data.spawn, row.position);
- 	assert.equal(data.maxDistance, 65);
--	assert.deepEqual(data.bodies, bodies);
++];
++
++test('sources retain the authored activity range and actual solid without a transport state space', () => {
++	const data = followingSupport('x', 'level', 'model', template(), row, bodies, 'box');
++	assert.equal(isFollowingBox(template(), row), true);
++	assert.deepEqual(data.spawn, row.position);
++	assert.equal(data.maxDistance, 65);
 +	assert.deepEqual(data.bodies[0], [0,1,3,2,4,5,7,6].map(i=>bodies[0][i]));
- 	assert.equal(data.assumption, 'placement-within-activity-range');
- 	assert.equal('surfaces' in data, false);
- 	assert.equal('activation' in data, false);
-@@ -82,3 +84,22 @@ test('controller declaration is a fallback, while effective placement properties
- 	} as LevelInteractive;
- 	assert.equal(isFollowingBox(source, changed), false);
- });
++	assert.equal(data.assumption, 'placement-within-activity-range');
++	assert.equal('surfaces' in data, false);
++	assert.equal('activation' in data, false);
++	assert.equal('movement' in data, false);
++});
++
++test('saved state restores the activity centre once without granting a separate free endpoint', () => {
++	const saved = template() as Record<string, MemoryPackValue>;
++	saved.saveProperties = [param('state', [1], 3)];
++	const data = followingSupport('x', 'level', 'model', saved, row, bodies, 'box');
++	assert.deepEqual(data.spawn, [100, 2, 300]);
++	assert.deepEqual(data.bodies[0][0], [99, 2, 299]);
++	assert.deepEqual(bodies[0][0], [9, 0, 19]);
++});
++
++test('invalid activity ranges and solids do not grant placements', () => {
++	const invalid = template() as Record<string, MemoryPackValue>;
++	invalid.configProperties = [param('box_max_distance', [-1])];
++	assert.throws(() => followingSupport('x', 'level', 'model', invalid, row, bodies, 'box'), /activity range/);
++	assert.throws(() => followingSupport('x', 'level', 'model', template(), row, [], 'box'), /solid geometry/);
++});
++
++test('controller declaration is a fallback, while effective placement properties take precedence', () => {
++	const source = template() as Record<string, MemoryPackValue>;
++	source.componentList = [
++		{ $type: '_InteractiveLogicControllerComponentDataForMemoryPack', logicType: 12, propertyList: [] },
++	];
++	assert.equal(isFollowingBox(source, row), true);
++	const changed = {
++		...row,
++		componentProperties: new Map([
++			[29, [{ key: 'logic_type', type: 3, values: [{ bits: 24n, text: null }] }]],
++		]),
++	} as LevelInteractive;
++	assert.equal(isFollowingBox(source, changed), false);
++});
 +
 +
 +test('rotated mirrored multiple BoxColliders preserve coordinates with bit-indexed edge axes', () => {
@@ -179,222 +396,115 @@ index 52745255..50223102 100644
 +    assert.equal(convex.geometryKind,'convex');assert.deepEqual(convex.bodies,source);
 +});
 diff --git a/packages/extractor/src/game/following-supports.ts b/packages/extractor/src/game/following-supports.ts
-index d8783c2e..dc4931a4 100644
---- a/packages/extractor/src/game/following-supports.ts
+new file mode 100644
+index 00000000..dc4931a4
+--- /dev/null
 +++ b/packages/extractor/src/game/following-supports.ts
-@@ -43,7 +43,7 @@ export const isFollowingBox = (template: MemoryPackValue, row: LevelInteractive)
-  * @param model source model
-  * @param template decoded effective interactive template
-  * @param row placed box
-- * @param bodies solid collider vertices at the authored placement in world space
+@@ -0,0 +1,107 @@
++import type { LevelInteractive } from '@endfield-noclip/formats/endfield/level-interactives';
++import type { MemoryPackValue } from '@endfield-noclip/formats/endfield/memory-pack';
++
++import type { Vec3 } from '@opendfieldmap/ganglia';
++
++import { componentOf, componentParams } from './interactives/component-params.ts';
++import { atomFloat, entityProperties, entityProperty, entityState } from './interactives/template-data.ts';
++
++/** One movable support with an authored activity range, independent of its transport choreography. */
++export interface FollowingSupport {
++	id: string;
++	level: string;
++	model: string;
++	spawn: Vec3;
++	bodies: Vec3[][];
++	geometryKind: 'box' | 'convex';
++	/** Three-dimensional distance from the restored spawn, not an arbitrary endpoint. */
++	maxDistance: number;
++	initialState: number;
++	assumption: 'placement-within-activity-range';
++}
++
++/**
++ * @param template decoded template with placement and variant overrides
++ * @param row placed interactive
++ * @returns whether the effective controller belongs to the following-box family
++ */
++export const isFollowingBox = (template: MemoryPackValue, row: LevelInteractive): boolean => {
++	const suffix = '_InteractiveLogicControllerComponentDataForMemoryPack';
++	const logic = componentParams(template, row, {
++		suffix,
++		diffKey: 'Comp_InteractiveLogicController',
++		type: 29,
++	})?.get('logic_type');
++	return logic === undefined
++		? componentOf(template, suffix)?.logicType === 12
++		: logic.type === 3 && logic.values.length === 1 && logic.values[0].bits === 12n;
++};
++
++/**
++ * @param id source identity
++ * @param level owning level
++ * @param model source model
++ * @param template decoded effective interactive template
++ * @param row placed box
 + * @param bodies solid collider vertices at the authored placement in world space; boxes retain collisionBox face-ring order
-  * @param geometryKind decoded solid provenance
-  * @returns an activity-range source; the solver must still validate each stationary placement
-  * @throws on invalid collision geometry, saved state or activity range
-@@ -81,7 +81,7 @@ export const followingSupport = (
- 	if (
- 		!spawn.every(Number.isFinite) ||
- 		!bodies.length ||
--		bodies.some((body) => body.length < 8 || body.some((p) => p.length !== 3 || !p.every(Number.isFinite)))
++ * @param geometryKind decoded solid provenance
++ * @returns an activity-range source; the solver must still validate each stationary placement
++ * @throws on invalid collision geometry, saved state or activity range
++ */
++export const followingSupport = (
++	id: string,
++	level: string,
++	model: string,
++	template: MemoryPackValue,
++	row: LevelInteractive,
++	bodies: Vec3[][],
++	geometryKind: FollowingSupport['geometryKind'],
++): FollowingSupport => {
++	const entity = entityProperties(template);
++	if (!entity || !isFollowingBox(template, row)) {
++		throw new Error('following box controller unresolved');
++	}
++	const distance = entityProperty(entity, row, 'box_max_distance');
++	const maxDistance = distance?.length === 1 ? atomFloat(distance[0].bits) : NaN;
++	if (!Number.isFinite(maxDistance) || maxDistance <= 0) {
++		throw new Error('invalid following box activity range');
++	}
++	const initialState = entityState(entity, row);
++	if (initialState !== 0 && initialState !== 1) {
++		throw new Error('following box saved state unresolved');
++	}
++	let spawn: Vec3 = [...row.position];
++	if (initialState === 1) {
++		const values = entityProperty(entity, row, 'end_pos');
++		if (!values || values.length !== 3) {
++			throw new Error('following box restored position unresolved');
++		}
++		spawn = [atomFloat(values[0].bits), atomFloat(values[1].bits), atomFloat(values[2].bits)];
++	}
++	if (
++		!spawn.every(Number.isFinite) ||
++		!bodies.length ||
 +		bodies.some((body) => body.length < 8 || (geometryKind === 'box' && body.length !== 8) || body.some((p) => p.length !== 3 || !p.every(Number.isFinite)))
- 	) {
- 		throw new Error('following box solid geometry unresolved');
- 	}
-@@ -92,10 +92,12 @@ export const followingSupport = (
- 		spawn,
- 		geometryKind,
- 		bodies: bodies.map((body) =>
--			body.map((p): Vec3 => [
--				p[0] + spawn[0] - row.position[0],
--				p[1] + spawn[1] - row.position[1],
--				p[2] + spawn[2] - row.position[2],
++	) {
++		throw new Error('following box solid geometry unresolved');
++	}
++	return {
++		id,
++		level,
++		model,
++		spawn,
++		geometryKind,
++		bodies: bodies.map((body) =>
 +			// Only the following-box boundary needs bit-indexed corners. Preserve the
 +			// indexed mesh/ring order used by static and rotating collider exporters.
 +			(geometryKind === 'box' ? [0, 1, 3, 2, 4, 5, 7, 6].map(i => body[i]) : body).map((p): Vec3 => [
 +				p[0] + (spawn[0] - row.position[0]),
 +				p[1] + (spawn[1] - row.position[1]),
 +				p[2] + (spawn[2] - row.position[2]),
- 			]),
- 		),
- 		maxDistance,
-diff --git a/packages/extractor/src/game/ground-tile-cache.ts b/packages/extractor/src/game/ground-tile-cache.ts
-index 6f9e1d74..7a9e5900 100644
---- a/packages/extractor/src/game/ground-tile-cache.ts
-+++ b/packages/extractor/src/game/ground-tile-cache.ts
-@@ -31,8 +31,10 @@ export const groundGeneratorIdentity = async (
- 			'./collision-inputs.ts',
- 			'./collision-ground.ts',
- 			'./prefab-support.ts',
-+            './circular-rotations.ts',
- 			'./static-supports.ts',
- 			'./moving-supports.ts',
-+            './following-supports.ts',
- 			'./floor-supports.ts',
- 			'./prefabs/pose-paths.ts',
- 			'./assets/asset-decode.ts',
-diff --git a/packages/extractor/src/game/prefab-support.ts b/packages/extractor/src/game/prefab-support.ts
-index 273e89e1..6c260e04 100644
---- a/packages/extractor/src/game/prefab-support.ts
-+++ b/packages/extractor/src/game/prefab-support.ts
-@@ -21,6 +21,7 @@ import { readColliderGeometry } from './collision-inputs.ts';
- import { collisionBox } from './collision-ground.ts';
- import { bindingKey, clipPaths, posedLocal, type ClipPaths } from './prefabs/pose-paths.ts';
- import type { PrefabPose } from './prefabs/prefab.ts';
-+import { circularRotations } from './circular-rotations.ts';
- 
- type Vec3 = [number, number, number];
- const xyz = (v: TypeTreeObject): Vec3 => [numberField(v, 'x'), numberField(v, 'y'), numberField(v, 'z')];
-@@ -37,7 +38,7 @@ const corners = (center: Vec3, size: Vec3): Vec3[] =>
-  * @throws for malformed references, unsupported nonempty collision cooks or absent solid support
-  */
- export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef,
-- options: { wholePrefab?: boolean; pose?: PrefabPose | null } = {}) => {
-+ options: { wholePrefab?: boolean; pose?: PrefabPose | null; circular?: boolean } = {}) => {
-  const clips = options.pose?.clips ?? [];
-  const transforms = clips.map(clip => clip.transforms);
- 	const nodes: {
-@@ -45,6 +46,7 @@ export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef
- 		paths: ClipPaths;
- 		parent: string | null;
- 		matrix: Float32Array;
-+        local: ReturnType<typeof posedLocal>;
- 		active: boolean;
- 		components: { ref: ObjectRef; data: TypeTreeObject }[];
- 	}[] = [];
-@@ -91,7 +93,7 @@ export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef
-             const path = paths[i];
-             if (path !== null && path !== undefined && path !== '') enabled = clip.active.get(bindingKey(path)) ?? enabled;
-         }
--        const node = { key, paths, parent: parent?.key ?? null, matrix,
-+        const node = { key, paths, parent: parent?.key ?? null, matrix, local,
-             active: (parent?.active ?? true) && options.pose?.hidden !== true &&
-                 (enabled ?? (data.m_IsActive !== false && data.m_IsActive !== 0)), components };
- 
-@@ -136,17 +138,21 @@ export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef
- 	}
- 	const belongs = (node: (typeof nodes)[number]): boolean =>
- 		!selected || node.key === selected || (node.parent !== null && belongs(byKey.get(node.parent)!));
--	const vertices: Vec3[] = [];
-+	const bodyOwners: string[] = [];
-+    let bodyOwner = '';
-+    const vertices: Vec3[] = [];
- 	const bodies: Vec3[][] = [];
- 	const bodyKinds: ('box' | 'convex' | 'triangle')[] = [];
- 	const bodyTriangles: (number[][] | null)[] = [];
- 	const add = (points: Vec3[], kind: 'box' | 'convex' | 'triangle', triangles: number[][] | null = null) => {
--		bodyTriangles.push(triangles ?? (kind === 'box' ? collisionBox([1, 1, 1]).triangles : null));
-+		bodyOwners.push(bodyOwner);
-+        bodyTriangles.push(triangles ?? (kind === 'box' ? collisionBox([1, 1, 1]).triangles : null));
- 		bodyKinds.push(kind);
- 		vertices.push(...points);
- 		bodies.push(points);
- 	};
- 	for (const node of nodes) {
-+        bodyOwner = node.key;
- 		if (!node.active || !belongs(node)) {
- 			continue;
- 		}
-@@ -261,6 +267,7 @@ export const readPrefabSupport = async (resolver: AssetResolver, root: ObjectRef
- 	if (!vertices.length) throw new FormatError('prefab has no decoded solid support');
-     if (vertices.some(point => !point.every(Number.isFinite))) throw new FormatError('prefab collider contains nonfinite vertices');
- 	return {
-+        circular: options.circular ? circularRotations(nodes, bodyOwners, clips) : [],
- 		bodies,
- 		bodyKinds,
- 		bodyTriangles,
-diff --git a/packages/extractor/src/game/static-supports.ts b/packages/extractor/src/game/static-supports.ts
-index 631c9b71..7d12f703 100644
---- a/packages/extractor/src/game/static-supports.ts
-+++ b/packages/extractor/src/game/static-supports.ts
-@@ -1,3 +1,5 @@
-+import { circularSupport } from '@opendfieldmap/ganglia/solver/host';
-+import type { SweptSupport } from '@opendfieldmap/ganglia/solver';
- /* oxlint-disable no-await-in-loop -- offline export follows authored placement order */
- import { levelInteractiveFromValue, type LevelInteractive } from '@endfield-noclip/formats/endfield/level-interactives';
- import { isMemoryPackObject } from '@endfield-noclip/formats/endfield/memory-pack';
-@@ -103,6 +105,7 @@ const visibility = (condition: Visibility, values: Record<string, number>): 'vis
- export const collectStaticSupports = async (ctx: Context, scene: string, knownIds: ReadonlySet<string>) => {
-     const objects: ObjectRecord[] = [], unsupported: { id: string; template: string; reason: string }[] = [];
-     const supports = new Map<string, Support>();
-+    const circular = new Map<string, SweptSupport>();
-     const rows = new Map<string, Row>(), byOwner = new Map<string, Row[]>();
-     const paths = await ctx.world.pathLookup(), reader = await ctx.memoryPack();
-     const levels = [...(await ctx.world.levelConfigs()).values()].filter(level => level.mapId === scene);
-@@ -155,14 +158,41 @@ export const collectStaticSupports = async (ctx: Context, scene: string, knownId
-         const path = paths(model.model.pathHash)?.toLowerCase();
-         if (!path) throw new Error('static-support prefab path unavailable');
-         const pose = model.pose?.key ?? 'authored-rest';
--        const key = `${path}:${pose}`;
-+        const wheel = /^int_(?:big_)?waterwheel$/.test(item.template);
-+        const key = `${path}:${pose}:${wheel}`;
-         if (!bodies.has(key)) bodies.set(key, (async () => {
-             const ref = await resolver.findUnique({ hash: model.model.pathHash, path }, UnityClass.GameObject);
--            return readPrefabSupport(resolver, ref, { wholePrefab: true, pose: model.pose });
-+            return readPrefabSupport(resolver, ref, { wholePrefab: true, pose: model.pose, circular: wheel });
-         })());
-         const body = await bodies.get(key)!;
--        const geometry = supportGeometry(body, model.model);
--        if (!geometry.indices.length) throw new Error('prefab has no solid triangles');
-+        const rotating = new Set(body.circular.flatMap(r => r.bodies));
-+        if (wheel && !body.circular.length) throw new Error('waterwheel has no source-bound circular collider');
-+        const generated: SweptSupport[] = [];
-+        for (const [ri, rotor] of body.circular.entries()) {
-+            if (Math.max(...model.model.scale)-Math.min(...model.model.scale)>Math.max(...model.model.scale)*1e-4) throw new Error('waterwheel has nonuniform placement scale');
-+            const matrix=trsMatrix(model.model.position,unityEulerQuaternion(model.model.rotation),model.model.scale);
-+            const pivot=transformPoint(matrix,rotor.pivot);
-+            const tip=transformPoint(matrix,rotor.pivot.map((v,i)=>v+rotor.axis[i]));
-+            const delta=tip.map((v,i)=>v-pivot[i]),norm=Math.hypot(...delta);
-+            const axis=delta.map(v=>v/norm) as [number,number,number];
-+            const vertices=rotor.bodies.flatMap(i=>body.bodies[i]).map(p=>transformPoint(matrix,p));
-+            const along=vertices.map(p=>p.reduce((n,v,i)=>n+(v-pivot[i])*axis[i],0));
-+            const radii=vertices.map((p,j)=>Math.hypot(...p.map((v,i)=>v-pivot[i]-along[j]*axis[i])));
-+            const radius=Math.max(...radii);
-+            // Axle/braces can extend farther sideways than the blade rim. Only
-+            // source vertices at the actual peripheral contact radius set width.
-+            const rim=along.filter((_,i)=>radius-radii[i]<=Math.max(1e-5,radius*1e-5));
-+            const low=Math.min(...rim),high=Math.max(...rim);
-+            const id=body.circular.length===1 ? item.id : `${item.id}/rotor/${ri}`;
-+            const ring=circularSupport({id,level:item.level,model:path,
-+                center:pivot.map((v,i)=>v+(low+high)/2*axis[i]) as [number,number,number],axis,radius,
-+                halfWidth:(high-low)/2,speed:2*Math.PI*radius/rotor.period});
-+            if(circular.has(id))throw new Error('waterwheel has ambiguous model ownership');
-+            generated.push(ring);
-+        }
-+        const geometry = supportGeometry({bodies:body.bodies.filter((_,i)=>!rotating.has(i)),
-+            bodyTriangles:body.bodyTriangles.filter((_,i)=>!rotating.has(i))},model.model);
-+        if (!geometry.indices.length && !generated.length) throw new Error('prefab has no solid triangles');
-         const motion = supportMotion(model.pose);
-         let support = supports.get(item.id);
-         if (!support) {
-@@ -175,6 +205,7 @@ export const collectStaticSupports = async (ctx: Context, scene: string, knownId
-         for (const index of geometry.indices) support.indices.push(index + first);
-         support.parts.push({ model: { pathHash: String(model.model.pathHash), position: model.model.position,
-             rotation: model.model.rotation, scale: model.model.scale }, path, pose, source: model.source, motion });
-+        for(const ring of generated)circular.set(ring.id,ring);
-         if (motion.length) support.motion = 'animated-terminal-pose';
-         if (item.status !== 'unresolved') item.status = motion.length || support.motion === 'animated-terminal-pose' ? 'animated' : 'exported';
-     };
-@@ -243,8 +274,9 @@ export const collectStaticSupports = async (ctx: Context, scene: string, knownId
-         }
-         if (item.status === 'unresolved') {
-             supports.delete(item.id);
-+            for(const id of circular.keys())if(id===item.id || id.startsWith(item.id+'/rotor/'))circular.delete(id);
-             unsupported.push({ id: item.id, template: item.template, reason: item.reason ?? 'unresolved physical model' });
-         }
-     }
--    return { supports: [...supports.values()], objects, unsupported };
-+    return { supports: [...supports.values()], circularSupports: [...circular.values()], objects, unsupported };
- };
-diff --git a/packages/extractor/src/commands/traversal-devices.ts b/packages/extractor/src/commands/traversal-devices.ts
-index b0cd80f1..ff7a776a 100644
---- a/packages/extractor/src/commands/traversal-devices.ts
-+++ b/packages/extractor/src/commands/traversal-devices.ts
-@@ -33,7 +33,7 @@ export const run = async (args: string[]): Promise<void> => {
- 			if (!file) {
- 				throw new Error(`missing ${path}`);
- 			}
--			return ctx.vfs.readVerified(file);
-+			return file.readVerified();
- 		};
- 		const pool = await ctx.world.stringPool(),
- 			reader = await ctx.memoryPack();
++			]),
++		),
++		maxDistance,
++		initialState,
++		assumption: 'placement-within-activity-range',
++	};
++};

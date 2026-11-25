@@ -1,16 +1,68 @@
 diff --git a/packages/viewer/src/app.tsx b/packages/viewer/src/app.tsx
-index f1ffcbb3..e92e2e9a 100644
+index 96a1de20..19cbc14b 100644
 --- a/packages/viewer/src/app.tsx
 +++ b/packages/viewer/src/app.tsx
-@@ -42,6 +42,7 @@ export const App = ({
+@@ -1,4 +1,4 @@
+-import { useEffect, useEffectEvent, useRef, useState } from 'react';
++import { useEffect, useCallback, type ReactNode, useRef, useState } from 'react';
+ 
+ import { sourceFromParam } from './package/package-param.ts';
+ import type { PackageSource } from './package/package-source.ts';
+@@ -6,8 +6,9 @@ import { CameraReadout } from './ui/camera-readout.tsx';
+ import { describeError } from './ui/format.ts';
+ import { LevelsPanel } from './ui/levels-panel.tsx';
+ import { type OpenPackage, PackagePanel } from './ui/package-panel.tsx';
++import { PhotoFiltersPanel } from './ui/photo-filters.tsx';
+ import { SceneControls } from './ui/scene-controls/scene-controls.tsx';
+-import { SettingsPanel } from './ui/settings-panel.tsx';
++import { PhotographyPanel, SettingsPanel } from './ui/settings-panel.tsx';
+ import { StatsPanel } from './ui/stats-panel.tsx';
+ import { Viewer } from './viewer/viewer.ts';
+ 
+@@ -25,14 +26,28 @@ const setParam = (name: string, value: string | null): void => {
+ 	history.replaceState(null, '', url);
+ };
+ 
+-export const App = () => {
++/**
++ * @param props optional host overlay and photography library URL; the overlay delegates navigation to the
++ *   host
++ * @returns the shared viewer canvas and scene panels
++ */
++export const App = ({
++	overlay,
++	filtersUrl,
++}: {
++	overlay?: (viewer: Viewer, panel: HTMLElement | null) => ReactNode;
++	filtersUrl?: string;
++}) => {
++	const hosted = overlay !== undefined;
  	const canvasRef = useRef<HTMLCanvasElement>(null);
  	const [viewer, setViewer] = useState<Viewer | null>(null);
  	const [error, setError] = useState<string | null>(null);
 +	const [attempt, setAttempt] = useState(0);
  	const [current, setCurrent] = useState<OpenPackage | null>(null);
  	const [status, setStatus] = useState('');
- 	const [pointPanelRoot, setPointPanelRoot] = useState<HTMLDivElement | null>(null);
-@@ -67,10 +68,19 @@ export const App = ({
++	const [pointPanelRoot, setPointPanelRoot] = useState<HTMLDivElement | null>(null);
+ 
+-	const open = (target: Viewer, source: PackageSource, param: string | null): void => {
++	const open = useCallback((target: Viewer, source: PackageSource, param: string | null): void => {
+ 		setParam(PACKAGE_PARAM, param);
+ 		setStatus('opening…');
+ 		setCurrent({ label: source.label, param });
+@@ -43,10 +58,7 @@ export const App = () => {
+ 				setCurrent(null);
+ 				setStatus(`couldn't open ${source.label}: ${describeError(err)}`);
+ 			});
+-	};
+-	const openInitial = useEffectEvent((instance: Viewer, param: string) =>
+-		open(instance, sourceFromParam(param), param),
+-	);
++	}, []);
+ 
+ 	useEffect(() => {
+ 		const canvas = canvasRef.current;
+@@ -56,10 +68,19 @@ export const App = () => {
  		// StrictMode mounts this effect twice in development, so the first creation is aborted mid-flight
  		const abort = new AbortController();
  		let created: Viewer | null = null;
@@ -32,16 +84,43 @@ index f1ffcbb3..e92e2e9a 100644
  					instance.destroy();
  					return;
  				}
-@@ -94,7 +104,7 @@ export const App = ({
+@@ -70,8 +91,8 @@ export const App = () => {
+ 				}
+ 				setViewer(instance);
+ 				const param = new URL(location.href).searchParams.get(PACKAGE_PARAM);
+-				if (param !== null) {
+-					openInitial(instance, param);
++				if (param !== null && !hosted) {
++					open(instance, sourceFromParam(param), param);
+ 				}
+ 			})
+ 			.catch((err: unknown) => {
+@@ -83,11 +104,11 @@ export const App = () => {
  			abort.abort();
  			created?.destroy();
  		};
--	}, [hosted, open]);
+-	}, []);
 +	}, [hosted, open, attempt]);
  
  	// the current level lives in the URL, so a reload or a shared link opens over the same level
  	useEffect(() => {
-@@ -116,6 +126,7 @@ export const App = ({
+-		if (viewer === null) {
++		if (viewer === null || hosted) {
+ 			return;
+ 		}
+ 		return viewer.subscribe('state', () => {
+@@ -96,31 +117,39 @@ export const App = () => {
+ 				setParam(LEVEL_PARAM, viewer.level);
+ 			}
+ 		});
+-	}, [viewer]);
++	}, [viewer, hosted]);
+ 
+ 	return (
+-		<main className="app">
++		<main className={`viewer-app${hosted ? ' hosted-viewer' : ''}`}>
+ 			<canvas ref={canvasRef} className="viewport" />
+ 			{error !== null && (
  				<div className="panel error" role="alert">
  					<h2>can't start the viewer</h2>
  					<p>{error}</p>
@@ -49,11 +128,41 @@ index f1ffcbb3..e92e2e9a 100644
  				</div>
  			)}
  			{viewer !== null && (
+ 				<>
++					{overlay?.(viewer, pointPanelRoot)}
+ 					<div className="dock left">
+-						<PackagePanel
+-							current={current}
+-							status={status}
+-							onOpen={(source, param) => open(viewer, source, param)}
+-						/>
+-						<StatsPanel viewer={viewer} />
++						{!hosted && (
++							<PackagePanel
++								current={current}
++								status={status}
++								onOpen={(source, param) => open(viewer, source, param)}
++							/>
++						)}
++						{!hosted && <StatsPanel viewer={viewer} />}
+ 					</div>
+ 					<div className="dock right">
+-						<LevelsPanel viewer={viewer} />
++						{hosted && <div ref={setPointPanelRoot} className="host-panel" />}
++						{!hosted && <LevelsPanel viewer={viewer} />}
+ 						<SceneControls viewer={viewer} />
++						<PhotographyPanel viewer={viewer} />
++						<PhotoFiltersPanel viewer={viewer} source={filtersUrl} />
+ 						<SettingsPanel viewer={viewer} />
++						{hosted && <StatsPanel viewer={viewer} />}
+ 					</div>
+ 					<div className="dock bottom">
+ 						<CameraReadout viewer={viewer} />
 diff --git a/packages/viewer/src/gfx/device.ts b/packages/viewer/src/gfx/device.ts
-index 130c71a1..e6801164 100644
+index 413c1289..e51595e6 100644
 --- a/packages/viewer/src/gfx/device.ts
 +++ b/packages/viewer/src/gfx/device.ts
-@@ -44,9 +44,11 @@ export const createGfxDevice = async (onLost: (reason: string) => void): Promise
+@@ -40,9 +40,11 @@ export const createGfxDevice = async (onLost: (reason: string) => void): Promise
  	if (!('gpu' in navigator)) {
  		throw new GfxUnsupportedError(`this browser doesn't support WebGPU`);
  	}
@@ -67,7 +176,7 @@ index 130c71a1..e6801164 100644
  	}
  
  	const has = (feature: GPUFeatureName): boolean => adapter.features.has(feature);
-@@ -94,7 +96,8 @@ export const createGfxDevice = async (onLost: (reason: string) => void): Promise
+@@ -91,7 +93,8 @@ export const createGfxDevice = async (onLost: (reason: string) => void): Promise
  	device.lost
  		.then((info) => {
  			if (info.reason !== 'destroyed') {
@@ -94,18 +203,210 @@ index 00000000..6b06d53b
 +    }
 +}
 diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/viewer.ts
-index 67207bb4..1eb5cbd9 100644
+index 8f897535..bfbaf32a 100644
 --- a/packages/viewer/src/viewer/viewer.ts
 +++ b/packages/viewer/src/viewer/viewer.ts
-@@ -20,6 +20,7 @@ import type { WaterSurfaceEntry } from '@endfield-noclip/package-format/water';
- import { ROW_BYTES, ROW_WORDS } from '../content/instance-rows.ts';
- import type { AppliedVolume } from '../environment/blend.ts';
- import { windClockRate } from '../environment/environment.ts';
+@@ -1,4 +1,19 @@
++import { cameraValues, NO_TRIGGER_MEMORY } from '@endfield-noclip/package-format/camera';
++import {
++	conditionResults,
++	groupsShown,
++	resolveSceneValues,
++} from '@endfield-noclip/package-format/conditions';
+ import type { LevelInfo, PackageManifest } from '@endfield-noclip/package-format/manifest';
++import {
++	companionStates,
++	isPointView,
++	type CompanionControl,
++	type PointView,
++} from '@endfield-noclip/package-format/oem';
++import type { PhotoFilter } from '@endfield-noclip/package-format/photo-filters';
++import type { MissionInfo, StatesInfo } from '@endfield-noclip/package-format/states';
++import { areasShownIn, zonesAt, zonesAround } from '@endfield-noclip/package-format/stream-areas';
+ import type { Vec3 } from '@endfield-noclip/package-format/values';
+ import type { WaterSurfaceEntry } from '@endfield-noclip/package-format/water';
+ 
+@@ -19,13 +34,17 @@ import { volumesForLevel } from '../scene-states/listing.ts';
+ import { SceneState } from '../scene-states/scene-state.ts';
+ import { WaterLevels, type WaterVolumeState } from '../scene-states/water-levels.ts';
+ import { Camera } from '../scene/camera.ts';
++import { groundHeight as heightAt } from '../scene/ground.ts';
+ import { cellIdAt, levelCellIds, levelPose, levelsByCell, overviewPose } from '../scene/level-pose.ts';
+ import { type CameraPose, NoclipControls } from '../scene/noclip-controls.ts';
++import { pointPreview } from '../scene/point-preview.ts';
++import { pointViewKey, readPointView, writePointView } from '../scene/point-view-cache.ts';
+ import type { ResidentInstances } from '../streaming/resident.ts';
+ 
+ import { EnvironmentState } from './environment-state.ts';
 +import { FrameQueue } from './frame-queue.ts';
- import { type GfxDevice, createGfxDevice } from '../gfx/device.ts';
- import { DecodePool } from '../package/decode-pool.ts';
- import type { PackageSource } from '../package/package-source.ts';
-@@ -265,6 +266,7 @@ export class Viewer {
+ import { DEFAULT_OPTIONS, type ViewerOptions, postSettings } from './options.ts';
+-import { Renderer } from './renderer.ts';
++import { Renderer, type OverlayFrame } from './renderer.ts';
+ import { type LevelEntry, type LoadedScene, openScene } from './scene-loader.ts';
+ import { type ViewerStats, FrameTimes, STATS_INTERVAL, collectStats, emptyStats } from './stats.ts';
+ import { Traversal } from './traversal.ts';
+@@ -45,9 +64,160 @@ const OptionDirty = {
+ 	Budget: 1 << 3,
+ 	Shadows: 1 << 4,
+ } as const;
++export type { OverlayFrame } from './renderer.ts';
+ 
+ /** the running viewer */
+ export class Viewer {
++	#overlays = new Set<(frame: OverlayFrame) => void>();
++	#animatedOverlays = new Set<(frame: OverlayFrame) => void>();
++	#baseStates: StatesInfo | null = null;
++	#cameraListeners = new Set<() => void>();
++	#photoFilters: readonly PhotoFilter[] = [];
++
++	addOverlay(encode: (frame: OverlayFrame) => void, options?: { animated?: boolean }): () => void {
++		this.#overlays.add(encode);
++		if (options?.animated) this.#animatedOverlays.add(encode);
++		this.#dirty = true;
++		return () => {
++			this.#overlays.delete(encode);
++			this.#animatedOverlays.delete(encode);
++			this.#dirty = true;
++		};
++	}
++
++	subscribeCamera(listener: () => void): () => void {
++		this.#cameraListeners.add(listener);
++		return () => this.#cameraListeners.delete(listener);
++	}
++
++	setCompanion(controls: readonly CompanionControl[], missions: readonly MissionInfo[]): void {
++		const pkg = this.scene?.pkg,
++			base = this.#baseStates;
++		if (!pkg || !base) {
++			return;
++		}
++		pkg.manifest.states = companionStates(base, { controls: [...controls], missions: [...missions] });
++		this.#sceneState.setPackage(pkg.manifest.states);
++		this.#updateVisibility();
++		this.#emitState();
++	}
++
++	async framePoint(
++		target: Vec3,
++		signal: AbortSignal,
++		options?: { baked?: PointView; animate: boolean },
++	): Promise<PointView | null> {
++		signal.throwIfAborted();
++		const scene = this.scene;
++		if (!scene || target.length !== 3 || !target.every(Number.isFinite)) {
++			return null;
++		}
++		this.#unsettledPose = null;
++		const initial: CameraPose = {
++			position: [target[0], target[1] + 6, target[2] - 10],
++			yaw: 0,
++			pitch: -Math.atan2(6, 10),
++		};
++		if (options?.animate) {
++			this.controls.flyTo(initial);
++		} else {
++			this.controls.cancelFlight();
++			this.#setPose(initial);
++		}
++		this.#dirty = true;
++		const states = scene.pkg.manifest.states;
++		const areas = states.streamAreas;
++		let visibleAreas: ReadonlySet<number> | null = null;
++		if (areas && this.options.streamAreas) {
++			let zones = zonesAt(areas, target);
++			if (zones.size === 0) {
++				zones = zonesAround(areas, target);
++			}
++			visibleAreas = areasShownIn(areas, zones);
++		}
++		const picks = new Map([
++			...cameraValues(states.controls, target, visibleAreas, NO_TRIGGER_MEMORY).values,
++			...this.scenePicksByIndex,
++		]);
++		const shown = groupsShown(states, conditionResults(states, resolveSceneValues(states, picks)));
++		const key = await pointViewKey(scene.pkg.manifest.generation, this.level, target, shown);
++		let pose = options?.baked?.key === key && isPointView(options.baked) ? options.baked : readPointView(key);
++		if (pose === null) {
++			let pendingTerrain = false;
++			pose = await pointPreview(
++				scene.pkg,
++				this.#pool,
++				target,
++				states,
++				this.#level === null ? null : scene.pkg.manifest.levels.indexOf(this.#level),
++				picks,
++				(x, z) => {
++					const height = heightAt(scene.ground, x, z);
++					pendingTerrain ||= height === undefined;
++					return height ?? null;
++				},
++				signal,
++			);
++			if (!pendingTerrain && !signal.aborted && this.scene === scene) {
++				writePointView(key, pose);
++			}
++		}
++		signal.throwIfAborted();
++		if (this.scene !== scene) {
++			return null;
++		}
++		this.#unsettledPose = null;
++		if (options?.animate) {
++			this.controls.flyTo(pose);
++		} else {
++			this.controls.cancelFlight();
++			this.#setPose(pose);
++		}
++		this.#dirty = true;
++		return { key, clear: false, ...pose };
++	}
++
++	focusAt(point: Vec3): boolean {
++		const forward = this.camera.forward();
++		const distance = point.reduce((sum, value, i) => sum + (value - this.camera.position[i]) * forward[i], 0);
++		if (!Number.isFinite(distance) || distance < this.camera.near) {
++			return false;
++		}
++		this.setOptions({ depthOfField: true, focusDistance: distance });
++		return true;
++	}
++
++	/** @returns the terrain beneath the camera, when resident */
++	get groundHeight(): number | null {
++		return this.scene === null
++			? null
++			: (heightAt(this.scene.ground, this.camera.position[0], this.camera.position[2]) ?? null);
++	}
++	/** @param id level to prioritize @param options whether to fly there */
++	showLevel(id: string, options: { fly?: boolean } = {}): void {
++		const level = this.#levelInfo(id);
++		const scene = this.scene;
++		if (!level || !scene) {
++			return;
++		}
++		this.#setLevel(level, scene.pkg.manifest);
++		this.#blendEnvironment({ force: true, dt: 0 });
++		if (options.fly !== false) {
++			this.flyToLevel(id);
++		}
++		this.#updateVisibility();
++	}
++	/** @returns installed photo filters */
++	get photoFilters(): readonly PhotoFilter[] {
++		return this.#photoFilters;
++	}
++	/** @param filters validated library */
++	setPhotoFilters(filters: readonly PhotoFilter[]): void {
++		this.setOptions({ photoFilter: null });
++		this.#photoFilters = filters;
++		this.#emitState();
++	}
++
+ 	readonly camera = new Camera();
+ 	readonly controls: NoclipControls;
+ 	readonly options: ViewerOptions = structuredClone(DEFAULT_OPTIONS);
+@@ -114,6 +284,7 @@ export class Viewer {
  	 * `animate` is on, so animation pauses when the view idles and resumes where it stopped
  	 */
  	#time = 0;
@@ -113,7 +414,7 @@ index 67207bb4..1eb5cbd9 100644
  	/** the wind clock (`Frame.wind.x`), which advances with {@link #time} at the wind's rate */
  	#windClock = 0;
  	/**
-@@ -323,7 +325,14 @@ export class Viewer {
+@@ -180,7 +351,14 @@ export class Viewer {
  			gfx.device.destroy();
  			throw signal.reason;
  		}
@@ -129,7 +430,171 @@ index 67207bb4..1eb5cbd9 100644
  		viewer.#raf = requestAnimationFrame(viewer.#onFrame);
  		document.addEventListener('visibilitychange', viewer.#onVisibilityChange);
  		return viewer;
-@@ -873,6 +882,9 @@ export class Viewer {
+@@ -200,10 +378,12 @@ export class Viewer {
+ 		source: PackageSource,
+ 		initialLevel: string | null,
+ 		onProgress: (phase: string) => void,
++		loadOptions: { preserveCamera?: boolean } = {},
+ 	): Promise<void> {
+ 		this.unload();
+ 		const pkg = await openViewerPackage(source, onProgress);
+ 		const manifest = pkg.manifest;
++		this.#baseStates = manifest.states;
+ 		const renderer = this.#renderer;
+ 		renderer.setIrradiance(pkg.irradiance, manifest.irradianceRegions);
+ 		const scene = openScene(pkg, {
+@@ -235,7 +415,9 @@ export class Viewer {
+ 		this.#updateVisibility();
+ 		this.#waterLevels.settle();
+ 		this.#applyEnvironment();
+-		if (level === null) {
++		if (loadOptions.preserveCamera) {
++			this.#unsettledPose = null;
++		} else if (level === null) {
+ 			this.#setPose(overviewPose(manifest));
+ 		} else {
+ 			this.#focusCells = levelCellIds(manifest, level);
+@@ -278,6 +460,8 @@ export class Viewer {
+ 		this.scene = null;
+ 		this.#unsubscribeSelector?.();
+ 		this.#unsubscribeSelector = null;
++
++		this.#baseStates = null;
+ 		this.#sceneState.setPackage(null);
+ 		this.options.environmentPin = null;
+ 		this.#environment.fades.reset();
+@@ -371,6 +555,7 @@ export class Viewer {
+ 				eye: this.camera.position,
+ 				volumes: this.options.environmentVolumes,
+ 				pinnedPhase: this.options.environmentPin,
++				photoFilter: this.#photoFilters.find((f) => f.id === this.options.photoFilter) ?? null,
+ 				loaded: this.#sceneState.conditionResults,
+ 				dt,
+ 			},
+@@ -473,6 +658,9 @@ export class Viewer {
+ 		this.camera.pitch = pitch;
+ 		// a cut: the last frames show somewhere else
+ 		this.#renderer.cut();
++		for (const listener of this.#cameraListeners) {
++			listener();
++		}
+ 	}
+ 
+ 	/** re-poses the first view over the ground once the coarse terrain lands; drops it if the camera moved */
+@@ -561,15 +749,29 @@ export class Viewer {
+ 	// #region scene states
+ 
+ 	/** @returns every scene control's current value, by index into the manifest's controls */
+-	get sceneValues(): readonly number[] {
++	get sceneValuesByIndex(): readonly number[] {
+ 		return this.#sceneState.values;
+ 	}
+ 
+ 	/** @returns the values the user picked, by control index; other controls follow their default or formula */
+-	get scenePicks(): ReadonlyMap<number, number> {
++	get scenePicksByIndex(): ReadonlyMap<number, number> {
+ 		return this.#sceneState.picks;
+ 	}
+ 
++	/** Stable control IDs form the host contract; package indexes stay internal. */
++	get sceneValues(): Readonly<Record<string, number>> {
++		return Object.fromEntries(
++			(this.manifest?.states.controls ?? []).map((c, i) => [c.id, this.#sceneState.values[i] ?? c.default]),
++		);
++	}
++
++	get scenePicks(): Readonly<Record<string, number>> {
++		const controls = this.manifest?.states.controls ?? [];
++		return Object.fromEntries(
++			[...this.#sceneState.picks].flatMap(([i, value]) => (controls[i] ? [[controls[i].id, value]] : [])),
++		);
++	}
++
+ 	/** @returns per conditional set of the loaded package, whether the selected scene values satisfy it */
+ 	get conditionResults(): readonly boolean[] {
+ 		return this.#sceneState.conditionResults;
+@@ -589,21 +791,35 @@ export class Viewer {
+ 	}
+ 
+ 	/**
+-	 * @param control a scene control's index into the manifest's controls
++	 * @param control a stable control ID from the host, or a package index from the built-in panels
+ 	 * @param value one of its values, or `null` to drop the pick so it follows its default or formula again
+ 	 */
+-	setSceneValue(control: number, value: number | null): void {
+-		this.setSceneValues(new Map([[control, value]]));
++	setSceneValue(control: string | number, value: number | null): void {
++		if (typeof control === 'number') {
++			this.setSceneValues(new Map([[control, value]]));
++		} else {
++			this.setSceneValues({ [control]: value });
++		}
+ 	}
+ 
+ 	/**
+ 	 * sets several controls at once, re-evaluating visibility once
+ 	 *
+-	 * @param values by control index, one of its values or `null` to drop the pick; unknown controls and values
+-	 *   are ignored
++	 * @param values a host record keyed by stable control ID, or a panel Map keyed by package index; `null`
++	 *   drops a pick, and unknown controls and unsupported values are ignored
+ 	 */
+-	setSceneValues(values: ReadonlyMap<number, number | null>): void {
+-		if (!this.#sceneState.pick(values)) {
++	setSceneValues(values: ReadonlyMap<number, number | null> | Readonly<Record<string, number | null>>): void {
++		const controls = this.manifest?.states.controls ?? [];
++		const indexed =
++			values instanceof Map
++				? values
++				: new Map(
++						Object.entries(values).flatMap(([id, value]) => {
++							const index = controls.findIndex((control) => control.id === id);
++							return index < 0 ? [] : [[index, value] as const];
++						}),
++					);
++		if (!this.#sceneState.pick(indexed)) {
+ 			return;
+ 		}
+ 		this.#updateVisibility();
+@@ -633,7 +849,37 @@ export class Viewer {
+ 
+ 	/** @param patch options to change */
+ 	setOptions(patch: Partial<ViewerOptions>): void {
++		if (patch.photoFilter !== undefined || patch.photoLutStrength !== undefined) {
++			const id = patch.photoFilter === undefined ? this.options.photoFilter : patch.photoFilter;
++			const filter = this.#photoFilters.find((entry) => entry.id === id) ?? null;
++			const strength = patch.photoLutStrength ?? this.options.photoLutStrength;
++			if (id !== null && filter === null) {
++				throw new Error(`unknown photo filter ${id}`);
++			}
++			if (!Number.isFinite(strength) || strength < 0 || strength > 1) {
++				throw new RangeError('photo LUT contribution must be between 0 and 1');
++			}
++			this.#renderer.post.setPhotoLut(filter, strength);
++			if (patch.photoFilter !== undefined && id !== this.options.photoFilter) {
++				this.#renderer.post.setPhotoEffects(filter, this.camera, this.#time);
++				this.#renderer.post.resetAntialiasing();
++			}
++		}
+ 		Object.assign(this.options, patch);
++		this.options.aperture = Number.isFinite(this.options.aperture)
++			? Math.min(32, Math.max(1.4, this.options.aperture))
++			: DEFAULT_OPTIONS.aperture;
++		this.options.focusDistance = Number.isFinite(this.options.focusDistance)
++			? Math.min(10000, Math.max(0.1, this.options.focusDistance))
++			: DEFAULT_OPTIONS.focusDistance;
++		if (
++			patch.depthOfField !== undefined ||
++			patch.aperture !== undefined ||
++			patch.focusDistance !== undefined
++		) {
++			this.#renderer.post.resetFocus();
++			this.#renderer.post.resetAntialiasing();
++		}
+ 		let dirty = this.#dirtyOptions | OptionDirty.Shadows;
+ 		if (patch.renderScale !== undefined) {
+ 			dirty |= OptionDirty.Targets;
+@@ -733,12 +979,21 @@ export class Viewer {
  		this.#raf = requestAnimationFrame(this.#onFrame);
  		const dt = this.#lastTime === 0 ? 1 / 60 : Math.min(0.1, (time - this.#lastTime) / 1000);
  		this.#lastTime = time;
@@ -137,13 +602,59 @@ index 67207bb4..1eb5cbd9 100644
 +		// Do not accumulate submissions when the GPU cannot keep up.
 +		if (this.#frameQueue.full) return;
  		this.#times.begin();
+ 		this.#flushOptionChanges();
  		const renderer = this.#renderer;
  		const traversal = this.#traversal;
-@@ -974,6 +986,7 @@ export class Viewer {
+ 
++		this.controls.groundHeight = this.groundHeight;
+ 		const moved = this.controls.update(dt) || this.#settleFirstPose();
++		if (moved) {
++			for (const listener of this.#cameraListeners) {
++				listener();
++			}
++		}
+ 		const watered = this.#waterLevels.update(dt, this.options.waterLevelRate);
+ 		this.#waterLevels.applyFloaters(this.#writeFloater);
+ 		if (watered || this.#sceneState.follow(this.camera.position)) {
+@@ -779,7 +1034,7 @@ export class Viewer {
+ 		// the temporal antialiasing converges over a few more jittered frames of the same view
+ 		let settling = false;
+ 		if (changed) {
+-			this.#settleFrames = options.antialiasing ? SETTLE_FRAMES : 0;
++			this.#settleFrames = options.antialiasing || options.depthOfField ? SETTLE_FRAMES : 0;
+ 		} else if (this.#settleFrames > 0) {
+ 			this.#settleFrames--;
+ 			settling = true;
+@@ -788,7 +1043,11 @@ export class Viewer {
+ 		// particles change what it meters every frame, so a meter that kept running would never let it settle
+ 		const settings = frameSettings(options, scene !== null, postSettings(options, scene !== null));
+ 		const adapting = renderer.post.adaptExposure(settings.post, dt, { metering: changed || settling });
+-		const render = changed || settling || adapting;
++		const render =
++			changed ||
++			settling ||
++			adapting ||
++			(options.animate && (this.#animatedOverlays.size > 0 || renderer.post.photoEffectsActive));
+ 		if (render && options.animate) {
+ 			this.#time += dt;
+ 			this.#windClock += windClockRate(look.environment.wind) * dt;
+@@ -849,7 +1108,9 @@ export class Viewer {
+ 				content: { version: scene?.stream.version ?? 0, idle: scene?.stream.idle ?? true },
+ 				options,
  				times: this.#times,
- 				overlays: this.#overlays,
++				overlays: this.#overlays,
  			});
 +			this.#frameQueue.submitted(this.#gfx.device.queue);
  			this.#times.rendered(dt);
  		}
  		if (render || traverse) {
+@@ -868,6 +1129,9 @@ export class Viewer {
+ 		document.removeEventListener('visibilitychange', this.#onVisibilityChange);
+ 		this.unload();
+ 		this.controls.destroy();
++		this.#overlays.clear();
++		this.#animatedOverlays.clear();
++		this.#cameraListeners.clear();
+ 		this.#pool.destroy();
+ 		this.#renderer.destroy();
+ 	}

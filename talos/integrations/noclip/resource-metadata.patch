@@ -75,7 +75,7 @@ index d1c65061..4b140ce5 100644
 +	}
 +});
 diff --git a/packages/viewer/src/package/package-source.ts b/packages/viewer/src/package/package-source.ts
-index d80af09b..9f8a9991 100644
+index f1ac49d7..fd610630 100644
 --- a/packages/viewer/src/package/package-source.ts
 +++ b/packages/viewer/src/package/package-source.ts
 @@ -44,6 +44,8 @@ export interface ByteRange {
@@ -91,20 +91,20 @@ index d80af09b..9f8a9991 100644
   * @returns a source issuing one HTTP range request per read, or per several where the server answers
   *   multi-range requests
   */
--export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): PackageSource => {
+-export const httpSource = (baseUrl: string): PackageSource => {
 +export const httpSource = (
 +	baseUrl: string,
 +	fetcher: (url: URL, init: RequestInit, range?: Pick<ByteRange, 'content'>) => Promise<Response> = fetch,
 +): PackageSource => {
  	const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
 -	const fetchOk = async (path: string, init: RequestInit): Promise<Response> => {
--		const response = await fetcher(new URL(path, new URL(base, location.href)), init);
+-		const response = await fetch(new URL(path, new URL(base, location.href)), init);
 +	const fetchOk = async (path: string, init: RequestInit, range?: ByteRange): Promise<Response> => {
 +		const response = await fetcher(new URL(path, new URL(base, location.href)), init, range);
  		if (!response.ok) {
  			throw new Error(`${path}: HTTP ${response.status}`);
  		}
-@@ -172,12 +177,16 @@ export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): Pack
+@@ -172,12 +177,16 @@ export const httpSource = (baseUrl: string): PackageSource => {
  			if (multiRange === 'refused' || ranges.length < 2) {
  				return single();
  			}
@@ -126,7 +126,7 @@ index d80af09b..9f8a9991 100644
  				// from a server that has answered in parts, a failure is the network's
  				if (multiRange === 'answered' || signal?.aborted === true) {
  					throw err;
-@@ -216,11 +225,16 @@ export const httpSource = (baseUrl: string, fetcher: typeof fetch = fetch): Pack
+@@ -216,11 +225,16 @@ export const httpSource = (baseUrl: string): PackageSource => {
  				return part.bytes.slice(offset - part.offset, offset - part.offset + length);
  			});
  		},
@@ -149,10 +149,10 @@ index d80af09b..9f8a9991 100644
  			const partial = response.status === 206;
  			// `bytes <first>-<last>/<size>`; the size may be `*` (unknown)
 diff --git a/packages/viewer/src/streaming/stream-manager.ts b/packages/viewer/src/streaming/stream-manager.ts
-index 4e6a0616..92723ae3 100644
+index f030fc51..8e57d8ae 100644
 --- a/packages/viewer/src/streaming/stream-manager.ts
 +++ b/packages/viewer/src/streaming/stream-manager.ts
-@@ -542,7 +542,15 @@ export class StreamManager {
+@@ -562,7 +562,15 @@ export class StreamManager {
  		this.#package.source
  			.readRanges(
  				shard.path,

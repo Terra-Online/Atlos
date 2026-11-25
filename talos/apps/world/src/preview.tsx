@@ -575,7 +575,7 @@ export const Preview = ({
             if (saveTimer === undefined) saveTimer = setTimeout(save, 500);
         };
         let stateRevision = viewer.stateRevision;
-        const stopSettings = viewer.subscribe(() => {
+        const stopSettings = viewer.subscribe('state', () => {
             if (stateRevision !== viewer.stateRevision) {
                 stateRevision = viewer.stateRevision;
                 scheduleSave();

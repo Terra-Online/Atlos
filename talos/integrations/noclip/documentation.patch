@@ -1,5 +1,5 @@
 diff --git a/docs/architecture.md b/docs/architecture.md
-index c36b9818..624437d3 100644
+index 10650a64..619772e0 100644
 --- a/docs/architecture.md
 +++ b/docs/architecture.md
 @@ -34,8 +34,14 @@ unchecked facts marked. our implementation lives in [viewer](viewer/index.md),
@@ -18,12 +18,12 @@ index c36b9818..624437d3 100644
  install (Endfield_Data)                      local, read-only
    │  VFS catalogs + chunks → HG bundles → Unity SerializedFiles, world data, tables
 diff --git a/docs/extraction.md b/docs/extraction.md
-index 51f6b4d2..28843807 100644
+index 79539cec..79a13001 100644
 --- a/docs/extraction.md
 +++ b/docs/extraction.md
-@@ -118,6 +118,21 @@ requirements by `&`, each `control=values` (or `always` when ungated). `static`
-   `materials` / `geometries` / `textures` / `stand-ins` / `interactives` / `water` / `env` query
-   `debug/` (`materials --packed` also reads the packed `core.czar` entry).
+@@ -71,6 +71,21 @@ requirements by `&`, each `control=values` (or `always` when ungated). `static`
+ [streaming layer](game-data/world.md#streaming-layers), and rect/water decals show their material.
+ summaries and limit notices go to stderr so `--json` emits one JSON array.
  
 +### OEM companion releases
 +
@@ -43,9 +43,9 @@ index 51f6b4d2..28843807 100644
  ## local config and keys
  
  `endfield.local.json` stores `gameData` (the `Endfield_Data` path) and container keys (`keys.vfsKey`
-@@ -217,6 +232,19 @@ arrays and `UInt8` bools as booleans. code:
- [values.ts](../packages/formats/src/unity/values.ts),
- [plain-object.ts](../packages/formats/src/unity/plain-object.ts).
+@@ -142,6 +157,19 @@ decode automatically without hardcoded class layouts. integers ≤32-bit and flo
+ to aligned typed arrays. class decoders validate expected field types and throw `FormatError` on
+ mismatch.
  
 +## photo library
 +
@@ -62,7 +62,7 @@ index 51f6b4d2..28843807 100644
 +
  ## decoders
  
- `formats` modules validate layouts during decoding and throw on mismatch.
+ decoders validate layouts during reading and throw on mismatch.
 diff --git a/docs/game-data/interaction.md b/docs/game-data/interaction.md
 new file mode 100644
 index 00000000..b75e4269
@@ -1250,7 +1250,7 @@ index 00000000..37f79965
 +ordinary-area-only routing has so far established only a short local approach. no all-point routing
 +bake, in-game traversal validation or browser screenshot comparison has been completed.
 diff --git a/docs/status.md b/docs/status.md
-index 24b09d4b..5ebc3ebf 100644
+index cfa6bacd..be44eb2b 100644
 --- a/docs/status.md
 +++ b/docs/status.md
 @@ -98,6 +98,9 @@ only `map01` and `map02` are tested. other scenes listed by `scene list` are unv
@@ -1263,7 +1263,7 @@ index 24b09d4b..5ebc3ebf 100644
  
  ## environment, sky and fog
  
-@@ -644,3 +647,77 @@ entries once resolved or ruled out.
+@@ -627,3 +630,77 @@ entries once resolved or ruled out.
  - `world vars <scene>`: join AutoName, MapConfig, LevelData, and DynamicStreaming variables
  - `world scripts find <type>`: print level-script nodes of a type
  - `vfs table <name>`: dump a config table
@@ -1342,19 +1342,15 @@ index 24b09d4b..5ebc3ebf 100644
 +  corridor search and full player dynamics remain open. The English development route panel uses the
 +  existing host component.
 diff --git a/docs/viewer/frame.md b/docs/viewer/frame.md
-index 6455c55b..f37c763a 100644
+index 898e3219..1639e749 100644
 --- a/docs/viewer/frame.md
 +++ b/docs/viewer/frame.md
-@@ -60,6 +60,12 @@ for pass details.
-   using depth, packed surface, and ambient ([decals](materials.md#decals)).
- - **lit decal pass.** albedo-writing lit decals draw over the composited scene (no depth test,
-   reading main-pass depth) before water so water covers riverbed decals
+@@ -58,6 +58,8 @@ for pass details.
+   AO, SSR, and deferred lighting (reading copies of G-buffer A/B for normal/roughness/PBR blending
+   and using hardware premultiplied-over blending on G-buffer C). `wetness decals` writes
+   `HGRP/WetnessDecal` boxes with `max` blending into a `rg8unorm` wetness mask
 +
-+hosts can register `Viewer.addOverlay` callbacks after tonemapping. each callback receives the
-+output target and size, the current opaque/cutout reversed-Z depth view and its NDC projection
-+jitter, and the device/encoder for that frame. targets are transient; host renderers own their
-+buffers and pipelines. registration and removal invalidate the frame. depth sampling must account
-+for jitter and the difference between render and output size.
++The Atlos host can also render photography depth of field and scene overlays.
    ([decals](materials.md#decals)).
- - **transparent pass.** matches the game's
-   [transparent draw order](../game-data/materials.md#transparent-draw-order) and
+ - **deferred lighting & composite.** `deferred lighting` unpacks the G-buffer once per pixel,
+   applies rain wetness and the wetness mask with per-material porosity, evaluates sun, shadows,

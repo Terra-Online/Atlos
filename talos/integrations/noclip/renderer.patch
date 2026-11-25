@@ -1,5 +1,5 @@
 diff --git a/packages/viewer/package.json b/packages/viewer/package.json
-index 4a7a4403..866b97f3 100644
+index 3f5a3b55..c0d44876 100644
 --- a/packages/viewer/package.json
 +++ b/packages/viewer/package.json
 @@ -3,6 +3,10 @@
@@ -72,140 +72,6 @@ index 6be41e67..20cf2d2e 100644
 +.host-panel:empty {
 +	display: none;
 +}
-diff --git a/packages/viewer/src/app.tsx b/packages/viewer/src/app.tsx
-index 780b94dd..f1ffcbb3 100644
---- a/packages/viewer/src/app.tsx
-+++ b/packages/viewer/src/app.tsx
-@@ -1,4 +1,4 @@
--import { useEffect, useEffectEvent, useRef, useState } from 'react';
-+import { useEffect, useCallback, type ReactNode, useRef, useState } from 'react';
- 
- import { sourceFromParam } from './package/package-param.ts';
- import type { PackageSource } from './package/package-source.ts';
-@@ -6,8 +6,9 @@ import { CameraReadout } from './ui/camera-readout.tsx';
- import { describeError } from './ui/format.ts';
- import { LevelsPanel } from './ui/levels-panel.tsx';
- import { type OpenPackage, PackagePanel } from './ui/package-panel.tsx';
-+import { PhotoFiltersPanel } from './ui/photo-filters.tsx';
- import { SceneControls } from './ui/scene-controls/scene-controls.tsx';
--import { SettingsPanel } from './ui/settings-panel.tsx';
-+import { PhotographyPanel, SettingsPanel } from './ui/settings-panel.tsx';
- import { StatsPanel } from './ui/stats-panel.tsx';
- import { Viewer } from './viewer/viewer.ts';
- 
-@@ -25,14 +26,27 @@ const setParam = (name: string, value: string | null): void => {
- 	history.replaceState(null, '', url);
- };
- 
--export const App = () => {
-+/**
-+ * @param props optional host overlay and photography library URL; the overlay delegates navigation to the
-+ *   host
-+ * @returns the shared viewer canvas and scene panels
-+ */
-+export const App = ({
-+	overlay,
-+	filtersUrl,
-+}: {
-+	overlay?: (viewer: Viewer, panel: HTMLElement | null) => ReactNode;
-+	filtersUrl?: string;
-+}) => {
-+	const hosted = overlay !== undefined;
- 	const canvasRef = useRef<HTMLCanvasElement>(null);
- 	const [viewer, setViewer] = useState<Viewer | null>(null);
- 	const [error, setError] = useState<string | null>(null);
- 	const [current, setCurrent] = useState<OpenPackage | null>(null);
- 	const [status, setStatus] = useState('');
-+	const [pointPanelRoot, setPointPanelRoot] = useState<HTMLDivElement | null>(null);
- 
--	const open = (target: Viewer, source: PackageSource, param: string | null): void => {
-+	const open = useCallback((target: Viewer, source: PackageSource, param: string | null): void => {
- 		setParam(PACKAGE_PARAM, param);
- 		setStatus('opening…');
- 		setCurrent({ label: source.label, param });
-@@ -43,10 +57,7 @@ export const App = () => {
- 				setCurrent(null);
- 				setStatus(`couldn't open ${source.label}: ${describeError(err)}`);
- 			});
--	};
--	const openInitial = useEffectEvent((instance: Viewer, param: string) =>
--		open(instance, sourceFromParam(param), param),
--	);
-+	}, []);
- 
- 	useEffect(() => {
- 		const canvas = canvasRef.current;
-@@ -70,8 +81,8 @@ export const App = () => {
- 				}
- 				setViewer(instance);
- 				const param = new URL(location.href).searchParams.get(PACKAGE_PARAM);
--				if (param !== null) {
--					openInitial(instance, param);
-+				if (param !== null && !hosted) {
-+					open(instance, sourceFromParam(param), param);
- 				}
- 			})
- 			.catch((err: unknown) => {
-@@ -83,11 +94,11 @@ export const App = () => {
- 			abort.abort();
- 			created?.destroy();
- 		};
--	}, []);
-+	}, [hosted, open]);
- 
- 	// the current level lives in the URL, so a reload or a shared link opens over the same level
- 	useEffect(() => {
--		if (viewer === null) {
-+		if (viewer === null || hosted) {
- 			return;
- 		}
- 		return viewer.subscribe(() => {
-@@ -96,10 +107,10 @@ export const App = () => {
- 				setParam(LEVEL_PARAM, viewer.level);
- 			}
- 		});
--	}, [viewer]);
-+	}, [viewer, hosted]);
- 
- 	return (
--		<main className="app">
-+		<main className={`viewer-app${hosted ? ' hosted-viewer' : ''}`}>
- 			<canvas ref={canvasRef} className="viewport" />
- 			{error !== null && (
- 				<div className="panel error" role="alert">
-@@ -109,18 +120,25 @@ export const App = () => {
- 			)}
- 			{viewer !== null && (
- 				<>
-+					{overlay?.(viewer, pointPanelRoot)}
- 					<div className="dock left">
--						<PackagePanel
--							current={current}
--							status={status}
--							onOpen={(source, param) => open(viewer, source, param)}
--						/>
--						<StatsPanel viewer={viewer} />
-+						{!hosted && (
-+							<PackagePanel
-+								current={current}
-+								status={status}
-+								onOpen={(source, param) => open(viewer, source, param)}
-+							/>
-+						)}
-+						{!hosted && <StatsPanel viewer={viewer} />}
- 					</div>
- 					<div className="dock right">
--						<LevelsPanel viewer={viewer} />
-+						{hosted && <div ref={setPointPanelRoot} className="host-panel" />}
-+						{!hosted && <LevelsPanel viewer={viewer} />}
- 						<SceneControls viewer={viewer} />
-+						<PhotographyPanel viewer={viewer} />
-+						<PhotoFiltersPanel viewer={viewer} source={filtersUrl} />
- 						<SettingsPanel viewer={viewer} />
-+						{hosted && <StatsPanel viewer={viewer} />}
- 					</div>
- 					<div className="dock bottom">
- 						<CameraReadout viewer={viewer} />
 diff --git a/packages/viewer/src/environment/color-grading.ts b/packages/viewer/src/environment/color-grading.ts
 index 112457bd..624528c3 100644
 --- a/packages/viewer/src/environment/color-grading.ts
@@ -266,10 +132,10 @@ index 00000000..ed61d7ae
 +export { useViewerState } from './ui/use-viewer.ts';
 +export { Panel, PanelProvider, type PanelProps } from './ui/panel.tsx';
 diff --git a/packages/viewer/src/looks/lit-look.test.ts b/packages/viewer/src/looks/lit-look.test.ts
-index 88a2741a..329a961e 100644
+index 2e9a7ba9..e0512159 100644
 --- a/packages/viewer/src/looks/lit-look.test.ts
 +++ b/packages/viewer/src/looks/lit-look.test.ts
-@@ -691,3 +691,23 @@ test('a non-depth-writing alpha-tested Lit surface draws in cutoutOverlay withou
+@@ -815,3 +815,23 @@ test('a non-depth-writing alpha-tested Lit surface draws in cutoutOverlay withou
  	assert.equal(normal.queue, 'cutout');
  	assert.equal(normal.castsShadows, true);
  });
@@ -294,10 +160,10 @@ index 88a2741a..329a961e 100644
 +	);
 +});
 diff --git a/packages/viewer/src/looks/look.ts b/packages/viewer/src/looks/look.ts
-index 5089729e..08d629e5 100644
+index 673c11d4..83c6f05b 100644
 --- a/packages/viewer/src/looks/look.ts
 +++ b/packages/viewer/src/looks/look.ts
-@@ -124,6 +124,8 @@ export interface MaterialLook {
+@@ -149,6 +149,8 @@ export interface MaterialLook {
  	unsupported: boolean;
  	/** the draws the look's meshes join, which decide their pass and pipelines */
  	queue: LookQueue;
@@ -306,7 +172,7 @@ index 5089729e..08d629e5 100644
  	/** the faces the game culls, for unmirrored instances */
  	cull: MaterialCull;
  	/** whether the material draws into shadow maps */
-@@ -369,6 +371,7 @@ export const emptyLook = ({ drawn }: { drawn: boolean }): MaterialLook => ({
+@@ -420,6 +422,7 @@ export const emptyLook = ({ drawn }: { drawn: boolean }): MaterialLook => ({
  	drawn,
  	unsupported: false,
  	queue: 'opaque',
@@ -315,10 +181,10 @@ index 5089729e..08d629e5 100644
  	castsShadows: true,
  	readsBackground: false,
 diff --git a/packages/viewer/src/looks/material-looks.ts b/packages/viewer/src/looks/material-looks.ts
-index 41d2e8bc..08c1dfbf 100644
+index 568b1ce8..28c201d9 100644
 --- a/packages/viewer/src/looks/material-looks.ts
 +++ b/packages/viewer/src/looks/material-looks.ts
-@@ -107,7 +107,7 @@ const stencilMaskLook = (mask: StencilMaskSurface, cull: MaterialCull): Material
+@@ -114,7 +114,7 @@ const stencilMaskLook = (mask: StencilMaskSurface, cull: MaterialCull): Material
  
  // #endregion
  
@@ -327,7 +193,7 @@ index 41d2e8bc..08c1dfbf 100644
  	// a material that didn't convert (its reason is in debug/assets.json) has nothing to draw by
  	if (entry.status !== 'ready') {
  		return unsupportedLook();
-@@ -280,6 +280,31 @@ const surfaceLook = (entry: ReadyMaterial): MaterialLook => {
+@@ -326,6 +326,31 @@ const surfaceLook = (entry: ReadyMaterial): MaterialLook => {
   * @param materials the package's material table
   * @returns a look per material id
   */
@@ -359,7 +225,7 @@ index 41d2e8bc..08c1dfbf 100644
  export const materialLooks = (materials: MaterialTable): MaterialLook[] =>
  	materials.entries.map(materialLook);
  
-@@ -361,6 +386,7 @@ const effectMaterialLook = (
+@@ -407,6 +432,7 @@ const effectMaterialLook = (
  	drawn: true,
  	unsupported: false,
  	queue,
@@ -441,10 +307,11 @@ index 00000000..a4b86d04
 +});
 diff --git a/packages/viewer/src/package/decode-data.ts b/packages/viewer/src/package/decode-data.ts
 new file mode 100644
-index 00000000..d0fd0ba8
+index 00000000..c4e9d101
 --- /dev/null
 +++ b/packages/viewer/src/package/decode-data.ts
-@@ -0,0 +1,447 @@
+@@ -0,0 +1,494 @@
++import { AnimationKind, decodeAnimationBlob } from '@endfield-noclip/package-format/animation';
 +import { BlobCodec } from '@endfield-noclip/package-format/blobs';
 +import {
 +	decodeGeometryBlob,
@@ -466,7 +333,7 @@ index 00000000..d0fd0ba8
 +
 +import { MeshoptDecoder } from 'meshoptimizer/decoder';
 +
-+import { buildInstanceRows, movingRows } from '../content/instance-rows.ts';
++import { buildInstanceRows } from '../content/instance-rows.ts';
 +import { buildRowBounds } from '../streaming/row-groups.ts';
 +
 +import type {
@@ -690,7 +557,15 @@ index 00000000..d0fd0ba8
 +): { response: DecodedGeometry; transfer: Transferable[] } => {
 +	const blob = decodeGeometryBlob(raw);
 +	const position = findStream(blob, VertexAttribute.Position);
-+	const positions = decodeAttribute(blob, VertexAttribute.Position, GeometryVertexFormat.Unorm16x4);
++	let positionFormat: DecodedGeometry['positionFormat'];
++	let positions: ArrayBuffer | null = null;
++	if (position?.format === GeometryVertexFormat.Float32x4) {
++		positionFormat = 'float32x4';
++		positions = decodeAttribute(blob, VertexAttribute.Position, GeometryVertexFormat.Float32x4);
++	} else {
++		positionFormat = 'unorm16x4';
++		positions = decodeAttribute(blob, VertexAttribute.Position, GeometryVertexFormat.Unorm16x4);
++	}
 +	if (position === undefined || positions === null) {
 +		throw new Error('geometry has no positions');
 +	}
@@ -722,6 +597,7 @@ index 00000000..d0fd0ba8
 +			// an animation's output is quantized to the box its frames lie in
 +			positionOffset: blob.animation?.offset ?? position.offset,
 +			positionScale: blob.animation?.scale ?? position.scale,
++			positionFormat,
 +			positions,
 +			normals,
 +			uvs,
@@ -748,7 +624,12 @@ index 00000000..d0fd0ba8
 +	bind: { positions: ArrayBuffer; normals: ArrayBuffer | null; tangents: ArrayBuffer | null },
 +): DecodedSkin => {
 +	const weights = decodeAttribute(blob, VertexAttribute.BlendWeight, GeometryVertexFormat.Unorm16x4);
-+	const bones = decodeAttribute(blob, VertexAttribute.BlendIndices, GeometryVertexFormat.Uint8x4);
++	const wideBones = findStream(blob, VertexAttribute.BlendIndices)?.format === GeometryVertexFormat.Uint16x4;
++	const bones = decodeAttribute(
++		blob,
++		VertexAttribute.BlendIndices,
++		wideBones ? GeometryVertexFormat.Uint16x4 : GeometryVertexFormat.Uint8x4,
++	);
 +	if (weights === null || bones === null) {
 +		throw new Error('animated geometry has no bone weights or indices');
 +	}
@@ -771,6 +652,7 @@ index 00000000..d0fd0ba8
 +		tangentWord: words[2],
 +		weightWord: words[3],
 +		boneWord: words[4],
++		wideBones,
 +		bindOffset: position.offset,
 +		bindScale: position.scale,
 +		boneCount: animation.boneCount,
@@ -841,7 +723,8 @@ index 00000000..d0fd0ba8
 +				rowsF32: new Float32Array(built.rows.buffer),
 +				cull: built.cull,
 +				runs: built.runs,
-+				moving: movingRows(built.spins, built.rides),
++				spins: built.spins,
++				rides: built.rides,
 +			});
 +			return {
 +				response: { id: request.id, kind: 'instances', ...built, bounds },
@@ -877,6 +760,36 @@ index 00000000..d0fd0ba8
 +		}
 +		case 'geometry': {
 +			return decodeGeometry(request.id, raw);
++		}
++		case 'animation': {
++			const clip = decodeAnimationBlob(raw);
++			const transfer: Transferable[] = [];
++			switch (clip.kind) {
++				case AnimationKind.Skin: {
++					const copy = new Float32Array(clip.matrices);
++					clip.matrices = copy;
++					transfer.push(copy.buffer);
++					break;
++				}
++				case AnimationKind.Transform: {
++					const copy = new Float32Array(clip.frames);
++					clip.frames = copy;
++					transfer.push(copy.buffer);
++					break;
++				}
++				case AnimationKind.Material: {
++					for (const track of clip.tracks) {
++						const copy = new Float32Array(track.samples);
++						track.samples = copy;
++						transfer.push(copy.buffer);
++					}
++					break;
++				}
++				default: {
++					break;
++				}
++			}
++			return { response: { id: request.id, kind: 'animation', clip }, transfer };
 +		}
 +	}
 +};
@@ -920,20 +833,28 @@ index 2cac49c2..b9b132b5 100644
  		throw new Error(`zstd frame decoded to ${raw.byteLength} bytes, expected ${rawLength ?? 'more'}`);
  	}
 diff --git a/packages/viewer/src/render/frame/frame-graph.ts b/packages/viewer/src/render/frame/frame-graph.ts
-index f06a1f6e..2a9192e3 100644
+index 768349a3..5d9053e8 100644
 --- a/packages/viewer/src/render/frame/frame-graph.ts
 +++ b/packages/viewer/src/render/frame/frame-graph.ts
-@@ -475,6 +475,25 @@ export const encodeFrame = (
+@@ -446,6 +446,7 @@ export const encodeFrame = (
+ 	const composited = composer.ensureTarget(scene, width, height);
+ 	const { resized, historyViews } = post.ensureSized(scene, {
+ 		composited: composited.view,
++		compositedTexture: composited.texture,
+ 		width,
+ 		height,
+ 		outputWidth,
+@@ -595,6 +596,25 @@ export const encodeFrame = (
  		outputWidth,
  		outputHeight,
  		settings: settings.post,
 +		scene,
 +		time: context.time,
-+		afterDepthOfField: (screenEncoder, target, copy) => {
++		afterDepthOfField: (screenEncoder, target) => {
 +			if (sceneFrame === null || !meshes.hasAfterDof) {
 +				return;
 +			}
-+			copy();
++			composer.copyComposite(screenEncoder, scene);
 +			const pass = beginPass(
 +				screenEncoder,
 +				{
@@ -943,17 +864,17 @@ index f06a1f6e..2a9192e3 100644
 +				},
 +				sceneFrame,
 +			);
-+			draws += meshes.encodeAfterDof(pass, { ...scene, background: scene.radiance });
++			draws += meshes.encodeAfterDof(pass, { ...scene, background: scene.lit });
 +			pass.end();
 +		},
  	});
  	return draws;
  };
 diff --git a/packages/viewer/src/render/frame/render-targets.ts b/packages/viewer/src/render/frame/render-targets.ts
-index 4b5d356f..e6f9074f 100644
+index 549fddac..6ffb6a79 100644
 --- a/packages/viewer/src/render/frame/render-targets.ts
 +++ b/packages/viewer/src/render/frame/render-targets.ts
-@@ -352,7 +352,8 @@ export class RenderTargets {
+@@ -380,7 +380,8 @@ export class RenderTargets {
  		};
  		if (this.format.stencil) {
  			depth.stencilLoadOp = 'load';
@@ -964,10 +885,10 @@ index 4b5d356f..e6f9074f 100644
  		this.#transparentDepth = depth;
  		return depth;
 diff --git a/packages/viewer/src/render/meshes/draw-ranges.ts b/packages/viewer/src/render/meshes/draw-ranges.ts
-index efaed3a3..7acd77bb 100644
+index 47798dd0..95f2a113 100644
 --- a/packages/viewer/src/render/meshes/draw-ranges.ts
 +++ b/packages/viewer/src/render/meshes/draw-ranges.ts
-@@ -159,7 +159,7 @@ export const PHASES = {
+@@ -174,7 +174,7 @@ export const PHASES = {
  } as const satisfies Record<string, DrawPhase>;
  
  /** the passes that draw meshes */
@@ -975,8 +896,8 @@ index efaed3a3..7acd77bb 100644
 +export type MeshPass = SurfacePass | EffectPass | 'shadow' | 'lightShadow' | 'afterDof';
  
  /** passes over the main pass's targets */
- export type SurfacePass = 'prepass' | 'main';
-@@ -206,6 +206,15 @@ export const PASS_PHASES: Record<MeshPass, readonly DrawPhase[]> = {
+ export type SurfacePass = 'prepass' | 'main' | 'effectOpaque';
+@@ -222,6 +222,15 @@ export const PASS_PHASES: Record<MeshPass, readonly DrawPhase[]> = {
  	waterFoam: [PHASES.waterFoam, PHASES.waterFoamBehind, PHASES.waterFoamThrough],
  	shadow: [PHASES.shadowOpaqueLit, PHASES.shadowOpaque, PHASES.shadowCutout],
  	lightShadow: [PHASES.lightShadowOpaqueLit, PHASES.lightShadowOpaque, PHASES.lightShadowCutout],
@@ -993,12 +914,12 @@ index efaed3a3..7acd77bb 100644
  
  /**
 diff --git a/packages/viewer/src/render/meshes/mesh-renderer.ts b/packages/viewer/src/render/meshes/mesh-renderer.ts
-index 25d095ab..c376c5c6 100644
+index 7b513b4a..94ad34e5 100644
 --- a/packages/viewer/src/render/meshes/mesh-renderer.ts
 +++ b/packages/viewer/src/render/meshes/mesh-renderer.ts
-@@ -79,7 +79,17 @@ const createLookTable = (device: GPUDevice): GrowableBuffer =>
- 		usage: GPUBufferUsage.STORAGE,
- 	});
+@@ -55,7 +55,17 @@ const MAX_DRAWS = 16_384;
+  */
+ const OCCLUSION_MAX_MOVE = 8;
  
 +interface SortedDraw {
 +	band: number;
@@ -1014,7 +935,7 @@ index 25d095ab..c376c5c6 100644
  	geometry: ResidentGeometry;
  	indexCount: number;
  	firstIndex: number;
-@@ -207,6 +217,7 @@ export class MeshRenderer {
+@@ -172,6 +182,7 @@ export class MeshRenderer {
  	#entries: DrawEntry[] = [];
  	/** prepared draws in {@link DRAW_RANGES} order; entries past {@link #drawCount} are reused next frame */
  	#draws: PreparedDraw[] = [];
@@ -1022,7 +943,7 @@ index 25d095ab..c376c5c6 100644
  	#drawCount = 0;
  	/**
  	 * the transparent pass's draw order, as `[draw, first, count, phase]` quads: the draws that write the
-@@ -509,6 +520,7 @@ export class MeshRenderer {
+@@ -451,6 +462,7 @@ export class MeshRenderer {
  
  	/** draws nothing this frame */
  	clear(): void {
@@ -1030,15 +951,15 @@ index 25d095ab..c376c5c6 100644
  		this.#drawCount = 0;
  		this.#sortedRuns.length = 0;
  		this.instanceCount = 0;
-@@ -598,6 +610,7 @@ export class MeshRenderer {
+@@ -542,6 +554,7 @@ export class MeshRenderer {
  			}
  			range.end = d;
  		}
 +		this.#afterDof.sort((a, b) => a.band - b.band || a.queue - b.queue || b.distance - a.distance);
  		this.#drawCount = d;
  		this.#prepareSorted();
- 		this.#flushLooks();
-@@ -631,6 +644,9 @@ export class MeshRenderer {
+ 		this.#looks.flush();
+@@ -575,6 +588,9 @@ export class MeshRenderer {
  			const range = this.#range(phase.range);
  			for (let i = range.castOnlyEnd; i < range.end; i++) {
  				const draw = this.#draws[i];
@@ -1048,7 +969,7 @@ index 25d095ab..c376c5c6 100644
  				if (draw.stencil?.replace === true || draw.distances.length === 0) {
  					runs.push(i, 0, draw.count, p);
  					continue;
-@@ -809,6 +825,7 @@ export class MeshRenderer {
+@@ -696,6 +712,7 @@ export class MeshRenderer {
  		const draw = this.#draws[d];
  		if (draw === undefined) {
  			this.#draws[d] = {
@@ -1056,17 +977,17 @@ index 25d095ab..c376c5c6 100644
  				geometry: resident,
  				indexCount: range.indexCount,
  				firstIndex: range.firstIndex,
-@@ -827,6 +844,7 @@ export class MeshRenderer {
- 				fading: bucket.fading,
+@@ -715,6 +732,7 @@ export class MeshRenderer {
+ 				vertexTextured: look.params[SwayRow.kind] === SwayKind.Mushroom,
  			};
  		} else {
 +			draw.afterDof = look.afterDof !== null;
  			draw.geometry = resident;
  			draw.indexCount = range.indexCount;
  			draw.firstIndex = range.firstIndex;
-@@ -848,6 +866,21 @@ export class MeshRenderer {
- 			draw.bands = bucket.bands;
+@@ -737,6 +755,21 @@ export class MeshRenderer {
  			draw.fading = bucket.fading;
+ 			draw.vertexTextured = look.params[SwayRow.kind] === SwayKind.Mushroom;
  		}
 +		if (look.afterDof !== null && !bucket.castOnly) {
 +			const phase = PASS_PHASES.afterDof.find((candidate) => candidate.range === info.range);
@@ -1086,7 +1007,7 @@ index 25d095ab..c376c5c6 100644
  		if (!bucket.castOnly && gpu === null) {
  			this.instanceCount += span.count;
  			this.triangles += (span.count * range.indexCount) / 3;
-@@ -920,6 +953,21 @@ export class MeshRenderer {
+@@ -809,6 +842,21 @@ export class MeshRenderer {
  		return this.#encode(which, pass, -1);
  	}
  
@@ -1108,8 +1029,8 @@ index 25d095ab..c376c5c6 100644
  	/** builds the groups of a pass's effect draws, which also bind the main pass's outputs */
  	#bindEffectGroups(which: MeshPass, inputs: EffectInputs): void {
  		for (const phase of PASS_PHASES[which]) {
-@@ -990,7 +1038,7 @@ export class MeshRenderer {
- 	 * encodes a pass's phases in order; nothing if any of its or its paired pass's pipelines isn't ready.
+@@ -851,7 +899,7 @@ export class MeshRenderer {
+ 	 * encodes a pass's phases in order; draws whose pipeline is still compiling are skipped until ready.
  	 * `layer` limits each draw to the rows that shadow layer draws, or is -1 for all of them
  	 */
 -	#encode(which: MeshPass, pass: GPURenderPassEncoder, layer: number): number {
@@ -1117,7 +1038,7 @@ index 25d095ab..c376c5c6 100644
  		if (this.#drawCount === 0) {
  			return 0;
  		}
-@@ -1015,6 +1063,14 @@ export class MeshRenderer {
+@@ -869,6 +917,14 @@ export class MeshRenderer {
  			material: null,
  		};
  		let draws = 0;
@@ -1132,7 +1053,7 @@ index 25d095ab..c376c5c6 100644
  		if (which === 'transparent') {
  			const phases = PASS_PHASES.transparent;
  			const runs = this.#sortedRuns;
-@@ -1039,6 +1095,9 @@ export class MeshRenderer {
+@@ -893,6 +949,9 @@ export class MeshRenderer {
  			const to = phase.shadow ? range.castersEnd : range.end;
  			for (let i = from; i < to; i++) {
  				const draw = this.#draws[i];
@@ -2920,121 +2841,152 @@ index 00000000..36ee2d6c
 +	return vec4f(sample.rgb * in.color.rgb * sample.a * in.color.a, 0.0);
 +}
 diff --git a/packages/viewer/src/render/post/post-process.ts b/packages/viewer/src/render/post/post-process.ts
-index f1ec4fe9..57c64159 100644
+index 46a81ff5..01b16df4 100644
 --- a/packages/viewer/src/render/post/post-process.ts
 +++ b/packages/viewer/src/render/post/post-process.ts
-@@ -19,8 +19,11 @@ import { AutoExposure } from './auto-exposure.ts';
+@@ -1,3 +1,5 @@
++import type { PhotoFilter } from '@endfield-noclip/package-format/photo-filters';
++
+ import type { Environment } from '../../environment/environment.ts';
+ import type { LensFlareLook } from '../../environment/lens-flare-look.ts';
+ import type { PipelineCache } from '../../gfx/pipeline-cache.ts';
+@@ -7,8 +9,10 @@ import type { SceneTextures } from '../frame/render-targets.ts';
+ 
+ import { AutoExposure } from './auto-exposure.ts';
  import { Bloom } from './bloom.ts';
- import { CAMERA_HISTORY_FLOATS } from './camera-history.ts';
- import { Composite } from './composite.ts';
 +import { DepthOfField } from './depth-of-field.ts';
  import { LensFlares } from './lens-flare.ts';
  import { LightShafts } from './light-shafts.ts';
-+import type { PhotoLut } from './photo-filters.ts';
 +import { PhotoParticles } from './photo-particles.ts';
- import { POST_BYTES, writeEnvironmentUniforms, writeFrameUniforms } from './post-uniforms.ts';
- import { ScreenSpaceReflections } from './screen-space-reflections.ts';
  import { type PostSettings, effectiveSettings, postExposure } from './settings.ts';
-@@ -51,6 +54,9 @@ export interface CompositedScene {
-  * then the caller's passes over the composited scene, then {@link encodeAfterScene}
+ import { TemporalAA } from './temporal-aa.ts';
+ import { Tonemap } from './tonemap.ts';
+@@ -17,6 +21,9 @@ import { Tonemap } from './tonemap.ts';
+ interface Sized {
+ 	version: number;
+ 	historyViews: [GPUTextureView, GPUTextureView];
++	composited: GPUTextureView;
++	compositedTexture: GPUTexture;
++	depth: GPUTextureView;
+ }
+ 
+ /**
+@@ -24,12 +31,15 @@ interface Sized {
+  * tonemapping to the swapchain
   */
  export class PostProcess {
-+	/** stationary particle effects owned by the selected photo look */
-+	readonly photoParticles: PhotoParticles;
++	#device: GPUDevice;
+ 	#lightShafts: LightShafts;
+ 	#lensFlares: LensFlares;
+ 	#taa: TemporalAA;
+ 	#autoExposure: AutoExposure;
+ 	#bloom: Bloom;
+ 	#tonemap: Tonemap;
 +	#focus: DepthOfField | null = null;
- 	/**
- 	 * explicit layouts of the post uniforms and of the sky's reads (the sky-view LUT, its sampler and the
- 	 * volumetric fog, at their atmosphere.wgsl and sky.wgsl bindings), for passes that also bind the main
-@@ -124,6 +130,7 @@ export class PostProcess {
- 		this.#taa = new TemporalAA(device, postUniforms);
- 		this.#bloom = new Bloom(device, postUniforms, sampler);
- 		this.#tonemap = new Tonemap(device, postUniforms, sampler, swapchainFormat);
-+		this.photoParticles = new PhotoParticles(device);
++	#photoParticles: PhotoParticles | null = null;
+ 	#sized: Sized | null = null;
+ 	#environment: Environment;
+ 
+@@ -56,11 +66,37 @@ export class PostProcess {
+ 		this.#bloom = new Bloom(device, pipelines, postUniforms, sampler);
+ 		this.#tonemap = new Tonemap(device, pipelines, postUniforms, sampler, swapchainFormat);
  		this.#environment = environment;
- 		writeEnvironmentUniforms(this.#data, environment);
- 
-@@ -173,10 +180,16 @@ export class PostProcess {
- 			this.#bloom.bytes +
- 			this.#taa.bytes +
- 			this.#reflections.bytes +
--			this.#lightShafts.bytes
-+			this.#lightShafts.bytes +
-+			(this.#focus?.bytes ?? 0)
- 		);
- 	}
- 
-+	/** the photo LUT applied after scene grading and tonemapping */
-+	get photoLut(): PhotoLut {
-+		return this.#tonemap.photoLut;
++		this.#device = device;
 +	}
 +
++	/**
++	 * @param filter selected look
++	 * @param strength contribution of the look's LUT
++	 */
++	setPhotoLut(filter: PhotoFilter | null, strength: number): void {
++		this.#tonemap.setPhotoLut(filter, strength);
++	}
++
++	/**
++	 * @param filter selected look
++	 * @param camera the camera pose used to anchor photo effects
++	 * @param time the current animation clock
++	 */
++	setPhotoEffects(filter: PhotoFilter | null, camera: Camera, time: number): void {
++		if (this.#photoParticles === null && (filter?.effects?.length ?? 0) > 0) {
++			this.#photoParticles = new PhotoParticles(this.#device);
++		}
++		this.#photoParticles?.set(filter, camera, time);
++	}
++
++	/** @returns whether the selected photo look needs animation frames */
++	get photoEffectsActive(): boolean {
++		return this.#photoParticles?.active ?? false;
+ 	}
+ 
+ 	/** @returns bytes of the post chain's render targets */
+ 	get bytes(): number {
+-		return this.#bloom.bytes + this.#taa.bytes + this.#lightShafts.bytes;
++		return this.#bloom.bytes + this.#taa.bytes + this.#lightShafts.bytes + (this.#focus?.bytes ?? 0);
+ 	}
+ 
  	/**
- 	 * binds the sky's textures as they stream in; what isn't resident yet doesn't draw.
- 	 *
-@@ -234,6 +247,12 @@ export class PostProcess {
+@@ -91,6 +127,12 @@ export class PostProcess {
+ 	/** drops the temporal antialiasing history after a camera cut */
  	reset(): void {
  		this.#taa.reset();
- 		this.#reflections.reset();
 +		this.resetFocus();
 +	}
 +
-+	/** discards photography history after a camera cut or focus-setting change */
++	/** drops temporal depth-of-field history after focus changes */
 +	resetFocus(): void {
 +		this.#focus?.reset();
  	}
  
  	/** @param enabled whether the temporal antialiasing jitters and accumulates; off passes the frame through */
-@@ -264,6 +283,11 @@ export class PostProcess {
- 		return this.#taa.phase;
+@@ -189,6 +231,7 @@ export class PostProcess {
+ 		scene: SceneTextures,
+ 		input: {
+ 			composited: GPUTextureView;
++			compositedTexture: GPUTexture;
+ 			width: number;
+ 			height: number;
+ 			outputWidth: number;
+@@ -218,7 +261,8 @@ export class PostProcess {
+ 		this.#lensFlares.resize({ scene, composited });
+ 		this.#bloom.resize({ histories, outputWidth, outputHeight });
+ 		this.#tonemap.resize({ histories, bloom: this.#bloom.result });
+-		this.#sized = { version: scene.version, historyViews };
++		this.#focus?.release();
++		this.#sized = { version: scene.version, historyViews, composited, compositedTexture: input.compositedTexture, depth: scene.depth };
+ 		return { resized: true, historyViews };
  	}
  
-+	/** this frame's projection jitter, for passes sharing the main pass's depth */
-+	get jitter(): readonly [number, number] {
-+		return this.#taa.jitter;
-+	}
-+
- 	/** jumps the auto exposure straight to its next reading (a new package or level) */
- 	resetExposure(): void {
- 		this.#autoExposure.reset();
-@@ -310,6 +334,7 @@ export class PostProcess {
- 			return current;
- 		}
- 		this.#targets.destroy();
-+		this.#focus?.release();
- 		const sceneTexture = this.#targets.create({
- 			label: 'hdr scene',
- 			size: [width, height],
-@@ -473,6 +498,11 @@ export class PostProcess {
+@@ -233,6 +277,9 @@ export class PostProcess {
  		encoder: GPUCommandEncoder,
  		input: {
  			swapchain: GPUTextureView;
-+			scene: SceneTextures;
-+			/** viewer animation time, frozen when animation is disabled */
 +			time: number;
-+			/** transparent effects whose render queue puts them after photography */
-+			afterDepthOfField: (encoder: GPUCommandEncoder, target: GPUTextureView, copy: () => void) => void;
++			scene: SceneTextures;
++			afterDepthOfField: (encoder: GPUCommandEncoder, target: GPUTextureView) => void;
  			camera: Camera;
  			width: number;
  			height: number;
-@@ -489,10 +519,41 @@ export class PostProcess {
+@@ -249,10 +296,40 @@ export class PostProcess {
  			return;
  		}
  		if (settings.debugView === 'lit') {
-+			this.photoParticles.encode(encoder, {
++			this.#photoParticles?.encode(encoder, {
 +				time: input.time,
-+				target: sized.sceneView,
-+				depth: input.scene.depth,
++				target: sized.composited,
++				depth: sized.depth,
 +				camera,
 +				aspect: width / height,
 +				exposure: postExposure(settings, this.#autoExposure),
 +			});
  			this.#lightShafts.encode(encoder, { camera, aspect: width / height, look: environment.lightShaft });
+-			// the game draws the flare after the shafts, which don't see it
 +			if (settings.depthOfField) {
 +				this.#focus ??= new DepthOfField(this.#device);
 +				this.#focus.encode(encoder, {
 +					camera,
 +					jitter: this.#taa.jitter,
-+					scene: sized.scene,
++					scene: sized.compositedTexture,
 +					depth: input.scene.depth,
 +					waterDepth: input.scene.waterDepth,
 +					settings: {
@@ -3047,9 +2999,8 @@ index f1ec4fe9..57c64159 100644
 +				});
 +			}
 +		}
-+		input.afterDepthOfField(encoder, sized.sceneView, () => this.copyComposite(encoder, input.scene));
++		input.afterDepthOfField(encoder, sized.composited);
 +		if (settings.debugView === 'lit') {
- 			// the game draws the flare after the shafts, which don't see it
  			this.#lensFlares.encode(encoder, { camera, width, height });
  		}
 +		if (!settings.depthOfField) {
@@ -3058,17 +3009,18 @@ index f1ec4fe9..57c64159 100644
  		const resolved = this.#taa.encode(encoder, camera);
  		if (settings.autoExposure) {
  			this.#autoExposure.encode(
-@@ -520,5 +581,8 @@ export class PostProcess {
- 		this.#reflections.destroy();
- 		this.#lightShafts.destroy();
- 		this.#lensFlares.destroy();
+@@ -269,6 +346,9 @@ export class PostProcess {
+ 
+ 	/** frees the post chain's GPU resources */
+ 	destroy(): void {
 +		this.#tonemap.destroy();
-+		this.photoParticles.destroy();
++		this.#photoParticles?.destroy();
 +		this.#focus?.destroy();
- 	}
- }
+ 		this.#bloom.destroy();
+ 		this.#autoExposure.destroy();
+ 		this.#taa.destroy();
 diff --git a/packages/viewer/src/render/post/settings.ts b/packages/viewer/src/render/post/settings.ts
-index 3178d551..c55adccc 100644
+index 55808fa4..1e93e6a8 100644
 --- a/packages/viewer/src/render/post/settings.ts
 +++ b/packages/viewer/src/render/post/settings.ts
 @@ -15,6 +15,9 @@ export type Tonemapper = (typeof TONEMAPPERS)[number];
@@ -3081,7 +3033,7 @@ index 3178d551..c55adccc 100644
  	/** follow the game's auto exposure on top of the compensation */
  	autoExposure: boolean;
  	tonemapper: Tonemapper;
-@@ -45,6 +48,7 @@ export const effectiveSettings = (settings: PostSettings): PostSettings => {
+@@ -47,6 +50,7 @@ export const effectiveSettings = (settings: PostSettings): PostSettings => {
  		exposure: 0,
  		autoExposure: false,
  		tonemapper: 'none',
@@ -3090,55 +3042,104 @@ index 3178d551..c55adccc 100644
  		atmosphereFog: false,
  		flowNoise: false,
 diff --git a/packages/viewer/src/render/post/tonemap.ts b/packages/viewer/src/render/post/tonemap.ts
-index ce498744..9f567f95 100644
+index 815aaa2d..8d3eb8d8 100644
 --- a/packages/viewer/src/render/post/tonemap.ts
 +++ b/packages/viewer/src/render/post/tonemap.ts
-@@ -1,11 +1,14 @@
- import { autoBindGroup, encodeFullscreen, fullscreenPipeline } from '../../gfx/fullscreen-pass.ts';
+@@ -1,3 +1,5 @@
++import type { PhotoFilter } from '@endfield-noclip/package-format/photo-filters';
++
+ import {
+ 	type FullscreenPass,
+ 	type FullscreenPipeline,
+@@ -8,6 +10,7 @@ import {
+ import type { PipelineCache } from '../../gfx/pipeline-cache.ts';
  import colorWgsl from '../shaders/common/color.wgsl?raw';
  
 +import { PhotoLut } from './photo-filters.ts';
  import { postShaderModule } from './shader-source.ts';
  import tonemapWgsl from './tonemap.wgsl?raw';
  
- /** the final pass (tonemap.wgsl): exposure, bloom, vignette, grading and tonemapping into the swapchain */
- export class Tonemap {
-+	/** the photo LUT applied after scene grading and tonemapping */
-+	readonly photoLut: PhotoLut;
- 	#device: GPUDevice;
+@@ -18,6 +21,9 @@ export class Tonemap {
  	#sampler: GPUSampler;
- 	#pipeline: GPURenderPipeline;
-@@ -33,6 +36,7 @@ export class Tonemap {
- 			entryPoint: 'fs_tonemap',
- 			targets: [{ format: swapchainFormat }],
- 		});
-+		this.photoLut = new PhotoLut(device, this.#pipeline.getBindGroupLayout(2));
- 		this.#postGroup = autoBindGroup(device, this.#pipeline, 0, { 0: { buffer: postUniforms } });
- 	}
+ 	#pipeline: FullscreenPipeline;
+ 	#postGroup: GPUBindGroup | null = null;
++	#photoLut: PhotoLut | null = null;
++	#filter: PhotoFilter | null = null;
++	#strength = 1;
+ 	/** per temporal history: the pass reading it */
+ 	#passes: [FullscreenPass, FullscreenPass] | null = null;
  
-@@ -62,8 +66,13 @@ export class Tonemap {
- 		encodeFullscreen(encoder, {
- 			label: 'tonemap',
- 			pipeline: this.#pipeline,
--			groups: [this.#postGroup, this.#groups[input.history]],
-+			groups: [this.#postGroup, this.#groups[input.history], this.photoLut.group],
- 			targets: [input.swapchain],
- 		});
+@@ -58,16 +64,23 @@ export class Tonemap {
+ 			return {
+ 				label: 'tonemap',
+ 				pipeline: this.#pipeline,
+-				bind: (compiled) => [
+-					(this.#postGroup ??= autoBindGroup(this.#device, compiled, 0, {
+-						0: { buffer: this.#postUniforms },
+-					})),
+-					autoBindGroup(this.#device, compiled, 1, {
+-						0: historyView,
+-						1: bloomView,
+-						2: this.#sampler,
+-					}),
+-				],
++				bind: (compiled) => {
++					if (this.#photoLut === null) {
++						this.#photoLut = new PhotoLut(this.#device, compiled.getBindGroupLayout(2));
++						this.#photoLut.set(this.#filter, this.#strength);
++					}
++					return [
++						(this.#postGroup ??= autoBindGroup(this.#device, compiled, 0, {
++							0: { buffer: this.#postUniforms },
++						})),
++						autoBindGroup(this.#device, compiled, 1, {
++							0: historyView,
++							1: bloomView,
++							2: this.#sampler,
++						}),
++						this.#photoLut.group,
++					];
++				},
+ 				targets: [],
+ 			};
+ 		};
+@@ -86,4 +99,28 @@ export class Tonemap {
+ 		pass.targets[0] = input.swapchain;
+ 		encodeFullscreen(encoder, pass);
  	}
 +
-+	/** frees the final pass's photo LUT */
++	/**
++	 * @param filter selected look
++	 * @param strength contribution of the look's LUT
++	 */
++	setPhotoLut(filter: PhotoFilter | null, strength: number): void {
++		if (filter?.lut && !this.#device.features.has('texture-compression-bc')) {
++			throw new Error('photo LUTs require BC texture support');
++		}
++		const current = this.#photoLut?.group;
++		this.#photoLut?.set(filter, strength);
++		this.#filter = filter;
++		this.#strength = strength;
++		if (this.#photoLut?.group !== current && this.#passes !== null) {
++			for (const pass of this.#passes) {
++				delete pass.groups;
++			}
++		}
++	}
++
++	/** frees photography GPU resources */
 +	destroy(): void {
-+		this.photoLut.destroy();
++		this.#photoLut?.destroy();
 +	}
  }
 diff --git a/packages/viewer/src/render/post/tonemap.wgsl b/packages/viewer/src/render/post/tonemap.wgsl
-index cf017022..c041a5e6 100644
+index 9c64238c..bdcf1d81 100644
 --- a/packages/viewer/src/render/post/tonemap.wgsl
 +++ b/packages/viewer/src/render/post/tonemap.wgsl
-@@ -10,6 +10,20 @@
- @group(1) @binding(0) var scene_texture: texture_2d<f32>;
- @group(1) @binding(1) var bloom_texture: texture_2d<f32>;
- @group(1) @binding(2) var bilinear: sampler;
+@@ -134,6 +134,21 @@ fn cas_compress(c: vec3f) -> vec3f {
+ 	return c / (1.0 + max(c.r, max(c.g, c.b)));
+ }
+ 
 +@group(2) @binding(0) var photo_lut: texture_2d<f32>;
 +@group(2) @binding(1) var photo_sampler: sampler;
 +@group(2) @binding(2) var<uniform> photo: vec4f;
@@ -3153,10 +3154,11 @@ index cf017022..c041a5e6 100644
 +	let b = textureSampleLevel(photo_lut, photo_sampler, uv + vec2f(select(1.0 / size, 0.0, slice >= size - 1.0), 0.0), 0.0).rgb;
 +	return mix(color, mix(a, b, fract(c.b)), photo.y);
 +}
- 
- const LIN_TO_LMS = mat3x3f(
- 	vec3f(0.390405, 0.549941, 0.00892632),
-@@ -172,5 +186,10 @@ fn fs_tonemap(in: FullscreenOut) -> @location(0) vec4f {
++
+ @fragment
+ fn fs_tonemap(in: FullscreenOut) -> @location(0) vec4f {
+ 	let px = vec2i(in.position.xy);
+@@ -192,5 +207,9 @@ fn fs_tonemap(in: FullscreenOut) -> @location(0) vec4f {
  	}
  	// ±half a step of dither against banding in the sky
  	let noise = (gradient_noise(in.position.xy + post.eye.w * 5.588238) - 0.5) / 255.0;
@@ -3166,7 +3168,6 @@ index cf017022..c041a5e6 100644
 +		display = photo_lookup(display);
 +	}
 +	return vec4f(display + noise, 1.0);
-+
  }
 diff --git a/packages/viewer/src/scene/camera.ts b/packages/viewer/src/scene/camera.ts
 index 1d916c4c..92959038 100644
@@ -4197,10 +4198,10 @@ index 00000000..3091b653
 +});
 diff --git a/packages/viewer/src/scene/point-view.ts b/packages/viewer/src/scene/point-view.ts
 new file mode 100644
-index 00000000..0381eea2
+index 00000000..38d55827
 --- /dev/null
 +++ b/packages/viewer/src/scene/point-view.ts
-@@ -0,0 +1,587 @@
+@@ -0,0 +1,592 @@
 +/* oxlint-disable no-await-in-loop -- avoid a burst of requests while examining local instances */
 +import { DrawRole } from '@endfield-noclip/package-format/instances';
 +import { CORE_ARCHIVE_INDEX } from '@endfield-noclip/package-format/manifest';
@@ -4688,7 +4689,12 @@ index 00000000..0381eea2
 +					}
 +					const geometry = await mesh;
 +					remember(pkg, entry.blob, geometry);
-+					const vertices = new Uint16Array(geometry.positions),
++					const floatPositions = geometry.positionFormat === 'float32x4';
++					const vertices = floatPositions
++						? new Float32Array(geometry.positions)
++						: new Uint16Array(geometry.positions);
++					const positionDivisor = floatPositions ? 1 : 65535;
++					const
 +						indices =
 +							geometry.indexSize === 2
 +								? new Uint16Array(geometry.indices)
@@ -4699,7 +4705,7 @@ index 00000000..0381eea2
 +					}
 +					const vertex = (index: number): Vec3 => {
 +						const local = geometry.positionOffset.map(
-+							(v, i) => v + (vertices[index * 4 + i] / 65535) * geometry.positionScale[i],
++							(v, i) => v + (vertices[index * 4 + i] / positionDivisor) * geometry.positionScale[i],
 +						);
 +						return [
 +							block.origin[0] + dot([rows[at], rows[at + 1], rows[at + 2]], local) + rows[at + 3],
@@ -4789,10 +4795,10 @@ index 00000000..0381eea2
 +	return score;
 +};
 diff --git a/packages/viewer/src/streaming/mesh-buckets.ts b/packages/viewer/src/streaming/mesh-buckets.ts
-index 7dbf4f05..5d53d074 100644
+index 37200697..e9b081c8 100644
 --- a/packages/viewer/src/streaming/mesh-buckets.ts
 +++ b/packages/viewer/src/streaming/mesh-buckets.ts
-@@ -312,8 +312,9 @@ export class MeshBuckets {
+@@ -319,8 +319,9 @@ export class MeshBuckets {
  					shadowOnly,
  					gpuCullable:
  						draw.particles === null &&
@@ -5101,7 +5107,7 @@ index e6013f06..a6a070d2 100644
  	);
  	return (
 diff --git a/packages/viewer/src/ui/settings-panel.tsx b/packages/viewer/src/ui/settings-panel.tsx
-index 38e4e2eb..1f3e7d38 100644
+index c2572558..89fc7182 100644
 --- a/packages/viewer/src/ui/settings-panel.tsx
 +++ b/packages/viewer/src/ui/settings-panel.tsx
 @@ -6,6 +6,7 @@ import type { ViewerOptions } from '../viewer/options.ts';
@@ -5130,7 +5136,7 @@ index 38e4e2eb..1f3e7d38 100644
  			<fieldset>
  				<legend>layers</legend>
  				<Toggle viewer={viewer} name="terrain" label="terrain" />
-@@ -297,6 +298,43 @@ export const SettingsPanel = ({ viewer }: { viewer: Viewer }) => {
+@@ -307,6 +308,43 @@ export const SettingsPanel = ({ viewer }: { viewer: Viewer }) => {
  			/>
  			<Toggle viewer={viewer} name="animate" label="animate" />
  			<Toggle viewer={viewer} name="continuous" label="render every frame" />
@@ -5205,17 +5211,17 @@ index c1c49afb..e687decf 100644
  	);
  };
 diff --git a/packages/viewer/src/viewer/environment-state.ts b/packages/viewer/src/viewer/environment-state.ts
-index 6f50ebaa..5752b618 100644
+index 33b799a2..e1448498 100644
 --- a/packages/viewer/src/viewer/environment-state.ts
 +++ b/packages/viewer/src/viewer/environment-state.ts
 @@ -1,5 +1,6 @@
- import type { EnvironmentProfile } from '@endfield-noclip/package-format/environment';
+ import type { EnvironmentProfile, RainConfig, SnowConfig } from '@endfield-noclip/package-format/environment';
  import type { LevelEnvironment } from '@endfield-noclip/package-format/manifest';
 +import type { PhotoFilter } from '@endfield-noclip/package-format/photo-filters';
  import type { Vec3 } from '@endfield-noclip/package-format/values';
  
  import {
-@@ -28,6 +29,7 @@ export interface EnvironmentLook {
+@@ -33,6 +34,7 @@ export interface EnvironmentLook {
  
  /** what {@link EnvironmentState.update} blends at */
  export interface BlendInput {
@@ -5223,7 +5229,7 @@ index 6f50ebaa..5752b618 100644
  	/** the loaded package's environment table and manifest, `undefined` without one */
  	scene: EnvironmentScene | undefined;
  	eye: Vec3;
-@@ -45,8 +47,8 @@ export interface BlendInput {
+@@ -50,8 +52,8 @@ export interface BlendInput {
   * @param profile a blended profile, or `null` for the defaults
   * @returns what the renderers take from it
   */
@@ -5234,7 +5240,7 @@ index 6f50ebaa..5752b618 100644
  	celestial: celestialLook(profile),
  	lensFlare: lensFlareLook(profile),
  	wetness: wetnessParams(profile?.rain),
-@@ -58,7 +60,7 @@ const lookOf = (profile: EnvironmentProfile | null): EnvironmentLook => ({
+@@ -65,7 +67,7 @@ const lookOf = (profile: EnvironmentProfile | null): EnvironmentLook => ({
   */
  export class EnvironmentState {
  	/** the look in effect */
@@ -5243,15 +5249,15 @@ index 6f50ebaa..5752b618 100644
  	/** the volumes applied at the camera, in order */
  	applied: AppliedVolume[] = [];
  	/** the time-faded volumes' fade state for the camera */
-@@ -68,6 +70,7 @@ export class EnvironmentState {
+@@ -75,6 +77,7 @@ export class EnvironmentState {
  	/** what the blend was last planned for */
  	#eye: Vec3 = [Infinity, Infinity, Infinity];
  	#volumes = true;
 +	#photoFilter: PhotoFilter | null = null;
  	#pinnedPhase: number | null = null;
  	#loaded: readonly boolean[] = [];
- 	/** the last plan's key; `null` forces a new look */
-@@ -91,9 +94,12 @@ export class EnvironmentState {
+ 	/** whether {@link look} matches {@link applied} for the current base; `false` forces a re-blend */
+@@ -98,9 +101,12 @@ export class EnvironmentState {
  	 */
  	update(input: BlendInput, options: { force: boolean }): EnvironmentLook | null {
  		const { eye } = input;
@@ -5264,7 +5270,7 @@ index 6f50ebaa..5752b618 100644
  			input.volumes === this.#volumes &&
  			input.pinnedPhase === this.#pinnedPhase &&
  			input.loaded === this.#loaded &&
-@@ -105,6 +111,7 @@ export class EnvironmentState {
+@@ -112,6 +118,7 @@ export class EnvironmentState {
  			return null;
  		}
  		this.#eye = [...eye];
@@ -5272,22 +5278,24 @@ index 6f50ebaa..5752b618 100644
  		this.#volumes = input.volumes;
  		this.#pinnedPhase = input.pinnedPhase;
  		this.#loaded = input.loaded;
-@@ -122,11 +129,11 @@ export class EnvironmentState {
+@@ -128,13 +135,13 @@ export class EnvironmentState {
+ 						{ fades: this.fades, dt: input.dt },
  					);
- 		const key = plan?.key ?? '';
- 		this.applied = plan?.applied ?? [];
--		if (key === this.#key) {
-+		if (key === this.#key && !filterChanged) {
+ 		const applied = plan?.applied ?? [];
+-		const unchanged = this.#valid && sameApplied(this.applied, applied);
++		const unchanged = this.#valid && !filterChanged && sameApplied(this.applied, applied);
+ 		this.applied = applied;
+ 		if (unchanged) {
  			return null;
  		}
- 		this.#key = key;
+ 		this.#valid = true;
 -		this.look = lookOf(plan === null ? null : applyBlend(plan));
 +		this.look = lookOf(plan === null ? null : applyBlend(plan), filter);
  		return this.look;
  	}
  }
 diff --git a/packages/viewer/src/viewer/options.ts b/packages/viewer/src/viewer/options.ts
-index d9a53e79..1a4cb5f7 100644
+index fcf680d3..f269d627 100644
 --- a/packages/viewer/src/viewer/options.ts
 +++ b/packages/viewer/src/viewer/options.ts
 @@ -3,6 +3,10 @@ import type { PostSettings, Tonemapper } from '../render/post/settings.ts';
@@ -5301,7 +5309,7 @@ index d9a53e79..1a4cb5f7 100644
  	terrain: boolean;
  	/** draw the terrain's baked albedo and normal pages; off (or without BC textures) shows stand-in colours */
  	terrainSurface: boolean;
-@@ -67,6 +71,12 @@ export interface ViewerOptions {
+@@ -69,6 +73,12 @@ export interface ViewerOptions {
  	renderScale: number;
  	/** exposure compensation on top of the level's exposure, EV */
  	exposure: number;
@@ -5314,7 +5322,7 @@ index d9a53e79..1a4cb5f7 100644
  	/** adapt the exposure to the view as the game's auto exposure does */
  	autoExposure: boolean;
  	tonemapper: Tonemapper;
-@@ -105,6 +115,8 @@ export interface ViewerOptions {
+@@ -109,6 +119,8 @@ export interface ViewerOptions {
  
  /** defaults for {@link ViewerOptions} */
  export const DEFAULT_OPTIONS: ViewerOptions = {
@@ -5323,7 +5331,7 @@ index d9a53e79..1a4cb5f7 100644
  	terrain: true,
  	terrainSurface: true,
  	terrainSplat: true,
-@@ -130,6 +142,9 @@ export const DEFAULT_OPTIONS: ViewerOptions = {
+@@ -135,6 +147,9 @@ export const DEFAULT_OPTIONS: ViewerOptions = {
  	antialiasing: true,
  	renderScale: 1,
  	exposure: 0,
@@ -5333,7 +5341,7 @@ index d9a53e79..1a4cb5f7 100644
  	autoExposure: true,
  	tonemapper: 'game',
  	sky: true,
-@@ -159,6 +174,9 @@ export const DEFAULT_OPTIONS: ViewerOptions = {
+@@ -165,6 +180,9 @@ export const DEFAULT_OPTIONS: ViewerOptions = {
   */
  export const postSettings = (options: ViewerOptions, scene: boolean): PostSettings => ({
  	exposure: options.exposure,
@@ -5344,10 +5352,10 @@ index d9a53e79..1a4cb5f7 100644
  	tonemapper: options.tonemapper,
  	sky: options.sky,
 diff --git a/packages/viewer/src/viewer/renderer.ts b/packages/viewer/src/viewer/renderer.ts
-index e89b83fb..393ed218 100644
+index b7e99b97..8369b335 100644
 --- a/packages/viewer/src/viewer/renderer.ts
 +++ b/packages/viewer/src/viewer/renderer.ts
-@@ -40,6 +40,22 @@ const INSTANCE_ROWS = 1_500_000;
+@@ -47,6 +47,22 @@ const INSTANCE_ROWS = 1_500_000;
  /** the frame uniforms' local lights while they're off */
  const NO_LOCAL_LIGHTS: LocalLightFrame = { count: 0, tilesX: 1, tilesY: 1 };
  
@@ -5370,7 +5378,7 @@ index e89b83fb..393ed218 100644
  /** what {@link Renderer.render} draws */
  export interface RenderInput {
  	camera: Camera;
-@@ -63,6 +79,8 @@ export interface RenderInput {
+@@ -74,6 +90,8 @@ export interface RenderInput {
  	content: { version: number; idle: boolean };
  	/** where the CPU spans go */
  	times: FrameTimes;
@@ -5379,7 +5387,7 @@ index e89b83fb..393ed218 100644
  }
  
  /** the GPU side of the viewer: the device's renderers and targets, and the frame they encode together */
-@@ -188,6 +206,7 @@ export class Renderer {
+@@ -269,6 +287,7 @@ export class Renderer {
  
  	/** drops what the passes carry over from earlier frames, after a cut to somewhere else */
  	cut(): void {
@@ -5387,7 +5395,7 @@ index e89b83fb..393ed218 100644
  		for (const history of this.#histories) {
  			history.reset();
  		}
-@@ -306,6 +325,19 @@ export class Renderer {
+@@ -430,6 +449,19 @@ export class Renderer {
  			},
  			this.frame,
  		);
@@ -5407,440 +5415,6 @@ index e89b83fb..393ed218 100644
  		this.profiler.resolve(encoder);
  		times.span('encode');
  		this.device.queue.submit([encoder.finish()]);
-diff --git a/packages/viewer/src/viewer/viewer.ts b/packages/viewer/src/viewer/viewer.ts
-index 9742e57b..b94a02e5 100644
---- a/packages/viewer/src/viewer/viewer.ts
-+++ b/packages/viewer/src/viewer/viewer.ts
-@@ -1,4 +1,19 @@
-+import { cameraValues, NO_TRIGGER_MEMORY } from '@endfield-noclip/package-format/camera';
-+import {
-+	conditionResults,
-+	groupsShown,
-+	resolveSceneValues,
-+} from '@endfield-noclip/package-format/conditions';
- import type { LevelInfo, PackageManifest } from '@endfield-noclip/package-format/manifest';
-+import {
-+	companionStates,
-+	isPointView,
-+	type CompanionControl,
-+	type PointView,
-+} from '@endfield-noclip/package-format/oem';
-+import type { PhotoFilter } from '@endfield-noclip/package-format/photo-filters';
-+import type { MissionInfo, StatesInfo } from '@endfield-noclip/package-format/states';
-+import { areasShownIn, zonesAt, zonesAround } from '@endfield-noclip/package-format/stream-areas';
- import type { Vec3 } from '@endfield-noclip/package-format/values';
- import type { WaterSurfaceEntry } from '@endfield-noclip/package-format/water';
- 
-@@ -17,13 +32,16 @@ import { volumesForLevel } from '../scene-states/listing.ts';
- import { type GroupsConsumer, SceneState } from '../scene-states/scene-state.ts';
- import { WaterLevels, type WaterVolumeState } from '../scene-states/water-levels.ts';
- import { Camera } from '../scene/camera.ts';
-+import { groundHeight as heightAt } from '../scene/ground.ts';
- import { cellIdAt, levelCellIds, levelPose, levelsByCell, overviewPose } from '../scene/level-pose.ts';
- import { type CameraPose, NoclipControls } from '../scene/noclip-controls.ts';
-+import { pointPreview } from '../scene/point-preview.ts';
-+import { pointViewKey, readPointView, writePointView } from '../scene/point-view-cache.ts';
- import type { ResidentInstances } from '../streaming/resident.ts';
- 
- import { EnvironmentState } from './environment-state.ts';
- import { DEFAULT_OPTIONS, type ViewerOptions, postSettings } from './options.ts';
--import { Renderer } from './renderer.ts';
-+import { Renderer, type OverlayFrame } from './renderer.ts';
- import { type LevelEntry, type LoadedScene, openScene } from './scene-loader.ts';
- import { type ViewerStats, FrameTimes, STATS_INTERVAL, collectStats, emptyStats } from './stats.ts';
- import { Traversal } from './traversal.ts';
-@@ -31,8 +49,160 @@ import { Traversal } from './traversal.ts';
- /** the irradiance volume of a package without one */
- const EMPTY_IRRADIANCE = { keys: new Uint32Array(), blobs: new Uint32Array(), groups: new Uint32Array() };
- 
-+export type { OverlayFrame } from './renderer.ts';
-+
- /** the running viewer */
- export class Viewer {
-+	#overlays = new Set<(frame: OverlayFrame) => void>();
-+	#animatedOverlays = new Set<(frame: OverlayFrame) => void>();
-+	#baseStates: StatesInfo | null = null;
-+	#cameraListeners = new Set<() => void>();
-+	#photoFilters: readonly PhotoFilter[] = [];
-+
-+	addOverlay(encode: (frame: OverlayFrame) => void, options?: { animated?: boolean }): () => void {
-+		this.#overlays.add(encode);
-+		if (options?.animated) this.#animatedOverlays.add(encode);
-+		this.#dirty = true;
-+		return () => {
-+			this.#overlays.delete(encode);
-+			this.#animatedOverlays.delete(encode);
-+			this.#dirty = true;
-+		};
-+	}
-+
-+	subscribeCamera(listener: () => void): () => void {
-+		this.#cameraListeners.add(listener);
-+		return () => this.#cameraListeners.delete(listener);
-+	}
-+
-+	setCompanion(controls: readonly CompanionControl[], missions: readonly MissionInfo[]): void {
-+		const pkg = this.scene?.pkg,
-+			base = this.#baseStates;
-+		if (!pkg || !base) {
-+			return;
-+		}
-+		pkg.manifest.states = companionStates(base, { controls: [...controls], missions: [...missions] });
-+		this.#sceneState.setPackage(pkg.manifest.states, [this.scene!.selector, ...this.#groupsConsumers]);
-+		this.#updateVisibility();
-+		this.#emitState();
-+	}
-+
-+	async framePoint(
-+		target: Vec3,
-+		signal: AbortSignal,
-+		options?: { baked?: PointView; animate: boolean },
-+	): Promise<PointView | null> {
-+		signal.throwIfAborted();
-+		const scene = this.scene;
-+		if (!scene || target.length !== 3 || !target.every(Number.isFinite)) {
-+			return null;
-+		}
-+		this.#unsettledPose = null;
-+		const initial: CameraPose = {
-+			position: [target[0], target[1] + 6, target[2] - 10],
-+			yaw: 0,
-+			pitch: -Math.atan2(6, 10),
-+		};
-+		if (options?.animate) {
-+			this.controls.flyTo(initial);
-+		} else {
-+			this.controls.cancelFlight();
-+			this.#setPose(initial);
-+		}
-+		this.#dirty = true;
-+		const states = scene.pkg.manifest.states;
-+		const areas = states.streamAreas;
-+		let visibleAreas: ReadonlySet<number> | null = null;
-+		if (areas && this.options.streamAreas) {
-+			let zones = zonesAt(areas, target);
-+			if (zones.size === 0) {
-+				zones = zonesAround(areas, target);
-+			}
-+			visibleAreas = areasShownIn(areas, zones);
-+		}
-+		const picks = new Map([
-+			...cameraValues(states.controls, target, visibleAreas, NO_TRIGGER_MEMORY).values,
-+			...this.scenePicksByIndex,
-+		]);
-+		const shown = groupsShown(states, conditionResults(states, resolveSceneValues(states, picks)));
-+		const key = await pointViewKey(scene.pkg.manifest.generation, this.level, target, shown);
-+		let pose = options?.baked?.key === key && isPointView(options.baked) ? options.baked : readPointView(key);
-+		if (pose === null) {
-+			let pendingTerrain = false;
-+			pose = await pointPreview(
-+				scene.pkg,
-+				this.#pool,
-+				target,
-+				states,
-+				this.#level === null ? null : scene.pkg.manifest.levels.indexOf(this.#level),
-+				picks,
-+				(x, z) => {
-+					const height = heightAt(scene.ground, x, z);
-+					pendingTerrain ||= height === undefined;
-+					return height ?? null;
-+				},
-+				signal,
-+			);
-+			if (!pendingTerrain && !signal.aborted && this.scene === scene) {
-+				writePointView(key, pose);
-+			}
-+		}
-+		signal.throwIfAborted();
-+		if (this.scene !== scene) {
-+			return null;
-+		}
-+		this.#unsettledPose = null;
-+		if (options?.animate) {
-+			this.controls.flyTo(pose);
-+		} else {
-+			this.controls.cancelFlight();
-+			this.#setPose(pose);
-+		}
-+		this.#dirty = true;
-+		return { key, clear: false, ...pose };
-+	}
-+
-+	focusAt(point: Vec3): boolean {
-+		const forward = this.camera.forward();
-+		const distance = point.reduce((sum, value, i) => sum + (value - this.camera.position[i]) * forward[i], 0);
-+		if (!Number.isFinite(distance) || distance < this.camera.near) {
-+			return false;
-+		}
-+		this.setOptions({ depthOfField: true, focusDistance: distance });
-+		return true;
-+	}
-+
-+	/** @returns the terrain beneath the camera, when resident */
-+	get groundHeight(): number | null {
-+		return this.scene === null
-+			? null
-+			: (heightAt(this.scene.ground, this.camera.position[0], this.camera.position[2]) ?? null);
-+	}
-+	/** @param id level to prioritize @param options whether to fly there */
-+	showLevel(id: string, options: { fly?: boolean } = {}): void {
-+		const level = this.#levelInfo(id);
-+		const scene = this.scene;
-+		if (!level || !scene) {
-+			return;
-+		}
-+		this.#setLevel(level, scene.pkg.manifest);
-+		this.#blendEnvironment({ force: true, dt: 0 });
-+		if (options.fly !== false) {
-+			this.flyToLevel(id);
-+		}
-+		this.#updateVisibility();
-+	}
-+	/** @returns installed photo filters */
-+	get photoFilters(): readonly PhotoFilter[] {
-+		return this.#photoFilters;
-+	}
-+	/** @param filters validated library */
-+	setPhotoFilters(filters: readonly PhotoFilter[]): void {
-+		this.setOptions({ photoFilter: null });
-+		this.#photoFilters = filters;
-+		this.#emitState();
-+	}
-+
- 	readonly camera = new Camera();
- 	readonly controls: NoclipControls;
- 	readonly options: ViewerOptions = structuredClone(DEFAULT_OPTIONS);
-@@ -174,10 +344,12 @@ export class Viewer {
- 		source: PackageSource,
- 		initialLevel: string | null,
- 		onProgress: (phase: string) => void,
-+		loadOptions: { preserveCamera?: boolean } = {},
- 	): Promise<void> {
- 		this.unload();
- 		const pkg = await openViewerPackage(source, onProgress);
- 		const manifest = pkg.manifest;
-+		this.#baseStates = manifest.states;
- 		const renderer = this.#renderer;
- 		renderer.setIrradiance(pkg.irradiance, manifest.irradianceRegions);
- 		const scene = openScene(pkg, {
-@@ -205,7 +377,9 @@ export class Viewer {
- 		this.#updateVisibility();
- 		this.#waterLevels.settle();
- 		this.#applyEnvironment();
--		if (level === null) {
-+		if (loadOptions.preserveCamera) {
-+			this.#unsettledPose = null;
-+		} else if (level === null) {
- 			this.#setPose(overviewPose(manifest));
- 		} else {
- 			this.#focusCells = levelCellIds(manifest, level);
-@@ -231,6 +405,7 @@ export class Viewer {
- 		renderer.bindings.setReflection(null, 1);
- 		renderer.bindings.set('shadowRamp', null);
- 		this.scene = null;
-+		this.#baseStates = null;
- 		this.#sceneState.setPackage(null, this.#groupsConsumers);
- 		this.options.environmentPin = null;
- 		this.#environment.fades.reset();
-@@ -323,6 +498,7 @@ export class Viewer {
- 				eye: this.camera.position,
- 				volumes: this.options.environmentVolumes,
- 				pinnedPhase: this.options.environmentPin,
-+				photoFilter: this.#photoFilters.find((f) => f.id === this.options.photoFilter) ?? null,
- 				loaded: this.#sceneState.conditionResults,
- 				dt,
- 			},
-@@ -426,6 +602,9 @@ export class Viewer {
- 		this.camera.pitch = pitch;
- 		// a cut: the last frames show somewhere else
- 		this.#renderer.cut();
-+		for (const listener of this.#cameraListeners) {
-+			listener();
-+		}
- 	}
- 
- 	/** re-poses the first view over the ground once the coarse terrain lands; drops it if the camera moved */
-@@ -514,15 +693,29 @@ export class Viewer {
- 	// #region scene states
- 
- 	/** @returns every scene control's current value, by index into the manifest's controls */
--	get sceneValues(): readonly number[] {
-+	get sceneValuesByIndex(): readonly number[] {
- 		return this.#sceneState.values;
- 	}
- 
- 	/** @returns the values the user picked, by control index; other controls follow their default or formula */
--	get scenePicks(): ReadonlyMap<number, number> {
-+	get scenePicksByIndex(): ReadonlyMap<number, number> {
- 		return this.#sceneState.picks;
- 	}
- 
-+	/** Stable control IDs form the host contract; package indexes stay internal. */
-+	get sceneValues(): Readonly<Record<string, number>> {
-+		return Object.fromEntries(
-+			(this.manifest?.states.controls ?? []).map((c, i) => [c.id, this.#sceneState.values[i] ?? c.default]),
-+		);
-+	}
-+
-+	get scenePicks(): Readonly<Record<string, number>> {
-+		const controls = this.manifest?.states.controls ?? [];
-+		return Object.fromEntries(
-+			[...this.#sceneState.picks].flatMap(([i, value]) => (controls[i] ? [[controls[i].id, value]] : [])),
-+		);
-+	}
-+
- 	/** @returns per conditional set of the loaded package, whether the selected scene values satisfy it */
- 	get conditionResults(): readonly boolean[] {
- 		return this.#sceneState.conditionResults;
-@@ -542,21 +735,35 @@ export class Viewer {
- 	}
- 
- 	/**
--	 * @param control a scene control's index into the manifest's controls
-+	 * @param control a stable control ID from the host, or a package index from the built-in panels
- 	 * @param value one of its values, or `null` to drop the pick so it follows its default or formula again
- 	 */
--	setSceneValue(control: number, value: number | null): void {
--		this.setSceneValues(new Map([[control, value]]));
-+	setSceneValue(control: string | number, value: number | null): void {
-+		if (typeof control === 'number') {
-+			this.setSceneValues(new Map([[control, value]]));
-+		} else {
-+			this.setSceneValues({ [control]: value });
-+		}
- 	}
- 
- 	/**
- 	 * sets several controls at once, re-evaluating visibility once
- 	 *
--	 * @param values by control index, one of its values or `null` to drop the pick; unknown controls and values
--	 *   are ignored
-+	 * @param values a host record keyed by stable control ID, or a panel Map keyed by package index; `null`
-+	 *   drops a pick, and unknown controls and unsupported values are ignored
- 	 */
--	setSceneValues(values: ReadonlyMap<number, number | null>): void {
--		if (!this.#sceneState.pick(values)) {
-+	setSceneValues(values: ReadonlyMap<number, number | null> | Readonly<Record<string, number | null>>): void {
-+		const controls = this.manifest?.states.controls ?? [];
-+		const indexed =
-+			values instanceof Map
-+				? values
-+				: new Map(
-+						Object.entries(values).flatMap(([id, value]) => {
-+							const index = controls.findIndex((control) => control.id === id);
-+							return index < 0 ? [] : [[index, value] as const];
-+						}),
-+					);
-+		if (!this.#sceneState.pick(indexed)) {
- 			return;
- 		}
- 		this.#updateVisibility();
-@@ -587,11 +794,50 @@ export class Viewer {
- 	/** @param patch options to change */
- 	setOptions(patch: Partial<ViewerOptions>): void {
- 		const { post, targets } = this.#renderer;
-+		if (
-+			patch.photoFilter !== undefined &&
-+			patch.photoFilter !== null &&
-+			!this.#photoFilters.some((filter) => filter.id === patch.photoFilter)
-+		) {
-+			throw new Error(`unknown photo filter ${patch.photoFilter}`);
-+		}
-+		if (patch.photoFilter !== undefined || patch.photoLutStrength !== undefined) {
-+			const id = patch.photoFilter === undefined ? this.options.photoFilter : patch.photoFilter;
-+			const filter = this.#photoFilters.find((entry) => entry.id === id) ?? null;
-+			if (
-+				patch.photoLutStrength !== undefined &&
-+				(!Number.isFinite(patch.photoLutStrength) || patch.photoLutStrength < 0 || patch.photoLutStrength > 1)
-+			) {
-+				throw new RangeError('photo LUT contribution must be between 0 and 1');
-+			}
-+			this.#renderer.post.photoLut.set(filter, patch.photoLutStrength ?? this.options.photoLutStrength);
-+			if (patch.photoFilter !== undefined && patch.photoFilter !== this.options.photoFilter) {
-+				this.#renderer.post.photoParticles.set(filter, this.camera, this.#time);
-+			}
-+		}
-+
- 		Object.assign(this.options, patch);
-+		this.options.aperture = Number.isFinite(this.options.aperture)
-+			? Math.min(32, Math.max(1.4, this.options.aperture))
-+			: DEFAULT_OPTIONS.aperture;
-+		this.options.focusDistance = Number.isFinite(this.options.focusDistance)
-+			? Math.min(10000, Math.max(0.1, this.options.focusDistance))
-+			: DEFAULT_OPTIONS.focusDistance;
-+		if (
-+			patch.depthOfField !== undefined ||
-+			patch.aperture !== undefined ||
-+			patch.focusDistance !== undefined
-+		) {
-+			this.#renderer.post.resetFocus();
-+			this.#renderer.post.resetAntialiasing();
-+		}
-+
-+		this.#blendEnvironment({ force: true, dt: 0 });
- 		targets.renderScale = Math.min(1, Math.max(0.25, this.options.renderScale));
- 		post.setAntialiasing(this.options.antialiasing);
- 		if (patch.debugView !== undefined || patch.antialiasing !== undefined) {
- 			post.resetAntialiasing();
-+			post.resetFocus();
- 		}
- 		if (patch.streamAreas !== undefined) {
- 			this.#updateVisibility();
-@@ -666,7 +912,13 @@ export class Viewer {
- 		const renderer = this.#renderer;
- 		const traversal = this.#traversal;
- 
-+		this.controls.groundHeight = this.groundHeight;
- 		const moved = this.controls.update(dt) || this.#settleFirstPose();
-+		if (moved) {
-+			for (const listener of this.#cameraListeners) {
-+				listener();
-+			}
-+		}
- 		const watered = this.#waterLevels.update(dt, this.options.waterLevelRate);
- 		this.#waterLevels.applyFloaters(this.#writeFloater);
- 		if (watered || this.#sceneState.follow(this.camera.position)) {
-@@ -696,7 +948,7 @@ export class Viewer {
- 		// the temporal antialiasing converges over a few more jittered frames of the same view
- 		let settling = false;
- 		if (changed) {
--			this.#settleFrames = options.antialiasing ? SETTLE_FRAMES : 0;
-+			this.#settleFrames = options.antialiasing || options.depthOfField ? SETTLE_FRAMES : 0;
- 		} else if (this.#settleFrames > 0) {
- 			this.#settleFrames--;
- 			settling = true;
-@@ -705,7 +957,12 @@ export class Viewer {
- 		// particles change what it meters every frame, so a meter that kept running would never let it settle
- 		const settings = frameSettings(options, scene !== null, postSettings(options, scene !== null));
- 		const adapting = renderer.post.adaptExposure(settings.post, dt, { metering: changed || settling });
--		const render = changed || settling || adapting;
-+		const render =
-+			changed ||
-+			settling ||
-+			adapting ||
-+			(options.animate && this.#animatedOverlays.size > 0) ||
-+			(options.animate && settings.post.debugView === 'lit' && renderer.post.photoParticles.active);
- 		const look = this.#environment.look;
- 		if (render && options.animate) {
- 			this.#time += dt;
-@@ -765,6 +1022,7 @@ export class Viewer {
- 				content: { version: scene?.stream.version ?? 0, idle: scene?.stream.idle ?? true },
- 				options,
- 				times: this.#times,
-+				overlays: this.#overlays,
- 			});
- 			this.#times.rendered(dt);
- 		}
-@@ -784,6 +1042,9 @@ export class Viewer {
- 		document.removeEventListener('visibilitychange', this.#onVisibilityChange);
- 		this.unload();
- 		this.controls.destroy();
-+		this.#overlays.clear();
-+		this.#animatedOverlays.clear();
-+		this.#cameraListeners.clear();
- 		this.#pool.destroy();
- 		this.#renderer.destroy();
- 	}
 diff --git a/packages/viewer/vite-plugins/package-server.ts b/packages/viewer/vite-plugins/package-server.ts
 index 91ed8566..4dc5c7b9 100644
 --- a/packages/viewer/vite-plugins/package-server.ts
@@ -5895,100 +5469,3 @@ index d6866073..c3183a2e 100644
  	worker: {
  		format: 'es',
  	},
-diff --git a/packages/viewer/src/package/decode-data.ts b/packages/viewer/src/package/decode-data.ts
-index d0fd0ba8..f6091d21 100644
---- a/packages/viewer/src/package/decode-data.ts
-+++ b/packages/viewer/src/package/decode-data.ts
-@@ -19,7 +19,7 @@ import {
- 
- import { MeshoptDecoder } from 'meshoptimizer/decoder';
- 
--import { buildInstanceRows, movingRows } from '../content/instance-rows.ts';
-+import { buildInstanceRows } from '../content/instance-rows.ts';
- import { buildRowBounds } from '../streaming/row-groups.ts';
- 
- import type {
-@@ -243,7 +243,15 @@ const decodeGeometry = (
- ): { response: DecodedGeometry; transfer: Transferable[] } => {
- 	const blob = decodeGeometryBlob(raw);
- 	const position = findStream(blob, VertexAttribute.Position);
--	const positions = decodeAttribute(blob, VertexAttribute.Position, GeometryVertexFormat.Unorm16x4);
-+	let positionFormat: DecodedGeometry['positionFormat'];
-+	let positions: ArrayBuffer | null = null;
-+	if (position?.format === GeometryVertexFormat.Float32x4) {
-+		positionFormat = 'float32x4';
-+		positions = decodeAttribute(blob, VertexAttribute.Position, GeometryVertexFormat.Float32x4);
-+	} else {
-+		positionFormat = 'unorm16x4';
-+		positions = decodeAttribute(blob, VertexAttribute.Position, GeometryVertexFormat.Unorm16x4);
-+	}
- 	if (position === undefined || positions === null) {
- 		throw new Error('geometry has no positions');
- 	}
-@@ -275,6 +283,7 @@ const decodeGeometry = (
- 			// an animation's output is quantized to the box its frames lie in
- 			positionOffset: blob.animation?.offset ?? position.offset,
- 			positionScale: blob.animation?.scale ?? position.scale,
-+			positionFormat,
- 			positions,
- 			normals,
- 			uvs,
-@@ -301,7 +310,12 @@ const decodeSkin = (
- 	bind: { positions: ArrayBuffer; normals: ArrayBuffer | null; tangents: ArrayBuffer | null },
- ): DecodedSkin => {
- 	const weights = decodeAttribute(blob, VertexAttribute.BlendWeight, GeometryVertexFormat.Unorm16x4);
--	const bones = decodeAttribute(blob, VertexAttribute.BlendIndices, GeometryVertexFormat.Uint8x4);
-+	const wideBones = findStream(blob, VertexAttribute.BlendIndices)?.format === GeometryVertexFormat.Uint16x4;
-+	const bones = decodeAttribute(
-+		blob,
-+		VertexAttribute.BlendIndices,
-+		wideBones ? GeometryVertexFormat.Uint16x4 : GeometryVertexFormat.Uint8x4,
-+	);
- 	if (weights === null || bones === null) {
- 		throw new Error('animated geometry has no bone weights or indices');
- 	}
-@@ -324,6 +338,7 @@ const decodeSkin = (
- 		tangentWord: words[2],
- 		weightWord: words[3],
- 		boneWord: words[4],
-+		wideBones,
- 		bindOffset: position.offset,
- 		bindScale: position.scale,
- 		boneCount: animation.boneCount,
-@@ -394,7 +409,8 @@ const handle = (
- 				rowsF32: new Float32Array(built.rows.buffer),
- 				cull: built.cull,
- 				runs: built.runs,
--				moving: movingRows(built.spins, built.rides),
-+				spins: built.spins,
-+				rides: built.rides,
- 			});
- 			return {
- 				response: { id: request.id, kind: 'instances', ...built, bounds },
-diff --git a/packages/viewer/src/scene/point-view.ts b/packages/viewer/src/scene/point-view.ts
-index 0381eea2..38d55827 100644
---- a/packages/viewer/src/scene/point-view.ts
-+++ b/packages/viewer/src/scene/point-view.ts
-@@ -485,7 +485,12 @@ export const pointTriangles = async (
- 					}
- 					const geometry = await mesh;
- 					remember(pkg, entry.blob, geometry);
--					const vertices = new Uint16Array(geometry.positions),
-+					const floatPositions = geometry.positionFormat === 'float32x4';
-+					const vertices = floatPositions
-+						? new Float32Array(geometry.positions)
-+						: new Uint16Array(geometry.positions);
-+					const positionDivisor = floatPositions ? 1 : 65535;
-+					const
- 						indices =
- 							geometry.indexSize === 2
- 								? new Uint16Array(geometry.indices)
-@@ -496,7 +501,7 @@ export const pointTriangles = async (
- 					}
- 					const vertex = (index: number): Vec3 => {
- 						const local = geometry.positionOffset.map(
--							(v, i) => v + (vertices[index * 4 + i] / 65535) * geometry.positionScale[i],
-+							(v, i) => v + (vertices[index * 4 + i] / positionDivisor) * geometry.positionScale[i],
- 						);
- 						return [
- 							block.origin[0] + dot([rows[at], rows[at + 1], rows[at + 2]], local) + rows[at + 3],

@@ -3,7 +3,7 @@
 `source.json` pins the current upstream commit and its exact source archive. The patches own our
 renderer host, photography, OEM package contracts and extraction/navigation extensions. They are
 Atlos build inputs; the `.local/repos/endfield-noclip` checkout stays on upstream `trunk` without local
-feature commits. `feat/filters` remains a separate PR development branch in that repository.
+feature commits. `feat/filters-v2` remains a separate PR development branch in that repository.
 
 ```sh
 cd talos
@@ -27,7 +27,7 @@ configure route data and the private game configuration. Neither keys nor game c
 
 ## updating
 
-The current pin uses package format v131. Earlier archives require a repack.
+The current pin uses noclip major package format v2. Pre-v2 archives require a repack.
 Update all scenes in a catalog together; an OEM export validates each
 package's format and source binding. Keep the deployed viewer and its immutable catalog paired until
 the replacement release is validated.

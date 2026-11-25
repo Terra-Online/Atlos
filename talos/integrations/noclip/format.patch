@@ -143,12 +143,12 @@ index 00000000..cce8a7e0
 +	};
 +};
 diff --git a/packages/formats/src/endfield/dynamic-scene.test.ts b/packages/formats/src/endfield/dynamic-scene.test.ts
-index 5fe77239..09037c77 100644
+index c1799161..109cf7e7 100644
 --- a/packages/formats/src/endfield/dynamic-scene.test.ts
 +++ b/packages/formats/src/endfield/dynamic-scene.test.ts
-@@ -350,3 +350,128 @@ test('reads the sludge core a sludge patch belongs to', () => {
- 	assert.equal(entities[2].erosionCore, null);
- 	assert.equal(entities[0].sludgeCore, null);
+@@ -443,3 +443,128 @@ test('ranks resource groups belonging to a ResourceComp.LodInfo chain', () => {
+ 		[null, 0, 1],
+ 	);
  });
 +
 +const buildConveyors = (): Uint8Array => {
@@ -179,7 +179,7 @@ index 5fe77239..09037c77 100644
 +		grid.get(33)!,
 +		w.structs(
 +			84,
-+			types.map((_, i) => [10 + i, 0].concat(ref(1, i, 1))),
++			types.map((_, i) => [10 + i, 0, ...ref(1, i, 1), 0, 1, 49, GRID, 0, 0, 0, 1, 49, GRID, 0, 0, 0]),
 +		),
 +	);
 +	const groupId = 0x100000005n;
@@ -220,7 +220,7 @@ index 5fe77239..09037c77 100644
 +};
 +
 +test('preserves conveyor identity, signed speed, box offsets and cross-grid path rows', () => {
-+	const conveyors = readDynamicEntities(buildConveyors()).map((entity) => entity.conveyor);
++	const conveyors = readDynamicScene(buildConveyors()).entities.map((entity) => entity.conveyor);
 +	assert.deepEqual(conveyors.slice(0, 3), [
 +		{ kind: 'belt', group: 0x100000005n, entry: true, exit: false },
 +		{ kind: 'box', group: 0x100000005n, fixedProgress: -7, lateralOffset: -0.25 },
@@ -250,7 +250,7 @@ index 5fe77239..09037c77 100644
 +			},
 +		],
 +	});
-+	assert.ok(readDynamicEntities(build()).every((entity) => entity.conveyor === undefined));
++	assert.ok(readDynamicScene(build()).entities.every((entity) => entity.conveyor === undefined));
 +});
 +
 +test('rejects malformed conveyor references, flags and non-finite geometry', () => {
@@ -266,17 +266,17 @@ index 5fe77239..09037c77 100644
 +			rows = fb.vector(grid, slot);
 +		const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 +		view.setInt32(rows.start + offset, value, true);
-+		assert.throws(() => readDynamicEntities(bytes), expected);
++		assert.throws(() => readDynamicScene(bytes), expected);
 +	}
 +	const bytes = buildConveyors(),
 +		fb = new FlatBuffer(bytes);
 +	const grid = fb.tableAt(fb.vector(fb.root(), 3).start, 1),
 +		paths = fb.vector(grid, 41);
 +	new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).setFloat32(paths.start + 84 + 4, NaN, true);
-+	assert.throws(() => readDynamicEntities(bytes), /non-finite conveyor/);
++	assert.throws(() => readDynamicScene(bytes), /non-finite conveyor/);
 +});
 diff --git a/packages/formats/src/endfield/dynamic-scene.ts b/packages/formats/src/endfield/dynamic-scene.ts
-index 0d3e1138..dfab8b81 100644
+index 09776b12..b0355148 100644
 --- a/packages/formats/src/endfield/dynamic-scene.ts
 +++ b/packages/formats/src/endfield/dynamic-scene.ts
 @@ -26,6 +26,10 @@ export const DynamicData = {
@@ -289,8 +289,8 @@ index 0d3e1138..dfab8b81 100644
 +	ConveyorPath: 39,
  	SludgeComp: 42,
  	ExtraSceneComp: 44,
- 	MapVarControlComp: 51,
-@@ -144,6 +148,29 @@ export interface DynamicViewState {
+ 	WaterPipeComp: 47,
+@@ -151,6 +155,29 @@ export interface DynamicViewState {
  	oldVersion: boolean;
  }
  
@@ -320,16 +320,16 @@ index 0d3e1138..dfab8b81 100644
  /** a DynamicStreaming entity */
  export interface DynamicEntity {
  	/** grid unique id */
-@@ -176,6 +203,8 @@ export interface DynamicEntity {
- 	erosionCore: ErosionCoreLink | null;
- 	/** the erosion sludge core whose sludge this entity is, `null` for other entities */
+@@ -185,6 +212,8 @@ export interface DynamicEntity {
  	sludgeCore: SludgeCoreLink | null;
+ 	/** water pipe or outfall configuration (`WaterPipeComp`), `null` for other entities */
+ 	waterPipe: WaterPipe | null;
 +	/** absent on entities without a conveyor component; not a sampled world-space trajectory */
 +	conveyor?: Conveyor;
  }
  
- /** decoded grids and entities of one `fb_main_*` file */
-@@ -234,6 +263,10 @@ const Slot = {
+ /** a dynamic water pipe or outfall (`FBDynamicSceneWaterPipeComp`) */
+@@ -281,6 +310,10 @@ const Slot = {
  	RootComp: 33,
  	ErosionRootComp: 36,
  	ModelViewStateControllerNewComp: 37,
@@ -339,8 +339,8 @@ index 0d3e1138..dfab8b81 100644
 +	ConveyorPath: 41,
  	SludgeComp: 44,
  	ExtraSceneComp: 46,
- 	MapVarControlComp: 52,
-@@ -261,6 +294,10 @@ const Width = {
+ 	WaterPipeComp: 49,
+@@ -310,6 +343,10 @@ const Width = {
  	ExtraSceneComp: 40,
  	ErosionRootComp: 48,
  	ModelViewStateControllerNewComp: 36,
@@ -349,9 +349,9 @@ index 0d3e1138..dfab8b81 100644
 +	ConveyorBeltGroupComp: 40,
 +	ConveyorPath: 84,
  	SludgeComp: 264,
- } as const;
- 
-@@ -380,6 +417,21 @@ export const readDynamicScene = (bytes: Uint8Array): DynamicScene => {
+ 	WaterPipeComp: 48,
+ 	LodGridResource: 92,
+@@ -431,6 +468,21 @@ export const readDynamicScene = (bytes: Uint8Array): DynamicScene => {
  		}
  		return vector.start + index * width;
  	};
@@ -373,7 +373,7 @@ index 0d3e1138..dfab8b81 100644
  	/** reads a variable component: the variable it reads, and its load gate when it controls loading */
  	const variableComp = (
  		kind: 'globalVar' | 'mapVar',
-@@ -558,6 +610,80 @@ export const readDynamicScene = (bytes: Uint8Array): DynamicScene => {
+@@ -610,6 +662,80 @@ export const readDynamicScene = (bytes: Uint8Array): DynamicScene => {
  						entity.uid = fb.u64(id);
  						break;
  					}
@@ -891,7 +891,7 @@ index 61a05d36..d578cdcd 100644
 +	);
 +});
 diff --git a/packages/formats/src/endfield/memory-pack.ts b/packages/formats/src/endfield/memory-pack.ts
-index d050565f..bc4b6856 100644
+index d050565f..54d50a1c 100644
 --- a/packages/formats/src/endfield/memory-pack.ts
 +++ b/packages/formats/src/endfield/memory-pack.ts
 @@ -154,6 +154,8 @@ const VECTORS = new Map<string, [string, number]>([
@@ -916,15 +916,27 @@ index d050565f..bc4b6856 100644
 +							(arg) => arg.kind === 'definition' && runtime.definitionName(arg.definition) === 'Vector3',
 +						)
 +					) {
-+						throw new FormatError(`unsupported tuple layout ${name}`);
++						throw new FormatError(`unsupported tuple layout ${runtime.typeName(type)}`);
 +					}
-+					return [this.#value(first, false), this.#value(second, false)];
++					return [this.#value(first, false, c), this.#value(second, false, c)];
 +				}
 +				case 'HashSet':
  				case 'List': {
  					return this.#list(c, () => this.#value(first, true, c));
  				}
-@@ -955,7 +971,7 @@ export class MemoryPackReader {
+@@ -762,6 +778,11 @@ export class MemoryPackReader {
+ 		if (type.kind === 'generic') {
+ 			const [first, second] = type.args;
+ 			switch (base) {
++				case 'ValueTuple': {
++					this.#value(type, listElement, c);
++					return;
++				}
++				case 'HashSet':
+ 				case 'List': {
+ 					const count = readListCount(c);
+ 					for (let i = 0; i < count; i++) {
+@@ -955,7 +976,7 @@ export class MemoryPackReader {
  			return false;
  		}
  		const definition = this.schema.runtime.metadata.typeDefinition(type.definition);
@@ -2640,7 +2652,7 @@ index 00000000..b5839188
 +	};
 +}
 diff --git a/packages/package-format/src/story.test.ts b/packages/package-format/src/story.test.ts
-index 5733e4ec..150cc42d 100644
+index 5733e4ec..ef06d078 100644
 --- a/packages/package-format/src/story.test.ts
 +++ b/packages/package-format/src/story.test.ts
 @@ -2,7 +2,14 @@ import assert from 'node:assert/strict';
@@ -2727,12 +2739,12 @@ index 5733e4ec..150cc42d 100644
  it('a story point completes what came before it and leaves what follows unstarted', () => {
  	assert.deepEqual(
  		storyPointPicks(CONTROLS, MISSIONS, { mission: 0, step: 5 }),
-@@ -88,3 +156,26 @@ it('lists a point per mission start and per step quest controls sit at, once per
+@@ -88,3 +156,34 @@ it('lists a point per mission start and per step quest controls sit at, once per
  		],
  	);
  });
 +
-+it('opens traversal doors without destroying supports or overriding derived gates', () => {
++it('opens traversal doors and extends bridges without destroying supports or overriding derived gates', () => {
 +	const door: SceneControl = {
 +		...control('quest', 'a', E1M1, 1),
 +		kind: 'door',
@@ -2747,18 +2759,26 @@ index 5733e4ec..150cc42d 100644
 +	const controls: SceneControl[] = [
 +		door,
 +		{ ...door, kind: 'activation', id: 'activation:a' },
++		{ ...door, kind: 'bridge', id: 'bridge:a' },
 +		{ ...door, kind: 'destruction', id: 'destruction:a' },
 +		{ ...door, id: 'door:derived', source: { kind: 'derived' as const, condition: 0, rule: ['test gate'] } },
 +	];
-+	assert.deepEqual(openTraversalPicks(controls), { 'door:a': 1, 'activation:a': 1 });
-+	assert.deepEqual(openTraversalPicksByIndex(controls), new Map([[0, 1], [1, 1]]));
++	assert.deepEqual(openTraversalPicks(controls), { 'door:a': 1, 'activation:a': 1, 'bridge:a': 1 });
++	assert.deepEqual(
++		openTraversalPicksByIndex(controls),
++		new Map([
++			[0, 1],
++			[1, 1],
++			[2, 1],
++		]),
++	);
 +	assert.deepEqual(completedProgressionPicksByIndex(controls), new Map());
 +});
 diff --git a/packages/package-format/src/story.ts b/packages/package-format/src/story.ts
-index 97d740f1..1ea031cf 100644
+index 97d740f1..5337dc0a 100644
 --- a/packages/package-format/src/story.ts
 +++ b/packages/package-format/src/story.ts
-@@ -11,6 +11,80 @@ const NONE = 0;
+@@ -11,6 +11,83 @@ const NONE = 0;
  const PROCESSING = 2;
  const COMPLETED = 3;
  
@@ -2801,7 +2821,10 @@ index 97d740f1..1ea031cf 100644
 +	return indexedPicks(controls, completedProgressionPicks(controls));
 +};
 +
-+const indexedPicks = (controls: readonly SceneControl[], byId: Record<string, number>): Map<number, number> => {
++const indexedPicks = (
++	controls: readonly SceneControl[],
++	byId: Record<string, number>,
++): Map<number, number> => {
 +	return new Map(
 +		controls.flatMap((control, index) => {
 +			const value = byId[control.id];
@@ -2819,7 +2842,7 @@ index 97d740f1..1ea031cf 100644
 +	for (const control of controls) {
 +		if (
 +			control.source.kind === 'user' &&
-+			(control.kind === 'door' || control.kind === 'activation') &&
++			(control.kind === 'door' || control.kind === 'activation' || control.kind === 'bridge') &&
 +			control.default !== 1 &&
 +			control.values.some((value) => value.value === 1)
 +		) {
@@ -2839,77 +2862,3 @@ index 97d740f1..1ea031cf 100644
  /**
   * @param controls a package's controls
   * @param missions `StatesInfo.missions` indices in story order
-diff --git a/packages/formats/src/endfield/dynamic-scene.test.ts b/packages/formats/src/endfield/dynamic-scene.test.ts
-index 09037c77..97139239 100644
---- a/packages/formats/src/endfield/dynamic-scene.test.ts
-+++ b/packages/formats/src/endfield/dynamic-scene.test.ts
-@@ -379,7 +379,7 @@ const buildConveyors = (): Uint8Array => {
- 		grid.get(33)!,
- 		w.structs(
- 			84,
--			types.map((_, i) => [10 + i, 0].concat(ref(1, i, 1))),
-+			types.map((_, i) => [10 + i, 0, ...ref(1, i, 1), 0, 1, 49, GRID, 0, 0, 0, 1, 49, GRID, 0, 0, 0]),
- 		),
- 	);
- 	const groupId = 0x100000005n;
-@@ -420,7 +420,7 @@ const buildConveyors = (): Uint8Array => {
- };
- 
- test('preserves conveyor identity, signed speed, box offsets and cross-grid path rows', () => {
--	const conveyors = readDynamicEntities(buildConveyors()).map((entity) => entity.conveyor);
-+	const conveyors = readDynamicScene(buildConveyors()).entities.map((entity) => entity.conveyor);
- 	assert.deepEqual(conveyors.slice(0, 3), [
- 		{ kind: 'belt', group: 0x100000005n, entry: true, exit: false },
- 		{ kind: 'box', group: 0x100000005n, fixedProgress: -7, lateralOffset: -0.25 },
-@@ -450,7 +450,7 @@ test('preserves conveyor identity, signed speed, box offsets and cross-grid path
- 			},
- 		],
- 	});
--	assert.ok(readDynamicEntities(build()).every((entity) => entity.conveyor === undefined));
-+	assert.ok(readDynamicScene(build()).entities.every((entity) => entity.conveyor === undefined));
- });
- 
- test('rejects malformed conveyor references, flags and non-finite geometry', () => {
-@@ -466,12 +466,12 @@ test('rejects malformed conveyor references, flags and non-finite geometry', ()
- 			rows = fb.vector(grid, slot);
- 		const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
- 		view.setInt32(rows.start + offset, value, true);
--		assert.throws(() => readDynamicEntities(bytes), expected);
-+		assert.throws(() => readDynamicScene(bytes), expected);
- 	}
- 	const bytes = buildConveyors(),
- 		fb = new FlatBuffer(bytes);
- 	const grid = fb.tableAt(fb.vector(fb.root(), 3).start, 1),
- 		paths = fb.vector(grid, 41);
- 	new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).setFloat32(paths.start + 84 + 4, NaN, true);
--	assert.throws(() => readDynamicEntities(bytes), /non-finite conveyor/);
-+	assert.throws(() => readDynamicScene(bytes), /non-finite conveyor/);
- });
-diff --git a/packages/formats/src/endfield/memory-pack.ts b/packages/formats/src/endfield/memory-pack.ts
-index bc4b6856..54d50a1c 100644
---- a/packages/formats/src/endfield/memory-pack.ts
-+++ b/packages/formats/src/endfield/memory-pack.ts
-@@ -672,9 +672,9 @@ export class MemoryPackReader {
- 							(arg) => arg.kind === 'definition' && runtime.definitionName(arg.definition) === 'Vector3',
- 						)
- 					) {
--						throw new FormatError(`unsupported tuple layout ${name}`);
-+						throw new FormatError(`unsupported tuple layout ${runtime.typeName(type)}`);
- 					}
--					return [this.#value(first, false), this.#value(second, false)];
-+					return [this.#value(first, false, c), this.#value(second, false, c)];
- 				}
- 				case 'HashSet':
- 				case 'List': {
-@@ -778,6 +778,11 @@ export class MemoryPackReader {
- 		if (type.kind === 'generic') {
- 			const [first, second] = type.args;
- 			switch (base) {
-+				case 'ValueTuple': {
-+					this.#value(type, listElement, c);
-+					return;
-+				}
-+				case 'HashSet':
- 				case 'List': {
- 					const count = readListCount(c);
- 					for (let i = 0; i < count; i++) {

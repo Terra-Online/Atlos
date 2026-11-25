@@ -1,133 +1,415 @@
 diff --git a/packages/extractor/src/commands/player-ground.ts b/packages/extractor/src/commands/player-ground.ts
---- a/packages/extractor/src/commands/player-ground.ts
+new file mode 100644
+index 00000000..37f30e85
+--- /dev/null
 +++ b/packages/extractor/src/commands/player-ground.ts
-@@ -7,7 +7,8 @@
- 
- import { isObject, numberField, objectField, stringField } from '@endfield-noclip/formats/unity/values';
- 
--import { buildGroundTiles } from '@opendfieldmap/ganglia/build';
+@@ -0,0 +1,403 @@
++import { createHash } from 'node:crypto';
++/* oxlint-disable no-await-in-loop -- retain one selected collision export at a time */
++import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
++import { resolve } from 'node:path';
++import { parseArgs, isDeepStrictEqual } from 'node:util';
++import { serialize } from 'node:v8';
++
++import { isObject, numberField, objectField, stringField } from '@endfield-noclip/formats/unity/values';
++
 +import { buildGroundTiles, type TileBuildResult } from '@opendfieldmap/ganglia/build';
 +import type { CollisionExport, Header } from '@opendfieldmap/ganglia/scene-pack';
- 
- import { parseInteger } from '../cli-args.ts';
- import { withContext } from '../context.ts';
-@@ -20,6 +21,7 @@
- import { loadSceneStates, loadMapVariables, defaultSceneStates } from '../game/state/scene-conditions.ts';
- import { collectCollisionInputs, collisionChunkFiles } from '../game/collision-inputs.ts';
- import { collectInkRoadCollision } from '../game/dynamic/ink-road-collision.ts';
++
++import { parseInteger } from '../cli/helpers.ts';
++import { withContext } from '../context.ts';
++import {
++	collisionGeometry,
++	walkableCollisionIndices,
++	type CollisionInputs,
++} from '../game/collision-ground.ts';
++import { collectCollisionInputs, collisionChunkFiles } from '../game/collision-inputs.ts';
++import { collectInkRoadCollision } from '../game/dynamic/ink-road-collision.ts';
++import { groundGeneratorIdentity, groundTileCache } from '../game/ground-tile-cache.ts';
 +import { roundExclusions } from '../game/round-exclusions.ts';
- import { groundGeneratorIdentity, groundTileCache } from '../game/ground-tile-cache.ts';
- 
- export const summary =
-@@ -56,7 +58,10 @@
-  * @returns after writing physical ground and collision evidence independently of AI navigation coverage
-  * @throws on unsupported source geometry, missing selected payloads, mismatched builds or failed tile builds
-  */
--export const run = async (args: string[]): Promise<void> => {
++import { GameState } from '../game/state/game-state.ts';
++import { loadSceneStates, loadMapVariables, defaultSceneStates } from '../game/state/scene-conditions.ts';
++
++export const summary =
++	'build bounded player ground tiles from selected collision sources, including factory floors';
++export const usage =
++	'usage: endfield-extract player-ground <scene> --bounds <minX,minZ,maxX,maxZ> --scene-state <n> --area <n> --movement-settings <file> -o <ground-file> --collision-output <geometry-file> [--collision-format <json|v8>] [--terminal-scene] [--cell-size <m>] [--tile-cells <n>] [--tiles <x,z;x,z>] [--tile-cache <directory>] --config <config>; player-ground --identity';
++
++/** V8 snapshots are local Node cache files; metadata retains the exporter bindings. */
++export const encodeCollision = (
++	value: { positions: number[]; indices: number[]; [key: string]: unknown },
++	format: 'json' | 'v8' = 'json',
++): string | Buffer => {
++	if (format === 'json') return JSON.stringify(value);
++	if (value.positions.length % 3 || value.indices.length % 3) {
++		throw new Error('invalid collision triangle packing for v8 export');
++	}
++	for (const position of value.positions) {
++		if (!Number.isFinite(position)) throw new Error('invalid collision vertex for v8 export');
++	}
++	for (const index of value.indices) {
++		if (!Number.isInteger(index) || index < 0 || index > 0xffffffff || index >= value.positions.length / 3) {
++			throw new Error('invalid collision index for v8 export');
++		}
++	}
++	return serialize({
++		...value,
++		positions: Float64Array.from(value.positions),
++		indices: Uint32Array.from(value.indices),
++	});
++};
++
++/**
++ * @param args source selection, build-bound movement parameters and explicit world bounds
++ * @returns after writing physical ground and collision evidence independently of AI navigation coverage
++ * @throws on unsupported source geometry, missing selected payloads, mismatched builds or failed tile builds
++ */
 +export const buildPlayerGround = async (
 +	args: string[],
 +	publish?: (header: Header, collision: CollisionExport, ground: TileBuildResult) => Promise<void>,
 +): Promise<void> => {
- 	const { values, positionals } = parseArgs({
- 		args,
- 		allowPositionals: true,
-@@ -89,9 +94,7 @@
- 		values['scene-state'] === undefined ||
- 		values.area === undefined ||
- 		!values['movement-settings'] ||
--		!values.output ||
--		!values['collision-output'] ||
--		values.output === values['collision-output']
-+		(!publish && (!values.output || !values['collision-output'] || values.output === values['collision-output']))
- 	) {
- 		throw new Error(usage);
- 	}
-@@ -162,6 +165,10 @@
- 		radius: numberField(movement.defaultProfile, 'radius'),
- 		height: numberField(movement.defaultProfile, 'height'),
- 	};
++	const { values, positionals } = parseArgs({
++		args,
++		allowPositionals: true,
++		options: {
++			bounds: { type: 'string' },
++			'scene-state': { type: 'string' },
++			'terminal-scene': { type: 'boolean' },
++			'static-supports': { type: 'string' },
++			area: { type: 'string' },
++			'movement-settings': { type: 'string' },
++			output: { type: 'string', short: 'o' },
++			'collision-output': { type: 'string' },
++			'collision-format': { type: 'string', default: 'json' },
++			'cell-size': { type: 'string', default: '0.15' },
++			'tile-cells': { type: 'string', default: '256' },
++			tiles: { type: 'string' },
++			config: { type: 'string' },
++			'input-cache': { type: 'string' },
++			'tile-cache': { type: 'string' },
++			identity: { type: 'boolean' },
++		},
++	});
++	if (values.identity) {
++		console.log(JSON.stringify({ generator: await groundGeneratorIdentity() }));
++		return;
++	}
++	if (
++		positionals.length !== 1 ||
++		!values.bounds ||
++		values['scene-state'] === undefined ||
++		values.area === undefined ||
++		!values['movement-settings'] ||
++		(!publish &&
++			(!values.output || !values['collision-output'] || values.output === values['collision-output']))
++	) {
++		throw new Error(usage);
++	}
++	const collisionFormat = values['collision-format'];
++	if (collisionFormat !== 'json' && collisionFormat !== 'v8') throw new Error('invalid collision format');
++	const bounds = values.bounds.split(',').map(Number);
++	if (
++		bounds.length !== 4 ||
++		!bounds.every(Number.isFinite) ||
++		bounds[0] >= bounds[2] ||
++		bounds[1] >= bounds[3]
++	) {
++		throw new Error('invalid player ground bounds');
++	}
++	const minCell = [Math.floor(bounds[0] / 128) - 1, Math.floor(bounds[1] / 128) - 1];
++	const maxCell = [Math.floor(bounds[2] / 128) + 1, Math.floor(bounds[3] / 128) + 1];
++	const cellCount = (maxCell[0] - minCell[0] + 1) * (maxCell[1] - minCell[1] + 1);
++	if (![...minCell, ...maxCell, cellCount].every(Number.isSafeInteger) || cellCount > 512) {
++		throw new Error('player ground region exceeds the collision cell budget');
++	}
++	const cellSize = Number(values['cell-size']);
++	const tileCells = parseInteger(values['tile-cells'], '--tile-cells');
++	const tiles = values.tiles?.split(';').map((value) => {
++		if (!/^-?\d+,-?\d+$/.test(value)) {
++			throw new Error('invalid physical tile selection');
++		}
++		const [x, z] = value.split(',').map(Number);
++		return { x, z };
++	});
++	const tileSpan = cellSize * tileCells;
++	const tileRange = [
++		Math.floor(bounds[0] / tileSpan),
++		Math.floor(bounds[1] / tileSpan),
++		Math.ceil(bounds[2] / tileSpan),
++		Math.ceil(bounds[3] / tileSpan),
++	];
++	const tileCount = tiles?.length ?? (tileRange[2] - tileRange[0]) * (tileRange[3] - tileRange[1]);
++	if (
++		!Number.isFinite(cellSize) ||
++		cellSize <= 0 ||
++		tileCells < 1 ||
++		![...tileRange, tileCount].every(Number.isSafeInteger) ||
++		tileCount > 512
++	) {
++		throw new Error('player ground resolution or tile budget is invalid');
++	}
++	const movement: unknown = JSON.parse(await readFile(values['movement-settings'], 'utf8'));
++	if (
++		!isObject(movement) ||
++		!isObject(movement.source) ||
++		!isObject(movement.defaultProfile) ||
++		!Array.isArray(movement.assets)
++	) {
++		throw new Error('invalid movement export');
++	}
++	const asset = movement.assets.find(
++		(a) => isObject(a) && typeof a.path === 'string' && a.path.endsWith('/MovementSetting_Default.asset'),
++	);
++	if (!isObject(asset) || !isObject(asset.settings)) {
++		throw new Error('missing default movement settings');
++	}
++	const settings = asset.settings;
++	const source = {
++		buildGuid: stringField(movement.source, 'buildGuid'),
++		contentHash: stringField(movement.source, 'contentHash'),
++	};
++	const profile = {
++		radius: numberField(movement.defaultProfile, 'radius'),
++		height: numberField(movement.defaultProfile, 'height'),
++	};
 +	// Scene packs build whole tiles. Their ground meshes need the same source
 +	// geometry in each tile's pad, including supports across a batch edge.
 +	const pad = publish ? (Math.ceil(profile.radius / cellSize) + 3) * cellSize : 0;
 +	const supportBounds = [bounds[0] - pad, bounds[1] - pad, bounds[2] + pad, bounds[3] + pad];
- 	const selection: { sceneState: number; sceneStates?: number[]; area: number; layerMask: number; solidsOnly: true } = {
- 		sceneState: parseInteger(values['scene-state'], '--scene-state'),
- 		area: parseInteger(values.area, '--area'),
-@@ -236,8 +243,8 @@
- 		}
- 		const inkRoad = values['terminal-scene']
- 			? await collectInkRoadCollision(ctx, scene, {
--				minX: bounds[0] - profile.radius, minZ: bounds[1] - profile.radius,
--				maxX: bounds[2] + profile.radius, maxZ: bounds[3] + profile.radius,
-+				minX: bounds[0] - Math.max(pad, profile.radius), minZ: bounds[1] - Math.max(pad, profile.radius),
-+				maxX: bounds[2] + Math.max(pad, profile.radius), maxZ: bounds[3] + Math.max(pad, profile.radius),
- 			}, selection)
- 			: null;
- 		if (inkRoad) inputs.push(inkRoad);
-@@ -245,23 +252,23 @@
- 			walkableLayers: numberField(objectField(settings, '_walkableLayers'), 'm_Bits'),
- 		});
- 		if (inkRoad) Object.assign(geometry.coverage, { inkRoadActors: inkRoad.actors.map(actor => actor.id) });
++	const selection: {
++		sceneState: number;
++		sceneStates?: number[];
++		area: number;
++		layerMask: number;
++		solidsOnly: true;
++	} = {
++		sceneState: parseInteger(values['scene-state'], '--scene-state'),
++		area: parseInteger(values.area, '--area'),
++		layerMask: numberField(objectField(settings, '_collidableLayers'), 'm_Bits'),
++		solidsOnly: true,
++	};
++	const scene = positionals[0];
++	await withContext(values.config, async (ctx) => {
++		const manifest = await ctx.world.manifest();
++		if (source.buildGuid !== manifest.guid || source.contentHash !== manifest.contentHash) {
++			throw new Error('collision and movement sources must share a build');
++		}
++		if (values['terminal-scene']) {
++			const states = await loadSceneStates(ctx.world, scene);
++			const game = new GameState({ variables: await loadMapVariables(ctx.world, scene) });
++			game.note(states.flatMap((state) => (state.condition ? [state.condition] : [])));
++			// Streaming filenames encode a MapConfig index plus one. Zero is shared base geometry.
++			selection.sceneStates = [0, ...[...defaultSceneStates(states, game)].map((index) => index + 1)].sort(
++				(a, b) => a - b,
++			);
++		}
++		const cells: ({ x: number; z: number } | 'global')[] = ['global'];
++		// Adjacent cells may own geometry intersecting the region despite an outside actor origin.
++		for (let x = minCell[0]; x <= maxCell[0]; x++) {
++			for (let z = minCell[1]; z <= maxCell[1]; z++) {
++				cells.push({ x, z });
++			}
++		}
++		const cacheKey = createHash('sha256')
++			.update(JSON.stringify({ source, scene, selection, format: 2 }))
++			.digest('hex');
++		const cacheDirectory = values['input-cache'] ? resolve(values['input-cache'], cacheKey) : null;
++		if (cacheDirectory) {
++			await mkdir(cacheDirectory, { recursive: true });
++		}
++		const inputs: CollisionInputs[] = [],
++			absent = [];
++		for (const cell of cells) {
++			if (!(await collisionChunkFiles(ctx, scene, cell, selection)).length) {
++				absent.push(cell);
++				continue;
++			}
++			const cacheFile = cacheDirectory
++				? resolve(cacheDirectory, cell === 'global' ? 'global.json' : `${cell.x}_${cell.z}.json`)
++				: null;
++			let input: CollisionInputs | null = null;
++			if (cacheFile) {
++				try {
++					const cached: CollisionInputs = JSON.parse(await readFile(cacheFile, 'utf8'));
++					if (
++						cached.version === 1 &&
++						cached.scene === scene &&
++						cached.source.buildGuid === source.buildGuid &&
++						cached.source.contentHash === source.contentHash &&
++						isDeepStrictEqual(cached.selection, selection) &&
++						isDeepStrictEqual(cached.cell, cell)
++					) {
++						input = cached;
++					}
++				} catch {
++					/* Missing or incomplete cache entries are rebuilt from verified source payloads. */
++				}
++			}
++			if (!input) {
++				input = await collectCollisionInputs(ctx, scene, cell, selection);
++				if (cacheFile) {
++					const temporary = `${cacheFile}.${process.pid}.tmp`;
++					await writeFile(temporary, JSON.stringify(input));
++					await rename(temporary, cacheFile);
++				}
++			}
++			inputs.push(input);
++			console.log(JSON.stringify({ phase: 'collision-inputs', cell, actors: input.actors.length }));
++		}
++		const inkRoad = values['terminal-scene']
++			? await collectInkRoadCollision(
++					ctx,
++					scene,
++					{
++						minX: bounds[0] - Math.max(pad, profile.radius),
++						minZ: bounds[1] - Math.max(pad, profile.radius),
++						maxX: bounds[2] + Math.max(pad, profile.radius),
++						maxZ: bounds[3] + Math.max(pad, profile.radius),
++					},
++					selection,
++				)
++			: null;
++		if (inkRoad) inputs.push(inkRoad);
++		const geometry = collisionGeometry(inputs, {
++			walkableLayers: numberField(objectField(settings, '_walkableLayers'), 'm_Bits'),
++		});
++		if (inkRoad) Object.assign(geometry.coverage, { inkRoadActors: inkRoad.actors.map((actor) => actor.id) });
 +		const staticSupports: { id: string; model: string; pose: string }[] = [];
- 		if (values['static-supports']) {
- 			const catalog = JSON.parse(await readFile(values['static-supports'], 'utf8'));
- 			if (catalog.scene !== scene || catalog.source?.buildGuid !== source.buildGuid || catalog.source?.contentHash !== source.contentHash) throw new Error('static support source mismatch');
--			const used = [];
- 			for (const support of catalog.staticSupports ?? []) {
- 				if (!Array.isArray(support.positions) || support.positions.length % 3 || support.positions.some((v: unknown) => typeof v !== 'number' || !Number.isFinite(v)) ||
- 					!Array.isArray(support.indices) || support.indices.length % 3 || support.indices.some((v: number) => !Number.isInteger(v) || v < 0 || v >= support.positions.length / 3)) throw new Error('invalid static support geometry');
- 				const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
- 				for (let i = 0; i < support.positions.length; i++) { min[i % 3] = Math.min(min[i % 3], support.positions[i]); max[i % 3] = Math.max(max[i % 3], support.positions[i]); }
--				if (max[0] < bounds[0] || min[0] > bounds[2] || max[2] < bounds[1] || min[2] > bounds[3]) continue;
-+				if (max[0] < supportBounds[0] || min[0] > supportBounds[2] || max[2] < supportBounds[1] || min[2] > supportBounds[3]) continue;
- 				const base = geometry.positions.length / 3, first = geometry.indices.length / 3;
- 				for (const value of support.positions) geometry.positions.push(value);
- 				for (const index of support.indices) geometry.indices.push(base + index);
- 				geometry.records.push({ id: Number(support.id), component: 0, index: 0, kind: 'mesh', layer: 0, bounds: { min: min as [number, number, number], max: max as [number, number, number] }, first, count: support.indices.length / 3, walkable: true });
--				used.push({ id: support.id, model: support.model, pose: support.pose });
--			}
--			Object.assign(geometry.coverage, { staticSupports: used });
++		if (values['static-supports']) {
++			const catalog = JSON.parse(await readFile(values['static-supports'], 'utf8'));
++			if (
++				catalog.scene !== scene ||
++				catalog.source?.buildGuid !== source.buildGuid ||
++				catalog.source?.contentHash !== source.contentHash
++			)
++				throw new Error('static support source mismatch');
++			for (const support of catalog.staticSupports ?? []) {
++				if (
++					!Array.isArray(support.positions) ||
++					support.positions.length % 3 ||
++					support.positions.some((v: unknown) => typeof v !== 'number' || !Number.isFinite(v)) ||
++					!Array.isArray(support.indices) ||
++					support.indices.length % 3 ||
++					support.indices.some(
++						(v: number) => !Number.isInteger(v) || v < 0 || v >= support.positions.length / 3,
++					)
++				)
++					throw new Error('invalid static support geometry');
++				const min = [Infinity, Infinity, Infinity],
++					max = [-Infinity, -Infinity, -Infinity];
++				for (let i = 0; i < support.positions.length; i++) {
++					min[i % 3] = Math.min(min[i % 3], support.positions[i]);
++					max[i % 3] = Math.max(max[i % 3], support.positions[i]);
++				}
++				if (
++					max[0] < supportBounds[0] ||
++					min[0] > supportBounds[2] ||
++					max[2] < supportBounds[1] ||
++					min[2] > supportBounds[3]
++				)
++					continue;
++				const base = geometry.positions.length / 3,
++					first = geometry.indices.length / 3;
++				for (const value of support.positions) geometry.positions.push(value);
++				for (const index of support.indices) geometry.indices.push(base + index);
++				geometry.records.push({
++					id: Number(support.id),
++					component: 0,
++					index: 0,
++					kind: 'mesh',
++					layer: 0,
++					bounds: { min: min as [number, number, number], max: max as [number, number, number] },
++					first,
++					count: support.indices.length / 3,
++					walkable: true,
++				});
 +				staticSupports.push({ id: support.id, model: support.model, pose: support.pose });
 +			}
 +			Object.assign(geometry.coverage, { staticSupports });
- 		}
- 		const buildIndices = walkableCollisionIndices(geometry);
- 		const options = {
-@@ -278,8 +285,8 @@
- 			},
- 			...(tiles ? { tiles } : {}),
- 		};
--		const generator = await groundGeneratorIdentity();
--		await writeFile(values['collision-output']!, encodeCollision({ ...geometry, exportRevision: 2, generator, options, absent }, collisionFormat));
++		}
++		const buildIndices = walkableCollisionIndices(geometry);
++		const options = {
++			profile,
++			maxSlope: numberField(settings, '_slopeLimit'),
++			stepUp: numberField(settings, '_stepOffset'),
++			stepDown: numberField(settings, '_stepDownOffset'),
++			cellSize,
++			cellHeight: 0.05,
++			tileCells,
++			bounds: {
++				min: [bounds[0], bounds[1]] as [number, number],
++				max: [bounds[2], bounds[3]] as [number, number],
++			},
++			...(tiles ? { tiles } : {}),
++		};
 +		const generator = publish ? null : await groundGeneratorIdentity();
-+		if (!publish) await writeFile(values['collision-output']!, encodeCollision({ ...geometry, exportRevision: 2, generator, options, absent }, collisionFormat));
- 		const ground = await buildGroundTiles(
- 			{ positions: geometry.positions, indices: buildIndices },
- 			{
-@@ -290,6 +297,15 @@
- 				onTile: (progress) => console.log(JSON.stringify({ phase: 'ground-tile', ...progress })),
- 			},
- 		);
++		if (!publish)
++			await writeFile(
++				values['collision-output']!,
++				encodeCollision({ ...geometry, exportRevision: 2, generator, options, absent }, collisionFormat),
++			);
++		const ground = await buildGroundTiles(
++			{ positions: geometry.positions, indices: buildIndices },
++			{
++				...options,
++				cache: values['tile-cache']
++					? await groundTileCache(resolve(values['tile-cache']), source)
++					: undefined,
++				onTile: (progress) => console.log(JSON.stringify({ phase: 'ground-tile', ...progress })),
++			},
++		);
 +		if (publish) {
 +			const { bounds: _bounds, tiles: _tiles, ...settings } = options;
 +			await publish(
 +				{ scene, source, selection, settings },
-+				{ ...geometry, exclusions: roundExclusions(geometry.exclusions, geometry.coverage), coverage: { ...geometry.coverage, staticSupports } },
++				{
++					...geometry,
++					exclusions: roundExclusions(geometry.exclusions, geometry.coverage),
++					coverage: { ...geometry.coverage, staticSupports },
++				},
 +				ground,
 +			);
 +			return;
 +		}
- 		await writeFile(
- 			values.output!,
- 			JSON.stringify({
-@@ -324,3 +340,5 @@
- 		);
- 	});
- };
++		await writeFile(
++			values.output!,
++			JSON.stringify({
++				version: 1,
++				exportRevision: 2,
++				generator,
++				source: geometry.source,
++				scene,
++				selection,
++				coverage: geometry.coverage,
++				absent,
++				build: options,
++				tiles: ground.tiles,
++				surfaces: ground.surfaces,
++				options: {
++					speed: numberField(settings, '_runSpeed'),
++					maxVertical: 0.5,
++					profile,
++					walls: geometry.exclusions,
++					portals: ground.portals,
++					locomotion: movement.sustainedSprint,
++				},
++			}),
++		);
++		console.log(
++			JSON.stringify({
++				phase: 'ground',
++				tiles: ground.tiles.length,
++				surfaces: ground.surfaces.length,
++				portals: ground.portals.length,
++			}),
++		);
++	});
++};
 +
 +export const run = (args: string[]) => buildPlayerGround(args);
 diff --git a/packages/extractor/src/commands/player-scene.ts b/packages/extractor/src/commands/player-scene.ts
 new file mode 100644
+index 00000000..fefefd30
 --- /dev/null
 +++ b/packages/extractor/src/commands/player-scene.ts
 @@ -0,0 +1,77 @@

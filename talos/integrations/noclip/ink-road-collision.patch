@@ -1,128 +1,189 @@
-diff --git a/packages/extractor/src/commands/player-ground.ts b/packages/extractor/src/commands/player-ground.ts
-index 72dfd6ab..2291f392 100644
---- a/packages/extractor/src/commands/player-ground.ts
-+++ b/packages/extractor/src/commands/player-ground.ts
-@@ -19,6 +19,7 @@ import {
- import { GameState } from '../game/state/game-state.ts';
- import { loadSceneStates, loadMapVariables, defaultSceneStates } from '../game/state/scene-conditions.ts';
- import { collectCollisionInputs, collisionChunkFiles } from '../game/collision-inputs.ts';
-+import { collectInkRoadCollision } from '../game/dynamic/ink-road-collision.ts';
- import { groundGeneratorIdentity, groundTileCache } from '../game/ground-tile-cache.ts';
- 
- export const summary =
-@@ -161,7 +162,7 @@ export const run = async (args: string[]): Promise<void> => {
- 		radius: numberField(movement.defaultProfile, 'radius'),
- 		height: numberField(movement.defaultProfile, 'height'),
- 	};
--	const selection: { sceneState: number; sceneStates?: number[]; area: number; layerMask: number; solidsOnly: boolean } = {
-+	const selection: { sceneState: number; sceneStates?: number[]; area: number; layerMask: number; solidsOnly: true } = {
- 		sceneState: parseInteger(values['scene-state'], '--scene-state'),
- 		area: parseInteger(values.area, '--area'),
- 		layerMask: numberField(objectField(settings, '_collidableLayers'), 'm_Bits'),
-@@ -233,9 +234,17 @@ export const run = async (args: string[]): Promise<void> => {
- 			inputs.push(input);
- 			console.log(JSON.stringify({ phase: 'collision-inputs', cell, actors: input.actors.length }));
- 		}
-+		const inkRoad = values['terminal-scene']
-+			? await collectInkRoadCollision(ctx, scene, {
-+				minX: bounds[0] - profile.radius, minZ: bounds[1] - profile.radius,
-+				maxX: bounds[2] + profile.radius, maxZ: bounds[3] + profile.radius,
-+			}, selection)
-+			: null;
-+		if (inkRoad) inputs.push(inkRoad);
- 		const geometry = collisionGeometry(inputs, {
- 			walkableLayers: numberField(objectField(settings, '_walkableLayers'), 'm_Bits'),
- 		});
-+		if (inkRoad) Object.assign(geometry.coverage, { inkRoadActors: inkRoad.actors.map(actor => actor.id) });
- 		if (values['static-supports']) {
- 			const catalog = JSON.parse(await readFile(values['static-supports'], 'utf8'));
- 			if (catalog.scene !== scene || catalog.source?.buildGuid !== source.buildGuid || catalog.source?.contentHash !== source.contentHash) throw new Error('static support source mismatch');
 diff --git a/packages/extractor/src/game/collision-inputs.ts b/packages/extractor/src/game/collision-inputs.ts
-index b1acd6ec..c425c2b1 100644
---- a/packages/extractor/src/game/collision-inputs.ts
+new file mode 100644
+index 00000000..55406f2d
+--- /dev/null
 +++ b/packages/extractor/src/game/collision-inputs.ts
-@@ -1,7 +1,7 @@
- /* oxlint-disable no-await-in-loop -- retain one streamed payload at a time */
- import { readCollisionHeightfield } from '@endfield-noclip/formats/endfield/collision-heightfield';
- import { readEcsCollider } from '@endfield-noclip/formats/endfield/ecs-collider';
--import { parseStreamingChunk } from '@endfield-noclip/formats/endfield/streaming-chunk-data';
-+import { parseStreamingChunk, type StreamingRecord } from '@endfield-noclip/formats/endfield/streaming-chunk-data';
- import { readCollisionMesh } from '@endfield-noclip/formats/unity/collision-mesh';
- import { readConvexMesh } from '@endfield-noclip/formats/unity/convex-mesh';
- import type { TypeTreeObject } from '@endfield-noclip/formats/unity/type-tree';
-@@ -58,24 +58,16 @@ export const collisionChunkFiles = async (
-   .filter(file => states.has(file.sceneState));
- };
- 
--/**
-- * @param ctx open installation context, reused across cells
-- * @param scene source scene identifier
-- * @param cell explicit cell coordinates or global chunks
-- * @param selection source state, area and layer selection; solidsOnly retains empty-cook bounds as unknown
-- *   obstacles
-- * @returns decoded collider inputs with source identity and explicit coverage limits
-- */
--export const collectCollisionInputs = async (
+@@ -0,0 +1,237 @@
++/* oxlint-disable no-await-in-loop -- retain one streamed payload at a time */
++import { readCollisionHeightfield } from '@endfield-noclip/formats/endfield/collision-heightfield';
++import { readEcsCollider } from '@endfield-noclip/formats/endfield/ecs-collider';
++import { parseStreamingChunk, type StreamingProperty } from '@endfield-noclip/formats/endfield/streaming-chunk-data';
++import { readCollisionMesh } from '@endfield-noclip/formats/unity/collision-mesh';
++import { readConvexMesh } from '@endfield-noclip/formats/unity/convex-mesh';
++import type { TypeTreeObject } from '@endfield-noclip/formats/unity/type-tree';
++import { aabbField, bytesField } from '@endfield-noclip/formats/unity/values';
++
++import type { Context } from '../context.ts';
++
++import { loadTexture } from './assets/asset-decode.ts';
++import type { CollisionInputs, MeshGeometry } from './collision-ground.ts';
++
++/**
++ * @param data source Unity Mesh object bound by a collider
++ * @param kind requested collision representation
++ * @param allowMissingCookBounds whether an empty cook may retain its source bounds as an unknown obstacle
++ * @returns decoded collision geometry or an explicitly marked empty-cook bounds record
++ * @throws for absent cooks in strict mode, corrupt nonempty cooks or invalid source bounds
++ */
++export const readColliderGeometry = (
++	data: TypeTreeObject,
++	kind: 'triangle' | 'convex',
++	allowMissingCookBounds: boolean,
++): MeshGeometry => {
++	const bytes = bytesField(
++		data,
++		kind === 'convex' ? 'm_BakedConvexCollisionMesh' : 'm_BakedTriangleCollisionMesh',
++	);
++	if (bytes.length || !allowMissingCookBounds) {
++		return kind === 'convex' ? readConvexMesh(bytes) : readCollisionMesh(bytes);
++	}
++	const { center, extents } = aabbField(data, 'm_LocalAABB');
++	if (!center.every(Number.isFinite) || !extents.every((value) => Number.isFinite(value) && value >= 0)) {
++		throw new Error('invalid missing-cook collision bounds');
++	}
++	return {
++		vertices: [],
++		triangles: [],
++		faceRemap: null,
++		materials: null,
++		bounds: {
++			min: [center[0] - extents[0], center[1] - extents[1], center[2] - extents[2]],
++			max: [center[0] + extents[0], center[1] + extents[1], center[2] + extents[2]],
++		},
++		approximation: 'missing-cook-bounds',
++	};
++};
++
++/** Select base chunks and the enabled terminal-state additions with one shared rule. */
++export const collisionChunkFiles = async (
++ ctx: Context, scene: string, cell: { x: number; z: number } | 'global',
++ selection: { sceneState: number; sceneStates?: number[]; area: number },
++) => {
++ const states = new Set(selection.sceneStates ?? [selection.sceneState]);
++ return (await ctx.world.cellChunkFiles(scene, cell, { area: selection.area }))
++  .filter(file => states.has(file.sceneState));
++};
++
 +type Selection = CollisionInputs['selection'] & { solidsOnly?: boolean };
-+type SourceRecords = { name: string; records: readonly StreamingRecord[] };
++type SourceRecords = {
++	name: string;
++	records: Iterable<{ id: number; kind: number; properties: StreamingProperty[] }>;
++};
 +
 +/** Decode selected object rows with the same shape and asset rules as ordinary streamed collision. */
 +export const decodeCollisionRecords = async (
- 	ctx: Context,
--	scene: string,
--	cell: { x: number; z: number } | 'global',
--	selection: { sceneState: number; sceneStates?: number[]; area: number; layerMask: number; solidsOnly?: boolean },
--): Promise<CollisionInputs> => {
--	const files = await collisionChunkFiles(ctx, scene, cell, selection);
--	if (!files.length) {
--		throw new Error('no chunks match the collision selection');
--	}
++	ctx: Context,
 +	selection: Selection,
 +	files: AsyncIterable<SourceRecords>,
 +	assetMatches?: (assets: string[]) => boolean,
 +): Promise<Pick<CollisionInputs, 'actors' | 'excludedActors' | 'geometries'>> => {
- 	const actors = [];
- 	const excludedActors = [];
- 	const resolver = await ctx.resolver(),
-@@ -96,12 +88,8 @@ export const collectCollisionInputs = async (
- 		}
- 		return key;
- 	};
--	for (const file of files) {
--		const payload = await ctx.world.readStreamingPayload(file);
--		if (!payload) {
--			throw new Error(`missing streaming collision input for ${file.name}`);
--		}
--		for (const row of parseStreamingChunk(payload).records) {
++	const actors = [];
++	const excludedActors = [];
++	const resolver = await ctx.resolver(),
++		paths = await ctx.world.pathLookup();
++	const geometries = new Map<string, MeshGeometry>();
++	const meshGeometry = async (asset: string, kind: 'triangle' | 'convex') => {
++		const key = `${asset}/${kind}`;
++		if (!geometries.has(key)) {
++			const hash = BigInt(asset),
++				data = await resolver.read(await resolver.findUnique({ hash, path: paths(hash) ?? null }, 43));
++			try {
++				geometries.set(key, readColliderGeometry(data, kind, selection.solidsOnly === true));
++			} catch (cause) {
++				throw new Error(`cannot decode collision geometry ${key} (${paths(hash) ?? 'unknown asset path'})`, {
++					cause,
++				});
++			}
++		}
++		return key;
++	};
 +	for await (const { name, records } of files) {
 +		for (const row of records) {
- 			for (const property of row.properties) {
- 				const component = property.key >>> 24;
- 				if (
-@@ -135,8 +123,9 @@ export const collectCollisionInputs = async (
- 					throw new Error('incomplete collider asset bindings');
- 				}
- 				const assets = Array.from({ length: count }, (_, i) => bindings.get(i)!);
++			for (const property of row.properties) {
++				const component = property.key >>> 24;
++				if (
++					row.kind !== 2 ||
++					![4, 5, 6, 7, 8, 9, 31].includes(component) ||
++					(property.key & 0xffffff) !== 0
++				) {
++					continue;
++				}
++				if (property.value.type !== 'blob') {
++					throw new Error('expected streamed collider blob');
++				}
++				const collider = readEcsCollider(property.value.value);
++				const bindings = new Map<number, string>();
++				for (const p of row.properties) {
++					if (p.key >>> 16 !== ((component << 8) | 1)) {
++						continue;
++					}
++					const index = p.key & 0xffff;
++					if (
++						p.value.type !== 'asset' ||
++						p.value.kind !== (collider.terrain ? 3 : 2) ||
++						bindings.has(index)
++					) {
++						throw new Error('invalid collider asset binding');
++					}
++					bindings.set(index, p.value.hash.toString());
++				}
++				const count = collider.terrain ? 1 : collider.meshCount;
++				if (bindings.size !== count || [...bindings.keys()].some((i) => i >= count)) {
++					throw new Error('incomplete collider asset bindings');
++				}
++				const assets = Array.from({ length: count }, (_, i) => bindings.get(i)!);
 +				if (assetMatches && !assetMatches(assets)) continue;
- 				if (((selection.layerMask >>> collider.layer) & 1) === 0) {
--					excludedActors.push({ id: row.id, component, file: file.name, collider, assets });
++				if (((selection.layerMask >>> collider.layer) & 1) === 0) {
 +					excludedActors.push({ id: row.id, component, file: name, collider, assets });
- 					continue;
- 				}
- 				const shapeGeometry: (string | null)[] = [];
-@@ -176,7 +165,7 @@ export const collectCollisionInputs = async (
- 				actors.push({
- 					id: row.id,
- 					component,
--					file: file.name,
++					continue;
++				}
++				const shapeGeometry: (string | null)[] = [];
++				for (const shape of collider.shapes) {
++					shapeGeometry.push(
++						shape.kind === 'mesh' && (!selection.solidsOnly || (shape.enabled && !shape.trigger))
++							? await meshGeometry(assets[shape.mesh], shape.convex ? 'convex' : 'triangle')
++							: null,
++					);
++				}
++				const complexGeometry =
++					collider.complex && !selection.solidsOnly
++						? await meshGeometry(assets[collider.complex.mesh], 'triangle')
++						: null;
++				let terrainGeometry: string | null = null;
++				if (collider.terrain && (!selection.solidsOnly || collider.terrain.enabled)) {
++					const hash = BigInt(assets[0]);
++					terrainGeometry = `${hash}/heightfield/${collider.terrain.scale.join('/')}`;
++					if (!geometries.has(terrainGeometry)) {
++						const texture = await loadTexture(
++							resolver,
++							await resolver.findUnique({ hash, path: paths(hash) ?? null }, 28),
++						);
++						if (texture.kind !== '2d' || texture.format.name !== 'RG16') {
++							throw new Error('unsupported collision height texture');
++						}
++						geometries.set(
++							terrainGeometry,
++							readCollisionHeightfield(texture.levels[0], {
++								width: texture.width,
++								height: texture.height,
++								scale: collider.terrain.scale,
++							}),
++						);
++					}
++				}
++				actors.push({
++					id: row.id,
++					component,
 +					file: name,
- 					collider,
- 					assets,
- 					shapeGeometry,
-@@ -186,6 +175,35 @@ export const collectCollisionInputs = async (
- 			}
- 		}
- 	}
++					collider,
++					assets,
++					shapeGeometry,
++					complexGeometry,
++					terrainGeometry,
++				});
++			}
++		}
++	}
 +	return { actors, excludedActors, geometries: Object.fromEntries(geometries) };
 +};
 +
@@ -148,92 +209,78 @@ index b1acd6ec..c425c2b1 100644
 +		for (const file of files) {
 +			const payload = await ctx.world.readStreamingPayload(file);
 +			if (!payload) throw new Error(`missing streaming collision input for ${file.name}`);
-+			yield { name: file.name, records: parseStreamingChunk(payload).records };
++			const chunk = parseStreamingChunk(payload);
++			yield {
++				name: file.name,
++				records: chunk.rows.filter((row) => row.tag === 2).map((row) => ({
++					id: row.id, kind: row.tag, properties: chunk.properties(row),
++				})),
++			};
 +		}
 +	};
 +	const inputs = await decodeCollisionRecords(ctx, selection, records());
- 	const build = await ctx.world.manifest();
- 	return {
- 		version: 1,
-@@ -205,8 +223,6 @@ export const collectCollisionInputs = async (
- 				'player-layer-policy',
- 			],
- 		},
--		actors,
--		excludedActors,
--		geometries: Object.fromEntries(geometries),
++	const build = await ctx.world.manifest();
++	return {
++		version: 1,
++		source: { buildGuid: build.guid, contentHash: build.contentHash },
++		scene,
++		cell,
++		selection,
++		coverage: {
++			scope: cell === 'global' ? 'streamed-ecs-global' : 'streamed-ecs-cell',
++			complete: false,
++			files: files.map((f) => f.name),
++			remaining: [
++				cell === 'global' ? 'cell-chunks' : 'global-chunks',
++				'mono-colliders',
++				'interactive-prefabs',
++				'foliage',
++				'player-layer-policy',
++			],
++		},
 +		...inputs,
- 	};
- };
-diff --git a/packages/extractor/src/game/dynamic/dynamic-structures.ts b/packages/extractor/src/game/dynamic/dynamic-structures.ts
-index d70e2d5a..5e369006 100644
---- a/packages/extractor/src/game/dynamic/dynamic-structures.ts
-+++ b/packages/extractor/src/game/dynamic/dynamic-structures.ts
-@@ -432,7 +432,7 @@ const noteOwnerConditions = (
- type EcsGroups = Map<string, Map<number, { visibility: Visibility; grid: number }>>;
- 
- /** a scene's DynamicStreaming files */
--class DynamicFiles {
-+export class DynamicFiles {
- 	readonly #vfs: Vfs;
- 	readonly #prefix: string;
- 
-@@ -477,6 +477,15 @@ class DynamicFiles {
- 		return { grids, owners };
- 	}
- 
-+	/** Read a dynamic ECS chunk together with the stream that owns its object IDs. */
-+	async readEcsChunk(key: string) {
-+		const [init, stream] = await Promise.all([
-+			this.#read(`fb_init_${key}.bytes`),
-+			this.#read(`fb_streaming_${key}.bytes`),
-+		]);
-+		return { init: unpackHgPayload(init), stream: unpackHgPayload(stream) };
-+	}
-+
- 	/**
- 	 * decodes the referenced ECS groups' entities and lights, each under every row's visibility that loads it
- 	 *
++	};
++};
 diff --git a/packages/extractor/src/game/dynamic/ink-road-collision.test.ts b/packages/extractor/src/game/dynamic/ink-road-collision.test.ts
 new file mode 100644
-index 00000000..10806bd7
+index 00000000..67168b08
 --- /dev/null
 +++ b/packages/extractor/src/game/dynamic/ink-road-collision.test.ts
 @@ -0,0 +1,62 @@
 +import assert from 'node:assert/strict';
 +import { test } from 'node:test';
 +
-+import type { DynamicResourceEntity } from '@endfield-noclip/formats/endfield/dynamic-resources';
++import type { DynamicEntity } from '@endfield-noclip/formats/endfield/dynamic-scene';
 +
 +import { isInkRoadCollider, visibleInkRoadGroup } from './ink-road-collision.ts';
 +
-+const owner = (): DynamicResourceEntity => ({
-+	entity: {
-+		grid: 1,
-+		uid: 123n,
-+		entityType: 0,
-+		components: [],
-+		controllers: [],
-+		gates: [],
-+		variables: [],
-+		viewState: null,
-+		resourceGroups: [
-+			{
-+				resources: { type: 7, grid: 1, index: 0, count: 1 },
-+				sceneState: 0,
-+				logicState: 0,
-+				levelNum: 1,
-+				factoryIndex: -1,
-+			},
-+		],
-+		extraScene: null,
-+		erosionCore: null,
-+		sludgeCore: null,
-+	},
++const owner = (): DynamicEntity => ({
++	grid: 1,
++	uid: 123n,
++	entityType: 0,
++	components: [],
++	controllers: [],
++	gates: [],
++	variables: [],
++	viewState: null,
++	resourceGroups: [
++		{
++			resources: { type: 7, grid: 1, index: 0, count: 1 },
++			lod: null,
++			sceneState: 0,
++			logicState: 0,
++			levelNum: 1,
++			factoryIndex: -1,
++			states: [4],
++			areas: [7],
++		},
++	],
++	extraScene: null,
++	erosionCore: null,
++	sludgeCore: null,
++	waterPipe: null,
 +	states: [3],
-+	groupStates: [[4]],
 +	areas: [0],
-+	groupAreas: [[7]],
 +	scriptDefaultLoad: false,
 +});
 +
@@ -249,7 +296,7 @@ index 00000000..10806bd7
 +
 +test('requires an ECS collision group with a resolved logic pose and the source ink-road mesh family', () => {
 +	const road = owner();
-+	const group = road.entity.resourceGroups[0];
++	const group = road.resourceGroups[0];
 +	group.logicState = 2;
 +	assert.equal(visibleInkRoadGroup(road, 0, new Set([3, 4]), 7), false);
 +	group.logicState = 0;
@@ -264,14 +311,14 @@ index 00000000..10806bd7
 +});
 diff --git a/packages/extractor/src/game/dynamic/ink-road-collision.ts b/packages/extractor/src/game/dynamic/ink-road-collision.ts
 new file mode 100644
-index 00000000..ce7de352
+index 00000000..a6404ea1
 --- /dev/null
 +++ b/packages/extractor/src/game/dynamic/ink-road-collision.ts
-@@ -0,0 +1,140 @@
+@@ -0,0 +1,143 @@
 +import {
 +	dynamicResourceSlice,
-+	type DynamicResourceEntity,
-+} from '@endfield-noclip/formats/endfield/dynamic-resources';
++	type DynamicEntity,
++} from '@endfield-noclip/formats/endfield/dynamic-scene';
 +import { parseDynamicChunk } from '@endfield-noclip/formats/endfield/init-chunk-data';
 +import { parseStreamingChunk } from '@endfield-noclip/formats/endfield/streaming-chunk-data';
 +import type { Rect } from '@endfield-noclip/package-format/values';
@@ -290,7 +337,7 @@ index 00000000..ce7de352
 +	path?.toLowerCase().startsWith('assets/beyond/arts/gameplay/pcg/inkbridge/road/models/') ?? false;
 +
 +export function visibleInkRoadGroup(
-+	owner: DynamicResourceEntity,
++	owner: DynamicEntity,
 +	index: number,
 +	states: ReadonlySet<number>,
 +	area: number,
@@ -299,12 +346,12 @@ index 00000000..ce7de352
 +	// Other entity gates and unresolved logic poses still constrain the geometry.
 +	return (
 +		owner.scriptDefaultLoad !== null &&
-+		owner.entity.resourceGroups[index].resources.type === 7 &&
-+		owner.entity.resourceGroups[index].logicState === 0 &&
-+		[owner.states, owner.groupStates[index]].every(
++		owner.resourceGroups[index].resources.type === 7 &&
++		owner.resourceGroups[index].logicState === 0 &&
++		[owner.states, owner.resourceGroups[index].states].every(
 +			(row) => !row.length || row.some((state) => states.has(state)),
 +		) &&
-+		[owner.areas, owner.groupAreas[index]].every(
++		[owner.areas, owner.resourceGroups[index].areas].every(
 +			(row) => !row.length || row.includes(0) || row.includes(area),
 +		)
 +	);
@@ -326,13 +373,13 @@ index 00000000..ce7de352
 +		(selection.sceneStates ?? [selection.sceneState]).filter((s) => s > 0).map((s) => s - 1),
 +	);
 +	const selected = owners.flatMap((owner) => {
-+		const entries = owner.entity.resourceGroups.filter(
++		const entries = owner.resourceGroups.filter(
 +			({ resources }, index) =>
 +				resources.count > 0 &&
 +				visibleInkRoadGroup(owner, index, states, selection.area) &&
 +				intersects(gridIdReach(resources.grid), bounds),
 +		);
-+		return entries.length ? [{ gates: owner.entity.gates.map(gateCondition), entries }] : [];
++		return entries.length ? [{ gates: owner.gates.map(gateCondition), entries }] : [];
 +	});
 +	if (!selected.length) return null;
 +	const game = new GameState({ variables: await loadMapVariables(ctx.world, scene) });
@@ -374,11 +421,14 @@ index 00000000..ce7de352
 +				for (const id of group.ids) ids.add(id);
 +			}
 +			if (!ids.size) continue;
-+			const selectedRows = parseStreamingChunk(stream).records.filter(
-+				(row) =>
-+					ids.has(row.id) &&
-+					row.properties.some(({ value }) => value.type === 'asset' && isInkRoadCollider(paths(value.hash))),
-+			);
++			const streaming = parseStreamingChunk(stream);
++			const selectedRows = streaming.rows.flatMap((row) => {
++				if (row.tag !== 2 || !ids.has(row.id)) return [];
++				const properties = streaming.properties(row);
++				return properties.some(({ value }) => value.type === 'asset' && isInkRoadCollider(paths(value.hash)))
++					? [{ id: row.id, kind: row.tag, properties }]
++					: [];
++			});
 +			if (!selectedRows.length) continue;
 +			const name = `Data/DynamicStreaming/PC/Scene/${scene}/fb_streaming_${key}.bytes`;
 +			sourceFiles.push(name);
@@ -408,220 +458,3 @@ index 00000000..ce7de352
 +		...decoded,
 +	};
 +}
-diff --git a/packages/extractor/src/game/ground-tile-cache.ts b/packages/extractor/src/game/ground-tile-cache.ts
-index f640591f..1ed9e2a5 100644
---- a/packages/extractor/src/game/ground-tile-cache.ts
-+++ b/packages/extractor/src/game/ground-tile-cache.ts
-@@ -30,6 +30,11 @@ export const groundGeneratorIdentity = async (
- 			'../commands/player-ground.ts',
- 			'./collision-inputs.ts',
- 			'./collision-ground.ts',
-+			'./dynamic/ink-road-collision.ts',
-+			'./dynamic/dynamic-structures.ts',
-+			'./dynamic/dynamic-grids.ts',
-+			'./state/game-state.ts',
-+			'./state/scene-conditions.ts',
- 			'./prefab-support.ts',
-             './circular-rotations.ts',
- 			'./static-supports.ts',
-@@ -48,6 +53,9 @@ export const groundGeneratorIdentity = async (
- 			'endfield/collision-heightfield',
- 			'endfield/ecs-collider',
- 			'endfield/streaming-chunk-data',
-+			'endfield/init-chunk-data',
-+			'endfield/dynamic-resources',
-+			'endfield/dynamic-scene',
- 			'unity/collision-mesh',
- 			'unity/convex-mesh',
- 			'unity/mesh',
-diff --git a/packages/extractor/src/game/collision-inputs.ts b/packages/extractor/src/game/collision-inputs.ts
-index c425c2b1..55406f2d 100644
---- a/packages/extractor/src/game/collision-inputs.ts
-+++ b/packages/extractor/src/game/collision-inputs.ts
-@@ -1,7 +1,7 @@
- /* oxlint-disable no-await-in-loop -- retain one streamed payload at a time */
- import { readCollisionHeightfield } from '@endfield-noclip/formats/endfield/collision-heightfield';
- import { readEcsCollider } from '@endfield-noclip/formats/endfield/ecs-collider';
--import { parseStreamingChunk, type StreamingRecord } from '@endfield-noclip/formats/endfield/streaming-chunk-data';
-+import { parseStreamingChunk, type StreamingProperty } from '@endfield-noclip/formats/endfield/streaming-chunk-data';
- import { readCollisionMesh } from '@endfield-noclip/formats/unity/collision-mesh';
- import { readConvexMesh } from '@endfield-noclip/formats/unity/convex-mesh';
- import type { TypeTreeObject } from '@endfield-noclip/formats/unity/type-tree';
-@@ -59,7 +59,10 @@ export const collisionChunkFiles = async (
- };
- 
- type Selection = CollisionInputs['selection'] & { solidsOnly?: boolean };
--type SourceRecords = { name: string; records: readonly StreamingRecord[] };
-+type SourceRecords = {
-+	name: string;
-+	records: Iterable<{ id: number; kind: number; properties: StreamingProperty[] }>;
-+};
- 
- /** Decode selected object rows with the same shape and asset rules as ordinary streamed collision. */
- export const decodeCollisionRecords = async (
-@@ -200,7 +203,13 @@ export const collectCollisionInputs = async (
- 		for (const file of files) {
- 			const payload = await ctx.world.readStreamingPayload(file);
- 			if (!payload) throw new Error(`missing streaming collision input for ${file.name}`);
--			yield { name: file.name, records: parseStreamingChunk(payload).records };
-+			const chunk = parseStreamingChunk(payload);
-+			yield {
-+				name: file.name,
-+				records: chunk.rows.filter((row) => row.tag === 2).map((row) => ({
-+					id: row.id, kind: row.tag, properties: chunk.properties(row),
-+				})),
-+			};
- 		}
- 	};
- 	const inputs = await decodeCollisionRecords(ctx, selection, records());
-diff --git a/packages/extractor/src/game/dynamic/ink-road-collision.test.ts b/packages/extractor/src/game/dynamic/ink-road-collision.test.ts
-index 10806bd7..be56a6bb 100644
---- a/packages/extractor/src/game/dynamic/ink-road-collision.test.ts
-+++ b/packages/extractor/src/game/dynamic/ink-road-collision.test.ts
-@@ -1,37 +1,35 @@
- import assert from 'node:assert/strict';
- import { test } from 'node:test';
- 
--import type { DynamicResourceEntity } from '@endfield-noclip/formats/endfield/dynamic-resources';
-+import type { DynamicEntity } from '@endfield-noclip/formats/endfield/dynamic-scene';
- 
- import { isInkRoadCollider, visibleInkRoadGroup } from './ink-road-collision.ts';
- 
--const owner = (): DynamicResourceEntity => ({
--	entity: {
--		grid: 1,
--		uid: 123n,
--		entityType: 0,
--		components: [],
--		controllers: [],
--		gates: [],
--		variables: [],
--		viewState: null,
--		resourceGroups: [
--			{
--				resources: { type: 7, grid: 1, index: 0, count: 1 },
--				sceneState: 0,
--				logicState: 0,
--				levelNum: 1,
--				factoryIndex: -1,
--			},
--		],
--		extraScene: null,
--		erosionCore: null,
--		sludgeCore: null,
--	},
-+const owner = (): DynamicEntity => ({
-+	grid: 1,
-+	uid: 123n,
-+	entityType: 0,
-+	components: [],
-+	controllers: [],
-+	gates: [],
-+	variables: [],
-+	viewState: null,
-+	resourceGroups: [
-+		{
-+			resources: { type: 7, grid: 1, index: 0, count: 1 },
-+			sceneState: 0,
-+			logicState: 0,
-+			levelNum: 1,
-+			factoryIndex: -1,
-+			states: [4],
-+			areas: [7],
-+		},
-+	],
-+	extraScene: null,
-+	erosionCore: null,
-+	sludgeCore: null,
- 	states: [3],
--	groupStates: [[4]],
- 	areas: [0],
--	groupAreas: [[7]],
- 	scriptDefaultLoad: false,
- });
- 
-@@ -47,7 +45,7 @@ test('completed script roads still require the owner and group scene states and
- 
- test('requires an ECS collision group with a resolved logic pose and the source ink-road mesh family', () => {
- 	const road = owner();
--	const group = road.entity.resourceGroups[0];
-+	const group = road.resourceGroups[0];
- 	group.logicState = 2;
- 	assert.equal(visibleInkRoadGroup(road, 0, new Set([3, 4]), 7), false);
- 	group.logicState = 0;
-diff --git a/packages/extractor/src/game/dynamic/ink-road-collision.ts b/packages/extractor/src/game/dynamic/ink-road-collision.ts
-index ce7de352..a6404ea1 100644
---- a/packages/extractor/src/game/dynamic/ink-road-collision.ts
-+++ b/packages/extractor/src/game/dynamic/ink-road-collision.ts
-@@ -1,7 +1,7 @@
- import {
- 	dynamicResourceSlice,
--	type DynamicResourceEntity,
--} from '@endfield-noclip/formats/endfield/dynamic-resources';
-+	type DynamicEntity,
-+} from '@endfield-noclip/formats/endfield/dynamic-scene';
- import { parseDynamicChunk } from '@endfield-noclip/formats/endfield/init-chunk-data';
- import { parseStreamingChunk } from '@endfield-noclip/formats/endfield/streaming-chunk-data';
- import type { Rect } from '@endfield-noclip/package-format/values';
-@@ -20,7 +20,7 @@ export const isInkRoadCollider = (path: string | undefined): boolean =>
- 	path?.toLowerCase().startsWith('assets/beyond/arts/gameplay/pcg/inkbridge/road/models/') ?? false;
- 
- export function visibleInkRoadGroup(
--	owner: DynamicResourceEntity,
-+	owner: DynamicEntity,
- 	index: number,
- 	states: ReadonlySet<number>,
- 	area: number,
-@@ -29,12 +29,12 @@ export function visibleInkRoadGroup(
- 	// Other entity gates and unresolved logic poses still constrain the geometry.
- 	return (
- 		owner.scriptDefaultLoad !== null &&
--		owner.entity.resourceGroups[index].resources.type === 7 &&
--		owner.entity.resourceGroups[index].logicState === 0 &&
--		[owner.states, owner.groupStates[index]].every(
-+		owner.resourceGroups[index].resources.type === 7 &&
-+		owner.resourceGroups[index].logicState === 0 &&
-+		[owner.states, owner.resourceGroups[index].states].every(
- 			(row) => !row.length || row.some((state) => states.has(state)),
- 		) &&
--		[owner.areas, owner.groupAreas[index]].every(
-+		[owner.areas, owner.resourceGroups[index].areas].every(
- 			(row) => !row.length || row.includes(0) || row.includes(area),
- 		)
- 	);
-@@ -56,13 +56,13 @@ export async function collectInkRoadCollision(
- 		(selection.sceneStates ?? [selection.sceneState]).filter((s) => s > 0).map((s) => s - 1),
- 	);
- 	const selected = owners.flatMap((owner) => {
--		const entries = owner.entity.resourceGroups.filter(
-+		const entries = owner.resourceGroups.filter(
- 			({ resources }, index) =>
- 				resources.count > 0 &&
- 				visibleInkRoadGroup(owner, index, states, selection.area) &&
- 				intersects(gridIdReach(resources.grid), bounds),
- 		);
--		return entries.length ? [{ gates: owner.entity.gates.map(gateCondition), entries }] : [];
-+		return entries.length ? [{ gates: owner.gates.map(gateCondition), entries }] : [];
- 	});
- 	if (!selected.length) return null;
- 	const game = new GameState({ variables: await loadMapVariables(ctx.world, scene) });
-@@ -104,11 +104,14 @@ export async function collectInkRoadCollision(
- 				for (const id of group.ids) ids.add(id);
- 			}
- 			if (!ids.size) continue;
--			const selectedRows = parseStreamingChunk(stream).records.filter(
--				(row) =>
--					ids.has(row.id) &&
--					row.properties.some(({ value }) => value.type === 'asset' && isInkRoadCollider(paths(value.hash))),
--			);
-+			const streaming = parseStreamingChunk(stream);
-+			const selectedRows = streaming.rows.flatMap((row) => {
-+				if (row.tag !== 2 || !ids.has(row.id)) return [];
-+				const properties = streaming.properties(row);
-+				return properties.some(({ value }) => value.type === 'asset' && isInkRoadCollider(paths(value.hash)))
-+					? [{ id: row.id, kind: row.tag, properties }]
-+					: [];
-+			});
- 			if (!selectedRows.length) continue;
- 			const name = `Data/DynamicStreaming/PC/Scene/${scene}/fb_streaming_${key}.bytes`;
- 			sourceFiles.push(name);
