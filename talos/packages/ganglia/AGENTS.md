@@ -6,13 +6,21 @@ extensions through `talos/integrations/noclip` patches; `.cache/noclip` is gener
 `feat/3d-preview` is the base branch. Unless specified otherwise, target it with
 one independently reviewable strategy or fix per PR.
 
+Use Ganglia v1 TypeScript for v1 work and comparisons. Use Ganglia v2 for
+Rust solver work. Ignore the existing v1 Rust implementation
+(`crates/ganglia-v1`, the `ganglia-v1-rust` adapter, and its results) unless
+the task explicitly targets it.
+
 ## Required validation
 
-No CI currently covers solver acceptance on this branch. Before merging changes:
+No CI currently covers solver acceptance on this branch. Before merging code
+changes in this package:
 
-1. Lint, format and test: run `pnpm check` for TS solver changes;
-   `pnpm rust:build`, `pnpm rust:test` and `pnpm rust:integration` for Rust changes.
-2. Run the complete mechanism benchmark and apply the merge gates below (skip if no code is touched). Report benchmark results.
+1. Run `pnpm check` for TypeScript solver changes. For v2 Rust changes, run
+   `pnpm rust:v2:build`, `pnpm rust:v2:test` and
+   `node --test test/rust/v2*.test.ts`.
+2. Run the complete mechanism benchmark and apply the merge gates below.
+   Report benchmark results.
 
 ## Benchmark operation and interpretation
 
@@ -38,13 +46,12 @@ tagged union or an enum in a single field. Otherwise, prefer orthogonal fields
 for independently combinable dimensions, such as search outcome and verification,
 to keep the output model maintainable.
 
-Expected rejections and mechanism exercise are assessed separately. Keep solver
-action construction and physical feasibility checks active.
-
-Independent whole-route verification is beta evidence. Report `valid`, `invalid`,
-`error` and `not-run` separately from search status. Verification failures and
-exceptions do not change completion, route-cost or timing comparisons, or merge
-acceptance; retain their diagnostics and continue the benchmark.
+Use search status to decide whether a request completed. Ignore the current
+independent whole-route verifier and its results in routine Ganglia work,
+including case triage, route-cost and timing comparisons, and merge acceptance.
+Investigate verifier output only when the task explicitly concerns the verifier.
+Keep solver action construction and physical feasibility checks active. Assess
+expected rejections and mechanism exercise separately from search status.
 
 ## Mechanism benchmark
 
@@ -52,7 +59,8 @@ For quick visualization or route debugging, use the [Ganglia v2 case viewer](ben
 
 Use Node 26. For input preparation, follow the
 [mechanism input recipe](bench/scenes/mechanisms/README.md#generate-service-inputs).
-Run from this package:
+For v2 benchmarks, use `--adapter ganglia-v2`. For v1 benchmarks, run from this
+package with the TypeScript adapter:
 
 ```sh
 GANGLIA_BENCHMARK_QUERY_CUTOFF_MS=60000 \
@@ -83,9 +91,9 @@ like-for-like comparison. For exploratory comparisons with custom pairings,
 see the SQL options in `pnpm benchmark:report --help`.
 
 Report source revisions, input bindings, commands, gained/lost cases, cost
-regressions, timing comparisons, physical validity and mechanism exercise.
+regressions, timing comparisons and mechanism exercise.
 If benchmark reports, provenance notes or other research artifacts are saved,
 place them in `.local/research/` and keep them untracked by Git. A separate
 provenance document is optional.
 
-`benchmark:full` and `mechanism-run.ts --mode physical-diagnostic` are optional.
+`benchmark:full` is optional.
