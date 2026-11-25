@@ -19,6 +19,12 @@ function corridor(
 
 export const longCorridors: ReadonlyMap<string, Window> = new Map([
   [
+    '156-0wPCdoe',
+    // The approach leaves the default district to the east before returning
+    // to the boost ridge. Include that terrain without widening other cases.
+    { min: [256, -1952], max: [512, -1696] },
+  ],
+  [
     '159-0PqRUqq',
     // Collider 549449112 ends at z=-195.809. The supported passage around
     // its north end reaches z=-191.973, beyond the local target district.

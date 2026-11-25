@@ -197,9 +197,12 @@ pub struct Profile {
     pub height: f64,
 }
 #[derive(Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Collision {
     pub positions: Vec<f64>,
     pub indices: Vec<usize>,
+    #[serde(default)]
+    pub box_starts: Vec<usize>,
 }
 #[derive(Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
