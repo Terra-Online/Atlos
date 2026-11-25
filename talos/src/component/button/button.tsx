@@ -1,76 +1,57 @@
-import React from 'react';
+import type { ComponentProps, ComponentPropsWithRef, CSSProperties } from 'react';
+import classNames from 'classnames';
+import IconButton from './IconButton';
 import styles from './button.module.scss';
 
-export type ButtonType = 'next' | 'prev' | 'close' | 'confirm';
-export type ButtonStyle = 'normal' | 'icon' | 'square';
-export type ButtonSchema = 'light' | 'dark';
+type Schema = 'light' | 'dark';
+type NativeProps = ComponentPropsWithRef<'button'>;
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  text: string;
-  ref?: React.Ref<HTMLButtonElement>;
-  buttonType?: ButtonType;
-  buttonStyle?: ButtonStyle;
-  schema?: ButtonSchema;
-  deco?: boolean; // Control whether to show decorative elements
-  // Size params: width/height for 'normal', size for 'icon'
-  width?: string | number; // Minimum width for normal buttons, width for square buttons
-  height?: string | number; // Only for buttonStyle='normal' | 'square', e.g., '1.5rem' | 24
-  size?: string | number; // Only for buttonStyle='icon', creates square button, e.g., '2rem' | 32
+export function PillButton({
+    children,
+    className,
+    schema = 'light',
+    type = 'button',
+    ...props
+}: NativeProps & { schema?: Schema }) {
+    return (
+        <button {...props} type={type} className={classNames(styles.button, styles.pill, className)} data-schema={schema}>
+            <span className={styles.arrow} aria-hidden="true" />
+            <span className={styles.text}>{children}</span>
+            <span className={styles.icon} aria-hidden="true" />
+        </button>
+    );
 }
 
-const toCssSize = (v?: string | number): string | undefined => {
-  if (v === undefined) return undefined;
-  return typeof v === 'number' ? `${v}px` : v;
+export function SquareButton({
+    children,
+    className,
+    fullWidth,
+    type = 'button',
+    ...props
+}: NativeProps & { fullWidth?: boolean }) {
+    return (
+        <button {...props} type={type} className={classNames(styles.button, styles.square, fullWidth && styles.fullWidth, className)}>
+            <span className={styles.squareDeco} aria-hidden="true" />
+            <span className={styles.text}>{children}</span>
+        </button>
+    );
+}
+
+type RoundProps = Omit<ComponentProps<typeof IconButton>, 'children' | 'icon'> & {
+    icon: 'close' | 'prev' | 'next';
+    schema?: Schema;
+    size?: CSSProperties['width'];
 };
 
-const Button: React.FC<ButtonProps> = ({
-  text,
-  ref,
-  'aria-label': ariaLabel,
-  width = '6rem',
-  height = '1.5rem',
-  size = '2rem',
-  buttonType = 'close',
-  buttonStyle = 'normal',
-  schema = 'light',
-  deco = true,
-  className,
-  style,
-  ...rest
-}) => {
-  // Default dimensions for square style if not provided
-  const finalWidth = buttonStyle === 'square' && width === '6rem' ? '12rem' : width;
-  const finalHeight = buttonStyle === 'square' && height === '1.5rem' ? '3rem' : height;
-
-  const mergedStyle: React.CSSProperties = {
-    '--btn-width': buttonStyle === 'icon' ? toCssSize(size) : toCssSize(finalWidth),
-    '--btn-height': buttonStyle === 'icon' ? toCssSize(size) : toCssSize(finalHeight),
-    ...style,
-  } as React.CSSProperties;
-
-  return (
-    <button
-      type="button"
-      ref={ref}
-      aria-label={ariaLabel ?? (buttonStyle === 'icon' ? text : undefined)}
-      className={[styles.button, className].filter(Boolean).join(' ')}
-      style={mergedStyle}
-      data-type={buttonType}
-      data-button-style={buttonStyle}
-      data-schema={schema}
-      data-deco={deco}
-      {...rest}
-    >
-      {/* decorative line */}
-      {deco && buttonStyle === 'normal' && <span className={styles.deco} aria-hidden="true" />}
-      {/* square deco layer */}
-      {buttonStyle === 'square' && <span className={styles.squareDeco} aria-hidden="true" />}
-      {/* content text */}
-      {(buttonStyle === 'normal' || buttonStyle === 'square') && <span className={styles.text}>{text}</span>}
-      {/* icon */}
-      {buttonStyle !== 'square' && <span className={styles.icon} aria-hidden="true" />}
-    </button>
-  );
-};
-
-export default Button;
+export function RoundIconButton({ className, icon, schema = 'light', size, style, ...props }: RoundProps) {
+    return (
+        <IconButton
+            {...props}
+            className={classNames(styles.button, styles.round, className)}
+            style={size === undefined ? style : { width: size, ...style }}
+            data-schema={schema}
+            data-type={icon}
+            icon={<span className={styles.icon} aria-hidden="true" />}
+        />
+    );
+}

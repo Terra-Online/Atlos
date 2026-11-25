@@ -1,7 +1,7 @@
 import styles from '@/pages/userGuide/tooltip/tooltip.module.scss';
 import { TooltipRenderProps } from 'react-joyride';
-import { MouseEventHandler, useEffect, useState } from 'react';
-import Button from '@/component/button/button';
+import { useEffect, useState } from 'react';
+import { PillButton, RoundIconButton } from '@/component/button/button';
 import { useTranslateUI } from '@/locale';
 
 const RangeIndicator = ({ value, label }: { value: number; label?: string }) => {
@@ -18,16 +18,11 @@ const RangeIndicator = ({ value, label }: { value: number; label?: string }) => 
     );
 };
 
-interface TooltipHeaderInterface {
-    onClickBack?: MouseEventHandler<HTMLElement>;
-    onClickNext?: MouseEventHandler<HTMLElement>;
-    onClickSkip?: MouseEventHandler<HTMLElement>;
-    index: number;
-    size: number;
+type HeaderProps = Pick<TooltipRenderProps, 'backProps' | 'primaryProps' | 'skipProps' | 'index' | 'size'> & {
     hideProgress?: boolean;
-}
+};
 
-const TooltipHeader = (prop: TooltipHeaderInterface) => {
+const TooltipHeader = ({ backProps, primaryProps, skipProps, index, size, hideProgress }: HeaderProps) => {
     const t = useTranslateUI();
     const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
@@ -50,18 +45,14 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
 
     const buttonSchema = theme === 'light' ? 'dark' : 'light';
 
-    if (prop.hideProgress) {
+    if (hideProgress) {
         return (
             <div className={`${styles.header} ${styles.introHeader}`}>
                 <div className={styles.introLabel}>{t('guide.tip')}</div>
                 <div className={styles.buttonContainer}>
-                    <Button
-                        text={t('common.close')}
-                        buttonType='close'
-                        buttonStyle='normal'
-                        onClick={prop.onClickNext}
-                        schema={buttonSchema}
-                    />
+                    <PillButton onClick={primaryProps.onClick} schema={buttonSchema}>
+                        {t('common.close')}
+                    </PillButton>
                 </div>
             </div>
         );
@@ -70,28 +61,28 @@ const TooltipHeader = (prop: TooltipHeaderInterface) => {
     return (
         <div className={styles.header}>
             <div className={styles.textContainer}>
-                <div className={styles.index}>{`${prop.index + 1}`}</div>
-                <div className={styles.size}>{`/${prop.size}`}</div>
+                <div className={styles.index}>{index + 1}</div>
+                <div className={styles.size}>{`/${size}`}</div>
             </div>
             <div className={styles.buttonContainer}>
-                <Button
-                    text=''
-                    buttonType='prev'
-                    buttonStyle='icon'
-                    onClick={prop.onClickBack}
-                    size={'1.5rem'}
+                <RoundIconButton
+                    label={backProps['aria-label']}
+                    icon='prev'
+                    onClick={backProps.onClick}
+                    size='1.5rem'
                     schema={buttonSchema}
-                    disabled={prop.index === 0}
+                    disabled={index === 0}
                 />
-                <Button
-                    text=''
-                    buttonType='next'
-                    buttonStyle='icon'
-                    onClick={prop.onClickNext}
-                    size={'1.5rem'}
+                <RoundIconButton
+                    label={primaryProps['aria-label']}
+                    icon='next'
+                    onClick={primaryProps.onClick}
+                    size='1.5rem'
                     schema={buttonSchema}
                 />
-                <Button text={t('common.skip')} onClick={prop.onClickSkip} schema={buttonSchema} />
+                <PillButton onClick={skipProps.onClick} schema={buttonSchema}>
+                    {t('common.skip')}
+                </PillButton>
             </div>
         </div>
     );
@@ -111,9 +102,9 @@ export const GuideTooltip = ({
         <div className={styles.wrapper}>
             <div className={styles.container}>
                 <TooltipHeader
-                    onClickBack={backProps.onClick}
-                    onClickNext={primaryProps.onClick}
-                    onClickSkip={skipProps.onClick}
+                    backProps={backProps}
+                    primaryProps={primaryProps}
+                    skipProps={skipProps}
                     index={index}
                     size={size}
                     hideProgress={hideProgress}

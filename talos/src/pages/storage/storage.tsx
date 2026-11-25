@@ -3,7 +3,7 @@ import styles from '@/pages/storage/storage.module.scss';
 import { useTranslateUI } from '@/locale';
 import parse from 'html-react-parser';
 import TreeMap from '@/pages/storage/treeMap/treeMap';
-import Button from '@/component/button/button';
+import { SquareButton } from '@/component/button/button';
 import { clearAllStorage, clearStorageItem } from '@/services/storageInspector';
 import { exportMarkerData, importMarkerData } from '@/services/markerDataTransfer';
 import { useDevice } from '@/platform/device';
@@ -166,28 +166,19 @@ export const StorageSection: React.FC = () => {
         </div>
         <div className={styles.controls} ref={controlsRef}>
           <div className={styles.clearActions}>
-            <Button
-              text={`${t('common.clear')} ${selectedName || t('common.selected')}`}
+            <SquareButton
+              fullWidth
               onClick={(e) => handleActionClick(e, 'selected')}
-              buttonStyle="square"
-              schema="light"
-              width="100%"
               disabled={!selectedPath}
-            />
-            <Button 
-              text={t('common.clear') + ' ' + t('storage.filtersAndMarkers')}
-              onClick={(e) => handleActionClick(e, 'markers-filters')} 
-              buttonStyle="square"
-              schema="light"
-              width="100%"
-            />
-            <Button 
-              text={t('common.clear') + ' ' + t('common.all')} 
-              onClick={(e) => handleActionClick(e, 'all')} 
-              buttonStyle="square"
-              schema="light"
-              width="100%"
-            />
+            >
+              {`${t('common.clear')} ${selectedName || t('common.selected')}`}
+            </SquareButton>
+            <SquareButton fullWidth onClick={(e) => handleActionClick(e, 'markers-filters')}>
+              {t('common.clear') + ' ' + t('storage.filtersAndMarkers')}
+            </SquareButton>
+            <SquareButton fullWidth onClick={(e) => handleActionClick(e, 'all')}>
+              {t('common.clear') + ' ' + t('common.all')}
+            </SquareButton>
           </div>
           <div className={`${styles.warning} ${pendingAction ? styles.visible : ''}`}>
             <div className={styles.warningInner}>
@@ -197,20 +188,12 @@ export const StorageSection: React.FC = () => {
         </div>
       </div>
       <div className={styles.dataTransfer} data-device={deviceType}>
-        <Button
-          text={t('storage.export')}
-          onClick={handleExport}
-          buttonStyle="square"
-          schema="light"
-          width="100%"
-        />
-        <Button
-          text={t('storage.import')}
-          onClick={handleImport}
-          buttonStyle="square"
-          schema="light"
-          width="100%"
-        />
+        <SquareButton fullWidth onClick={handleExport}>
+          {t('storage.export')}
+        </SquareButton>
+        <SquareButton fullWidth onClick={handleImport}>
+          {t('storage.import')}
+        </SquareButton>
         <input
           ref={fileInputRef}
           type="file"

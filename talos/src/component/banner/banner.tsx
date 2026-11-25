@@ -2,7 +2,7 @@ import { usePresence } from '@/lib/dom/usePresence';
 import { useAppDocument } from '@/platform/pictureInPicture';
 import React, { useEffect, useRef, useState } from 'react';
 import styles from './banner.module.scss';
-import Button from '@/component/button/button';
+import { RoundIconButton } from '@/component/button/button';
 import { useTranslateUI } from '@/locale';
 
 const BANNER_EXIT_DURATION_MS = 200;
@@ -51,11 +51,9 @@ const Banner: React.FC<BannerProps> = ({ content, onClose, schema = 'light', ope
                 <div className={styles.bannerContent}>
                     <span className={styles.bannerText}>{renderedContent}</span>
                 </div>
-                <Button
-                    text={t('common.close')}
-                    aria-label={t('common.close')}
-                    buttonType='close'
-                    buttonStyle='icon'
+                <RoundIconButton
+                    label={t('common.close')}
+                    icon='close'
                     schema={schema}
                     size='1.2rem'
                     onClick={() => { closeRequested.current = true; setDismissed(true); }}

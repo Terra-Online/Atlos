@@ -15,7 +15,7 @@ import React, {
 } from 'react';
 import ReactDOM from 'react-dom';
 import styles from './modal.module.scss';
-import Button from '@/component/button/button';
+import { PillButton } from '@/component/button/button';
 import { getOpenerDocument, useAppDocument } from '@/platform/pictureInPicture';
 import OverflowPopoverText from '@/component/popover/OverflowPopoverText';
 import PopoverTooltip from '@/component/popover/popover';
@@ -444,15 +444,14 @@ const Modal: React.FC<ModalProps> = ({
               )
             )}
             {showClose && (
-              <Button
-                text={tUI('common.close')}
-                aria-label={tUI('common.close')}
-                buttonType='close'
+              <PillButton
                 onClick={() => {
                   onClose?.();
                   onChange?.(false);
                 }}
-              />
+              >
+                {tUI('common.close')}
+              </PillButton>
             )}
           </div>
         )}

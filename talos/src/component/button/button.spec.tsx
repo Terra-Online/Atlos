@@ -1,90 +1,54 @@
 import { createRef } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import Button from './button';
+import { PillButton, RoundIconButton, SquareButton } from './button';
 import IconButton from './IconButton';
 import { EntryButton } from './EntryButton';
-import styles from './button.module.scss';
 
 afterEach(cleanup);
 
-const cssVar = (element: HTMLElement, name: string) => element.style.getPropertyValue(name);
-
-describe('Button', () => {
-    it('renders a non-submitting normal close button with decoration, text and icon', () => {
-        render(<form onSubmit={() => { throw new Error('submitted'); }}><Button text="Close" /></form>);
-        const button = screen.getByRole('button', { name: 'Close' });
-        expect(button.getAttribute('type')).toBe('button');
-        expect(button.dataset).toMatchObject({ type: 'close', buttonStyle: 'normal', schema: 'light', deco: 'true' });
-        expect(button.hasAttribute('aria-label')).toBe(false);
-        expect(button.querySelector(`.${styles.deco}`)).not.toBeNull();
-        expect(button.querySelector(`.${styles.text}`)?.textContent).toBe('Close');
-        expect(button.querySelector(`.${styles.icon}`)).not.toBeNull();
-        expect(cssVar(button, '--btn-width')).toBe('6rem');
-        expect(cssVar(button, '--btn-height')).toBe('1.5rem');
-        fireEvent.click(button);
+describe('styled buttons', () => {
+    it('uses the written label as the accessible name for text buttons', () => {
+        render(<form onSubmit={() => { throw new Error('submitted'); }}>
+            <PillButton>Schließen</PillButton>
+            <SquareButton>Export</SquareButton>
+        </form>);
+        for (const label of ['Schließen', 'Export']) {
+            const button = screen.getByRole('button', { name: label });
+            expect(button.textContent).toBe(label);
+            expect(button.getAttribute('type')).toBe('button');
+            fireEvent.click(button);
+        }
     });
 
-    it('names icon buttons from their text and sizes them as a square', () => {
-        render(<Button text="Next" buttonStyle="icon" buttonType="next" size={32} width={200} />);
-        const button = screen.getByRole('button', { name: 'Next' });
-        expect(button.getAttribute('aria-label')).toBe('Next');
-        expect(button.querySelector(`.${styles.text}`)).toBeNull();
-        expect(button.querySelector(`.${styles.deco}`)).toBeNull();
-        expect(button.querySelector(`.${styles.icon}`)).not.toBeNull();
-        expect(cssVar(button, '--btn-width')).toBe('32px');
-        expect(cssVar(button, '--btn-height')).toBe('32px');
-    });
-
-    it('prefers an explicit aria-label over the icon text', () => {
-        render(<Button text="Next" buttonStyle="icon" aria-label="Go forward" />);
-        expect(screen.getByRole('button').getAttribute('aria-label')).toBe('Go forward');
-    });
-
-    it('enlarges square buttons only when the default size is kept', () => {
-        const { rerender } = render(<Button text="Confirm" buttonStyle="square" buttonType="confirm" />);
-        let button = screen.getByRole('button', { name: 'Confirm' });
-        expect(cssVar(button, '--btn-width')).toBe('12rem');
-        expect(cssVar(button, '--btn-height')).toBe('3rem');
-        expect(button.querySelector(`.${styles.squareDeco}`)).not.toBeNull();
-        expect(button.querySelector(`.${styles.icon}`)).toBeNull();
-        expect(button.querySelector(`.${styles.deco}`)).toBeNull();
-
-        rerender(<Button text="Confirm" buttonStyle="square" width={80} height="2rem" />);
-        button = screen.getByRole('button', { name: 'Confirm' });
-        expect(cssVar(button, '--btn-width')).toBe('80px');
-        expect(cssVar(button, '--btn-height')).toBe('2rem');
-    });
-
-    it('drops only the normal-style decoration when deco is off', () => {
-        render(<Button text="Prev" deco={false} schema="dark" buttonType="prev" />);
-        const button = screen.getByRole('button', { name: 'Prev' });
-        expect(button.dataset).toMatchObject({ deco: 'false', schema: 'dark', type: 'prev' });
-        expect(button.querySelector(`.${styles.deco}`)).toBeNull();
-        expect(button.querySelector(`.${styles.text}`)).not.toBeNull();
-    });
-
-    it('merges class names and lets caller styles override the size variables', () => {
-        render(<Button text="Go" className="extra" style={{ ['--btn-width' as string]: '1px', color: 'red' }} />);
-        const button = screen.getByRole('button', { name: 'Go' });
-        expect(button.className).toBe(`${styles.button} extra`);
-        expect(cssVar(button, '--btn-width')).toBe('1px');
-        expect(cssVar(button, '--btn-height')).toBe('1.5rem');
-        expect(button.style.color).toBe('red');
-    });
-
-    it('forwards the ref, native attributes and click handling, and blocks clicks when disabled', () => {
-        const ref = createRef<HTMLButtonElement>();
+    it('gives icon-only controls an accessible name and native disabled behavior', () => {
         const onClick = vi.fn();
-        const { rerender } = render(<Button text="Go" ref={ref} onClick={onClick} data-testid="go" type="submit" />);
-        expect(ref.current).toBe(screen.getByTestId('go'));
-        expect(ref.current?.getAttribute('type')).toBe('submit');
-        fireEvent.click(ref.current!);
-        expect(onClick).toHaveBeenCalledOnce();
+        const { rerender } = render(<RoundIconButton label="Back" icon="prev" disabled onClick={onClick} />);
+        const button = screen.getByRole('button', { name: 'Back' });
+        expect(button.textContent).toBe('');
+        expect(button.getAttribute('type')).toBe('button');
+        fireEvent.click(button);
+        expect(onClick).not.toHaveBeenCalled();
 
-        rerender(<Button text="Go" ref={ref} onClick={onClick} disabled />);
-        fireEvent.click(ref.current!);
+        rerender(<RoundIconButton label="Back" icon="prev" onClick={onClick} />);
+        fireEvent.click(button);
         expect(onClick).toHaveBeenCalledOnce();
+    });
+
+    it('accepts native button attributes, refs, and caller layout styles', () => {
+        const ref = createRef<HTMLButtonElement>();
+        const onSubmit = vi.fn((event) => event.preventDefault());
+        render(<form onSubmit={onSubmit}>
+            <SquareButton ref={ref} type="submit" className="own" style={{ width: '100%' }}>
+                Save
+            </SquareButton>
+        </form>);
+        const button = screen.getByRole('button', { name: 'Save' });
+        expect(ref.current).toBe(button);
+        expect(button.classList.contains('own')).toBe(true);
+        expect(button.style.width).toBe('100%');
+        fireEvent.click(button);
+        expect(onSubmit).toHaveBeenCalledOnce();
     });
 });
 

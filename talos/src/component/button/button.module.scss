@@ -1,378 +1,272 @@
 @use '../../styles/palette.scss' as *;
 
-:root,
-:root[data-schema='light'] {
-  --btn-bg-light: #{$white-3};
-  --btn-text-light: #{$grey-1};
-  --btn-deco-light: #{$grey-1};
-  --btn-icon-light: #{$light-2};
-
-  --btn-bg-dark: #{$grey-1};
-  --btn-text-dark: #{$light-1};
-  --btn-deco-dark: #{$light-1};
-  --btn-icon-dark: #{$grey-1};
-
-  --btn-square-bg: #{$black-1};
-  --btn-square-text: #{$white-2};
-  --btn-square-deco-1: #{$grey-3};
-  --btn-square-deco-2: #{$grey-2};
-  --btn-square-deco-3: #{$grey-1};
-
-  --btn-bg-hover: #{$primary-accent-4};
+:root {
+    --btn-bg-light: #{$white-3};
+    --btn-ink-light: #{$grey-1};
+    --btn-icon-light: #{$light-2};
+    --btn-bg-dark: #{$grey-1};
+    --btn-ink-dark: #{$light-1};
+    --btn-icon-dark: #{$grey-1};
+    --btn-square-ink: #{$white-2};
 }
 
 :root[data-schema='dark'] {
-  --btn-bg-light: #{$mid};
-  --btn-text-light: #{$black-1};
-  --btn-deco-light: #{$black-1};
-  --btn-icon-light: #{$light-2};
-
-  --btn-bg-dark: #{$grey-1};
-  --btn-text-dark: #{$light-2};
-  --btn-deco-dark: #{$light-2};
-  --btn-icon-dark: #{$grey-1};
-
-  --btn-square-bg: #{$black-1};
-  --btn-square-text: #{$white-1};
-  --btn-square-deco-1: #{$grey-3};
-  --btn-square-deco-2: #{$grey-2};
-  --btn-square-deco-3: #{$grey-1};
-
-  --btn-bg-hover: #{$primary-accent-4};
+    --btn-bg-light: #{$mid};
+    --btn-ink-light: #{$black-1};
+    --btn-ink-dark: #{$light-2};
+    --btn-square-ink: #{$white-1};
 }
 
 .button {
-    &[data-schema='light'] {
-        background: var(--btn-bg-light);
-        color: var(--btn-text-light);
-        --btn-deco: var(--btn-deco-light);
-        --btn-outline: var(--btn-bg-light);
-        --btn-icon-color: var(--btn-text-light);
-    }
-    &[data-schema='dark'] {
-        background: var(--btn-bg-dark);
-        color: var(--btn-text-dark);
-
-        --btn-deco: var(--btn-deco-dark);
-        --btn-outline: var(--btn-bg-dark);
-        --btn-icon-color: var(--btn-text-dark);
-    }
-
-    width: var(--btn-width, 6rem);
-    height: var(--btn-height, 1.5rem);
-  
-    border-radius: calc(var(--btn-height) / 2);
-    outline: 1.5px solid var(--btn-outline);
-    outline-offset: 2px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition:
-      filter 0.3s ease,
-      outline 0.3s ease,
-      box-shadow 0.3s ease,
-      background 0.3s ease,
-      color 0.3s ease;
-    will-change: filter, outline, box-shadow, background, color;
-    text-align: end;
     position: relative;
-    overflow: hidden;
     z-index: 2;
     display: flex;
-    justify-content: flex-start;
     align-items: center;
+    overflow: hidden;
+    cursor: pointer;
     touch-action: none;
     user-select: none;
+    outline-offset: 2px;
+    transition: filter .3s, outline .3s, box-shadow .3s, background .3s, color .3s;
 
-    &[data-button-style='square'] {
-        background-color: var(--btn-square-bg);
-        color: var(--btn-square-text);
-        outline: 2px solid var(--btn-square-bg);
-        font-size: 0.85rem;
-        position: relative;
-        box-shadow: 0 0 2px rgba($black-0, 0.6);
-        border-radius: 4px;
-        padding: 0.25rem;
-        justify-content: center;
-        align-items: center;
-        text-align: left;
-        &::before, &::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            display: block;
-            width: 3rem;
-            height: 3rem;
-            background-color: var(--btn-square-deco-2);
-            clip-path: polygon(60% 0, 100% 50%, 60% 100%, 0 100%, 0 0);
-            z-index: -2;
-            background-image: none;
-            transform: translateX(0);
-            transition: transform 0.3s ease;
-            transition-delay: .08s;
-        }
-        &::before {
-            background-color: var(--btn-square-deco-1);
-            transform: translateX(-1rem);
-            z-index: -1;
-            transition-delay: 0s;
-        }
-        .squareDeco {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -3;
-            pointer-events: none;
-            &::before {
-                content: '';
-                position: absolute;
-                left: 0;
-                top: 0;
-                display: block;
-                width: 3rem;
-                height: 3rem;
-                background-color: var(--btn-square-deco-3);
-                transform: translateX(1rem);
-                clip-path: polygon(60% 0, 100% 50%, 60% 100%, 0 100%, 0 0);
-                background-image: none;
-                transition: transform 0.3s ease;
-                transition-delay: .16s;
-            }
-            &::after {
-                content: '';
-                background-image: url('@/assets/images/UI/square-btn-bg.webp');
-                background-size: 110%;
-                background-repeat: no-repeat;
-                background-position: -132% 14%;
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                filter: invert(0);
-                opacity: .4;
-                transition: background-position 0.4s ease;
-                transition-delay: .08s;
-            }
-        }   
-        .text {
-            justify-content: flex-start;
-            padding: 0;
-            white-space: normal;
-            word-break: break-all;
-            text-overflow: ellipsis;
-            line-height: 1.1;
-            text-transform: uppercase;
-            margin-left: 1rem;
-            width: 10rem;
-            text-shadow: 0 0 2px var(--btn-square-bg);
-            transform: translateX(0);
-            transition: transform 0.3s ease;
-            transition-delay: 0.2s;
-        }
-        &:hover {
-            filter: none;
-            &::before {
-                transform: translateX(0);
-            }
-            &::after {
-                transform: translateX(1rem);
-            }
-            > .squareDeco {
-                &::before {
-                transform: translateX(2rem);
-                }
-                &::after {
-                    background-position: -111% 31%;
-                }
-            }
-            > .text {
-                transform: translateX(1rem);
-            }
-        }
+    &:disabled {
+        opacity: .5;
+        pointer-events: none;
+        cursor: not-allowed;
+    }
+}
+
+.pill,
+.round {
+    --btn-bg: var(--btn-bg-light);
+    --btn-ink: var(--btn-ink-light);
+    --btn-icon-fill: var(--btn-icon-light);
+
+    &[data-schema='dark'] {
+        --btn-bg: var(--btn-bg-dark);
+        --btn-ink: var(--btn-ink-dark);
+        --btn-icon-fill: var(--btn-icon-dark);
+    }
+}
+
+.text {
+    position: relative;
+    z-index: 3;
+    font-family:
+        'Novecento Medium', 'Novecento Cyrillic DemiBold',
+        'Novecento Vietnamese DemiBold', HMSans_EN, 'UD_ShinGo DemiBold',
+        'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+    font-weight: 900;
+    letter-spacing: -.5px;
+}
+
+.icon {
+    z-index: 2;
+    pointer-events: none;
+    mask: url('../../assets/images/UI/close.svg') center / contain no-repeat;
+    filter: drop-shadow(-1px 1px 1px rgba($black-0, .25));
+}
+
+.pill {
+    width: max-content;
+    min-width: 6rem;
+    height: 1.5rem;
+    padding: 0 .3rem 0 0;
+    border-radius: .75rem;
+    outline: 1.5px solid var(--btn-bg);
+    background: var(--btn-bg);
+    color: var(--btn-ink);
+    font-size: .8rem;
+    text-align: end;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url('../../assets/images/UI/bg.webp') 60% 40% / cover no-repeat;
+        pointer-events: none;
+    }
+
+    &[data-schema='dark']::after {
+        filter: invert(1);
+    }
+
+    .text {
+        white-space: nowrap;
+        padding: 0 5px 0 4px;
+        text-shadow: 1px 1px 1px rgba($black-0, .25);
+    }
+
+    .icon {
+        flex: 0 0 .9rem;
+        height: 100%;
+        background: currentcolor;
+    }
+
+    &:hover:not(:disabled) {
+        filter: invert(1);
+        box-shadow: 0 0 2px 1px var(--btn-ink);
+        outline-color: var(--btn-ink);
+    }
+}
+
+.arrow {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex: 1;
+    min-width: .75rem;
+    height: 1.5px;
+    margin: 0 2px 0 .3rem;
+    background: currentcolor;
+    pointer-events: none;
+
+    &::before,
+    &::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 0;
+    }
+
+    &::before {
+        border: solid transparent;
+        border-width: 3.3px 0 3.3px 6.6px;
+        border-left-color: currentcolor;
+        transform: translateY(calc(-50% + .75px));
+    }
+
+    &::after {
+        right: 0;
+        border: 2.25px solid currentcolor;
+        transform: rotate(45deg) translateY(calc(-50% + .25px));
+    }
+}
+
+.round {
+    width: 2rem;
+    aspect-ratio: 1;
+    padding: 0;
+    border-radius: 50%;
+    outline: 2px solid var(--btn-bg);
+    background: transparent;
+    color: var(--btn-ink);
+
+    .icon {
+        position: absolute;
+        inset: 0;
+        background: var(--btn-icon-fill);
+        transition: background .3s;
+    }
+
+    &[data-type='prev'] .icon {
+        mask-image: url('../../assets/images/UI/prev.svg');
+    }
+
+    &[data-type='next'] .icon {
+        mask-image: url('../../assets/images/UI/next.svg');
+    }
+
+    &:hover:not(:disabled) {
+        --btn-icon-fill: #{$primary-accent-4};
+        background: radial-gradient(circle, var(--btn-ink-light) 60%, transparent 60%);
+    }
+}
+
+.square {
+    width: 12rem;
+    height: 3rem;
+    padding: .25rem;
+    justify-content: center;
+    border-radius: 4px;
+    outline: 2px solid $black-1;
+    background: $black-1;
+    color: var(--btn-square-ink);
+    box-shadow: 0 0 2px rgba($black-0, .6);
+    font-size: .85rem;
+    text-align: left;
+
+    &.fullWidth {
+        width: 100%;
+    }
+
+    &::before,
+    &::after,
+    .squareDeco::before {
+        content: '';
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 3rem;
+        height: 3rem;
+        clip-path: polygon(60% 0, 100% 50%, 60% 100%, 0 100%, 0 0);
+        transition: transform .3s;
+    }
+
+    &::before {
+        z-index: -1;
+        background: $grey-3;
+        transform: translateX(-1rem);
+    }
+
+    &::after {
+        z-index: -2;
+        background: $grey-2;
+        transition-delay: .08s;
     }
 
     .text {
         display: inline-flex;
-        justify-content: center;
-        position: relative;
-        z-index: 3;
-        letter-spacing: -.5px;
-        font-family: 'Novecento Medium', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', HMSans_EN, 'UD_ShinGo DemiBold', 'Noto Sans SC', 'Noto Sans Arabic', 'Noto Sans Thai',
- sans-serif;
-        font-weight: 900;
-        text-shadow: 1px 1px 1px rgba($black-0, 0.25);
-        width: auto;
-        white-space: nowrap;
-        padding: 0 5px 0 4px;
-        margin-left: auto; // push text to the right then complementing deco
+        width: 10rem;
+        margin-left: 1rem;
+        word-break: break-all;
+        text-overflow: ellipsis;
+        text-transform: uppercase;
+        line-height: 1.1;
+        text-shadow: 0 0 2px $black-1;
+        transition: transform .3s .2s;
     }
 
-  .deco {
-      content: '';
-      display: flex;
-      flex: 1 1 auto;
-      height: 1.5px;
-      margin-left: .3rem;
-      margin-right: 2px;
-      background-color: var(--btn-deco);
-      z-index: 1;
-      pointer-events: none;
-      position: relative;
+    &:hover:not(:disabled) {
+        box-shadow: 0 0 2px 1px var(--btn-ink-light);
+        outline-color: var(--btn-ink-light);
 
-      &::before {
-          content: '';
-          position: absolute;
-          width: 0;
-          height: 0;
-          border-style: solid;
-          border-width: 3.3px 0 3.3px 6.6px;
-          border-color: transparent transparent transparent var(--btn-deco);
-          transform: translateY(calc(-50% + .75px)); // plus 1/2 of deco height to align center
-      }
+        &::before {
+            transform: translateX(0);
+        }
 
-      &::after {
-          content: '';
-          position: absolute;
-          width: 0;
-          height: 0;
-          right: 0;
-          border-style: solid;
-          border-width: 2.25px;
-          border-color: var(--btn-deco);
-          transform: rotate(45deg) translateY(calc(-50% + .75px - 0.5px)); // plus 1/2 of deco height to align center then minus 1/2 of the difference between border width and 3px to align center
+        &::after,
+        .text {
+            transform: translateX(1rem);
+        }
+
+        .squareDeco::before {
+            transform: translateX(2rem);
+        }
+
+        .squareDeco::after {
+            background-position: -111% 31%;
         }
     }
+}
 
-    &[data-deco='false'] .deco {
-        display: none;
-    }
+.square .squareDeco {
+    position: absolute;
+    inset: 0;
+    z-index: -3;
+    pointer-events: none;
 
-    .icon {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        right: 5%;
-        background-color: var(--btn-icon-color);
-        mask-image: url('../../assets/images/UI/close.svg');
-        mask-size: contain;
-        mask-repeat: no-repeat;
-        mask-position: center;
-        z-index: 2;
-        pointer-events: none;
-        filter: drop-shadow(-1px 1px 1px rgba($black-0, 0.25));
+    &::before {
+        background: $grey-1;
+        transform: translateX(1rem);
+        transition-delay: .16s;
     }
 
     &::after {
         content: '';
         position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        right: 0;
-        background-image: url('../../assets/images/UI/bg.webp');
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: 60% 40%;
-        z-index: 0;
-        pointer-events: none;
-    }
-    &[data-schema='dark']::after {
-        filter: invert(1);
-    }
-
-    &:hover {
-        filter: invert(1);
-        box-shadow: 0 0 2px 1px var(--btn-deco);
-        outline-color: var(--btn-deco);
-    }
-
-    &:disabled {
-        opacity: 0.5;
-        pointer-events: none;
-        cursor: not-allowed;
-        &:hover {
-            filter: none;
-            box-shadow: inherit;
-            outline-color: inherit;
-        }
-    }
-}
-
-/* Button type variants - different icons */
-.button[data-type='next'] .icon {
-    mask-image: url('../../assets/images/UI/next.svg');
-    --btn-icon-scale: .44;
-}
-
-.button[data-type='prev'] .icon {
-    mask-image: url('../../assets/images/UI/prev.svg');
-    --btn-icon-scale: .44;
-}
-
-.button[data-type='confirm'] .icon {
-    mask-image: url('../../assets/images/UI/confirm.svg');
-    --btn-icon-scale: .52;
-}
-
-.button[data-button-style='normal'] {
-    width: max-content;
-    min-width: var(--btn-width, 6rem);
-    padding-right: calc(var(--btn-height) / 5);
-
-    .deco {
-        min-width: .75rem;
-    }
-
-    .icon {
-        position: static;
-        flex: none;
-        width: calc(var(--btn-height) * var(--btn-icon-scale, .6));
-    }
-}
-
-.button[data-button-style='icon'] {
-    &[data-schema='light'] {
-        --icon-fill: var(--btn-icon-light);
-    }
-    &[data-schema='dark'] {
-        --icon-fill: var(--btn-icon-dark);
-    }
-    padding: 0;
-    text-align: center;
-    justify-content: center;
-    background: transparent;
-    outline: 2px solid var(--btn-outline);
-    outline-offset: 2px;
-    border-radius: 50%;
-    .icon {
-        width: 100%;
-        height: 100%;
-        top: 50%;
-        left: 50%;
-        right: auto;
-        background: var(--icon-fill);
-        transform: translate(-50%, -50%);
-        mask-size: contain;
-        mask-position: center;
-        transition: all 0.3s ease;
-    }
-    &::after {
-        display: none;
-    }
-    &:hover {
-        filter: invert(0);
-        box-shadow: none;
-        
-    }
-    &[data-schema='dark']:hover {
-        --icon-fill: var(--btn-bg-hover);
-        background: radial-gradient(circle, var(--btn-deco-light) 60%, transparent 60%); // avoiding edge rag
-    }
-    &[data-schema='light']:hover {
-        --icon-fill: var(--btn-bg-hover);
-        background: radial-gradient(circle, var(--btn-deco-light) 60%, transparent 60%); // avoiding edge rag
-
+        inset: 0;
+        background: url('@/assets/images/UI/square-btn-bg.webp') -132% 14% / 110% no-repeat;
+        opacity: .4;
+        transition: background-position .4s .08s;
     }
 }

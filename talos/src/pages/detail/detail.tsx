@@ -3,7 +3,7 @@ import { useAppDocument } from '@/platform/pictureInPicture';
 import { useFontRegion } from '@/locale/useFontRegion';
 import React, { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import styles from '@/pages/detail/detail.module.scss';
-import Button from '@/component/button/button';
+import { PillButton } from '@/component/button/button';
 import Modal, { ModalTabs, type ModalTabItem } from '@/component/modal/modal';
 import PopoverTooltip from '@/component/popover/popover';
 import OverflowPopoverText from '@/component/popover/OverflowPopoverText';
@@ -550,16 +550,15 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                             />
                         </div>
                         <div className={styles.headerActions}>
-                            <Button
-                                text={tUI('common.close')}
-                                aria-label={tUI('common.close')}
-                                buttonType='close'
+                            <PillButton
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     useMarkerStore.getState().clearImageOpenRequest();
                                     setDetailOpen(false);
                                 }}
-                            />
+                            >
+                                {tUI('common.close')}
+                            </PillButton>
                         </div>
                     </div>
                     <ModalTabs

@@ -284,8 +284,8 @@ const tooltipStep = (intro: boolean): StepMerged & { hideProgress: boolean } => 
     event: 'click', hideBackButton: false, hideCloseButton: false, hideFooter: false, isFixed: false, locale: {}, offset: 10, placement: 'bottom', showProgress: true, showSkipButton: true, spotlightClicks: false, spotlightPadding: 10,
     styles: { beacon: {}, beaconInner: {}, beaconOuter: {}, buttonBack: {}, buttonClose: {}, buttonNext: {}, buttonSkip: {}, options: {}, overlay: {}, overlayLegacy: {}, overlayLegacyCenter: {}, spotlight: {}, spotlightLegacy: {}, tooltip: {}, tooltipContainer: {}, tooltipContent: {}, tooltipFooter: {}, tooltipFooterSpacer: {}, tooltipTitle: {} } });
 const tooltipProps = (intro: boolean, next = vi.fn(), skip = vi.fn()): TooltipRenderProps => {
-    const button = (onClick: () => void) => ({ 'aria-label': '', 'data-action': '', role: 'button', title: '', onClick });
-    return { continuous: true, index: 0, isLastStep: false, size: 4, step: tooltipStep(intro), backProps: button(vi.fn()), closeProps: button(vi.fn()), primaryProps: button(next), skipProps: button(skip), tooltipProps: { 'aria-modal': true, role: 'dialog', ref: () => {} } };
+    const button = (label: string, onClick: () => void) => ({ 'aria-label': label, 'data-action': '', role: 'button', title: label, onClick });
+    return { continuous: true, index: 0, isLastStep: false, size: 4, step: tooltipStep(intro), backProps: button('Back', vi.fn()), closeProps: button('Close', vi.fn()), primaryProps: button('Next', next), skipProps: button('Skip', skip), tooltipProps: { 'aria-modal': true, role: 'dialog', ref: () => {} } };
 };
 
 it('keeps the intro tooltip a closeable tip and gives detailed Help progress, skip and first-step back protection', () => {
@@ -295,8 +295,8 @@ it('keeps the intro tooltip a closeable tip and gives detailed Help progress, sk
     fireEvent.click(screen.getByRole('button', { name: 'common.close' })); expect(next).toHaveBeenCalledOnce();
     view.rerender(<GuideTooltip {...tooltipProps(false, next, skip)} />);
     expect(screen.getByText('25%')).toBeTruthy();
-    const buttons = screen.getAllByRole('button');
-    expect((buttons[0] as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('button', { name: 'Back' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Next' })); expect(next).toHaveBeenCalledTimes(2);
     fireEvent.click(screen.getByRole('button', { name: 'common.skip' })); expect(skip).toHaveBeenCalledOnce();
 });
 
