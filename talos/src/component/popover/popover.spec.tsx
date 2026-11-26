@@ -37,21 +37,25 @@ it('ignores touch hover and pointer focus and dismisses on activation without lo
     const onClick = vi.fn();
     render(<PopoverTooltip content="Hint"><button onClick={onClick}>Action</button></PopoverTooltip>);
     const button = screen.getByRole('button');
-    const tooltip = screen.getByRole('tooltip');
+    expect(button.getAttribute('aria-description')).toBe('Hint');
     pointer(button, 'pointerover', 'touch');
     fireEvent.mouseEnter(button);
     act(() => button.focus());
-    expect(tooltip.dataset.open).not.toBe('true');
+    expect(screen.queryByRole('tooltip')).toBeNull();
     pointer(button, 'pointerover');
+    const tooltip = screen.getByRole('tooltip');
     expect(tooltip.dataset.open).toBe('true');
+    expect(button.getAttribute('aria-describedby')).toBe(tooltip.id);
     fireEvent.click(button);
     expect(tooltip.dataset.open).toBe('false');
+    expect(tooltip.isConnected).toBe(false);
     expect(onClick).toHaveBeenCalledOnce();
     button.dataset.keyboard = 'true';
     fireEvent.focus(button);
-    expect(tooltip.dataset.open).toBe('true');
+    const keyboardTooltip = screen.getByRole('tooltip');
+    expect(keyboardTooltip.dataset.open).toBe('true');
     pointer(document.body, 'pointerdown', 'touch');
-    expect(tooltip.dataset.open).toBe('false');
+    expect(keyboardTooltip.dataset.open).toBe('false');
 });
 
 it.each(['unmount', 'empty content', 'disabled'] as const)('releases overlay ownership after %s even when React has cleared the element ref', async (mode) => {
@@ -73,8 +77,8 @@ it.each(['unmount', 'empty content', 'disabled'] as const)('releases overlay own
 it('cancels an interrupted close and keeps explicitly controlled visibility under caller control', async () => {
     const view = render(<PopoverTooltip content="Hint"><button>Action</button></PopoverTooltip>);
     const button = screen.getByRole('button');
-    const tooltip = screen.getByRole('tooltip');
     pointer(button, 'pointerover');
+    const tooltip = screen.getByRole('tooltip');
     pointer(button, 'pointerout');
     await act(() => vi.advanceTimersByTime(60));
     pointer(button, 'pointerover');
@@ -87,4 +91,5 @@ it('cancels an interrupted close and keeps explicitly controlled visibility unde
     view.rerender(<PopoverTooltip content="Hint" visible={false}><button>Action</button></PopoverTooltip>);
     await act(() => vi.advanceTimersByTime(120));
     expect(tooltip.dataset.open).toBe('false');
+    expect(tooltip.isConnected).toBe(false);
 });

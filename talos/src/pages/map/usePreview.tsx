@@ -294,7 +294,7 @@ const UseProductionPreview = (
 
     const PreviewElement = previewEnabled && hoveredMarker ? (
         <PopoverTooltip
-            key={`${hoveredMarker.marker.id}:${Math.round(hoveredMarker.left)}:${Math.round(hoveredMarker.top)}`}
+            key={hoveredMarker.marker.id}
             content={
                 hoveredMarker.previewUrl ? (
                     <div className={styles.previewContent}>

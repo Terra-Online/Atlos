@@ -37,17 +37,23 @@ it('merges child refs and event handlers through a tooltip and clears the ref on
 
 it.each(['top', 'bottom', 'left', 'right'] as const)('clamps a %s tooltip to the viewport and remeasures after resize', async (placement) => {
     render(<PopoverTooltip content="Hint" placement={placement}><button>Action</button></PopoverTooltip>);
-    const button = screen.getByRole('button'), tooltip = screen.getByRole('tooltip');
+    const button = screen.getByRole('button');
     setRect(button, -100, -100, 30, 20);
-    setRect(tooltip, 0, 0, 80, 40);
     fireEvent.pointerEnter(button);
-    const coordinates = ['left', 'right', 'top', 'bottom'].map((name) => Number.parseFloat(tooltip.style.getPropertyValue(name))).filter(Number.isFinite);
-    expect(coordinates).toHaveLength(2);
-    expect(coordinates.every((value) => value >= 4)).toBe(true);
+    const tooltip = screen.getByRole('tooltip');
+    setRect(tooltip, 0, 0, 80, 40);
+    act(() => observer.notify(tooltip));
+    await act(() => vi.advanceTimersToNextFrame());
+    expect(tooltip.style.left).toBe('4px');
+    expect(tooltip.style.top).toBe('4px');
     const before = tooltip.style.cssText;
     setRect(button, 200, 200, 30, 20);
-    fireEvent(window, new Event('resize'));
+    const measure = vi.spyOn(tooltip, 'getBoundingClientRect');
+    fireEvent.pointerEnter(button);
+    expect(measure).not.toHaveBeenCalled();
+    for (let i = 0; i < 10; i++) fireEvent(window, new Event('resize'));
     await act(() => vi.advanceTimersToNextFrame());
+    expect(measure).toHaveBeenCalledOnce();
     expect(tooltip.style.cssText).not.toBe(before);
 });
 
@@ -72,10 +78,10 @@ it('shows real overflow tooltips only beyond the one-pixel tolerance and closes 
 
 it('reclamps an open tooltip when its font or content size changes, and stops observing after close', async () => {
     const view = render(<PopoverTooltip content="Late font"><button>Action</button></PopoverTooltip>);
-    const button = screen.getByRole('button'), tooltip = screen.getByRole('tooltip');
+    const button = screen.getByRole('button');
     setRect(button, window.innerWidth - 40, 100, 30, 20);
-    setRect(tooltip, 0, 0, 80, 40);
     fireEvent.pointerEnter(button);
+    const tooltip = screen.getByRole('tooltip');
     await act(() => vi.advanceTimersToNextFrame());
     setRect(tooltip, 0, 0, 160, 40);
     act(() => observer.notify(tooltip));
@@ -89,4 +95,28 @@ it('reclamps an open tooltip when its font or content size changes, and stops ob
     expect(observer.observers.every((entry) => entry.targets.size === 0)).toBe(true);
     view.unmount();
     expect(vi.getTimerCount()).toBe(0);
+});
+
+it('repositions a visible image when its anchor moves without remounting the image', async () => {
+    const preview = (left: number) => (
+        <PopoverTooltip content={<img src="/preview.webp" alt="Preview" />} placement="top" visible variant="image">
+            <span style={{ left }} data-testid="anchor" />
+        </PopoverTooltip>
+    );
+    const view = render(preview(80));
+    const anchor = screen.getByTestId('anchor');
+    const image = screen.getByRole('img', { name: 'Preview' });
+    const tooltip = screen.getByRole('tooltip');
+    setRect(tooltip, 0, 0, 80, 40);
+    setRect(anchor, 80, 200, 10, 10);
+    act(() => observer.notify(tooltip));
+    await act(() => vi.advanceTimersToNextFrame());
+    expect(tooltip.style.left).toBe('45px');
+
+    setRect(anchor, 180, 200, 10, 10);
+    view.rerender(preview(180));
+    await act(() => vi.advanceTimersToNextFrame());
+    expect(tooltip.style.left).toBe('145px');
+    expect(tooltip).toBe(screen.getByRole('tooltip'));
+    expect(image).toBe(screen.getByRole('img', { name: 'Preview' }));
 });

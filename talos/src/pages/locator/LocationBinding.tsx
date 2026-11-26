@@ -337,7 +337,7 @@ const LocationBinding: React.FC<LocationBindingProps> = ({
                                 <PopoverTooltip
                                     placement="top"
                                     gap={8}
-                                    toggleOnClick
+                                    trigger="press"
                                     content={(
                                         <span className={styles.deviceVerificationPopover}>
                                             注册/登录<span className="keyword">森空岛</span> » 右上角<span className="keyword">设置</span> » 通行证与账号安全 » 账号安全管理 » 设备管理 » 关闭<span className="keyword">新设备登录身份验证</span>

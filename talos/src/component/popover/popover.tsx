@@ -1,402 +1,308 @@
 import { registerOverlay } from '@/lib/dom/overlay';
 import { registerFontRegion } from '@/locale/fontLoader';
-import React, { useRef, useEffect, useCallback, useId, useLayoutEffect } from 'react';
+import { cloneElement, useCallback, useId, useLayoutEffect, useRef, useState } from 'react';
+import type { HTMLAttributes, ReactElement, ReactNode, Ref } from 'react';
 import styles from './popover.module.scss';
 
-interface PopoverTooltipProps {
-    content: React.ReactNode;
-    fontText?: string;
-    children: React.ReactElement;
+interface Position {
     anchor?: 'element' | 'first-line';
     placement?: 'top' | 'bottom' | 'left' | 'right';
+    gap?: number;
+}
+
+interface Props extends Position {
+    content: ReactNode;
+    fontText?: string;
+    children: ReactElement;
     disabled?: boolean;
     visible?: boolean;
-    toggleOnClick?: boolean;
-    gap?: number;
+    trigger?: 'hover' | 'press';
     variant?: 'text' | 'image';
 }
 
-const hasRenderableContent = (content: React.ReactNode): boolean => {
-    if (typeof content === 'string') return content.trim().length > 0;
-    return content !== null && content !== undefined;
-};
+type TriggerProps = HTMLAttributes<HTMLElement> & { ref?: Ref<HTMLElement> };
+
+interface Session {
+    anchor: HTMLElement;
+    element: HTMLSpanElement;
+    view: Window;
+    position: Position;
+    font?: ReturnType<typeof registerFontRegion>;
+    text: string;
+    frame?: number;
+    closeTimer?: number;
+    stopTracking?: () => void;
+}
 
 const VIEWPORT_MARGIN = 4;
 const CLOSE_TRANSITION_MS = 120;
 
-type PopoverElement = HTMLSpanElement & {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-};
-
-type ElementWithRef = React.ReactElement & {
-    ref?: React.Ref<HTMLElement>;
-};
-
-type Placement = NonNullable<PopoverTooltipProps['placement']>;
-
-type PositionedRect = {
-    bottom?: number;
-    left?: number;
-    right?: number;
-    top?: number;
-};
-
-const clamp = (value: number, min: number, max: number): number => (
-    Math.min(Math.max(value, min), max)
-);
-
-const setMergedRef = <T,>(ref: React.Ref<T> | undefined, value: T | null): void => {
-    if (!ref) return;
-    if (typeof ref === 'function') {
-        ref(value);
-        return;
-    }
-    (ref as React.MutableRefObject<T | null>).current = value;
-};
-
-const computeCoordinates = (
-    placement: Placement,
-    triggerRect: DOMRect,
-    popoverRect: DOMRect,
-    gap: number,
-    viewportWidth: number,
-    viewportHeight: number,
-): PositionedRect => {
+function positionPopover({ anchor, element, view, position }: Session) {
+    const { anchor: anchorMode, placement = 'right', gap = 12 } = position;
+    const target = (anchorMode === 'first-line' && anchor.getClientRects()[0]) || anchor.getBoundingClientRect();
+    const { width, height } = element.getBoundingClientRect();
+    let left = target.left + (target.width - width) / 2;
+    let top = target.top + (target.height - height) / 2;
     switch (placement) {
-        case 'right':
-            return {
-                left: triggerRect.right + gap,
-                top: triggerRect.top + triggerRect.height / 2 - popoverRect.height / 2,
-            };
-        case 'left':
-            return {
-                right: viewportWidth - triggerRect.left + gap,
-                top: triggerRect.top + triggerRect.height / 2 - popoverRect.height / 2,
-            };
-        case 'bottom':
-            return {
-                left: triggerRect.left + triggerRect.width / 2 - popoverRect.width / 2,
-                top: triggerRect.bottom + gap,
-            };
-        case 'top':
-            return {
-                left: triggerRect.left + triggerRect.width / 2 - popoverRect.width / 2,
-                bottom: viewportHeight - triggerRect.top + gap,
-            };
-    }
-};
-
-const computePopoverPosition = (
-    placement: Placement,
-    triggerRect: DOMRect,
-    popoverRect: DOMRect,
-    gap: number,
-    viewportWidth: number,
-    viewportHeight: number,
-): PositionedRect => {
-    const coordinates = computeCoordinates(
-        placement,
-        triggerRect,
-        popoverRect,
-        gap,
-        viewportWidth,
-        viewportHeight,
-    );
-    const maxLeft = Math.max(VIEWPORT_MARGIN, viewportWidth - popoverRect.width - VIEWPORT_MARGIN);
-    const maxTop = Math.max(VIEWPORT_MARGIN, viewportHeight - popoverRect.height - VIEWPORT_MARGIN);
-    const maxRight = Math.max(VIEWPORT_MARGIN, viewportWidth - popoverRect.width - VIEWPORT_MARGIN);
-    const maxBottom = Math.max(VIEWPORT_MARGIN, viewportHeight - popoverRect.height - VIEWPORT_MARGIN);
-
-    if (placement === 'left') {
-        return {
-            right: clamp(coordinates.right ?? VIEWPORT_MARGIN, VIEWPORT_MARGIN, maxRight),
-            top: clamp(coordinates.top ?? VIEWPORT_MARGIN, VIEWPORT_MARGIN, maxTop),
-        };
+        case 'left': left = target.left - width - gap; break;
+        case 'right': left = target.right + gap; break;
+        case 'top': top = target.top - height - gap; break;
+        case 'bottom': top = target.bottom + gap; break;
     }
 
-    if (placement === 'top') {
-        return {
-            bottom: clamp(coordinates.bottom ?? VIEWPORT_MARGIN, VIEWPORT_MARGIN, maxBottom),
-            left: clamp(coordinates.left ?? VIEWPORT_MARGIN, VIEWPORT_MARGIN, maxLeft),
-        };
-    }
+    const x = `${Math.max(VIEWPORT_MARGIN, Math.min(left, view.innerWidth - width - VIEWPORT_MARGIN))}px`;
+    const y = `${Math.max(VIEWPORT_MARGIN, Math.min(top, view.innerHeight - height - VIEWPORT_MARGIN))}px`;
+    if (element.style.left !== x) element.style.left = x;
+    if (element.style.top !== y) element.style.top = y;
+}
 
-    return {
-        left: clamp(coordinates.left ?? VIEWPORT_MARGIN, VIEWPORT_MARGIN, maxLeft),
-        top: clamp(coordinates.top ?? VIEWPORT_MARGIN, VIEWPORT_MARGIN, maxTop),
+function schedulePosition(session: Session) {
+    if (session.frame !== undefined) return;
+    session.frame = session.view.requestAnimationFrame(() => {
+        session.frame = undefined;
+        positionPopover(session);
+    });
+}
+
+function stopTracking(session: Session) {
+    if (session.frame !== undefined) session.view.cancelAnimationFrame(session.frame);
+    session.frame = undefined;
+    session.stopTracking?.();
+    session.stopTracking = undefined;
+}
+
+function trackPosition(session: Session, onDismiss: () => void) {
+    const { anchor, element, view } = session;
+    const doc = element.ownerDocument;
+    const overlay = registerOverlay({ element, trigger: anchor, closeOnOutside: true, onDismiss });
+    const update = () => schedulePosition(session);
+    // Late fonts and images can change geometry without a viewport event.
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
+    observer?.observe(element);
+    observer?.observe(anchor);
+    const onFontChange = (event: Event) => {
+        const region = event.target as Element | null;
+        if (region?.contains(anchor) || region?.contains(element)) update();
     };
-};
+    view.addEventListener('resize', update);
+    view.addEventListener('scroll', update, true);
+    doc.addEventListener('fontregionchange', onFontChange);
+    session.stopTracking = () => {
+        observer?.disconnect();
+        view.removeEventListener('resize', update);
+        view.removeEventListener('scroll', update, true);
+        doc.removeEventListener('fontregionchange', onFontChange);
+        overlay.dispose();
+    };
+}
 
-const isPopoverOpen = (popover: HTMLElement): boolean => {
-    try {
-        return popover.matches(':popover-open');
-    } catch {
-        return false;
-    }
-};
+function dispose(session: Session) {
+    stopTracking(session);
+    session.view.clearTimeout(session.closeTimer);
+    session.font?.stop();
+    if (session.element.matches(':popover-open')) session.element.hidePopover();
+}
 
-/**
- * Using native Popover API to avoid overflow issues
- */
-const PopoverTooltip: React.FC<PopoverTooltipProps> = ({
+export default function PopoverTooltip({
     content,
     fontText,
     children,
-    placement = 'right',
-    anchor = 'element',
+    anchor,
+    placement,
+    gap,
     disabled = false,
     visible,
-    toggleOnClick = false,
-    gap = 12,
+    trigger = 'hover',
     variant = 'text',
-}) => {
-    const closeTimeoutRef = useRef<number | undefined>(undefined);
-    const positionFrameRef = useRef<(() => void) | undefined>(undefined);
-    const viewportCleanupRef = useRef<(() => void) | undefined>(undefined);
-    const scheduleLatest = useRef<() => void>(() => {});
-    const isOpenRef = useRef(false);
-    const layerRef = useRef<ReturnType<typeof registerOverlay> | null>(null);
-    const fontOwner = useRef<ReturnType<typeof registerFontRegion>>(undefined);
-    const text = fontText ?? (typeof content === 'string' || typeof content === 'number' ? String(content) : '');
-    useLayoutEffect(() => {
-        fontOwner.current?.update([{ faces: ['h', 'r'], text }]);
-    }, [text]);
+}: Props) {
+    const id = useId();
     const triggerRef = useRef<HTMLElement | null>(null);
-    const popoverRef = useRef<PopoverElement | null>(null);
-    const popoverId = useId();
-    const hasContent = hasRenderableContent(content);
-    const childProps = children.props as Record<string, unknown> & {
-        ref?: React.Ref<HTMLElement>;
-        'aria-describedby'?: string;
-    };
-    const childRef = childProps.ref ?? (children as ElementWithRef).ref;
-
-    const clearCloseTimeout = useCallback(() => {
-        if (closeTimeoutRef.current) {
-            window.clearTimeout(closeTimeoutRef.current);
-            closeTimeoutRef.current = undefined;
-        }
-    }, []);
-
-    const positionPopover = useCallback(() => {
-        const trigger = triggerRef.current;
-        const popover = popoverRef.current;
-        if (!trigger || !popover || !isOpenRef.current) return;
-
-        const ownerWindow = trigger.ownerDocument.defaultView ?? window;
-        const popoverRect = popover.getBoundingClientRect();
-        const position = computePopoverPosition(
-            placement,
-            anchor === 'first-line'
-                ? trigger.getClientRects()[0] ?? trigger.getBoundingClientRect()
-                : trigger.getBoundingClientRect(),
-            popoverRect,
-            gap,
-            ownerWindow.innerWidth,
-            ownerWindow.innerHeight,
-        );
-
-        popover.style.position = 'fixed';
-        popover.style.left = position.left === undefined ? 'auto' : `${position.left}px`;
-        popover.style.top = position.top === undefined ? 'auto' : `${position.top}px`;
-        popover.style.right = position.right === undefined ? 'auto' : `${position.right}px`;
-        popover.style.bottom = position.bottom === undefined ? 'auto' : `${position.bottom}px`;
-        popover.style.transform = 'none';
-        popover.dataset.placement = placement;
-    }, [anchor, gap, placement]);
-
-    const schedulePosition = useCallback(() => {
-        positionFrameRef.current?.();
-        const ownerWindow = triggerRef.current?.ownerDocument.defaultView ?? window;
-        const frame = ownerWindow.requestAnimationFrame(() => {
-            positionFrameRef.current = undefined;
-            positionPopover();
-        });
-        positionFrameRef.current = () => ownerWindow.cancelAnimationFrame(frame);
-    }, [positionPopover]);
-    scheduleLatest.current = schedulePosition;
-
-    const hidePopover = useCallback((immediate = false) => {
-        clearCloseTimeout();
-        positionFrameRef.current?.();
-        positionFrameRef.current = undefined;
-        viewportCleanupRef.current?.();
-        viewportCleanupRef.current = undefined;
-        isOpenRef.current = false;
-
-        const popover = popoverRef.current;
-        layerRef.current?.setActive(false);
-        const finishClose = () => {
-            closeTimeoutRef.current = undefined;
-            try {
-                popover?.hidePopover?.();
-            } catch {
-                // Ignore if already hidden
-            }
-            popover?.classList.remove(styles.popoverClose);
-            layerRef.current?.dispose();
-            layerRef.current = null;
-            fontOwner.current?.stop();
-            fontOwner.current = undefined;
-        };
-
-        if (immediate || !popover || !isPopoverOpen(popover)) {
-            finishClose();
-            return;
-        }
-
-        popover.classList.add(styles.popoverClose);
-        closeTimeoutRef.current = window.setTimeout(finishClose, CLOSE_TRANSITION_MS);
-    }, [clearCloseTimeout]);
-
-    const showPopover = useCallback(() => {
-        if (disabled || !hasContent) return;
-        clearCloseTimeout();
-
-        const popover = popoverRef.current;
-        if (!popover) return;
-
-        if (!fontOwner.current) fontOwner.current = registerFontRegion(popover, [{ faces: ['h', 'r'], text }]);
-        popover.classList.remove(styles.popoverClose);
-        try {
-            if (!isPopoverOpen(popover)) {
-                popover.showPopover?.();
-            }
-        } catch {
-            // Ignore if already shown
-        }
-
-        if (!layerRef.current) layerRef.current = registerOverlay({
-            element: popover, trigger: triggerRef.current, closeOnOutside: true, onDismiss: () => hidePopover(true),
-        });
-        layerRef.current.setActive(true);
-        if (!viewportCleanupRef.current) {
-            const ownerWindow = popover.ownerDocument.defaultView ?? window;
-            const update = () => { if (isOpenRef.current) scheduleLatest.current(); };
-            const trigger = triggerRef.current;
-            // Regional fonts and loaded imagery can change either geometry
-            // without producing a window resize or scroll event.
-            const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
-            observer?.observe(popover);
-            if (trigger) observer?.observe(trigger);
-            const onFontChange = (event: Event) => {
-                const region = event.target as Element | null;
-                if (region?.contains(trigger) || region?.contains(popover)) update();
-            };
-            ownerWindow.addEventListener('resize', update);
-            ownerWindow.addEventListener('scroll', update, true);
-            popover.ownerDocument.addEventListener('fontregionchange', onFontChange);
-            viewportCleanupRef.current = () => {
-                observer?.disconnect();
-                ownerWindow.removeEventListener('resize', update);
-                ownerWindow.removeEventListener('scroll', update, true);
-                popover.ownerDocument.removeEventListener('fontregionchange', onFontChange);
-            };
-        }
-        isOpenRef.current = true;
-        positionPopover();
-        schedulePosition();
-    }, [clearCloseTimeout, disabled, hasContent, hidePopover, positionPopover, schedulePosition, text]);
-
-    // Cleanup function: ensure popover is closed
-    useEffect(() => {
-        return () => {
-            clearCloseTimeout();
-            hidePopover(true);
-            fontOwner.current?.stop();
-            fontOwner.current = undefined;
-        };
-    }, [clearCloseTimeout, hidePopover]);
-
-    useEffect(() => {
-        if (disabled || !hasContent) {
-            hidePopover(true);
-        }
-    }, [disabled, hasContent, hidePopover]);
-
-    useEffect(() => {
-        if (visible === undefined) return;
-        if (visible) {
-            showPopover();
-            return;
-        }
-        hidePopover();
-    }, [hidePopover, showPopover, visible]);
-
-    useEffect(() => {
-        if (isOpenRef.current) schedulePosition();
-    }, [content, schedulePosition]);
-
-    const handleMouseEnter = () => {
-        if (visible !== undefined) return;
-        showPopover();
-    };
-
-    const handleMouseLeave = () => {
-        if (visible !== undefined) return;
-        hidePopover();
-    };
+    const popoverRef = useRef<HTMLSpanElement | null>(null);
+    const sessionRef = useRef<Session | null>(null);
+    const pendingOpen = useRef(false);
+    const [mounted, setMounted] = useState(false);
+    const enabled = !disabled && (typeof content === 'string' ? content.trim().length > 0 : content != null);
+    const plainText = typeof content === 'string' || typeof content === 'number' ? String(content) : undefined;
+    const text = fontText ?? plainText ?? '';
+    const needsFont = variant === 'text' || Boolean(text);
+    const child = children as ReactElement<TriggerProps>;
+    const childRef = child.props.ref;
 
     const setTriggerRef = useCallback((node: HTMLElement | null) => {
         triggerRef.current = node;
-        setMergedRef(childRef, node);
+        if (typeof childRef === 'function') {
+            const cleanup = childRef(node);
+            if (typeof cleanup === 'function') {
+                return () => {
+                    triggerRef.current = null;
+                    cleanup();
+                };
+            }
+        } else if (childRef) {
+            childRef.current = node;
+        }
+        return undefined;
     }, [childRef]);
 
-    if (disabled || !hasContent) {
-        return children;
-    }
+    const hide = useCallback((immediate = false) => {
+        pendingOpen.current = false;
+        const session = sessionRef.current;
+        if (!session) {
+            setMounted(false);
+            return;
+        }
+        const finish = () => {
+            sessionRef.current = null;
+            dispose(session);
+            setMounted(false);
+        };
+        if (immediate) {
+            finish();
+        } else if (session.closeTimer === undefined) {
+            stopTracking(session);
+            session.element.setAttribute('inert', '');
+            session.element.classList.add(styles.popoverClose);
+            session.closeTimer = session.view.setTimeout(finish, CLOSE_TRANSITION_MS);
+        }
+    }, []);
 
-    // Clone children and add event handlers
-    const describedBy = [childProps['aria-describedby'], popoverId].filter(Boolean).join(' ') || undefined;
+    const open = useCallback((session: Session) => {
+        if (session.stopTracking) return;
+        const { element, view } = session;
+        view.clearTimeout(session.closeTimer);
+        session.closeTimer = undefined;
+        element.classList.remove(styles.popoverClose);
+        element.removeAttribute('inert');
+        try {
+            if (!element.matches(':popover-open')) element.showPopover();
+        } catch {
+            // The document can go away while a tooltip is being opened.
+            hide(true);
+            return;
+        }
+        positionPopover(session);
+        trackPosition(session, () => hide(true));
+    }, [hide]);
 
-    const childWithHandlers = React.cloneElement(children, {
-        ref: setTriggerRef,
-        'aria-describedby': describedBy,
-        onFocus: (e: React.FocusEvent<HTMLElement>) => {
-            if (e.target.matches(':focus-visible')) handleMouseEnter();
-            (childProps.onFocus as ((event: React.FocusEvent<HTMLElement>) => void) | undefined)?.(e);
-        },
-        onBlur: (e: React.FocusEvent<HTMLElement>) => {
-            handleMouseLeave();
-            (childProps.onBlur as ((event: React.FocusEvent<HTMLElement>) => void) | undefined)?.(e);
-        },
-        onPointerEnter: (e: React.PointerEvent<HTMLElement>) => {
-            if (e.pointerType !== 'touch') handleMouseEnter();
-            (childProps.onPointerEnter as ((event: React.PointerEvent<HTMLElement>) => void) | undefined)?.(e);
-        },
-        onPointerLeave: (e: React.PointerEvent<HTMLElement>) => {
-            // Touch leaves the trigger before click; keep tap-open help available.
-            if (!toggleOnClick || e.pointerType !== 'touch') handleMouseLeave();
-            (childProps.onPointerLeave as ((event: React.PointerEvent<HTMLElement>) => void) | undefined)?.(e);
-        },
-        onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
-            if (visible === undefined && !toggleOnClick) hidePopover(true);
-            (childProps.onPointerDown as ((event: React.PointerEvent<HTMLElement>) => void) | undefined)?.(e);
-        },
-        onClick: (e: React.MouseEvent<HTMLElement>) => {
-            if (visible === undefined) {
-                if (toggleOnClick && !isOpenRef.current) showPopover();
-                else hidePopover(true);
+    const show = useCallback(() => {
+        const session = sessionRef.current;
+        if (session) {
+            open(session);
+        } else if (!pendingOpen.current) {
+            pendingOpen.current = true;
+            setMounted(true);
+        }
+    }, [open]);
+
+    useLayoutEffect(() => () => {
+        const session = sessionRef.current;
+        if (session) dispose(session);
+        sessionRef.current = null;
+    }, []);
+
+    useLayoutEffect(() => {
+        if (!enabled) hide(true);
+        else if (visible === true) show();
+        else if (visible === false) hide();
+    }, [enabled, visible, hide, show]);
+
+    useLayoutEffect(() => {
+        if (!enabled || !mounted) return;
+        const target = triggerRef.current;
+        const element = popoverRef.current;
+        const view = element?.ownerDocument.defaultView;
+        if (!target || !element?.showPopover || !view) {
+            hide(true);
+            return;
+        }
+
+        let session = sessionRef.current;
+        if (session && (session.anchor !== target || session.element !== element || session.view !== view)) {
+            const wasOpen = Boolean(session.stopTracking);
+            dispose(session);
+            sessionRef.current = session = null;
+            pendingOpen.current = wasOpen;
+            if (!wasOpen) hide(true);
+        }
+
+        const position = { anchor, placement, gap };
+        if (!session) {
+            if (!pendingOpen.current) return;
+            pendingOpen.current = false;
+            session = { anchor: target, element, view, position, text };
+            if (needsFont) session.font = registerFontRegion(element, [{ faces: ['h', 'r'], text }]);
+            sessionRef.current = session;
+            open(session);
+        } else {
+            session.position = position;
+            if (!needsFont) {
+                session.font?.stop();
+                session.font = undefined;
+            } else if (!session.font) {
+                session.font = registerFontRegion(element, [{ faces: ['h', 'r'], text }]);
+            } else if (session.text !== text) {
+                session.font.update([{ faces: ['h', 'r'], text }]);
             }
-            (childProps.onClick as ((event: React.MouseEvent<HTMLElement>) => void) | undefined)?.(e);
-        },
-    } as Partial<React.HTMLAttributes<HTMLElement>> & { ref: React.Ref<HTMLElement> });
+            session.text = text;
+            if (session.stopTracking) schedulePosition(session);
+        }
+    }, [anchor, children, content, enabled, gap, hide, mounted, needsFont, open, placement, text]);
+
+    if (!enabled) return children;
+
+    const describedBy = child.props['aria-describedby'];
+    const props: TriggerProps = {
+        ref: setTriggerRef,
+        'aria-describedby': mounted ? [describedBy, id].filter(Boolean).join(' ') : describedBy,
+        'aria-description': child.props['aria-description'] ?? (mounted || describedBy ? undefined : plainText),
+    };
+
+    if (visible === undefined) {
+        const press = trigger === 'press';
+        props.onFocus = (event) => {
+            if (event.target.matches(':focus-visible')) show();
+            child.props.onFocus?.(event);
+        };
+        props.onBlur = (event) => {
+            hide();
+            child.props.onBlur?.(event);
+        };
+        props.onPointerEnter = (event) => {
+            if (event.pointerType !== 'touch') show();
+            child.props.onPointerEnter?.(event);
+        };
+        props.onPointerLeave = (event) => {
+            // Touch may leave before the click that opens help.
+            if (!press || event.pointerType !== 'touch') hide();
+            child.props.onPointerLeave?.(event);
+        };
+        if (!press) {
+            props.onPointerDown = (event) => {
+                hide(true);
+                child.props.onPointerDown?.(event);
+            };
+        }
+        props.onClick = (event) => {
+            if (press && !sessionRef.current?.stopTracking) show();
+            else hide(true);
+            child.props.onClick?.(event);
+        };
+    }
 
     return (
         <>
-            {childWithHandlers}
-            <span
-                ref={popoverRef}
-                id={popoverId}
-                role="tooltip"
-                popover="manual"
-                className={`${styles.popoverTooltip} ${variant === 'image' ? styles.imgInner : styles.txtInner}`}
-            >
-                {content}
-            </span>
+            {cloneElement(child, props)}
+            {mounted && (
+                <span
+                    ref={popoverRef}
+                    id={id}
+                    role="tooltip"
+                    popover="manual"
+                    className={`${styles.popoverTooltip} ${variant === 'image' ? styles.imgInner : styles.txtInner}`}
+                >
+                    {content}
+                </span>
+            )}
         </>
     );
-};
-
-export default PopoverTooltip;
+}
