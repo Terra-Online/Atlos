@@ -85,6 +85,65 @@ test('TEST-BROWSER-MAIN-SETTINGS-001 theme persists and the language modal commi
     await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('ui-prefs')).state.theme)).toBe('dark');
 });
 
+test('TEST-BROWSER-MAIN-COMMENTS-001 composer grows smoothly and the reply line fits the active font', async ({ page, services }) => {
+    const markerId = '9800000003';
+    services.user = { ...browserUser };
+    services.handle('POST', '/uploads/v1/comments/translations', () => ({ status: 200, body: { items: [] } }));
+    services.handle('GET', '/uploads/v1/comments', () => ({ status: 200, body: { items: [{
+        type: 'comment', id: 'reply-fixture', snapshotId: 'reply-fixture', markerId,
+        parentId: null, depth: 0,
+        content: '由于无休止的学业负担、脑力劳动和生理疲劳，他精疲力尽，决定停下来休息一会儿。',
+        author: { nickname: '本地测试', publicUid: 'reply-author' },
+        status: 'active', createdAt: '2026-10-27T00:00:00Z', score: 0, replyCount: 0, replies: [],
+    }] } }));
+    await page.route((url) => url.port === '5176' && url.pathname.startsWith('/oem/'), (route) =>
+        route.fulfill({ status: 404, headers: { 'access-control-allow-origin': '*' }, body: '{}' }),
+    );
+    await page.addInitScript(() => localStorage.setItem('talos:locale', 'zh-CN'));
+    await page.goto('/?r=VL&p=' + markerId);
+    const detail = page.locator('[data-font-region="detail"][data-state="open"]');
+    await detail.locator('button[data-tab="comments"]').click();
+    const bar = detail.locator('[data-comment-input="true"]');
+    const editor = bar.locator('[contenteditable="true"]');
+    await expect(editor).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const measure = async (value) => {
+        await bar.evaluate((element) => {
+            const start = performance.now();
+            const frames = [element.getBoundingClientRect().height];
+            window.__commentHeightFrames = new Promise((resolve) => {
+                const sample = () => {
+                    frames.push(element.getBoundingClientRect().height);
+                    if (performance.now() - start < 420) requestAnimationFrame(sample);
+                    else resolve(frames);
+                };
+                requestAnimationFrame(sample);
+            });
+        });
+        await editor.fill(value);
+        const frames = await page.evaluate(() => window.__commentHeightFrames);
+        const first = frames[0], last = frames.at(-1);
+        const lower = Math.min(first, last), upper = Math.max(first, last);
+        expect(frames.some((height) => height > lower + 1 && height < upper - 1)).toBe(true);
+        return last - first;
+    };
+    expect(await measure('第一行测试。\n第二行测试。\n第三行测试。')).toBeGreaterThan(16);
+    expect(await measure('')).toBeLessThan(-16);
+
+    await detail.locator('[data-comment-list] [data-comment-id="reply-fixture"] article').hover();
+    await page.getByRole('button', { name: '回复帖文', exact: true }).click();
+    const quote = bar.locator('[class*="commentReplyQuoteShell"]');
+    await expect(quote).toHaveAttribute('data-visible', 'true');
+    await expect(quote).toHaveCSS('font-weight', '400');
+    await expect.poll(() => quote.evaluate((element) =>
+        element.firstElementChild.scrollHeight - element.getBoundingClientRect().height,
+    )).toBeLessThanOrEqual(0.5);
+    await editor.press('Backspace');
+    await expect(bar).toHaveAttribute('data-replying', 'false');
+    await expect.poll(() => quote.evaluate((element) => element.getBoundingClientRect().height)).toBe(0);
+});
+
 test('TEST-BROWSER-INTEL-MOTION-001 category/search and collect reversal finish with native animation events', async ({ page }, testInfo) => {
     await page.goto('/intel/');
     await expect(page.locator('[data-intel-archive]').first()).toBeVisible();

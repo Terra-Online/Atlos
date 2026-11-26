@@ -512,11 +512,28 @@ const CommentEditor = forwardRef<CommentEditorHandle, Props>(({
     editorElementRef,
     onEditorReady,
 }, ref) => {
+    const shellRef = useRef<HTMLDivElement>(null);
     useLayoutEffect(onEditorReady, [onEditorReady]);
+
+    useLayoutEffect(() => {
+        const editor = editorElementRef.current;
+        const shell = shellRef.current;
+        if (!editor || !shell || typeof ResizeObserver === 'undefined') return;
+        const resize = (height: number) => {
+            if (height > 0) shell.style.setProperty('--comment-editor-height', `${height}px`);
+        };
+        resize(editor.offsetHeight);
+        // Measure the natural editor height independently of the animated shell.
+        const observer = new ResizeObserver(([entry]) => {
+            resize(entry?.borderBoxSize?.[0]?.blockSize ?? editor.offsetHeight);
+        });
+        observer.observe(editor, { box: 'border-box' });
+        return () => observer.disconnect();
+    }, [editorElementRef]);
 
     return (
         <LexicalComposer initialConfig={COMMENT_EDITOR_CONFIG}>
-            <div className={styles.commentEditorShell}>
+            <div className={styles.commentEditorShell} ref={shellRef}>
                 <RichTextPlugin
                     contentEditable={(
                         <ContentEditable

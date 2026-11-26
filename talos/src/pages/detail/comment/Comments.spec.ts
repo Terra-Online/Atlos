@@ -51,10 +51,12 @@ import { useMarkerStore } from '@/store/marker';
 import { useAuthStore } from '@/store/auth';
 import { restoreCommentSubmission, getCommentSubmissionSnapshot } from './commentSubmissionStore';
 import { registerOverlay } from '@/lib/dom/overlay';
+import { installPopover } from '../../../../test-support/browser';
 
 const point = { id: '1', type: 'test', subregId: 'sub' } as IMarkerData;
 const comment: UGCComment = { type: 'comment', id: 'reply', markerId: '1', content: 'A shareable comment', parentId: null, depth: 0, createdAt: '', score: 0, replyCount: 0, replies: [], status: 'active' };
 let writeText: ReturnType<typeof vi.fn>;
+let popover: ReturnType<typeof installPopover>;
 beforeEach(() => {
     useAuthStore.getState().clearSessionUser();
     localeState.current = 'en-US';
@@ -63,11 +65,12 @@ beforeEach(() => {
     vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
     vi.stubGlobal('DragEvent', class extends Event {});
     vi.stubGlobal('matchMedia', () => ({ matches: true }));
+    popover = installPopover();
     Object.defineProperty(HTMLElement.prototype, 'scrollTo', { configurable: true, value: vi.fn() });
     writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
 });
-afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); popover.restore(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 it.each(['mouse', 'touch'])('allows anonymous sharing from the %s toolbar', async pointerType => {
     render(createElement(Comments, { point, pointName: 'Marker' }));

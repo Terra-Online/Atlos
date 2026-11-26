@@ -395,24 +395,24 @@
         'HMSans_EN', 'UD_ShinGo Regular', HMSans, 'Noto Sans SC',
         'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
     letter-spacing: -.2px;
-    font-weight: 600;
+    font-weight: 400;
     font-size: 0.85em;
+    display: grid;
+    grid-template-rows: 0fr;
     min-width: 0;
-    height: 0;
     margin-bottom: 0;
     color: var(--comment-text);
     opacity: 0;
     overflow: hidden;
     transform: translateY(-0.15rem);
     transition:
-        height 0.18s $standard-curve,
+        grid-template-rows 0.18s $standard-curve,
         margin-bottom 0.18s $standard-curve,
         opacity 0.16s ease,
         transform 0.18s $standard-curve;
-    will-change: height, opacity, transform;
 
     &[data-visible='true'] {
-        height: 1.25em;
+        grid-template-rows: 1fr;
         margin-bottom: 0.35rem;
         opacity: 1;
         transform: translateY(0);
@@ -695,6 +695,9 @@
     grid-area: editor;
     position: relative;
     min-width: 0;
+    height: var(--comment-editor-height, auto);
+    overflow: clip;
+    transition: height 0.18s $standard-curve;
 }
 
 .commentInput > p:last-child::after {
@@ -740,6 +743,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .commentInputBar,
+    .commentReplyQuoteShell,
+    .commentEditorShell,
     .commentInput > p:last-child::after {
         transition: none;
     }
