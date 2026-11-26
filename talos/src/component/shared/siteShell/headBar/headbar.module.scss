@@ -307,14 +307,16 @@
 }
 
 .glassShell {
+    $layer-transform: transform 0.12s ease-out;
+
     // A positioned wrapper prevents the library's filtered backdrop from
     // sampling the page in Chromium. Keep its fixed layers in the parent box.
     display: contents;
 
     // ResizeObserver supplies the rim dimensions. Apply those immediately,
-    // while all optical layers share the same transform-only transition.
+    // while all optical layers share the same transform timing.
     > * {
-        transition: transform 0.12s ease-out !important;
+        transition: $layer-transform !important;
         transform-origin: center;
     }
 
@@ -323,9 +325,12 @@
         pointer-events: none;
     }
 
-    .glassMaterial {
+    > .glassMaterial {
         display: inline-flex;
-        background: var(--headbar-bg);
+        background-color: var(--headbar-bg);
+        transition:
+            $layer-transform,
+            background-color var(--theme-transition-duration, 350ms) var(--theme-transition-ease, #{$moderato-curve}) !important;
     }
 
     :global(.glass) {
@@ -337,6 +342,7 @@
             transform: none !important;
         }
 
+        > .glassMaterial,
         *, *::before, *::after {
             transition: none !important;
         }

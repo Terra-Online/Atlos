@@ -170,6 +170,41 @@ test('TEST-BROWSER-INTEL-THEME-001 the headbar theme icon rotates in both direct
     }
 });
 
+test('TEST-BROWSER-INTEL-THEME-002 the glass tint transitions in both directions', async ({ page }) => {
+    await page.addInitScript(() => {
+        if (location.origin === 'null') return;
+        const prefs = JSON.parse(localStorage.getItem('ui-prefs') || '{"state":{},"version":1}');
+        Object.assign(prefs.state, { theme: 'light', prefsPerformanceModeEnabled: false });
+        localStorage.setItem('ui-prefs', JSON.stringify(prefs));
+    });
+    await page.goto('/intel/');
+    const root = page.locator('html');
+    const glass = page.locator('[class*="glassMaterial"]').filter({ has: page.locator('button[data-guide="dark-mode"]') });
+    const button = glass.locator('button[data-guide="dark-mode"]');
+    await expect(root).toHaveAttribute('data-theme', 'light');
+    await glass.evaluate((element) => {
+        window.__intelGlassTints = [];
+        for (const type of ['transitionrun', 'transitionend']) {
+            element.addEventListener(type, (event) => {
+                if (event.target === element && event.propertyName === 'background-color') {
+                    window.__intelGlassTints.push(`${document.documentElement.dataset.theme}:${type}`);
+                }
+            });
+        }
+    });
+
+    const events = [];
+    for (const theme of ['dark', 'light']) {
+        await button.click();
+        await expect(root).toHaveAttribute('data-theme', theme);
+        events.push(`${theme}:transitionrun`, `${theme}:transitionend`);
+        await expect.poll(() => page.evaluate(() => window.__intelGlassTints)).toEqual(events);
+        await expect(root).not.toHaveAttribute('data-theme-switching');
+    }
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(glass).toHaveCSS('transition-property', 'none');
+});
+
 test('TEST-BROWSER-INTEL-MOTION-001 category/search and collect reversal finish with native animation events', async ({ page }, testInfo) => {
     await page.goto('/intel/');
     await expect(page.locator('[data-intel-archive]').first()).toBeVisible();
