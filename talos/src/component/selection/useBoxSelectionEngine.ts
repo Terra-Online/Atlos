@@ -88,6 +88,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
         let isDragging = false;
         let initialKeys: string[] = [];
         let currentOptimisticSet = new Set<string>();
+        let optimisticSignature = '';
         let targets: BoxSelectionTarget[] = [];
         let lastChangeSignature = '';
         let pendingKeys: Set<string> | null = null;
@@ -109,7 +110,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
 
         const measureScrollGeometry = (scrollContainer: HTMLElement): ScrollGeometry => {
             const scrollRect = scrollContainer.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
+            const containerRect = scrollContainer === container ? scrollRect : container.getBoundingClientRect();
             const offsetLeft = scrollRect.left - containerRect.left;
             const offsetTop = scrollRect.top - containerRect.top;
             return {
@@ -195,8 +196,10 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
 
         const syncOptimisticState = (nextSet: Set<string>) => {
             targets.forEach((target) => {
-                const active = target.keys.length > 0 && target.keys.every((key) => nextSet.has(key));
-                optionsRef.current.syncTarget(target, active);
+                if (!target.keys.length) return;
+                const wasActive = target.keys.every((key) => currentOptimisticSet.has(key));
+                const active = target.keys.every((key) => nextSet.has(key));
+                if (wasActive !== active) optionsRef.current.syncTarget(target, active);
             });
         };
 
@@ -209,15 +212,15 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
 
         const queueKeysUpdate = (nextSet: Set<string>) => {
             const nextSignature = Array.from(nextSet).join('\0');
-            const currentSignature = Array.from(currentOptimisticSet).join('\0');
-            if (nextSignature === currentSignature) return;
-            currentOptimisticSet = new Set(nextSet);
-            syncOptimisticState(currentOptimisticSet);
+            if (nextSignature === optimisticSignature) return;
+            syncOptimisticState(nextSet);
+            currentOptimisticSet = nextSet;
+            optimisticSignature = nextSignature;
             if (immediate) {
                 applyKeys(nextSet);
                 return;
             }
-            pendingKeys = new Set(nextSet);
+            pendingKeys = nextSet;
             pendingChangeCount += 1;
             if (pendingChangeCount >= updateBatchSize) flushPendingKeys();
         };
@@ -389,6 +392,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
             isDragging = false;
             initialKeys = [];
             currentOptimisticSet = new Set<string>();
+            optimisticSignature = '';
             targets = [];
             activateTargets = [];
             toggleTargets = [];
@@ -412,9 +416,15 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
             activePointerId = event.pointerId;
             lastClientPoint = { x: event.clientX, y: event.clientY };
             startPoint = toContentPoint(scrollContainer, lastClientPoint);
+            view.addEventListener('pointermove', onPointerMove);
+            view.addEventListener('pointerup', finishSelection);
+            view.addEventListener('pointercancel', finishSelection);
+        };
+
+        const beginDrag = (scrollContainer: HTMLElement, pointerId: number) => {
             initialKeys = Array.from(optionsRef.current.getInitialKeys());
             currentOptimisticSet = new Set(initialKeys);
-            lastChangeSignature = initialKeys.join('\0');
+            optimisticSignature = lastChangeSignature = initialKeys.join('\0');
             targets = optionsRef.current.collectTargets({
                 container,
                 scrollContainer,
@@ -424,29 +434,25 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
             toggleTargets = targets.filter((target) => target.mode !== 'activate');
             previousBodyUserSelect = doc.body.style.userSelect;
             previousScrollBehavior = scrollContainer.style.scrollBehavior;
-            view.addEventListener('pointermove', onPointerMove);
-            view.addEventListener('pointerup', finishSelection);
-            view.addEventListener('pointercancel', finishSelection);
             scrollContainer.addEventListener('scroll', onScroll, { passive: true });
+            isDragging = true;
+            doc.body.style.userSelect = 'none';
+            scrollContainer.style.scrollBehavior = 'auto';
+            container.setPointerCapture(pointerId);
+            hasPointerCapture = true;
+            setIsSelecting(true);
         };
 
         const onPointerMove = (event: PointerEvent) => {
             if (event.pointerId !== activePointerId || !startPoint || !activeScrollContainer) return;
             lastClientPoint = { x: event.clientX, y: event.clientY };
-            const currentPoint = toContentPoint(activeScrollContainer, lastClientPoint);
             if (!isDragging) {
+                const currentPoint = toContentPoint(activeScrollContainer, lastClientPoint);
                 const dx = currentPoint.x - startPoint.x;
                 const dy = currentPoint.y - startPoint.y;
-                if (dx * dx + dy * dy > DRAG_START_THRESHOLD_SQ) {
-                    isDragging = true;
-                    doc.body.style.userSelect = 'none';
-                    activeScrollContainer.style.scrollBehavior = 'auto';
-                    container.setPointerCapture(event.pointerId);
-                    hasPointerCapture = true;
-                    setIsSelecting(true);
-                }
+                if (dx * dx + dy * dy <= DRAG_START_THRESHOLD_SQ) return;
+                beginDrag(activeScrollContainer, event.pointerId);
             }
-            if (!isDragging) return;
             requestSelectionUpdate(lastClientPoint, activeScrollContainer);
             updateAutoScroll();
         };
@@ -458,7 +464,7 @@ export const useBoxSelectionEngine = <TContainer extends HTMLElement>({
 
         function finishSelection(event: PointerEvent) {
             if (event.pointerId !== activePointerId) return;
-            flushSelectionUpdate();
+            if (isDragging) flushSelectionUpdate();
             cleanupSelection();
         }
 

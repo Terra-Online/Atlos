@@ -1,4 +1,4 @@
-import { useRef, type RefObject } from 'react';
+import type { RefObject } from 'react';
 import { useBoxSelectionEngine } from '@/component/selection/useBoxSelectionEngine';
 
 interface ScopedBoxSelectionOptions {
@@ -17,17 +17,14 @@ export const useScopedBoxSelection = ({
     itemSelector,
     keyAttribute,
     activeAttribute,
-    getInitialKeys,
+    getInitialKeys = () => [],
     onChange,
 }: ScopedBoxSelectionOptions) => {
-    const currentKeysRef = useRef<string[]>([]);
-    currentKeysRef.current = Array.from(getInitialKeys?.() ?? []);
-
     return useBoxSelectionEngine({
         containerRef,
         selectionBoxRef,
         selectionBoxCoordinates: 'auto',
-        getInitialKeys: () => currentKeysRef.current,
+        getInitialKeys,
         onChange,
         canStart: (target) => !(
             target.closest('button, a, input, textarea, select, [data-drag-handle]')

@@ -96,7 +96,9 @@ it('toggles intersected visible items against initial keys, then flushes the bat
 
 it('does not start from controls, cards or drag handles, from secondary buttons, or before the threshold', () => {
     const { blank, container, onChange } = fixture([]);
-    const targets = [screen.getByRole('button'), screen.getByRole('textbox'), screen.getByText('Handle'), container.querySelector('[data-item="a"]')!];
+    const card = container.querySelector('[data-item="a"]')!;
+    const measure = vi.spyOn(card, 'getBoundingClientRect');
+    const targets = [screen.getByRole('button'), screen.getByRole('textbox'), screen.getByText('Handle'), card];
     for (const target of targets) {
         pointer(target, 'pointerdown', 10, 50);
         pointer(window, 'pointermove', 100);
@@ -108,9 +110,27 @@ it('does not start from controls, cards or drag handles, from secondary buttons,
     pointer(blank, 'pointerdown', 10, 50);
     pointer(window, 'pointermove', 12, 51);
     pointer(window, 'pointerup', 12, 51);
+    expect(measure).not.toHaveBeenCalled();
     expect(onChange).not.toHaveBeenCalled();
     expect(container.dataset.selecting).toBe('false');
     expect(container.hasPointerCapture(1)).toBe(false);
+});
+
+it('writes optimistic attributes only for cards whose state changes', () => {
+    const { blank, container } = fixture([]);
+    const selected = container.querySelector('[data-item="a"]')!;
+    const other = container.querySelector('[data-item="b"]')!;
+    const untouched = vi.spyOn(other, 'setAttribute');
+    pointer(blank, 'pointerdown', 10, 50);
+    pointer(window, 'pointermove', 44, 80);
+    act(() => { vi.advanceTimersToNextFrame(); });
+    expect(selected.getAttribute('aria-pressed')).toBe('true');
+    expect(untouched).not.toHaveBeenCalled();
+    pointer(window, 'pointermove', 20, 80);
+    act(() => { vi.advanceTimersToNextFrame(); });
+    expect(selected.getAttribute('aria-pressed')).toBe('false');
+    expect(untouched).not.toHaveBeenCalled();
+    pointer(window, 'pointerup', 20, 80);
 });
 
 it('ignores a different pointer and restores scroll/text policies after cancellation or unmount', () => {
