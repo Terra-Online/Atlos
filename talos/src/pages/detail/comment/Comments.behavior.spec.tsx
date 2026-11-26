@@ -5,7 +5,7 @@ import { useAuthStore } from '@/store/auth';
 import { useMarkerStore } from '@/store/marker';
 import type { IMarkerData } from '@/data/marker';
 import type { UGCComment, UGCCommentSubmission } from '@/services/ugc/client';
-import { installResizeObserver } from '../../../../test-support/browser';
+import { installPopover, installResizeObserver } from '../../../../test-support/browser';
 import { deferred } from '../../../../test-support/pages';
 
 const api = vi.hoisted(() => ({ t: (key: string) => key, list: vi.fn(), submit: vi.fn(), edit: vi.fn(), vote: vi.fn(), flag: vi.fn(), auth: vi.fn() }));
@@ -22,13 +22,15 @@ vi.mock('@/services/ugc/client', async (original) => ({ ...await original<typeof
 const auth = useAuthStore.getState(), markers = useMarkerStore.getState();
 const scrollTo = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollTo');
 let serial = 0;
+let popover: ReturnType<typeof installPopover>;
 const point = (): IMarkerData => ({ id: `comment-ui-${++serial}`, type: 'crate_ii', subregId: 'VL_1', pos: [0, 0], x: 0, y: 0, z: 0, tier: 0 });
 const comment = (markerId: string, own = false): UGCComment => ({ type: 'comment', id: `comment-${markerId}`, markerId, snapshotId: 'original-snapshot', content: 'Original comment', parentId: null, depth: 0, replies: [], score: 2, replyCount: 0, viewerVote: 0, status: 'active', createdAt: '2026-10-27T00:00:00Z', author: { publicUid: own ? 'a' : 'other', nickname: own ? 'A' : 'Other' } });
 beforeEach(() => {
     vi.clearAllMocks(); installResizeObserver(); useAuthStore.setState({ sessionUser: { uid: 'a', nickname: 'A' } }); useMarkerStore.setState({ commentOpenRequest: null }); api.list.mockResolvedValue([]); api.vote.mockRejectedValue(new Error('offline')); api.flag.mockResolvedValue({ flagged: true });
+    popover = installPopover();
     Object.defineProperty(HTMLElement.prototype, 'scrollTo', { configurable: true, value: () => {} });
 });
-afterEach(() => { cleanup(); useAuthStore.setState(auth, true); useMarkerStore.setState(markers, true); if (scrollTo) Object.defineProperty(HTMLElement.prototype, 'scrollTo', scrollTo); else Reflect.deleteProperty(HTMLElement.prototype, 'scrollTo'); vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+afterEach(() => { cleanup(); popover.restore(); useAuthStore.setState(auth, true); useMarkerStore.setState(markers, true); if (scrollTo) Object.defineProperty(HTMLElement.prototype, 'scrollTo', scrollTo); else Reflect.deleteProperty(HTMLElement.prototype, 'scrollTo'); vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 const type = async (text: string) => {
     const editor = await screen.findByRole('textbox'); act(() => { editor.focus(); }); fireEvent.paste(editor, { clipboardData: { getData: () => text } });
     await waitFor(() => expect(editor.textContent).toBe(text)); return editor;
@@ -90,8 +92,10 @@ it('cancels an unsent vote on account changes and does not expose the previous a
     render(<Comments point={marker} pointName="Crate" />); await screen.findByText('Original comment'); await type('Private pending A');
     fireEvent.click(screen.getByRole('button', { name: 'detail.comments.submit' }));
     vi.useFakeTimers(); const publicComment = document.querySelector(`[data-comment-id="${original.id}"]`)!;
-    const toolbarId = publicComment.querySelector('article')?.getAttribute('data-short-actions-root'); expect(toolbarId).toBe('true');
-    const vote = screen.getAllByRole('button', { name: 'detail.comments.upvote' }).find((button) => !(button as HTMLButtonElement).disabled)!; fireEvent.click(vote);
+    fireEvent.focusIn(publicComment.querySelector('article')!);
+    const vote = screen.getAllByRole('button', { name: 'detail.comments.upvote' }).find((button) => !(button as HTMLButtonElement).disabled)!;
+    expect(popover.isOpen(vote.closest('[role="toolbar"]')!)).toBe(true);
+    fireEvent.click(vote);
     act(() => { useAuthStore.getState().setSessionUser({ uid: 'b', nickname: 'B' }); }); await act(async () => { await Promise.resolve(); });
     expect(screen.queryByText('Private pending A')).toBeNull();
     await act(async () => { await vi.advanceTimersByTimeAsync(300); }); expect(api.vote).not.toHaveBeenCalled();

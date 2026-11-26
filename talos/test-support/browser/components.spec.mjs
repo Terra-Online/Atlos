@@ -197,3 +197,20 @@ test('TEST-BROWSER-ACTIONBAR-001 selection actions preserve editor focus and rel
     await expect(action).toBeHidden();
     await expect(editor).toBeFocused();
 });
+
+test('TEST-BROWSER-ACTIONBAR-002 card actions stay usable across hover and touch', async ({ page, isMobile }) => {
+    const card = page.getByRole('article', { name: 'Action card fixture' });
+    const toolbar = page.getByRole('toolbar', { name: 'Fixture card actions' });
+    await expect(toolbar).toBeHidden();
+    if (isMobile) await card.tap();
+    else await card.hover();
+    await expect(toolbar).toBeVisible();
+    const action = toolbar.getByRole('button', { name: 'Reply to fixture card' });
+    if (isMobile) await action.tap();
+    else await action.click();
+    await expect(page.locator('[data-result="action"]')).toHaveText('reply');
+    const outside = page.getByRole('button', { name: 'Reset feed fixture' });
+    if (isMobile) await outside.tap();
+    else await outside.click();
+    await expect(toolbar).toBeHidden();
+});

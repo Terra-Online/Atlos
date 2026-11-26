@@ -1,28 +1,20 @@
 @use '@/styles/palette.scss' as *;
 @use '@/styles/curves.scss' as *;
 
-:root, :root[data-theme='light'] {
-    --actionbtn-bg: #{rgba($black-1, 0.1)};
-    --actionbtn-hover: #{rgba($primary-accent-4, 0.6)};
+:root {
+    --actionbtn-bg: #{rgba($black-1, .1)};
+    --actionbtn-hover: #{rgba($primary-accent-4, .6)};
     --actionbtn-active: #{$primary-accent-4};
-    --activebtn-active-hover: #{rgba($primary-accent-4, 0.3)};
-    --float-bg: #{rgba($black-1, 0.05)};
-}
-:root[data-theme='dark'] {
-    --actionbtn-bg: #{rgba($black-1, 0.1)};
-    --actionbtn-hover: #{rgba($primary-accent-4, 0.6)};
-    --actionbtn-active: #{$primary-accent-4};
-    --activebtn-active-hover: #{rgba($primary-accent-4, 0.3)};
-    --float-bg: #{rgba($black-1, 0.05)};
+    --activebtn-active-hover: #{rgba($primary-accent-4, .3)};
 }
 
 .shortActions {
     --short-action-bg: var(--actionbtn-bg);
-    --short-action-disabled-bg: rgba($white-0, 0.1);
+    --short-action-disabled-bg: transparent;
     --short-action-content-opacity: 1;
-    --short-action-disabled-content-opacity: 0.4;
+    --short-action-disabled-content-opacity: .4;
     --short-action-blur: 4px;
-    --short-action-shadow: #{0 0 4px rgba($black-0, 0.4)};
+    --short-action-shadow: #{0 0 4px rgba($black-0, .4)};
 
     display: inline-grid;
     grid-auto-flow: column;
@@ -32,107 +24,11 @@
 
 .floatingAnchor {
     position: absolute;
-    top: 0.15rem;
-    right: 0.3rem;
+    top: -.5rem;
+    right: .5rem;
     width: 1px;
     height: 1px;
     pointer-events: none;
-}
-
-.grouped {
-    --short-action-shadow: #{0 0 0 rgba($black-0, 0)};
-
-    position: relative;
-    gap: 0;
-    padding: 0.125rem;
-    border-radius: .45rem;
-    overflow: hidden;
-    isolation: isolate;
-    box-shadow: 0 0 4px rgba($black-0, 0.4);
-
-    &::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        z-index: 0;
-        border-radius: inherit;
-        background-color: var(--actionbtn-bg);
-        backdrop-filter: blur(var(--short-action-blur));
-        transition: background-color 0.2s ease, backdrop-filter 0.2s ease;
-        will-change: backdrop-filter;
-    }
-
-    .shortActionButton {
-        width: 1.35rem;
-        height: 1.35rem;
-        border-radius: .275rem;
-        box-shadow: none;
-
-        &::before {
-            background-color: transparent;
-            backdrop-filter: none;
-        }
-    }
-}
-
-.floatingLayer {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin: 0;
-    border: 0;
-    background: transparent;
-    inset: unset;
-    top: auto;
-    right: auto;
-    bottom: auto;
-    left: auto;
-    padding: 0.125rem;
-    box-sizing: border-box;
-    width: max-content;
-    height: auto;
-    inline-size: max-content;
-    block-size: auto;
-    min-width: 0;
-    min-height: 0;
-    max-width: calc(100vw - 8px);
-    max-inline-size: calc(100dvw - 8px);
-    max-height: none;
-    max-block-size: none;
-    flex-wrap: nowrap;
-    opacity: 0;
-    overflow: visible;
-    pointer-events: auto;
-    background-color: var(--float-bg);
-    backdrop-filter: blur(var(--short-action-blur));
-    transform: translateY(-0.25rem) scale(0.96);
-    transform-origin: top right;
-    transition:
-        opacity 0.16s $standard-curve,
-        transform 0.16s $moderato-curve,
-        overlay 0.16s $standard-curve allow-discrete,
-        display 0.16s $standard-curve allow-discrete;
-
-    &:popover-open,
-    &[data-open='true'] {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-
-    @starting-style {
-        &:popover-open {
-            opacity: 0;
-            transform: translateY(-0.25rem) scale(0.96);
-        }
-    }
-
-    &.floatingLayerClosing {
-        opacity: 0;
-        transform: translateY(-0.2rem) scale(0.98);
-        transition:
-            opacity 0.16s $standard-curve,
-            transform 0.16s $moderato-curve;
-    }
 }
 
 .shortActionButton {
@@ -144,7 +40,9 @@
     padding: 0;
     border: 0;
     border-radius: .375rem;
-    background: transparent;
+    background-color: var(--short-action-button-bg);
+    -webkit-backdrop-filter: blur(var(--short-action-blur));
+    backdrop-filter: blur(var(--short-action-blur));
     box-shadow: var(--short-action-shadow);
     color: $white-1;
     display: inline-flex;
@@ -152,30 +50,13 @@
     justify-content: center;
     cursor: pointer;
     overflow: hidden;
-    isolation: isolate;
-    transition: box-shadow 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
-
-    &::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        z-index: -1;
-        border-radius: inherit;
-        background-color: var(--short-action-button-bg);
-        backdrop-filter: blur(var(--short-action-blur));
-        pointer-events: none;
-        transition: background-color 0.2s ease, backdrop-filter 0.2s ease;
-        will-change: backdrop-filter;
-    }
+    transition: box-shadow .2s ease, transform .2s ease, background-color .2s ease, backdrop-filter .2s ease;
 
     .shortActionIcon {
         position: relative;
-        z-index: 1;
         display: inline-flex;
-        isolation: isolate;
-        backface-visibility: hidden;
         opacity: var(--short-action-content-opacity);
-        transition: color 0.2s ease, opacity 0.2s ease;
+        transition: color .2s ease, opacity .2s ease;
     }
 
     svg {
@@ -183,7 +64,7 @@
         height: 1rem;
         display: block;
         fill: currentcolor;
-        filter: drop-shadow(0 0 2px rgba($black-0, 0.6));
+        filter: drop-shadow(0 0 2px rgba($black-0, .6));
     }
 
     svg * {
@@ -195,39 +76,100 @@
         height: 1rem;
         display: block;
         object-fit: contain;
-        filter: brightness(0) invert(1) drop-shadow(0 0 2px rgba($black-0, 0.6));
+        filter: brightness(0) invert(1) drop-shadow(0 0 2px rgba($black-0, .6));
     }
 
     &:hover:not(:disabled),
     &:focus-visible {
         --short-action-button-bg: var(--actionbtn-hover);
-
         outline: none;
         transform: translateY(-1px);
     }
 
     &:disabled {
+        --short-action-button-bg: var(--short-action-disabled-bg);
         cursor: default;
 
         .shortActionIcon {
             opacity: var(--short-action-disabled-content-opacity);
         }
-
-        --short-action-button-bg: var(--short-action-disabled-bg);
     }
 
     &[data-active='true'] {
         &:hover:not(:disabled),
         &:focus-visible {
             --short-action-button-bg: var(--activebtn-active-hover);
-
         }
+
         .shortActionIcon {
             color: var(--actionbtn-active);
         }
     }
+
     &[data-confirming='true'] .shortActionIcon {
         color: $primary-accent-4;
-        opacity: 0.75;
+        opacity: .75;
+    }
+}
+
+.floatingLayer {
+    position: fixed;
+    inset: auto;
+    align-items: center;
+    margin: 0;
+    border: 0;
+    padding: .125rem;
+    gap: 0;
+    box-sizing: border-box;
+    width: max-content;
+    max-width: calc(100vw - 8px);
+    max-inline-size: calc(100dvw - 8px);
+    border-radius: .45rem;
+    overflow: visible;
+    box-shadow: 0 0 4px rgba($black-0, .4);
+    // Combine the previous layered tints on one backdrop surface.
+    background-color: rgba($black-1, .145);
+    -webkit-backdrop-filter: blur(var(--short-action-blur));
+    backdrop-filter: blur(var(--short-action-blur));
+    opacity: 0;
+    transform: translateY(-.25rem) scale(.96);
+    transform-origin: top right;
+    transition:
+        opacity .16s $standard-curve,
+        transform .16s $moderato-curve,
+        overlay .16s $standard-curve allow-discrete,
+        display .16s $standard-curve allow-discrete;
+
+    &:not(:popover-open) {
+        display: none;
+    }
+
+    &:popover-open,
+    &[data-open='true'] {
+        opacity: 1;
+        transform: none;
+    }
+
+    @starting-style {
+        &:popover-open {
+            opacity: 0;
+            transform: translateY(-.25rem) scale(.96);
+        }
+    }
+
+    &.floatingLayerClosing {
+        opacity: 0;
+        transform: translateY(-.2rem) scale(.98);
+        transition: opacity .16s $standard-curve, transform .16s $moderato-curve;
+    }
+
+    .shortActionButton {
+        width: 1.35rem;
+        height: 1.35rem;
+        border-radius: .275rem;
+        box-shadow: none;
+        background-color: transparent;
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
     }
 }

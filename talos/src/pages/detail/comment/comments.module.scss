@@ -107,20 +107,6 @@
     }
 }
 
-.commentActions,
-.commentFormatActions {
-    --short-action-content-opacity: 1;
-    --short-action-disabled-content-opacity: 0.4;
-    --short-action-bg: var(--actionbtn-bg);
-    --short-action-blur: 4px;
-    --short-action-shadow: #{0 0 4px rgba($black-0, 0.4)};
-}
-
-.commentActionsAnchor {
-    top: -0.5rem;
-    right: 0.5rem;
-}
-
 .commentFormatActions :is(
     [data-action='bold'],
     [data-action='italic'],
@@ -131,44 +117,38 @@
     height: 0.75rem;
 }
 
-.commentActions [data-label='translate'] {
-    > span {
-        transform: scale(1);
-    }
-}
-
-.commentActions [data-label='upvote'] {
+.commentActions [data-action='upvote'] {
     > span {
         transform: scale(0.95);
     }
 }
 
-.commentActions [data-label='downvote'] {
+.commentActions [data-action='downvote'] {
     > span {
         transform: rotate(180deg) scale(0.95);
     }
 }
 
-.commentActions [data-label='flag'] {
+.commentActions [data-action='flag'] {
     > span {
         transform: scale(0.95);
     }
 }
 
-.commentActions [data-label='delete'] {
+.commentActions [data-action='delete'] {
     > span {
         transform: scale(0.85);
     }
 }
 
-.commentActions [data-label='share'] {
+.commentActions [data-action='share'] {
     > span {
         transform: scale(0.85);
     }
 }
 
-.commentActions [data-label='edit'],
-.commentActions [data-label='reply'] {
+.commentActions [data-action='edit'],
+.commentActions [data-action='reply'] {
     > span {
         transform: scale(0.9);
     }

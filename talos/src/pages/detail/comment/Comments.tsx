@@ -25,7 +25,7 @@ import {
     type UGCCommentNode,
     type UGCCommentVoteValue,
 } from '@/services/ugc/client';
-import ActionBar, { type ActionBarItem } from '@/component/actionBar/ActionBar';
+import { FloatingActionBar, type ActionBarItem } from '@/component/actionBar/ActionBar';
 import TranslateIcon from '@/assets/logos/translater.svg?react';
 import LikeIcon from '@/assets/images/UI/like.svg?react';
 import FlagIcon from '@/assets/images/UI/flag.svg?react';
@@ -98,6 +98,7 @@ type CommentExcerptProps = {
     comment: UGCComment;
     displayDepth?: number;
     actions?: React.ReactNode;
+    bubbleRef?: React.RefObject<HTMLElement | null>;
     highlighted?: boolean;
 };
 
@@ -105,6 +106,7 @@ export const CommentExcerpt = memo(({
     comment,
     displayDepth = 0,
     actions,
+    bubbleRef,
     highlighted,
 }: CommentExcerptProps) => {
     const tUI = useTranslateUI();
@@ -121,6 +123,10 @@ export const CommentExcerpt = memo(({
         { faces: ['r', 'h'], text: `${authorName || ''}${commentText(comment)}` },
         { faces: ['r'], text: note || '', localized: 'ui' },
     ], { scope: 'background' });
+    const setBubble = useCallback((element: HTMLElement | null) => {
+        if (bubbleRef) bubbleRef.current = element;
+        fontRef(element);
+    }, [bubbleRef, fontRef]);
 
     return (
         <div
@@ -130,9 +136,8 @@ export const CommentExcerpt = memo(({
             style={{ '--comment-display-depth': displayDepth } as React.CSSProperties}
         >
             <article
-                ref={fontRef}
+                ref={setBubble}
                 className={styles.commentBubble}
-                data-short-actions-root={actions ? 'true' : undefined}
             >
                 {actions}
                 <div
@@ -194,6 +199,7 @@ const CommentItem = memo(({
     onToolbarDismiss,
 }: CommentItemProps) => {
     const tUI = useTranslateUI();
+    const bubbleRef = useRef<HTMLElement>(null);
     const canModerate = isVisible(comment.status);
     const canEdit = Boolean(comment.snapshotId) && (comment.status === 'active' || comment.status === 'flagged');
     const translationVisible = isTransShown(comment);
@@ -306,14 +312,14 @@ const CommentItem = memo(({
             highlighted={highlighted}
             comment={comment}
             displayDepth={displayDepth}
+            bubbleRef={bubbleRef}
             actions={(
-                <ActionBar
+                <FloatingActionBar
                     className={styles.commentActions}
-                    anchorClassName={styles.commentActionsAnchor}
+                    targetRef={bubbleRef}
                     items={actions}
                     ariaLabel={tUI('detail.comments.actions')}
-                    variant="floating"
-                    onFloatingDismiss={onToolbarDismiss}
+                    onDismiss={onToolbarDismiss}
                 />
             )}
         />

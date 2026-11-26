@@ -8,7 +8,7 @@ import Italic from '@/assets/images/UI/format/italic.svg';
 import Underline from '@/assets/images/UI/format/underline.svg';
 import Strikethrough from '@/assets/images/UI/format/strike.svg';
 import Code from '@/assets/images/UI/format/code.svg';
-import ActionBar from '@/component/actionBar/ActionBar';
+import { FloatingActionBar } from '@/component/actionBar/ActionBar';
 import HideUI from '@/assets/logos/hideUI.svg';
 import styles from '@/pages/detail/comment/comments.module.scss';
 
@@ -90,12 +90,11 @@ const CommentEditorToolbar = ({ disabled, onFormat }: {
     }, []);
 
     return (
-        <ActionBar
-            variant="floating"
+        <FloatingActionBar
             className={classNames(styles.commentActions, styles.commentFormatActions)}
             ariaLabel="Text formatting"
-            anchorRect={open ? anchor : null}
-            onFloatingDismiss={dismiss}
+            selection={open ? anchor : null}
+            onDismiss={dismiss}
             items={actions.map(({ format, label, icon: Icon }) => ({
                 id: format,
                 label,

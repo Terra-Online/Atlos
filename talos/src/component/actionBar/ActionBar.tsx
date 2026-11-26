@@ -1,16 +1,16 @@
-import IconButton from '@/component/button/IconButton';
-import { registerOverlay } from '@/lib/dom/overlay';
-import { getAppDocument, subscribePictureInPictureState } from '@/platform/pictureInPicture';
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import classNames from 'classnames';
+import IconButton from '@/component/button/IconButton';
+import { registerOverlay } from '@/lib/dom/overlay';
+import { useAppDocument } from '@/platform/pictureInPicture';
 import PopoverTooltip from '@/component/popover/popover';
-import styles from '@/component/actionBar/ActionBar.module.scss';
+import styles from './ActionBar.module.scss';
 
 export type ActionBarItem = {
     id: string;
     label: string;
-    icon: React.ReactNode;
+    icon: ReactNode;
     onClick?: () => void;
     disabled?: boolean;
     active?: boolean;
@@ -23,433 +23,311 @@ export type ActionBarItem = {
 type Props = {
     items: ActionBarItem[];
     className?: string;
-    anchorClassName?: string;
     ariaLabel?: string;
-    variant?: 'separate' | 'grouped' | 'floating';
-    onFloatingDismiss?: () => void;
-    // A supplied selection rect controls visibility; null closes the floating toolbar.
-    anchorRect?: DOMRect | null;
 };
 
-type PopoverElement = HTMLDivElement & {
-    showPopover?: () => void;
-    hidePopover?: () => void;
-};
+type FloatingProps = Props & { onDismiss?: () => void } & (
+    | { targetRef: RefObject<HTMLElement | null>; selection?: never }
+    | { targetRef?: never; selection: DOMRect | null }
+);
+
+const stopPropagation = (event: { stopPropagation(): void }) => event.stopPropagation();
+
+function Actions({ items, onPointerDown }: Pick<Props, 'items'> & {
+    onPointerDown?: (event: ReactPointerEvent<HTMLButtonElement>) => void;
+}) {
+    return items.map((item) => (
+        <PopoverTooltip key={item.tooltipKey ?? item.id} content={item.label} placement="top" gap={4} visible={item.tooltipVisible}>
+            <IconButton
+                label={item.label}
+                className={styles.shortActionButton}
+                data-action={item.id}
+                data-active={item.active ? 'true' : 'false'}
+                data-confirming={item.confirming ? 'true' : 'false'}
+                disabled={item.disabled}
+                pressed={item.active}
+                onPointerDown={onPointerDown}
+                onClick={(event) => {
+                    event.stopPropagation();
+                    item.onClick?.();
+                }}
+            >
+                <span className={classNames(styles.shortActionIcon, item.iconClassName)}>{item.icon}</span>
+            </IconButton>
+        </PopoverTooltip>
+    ));
+}
+
+const ActionBar = memo(function ActionBar({ items, className, ariaLabel = 'Actions' }: Props) {
+    if (items.length === 0) return null;
+
+    return (
+        <div
+            className={classNames(styles.shortActions, className)}
+            role="toolbar"
+            aria-label={ariaLabel}
+            onClick={stopPropagation}
+            onPointerDown={stopPropagation}
+        >
+            <Actions items={items} />
+        </div>
+    );
+});
 
 const VIEWPORT_MARGIN = 4;
 const CLOSE_MS = 120;
 
-const clamp = (value: number, min: number, max: number): number => (
-    Math.min(Math.max(value, min), max)
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+const contains = (element: Element | null | undefined, target: EventTarget | null | undefined): boolean => (
+    Boolean(target && 'nodeType' in target && element?.contains(target as Node))
+);
+const isTouch = (event: Pick<PointerEvent, 'pointerType'>, view: Window) => (
+    event.pointerType === 'touch' || event.pointerType === 'pen'
+    || (event.pointerType === '' && Boolean(view.matchMedia?.('(hover: none)')?.matches))
 );
 
-const isTouchLikePointer = (event: Pick<PointerEvent, 'pointerType'> | Pick<React.PointerEvent, 'pointerType'>): boolean => (
-    event.pointerType === 'touch'
-    || event.pointerType === 'pen'
-    || (event.pointerType === '' && Boolean(window.matchMedia?.('(hover: none)')?.matches))
-);
+const idle = () => ({ targetHover: false, layerHover: false, targetFocus: false, layerFocus: false, pinned: false });
 
-const isPopoverOpen = (popover: HTMLElement): boolean => {
-    try {
-        return popover.matches(':popover-open');
-    } catch {
-        return false;
-    }
-};
+function FloatingLayer({ items, className, ariaLabel = 'Actions', targetRef, selection, onDismiss, doc }: FloatingProps & { doc: Document }) {
+    const view = doc.defaultView ?? window;
+    const anchor = useRef<HTMLSpanElement>(null);
+    const layer = useRef<HTMLDivElement>(null);
+    const shown = useRef<HTMLDivElement | null>(null);
+    const overlay = useRef<ReturnType<typeof registerOverlay> | null>(null);
+    const timers = useRef<{ exit?: number; focus?: number; frame?: number }>({});
+    const interaction = useRef(idle());
+    const [open, setOpen] = useState(false);
+    const current = useRef({ selection, onDismiss });
+    useLayoutEffect(() => {
+        current.current = { selection, onDismiss };
+    }, [selection, onDismiss]);
 
-const containsNode = (container: Element | null | undefined, target: EventTarget | null | undefined): boolean => (
-    Boolean(target && 'nodeType' in target && container?.contains(target as Node))
-);
+    const clearPending = useCallback(() => {
+        view.clearTimeout(timers.current.exit);
+        view.clearTimeout(timers.current.focus);
+        if (timers.current.frame !== undefined) view.cancelAnimationFrame(timers.current.frame);
+        timers.current = {};
+    }, [view]);
 
-const ActionBar = memo(({
-    items,
-    className,
-    anchorClassName,
-    ariaLabel = 'Actions',
-    variant = 'separate',
-    onFloatingDismiss,
-    anchorRect,
-}: Props) => {
-    const [mounted, setMounted] = useState(false);
-    const [ownerDocument, setOwnerDocument] = useState(getAppDocument);
-    const ownerWindow = ownerDocument.defaultView ?? window;
-    const registration = useRef<ReturnType<typeof registerOverlay> | null>(null);
-    useEffect(() => subscribePictureInPictureState(() => setOwnerDocument(getAppDocument())), []);
-    const anchorRef = useRef<HTMLSpanElement | null>(null);
-    const layerRef = useRef<PopoverElement | null>(null);
-    const closeTimerRef = useRef<number | undefined>(undefined);
-    const focusTimerRef = useRef<number | undefined>(undefined);
-    const frameRef = useRef<number | undefined>(undefined);
-    const rootHoverRef = useRef(false);
-    const layerHoverRef = useRef(false);
-    const rootFocusRef = useRef(false);
-    const layerFocusRef = useRef(false);
-    const touchPinnedRef = useRef(false);
-    const isFloating = variant === 'floating';
-    const controlled = anchorRect !== undefined;
-
-    const getRootElement = useCallback(() => (
-        anchorRef.current?.closest('[data-short-actions-root="true"]') as HTMLElement | null
-    ), []);
-
-    const clearTimers = useCallback(() => {
-        if (closeTimerRef.current) {
-            ownerWindow.clearTimeout(closeTimerRef.current);
-            closeTimerRef.current = undefined;
-        }
-        if (focusTimerRef.current) {
-            ownerWindow.clearTimeout(focusTimerRef.current);
-            focusTimerRef.current = undefined;
-        }
-    }, [ownerWindow]);
-
-    const deferFocusCheck = useCallback((check: () => void) => {
-        if (focusTimerRef.current) ownerWindow.clearTimeout(focusTimerRef.current);
-        focusTimerRef.current = ownerWindow.setTimeout(() => {
-            focusTimerRef.current = undefined;
-            check();
-        }, 0);
-    }, [ownerWindow]);
-
-    const positionLayer = useCallback(() => {
-        const anchor = anchorRef.current;
-        const layer = layerRef.current;
-        if (!anchor || !layer || layer.dataset.open !== 'true' || !isPopoverOpen(layer)) return;
-
-        const rect = anchorRect ?? anchor.getBoundingClientRect();
-        const layerWidth = layer.offsetWidth;
-        const layerHeight = layer.offsetHeight;
-        layer.style.position = 'fixed';
-        layer.style.left = `${clamp(
-            anchorRect ? rect.left + rect.width / 2 - layerWidth / 2 : rect.right - layerWidth,
-            VIEWPORT_MARGIN,
-            Math.max(VIEWPORT_MARGIN, ownerWindow.innerWidth - layerWidth - VIEWPORT_MARGIN),
-        )}px`;
-        layer.style.top = `${clamp(
-            anchorRect
-                ? (rect.top >= layerHeight + 8 ? rect.top - layerHeight - 8 : rect.bottom + 8)
-                : rect.top,
-            VIEWPORT_MARGIN,
-            Math.max(VIEWPORT_MARGIN, ownerWindow.innerHeight - layerHeight - VIEWPORT_MARGIN),
-        )}px`;
-        layer.style.right = 'auto';
-        layer.style.bottom = 'auto';
-    }, [anchorRect, ownerWindow]);
+    const position = useCallback(() => {
+        const element = layer.current;
+        if (!element || element.dataset.open !== 'true') return;
+        const selection = current.current.selection;
+        const rect = selection ?? anchor.current?.getBoundingClientRect();
+        if (!rect) return;
+        const width = element.offsetWidth, height = element.offsetHeight;
+        const left = selection ? rect.left + (rect.width - width) / 2 : rect.right - width;
+        const top = selection ? (rect.top >= height + 8 ? rect.top - height - 8 : rect.bottom + 8) : rect.top;
+        element.style.left = `${clamp(left, VIEWPORT_MARGIN, Math.max(VIEWPORT_MARGIN, view.innerWidth - width - VIEWPORT_MARGIN))}px`;
+        element.style.top = `${clamp(top, VIEWPORT_MARGIN, Math.max(VIEWPORT_MARGIN, view.innerHeight - height - VIEWPORT_MARGIN))}px`;
+    }, [view]);
 
     const schedulePosition = useCallback(() => {
-        if (frameRef.current) ownerWindow.cancelAnimationFrame(frameRef.current);
-        frameRef.current = ownerWindow.requestAnimationFrame(() => {
-            frameRef.current = undefined;
-            positionLayer();
+        if (timers.current.frame !== undefined) view.cancelAnimationFrame(timers.current.frame);
+        timers.current.frame = view.requestAnimationFrame(() => {
+            timers.current.frame = undefined;
+            position();
         });
-    }, [ownerWindow, positionLayer]);
+    }, [position, view]);
 
-    const hideLayer = useCallback((immediate = false, notifyDismiss = true) => {
-        clearTimers();
-        if (frameRef.current) ownerWindow.cancelAnimationFrame(frameRef.current);
-        frameRef.current = undefined;
-        const layer = layerRef.current;
-        if (layer) layer.inert = true;
-        registration.current?.setActive(false);
-        if (notifyDismiss && layer?.dataset.open === 'true') {
-            onFloatingDismiss?.();
-        }
+    const hide = useCallback((immediate = false, notify = true) => {
+        const element = shown.current;
+        if (!element) return;
+        const wasOpen = element.dataset.open === 'true';
+        if (!wasOpen && !immediate) return;
+        clearPending();
+        element.dataset.open = 'false';
+        overlay.current?.dispose();
+        overlay.current = null;
+        element.setAttribute('inert', '');
+        if (wasOpen) setOpen(false);
 
         const finish = () => {
-            try {
-                layer?.hidePopover?.();
-            } catch {
-                // Already hidden.
-            }
-            registration.current?.dispose();
-            registration.current = null;
-            if (layer) layer.dataset.open = 'false';
-            layer?.classList.remove(styles.floatingLayerClosing);
-            rootHoverRef.current = false;
-            layerHoverRef.current = false;
-            rootFocusRef.current = false;
-            layerFocusRef.current = false;
-            touchPinnedRef.current = false;
+            element.hidePopover?.();
+            element.classList.remove(styles.floatingLayerClosing);
+            interaction.current = idle();
+            shown.current = null;
         };
-
-        if (immediate || !layer || !isPopoverOpen(layer)) {
+        if (immediate || !element.matches(':popover-open')) {
             finish();
-            return;
+        } else {
+            element.classList.add(styles.floatingLayerClosing);
+            timers.current.exit = view.setTimeout(finish, CLOSE_MS);
         }
+        if (wasOpen && notify) current.current.onDismiss?.();
+    }, [clearPending, view]);
 
-        layer.dataset.open = 'false';
-        layer.classList.add(styles.floatingLayerClosing);
-        closeTimerRef.current = ownerWindow.setTimeout(finish, CLOSE_MS);
-    }, [clearTimers, onFloatingDismiss, ownerWindow]);
-
-    const shouldKeepLayerOpen = useCallback(() => (
-        touchPinnedRef.current || rootHoverRef.current || layerHoverRef.current || rootFocusRef.current || layerFocusRef.current
-    ), []);
-
-    const syncHoverState = useCallback((target?: EventTarget | null, point?: { x: number; y: number }) => {
-        const root = getRootElement();
-        const layer = layerRef.current;
-        const pointTarget = point ? ownerDocument.elementFromPoint(point.x, point.y) : null;
-        const rootHovered = containsNode(root, target) || containsNode(root, pointTarget);
-        const layerHovered = containsNode(layer, target) || containsNode(layer, pointTarget);
-        rootHoverRef.current = rootHovered;
-        layerHoverRef.current = layerHovered;
-        return rootHovered || layerHovered;
-    }, [getRootElement, ownerDocument]);
-
-    const showLayer = useCallback(() => {
-        if (!isFloating || items.length === 0) return;
-        clearTimers();
-
-        const layer = layerRef.current;
-        if (!layer) return;
-
-        layer.inert = false;
-        registration.current?.setActive(true);
-        layer.dataset.open = 'true';
-        layer.classList.remove(styles.floatingLayerClosing);
-        try {
-            if (!isPopoverOpen(layer)) layer.showPopover?.();
-        } catch {
-            // Already shown.
-        }
-        if (!registration.current) registration.current = registerOverlay({
-            element: layer, trigger: getRootElement(), onDismiss: () => hideLayer(true),
+    const show = useCallback(() => {
+        const element = layer.current;
+        if (!element?.showPopover || !element.isConnected) return;
+        if (!targetRef && !current.current.selection) return;
+        clearPending();
+        element.removeAttribute('inert');
+        element.classList.remove(styles.floatingLayerClosing);
+        if (!element.matches(':popover-open')) element.showPopover();
+        element.dataset.open = 'true';
+        shown.current = element;
+        if (!overlay.current) overlay.current = registerOverlay({
+            element, trigger: targetRef?.current, onDismiss: () => hide(true),
         });
-        positionLayer();
+        setOpen(true);
+        position();
         schedulePosition();
-    }, [clearTimers, getRootElement, hideLayer, isFloating, items.length, positionLayer, schedulePosition]);
+    }, [clearPending, hide, position, schedulePosition, targetRef]);
+
+    useLayoutEffect(() => () => {
+        // The captured layer owns its registration even after React clears its ref.
+        hide(true, false);
+    }, [doc, hide]);
+
+    useLayoutEffect(() => {
+        if (targetRef) return;
+        if (selection) show();
+        else hide(false, false);
+    }, [hide, selection, show, targetRef, doc]);
+
+    const closeWhenIdle = useCallback(() => {
+        if (!Object.values(interaction.current).some(Boolean)) hide();
+    }, [hide]);
+
+    const checkFocus = useCallback(() => {
+        view.clearTimeout(timers.current.focus);
+        timers.current.focus = view.setTimeout(() => {
+            const active = doc.activeElement;
+            interaction.current.targetFocus = contains(targetRef?.current, active);
+            interaction.current.layerFocus = contains(layer.current, active);
+            closeWhenIdle();
+        }, 0);
+    }, [closeWhenIdle, doc, targetRef, view]);
 
     useEffect(() => {
-        if (!isFloating || !controlled || !mounted) return;
-        if (anchorRect) showLayer();
-        else hideLayer();
-    }, [anchorRect, controlled, hideLayer, isFloating, mounted, showLayer]);
-
-    const scheduleHideLayer = useCallback(() => {
-        if (!shouldKeepLayerOpen()) hideLayer();
-    }, [hideLayer, shouldKeepLayerOpen]);
-
-    useEffect(() => {
-        setMounted(true);
+        const target = targetRef?.current;
+        if (!target) return;
+        const pin = (event: PointerEvent) => {
+            if (!isTouch(event, view)) return;
+            interaction.current = { ...idle(), pinned: true, targetHover: true };
+            show();
+        };
+        const enter = (event: PointerEvent) => {
+            if (isTouch(event, view)) return;
+            interaction.current.targetHover = true;
+            show();
+        };
+        const leave = (event: PointerEvent) => {
+            if (isTouch(event, view)) return;
+            interaction.current.targetHover = false;
+            if (!contains(layer.current, event.relatedTarget)) closeWhenIdle();
+        };
+        const focus = () => {
+            interaction.current.targetFocus = true;
+            show();
+        };
+        target.addEventListener('pointerdown', pin);
+        target.addEventListener('pointerenter', enter);
+        target.addEventListener('pointerleave', leave);
+        target.addEventListener('focusin', focus);
+        target.addEventListener('focusout', checkFocus);
         return () => {
-            clearTimers();
-            hideLayer(true, false);
+            target.removeEventListener('pointerdown', pin);
+            target.removeEventListener('pointerenter', enter);
+            target.removeEventListener('pointerleave', leave);
+            target.removeEventListener('focusin', focus);
+            target.removeEventListener('focusout', checkFocus);
+            view.clearTimeout(timers.current.focus);
         };
-    }, [clearTimers, hideLayer, ownerWindow]);
+    }, [checkFocus, closeWhenIdle, show, targetRef, doc, view]);
 
     useEffect(() => {
-        if (!isFloating || items.length === 0) hideLayer(true, false);
-    }, [hideLayer, isFloating, items.length]);
-
-    useEffect(() => {
-        if (!isFloating || controlled) return undefined;
-
-        const root = getRootElement();
-        if (!root) return undefined;
-
-        const handleRootPointerDown = (event: PointerEvent) => {
-            if (!isTouchLikePointer(event)) return;
-            touchPinnedRef.current = true;
-            rootHoverRef.current = true;
-            layerHoverRef.current = false;
-            rootFocusRef.current = false;
-            layerFocusRef.current = false;
-            showLayer();
+        if (!open) return;
+        const hit = (event: PointerEvent) => {
+            const realTarget = doc.elementFromPoint?.(event.clientX, event.clientY);
+            const over = (element?: Element | null) => contains(element, event.target) || contains(element, realTarget);
+            return { targetHover: over(targetRef?.current), layerHover: over(layer.current) };
         };
-        const handleRootEnter = (event: PointerEvent) => {
-            if (isTouchLikePointer(event)) return;
-            rootHoverRef.current = true;
-            showLayer();
+        const pointerMove = (event: PointerEvent) => {
+            if (!targetRef || (interaction.current.pinned && isTouch(event, view))) return;
+            Object.assign(interaction.current, hit(event));
+            closeWhenIdle();
         };
-        const handleRootLeave = (event: PointerEvent) => {
-            if (isTouchLikePointer(event)) return;
-            rootHoverRef.current = false;
-            const nextTarget = event.relatedTarget;
-            if (containsNode(layerRef.current, nextTarget)) return;
-            scheduleHideLayer();
+        const pointerDown = (event: PointerEvent) => {
+            const { targetHover, layerHover } = hit(event);
+            if (!targetHover && !layerHover) hide(true);
         };
-        const handleFocusIn = () => {
-            rootFocusRef.current = true;
-            showLayer();
-        };
-        const handleFocusOut = () => {
-            deferFocusCheck(() => {
-                const activeElement = ownerDocument.activeElement;
-                rootFocusRef.current = Boolean(activeElement && root.contains(activeElement));
-                layerFocusRef.current = Boolean(activeElement && layerRef.current?.contains(activeElement));
-                if (!activeElement || (!root.contains(activeElement) && !layerRef.current?.contains(activeElement))) {
-                    scheduleHideLayer();
-                }
-            });
-        };
-
-        root.addEventListener('pointerdown', handleRootPointerDown);
-        root.addEventListener('pointerenter', handleRootEnter);
-        root.addEventListener('pointerleave', handleRootLeave);
-        root.addEventListener('focusin', handleFocusIn);
-        root.addEventListener('focusout', handleFocusOut);
-
-        return () => {
-            root.removeEventListener('pointerdown', handleRootPointerDown);
-            root.removeEventListener('pointerenter', handleRootEnter);
-            root.removeEventListener('pointerleave', handleRootLeave);
-            root.removeEventListener('focusin', handleFocusIn);
-            root.removeEventListener('focusout', handleFocusOut);
-        };
-    }, [controlled, deferFocusCheck, getRootElement, isFloating, ownerDocument, ownerWindow, scheduleHideLayer, showLayer]);
-
-    useEffect(() => {
-        if (!isFloating) return undefined;
-
-        const closeIfPointerOutside = (event: PointerEvent) => {
-            if (controlled) return;
-            const layer = layerRef.current;
-            if (!layer || !isPopoverOpen(layer)) return;
-            if (touchPinnedRef.current && isTouchLikePointer(event)) return;
-            const inside = syncHoverState(event.target, { x: event.clientX, y: event.clientY });
-            if (!inside && !rootFocusRef.current && !layerFocusRef.current) {
-                scheduleHideLayer();
-            }
-        };
-        const closeImmediatelyIfPointerOutside = (event: PointerEvent) => {
-            const layer = layerRef.current;
-            if (!layer || !isPopoverOpen(layer)) return;
-            const inside = syncHoverState(event.target, { x: event.clientX, y: event.clientY });
-            if (!inside) hideLayer(true);
-        };
-        const handleScroll = () => {
+        const scroll = () => {
             schedulePosition();
-            if (controlled) return;
-            const layer = layerRef.current;
-            if (!layer || !isPopoverOpen(layer)) return;
-            const root = getRootElement();
-            rootHoverRef.current = Boolean(root?.matches(':hover'));
-            layerHoverRef.current = Boolean(layer.matches(':hover'));
-            if (!shouldKeepLayerOpen()) scheduleHideLayer();
+            if (!targetRef) return;
+            interaction.current.targetHover = Boolean(targetRef.current?.matches(':hover'));
+            interaction.current.layerHover = Boolean(layer.current?.matches(':hover'));
+            closeWhenIdle();
         };
-        const handleWindowBlur = () => hideLayer(true);
-        const handleVisibilityChange = () => {
-            if (ownerDocument.visibilityState !== 'visible') hideLayer(true);
-        };
-
-        ownerDocument.addEventListener('pointermove', closeIfPointerOutside, true);
-        ownerDocument.addEventListener('pointerdown', closeImmediatelyIfPointerOutside, true);
-        ownerDocument.addEventListener('visibilitychange', handleVisibilityChange);
-        ownerWindow.addEventListener('blur', handleWindowBlur);
-        ownerWindow.addEventListener('resize', schedulePosition);
-        ownerWindow.addEventListener('scroll', handleScroll, true);
+        const blur = () => hide(true);
+        const visibility = () => { if (doc.visibilityState !== 'visible') blur(); };
+        doc.addEventListener('pointermove', pointerMove, true);
+        doc.addEventListener('pointerdown', pointerDown, true);
+        doc.addEventListener('visibilitychange', visibility);
+        view.addEventListener('blur', blur);
+        view.addEventListener('resize', schedulePosition);
+        view.addEventListener('scroll', scroll, true);
+        const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(schedulePosition);
+        if (layer.current) observer?.observe(layer.current);
+        if (targetRef?.current) observer?.observe(targetRef.current);
         return () => {
-            ownerDocument.removeEventListener('pointermove', closeIfPointerOutside, true);
-            ownerDocument.removeEventListener('pointerdown', closeImmediatelyIfPointerOutside, true);
-            ownerDocument.removeEventListener('visibilitychange', handleVisibilityChange);
-            ownerWindow.removeEventListener('blur', handleWindowBlur);
-            ownerWindow.removeEventListener('resize', schedulePosition);
-            ownerWindow.removeEventListener('scroll', handleScroll, true);
+            doc.removeEventListener('pointermove', pointerMove, true);
+            doc.removeEventListener('pointerdown', pointerDown, true);
+            doc.removeEventListener('visibilitychange', visibility);
+            view.removeEventListener('blur', blur);
+            view.removeEventListener('resize', schedulePosition);
+            view.removeEventListener('scroll', scroll, true);
+            observer?.disconnect();
         };
-    }, [
-        ownerDocument,
-        ownerWindow,
-        controlled,
-        getRootElement,
-        hideLayer,
-        isFloating,
-        scheduleHideLayer,
-        schedulePosition,
-        shouldKeepLayerOpen,
-        syncHoverState,
-    ]);
+    }, [closeWhenIdle, doc, hide, open, schedulePosition, targetRef, view]);
 
-    if (items.length === 0) return null;
-
-    const actionLayer = (
-        <div
-            className={classNames(styles.shortActions, className, {
-                [styles.grouped]: variant === 'grouped' || isFloating,
-                [styles.floatingLayer]: isFloating,
-            })}
-            ref={isFloating ? layerRef : undefined}
-            {...(isFloating ? { popover: 'manual' } : {})}
-            onClick={(event) => event.stopPropagation()}
-            onPointerDown={(event) => event.stopPropagation()}
-            onPointerEnter={isFloating ? (event) => {
-                if (controlled || isTouchLikePointer(event)) return;
-                touchPinnedRef.current = false;
-                layerHoverRef.current = true;
-                showLayer();
-            } : undefined}
-            onPointerLeave={isFloating ? (event) => {
-                if (controlled || isTouchLikePointer(event)) return;
-                layerHoverRef.current = false;
-                const root = anchorRef.current?.closest('[data-short-actions-root="true"]');
-                const nextTarget = event.relatedTarget;
-                if (containsNode(root, nextTarget)) return;
-                scheduleHideLayer();
-            } : undefined}
-            onPointerMove={isFloating ? (event) => {
-                if (isTouchLikePointer(event)) return;
-                layerHoverRef.current = true;
-            } : undefined}
-            onFocus={isFloating ? () => {
-                layerFocusRef.current = true;
-                showLayer();
-            } : undefined}
-            onBlur={isFloating ? () => {
-                deferFocusCheck(() => {
-                    const activeElement = ownerDocument.activeElement;
-                    const root = anchorRef.current?.closest('[data-short-actions-root="true"]');
-                    rootFocusRef.current = Boolean(activeElement && root?.contains(activeElement));
-                    layerFocusRef.current = Boolean(activeElement && layerRef.current?.contains(activeElement));
-                    if (!controlled && !shouldKeepLayerOpen()) scheduleHideLayer();
-                });
-            } : undefined}
-            role="toolbar"
-            aria-label={ariaLabel}
-            aria-hidden={controlled ? !anchorRect : undefined}
-        >
-            {items.map((item) => (
-                <PopoverTooltip key={item.tooltipKey ?? item.id} content={item.label} placement="top" gap={4} visible={item.tooltipVisible}>
-                    <IconButton
-                        label={item.label}
-                        className={styles.shortActionButton}
-                        data-action={item.id}
-                        data-label={item.id}
-                        data-active={item.active ? 'true' : 'false'}
-                        data-confirming={item.confirming ? 'true' : 'false'}
-                        disabled={item.disabled}
-                        onPointerDown={isFloating ? (event) => {
-                            event.stopPropagation();
-                            if (controlled || event.pointerType !== 'touch') {
-                                event.preventDefault();
-                            }
-                            rootFocusRef.current = false;
-                            layerFocusRef.current = false;
-                        } : undefined}
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            item.onClick?.();
-                        }}
-                        pressed={item.active}
-                    >
-                        <span className={classNames(styles.shortActionIcon, item.iconClassName)}>{item.icon}</span>
-                    </IconButton>
-                </PopoverTooltip>
-            ))}
-        </div>
+    return (
+        <>
+            {targetRef && <span ref={anchor} className={styles.floatingAnchor} aria-hidden="true" />}
+            {createPortal(
+                <div
+                    ref={layer}
+                    className={classNames(styles.shortActions, styles.floatingLayer, className)}
+                    role="toolbar"
+                    aria-label={ariaLabel}
+                    popover="manual"
+                    onClick={stopPropagation}
+                    onPointerDown={stopPropagation}
+                    onPointerEnter={(event) => {
+                        if (!targetRef || isTouch(event, view)) return;
+                        interaction.current.pinned = false;
+                        interaction.current.layerHover = true;
+                        show();
+                    }}
+                    onPointerLeave={(event) => {
+                        if (!targetRef || isTouch(event, view)) return;
+                        interaction.current.layerHover = false;
+                        if (!contains(targetRef.current, event.relatedTarget)) closeWhenIdle();
+                    }}
+                    onFocus={() => {
+                        interaction.current.layerFocus = true;
+                        show();
+                    }}
+                    onBlur={targetRef ? checkFocus : undefined}
+                >
+                    <Actions items={items} onPointerDown={(event) => {
+                        event.stopPropagation();
+                        if (!targetRef || event.pointerType !== 'touch') event.preventDefault();
+                        interaction.current.targetFocus = false;
+                        interaction.current.layerFocus = false;
+                    }} />
+                </div>,
+                doc.body,
+            )}
+        </>
     );
+}
 
-    if (isFloating) {
-        return (
-            <>
-                <span ref={anchorRef} className={classNames(styles.floatingAnchor, anchorClassName)} aria-hidden="true"></span>
-                {mounted && createPortal(actionLayer, ownerDocument.body)}
-            </>
-        );
-    }
-
-    return actionLayer;
-});
-
-ActionBar.displayName = 'ActionBar';
+export function FloatingActionBar(props: FloatingProps) {
+    const doc = useAppDocument();
+    if (!doc || props.items.length === 0) return null;
+    return <FloatingLayer {...props} doc={doc} />;
+}
 
 export default ActionBar;

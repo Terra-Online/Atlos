@@ -114,11 +114,7 @@
 }
 
 .viewerActionBar {
-    --short-action-content-opacity: 1;
     --short-action-disabled-content-opacity: 0.42;
-    --short-action-bg: var(--actionbtn-bg);
-    --short-action-blur: 4px;
-    --short-action-shadow: #{0 0 4px rgba($black-0, 0.4)};
 
     position: absolute;
     top: 10px;

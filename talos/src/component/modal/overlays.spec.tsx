@@ -6,7 +6,7 @@ import Modal from './modal';
 import Viewer from '@/component/viewer/viewer';
 import PopoverTooltip from '@/component/popover/popover';
 import ContextMenu from '@/component/contextMenu/ContextMenu';
-import ActionBar from '@/component/actionBar/ActionBar';
+import { FloatingActionBar } from '@/component/actionBar/ActionBar';
 
 const platform = vi.hoisted(() => ({ document: null as Document | null }));
 const fontRef = () => {};
@@ -157,7 +157,7 @@ it('dismisses a floating toolbar before a modal takes ownership', () => {
     const anchor = new DOMRect(40, 80, 100, 20);
     const items = [{ id: 'copy', label: 'Copy', icon: 'C' }];
     const page = (open: boolean) => <>
-        <ActionBar variant="floating" anchorRect={anchor} onFloatingDismiss={dismiss} items={items} />
+        <FloatingActionBar selection={anchor} onDismiss={dismiss} items={items} />
         <Modal open={open} title="Import" animateOnOpen={false} />
     </>;
     const view = render(page(false));

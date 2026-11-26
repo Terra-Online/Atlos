@@ -7,7 +7,7 @@ import ContextMenu from '@/component/contextMenu/ContextMenu';
 import Drawer from '@/component/drawer/drawer';
 import TabView from '@/component/tabView/TabView';
 import Feed from '@/component/feed/Feed';
-import ActionBar from '@/component/actionBar/ActionBar';
+import { FloatingActionBar } from '@/component/actionBar/ActionBar';
 import LocationBinding from '@/pages/locator/LocationBinding';
 import '@/component/shared/account/access/access.module.scss';
 import type { UGCImage } from '@/services/ugc/client';
@@ -35,6 +35,7 @@ export default function Components() {
     const [feedKey, setFeedKey] = useState('first');
     const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
     const feed = useRef<HTMLDivElement>(null);
+    const actionCard = useRef<HTMLElement>(null);
     const reopen = useRef<number | undefined>(undefined);
     useEffect(() => () => window.clearTimeout(reopen.current), []);
     return <main data-fixture="ready" style={{ padding: 24, minHeight: '180vh', fontFamily: 'sans-serif' }}>
@@ -91,7 +92,13 @@ export default function Components() {
         </section>
         <section style={{ marginTop: 40 }}>
             <input aria-label="Floating editor" defaultValue="Select this text" onFocus={(event) => setSelectionRect(event.currentTarget.getBoundingClientRect())} />
-            <ActionBar variant="floating" anchorRect={selectionRect} onFloatingDismiss={() => setSelectionRect(null)} items={[{ id: 'format', label: 'Format fixture text', icon: 'B', onClick: () => setAction('format') }]} />
+            <FloatingActionBar selection={selectionRect} onDismiss={() => setSelectionRect(null)} items={[{ id: 'format', label: 'Format fixture text', icon: 'B', onClick: () => setAction('format') }]} />
         </section>
+        <article ref={actionCard} aria-label="Action card fixture" style={{ position: 'relative', marginTop: 80, padding: 24, maxWidth: 300 }}>
+            Hover or tap for card actions.
+            <FloatingActionBar targetRef={actionCard} ariaLabel="Fixture card actions" items={[
+                { id: 'reply', label: 'Reply to fixture card', icon: 'R', onClick: () => setAction('reply') },
+            ]} />
+        </article>
     </main>;
 }
