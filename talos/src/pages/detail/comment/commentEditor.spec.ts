@@ -2,9 +2,11 @@ import { createElement, createRef, useState } from 'react';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import CommentEditor, { type CommentEditorHandle } from '@/pages/detail/comment/commentEditor';
+import { installPopover } from '../../../../test-support/browser';
 
+let popover: ReturnType<typeof installPopover> | undefined;
 beforeEach(() => { vi.spyOn(window, 'scrollBy').mockImplementation(() => {}); });
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+afterEach(() => { cleanup(); popover?.restore(); popover = undefined; vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 Object.defineProperty(Range.prototype, 'getBoundingClientRect', {
     configurable: true, value: () => new DOMRect(50, 150, 80, 20),
 });
@@ -97,6 +99,7 @@ it('highlights only the overflow range across formatted source without rewriting
 });
 
 it('formats the saved selection from the floating toolbar and dismisses on Escape', async () => {
+    const native = popover = installPopover();
     setup('selected text');
     const input = screen.getByRole('textbox');
     await waitFor(() => expect(input.textContent).toBe('selected text'));
@@ -108,13 +111,18 @@ it('formats the saved selection from the floating toolbar and dismisses on Escap
     window.getSelection()?.removeAllRanges();
     window.getSelection()?.addRange(range);
     fireEvent(document, new Event('selectionchange'));
-    const toolbar = await screen.findByRole('toolbar', { name: 'Text formatting' });
+    const toolbar = await waitFor(() => {
+        const element = screen.getByRole('toolbar', { name: 'Text formatting' });
+        expect(native.isOpen(element)).toBe(true);
+        return element;
+    });
     fireEvent.pointerDown(screen.getByRole('button', { name: 'Spoiler' }));
     fireEvent.click(screen.getByRole('button', { name: 'Spoiler' }));
     await waitFor(() => expect(input.textContent).toBe('||selected|| text'));
     expect(window.getSelection()?.toString()).toBe('selected');
     fireEvent.keyDown(document, { key: 'Escape' });
-    expect(toolbar.getAttribute('aria-hidden')).toBe('true');
+    expect(native.isOpen(toolbar)).toBe(false);
+    expect(toolbar.hasAttribute('inert')).toBe(true);
 });
 
 it('counts each custom emoji as two characters for the limit, highlighting and submission', async () => {

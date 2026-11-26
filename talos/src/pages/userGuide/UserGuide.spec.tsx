@@ -295,7 +295,7 @@ it('keeps the intro tooltip a closeable tip and gives detailed Help progress, sk
     fireEvent.click(screen.getByRole('button', { name: 'common.close' })); expect(next).toHaveBeenCalledOnce();
     view.rerender(<GuideTooltip {...tooltipProps(false, next, skip)} />);
     expect(screen.getByText('25%')).toBeTruthy();
-    expect((screen.getByRole('button', { name: 'Back' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Back' }).disabled).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Next' })); expect(next).toHaveBeenCalledTimes(2);
     fireEvent.click(screen.getByRole('button', { name: 'common.skip' })); expect(skip).toHaveBeenCalledOnce();
 });

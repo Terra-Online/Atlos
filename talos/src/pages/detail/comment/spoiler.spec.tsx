@@ -4,9 +4,11 @@ import { afterEach, expect, it, vi } from 'vitest';
 import CommentEditor, { type CommentEditorHandle } from '@/pages/detail/comment/commentEditor';
 import { CommentContent } from '@/component/shared/comments/CommentContent';
 import { parseCommentContent, parseCommentSource } from '@/component/shared/comments/commentMarkdown';
+import { installPopover } from '../../../../test-support/browser';
 
 vi.mock('@/locale', () => ({ useTranslateUI: () => (key: string) => key }));
-afterEach(() => { cleanup(); vi.restoreAllMocks(); });
+let popover: ReturnType<typeof installPopover> | undefined;
+afterEach(() => { cleanup(); popover?.restore(); popover = undefined; vi.restoreAllMocks(); });
 
 it('parses multiline spoilers with formatting, links and emoji while preserving editor source', () => {
     const content = '||first **bold**\n[link](https://example.com) :sns_001:||';
@@ -46,20 +48,22 @@ it('reveals a whole multiline spoiler on click and resets when its content chang
 });
 
 it.each(['Enter', ' '])('reveals with %s and positions the tooltip above the first line', (key) => {
+    popover = installPopover();
     render(<CommentContent content={'||first\nsecond||'} />);
     const spoiler = screen.getByRole('button');
     Object.defineProperty(spoiler, 'getClientRects', {
         value: () => [new DOMRect(100, 100, 80, 20), new DOMRect(100, 120, 160, 20)],
     });
     fireEvent.mouseEnter(spoiler);
-    const tooltip = document.getElementById(spoiler.getAttribute('aria-describedby') ?? '');
-    expect(tooltip?.dataset.placement).toBe('top');
-    expect(tooltip?.style.left).toBe('140px');
-    expect(tooltip?.style.bottom).toBe(`${window.innerHeight - 100 + 8}px`);
-    expect(tooltip?.textContent).toBe('detail.comments.spoilerHidden');
+    const tooltip = screen.getByRole('tooltip');
+    expect(spoiler.getAttribute('aria-describedby')).toBe(tooltip.id);
+    expect(popover.isOpen(tooltip)).toBe(true);
+    expect(tooltip.style.left).toBe('140px');
+    expect(tooltip.style.top).toBe('92px');
+    expect(tooltip.textContent).toBe('detail.comments.spoilerHidden');
     fireEvent.keyDown(spoiler, { key });
     expect(spoiler.getAttribute('aria-expanded')).toBe('true');
-    expect(tooltip?.textContent).toBe('detail.comments.spoilerRevealed');
+    expect(tooltip.textContent).toBe('detail.comments.spoilerRevealed');
 });
 
 const mountEditor = (value: string, maxLength = 200) => {

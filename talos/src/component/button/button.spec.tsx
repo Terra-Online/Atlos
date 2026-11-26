@@ -1,4 +1,4 @@
-import { createRef } from 'react';
+import { createRef, type FormEvent } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PillButton, RoundIconButton, SquareButton } from './button';
@@ -37,7 +37,7 @@ describe('styled buttons', () => {
 
     it('accepts native button attributes, refs, and caller layout styles', () => {
         const ref = createRef<HTMLButtonElement>();
-        const onSubmit = vi.fn((event) => event.preventDefault());
+        const onSubmit = vi.fn((event: FormEvent<HTMLFormElement>) => event.preventDefault());
         render(<form onSubmit={onSubmit}>
             <SquareButton ref={ref} type="submit" className="own" style={{ width: '100%' }}>
                 Save
