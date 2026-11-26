@@ -211,7 +211,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
         },
         {
             id: 'MSTEP-17_drawer',
-            target: '[class*="mobileDrawer"]',
+            target: '[data-drawer="panel"]',
             content: parse(t('guide.mobile.drawer')),
             placement: 'top',
             disableBeacon: true,
@@ -236,8 +236,7 @@ export const useMobileGuideSteps = (map?: L.Map) => {
                 tasks.after(() => {
                     const targetItem = document.querySelector(`[data-key="${firstType}"]`);
                     const container =
-                        document.querySelector<HTMLElement>('[class*="contentWrapper"]') ??
-                        document.querySelector<HTMLElement>('[class*="mobileDrawerContent"]');
+                        document.querySelector<HTMLElement>('[data-drawer="panel"] [data-sidebar-scroll="true"]');
                     if (targetItem instanceof HTMLElement && container instanceof HTMLElement) {
                         const containerRect = container.getBoundingClientRect();
                         const itemRect = targetItem.getBoundingClientRect();

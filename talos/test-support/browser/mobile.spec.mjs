@@ -39,7 +39,7 @@ test('TEST-BROWSER-MOBILE-SIDEBAR-001 cards reflow into full columns when the dr
     await page.goto('/');
     const sidebar = page.locator('[data-sidebar-layout="mobile"]');
     const drawer = sidebar.locator('[data-font-region="drawer"]').first();
-    const handle = drawer.getByRole('separator', { name: 'Drawer drag handle', exact: true });
+    const handle = drawer.getByRole('button', { name: 'Drawer drag handle', exact: true });
     await handle.tap();
     await expect(drawer).toHaveAttribute('data-snap', '1');
     await handle.tap();

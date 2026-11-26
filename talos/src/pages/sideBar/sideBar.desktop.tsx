@@ -2,7 +2,6 @@ import { useTranslateUI } from '@/locale';
 import { AccountCard, SidebarFooter } from '@/component/shared/siteShell/sideBar.frame';
 import React, { useCallback, useEffect, useRef as useReactRef, useState } from 'react';
 import styles from '@/component/shared/siteShell/sideBar.module.scss';
-import drawerStyles from '@/component/shared/siteShell/triggerDrawer.module.scss';
 
 import Icon from '@/assets/images/UI/observator_6.webp';
 import SidebarIcon from '@/assets/logos/sideCollap.svg?react';
@@ -183,19 +182,12 @@ const SideBarDesktop = ({ onToggle, visible = true }: SideBarProps) => {
                 <SidebarFooter />
                 {/* Drawer placed above footer */}
                 <Drawer
-                    side='bottom'
-                    initialSize={0}
-                    snap={['0rem', '9.375rem']}
-                    snapThreshold={[50, 50]}
-                    snapToIndex={uiPrefsHydrated ? drawerSnapIndex : null}
+                    appearance="tools"
+                    snapPoints={['0rem', '9.375rem']}
+                    snapIndex={uiPrefsHydrated ? drawerSnapIndex ?? 0 : 0}
                     onSnapChange={setDrawerSnapIndex}
                     handleSize="1.75rem"
-                    className={drawerStyles.triggerDrawer}
-                    handleClassName={drawerStyles.triggerDrawerHandle}
-                    contentClassName={drawerStyles.triggerDrawerContent}
-                    backdropClassName={drawerStyles.triggerDrawerBackdrop}
-                    style={{ bottom: 'var(--drawer-bottom)', left: 0, right: 0 }}
-                    debug={false}
+                    bottomOffset="var(--drawer-bottom)"
                 >
                     <TriggerBar>
                         <Trigger isActive={trigCluster} onToggle={(v) => setTrigCluster(v)} label={t('trigger.clusterMode')} />

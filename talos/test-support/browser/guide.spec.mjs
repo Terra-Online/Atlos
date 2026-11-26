@@ -166,7 +166,7 @@ test('TEST-BROWSER-GUIDE-001 real Help/Joyride navigation owns its targets and p
     await next(page, 4);
     await atStep(page, 5, `[data-key="${firstType}"]`);
     await next(page, 5);
-    await atStep(page, 6, '[class*="triggerDrawerHandle"]');
+    await atStep(page, 6, '[data-drawer="tools"] [data-drawer-handle]');
     const completed = await progress(page);
     expect(completed.real).toEqual(before.real);
     expect(completed.displayed).toContain(demoBoss);

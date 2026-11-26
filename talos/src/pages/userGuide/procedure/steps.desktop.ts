@@ -170,7 +170,7 @@ export const useDesktopGuideSteps = (map?: L.Map, prepareTarget = true) => {
         },
         {
             id: 'STEP-7_trigger-handle',
-            target: '[class*="triggerDrawerHandle"]',
+            target: '[data-drawer="tools"] [data-drawer-handle]',
             content: parse(t('guide.triggerHandle')),
             placement: 'top',
             disableBeacon: true,

@@ -138,10 +138,10 @@ async function exercise(page, app, profile, cdp, tags) {
         if (profile.isMobile) {
             const sidebar = page.locator('[data-sidebar-layout="mobile"]');
             const drawer = sidebar.locator('[data-font-region="drawer"]').first();
-            if (await drawer.getAttribute('data-snap') === '0') await sidebar.getByRole('separator').click();
+            if (await drawer.getAttribute('data-snap') === '0') await drawer.getByRole('button', { name: 'Drawer drag handle' }).click();
             await button.evaluate((node) => node.scrollIntoView({ behavior: 'instant', block: 'center' }));
         } else {
-            const handle = page.locator('.intelBottomTools').getByRole('separator');
+            const handle = page.locator('.intelBottomTools').getByRole('button', { name: 'Drawer drag handle' });
             const box = await handle.boundingBox();
             await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down();
             await page.mouse.move(box.x + box.width / 2, box.y - 90, { steps: 10 }); await page.mouse.up();

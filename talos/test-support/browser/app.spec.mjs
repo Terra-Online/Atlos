@@ -123,15 +123,23 @@ test('TEST-BROWSER-INTEL-LAYOUT-001 details animate measured cards and virtualiz
     const card = page.locator('article[data-intel-archive]').first();
     await expect(card).toBeVisible();
     const id = await card.getAttribute('data-intel-archive');
+    // New and uncollected buckets can render the same archive. Track this instance.
+    const section = await card.evaluate((element) => element.closest('section').getAttribute('aria-labelledby'));
+    const cardSelector = `section[aria-labelledby="${section}"] article[data-intel-archive="${id}"]`;
+    const placeholderSelector = `section[aria-labelledby="${section}"] [data-intel-archive="${id}"]`;
     const shell = card.locator('..');
     await expect(shell).toHaveAttribute('data-motion-ready', 'true');
     await expect(shell).toHaveAttribute('data-motion-nearby', 'true');
-    const handle = page.locator('.intelBottomTools').getByRole('separator');
+    const handle = page.locator('.intelBottomTools').getByRole('button', { name: 'Drawer drag handle' });
     const handleBox = await handle.boundingBox();
-    await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2);
+    const handleX = handleBox.x + handleBox.width / 2;
+    const handleY = handleBox.y + handleBox.height / 2;
+    await page.mouse.move(handleX, handleY);
     await page.mouse.down();
-    await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y - 70, { steps: 10 });
+    // Release in the middle range that previously had no snap target.
+    await page.mouse.move(handleX, handleY - 38, { steps: 10 });
     await page.mouse.up();
+    await expect(page.locator('.intelBottomTools [data-drawer="tools"]')).toHaveAttribute('data-snap', '1');
     const expand = page.getByRole('button', { name: 'Show Details', exact: true });
     await expect(expand).toBeVisible();
     // Opening the tools drawer can overlap font commits and card measurement.
@@ -181,52 +189,52 @@ test('TEST-BROWSER-INTEL-LAYOUT-001 details animate measured cards and virtualiz
     await testInfo.attach('intel-expansion-frames', { body: JSON.stringify({ collapsed, expanded, frames, events: timeline.events, maxFrameGap }, null, 2), contentType: 'application/json' });
     expect(frames.some((frame) => frame.height > collapsed + 1 && frame.height < expanded - 1)).toBe(true);
     const content = page.locator('.intelContent');
-    await content.evaluate((element, id) => {
+    await content.evaluate((element, selector) => {
         window.__intelScrollTimeline = { active: true, frames: [] };
         const sample = () => {
             const timeline = window.__intelScrollTimeline;
-            const target = element.querySelector(`[data-intel-archive="${id}"]`);
+            const target = element.querySelector(selector);
             timeline.frames.push({ time: performance.now(), top: element.scrollTop, height: element.scrollHeight, viewport: element.clientHeight, targetTag: target?.tagName, targetY: target?.getBoundingClientRect().y });
             if (timeline.active) requestAnimationFrame(sample);
         };
         requestAnimationFrame(sample);
-    }, id);
+    }, placeholderSelector);
     try {
         await content.evaluate((element) => { element.scrollTop = element.scrollHeight; });
         // Global CSS makes these native smooth scrolls. A card being virtualized
         // only proves that scrolling started, not that the first scroll finished.
         await expect.poll(() => content.evaluate((element) => Math.abs(element.scrollHeight - element.clientHeight - element.scrollTop))).toBeLessThan(2);
-        await expect(page.locator(`article[data-intel-archive="${id}"]`)).toHaveCount(0);
-        const placeholder = page.locator(`[data-intel-archive="${id}"]`);
+        await expect(page.locator(cardSelector)).toHaveCount(0);
+        const placeholder = page.locator(placeholderSelector);
         await expect(placeholder).toHaveAttribute('aria-hidden', 'true');
         await content.evaluate((element) => { element.scrollTop = 0; });
         await expect.poll(() => content.evaluate((element) => Math.abs(element.scrollTop))).toBeLessThan(1);
-        const restored = page.locator(`article[data-intel-archive="${id}"]`);
+        const restored = page.locator(cardSelector);
         await expect(restored).toBeVisible();
         // IO replaces placeholder nodes as the native scroll settles. Require
         // continuous mounted, correctly sized content across twelve real frames.
-        await expect.poll(() => content.evaluate((element, { id, expanded }) => new Promise((done) => {
+        await expect.poll(() => content.evaluate((element, { cardSelector, expanded }) => new Promise((done) => {
             let count = 0;
             let maxError = 0;
             const sample = () => {
-                const target = element.querySelector(`article[data-intel-archive="${id}"]`);
+                const target = element.querySelector(cardSelector);
                 maxError = Math.max(maxError, target ? Math.abs(target.getBoundingClientRect().height - expanded) : expanded);
                 if (++count < 12) requestAnimationFrame(sample);
                 else done(maxError);
             };
             requestAnimationFrame(sample);
-        }), { id, expanded })).toBeLessThan(2);
-        const stableFrames = await content.evaluate((element, { id }) => new Promise((done) => {
+        }), { cardSelector, expanded })).toBeLessThan(2);
+        const stableFrames = await content.evaluate((element, selector) => new Promise((done) => {
             const start = performance.now();
             const samples = [];
             const sample = () => {
-                const target = element.querySelector(`article[data-intel-archive="${id}"]`);
+                const target = element.querySelector(selector);
                 samples.push({ elapsed: performance.now() - start, top: element.scrollTop, scrollHeight: element.scrollHeight, mounted: Boolean(target), height: target?.getBoundingClientRect().height ?? null });
                 if (performance.now() - start < 2_000) requestAnimationFrame(sample);
                 else done(samples);
             };
             requestAnimationFrame(sample);
-        }), { id });
+        }), cardSelector);
         await testInfo.attach('intel-restored-stability-frames', { body: JSON.stringify({ expanded, frames: stableFrames }, null, 2), contentType: 'application/json' });
         expect(stableFrames.every((frame) => frame.mounted && Math.abs(frame.height - expanded) < 2 && Math.abs(frame.top) < 1)).toBe(true);
         // A temporarily shorter scroll range can clamp a native smooth scroll

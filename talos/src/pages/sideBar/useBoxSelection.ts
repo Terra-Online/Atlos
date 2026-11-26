@@ -33,7 +33,7 @@ export const useBoxSelection = (
             || target.closest('[data-filter-header="true"]')
             || target.closest('[data-key]')
             || target.closest('[data-binder-wrap="true"]')
-            || target.closest('div[class*="triggerDrawer"]')
+            || target.closest('[data-drawer="tools"]')
         ),
         collectTargets: ({ container, scrollContainer, elementToContentRect }) => {
             const targets: BoxSelectionTarget[] = windowStore?.targets() ?? [];

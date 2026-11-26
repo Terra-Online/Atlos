@@ -180,26 +180,19 @@ const MobileFrame = ({ children, contentRef, bottomTools, onToggle, visible = tr
   const { height } = useAppViewport();
   const snapIndex = useMobileDrawerSnapIndex();
   const setSnapIndex = useSetMobileDrawerSnapIndex();
-  const snaps = [64, Math.max(64, Math.round(height * 0.55)), Math.max(64, Math.round(height * 0.85))];
+  const snaps = [...new Set([64, Math.max(64, Math.round(height * 0.55)), Math.max(64, Math.round(height * 0.85))])];
+  const currentSnap = Math.min(snapIndex ?? 0, snaps.length - 1);
+  const handleSnapChange = (index: number) => {
+    setSnapIndex(index);
+    onToggle?.(index === snaps.length - 1);
+  };
 
   return (
     <div className={`${mobileStyles.sidebarContainer} ${!visible ? mobileStyles.hidden : ''}`} data-font-region="sidebar" data-sidebar-layout="mobile" aria-hidden={!visible} inert={!visible}>
       <Drawer
-        side="bottom"
-        initialSize={snaps[0]}
-        snap={snaps}
-        snapThreshold={[50, 50, 50]}
-        handleSize="1rem"
-        fullWidth
-        className={mobileStyles.mobileDrawer}
-        handleClassName={mobileStyles.mobileDrawerHandle}
-        contentClassName={mobileStyles.mobileDrawerContent}
-        backdropClassName={mobileStyles.mobileDrawerBackdrop}
-        snapToIndex={snapIndex}
-        onSnapChange={(index) => {
-          setSnapIndex(index);
-          onToggle?.(index === snaps.length - 1);
-        }}
+        snapPoints={snaps}
+        snapIndex={currentSnap}
+        onSnapChange={handleSnapChange}
       >
         <div className={mobileStyles.contentWrapper} data-sidebar-scroll="true">
           <div ref={contentRef} className={mobileStyles.sidebarContent} data-sidebar-content="true">

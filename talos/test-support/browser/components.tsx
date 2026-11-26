@@ -74,7 +74,7 @@ export default function Components() {
             <button onClick={() => setDisabled((value) => !value)}>Toggle drawer disabled</button>
             <button onClick={() => setScrollable((value) => !value)}>Toggle drawer scrolling</button>
             <div data-fixture="drawer" style={{ position: 'relative', height: 340, width: '100%', maxWidth: 600 }}>
-                <Drawer snap={[60, 180, 300]} initialSize={60} snapToIndex={snap} dragDisabled={disabled} fullWidth>
+                <Drawer snapPoints={[60, 180, 300]} snapIndex={snap} onSnapChange={setSnap} disabled={disabled}>
                     {scrollable ? <div data-fixture="scroll-surface" style={{ height: 180, overflowY: 'auto' }}>
                         <div style={{ height: 600 }}>Scrollable drawer surface</div>
                     </div> : <div data-fixture="drag-surface" style={{ height: 260 }}>Drawer surface</div>}

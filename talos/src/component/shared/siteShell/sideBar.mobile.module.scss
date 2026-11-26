@@ -229,90 +229,31 @@ html:not(:lang(zh-CN), :lang(zh-HK)) {
 }
 
 :root, :root[data-theme='light'] {
-    --drawing-handle-bg: #{rgba($primary-accent-4, 0.9)};
     --divider-bg: #{rgba($black-1, 0.5)};
-    --mobile-drawer-backdrop-bg: #{rgba($white-1, 1)};
 }
 :root[data-theme='dark'] {
-    --drawing-handle-bg: #{rgba($primary-accent-4, 0.9)};
     --divider-bg: #{rgba($light-2, 0.5)};
-    --mobile-drawer-backdrop-bg: #{rgba($black-1, 1)};
 }
-.mobileDrawer {
-    pointer-events: auto;
-    max-width: calc(100vw - calc(1 - var(--drawer-progress)) * 2rem);
-    transform: translate(calc(calc(1 - var(--drawer-progress)) * 1rem), calc(calc(1 - var(--drawer-progress)) * -1rem));
-    border-radius: 40px 40px calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px)) calc(clamp(0px, (1 - var(--drawer-progress)) * 100px, 40px));
-    
-    box-shadow: 0 0 6px rgba($black-1, 0.25);
-    background: transparent;
-    overflow: hidden;
-    
+.contentWrapper {
+    display: flex;
+    flex-direction: column;
+    padding: 0 1rem 2rem;
+    gap: 0.5rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    touch-action: pan-y;
+    overscroll-behavior-y: auto;
+    height: 100%;
+    position: relative;
 
-  .mobileDrawerContent {
-        display: flex;
-        flex-direction: column;
-        overflow: visible;
-        position: relative;
-        height: 100%;
-    }
-
-  // Content wrapper is the scrollable container
-  .contentWrapper {
-        display: flex;
-        flex-direction: column;
-        padding: 0 1rem 2rem;
-        padding-top: 0;
-        gap: 0.5rem;
-        overflow-x: hidden;
-        overflow-y: auto;
-        touch-action: pan-y;
-        overscroll-behavior-y: auto;
-        height: 100%;
-        position: relative;
-
-        &.searchMode {
-            overflow-x: visible;
-            overflow-y: auto;
-            overscroll-behavior-y: auto;
-        }
-    }
-
-    &[data-snap="0"] .contentWrapper {
-        overflow-y: hidden;
-        touch-action: none;
+    &.searchMode {
+        overflow-x: visible;
     }
 }
 
-.mobileDrawerHandle {
-  background: transparent;
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  &::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 3rem;
-    height: 6px;
-    border-radius: 3px;
-    background-color: var(--drawer-handle-bg);
-    transition: background-color 0.3s $moderato-curve, width 0.3s $standard-curve;
-    box-shadow: 0 1px 3px rgba($black-0, 0.4);
-  }
-  &[data-dragging="true"]::before {
-    background-color: var(--drawing-handle-bg);
-    width: 4rem;
-  }
-}
-
-.mobileDrawerBackdrop {
-    --backdrop-opacity: clamp(0, calc(var(--drawer-progress) * 1.5), 0.7);
-    border-radius: 40px 40px calc(clamp(0px, calc(calc(1 - var(--drawer-progress)) * 100px), 40px)) calc(clamp(0px, calc(calc(1 - var(--drawer-progress)) * 100px), 40px));
-    background-color: var(--mobile-drawer-backdrop-bg);
-    //backdrop-filter: blur(6px);
+[data-drawer='panel'][data-expanded='false'] .contentWrapper {
+    overflow-y: hidden;
+    touch-action: none;
 }
 
 .topRow {
@@ -395,10 +336,10 @@ html:not(:lang(zh-CN), :lang(zh-HK)) {
     width: 100%;
 }
 
-.mobileDrawer[data-snap="0"] .sidebarContent > .filters,
-.mobileDrawer[data-snap="0"] .mobileDetail,
-.mobileDrawer[data-snap="0"] .mobileTriggerBar,
-.mobileDrawer[data-snap="0"] .copyright {
+[data-drawer='panel'][data-expanded='false'] .sidebarContent > .filters,
+[data-drawer='panel'][data-expanded='false'] .mobileDetail,
+[data-drawer='panel'][data-expanded='false'] .mobileTriggerBar,
+[data-drawer='panel'][data-expanded='false'] .copyright {
     display: none;
 }
 

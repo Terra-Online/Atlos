@@ -105,7 +105,7 @@ it('drives the real mobile drawer from stored snap commands and updates the stor
     await act(async () => {});
     const drawer = document.querySelector<HTMLElement>('[data-font-region="drawer"]')!;
     await waitFor(() => expect(drawer.style.getPropertyValue('--drawer-size')).toBe('680px'));
-    fireEvent.click(screen.getByRole('separator', { name: 'Drawer drag handle' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Drawer drag handle' }));
     await waitFor(() => expect(drawer.style.getPropertyValue('--drawer-size')).toBe('64px'));
     expect(useUiPrefsStore.getState().mobileDrawerSnapIndex).toBe(0);
     expect(toggle).toHaveBeenLastCalledWith(false);

@@ -1,94 +1,149 @@
-@use '../../styles/curves.scss' as *;
+@use '@/styles/palette.scss' as *;
+@use '@/styles/curves.scss' as *;
 
-.drawerContainer {
-  touch-action: auto;
-  position: absolute;
-  z-index: 150; /* above sidebar content/footer */
-  display: flex;
-  flex-direction: column; /* stack handle and content */
-  overflow: hidden;
-  pointer-events: none; /* enable internal hit areas only */
-  width: 100%;
-  transition: bottom 0.35s $moderato-curve, top 0.35s $moderato-curve, left 0.35s $moderato-curve, right 0.35s $moderato-curve;
-  
-  // Use CSS variables to control size dynamically
-  // For bottom/top: height = handleSize + drawerSize
-  // For left/right: width = handleSize + drawerSize
-  height: calc(var(--handle-size, 16px) + var(--drawer-size, 0px));
-  
-  // Alternate for left/right (will be overridden by specific rules below)
-  &.drawerLeft,
-  &.drawerRight {
-    height: auto;
-    flex-direction: row; /* handle and content side by side */
-    width: calc(var(--handle-size, 16px) + var(--drawer-size, 0px));
-  }
+:root {
+    --drawer-handle-bg: #{rgba($black-1, .9)};
+    --drawer-tools-bg: #{rgba($white-0, .2)};
+    --drawer-panel-bg: #{$white-1};
+}
+
+:root[data-theme='dark'] {
+    --drawer-handle-bg: #{rgba($light-2, .9)};
+    --drawer-tools-bg: #{rgba($mid, .2)};
+    --drawer-panel-bg: #{$black-1};
+}
+
+.drawer {
+    position: absolute;
+    inset-inline: 0;
+    z-index: 150;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: calc(var(--handle-size, 1rem) + var(--drawer-size, 0px));
+    overflow: hidden;
+    touch-action: auto;
+    pointer-events: none;
+    transition: bottom .35s $moderato-curve;
 }
 
 .content {
-  position: relative;
-  flex: 1; /* take remaining space after handle */
-  min-height: 0; /* allow flex shrink */
-  overflow: hidden;
-  pointer-events: auto;
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    pointer-events: auto;
 }
 
 .backdrop {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: -1; /* behind content and handle */
-  
-  // Use CSS variables for dynamic backdrop styling
-  // Example: opacity: calc(var(--drawer-progress) * 0.4);
-  // Background and blur can be controlled via custom classes
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
 }
 
 .handle {
-  position: relative; /* no longer absolute */
-  flex-shrink: 0; /* fixed size, won't shrink */
-  pointer-events: auto;
-  touch-action: none;
-  -webkit-tap-highlight-color: transparent;
-  
-  // Default minimal styling - override with custom handleClassName
-  // Example default styles:
-  // background: rgba(24, 24, 28, 0.9);
-  // border-radius: 12px 12px 0 0;
-  // box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    position: relative;
+    flex: 0 0 var(--handle-size, 1rem);
+    width: 100%;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    color: var(--drawer-handle-bg);
+    pointer-events: auto;
+    touch-action: none;
+    cursor: grab;
+    -webkit-tap-highlight-color: transparent;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 3rem;
+        height: 6px;
+        transform: translate(-50%, -50%);
+        border-radius: 3px;
+        background-color: currentcolor;
+        box-shadow: 0 1px 3px rgba($black-0, .4);
+        transition: background-color .3s $moderato-curve, width .3s $standard-curve;
+    }
+
+    &[data-dragging='true'] {
+        color: rgba($primary-accent-4, .9);
+        cursor: grabbing;
+
+        &::before {
+            width: 4rem;
+        }
+    }
+
+    &:disabled {
+        cursor: default;
+    }
+
+    &:focus-visible {
+        outline-offset: -2px;
+    }
 }
 
-/* Handles per side - positioning only, styling via custom classes */
-.handleTop {
-  order: 1; /* handle at bottom of flex container for top drawer */
-  width: 100%;
-  height: var(--handle-size, 16px);
-  cursor: grab;
+.drawer[data-drawer='panel'] {
+    --inset-progress: calc(1 - var(--drawer-progress, 0));
+    --bottom-radius: clamp(0px, var(--inset-progress) * 100px, 40px);
+
+    max-width: calc(100vw - var(--inset-progress) * 2rem);
+    transform: translate(calc(var(--inset-progress) * 1rem), calc(var(--inset-progress) * -1rem));
+    border-radius: 40px 40px var(--bottom-radius) var(--bottom-radius);
+    box-shadow: 0 0 6px rgba($black-1, .25);
+    pointer-events: auto;
+
+    .content {
+        overflow: visible;
+        height: 100%;
+    }
+
+    .handle {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+    }
+
+    .backdrop {
+        background-color: var(--drawer-panel-bg);
+    }
 }
 
-.handleBottom {
-  order: -1; /* handle at top of flex container for bottom drawer */
-  width: 100%;
-  height: var(--handle-size, 16px);
-  cursor: grab;
-}
+.drawer[data-drawer='tools'] {
+    --rounding: calc(var(--drawer-progress, 0) * 1.5rem);
 
-.handleLeft {
-  order: 1; /* handle at right of flex container for left drawer */
-  height: 100%;
-  width: var(--handle-size, 16px);
-  cursor: grab;
-}
+    border-radius: var(--rounding) var(--rounding) 0 0;
+    box-shadow: 0 -2px 4px rgba($black-1, .35);
+    z-index: 99;
 
-.handleRight {
-  order: -1; /* handle at left of flex container for right drawer */
-  height: 100%;
-  width: var(--handle-size, 16px);
-  cursor: grab;
-}
+    .backdrop {
+        background-color: var(--drawer-tools-bg);
+        backdrop-filter: blur(clamp(3px, (1 - var(--drawer-progress, 0)) * 12px, 12px));
+    }
 
-.handleTop, .handleBottom, .handleLeft, .handleRight {
-  &[data-dragging='true'] {
-    cursor: grabbing;
-  }
+    .handle {
+        position: absolute;
+        inset: 0 0 auto;
+        z-index: 1;
+        height: var(--handle-size, 1rem);
+    }
+
+    .content {
+        overflow: visible;
+        transform: translateY(calc((1 - var(--drawer-progress, 0)) * 1.25rem));
+        filter: blur(calc((1 - var(--drawer-progress, 0)) * 12px));
+        opacity: clamp(0, var(--drawer-progress, 0) * 3, 1);
+        mask-image: linear-gradient(transparent, #000 var(--handle-size, 1rem));
+    }
+
+    &[data-expanded='false'] .content {
+        visibility: hidden;
+    }
 }

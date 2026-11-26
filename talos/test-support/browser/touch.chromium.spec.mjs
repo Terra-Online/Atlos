@@ -13,7 +13,7 @@ async function touch(session, type, x, y) {
 
 test('TEST-BROWSER-DRAWER-001 trusted touch cancellation releases the drag lock when props disable it', async ({ page, context }) => {
     const drawer = page.locator('[data-fixture="drawer"] > div');
-    const handle = drawer.getByRole('separator');
+    const handle = drawer.getByRole('button', { name: 'Drawer drag handle' });
     await page.getByRole('button', { name: 'Drawer maximum', exact: true }).click();
     await expect.poll(() => size(drawer)).toBe(300);
     await drawer.scrollIntoViewIfNeeded();
@@ -50,7 +50,7 @@ test('TEST-BROWSER-DRAWER-002 a new trusted drag owns the pose instead of the ol
     expect(inFlight).toBeGreaterThan(60);
     await touch(session, 'touchStart', x, y);
     await touch(session, 'touchMove', x, y - 40);
-    await expect(drawer.getByRole('separator')).toHaveAttribute('data-dragging', 'true');
+    await expect(drawer.getByRole('button', { name: 'Drawer drag handle' })).toHaveAttribute('data-dragging', 'true');
     const held = await size(drawer);
     const frames = await drawer.evaluate((node) => new Promise((resolve) => {
         const start = performance.now(), samples = [];
@@ -64,7 +64,7 @@ test('TEST-BROWSER-DRAWER-002 a new trusted drag owns the pose instead of the ol
     await testInfo.attach('held-touch-frames', { body: JSON.stringify({ inFlight, held, frames }, null, 2), contentType: 'application/json' });
     expect(Math.max(...frames.map((frame) => Math.abs(frame.size - held)))).toBeLessThan(1);
     await touch(session, 'touchEnd', x, y - 40);
-    await expect(drawer.getByRole('separator')).not.toHaveAttribute('data-dragging');
+    await expect(drawer.getByRole('button', { name: 'Drawer drag handle' })).not.toHaveAttribute('data-dragging');
     await session.detach();
 });
 
@@ -81,13 +81,13 @@ test('TEST-BROWSER-DRAWER-003 reversing an accepted drag releases policies when 
     const session = await context.newCDPSession(page);
     await touch(session, 'touchStart', x, y);
     await touch(session, 'touchMove', x, y + 70);
-    await expect(drawer.getByRole('separator')).toHaveAttribute('data-dragging', 'true');
+    await expect(drawer.getByRole('button', { name: 'Drawer drag handle' })).toHaveAttribute('data-dragging', 'true');
     await touch(session, 'touchMove', x, y - 40);
-    await expect(drawer.getByRole('separator')).not.toHaveAttribute('data-dragging');
+    await expect(drawer.getByRole('button', { name: 'Drawer drag handle' })).not.toHaveAttribute('data-dragging');
     await expect(drawer).not.toHaveCSS('touch-action', 'none');
     expect(await drawer.evaluate((node) => node.style.overscrollBehavior)).toBe('');
-    const surrendered = await size(drawer);
     await touch(session, 'touchEnd', x, y - 40);
-    expect(await size(drawer)).toBe(surrendered);
+    await expect.poll(() => size(drawer)).toBe(300);
+    await expect(drawer).toHaveAttribute('data-snap', '2');
     await session.detach();
 });

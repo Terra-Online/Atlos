@@ -3,7 +3,6 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type CSSPr
 import SideBarFrame from '@main/component/shared/siteShell/sideBar.frame';
 import Drawer from '@main/component/drawer/drawer';
 import { Trigger, TriggerBar } from '@main/component/trigger/trigger';
-import drawerStyles from '@main/component/shared/siteShell/triggerDrawer.module.scss';
 import { useTranslateGame, useTranslateUI } from '@intel/locale';
 import { useTranslateUI as useTranslateMainUI } from '@main/locale';
 import { useDevice } from '@main/platform/device';
@@ -192,17 +191,7 @@ const IntelCardsExpansionControl = () => {
 
   return (
     <div className="intelBottomTools">
-      <Drawer
-        side="bottom"
-        initialSize={0}
-        snap={[0, 56]}
-        snapThreshold={[28, 28]}
-        handleSize={28}
-        className={drawerStyles.triggerDrawer}
-        handleClassName={drawerStyles.triggerDrawerHandle}
-        contentClassName={drawerStyles.triggerDrawerContent}
-        backdropClassName={drawerStyles.triggerDrawerBackdrop}
-      >
+      <Drawer appearance="tools" snapPoints={[0, 56]} handleSize={28}>
         <TriggerBar>
           <Trigger
             isActive={cardsExpanded}

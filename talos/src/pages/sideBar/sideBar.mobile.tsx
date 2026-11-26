@@ -1,5 +1,5 @@
 import { AccountCard, SidebarFooter } from '@/component/shared/siteShell/sideBar.frame';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { animate } from 'motion';
 import { motion, useMotionValue, useMotionValueEvent, useTransform } from 'motion/react';
 import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
@@ -51,9 +51,7 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
   const topRowRef = useRef<HTMLDivElement>(null);
   const [isScrolledTop, setIsScrolledTop] = useState(true);
   const [isScrolledBottom, setIsScrolledBottom] = useState(false);
-  const [currentSnap, setCurrentSnap] = useState(0);
   const [hasOpened, setHasOpened] = useState(() => (drawerSnapIndex ?? 0) > 0);
-  const hasOpenedRef = useRef(hasOpened);
   const [topRowWidth, setTopRowWidth] = useState(0);
   const [topRowHeight, setTopRowHeight] = useState(0);
   const [topRowBaseHeight, setTopRowBaseHeight] = useState(0);
@@ -76,40 +74,21 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
     return dedup;
   }, [vh, snap0]);
 
-  // We notify onToggle when we've reached fully opened (last snap) or closed (first snap)
-  const handleProgress = (p: number) => {
-    if (p > 0.02 && !hasOpenedRef.current) {
-      hasOpenedRef.current = true;
-      setHasOpened(true);
-    }
-    if (p >= 0.999) onToggle?.(true);
-    else if (p <= 0.001) onToggle?.(false);
-
-    // When collapsed (snap-0), ensure content scrolls back to top
-    if (p <= 0.02) {
-      setCurrentSnap(0);
-      const scroller = contentRef.current;
-      if (scroller && scroller.scrollTop !== 0) {
-        scroller.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    } else {
-      // Determine current snap index based on progress
-      const snapIndex = snapsNormalized.findIndex((s, i) => {
-        if (i === snapsNormalized.length - 1) return true;
-        const nextSnap = snapsNormalized[i + 1];
-        const snapProgress = (s - minSnap) / safeRange;
-        const nextProgress = (nextSnap - minSnap) / safeRange;
-        return p >= snapProgress && p < nextProgress;
-      });
-      setCurrentSnap(Math.max(0, snapIndex));
-    }
-  };
+  const lastSnap = snaps.length - 1;
+  const currentSnap = uiPrefsHydrated ? Math.min(drawerSnapIndex ?? 0, lastSnap) : 0;
+  const previousSnap = useRef(currentSnap);
 
   useEffect(() => {
-    if ((drawerSnapIndex ?? 0) <= 0 || hasOpenedRef.current) return;
-    hasOpenedRef.current = true;
-    setHasOpened(true);
-  }, [drawerSnapIndex]);
+    if (currentSnap > 0) setHasOpened(true);
+    if (previousSnap.current === currentSnap) return;
+    previousSnap.current = currentSnap;
+    if (currentSnap === lastSnap && currentSnap > 0) onToggle(true);
+    if (currentSnap === 0) {
+      onToggle(false);
+      const scroller = contentRef.current;
+      if (scroller?.scrollTop) scroller.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentSnap, lastSnap, onToggle]);
 
   // Track scroll position for blur effects
   useEffect(() => {
@@ -127,32 +106,12 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
     return () => scroller.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleSnapChange = useCallback((index: number) => {
-    setCurrentSnap(index);
-    if (drawerSnapIndex !== index) {
-      setDrawerSnapIndex(index);
-    }
-  }, [drawerSnapIndex, setDrawerSnapIndex]);
-
-  const snapsNormalized = snaps;
-  const minSnap = snaps[0] ?? 0;
-  const maxSnap = snaps[snaps.length - 1] ?? 0;
-  const safeRange = (maxSnap - minSnap) || 1;
-
   useEffect(() => {
-    const wasSearching = prevHasSearchQueryRef.current;
-    const maxIndex = Math.max(0, snaps.length - 1);
-
-    if (!wasSearching && hasSearchQuery) {
-      const targetIndex = Math.min(1, maxIndex);
-      const currentIndex = drawerSnapIndex ?? currentSnap;
-      if (currentIndex < targetIndex) {
-        setDrawerSnapIndex(targetIndex);
-      }
+    if (!prevHasSearchQueryRef.current && hasSearchQuery && currentSnap === 0) {
+      setDrawerSnapIndex(Math.min(1, lastSnap));
     }
-
     prevHasSearchQueryRef.current = hasSearchQuery;
-  }, [currentSnap, hasSearchQuery, snaps.length, drawerSnapIndex, setDrawerSnapIndex]);
+  }, [currentSnap, hasSearchQuery, lastSnap, setDrawerSnapIndex]);
 
   const hasFilterList = useMemo(
     () => filterList.some((item) => MARKER_TYPE_DICT[item]?.category?.main !== 'files'),
@@ -302,20 +261,9 @@ const SideBarMobile: React.FC<SideBarProps> = ({ onToggle, visible = true }) => 
     >
       {/* Mobile places the whole sidebar into a bottom drawer */}
       <Drawer
-        side="bottom"
-        initialSize={snap0}
-        snap={snaps}
-        snapThreshold={[50, 50, 50]}
-        handleSize="1rem"
-        fullWidth={true}
-        className={mobileStyles.mobileDrawer}
-        handleClassName={mobileStyles.mobileDrawerHandle}
-        contentClassName={mobileStyles.mobileDrawerContent}
-        backdropClassName={mobileStyles.mobileDrawerBackdrop}
-        onProgressChange={handleProgress}
-        onSnapChange={handleSnapChange}
-        style={{ bottom: 0 }}
-        snapToIndex={uiPrefsHydrated ? drawerSnapIndex : null}
+        snapPoints={snaps}
+        snapIndex={currentSnap}
+        onSnapChange={setDrawerSnapIndex}
       >
         <div
           className={`${mobileStyles.contentWrapper} ${hasSearchQuery ? mobileStyles.searchMode : ''}`}
