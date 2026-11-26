@@ -54,7 +54,7 @@ it('opens the real viewer, keeps carousel selection synchronized and isolates im
     expect(screen.queryByRole('dialog')).toBeNull();
     fireEvent.click(screen.getByAltText('Image first'));
     const viewer = screen.getByRole('dialog', { name: 'Image first' });
-    fireEvent.keyDown(within(viewer).getByRole('button', { name: 'Switch image' }), { key: 'ArrowRight' });
+    fireEvent.keyDown(viewer, { key: 'ArrowRight' });
     expect(screen.getByRole('dialog', { name: 'Image second' })).toBe(viewer);
     expect(screen.getAllByAltText('Image second')).toHaveLength(2);
     await act(async () => { fireEvent.click(within(viewer).getByRole('button', { name: 'Share' })); await Promise.resolve(); });

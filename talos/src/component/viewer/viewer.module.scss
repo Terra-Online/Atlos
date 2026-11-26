@@ -140,48 +140,64 @@
     position: absolute;
     inset: 0;
     z-index: 2;
-    display: grid;
-    grid-template-columns: minmax(4rem, 22%) 1fr minmax(4rem, 22%);
-    pointer-events: auto;
-    cursor: pointer;
+    pointer-events: none;
     opacity: 0;
     transition: opacity 0.2s ease;
-    filter: drop-shadow(0 0 4px rgba($black-0, 0.6));
-    transform: translateZ(0);
 
-    &::before,
-    &::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        width: var(--carousel-control-size);
-        height: calc(var(--carousel-control-size) * 1.5);
-        background-color: $white-1;
-        mask-image: var(--carousel-control-mask);
-        mask-repeat: no-repeat;
-        mask-position: center;
-        mask-size: contain;
-        transition: background-color 0.2s ease;
-    }
-
-    &::before {
-        left: var(--carousel-control-offset);
-        transform: translateY(-50%);
-    }
-
-    &::after {
-        right: var(--carousel-control-offset);
-        transform: translateY(-50%) scaleX(-1);
-    }
-
-    &[data-hover='previous']::before,
-    &[data-hover='next']::after {
-        background-color: $primary-accent-4;
+    @media (hover: none) {
+        opacity: 1;
     }
 }
 
-.viewerContent:hover .carouselLayer {
+.viewerContent:hover .carouselLayer,
+.carouselLayer:focus-within {
     opacity: 1;
+}
+
+.carouselArrow {
+    --hit-width: max(44px, var(--carousel-control-size));
+    --hit-offset: max(0px, calc(var(--carousel-control-offset) + (var(--carousel-control-size) - var(--hit-width)) / 2));
+
+    position: absolute;
+    top: 50%;
+    width: var(--hit-width);
+    height: max(44px, calc(var(--carousel-control-size) * 1.5));
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    pointer-events: auto;
+    color: $white-1;
+    filter: drop-shadow(0 0 4px rgba($black-0, 0.6));
+
+    &::before {
+        content: '';
+        width: var(--carousel-control-size);
+        height: calc(var(--carousel-control-size) * 1.5);
+        background: currentColor;
+        mask: var(--carousel-control-mask) center / contain no-repeat;
+        transition: background-color 0.2s ease;
+    }
+
+    &[data-direction='previous'] {
+        left: var(--hit-offset);
+    }
+
+    &[data-direction='next'] {
+        right: var(--hit-offset);
+
+        &::before {
+            transform: scaleX(-1);
+        }
+    }
+
+    &:hover,
+    &:focus-visible {
+        color: $primary-accent-4;
+    }
 }
 
 .viewerSkeleton {

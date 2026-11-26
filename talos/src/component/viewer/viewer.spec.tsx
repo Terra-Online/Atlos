@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { installPopover, setRect } from '../../../test-support/browser';
+import { installPopover } from '../../../test-support/browser';
 import type { UGCImage } from '@/services/ugc/client';
 import Viewer from './viewer';
 
@@ -32,7 +32,7 @@ it('keeps carousel selection, metadata and image loading state in step through t
     expect(first.dataset.loaded).toBe('true');
     expect(screen.getByText('Alice')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Upvote' }).getAttribute('aria-pressed')).toBe('true');
-    fireEvent.keyDown(screen.getByRole('button', { name: 'Switch image' }), { key: 'ArrowRight' });
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'ArrowRight' });
     const next = screen.getByRole('img', { name: 'Second image' });
     expect(change).toHaveBeenLastCalledWith('second');
     expect(next.dataset.loaded).toBe('false');
@@ -40,24 +40,22 @@ it('keeps carousel selection, metadata and image loading state in step through t
     expect(screen.queryByText('Alice')).toBeNull();
     expect(screen.getByRole('button', { name: 'Upvote' }).querySelector('span')?.textContent).toBe('7');
     expect(screen.getByRole('button', { name: 'Flag' }).getAttribute('aria-pressed')).toBe('true');
-    fireEvent.keyDown(screen.getByRole('button', { name: 'Switch image' }), { key: 'ArrowRight' });
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'ArrowRight' });
     expect(change).toHaveBeenLastCalledWith('first');
     expect(screen.getByRole('dialog', { name: 'First image' })).toBeTruthy();
 });
 
-it('navigates only within the carousel hit zones and keeps the click inside the viewer', () => {
+it('switches through native arrow buttons and keeps image clicks inside the viewer', () => {
     const change = vi.fn();
     const close = vi.fn();
     render(<Viewer open imageUrl="" alt="Fallback" images={images} selectedImageId="first" onSelectedImageIdChange={change} onClose={close} />);
-    const layer = screen.getByRole('button', { name: 'Switch image' });
-    setRect(layer, 10, 20, 1000, 600);
-    fireEvent.click(layer, { clientX: 500, clientY: 320 });
-    fireEvent.click(layer, { clientX: 950, clientY: 40 });
+    fireEvent.click(screen.getByRole('img', { name: 'First image' }));
     expect(change).not.toHaveBeenCalled();
-    fireEvent.click(layer, { clientX: 50, clientY: 320 });
-    expect(change).toHaveBeenLastCalledWith('second');
-    fireEvent.click(layer, { clientX: 960, clientY: 320 });
+    fireEvent.click(screen.getByRole('button', { name: 'Next image' }));
+    expect(change).toHaveBeenCalledExactlyOnceWith('second');
+    fireEvent.click(screen.getByRole('button', { name: 'Previous image' }));
     expect(change).toHaveBeenCalledTimes(2);
+    expect(change).toHaveBeenLastCalledWith('second');
     expect(close).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('dialog').parentElement!);
     expect(close).toHaveBeenCalledOnce();
@@ -81,7 +79,8 @@ it('gates actions by permissions, pending state and callbacks without losing act
 
 it('uses fallback metadata for a single image and cancels an interrupted exit', async () => {
     const view = render(<Viewer open imageUrl="/one.webp" alt="One" onClose={() => {}} />);
-    expect(screen.queryByRole('button', { name: 'Switch image' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Next image' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Previous image' })).toBeNull();
     expect(screen.getAllByText('--')).toHaveLength(3);
     const dialog = screen.getByRole('dialog');
     view.rerender(<Viewer open={false} imageUrl="/one.webp" alt="One" onClose={() => {}} />);

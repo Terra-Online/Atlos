@@ -11,37 +11,16 @@ import UpvoteIcon from '@/assets/images/UI/upvote.svg?react';
 import FlagIcon from '@/assets/images/UI/flag.svg?react';
 import ShareIcon from '@/assets/images/UI/share.svg?react';
 import RecallIcon from '@/assets/images/UI/recall.svg?react';
-import Carousel from '@/component/carousel';
+import { useCarousel } from '@/component/carousel/useCarousel';
 import type { UGCImage } from '@/services/ugc/client';
 import ActionBar, { type ActionBarItem } from '@/component/actionBar/ActionBar';
 
-type CarouselDirection = 'previous' | 'next';
+const emptyImages: UGCImage[] = [];
+const getImageKey = (image: UGCImage) => image.id;
 
 const getViewerUpvoteCount = (image: UGCImage): number => (
     Number.isFinite(image.upvoteCount) ? Math.max(0, image.upvoteCount as number) : 0
 );
-
-const getCarouselDirection = (
-    rect: DOMRect,
-    clientX: number,
-    clientY: number,
-    controlWidthRatio: number,
-    controlHeightRatio: number,
-    offsetRatio: number,
-): CarouselDirection | null => {
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
-    const controlWidth = rect.width * controlWidthRatio;
-    const controlHeight = controlWidth * controlHeightRatio;
-    const offset = rect.width * offsetRatio;
-    const top = (rect.height - controlHeight) / 2;
-    const bottom = top + controlHeight;
-
-    if (y < top || y > bottom) return null;
-    if (x >= offset && x <= offset + controlWidth) return 'previous';
-    if (x >= rect.width - offset - controlWidth && x <= rect.width - offset) return 'next';
-    return null;
-};
 
 interface ViewerProps {
     open: boolean;
@@ -108,17 +87,14 @@ const Viewer: React.FC<ViewerProps> = ({
 
     const [imageLoaded, setImageLoaded] = useState(false);
     const [createdAtAgo, setCreatedAtAgo] = useState('');
-    const [carouselHoverDirection, setCarouselHoverDirection] = useState<CarouselDirection | null>(null);
     const tUI = useTranslateUI();
     const locale = useLocale();
-    const carouselImages = useMemo(
-        () => images?.length ? images : [],
-        [images],
-    );
-    const selectedImage = useMemo(
-        () => carouselImages.find((image) => image.id === selectedImageId) ?? carouselImages[0] ?? null,
-        [carouselImages, selectedImageId],
-    );
+    const { item: selectedImage, hasMultiple, previous, next } = useCarousel({
+        items: images ?? emptyImages,
+        selectedKey: selectedImageId,
+        getKey: getImageKey,
+        onSelectedKeyChange: onSelectedImageIdChange,
+    });
     const currentImageUrl = selectedImage?.url ?? imageUrl;
     const { phase } = usePresence({ open: open && Boolean(currentImageUrl), exitDuration: 300, ownerDocument });
     const currentAlt = selectedImage?.content || alt;
@@ -154,56 +130,16 @@ const Viewer: React.FC<ViewerProps> = ({
         }]
     ), [canAppendUpload, onRequestUpload, uploadLabel, uploading]);
 
-    const handleCarouselLayerClick = useCallback((
-        event: React.MouseEvent<HTMLDivElement>,
-        previous: () => void,
-        next: () => void,
-    ) => {
-        const rect = event.currentTarget.getBoundingClientRect();
-        const direction = getCarouselDirection(rect, event.clientX, event.clientY, 0.04, 1.5879, 0.025);
-
-        if (direction === 'previous') {
-            previous();
-            return;
-        }
-
-        if (direction === 'next') {
-            next();
-        }
-    }, []);
-
-    const handleCarouselLayerPointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
-        const direction = getCarouselDirection(
-            event.currentTarget.getBoundingClientRect(),
-            event.clientX,
-            event.clientY,
-            0.04,
-            1.5879,
-            0.025,
-        );
-        setCarouselHoverDirection(direction);
-    }, []);
-
-    const handleCarouselLayerPointerLeave = useCallback(() => {
-        setCarouselHoverDirection(null);
-    }, []);
-
-    const handleCarouselLayerKeyDown = useCallback((
-        event: React.KeyboardEvent<HTMLDivElement>,
-        previous: () => void,
-        next: () => void,
-    ) => {
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
         if (event.key === 'ArrowLeft') {
             event.preventDefault();
             previous();
-            return;
-        }
-
-        if (event.key === 'ArrowRight') {
+        } else if (event.key === 'ArrowRight') {
             event.preventDefault();
             next();
         }
-    }, []);
+    };
 
     useEffect(() => {
         setImageLoaded(false);
@@ -238,50 +174,41 @@ const Viewer: React.FC<ViewerProps> = ({
                 role="dialog"
                 aria-modal="true"
                 aria-label={currentAlt}
+                onKeyDown={hasMultiple ? handleKeyDown : undefined}
             >
-                <Carousel
-                    items={carouselImages}
-                    selectedKey={selectedImageId}
-                    getKey={(image) => image.id}
-                    onSelectedKeyChange={onSelectedImageIdChange}
+                <div
+                    className={styles.viewerContent}
+                    style={{ '--bg': `url(${currentImageUrl})` } as React.CSSProperties}
                 >
-                    {({ item, hasMultiple, previous, next }) => {
-                        const visibleImageUrl = item?.url ?? currentImageUrl;
-                        const visibleAlt = item?.content || currentAlt;
-                        return (
-                            <div
-                                className={styles.viewerContent}
-                                style={{ '--bg': `url(${visibleImageUrl})` } as React.CSSProperties}
-                            >
-                                {!imageLoaded && (
-                                    <div className={styles.viewerSkeleton} aria-hidden="true" />
-                                )}
-                                <ActionBar className={styles.viewerActionBar} items={viewerActionBar} />
-                                <img
-                                    decoding='async'
-                                    src={visibleImageUrl}
-                                    alt={visibleAlt}
-                                    className={styles.viewerImage}
-                                    data-loaded={imageLoaded ? 'true' : 'false'}
-                                    onLoad={() => setImageLoaded(true)}
-	                                />
-	                                {hasMultiple && (
-	                                    <div
-	                                        className={styles.carouselLayer}
-	                                        data-hover={carouselHoverDirection ?? undefined}
-	                                        role="button"
-	                                        tabIndex={-1}
-	                                        aria-label="Switch image"
-	                                        onClick={(event) => handleCarouselLayerClick(event, previous, next)}
-	                                        onKeyDown={(event) => handleCarouselLayerKeyDown(event, previous, next)}
-	                                        onPointerMove={handleCarouselLayerPointerMove}
-	                                        onPointerLeave={handleCarouselLayerPointerLeave}
-	                                    />
-	                                )}
-	                            </div>
-                        );
-                    }}
-                </Carousel>
+                    {!imageLoaded && <div className={styles.viewerSkeleton} aria-hidden="true" />}
+                    <ActionBar className={styles.viewerActionBar} items={viewerActionBar} />
+                    <img
+                        decoding="async"
+                        src={currentImageUrl}
+                        alt={currentAlt}
+                        className={styles.viewerImage}
+                        data-loaded={imageLoaded ? 'true' : 'false'}
+                        onLoad={() => setImageLoaded(true)}
+                    />
+                    {hasMultiple && (
+                        <div className={styles.carouselLayer}>
+                            <button
+                                type="button"
+                                className={styles.carouselArrow}
+                                data-direction="previous"
+                                aria-label="Previous image"
+                                onClick={previous}
+                            />
+                            <button
+                                type="button"
+                                className={styles.carouselArrow}
+                                data-direction="next"
+                                aria-label="Next image"
+                                onClick={next}
+                            />
+                        </div>
+                    )}
+                </div>
                 <div className={styles.viewerMetaBar}>
                     <div className={styles.viewerAuthorBlock}>
                         <div className={styles.viewerMetaRow}>
