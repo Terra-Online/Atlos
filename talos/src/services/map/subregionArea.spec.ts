@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import L from 'leaflet';
+import wuling from '@/data/map/subregionData/WL.json';
+import { TILE_SIZE } from '@/data/map/tiles.js';
 import { containsSubregionPixel, resolveSubregionAtLocation } from './subregionArea';
 
 vi.mock('@/data/map', () => ({
@@ -15,6 +17,16 @@ vi.mock('@/data/map', () => ({
 }));
 
 describe('configured subregion geometry', () => {
+    it('keeps the Wuling boundaries and their bounds on one terrain tile grid', () => {
+        for (const area of wuling) {
+            const points = [...area.bounds, ...area.polygon.flat()];
+            for (const [x, y] of points) {
+                expect(x / TILE_SIZE, area.id).toBe(Math.round(x / TILE_SIZE));
+                expect(y / TILE_SIZE, area.id).toBe(Math.round(y / TILE_SIZE));
+            }
+        }
+    });
+
     it('uses polygon rather than its bounding box and excludes holes and hole edges', () => {
         const area = { id: 'test', name: 'test', bounds: [[0, 0], [20, 20]], polygon: [
             [[0, 0], [10, 0], [10, 10], [0, 10]],
