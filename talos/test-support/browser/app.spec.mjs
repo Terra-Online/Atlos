@@ -145,6 +145,31 @@ test('TEST-BROWSER-MAIN-COMMENTS-001 composer grows smoothly and the reply line 
     await expect.poll(() => quote.evaluate((element) => element.getBoundingClientRect().height)).toBe(0);
 });
 
+test('TEST-BROWSER-INTEL-THEME-001 the headbar theme icon rotates in both directions', async ({ page }) => {
+    await page.goto('/intel/');
+    const root = page.locator('html');
+    const button = page.locator('button[data-guide="dark-mode"]');
+    await expect(root).toHaveAttribute('data-theme', 'light');
+    await button.locator(':scope > div').evaluate((icon) => {
+        window.__intelThemeRotations = [];
+        for (const type of ['transitionrun', 'transitionend']) {
+            icon.addEventListener(type, (event) => {
+                if (event.target === icon && event.propertyName === 'transform') {
+                    window.__intelThemeRotations.push(`${document.documentElement.dataset.theme}:${type}`);
+                }
+            });
+        }
+    });
+
+    const events = [];
+    for (const theme of ['dark', 'light']) {
+        await button.click();
+        await expect(root).toHaveAttribute('data-theme', theme);
+        events.push(`${theme}:transitionrun`, `${theme}:transitionend`);
+        await expect.poll(() => page.evaluate(() => window.__intelThemeRotations)).toEqual(events);
+    }
+});
+
 test('TEST-BROWSER-INTEL-MOTION-001 category/search and collect reversal finish with native animation events', async ({ page }, testInfo) => {
     await page.goto('/intel/');
     await expect(page.locator('[data-intel-archive]').first()).toBeVisible();

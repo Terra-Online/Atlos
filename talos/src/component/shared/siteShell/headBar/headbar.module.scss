@@ -65,11 +65,12 @@
         cursor: not-allowed;
         pointer-events: none;
     }
+}
 
-    &[data-guide='dark-mode']>.headbarIcon {
-        transition: transform 0.45s $moderato-curve;
-        transform: var(--darkmode-rotate);
-    }
+// Keep the icon rotation independent of the app-wide color transition.
+:is(.headbar, .headbarMobile) .headbarItem[data-guide='dark-mode'] > .headbarIcon {
+    transition: transform 0.45s $moderato-curve;
+    transform: var(--darkmode-rotate);
 }
 
 .badge {
@@ -269,12 +270,6 @@
             pointer-events: auto;
             transition: opacity 0.2s ease-out;
         }
-    }
-
-
-    .headbarItem[data-guide='dark-mode']>.headbarIcon {
-        transform: var(--darkmode-rotate);
-        transition: transform 0.45s $moderato-curve;
     }
 }
 .headbarGrid {
