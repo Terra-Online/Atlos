@@ -1,11 +1,13 @@
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
+import { fireEvent } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { flush } from '../../testSetup';
 import type { Contribution } from '../../types';
 import List from './list';
 import { formatDate } from '../../config';
 import { deferred } from '../../../../../test-support/pages';
+import { installPopover } from '../../../../../test-support/browser';
 
 const api = vi.hoisted(() => ({ subregion: vi.fn<(id: string) => Promise<string | null>>(), all: vi.fn() }));
 vi.mock('@main/data/marker', () => ({
@@ -62,6 +64,7 @@ const item: Contribution = {
 };
 let node: HTMLDivElement;
 let root: ReturnType<typeof createRoot>;
+let popover: ReturnType<typeof installPopover> | undefined;
 beforeEach(() => {
     api.subregion.mockReset().mockResolvedValue('WL_12');
     api.all.mockReset().mockResolvedValue([{ id: '42', type: 'sample', subregId: 'WL_12' }]);
@@ -73,6 +76,8 @@ beforeEach(() => {
 afterEach(async () => {
     await flush(() => root.unmount());
     node.remove();
+    popover?.restore();
+    popover = undefined;
     vi.useRealTimers();
 });
 const render = (overrides: Partial<Contribution> = {}) =>
@@ -194,6 +199,7 @@ it('does not mark publication as completed when an author deletes before approva
 });
 
 it('shows the exact and relative node time without inventing missing timestamps', async () => {
+    popover = installPopover();
     vi.setSystemTime(new Date('2026-05-21T03:30:31Z'));
     await render({
         status: 'active',
@@ -216,11 +222,9 @@ it('shows the exact and relative node time without inventing missing timestamps'
             },
         },
     });
-    const trigger = stages()[1].querySelector('[aria-describedby]');
-    expect(trigger).not.toBeNull();
-    const tooltip = node.querySelector(
-        `[id="${trigger?.getAttribute('aria-describedby')}"]`,
-    );
+    const trigger = stages()[1].querySelector('span[aria-label]')!;
+    await flush(() => { fireEvent.pointerEnter(trigger); });
+    const tooltip = document.getElementById(trigger.getAttribute('aria-describedby') ?? '');
     expect(tooltip?.getAttribute('role')).toBe('tooltip');
     expect(tooltip?.textContent).toMatch(
         /^userHub\.steps\.ai\.complete - 2026-05-21 \d{2}:28:31 \(2分钟前\)$/,
@@ -233,6 +237,7 @@ it('shows the exact and relative node time without inventing missing timestamps'
         '2026-05-21T03:28:31.000Z',
     );
     expect(stages()[1].hasAttribute('title')).toBe(false);
+    await flush(() => { fireEvent.pointerLeave(trigger); });
     await render({
         status: 'active',
         review: {
@@ -244,6 +249,8 @@ it('shows the exact and relative node time without inventing missing timestamps'
             })),
         },
     });
+    const publishedTrigger = stages()[2].querySelector('span[aria-label]')!;
+    await flush(() => { fireEvent.pointerEnter(publishedTrigger); });
     expect(stages()[2].querySelector('[role="tooltip"]')?.textContent).toBe(
         'userHub.steps.public.complete',
     );

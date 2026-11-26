@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { installPointerCapture, setRect, setScrollMetrics } from '../../../../test-support/browser';
+import { installPointerCapture, installPopover, setRect, setScrollMetrics } from '../../../../test-support/browser';
 import { archives } from '../fixtures';
 import CategoryFilter from './categoryFilter/categoryFilter';
 import ArchiveSummary from './archiveSummary/archiveSummary';
@@ -17,8 +17,9 @@ vi.mock('@intel/locale', async () => {
 vi.mock('@main/locale', () => ({ useTranslateUI: () => (key: string) => key }));
 
 let restorePointer: (() => void) | undefined;
+let popover: ReturnType<typeof installPopover> | undefined;
 beforeEach(() => { vi.useFakeTimers(); });
-afterEach(() => { cleanup(); restorePointer?.(); restorePointer = undefined; vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.useRealTimers(); });
+afterEach(() => { cleanup(); popover?.restore(); popover = undefined; restorePointer?.(); restorePointer = undefined; vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 it('keeps category selection controlled, names completion progress, and supports keyboard activation', () => {
     const toggle = vi.fn();
@@ -41,11 +42,17 @@ it('keeps category selection controlled, names completion progress, and supports
 });
 
 it('renders the local archive count and content version without a network lookup', () => {
+    popover = installPopover();
     const fetch = vi.fn<typeof globalThis.fetch>();
     vi.stubGlobal('fetch', fetch);
     const view = render(<><ArchiveSummary /><IntelSidebarBrand /></>);
-    expect(view.container.querySelector('p')?.textContent).toBe(`${archives.length} archives`);
-    expect(screen.getByRole('tooltip').textContent).toBe(`${archiveVersion.gameVersion} (${archiveVersion.gameBuild})`);
+    const summary = screen.getByRole('paragraph');
+    const version = `${archiveVersion.gameVersion} (${archiveVersion.gameBuild})`;
+    expect(summary.textContent).toBe(`${archives.length} archives`);
+    expect(summary.getAttribute('aria-description')).toBe(version);
+    expect(screen.queryByRole('tooltip')).toBeNull();
+    fireEvent.pointerEnter(summary);
+    expect(screen.getByRole('tooltip').textContent).toBe(version);
     expect(screen.getByAltText('sidebar.alt.supportedBy').getAttribute('draggable')).toBe('false');
     expect(fetch).not.toHaveBeenCalled();
     view.unmount();
