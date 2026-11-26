@@ -343,5 +343,19 @@
         "living_sector": "Wohnsektor"
       }
     }
+  },
+  "ES": {
+    "main": "Ätzbereich: Bergung",
+    "sub": {
+      "name": "Tal-Anomalien",
+      "site": {
+        "area_1": "Anomaliezone 1",
+        "area_2": "Anomaliezone 2",
+        "area_3": "Anomaliezone 3",
+        "area_4": "Anomaliezone 4",
+        "area_5": "Anomaliezone 5",
+        "area_6": "Anomaliezone 6"
+      }
+    }
   }
 }

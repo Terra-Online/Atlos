@@ -343,5 +343,19 @@
         "living_sector": "Sector residencial"
       }
     }
+  },
+  "ES": {
+    "main": "Rescate de grabaespacio",
+    "sub": {
+      "name": "Aberrantes del Valle",
+      "site": {
+        "area_1": "Zona aberrante 1",
+        "area_2": "Zona aberrante 2",
+        "area_3": "Zona aberrante 3",
+        "area_4": "Zona aberrante 4",
+        "area_5": "Zona aberrante 5",
+        "area_6": "Zona aberrante 6"
+      }
+    }
   }
 }

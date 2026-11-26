@@ -343,5 +343,19 @@
         "living_sector": "Sektor Hunian"
       }
     }
+  },
+  "ES": {
+    "main": "Etchspace Salvage",
+    "sub": {
+      "name": "Aberan Lembah",
+      "site": {
+        "area_1": "Zona Aberan 1",
+        "area_2": "Zona Aberan 2",
+        "area_3": "Zona Aberan 3",
+        "area_4": "Zona Aberan 4",
+        "area_5": "Zona Aberan 5",
+        "area_6": "Zona Aberan 6"
+      }
+    }
   }
 }

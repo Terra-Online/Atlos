@@ -343,5 +343,19 @@
         "living_sector": "Secteur d'habitations"
       }
     }
+  },
+  "ES": {
+    "main": "Récupération d'espace de corrosion",
+    "sub": {
+      "name": "Anomalies de la Vallée",
+      "site": {
+        "area_1": "Zone d'anomalie 1",
+        "area_2": "Zone d'anomalie 2",
+        "area_3": "Zone d'anomalie 3",
+        "area_4": "Zone d'anomalie 4",
+        "area_5": "Zone d'anomalie 5",
+        "area_6": "Zone d'anomalie 6"
+      }
+    }
   }
 }

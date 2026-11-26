@@ -343,5 +343,19 @@
         "living_sector": "Living Sector"
       }
     }
+  },
+  "ES": {
+    "main": "Etchspace Salvage",
+    "sub": {
+      "name": "Valley's Aberrants",
+      "site": {
+        "area_1": "Aberrant Zone 1",
+        "area_2": "Aberrant Zone 2",
+        "area_3": "Aberrant Zone 3",
+        "area_4": "Aberrant Zone 4",
+        "area_5": "Aberrant Zone 5",
+        "area_6": "Aberrant Zone 6"
+      }
+    }
   }
 }

@@ -343,5 +343,19 @@
         "living_sector": "Khu Vực Sinh Sống"
       }
     }
+  },
+  "ES": {
+    "main": "Phế Tích Khắc Dẫn",
+    "sub": {
+      "name": "Dị Thể Thung Lũng",
+      "site": {
+        "area_1": "Khu Dị Thể 1",
+        "area_2": "Khu Dị Thể 2",
+        "area_3": "Khu Dị Thể 3",
+        "area_4": "Khu Dị Thể 4",
+        "area_5": "Khu Dị Thể 5",
+        "area_6": "Khu Dị Thể 6"
+      }
+    }
   }
 }

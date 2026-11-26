@@ -343,5 +343,19 @@
         "living_sector": "Setor Residencial"
       }
     }
+  },
+  "ES": {
+    "main": "Resgate do Espaço Multidimensional",
+    "sub": {
+      "name": "Aberrantes do Vale",
+      "site": {
+        "area_1": "Zona Aberrante 1",
+        "area_2": "Zona Aberrante 2",
+        "area_3": "Zona Aberrante 3",
+        "area_4": "Zona Aberrante 4",
+        "area_5": "Zona Aberrante 5",
+        "area_6": "Zona Aberrante 6"
+      }
+    }
   }
 }

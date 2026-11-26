@@ -2469,6 +2469,76 @@
           ]
         }
       }
+    },
+    "ES": {
+      "labels": {
+        "ES/__root__/area_1": {
+          "id": "ES/__root__/area_1",
+          "type": "site",
+          "region": "ES",
+          "sub": "__root__",
+          "site": "area_1",
+          "point": [
+            2646,
+            3752
+          ]
+        },
+        "ES/__root__/area_2": {
+          "id": "ES/__root__/area_2",
+          "type": "site",
+          "region": "ES",
+          "sub": "__root__",
+          "site": "area_2",
+          "point": [
+            857,
+            3278
+          ]
+        },
+        "ES/__root__/area_3": {
+          "id": "ES/__root__/area_3",
+          "type": "site",
+          "region": "ES",
+          "sub": "__root__",
+          "site": "area_3",
+          "point": [
+            1403,
+            5312
+          ]
+        },
+        "ES/__root__/area_4": {
+          "id": "ES/__root__/area_4",
+          "type": "site",
+          "region": "ES",
+          "sub": "__root__",
+          "site": "area_4",
+          "point": [
+            3214,
+            4921
+          ]
+        },
+        "ES/__root__/area_5": {
+          "id": "ES/__root__/area_5",
+          "type": "site",
+          "region": "ES",
+          "sub": "__root__",
+          "site": "area_5",
+          "point": [
+            4382,
+            2523
+          ]
+        },
+        "ES/__root__/area_6": {
+          "id": "ES/__root__/area_6",
+          "type": "site",
+          "region": "ES",
+          "sub": "__root__",
+          "site": "area_6",
+          "point": [
+            2395,
+            1057
+          ]
+        }
+      }
     }
   }
 }
