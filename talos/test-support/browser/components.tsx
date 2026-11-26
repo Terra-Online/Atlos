@@ -19,6 +19,16 @@ const images: UGCImage[] = [
     { id: 'second', markerId: 'fixture', url: second, content: 'Second fixture image', createdAt: '2026-05-22T03:28:31Z', author: { nickname: 'Second author', publicUid: 'F-002' }, upvoteCount: 7 },
 ];
 
+function FeedRows() {
+    const [expanded, setExpanded] = useState(false);
+    return (
+        <>
+            <button onClick={() => setExpanded((value) => !value)}>Toggle feed content</button>
+            {expanded && Array.from({ length: 20 }, (_, index) => <p key={index}>Feed row {index + 1}</p>)}
+        </>
+    );
+}
+
 export default function Components() {
     const [open, setOpen] = useState(false);
     const [binding, setBinding] = useState(false);
@@ -88,7 +98,7 @@ export default function Components() {
         </section>
         <section data-fixture="feed" style={{ display: 'flex', flexDirection: 'column', height: 180, width: 320, marginTop: 40 }}>
             <button onClick={() => setFeedKey((value) => value === 'first' ? 'second' : 'first')}>Reset feed fixture</button>
-            <Feed resetKey={feedKey} listRef={feed}>{Array.from({ length: 20 }, (_, index) => <p key={index}>Feed row {index + 1}</p>)}</Feed>
+            <Feed resetKey={feedKey} listRef={feed}><FeedRows /></Feed>
         </section>
         <section style={{ marginTop: 40 }}>
             <input aria-label="Floating editor" defaultValue="Select this text" onFocus={(event) => setSelectionRect(event.currentTarget.getBoundingClientRect())} />

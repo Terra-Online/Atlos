@@ -4,13 +4,28 @@ const localFrontend = (url) => ['localhost', '127.0.0.1'].includes(url.hostname)
 
 export const browserUser = { uid: 'browser-user', nickname: 'Browser reader', avatar: 1, email: 'reader@example.test', role: 'n', registeredAt: '2026-01-01T00:00:00Z' };
 
+export function contribution(id, content, kind = 'comment') {
+    const createdAt = '2026-05-21T03:28:31Z';
+    return {
+        id, content, kind, markerId: '9800000003', poiType: 'control_nexus',
+        previewUrl: null, snapshotId: `snapshot-${id}`, revision: 1,
+        reviewStatus: 'approved', authorDeletedAt: null, adminDeletedAt: null,
+        status: 'active', visibility: 'public', createdAt,
+        review: {
+            events: [], manual: false, published: true,
+            path: [{ key: 'uploaded', at: null }, { key: 'public', at: null }],
+            times: { uploaded: null, ai: null, manual: null, public: null, archived: null },
+        },
+    };
+}
+
 // Missing previews exercise the supported placeholder path without remote images.
 export function seedContributions(services, count = 20) {
     services.overviewCounts.imageCount = count;
-    services.contributions.set('image:', { items: Array.from({ length: count }, (_, index) => ({
-        id: `image-${index}`, kind: 'image', markerId: '9800000003', poiType: 'control_nexus',
-        content: null, previewUrl: null, status: 'active', visibility: 'public', createdAt: '2026-05-21T03:28:31Z',
-    })), nextCursor: null });
+    services.contributions.set('image:', {
+        items: Array.from({ length: count }, (_, index) => contribution(`image-${index}`, null, 'image')),
+        nextCursor: null,
+    });
 }
 
 export function deferred() {

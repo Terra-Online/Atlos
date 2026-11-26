@@ -1,112 +1,116 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useRef, type CSSProperties, type ReactNode, type Ref, type RefObject } from 'react';
 import classNames from 'classnames';
+import PopoverTooltip from '@/component/popover/popover';
 import styles from './TabView.module.scss';
+import { useTabIndicator } from './useTabIndicator';
 
 export interface TabViewItem {
     key: string;
-    label: React.ReactNode;
-    description?: React.ReactNode;
+    label: ReactNode;
+    icon?: ReactNode;
+    description?: ReactNode;
     disabled?: boolean;
 }
 
-interface TabViewProps {
+interface QuickAction {
+    icon: ReactNode;
+    label: string;
+    onClick: () => void;
+    disabled?: boolean;
+    active?: boolean;
+}
+
+interface Props {
     items: TabViewItem[];
     activeKey: string;
     onChange: (key: string) => void;
+    appearance?: 'strip' | 'panel';
     fill?: boolean;
     className?: string;
+    ariaLabel?: string;
+    quickAction?: QuickAction;
+    swipeTargetRef?: RefObject<HTMLElement | null>;
+    ref?: Ref<HTMLDivElement>;
 }
 
-const TabView: React.FC<TabViewProps> = ({
+function TabView({
     items,
     activeKey,
     onChange,
+    appearance = 'strip',
     fill = false,
     className,
-}) => {
-    const [indicatorLeft, setIndicatorLeft] = useState<number | null>(null);
-    const wrapperRef = useRef<HTMLDivElement | null>(null);
-    const tabBarRef = useRef<HTMLDivElement | null>(null);
-    const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+    ariaLabel,
+    quickAction,
+    swipeTargetRef,
+    ref,
+}: Props) {
+    const barRef = useRef<HTMLDivElement | null>(null);
+    const indicatorRef = useRef<HTMLSpanElement | null>(null);
     const activeItem = items.find((item) => item.key === activeKey);
+    const panel = appearance === 'panel';
+    const setBar = useCallback((element: HTMLDivElement | null) => {
+        barRef.current = element;
+        if (typeof ref === 'function') {
+            const cleanup = ref(element);
+            if (cleanup) return () => { barRef.current = null; cleanup(); };
+        } else if (ref) ref.current = element;
+        return undefined;
+    }, [ref]);
+    const layout = JSON.stringify([appearance, ...items.map((item) => item.key)]);
+    useTabIndicator(barRef, indicatorRef, layout, activeKey, onChange, swipeTargetRef);
 
-    const updateIndicator = useCallback(() => {
-        const activeTab = tabRefs.current.get(activeKey);
-        const tabBar = tabBarRef.current;
-        if (!activeTab || !tabBar) {
-            setIndicatorLeft(null);
-            return;
-        }
+    if (items.length === 0) return null;
 
-        const tabRect = activeTab.getBoundingClientRect();
-        const tabBarRect = tabBar.getBoundingClientRect();
-        setIndicatorLeft(tabRect.left - tabBarRect.left + tabBar.scrollLeft + tabRect.width / 2);
-    }, [activeKey]);
-
-    useEffect(() => {
-        if (items.length === 0) {
-            setIndicatorLeft(null);
-            return;
-        }
-
-        const tabBar = tabBarRef.current;
-        if (!tabBar) return;
-
-        const rafId = requestAnimationFrame(updateIndicator);
-        const handleResize = () => updateIndicator();
-        const handleScroll = () => updateIndicator();
-
-        window.addEventListener('resize', handleResize);
-        tabBar.addEventListener('scroll', handleScroll, { passive: true });
-
-        const resizeObserver = new ResizeObserver(() => updateIndicator());
-        resizeObserver.observe(tabBar);
-
-        const activeTab = tabRefs.current.get(activeKey);
-        if (activeTab) {
-            resizeObserver.observe(activeTab);
-        }
-
-        return () => {
-            cancelAnimationFrame(rafId);
-            window.removeEventListener('resize', handleResize);
-            tabBar.removeEventListener('scroll', handleScroll);
-            resizeObserver.disconnect();
-        };
-    }, [activeKey, items.length, updateIndicator]);
-
-    return (
-        <div className={classNames(styles.tabBarWrapper, className)} ref={wrapperRef}>
-            <div className={styles.tabBar} role="tablist" ref={tabBarRef} data-fill={fill ? 'true' : 'false'}>
-                {items.map((item) => (
+    const bar = (
+        <div
+            className={classNames(styles.tabBar, panel && styles.panel, panel && className)}
+            role="tablist"
+            aria-label={ariaLabel}
+            ref={setBar}
+            data-fill={fill}
+            data-has-quick-action={Boolean(quickAction)}
+            style={panel ? { '--tab-count': items.length } as CSSProperties : undefined}
+        >
+            {quickAction && (
+                <PopoverTooltip content={quickAction.label} placement="top" gap={4}>
                     <button
-                        key={item.key}
-                        role="tab"
-                        aria-selected={activeKey === item.key}
-                        disabled={item.disabled}
-                        ref={(el) => {
-                            if (el) tabRefs.current.set(item.key, el);
-                            else tabRefs.current.delete(item.key);
-                        }}
-                        className={classNames(styles.tab, activeKey === item.key && styles.activeTab)}
-                        onClick={() => onChange(item.key)}
                         type="button"
+                        className={styles.quickAction}
+                        aria-label={quickAction.label}
+                        disabled={quickAction.disabled}
+                        data-confirming={Boolean(quickAction.active)}
+                        onClick={quickAction.onClick}
                     >
-                        {item.label}
+                        {quickAction.icon}
                     </button>
-                ))}
-                {indicatorLeft !== null && (
-                <div
-                    className={styles.tabIndicator}
-                    style={{ left: `${indicatorLeft}px` }}
-                />
+                </PopoverTooltip>
             )}
-            </div>
-            {activeItem?.description ? (
-                <div className={styles.description}>{activeItem.description}</div>
-            ) : null}
+            {items.map((item) => (
+                <button
+                    key={item.key}
+                    role="tab"
+                    aria-selected={activeKey === item.key}
+                    disabled={item.disabled}
+                    data-tab={item.key}
+                    className={styles.tab}
+                    onClick={() => onChange(item.key)}
+                    type="button"
+                >
+                    {item.icon}
+                    {panel ? <span>{item.label}</span> : item.label}
+                </button>
+            ))}
+            {activeItem && <span ref={indicatorRef} className={styles.tabIndicator} data-tab-indicator aria-hidden="true" />}
         </div>
     );
-};
+    if (panel) return bar;
+    return (
+        <div className={classNames(styles.tabBarWrapper, className)}>
+            {bar}
+            {activeItem?.description && <div className={styles.description}>{activeItem.description}</div>}
+        </div>
+    );
+}
 
-export default React.memo(TabView);
+export default memo(TabView);

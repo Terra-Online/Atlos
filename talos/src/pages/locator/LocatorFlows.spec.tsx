@@ -120,7 +120,7 @@ it('lets a touch user toggle device verification help and dismiss it without clo
         advanceCountdown(); inputToken();
         await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'locator.binding.bind' })); await Promise.resolve(); });
         const help = screen.getByRole('button', { name: '如何解决？' });
-        const tooltip = screen.getByRole('tooltip');
+        expect(screen.queryByRole('tooltip')).toBeNull();
         const tap = () => {
             fireEvent.pointerEnter(help, { pointerType: 'touch' });
             fireEvent.pointerDown(help, { pointerType: 'touch' });
@@ -129,15 +129,18 @@ it('lets a touch user toggle device verification help and dismiss it without clo
             fireEvent.click(help);
         };
         tap();
+        const tooltip = screen.getByRole('tooltip');
         expect(popover.isOpen(tooltip)).toBe(true);
         tap();
-        expect(popover.isOpen(tooltip)).toBe(false);
+        expect(screen.queryByRole('tooltip')).toBeNull();
         tap();
+        expect(popover.isOpen(screen.getByRole('tooltip'))).toBe(true);
         fireEvent.pointerDown(screen.getByRole('textbox'), { pointerType: 'touch' });
-        expect(popover.isOpen(tooltip)).toBe(false);
+        expect(screen.queryByRole('tooltip')).toBeNull();
         tap();
+        expect(popover.isOpen(screen.getByRole('tooltip'))).toBe(true);
         fireEvent.keyDown(document, { key: 'Escape' });
-        expect(popover.isOpen(tooltip)).toBe(false);
+        expect(screen.queryByRole('tooltip')).toBeNull();
         expect(close).not.toHaveBeenCalled();
     } finally {
         cleanup();

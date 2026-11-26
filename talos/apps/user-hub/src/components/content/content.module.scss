@@ -57,9 +57,9 @@
 }
 
 .filters {
-    --modal-tab-bg: var(--content-tab-bg);
-    --modal-tab-active-bg: var(--content-tab-selected-bg);
-    --modal-tab-text: var(--content-tab-text);
+    --panel-tab-bg: var(--content-tab-bg);
+    --panel-tab-active-bg: var(--content-tab-selected-bg);
+    --panel-tab-text: var(--content-tab-text);
     margin-bottom: 0;
 
     > button {

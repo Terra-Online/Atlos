@@ -1,5 +1,6 @@
 import { contributionRoute } from './hub.mjs';
 import { test, expect, browserUser, deferred } from './fixtures.mjs';
+import { contribution } from './services.mjs';
 
 async function mainReady(page) {
     await page.goto('/');
@@ -345,8 +346,6 @@ test('TEST-BROWSER-CROSS-TAB-001 main progress reaches Intel and Intel changes r
     await shot(page, testInfo, 'main-after-intel-uncollect');
     await shot(intel, testInfo, 'intel-after-main-roundtrip');
 });
-
-const contribution = (id, content, kind = 'comment') => ({ id, kind, markerId: '9800000003', poiType: 'control_nexus', content, previewUrl: null, status: 'active', visibility: 'public', createdAt: '2026-05-21T03:28:31Z' });
 
 test('TEST-BROWSER-HUB-001 full shell changes tabs, localizes dates and saves one pending avatar', async ({ page, services }, testInfo) => {
     services.user = { ...browserUser };

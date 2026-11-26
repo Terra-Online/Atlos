@@ -125,9 +125,9 @@ test('TEST-BROWSER-LAYOUT-001 ResizeObserver keeps tab geometry and scroll masks
     await tabs.getByRole('tab', { name: 'Second longer tab', exact: true }).click();
     const delta = () => tabs.getByRole('tablist').evaluate((bar) => {
         const selected = bar.querySelector('[aria-selected="true"]');
-        const indicator = bar.querySelector('[style*="left"]');
+        const indicator = bar.querySelector('[data-tab-indicator]').getBoundingClientRect();
         const rect = selected.getBoundingClientRect();
-        return Math.abs(parseFloat(indicator.style.left) - (rect.left - bar.getBoundingClientRect().left + bar.scrollLeft + rect.width / 2));
+        return Math.abs(indicator.x + indicator.width / 2 - (rect.x + rect.width / 2));
     });
     await expect.poll(delta).toBeLessThan(1);
     await page.getByRole('button', { name: 'Resize tab fixture', exact: true }).click();
@@ -135,12 +135,18 @@ test('TEST-BROWSER-LAYOUT-001 ResizeObserver keeps tab geometry and scroll masks
     await expect(tabs.getByRole('tab', { name: 'Disabled tab', exact: true })).toBeDisabled();
     const feed = page.locator('[data-fixture="feed"]').getByRole('tabpanel');
     await feed.scrollIntoViewIfNeeded();
+    const bottomFade = () => feed.evaluate((node) => parseFloat(node.style.getPropertyValue('--scroll-fade-bottom')) || 0);
+    expect(await bottomFade()).toBe(0);
+    await feed.getByRole('button', { name: 'Toggle feed content', exact: true }).click();
     expect(await feed.evaluate((node) => node.scrollHeight > node.clientHeight)).toBe(true);
-    await expect.poll(() => feed.evaluate((node) => parseFloat(node.style.getPropertyValue('--scroll-fade-bottom')) || 0)).toBeGreaterThan(0);
+    await expect.poll(bottomFade).toBeGreaterThan(0);
     await feed.evaluate((node) => { node.scrollTop = node.scrollHeight; });
-    await expect.poll(() => feed.evaluate((node) => parseFloat(node.style.getPropertyValue('--scroll-fade-bottom')) || 0)).toBe(0);
+    await expect.poll(bottomFade).toBe(0);
     await page.getByRole('button', { name: 'Reset feed fixture', exact: true }).click();
     await expect.poll(() => feed.evaluate((node) => node.scrollTop)).toBe(0);
+    await expect.poll(bottomFade).toBeGreaterThan(0);
+    await feed.getByRole('button', { name: 'Toggle feed content', exact: true }).click();
+    await expect.poll(bottomFade).toBe(0);
     await testInfo.attach('real-layout', { body: await page.screenshot(), contentType: 'image/png' });
 });
 

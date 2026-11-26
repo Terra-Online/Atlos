@@ -4,7 +4,8 @@ import { useFontRegion } from '@/locale/useFontRegion';
 import React, { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import styles from '@/pages/detail/detail.module.scss';
 import { PillButton } from '@/component/button/button';
-import Modal, { ModalTabs, type ModalTabItem } from '@/component/modal/modal';
+import Modal from '@/component/modal/modal';
+import { TabView, type TabViewItem } from '@/component/tabView';
 import PopoverTooltip from '@/component/popover/popover';
 import OverflowPopoverText from '@/component/popover/OverflowPopoverText';
 import Uploader from '@/pages/uploader/uploader';
@@ -500,16 +501,16 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
     const collectAllLabel = collectAllConfirming
         ? tUI('common.confirmAgain')
         : tUI('detail.tabs.collectAll');
-    const detailTabs = useMemo<ModalTabItem[]>(() => [
+    const detailTabs = useMemo<TabViewItem[]>(() => [
         {
             key: 'general',
             icon: <GeneralInfoIcon />,
-            title: tUI('detail.tabs.general'),
+            label: tUI('detail.tabs.general'),
         },
         {
             key: 'comments',
             icon: <CommentIcon />,
-            title: tUI('detail.tabs.comments'),
+            label: tUI('detail.tabs.comments'),
         },
     ], [tUI]);
     const handleDetailTabChange = useCallback((key: string) => {
@@ -561,7 +562,8 @@ export const Detail = ({ inline = false, className }: DetailProps) => {
                             </PillButton>
                         </div>
                     </div>
-                    <ModalTabs
+                    <TabView
+                        appearance="panel"
                         className={styles.detailTabs}
                         items={detailTabs}
                         activeKey={activeTab}

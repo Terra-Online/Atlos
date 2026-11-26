@@ -17,11 +17,17 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
     box-sizing: border-box;
     overflow-x: hidden;
     overflow-y: auto;
     padding: 0.6rem;
+}
+
+.listContent {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .listBottomBlur {

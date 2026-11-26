@@ -1,13 +1,27 @@
-import {
-    useCallback,
-    useLayoutEffect,
-    useRef,
-    useState,
-    type ReactNode,
-    type RefObject,
-} from 'react';
+import { memo, useLayoutEffect, useRef, type ReactNode, type RefObject } from 'react';
 import AdaptiveLinearBlur from '@/component/effects/AdaptiveLinearBlur';
+import { useScrollEdges } from '@/lib/dom/useScrollEdges';
+import { useAppDocument } from '@/platform/pictureInPicture';
 import styles from '@/component/feed/Feed.module.scss';
+
+type ListRef = RefObject<HTMLDivElement | null>;
+
+const BottomFade = memo(function BottomFade({ listRef, contentRef }: {
+    listRef: ListRef;
+    contentRef: ListRef;
+}) {
+    const ownerDocument = useAppDocument();
+    const { bottom } = useScrollEdges({ targetRef: listRef, contentRef, ownerDocument });
+    return (
+        <AdaptiveLinearBlur
+            targetRef={listRef}
+            visible={bottom}
+            side="bottom"
+            strength={6}
+            className={`${styles.listBottomBlur} ${bottom ? styles.visible : ''}`}
+        />
+    );
+});
 
 export default function Feed({
     children,
@@ -15,53 +29,26 @@ export default function Feed({
     resetKey,
 }: {
     children: ReactNode;
-    listRef?: RefObject<HTMLDivElement | null>;
+    listRef?: ListRef;
     resetKey?: string;
 }) {
     const localRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
     const ref = listRef ?? localRef;
-    const [atBottom, setAtBottom] = useState(true);
-    const update = useCallback(() => {
-        const list = ref.current;
-        if (list)
-            setAtBottom(
-                list.scrollTop + list.clientHeight >= list.scrollHeight - 1,
-            );
-    }, [ref]);
+
     useLayoutEffect(() => {
         const list = ref.current;
         if (list && resetKey !== undefined) list.scrollTop = 0;
     }, [ref, resetKey]);
-    useLayoutEffect(() => {
-        const list = ref.current;
-        if (!list) return;
-        const frame = requestAnimationFrame(update);
-        list.addEventListener('transitionend', update);
-        const observer = new ResizeObserver(update);
-        observer.observe(list);
-        return () => {
-            cancelAnimationFrame(frame);
-            list.removeEventListener('transitionend', update);
-            observer.disconnect();
-        };
-    }, [children, ref, update]);
+
     return (
         <div className={styles.listViewport}>
-            <div
-                className={styles.notificationList}
-                role='tabpanel'
-                ref={ref}
-                onScroll={update}
-            >
-                {children}
+            <div className={styles.notificationList} role="tabpanel" ref={ref}>
+                <div className={styles.listContent} ref={contentRef}>
+                    {children}
+                </div>
             </div>
-            <AdaptiveLinearBlur
-                targetRef={ref}
-                visible={!atBottom}
-                side='bottom'
-                strength={6}
-                className={`${styles.listBottomBlur} ${!atBottom ? styles.visible : ''}`}
-            />
+            <BottomFade listRef={ref} contentRef={contentRef} />
         </div>
     );
 }

@@ -1,7 +1,7 @@
-import { StrictMode, useRef, useState } from 'react';
+import { StrictMode, createRef } from 'react';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
-import Modal, { ModalTabs } from './modal';
+import Modal from './modal';
 import Viewer from '@/component/viewer/viewer';
 
 vi.mock('@/locale', () => ({ useTranslateUI: () => (key: string) => key, useLocale: () => 'en' }));
@@ -58,106 +58,26 @@ it('waits for viewer content before starting its entry', async () => {
     expect(dialog.dataset.state).toBe('open');
 });
 
-it('positions the tab indicator in local coordinates while its dialog is scaled', () => {
-    const { getByRole } = render(<ModalTabs items={[{ key: 'a', title: 'A', icon: null }, { key: 'b', title: 'B', icon: null }]} activeKey="b" onChange={() => {}} />);
-    const tabs = getByRole('tablist');
-    const tab = getByRole('tab', { name: 'B' });
-    Object.defineProperties(tab, { offsetLeft: { value: 100 }, offsetWidth: { value: 100 } });
-    vi.spyOn(tabs, 'getBoundingClientRect').mockReturnValue(new DOMRect(10, 10, 184, 36));
-    vi.spyOn(tab, 'getBoundingClientRect').mockReturnValue(new DOMRect(102, 10, 92, 36));
-    act(() => { window.dispatchEvent(new Event('resize')); });
-    expect(tabs.style.getPropertyValue('--modal-tab-indicator-left')).toBe('150px');
-});
-
-it('keeps disabled tabs and quick actions inert and delegates enabled tab changes to the owner', () => {
-    const change = vi.fn(), quick = vi.fn();
-    const items = [{ key: 'a', title: 'A', icon: null }, { key: 'b', title: 'B', icon: null, disabled: true }];
-    const view = render(<ModalTabs items={items} activeKey="a" onChange={change} quickAction={{ icon: null, label: 'Reset', onClick: quick, disabled: true }} />);
-    fireEvent.click(screen.getByRole('tab', { name: 'B' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Reset' }));
-    expect(change).not.toHaveBeenCalled();
-    expect(quick).not.toHaveBeenCalled();
-    view.rerender(<ModalTabs items={items.map((item) => ({ ...item, disabled: false }))} activeKey="a" onChange={change} quickAction={{ icon: null, label: 'Reset', onClick: quick, active: true }} />);
-    fireEvent.click(screen.getByRole('tab', { name: 'B' }));
-    expect(change).toHaveBeenCalledExactlyOnceWith('b');
-    expect(screen.getByRole('tab', { name: 'A' }).getAttribute('aria-selected')).toBe('true');
-    fireEvent.click(screen.getByRole('button', { name: 'Reset' }));
-    expect(quick).toHaveBeenCalledOnce();
-});
-
-function renderTouchTabs() {
-    function Tabs() {
-        const [active, setActive] = useState('a');
-        const target = useRef<HTMLDivElement>(null);
-        return (
-            <div ref={target}>
-                <ModalTabs
-                    items={[{ key: 'a', title: 'A', icon: null }, { key: 'b', title: 'B', icon: null }]}
-                    activeKey={active}
-                    onChange={(key) => setActive(key)}
-                    swipeTargetRef={target}
-                />
-            </div>
-        );
-    }
-    const { getByRole } = render(<Tabs />);
-    const tabs = getByRole('tablist');
-    const first = getByRole('tab', { name: 'A' });
-    const second = getByRole('tab', { name: 'B' });
-    for (const [index, tab] of [first, second].entries()) {
-        Object.defineProperties(tab, { offsetLeft: { value: index * 100 }, offsetWidth: { value: 100 } });
-    }
-    act(() => { window.dispatchEvent(new Event('resize')); });
-    return { tabs, first, second };
-}
-
-const touch = (target: HTMLElement, type: string, x: number, y = 100) => {
-    // jsdom's TouchEvent exposes arrays rather than the browser's TouchList.
-    const point = { identifier: 1, clientX: x, clientY: y };
-    const list = { length: 1, item: () => point };
-    const event = new Event(type, { bubbles: true });
-    Object.defineProperties(event, {
-        touches: { value: type === 'touchend' || type === 'touchcancel' ? { length: 0, item: () => null } : list },
-        changedTouches: { value: list },
-    });
-    fireEvent(target, event);
-};
-
-it('keeps the indicator on the selected tab after a touch tap settles', () => {
+it('measures scroll once per frame and stops observing while a modal exits', async () => {
     vi.useFakeTimers();
-    const { tabs, second } = renderTouchTabs();
-    touch(second, 'touchstart', 150);
-    touch(second, 'touchend', 150);
-    fireEvent.click(second);
-    act(() => { vi.advanceTimersByTime(500); });
-    expect(second.getAttribute('aria-selected')).toBe('true');
-    expect(tabs.style.getPropertyValue('--modal-tab-indicator-left')).toBe('150px');
-});
+    const disconnect = vi.fn();
+    vi.stubGlobal('ResizeObserver', class { observe() {} disconnect = disconnect; });
+    const scroller = createRef<HTMLDivElement>();
+    const modal = (open: boolean) => (
+        <Modal open={open} animateOnOpen={false} showClose={false} contentRef={scroller}>Body</Modal>
+    );
+    const view = render(modal(true));
+    const content = scroller.current!;
+    const readHeight = vi.spyOn(content, 'scrollHeight', 'get');
+    for (let event = 0; event < 20; event += 1) fireEvent.scroll(content);
+    expect(readHeight).not.toHaveBeenCalled();
+    await act(() => vi.advanceTimersToNextFrame());
+    expect(readHeight).toHaveBeenCalledOnce();
 
-it('continues a swipe across indicator renders with inline items and callbacks', () => {
-    const { tabs, second } = renderTouchTabs();
-    touch(tabs, 'touchstart', 180);
-    touch(tabs, 'touchmove', 150);
-    expect(tabs.style.getPropertyValue('--modal-tab-indicator-left')).toBe('80px');
-    touch(tabs, 'touchmove', 90);
-    expect(tabs.style.getPropertyValue('--modal-tab-indicator-left')).toBe('140px');
-    touch(tabs, 'touchend', 90);
-    expect(second.getAttribute('aria-selected')).toBe('true');
-    expect(tabs.style.getPropertyValue('--modal-tab-indicator-left')).toBe('150px');
-});
-
-it('preserves the active tab on vertical scroll and restores its indicator on cancellation', () => {
-    const { tabs, first } = renderTouchTabs();
-    touch(tabs, 'touchstart', 180);
-    touch(tabs, 'touchmove', 170, 200);
-    touch(tabs, 'touchend', 170, 200);
-    expect(first.getAttribute('aria-selected')).toBe('true');
-    expect(tabs.style.getPropertyValue('--modal-tab-indicator-left')).toBe('50px');
-
-    touch(tabs, 'touchstart', 180);
-    touch(tabs, 'touchmove', 80);
-    touch(tabs, 'touchcancel', 80);
-    expect(first.getAttribute('aria-selected')).toBe('true');
-    expect(tabs.dataset.swiping).toBe('false');
-    expect(tabs.style.getPropertyValue('--modal-tab-indicator-left')).toBe('50px');
+    fireEvent.scroll(content);
+    view.rerender(modal(false));
+    expect(disconnect).toHaveBeenCalledOnce();
+    await act(() => vi.advanceTimersByTime(100));
+    expect(readHeight).toHaveBeenCalledOnce();
+    expect(content.isConnected).toBe(true);
 });

@@ -52,7 +52,7 @@ The root size follows the map's screen breakpoints; body copy remains 18px. Nove
 
 The compact profile reuses the map's ID card view, avatar offsets, responsive
 scaling, textures, and pointer-driven gradient. Navigation uses standard links with the Intel sidebar filter's style and state
-transitions under app-owned names; content filters reuse ModalTabs. App-specific classes and overrides stay inside user-hub, while
+transitions under app-owned names; content filters reuse the panel appearance of TabView. App-specific classes and overrides stay inside user-hub, while
 the original main-site component CSS stays unchanged. Navigation has no decorative icons,
 and filter counts sit beside their labels. Header controls use HeadItem; account and
 feed actions use AccessButton. Contribution cards reuse notification styles, and comments use CommentContent

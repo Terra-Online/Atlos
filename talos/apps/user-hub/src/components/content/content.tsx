@@ -4,7 +4,7 @@ import { useLocale, useTranslateUI } from '@hub/locale';
 import List from './list';
 import { useContributions, type Kind } from './useContributions';
 import type { Overview } from '../../types';
-import { ModalTabs } from '@main/component/modal/modal';
+import { TabView } from '@main/component/tabView';
 import Feed from '@main/component/feed/Feed';
 import ImageIcon from '@main/assets/logos/images.svg?react';
 import CommentIcon from '@main/assets/logos/comment.svg?react';
@@ -46,7 +46,8 @@ export default function Content({ revision, counts, onUnauthorized, authRevision
     return (
         <section data-font-region="content" className={styles.section} aria-busy={loading}>
             <div className={styles.feed} ref={swipeTarget}>
-                <ModalTabs
+                <TabView
+                    appearance="panel"
                     className={styles.filters}
                     swipeTargetRef={swipeTarget}
                     ariaLabel={t('userHub.tabs.contributions')}
@@ -58,7 +59,7 @@ export default function Content({ revision, counts, onUnauthorized, authRevision
                         key: value,
                         icon:
                             value === 'image' ? <ImageIcon /> : <CommentIcon />,
-                        title: `${t(`userHub.kinds.${value}`)} (${totals[value].toLocaleString(locale)})`,
+                        label: `${t(`userHub.kinds.${value}`)} (${totals[value].toLocaleString(locale)})`,
                     }))}
                 />
                 <Feed listRef={listRef} resetKey={kind}>

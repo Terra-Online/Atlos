@@ -10,6 +10,10 @@
     --tabview-hover-bg: #{$grey-1};
     --tabview-desc-bg: #{$grey-1};
     --tabview-desc-text: #{$light-1};
+    --panel-tab-bg: #{$grey-2};
+    --panel-tab-active-bg: #{$grey-1-5};
+    --panel-tab-action-bg: #{$black-1};
+    --panel-tab-text: #{$white-1};
 }
 
 :root[data-theme='dark'] {
@@ -20,6 +24,10 @@
     --tabview-hover-bg: #{$grey-3};
     --tabview-desc-bg: #{$black-1};
     --tabview-desc-text: #{$light-1};
+    --panel-tab-bg: #{$grey-2};
+    --panel-tab-active-bg: #{$grey-1-5};
+    --panel-tab-action-bg: #{$black-1};
+    --panel-tab-text: #{$light-1};
 }
 
 .tabBarWrapper {
@@ -55,16 +63,22 @@
 .tabIndicator {
     position: absolute;
     bottom: 0;
-    transform: translateX(-50%);
+    left: 0;
+    visibility: hidden;
+    transform: translateX(calc(var(--tab-center, 0px) - 50%));
     border-left: 6px solid transparent;
     border-right: 6px solid transparent;
     border-top: 6px solid var(--tabview-active-bg);
     pointer-events: none;
     z-index: 2;
-    transition: left 0.15s ease;
+    transition: transform 0.15s ease;
+
+    &[data-positioned] {
+        visibility: visible;
+    }
 }
 
-.tab {
+.tabBar:where(:not(.panel)) .tab {
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
@@ -84,14 +98,129 @@
         background-color 0.15s ease,
         color 0.15s ease;
 
-    &:not(.activeTab):hover {
+    &:not([aria-selected='true'], :disabled):hover {
         background-color: var(--tabview-hover-bg);
     }
 
-    &.activeTab {
+    &[aria-selected='true'] {
         background-color: var(--tabview-active-bg);
         color: var(--tabview-active-text);
     }
+}
+
+.tabBar.panel {
+    --panel-tab-action-size: 2.25rem;
+
+    flex: 0 0 auto;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(var(--tab-count), minmax(0, 1fr));
+    align-items: stretch;
+    min-height: 2.25rem;
+    overflow: visible;
+    user-select: none;
+    padding-bottom: 0;
+    transform: none;
+    z-index: 3;
+
+    &[data-has-quick-action='true'] {
+        grid-template-columns: var(--panel-tab-action-size) repeat(var(--tab-count), minmax(0, 1fr));
+    }
+
+    > button {
+        font-family: 'Novecento DemiBold', 'Novecento Cyrillic DemiBold', 'Novecento Vietnamese DemiBold', 'Fedra Sans Pro', 'UD_ShinGo DemiBold', 'Noto Sans Arabic', 'Noto Sans Thai', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 700;
+    }
+
+    .tabIndicator {
+        bottom: -5px;
+        border-top-color: var(--panel-tab-active-bg);
+        transition: transform 0.4s $standard-curve;
+        filter: drop-shadow(0 1px 2px rgba($black-0, .25));
+    }
+}
+
+.panel :is(.quickAction, .tab) {
+    border: 0;
+    min-width: 0;
+    height: 2.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    color: var(--panel-tab-text);
+    background: var(--panel-tab-bg);
+    cursor: pointer;
+    line-height: 1;
+    text-transform: uppercase;
+    box-shadow: 0 2px 3px rgba($black-0, 0.25);
+    overflow: hidden;
+    transition: filter 0.16s ease, opacity 0.16s ease, background-color 0.16s ease;
+
+    svg {
+        width: 1.5rem;
+        height: 1.125rem;
+        flex: 0 0 auto;
+        fill: currentcolor;
+        filter: drop-shadow(0 1px 1px rgba($black-0, 0.25));
+    }
+
+    svg * {
+        fill: currentcolor;
+    }
+
+    span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &:hover:not(:disabled),
+    &:focus-visible:not(:disabled) {
+        filter: brightness(1.08);
+        outline: none;
+    }
+}
+
+.panel .quickAction {
+    width: var(--panel-tab-action-size);
+    padding: 0;
+    background: var(--panel-tab-action-bg);
+
+    svg {
+        width: 1.35rem;
+        height: 1.35rem;
+        transition: opacity 0.3s ease;
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.8;
+    }
+
+    &[data-confirming='true'] > svg {
+        opacity: 0.75;
+    }
+}
+
+.panel .tab {
+    position: relative;
+    padding: 0 0.625rem;
+
+    span {
+        max-width: 100%;
+        opacity: 1;
+        line-height: 1.5;
+    }
+
+    &[aria-selected='true'] {
+        background: var(--panel-tab-active-bg);
+    }
+}
+.tabBar[data-swiping] .tabIndicator {
+    transition: none;
 }
 
 .description {

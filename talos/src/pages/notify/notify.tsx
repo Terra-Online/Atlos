@@ -9,7 +9,8 @@ import React, {
     useRef,
     useState,
 } from 'react';
-import Modal, { type ModalTabItem } from '@/component/modal/modal';
+import Modal from '@/component/modal/modal';
+import { TabView, type TabViewItem } from '@/component/tabView';
 import { useAuthStore } from '@/store/auth';
 import { useLocale, useTranslateGame, useTranslateUI } from '@/locale';
 import {
@@ -803,12 +804,13 @@ const NotifyModal: React.FC<NotifyProps> = ({
         }
     }, [feeds, isCurrentSession, markingAll, publishUnread, sessionUser, sessionVersion, unread.total]);
 
-    const tabs = useMemo<ModalTabItem[]>(
+    const modalContentRef = useRef<HTMLDivElement>(null);
+    const tabs = useMemo<TabViewItem[]>(
         () => [
             {
                 key: 'community',
                 icon: <CommunityIcon />,
-                title:
+                label:
                     unread.community > 0
                         ? `${t('notification.tabs.community')} (${unread.community})`
                         : t('notification.tabs.community'),
@@ -816,7 +818,7 @@ const NotifyModal: React.FC<NotifyProps> = ({
             {
                 key: 'system',
                 icon: <ModerationIcon />,
-                title:
+                label:
                     unread.system > 0
                         ? `${t('notification.tabs.system')} (${unread.system})`
                         : t('notification.tabs.system'),
@@ -888,20 +890,27 @@ const NotifyModal: React.FC<NotifyProps> = ({
             title={t('notification.title')}
             icon={<NotificationIcon aria-hidden='true' />}
             iconScale={0.9}
-            tabs={tabs}
-            activeTabKey={activeCategory}
-            onTabChange={(key) => {
-                if (key === 'system' || key === 'community')
-                    setActiveCategory(key);
-            }}
-            quickAction={{
-                icon: <CheckAllIcon />,
-                label: t('notification.markAllRead'),
-                disabled: !sessionUser || unread.total === 0 || markingAll,
-                active: markingAll,
-                onClick: () => void handleMarkAll(),
-            }}
-            tabsAriaLabel={t('notification.title')}
+            toolbar={(
+                <TabView
+                    appearance="panel"
+                    items={tabs}
+                    activeKey={activeCategory}
+                    onChange={(key) => {
+                        if (key === 'system' || key === 'community') setActiveCategory(key);
+                    }}
+                    quickAction={{
+                        icon: <CheckAllIcon />,
+                        label: t('notification.markAllRead'),
+                        disabled: !sessionUser || unread.total === 0 || markingAll,
+                        active: markingAll,
+                        onClick: () => void handleMarkAll(),
+                    }}
+                    ariaLabel={t('notification.title')}
+                    swipeTargetRef={modalContentRef}
+                />
+            )}
+            contentRef={modalContentRef}
+            scrollFades={false}
             contentClassName={`${styles.notifyContent} ${hasMessages ? styles.withMessages : ''}`}
         >
             <div className={styles.notifyRoot}>
