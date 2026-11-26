@@ -287,6 +287,9 @@
     align-items: center;
 }
 .headbarFallback {
+    position: fixed;
+    top: max(1rem, env(safe-area-inset-top, 0px));
+    right: 1rem;
     background: var(--headbar-bg);
     backdrop-filter: blur(4px);
     border-radius: 36px;

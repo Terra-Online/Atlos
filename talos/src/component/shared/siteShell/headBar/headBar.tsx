@@ -1,11 +1,11 @@
 import IconButton from '@/component/button/IconButton';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDevice } from '@/platform/device';
-import { useForceHeadbarExpanded } from '@/store/uiPrefs';
+import { useForceHeadbarExpanded, usePerformanceMode } from '@/store/uiPrefs';
+import { useAppDocument } from '@/platform/pictureInPicture';
+import CloseIcon from '@/assets/logos/close.svg?react';
 import PopoverTooltip from '@/component/popover/popover';
-
-import HeadBarDesktop from '@/component/shared/siteShell/headBar/headBar.desktop';
-import HeadBarMobile from '@/component/shared/siteShell/headBar/headBar.mobile';
+import GlassSurface from './glassSurface';
 
 import styles from '@/component/shared/siteShell/headBar/headbar.module.scss';
 
@@ -76,23 +76,66 @@ const HeadItem = ({
     );
 };
 
-// Main HeadBar component with responsive detection
 const HeadBar = ({ children, compact = false }: { children: React.ReactNode; compact?: boolean }) => {
     const { isMobile } = useDevice();
-    const forceHeadbarExpanded = useForceHeadbarExpanded();
+    const appDocument = useAppDocument();
+    const performanceMode = usePerformanceMode();
+    const forceExpanded = useForceHeadbarExpanded();
+    const [expanded, setExpanded] = useState(false);
+    const barRef = useRef<HTMLDivElement>(null);
+    const actualExpanded = isMobile && !compact && (forceExpanded ?? expanded);
+
+    useEffect(() => {
+        if (!actualExpanded || forceExpanded !== null) return;
+        const doc = barRef.current?.ownerDocument;
+        if (!doc) return;
+        const closeOutside = (event: PointerEvent) => {
+            if (!barRef.current?.contains(event.target as Node)) setExpanded(false);
+        };
+        doc.addEventListener('pointerdown', closeOutside, true);
+        return () => doc.removeEventListener('pointerdown', closeOutside, true);
+    }, [actualExpanded, appDocument, forceExpanded]);
+
     const displayedChildren = React.Children.map(children, (child) => {
         if (!React.isValidElement<HeadItemProps>(child)) return child;
         return React.cloneElement(child, {
             compactHidden: compact && child.props.guideKey !== 'hide-ui',
         });
     });
-
-    return isMobile ? (
-        <HeadBarMobile forceExpanded={forceHeadbarExpanded} compact={compact}>
-            {displayedChildren}
-        </HeadBarMobile>
+    const compactClass = compact ? styles.visibilityOnly : '';
+    const bar = isMobile ? (
+        <div
+            ref={barRef}
+            data-guide="headbar"
+            className={`${styles.headbarMobile} ${actualExpanded ? styles.expanded : styles.collapsed} ${compactClass}`}
+        >
+            <div className={styles.headbarGrid}>
+                {!compact && (
+                    <button
+                        type="button"
+                        className={styles.toggleIcon}
+                        onClick={() => setExpanded((value) => !value)}
+                        aria-expanded={actualExpanded}
+                        disabled={forceExpanded !== null}
+                    >
+                        <CloseIcon />
+                    </button>
+                )}
+                {displayedChildren}
+            </div>
+        </div>
     ) : (
-        <HeadBarDesktop compact={compact}>{displayedChildren}</HeadBarDesktop>
+        <div data-guide="headbar" className={`${styles.headbar} ${compactClass}`}>
+            {displayedChildren}
+        </div>
+    );
+
+    return !performanceMode ? (
+        <GlassSurface mobile={isMobile} compact={compact} expanded={actualExpanded}>{bar}</GlassSurface>
+    ) : (
+        <div className={`${styles.headbarFallback} ${!isMobile && compact ? styles.compactFallback : ''}`}>
+            {bar}
+        </div>
     );
 };
 

@@ -8,29 +8,33 @@ import { useUiPrefsStore } from '@/store/uiPrefs';
 const device = vi.hoisted(() => ({ isMobile: false }));
 vi.mock('@/platform/device', () => ({ useDevice: () => device }));
 vi.mock('liquid-glass-react-positioning', () => ({ default: ({ children }: { children: ReactNode }) => <div data-testid="glass">{children}</div> }));
-vi.mock('@/locale/fontLoader', () => ({ registerFontRegion: () => ({ update: () => {}, stop: () => {} }) }));
+vi.mock('@/locale/fontLoader', async (importOriginal) => ({
+    ...await importOriginal<typeof import('@/locale/fontLoader')>(),
+    registerFontRegion: () => ({ update: () => {}, stop: () => {} }),
+}));
 
 beforeEach(() => { device.isMobile = false; useUiPrefsStore.setState({ forceHeadbarExpanded: null, prefsPerformanceModeEnabled: true }); });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 const Icon = () => <svg />;
 
-it.each([true, false])('preserves mobile expand, outside dismissal and forced state in performance mode=%s', (performance) => {
+it.each([true, false])('renders the selected surface immediately and preserves mobile expand, outside dismissal and forced state in performance mode=%s', (performance) => {
     device.isMobile = true;
     useUiPrefsStore.setState({ prefsPerformanceModeEnabled: performance });
     const view = render(<HeadBar><HeadItem icon={Icon} ariaLabel="Language" /></HeadBar>);
+    expect(Boolean(view.queryByTestId('glass'))).toBe(!performance);
     const bar = view.container.querySelector('[data-guide="headbar"]')!;
     const toggle = view.container.querySelector('button')!;
     expect(bar.classList.contains(styles.collapsed)).toBe(true);
     fireEvent.click(toggle);
     expect(bar.classList.contains(styles.expanded)).toBe(true);
-    fireEvent.mouseDown(screen.getByRole('button', { name: 'Language' }));
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Language' }));
     expect(bar.classList.contains(styles.expanded)).toBe(true);
-    fireEvent.touchStart(document.body);
+    fireEvent.pointerDown(document.body, { pointerType: 'touch' });
     expect(bar.classList.contains(styles.collapsed)).toBe(true);
     act(() => useUiPrefsStore.setState({ forceHeadbarExpanded: true }));
     expect(toggle.disabled).toBe(true);
     expect(bar.classList.contains(styles.expanded)).toBe(true);
-    fireEvent.mouseDown(document.body);
+    fireEvent.pointerDown(document.body);
     expect(bar.classList.contains(styles.expanded)).toBe(true);
     act(() => useUiPrefsStore.setState({ forceHeadbarExpanded: false }));
     expect(bar.classList.contains(styles.collapsed)).toBe(true);
@@ -67,6 +71,19 @@ it('releases outside-dismissal listeners on unmount', () => {
     const view = render(<HeadBar><HeadItem icon={Icon} ariaLabel="Language" /></HeadBar>);
     fireEvent.click(view.container.querySelector('button')!);
     view.unmount();
-    expect(remove).toHaveBeenCalledWith('mousedown', expect.any(Function));
-    expect(remove).toHaveBeenCalledWith('touchstart', expect.any(Function));
+    expect(remove).toHaveBeenCalledWith('pointerdown', expect.any(Function), true);
+});
+
+it('keeps a mobile menu expanded when switching surfaces', () => {
+    device.isMobile = true;
+    const view = render(<HeadBar><HeadItem icon={Icon} ariaLabel="Language" /></HeadBar>);
+    fireEvent.click(view.container.querySelector('button')!);
+    const expanded = () => view.container.querySelector('[data-guide="headbar"]')?.classList.contains(styles.expanded);
+    expect(expanded()).toBe(true);
+    act(() => useUiPrefsStore.setState({ prefsPerformanceModeEnabled: false }));
+    expect(view.getByTestId('glass')).toBeTruthy();
+    expect(expanded()).toBe(true);
+    act(() => useUiPrefsStore.setState({ prefsPerformanceModeEnabled: true }));
+    expect(view.queryByTestId('glass')).toBeNull();
+    expect(expanded()).toBe(true);
 });
