@@ -90,6 +90,14 @@ const render = (overrides: Partial<Contribution> = {}) =>
         ),
     );
 const stages = () => [...node.querySelectorAll('ol li')];
+const hoverStage = async (stage: Element) => {
+    const trigger = stage.querySelector('span[aria-label]')!;
+    await flush(() => { fireEvent.pointerEnter(trigger); });
+    const tooltip = stage.querySelector('[role="tooltip"]');
+    expect(tooltip).not.toBeNull();
+    expect(trigger.getAttribute('aria-describedby')).toBe(tooltip?.id);
+    return { trigger, tooltip };
+};
 
 it('looks up each comment point once without loading point rows and preserves missing-point links', async () => {
     api.subregion.mockImplementation((id: string) => Promise.resolve(id === '42' ? 'WL_12' : null));
@@ -222,10 +230,7 @@ it('shows the exact and relative node time without inventing missing timestamps'
             },
         },
     });
-    const trigger = stages()[1].querySelector('span[aria-label]')!;
-    await flush(() => { fireEvent.pointerEnter(trigger); });
-    const tooltip = document.getElementById(trigger.getAttribute('aria-describedby') ?? '');
-    expect(tooltip?.getAttribute('role')).toBe('tooltip');
+    const { trigger, tooltip } = await hoverStage(stages()[1]);
     expect(tooltip?.textContent).toMatch(
         /^userHub\.steps\.ai\.complete - 2026-05-21 \d{2}:28:31 \(2分钟前\)$/,
     );
@@ -249,11 +254,8 @@ it('shows the exact and relative node time without inventing missing timestamps'
             })),
         },
     });
-    const publishedTrigger = stages()[2].querySelector('span[aria-label]')!;
-    await flush(() => { fireEvent.pointerEnter(publishedTrigger); });
-    expect(stages()[2].querySelector('[role="tooltip"]')?.textContent).toBe(
-        'userHub.steps.public.complete',
-    );
+    const { tooltip: publishedTooltip } = await hoverStage(stages()[2]);
+    expect(publishedTooltip?.textContent).toBe('userHub.steps.public.complete');
     expect(stages()[2].querySelector('time')).toBeNull();
 });
 
@@ -269,6 +271,7 @@ const paths: Key[][] = [
 it.each(paths.map((keys) => ({ keys })))(
     'shows only the recorded path without grey intermediate nodes: %j',
     async ({ keys }) => {
+        popover = installPopover();
         await render({
             status: keys.at(-1) === 'public' ? 'active' : 'stale',
             review: {
@@ -289,9 +292,9 @@ it.each(paths.map((keys) => ({ keys })))(
                     : `userHub.steps.${key}.complete`,
             ),
         );
-        expect(node.querySelector('[role="tooltip"]')?.textContent).toBe(
-            'userHub.steps.uploaded',
-        );
+        expect(node.querySelector('[role="tooltip"]')).toBeNull();
+        const { tooltip } = await hoverStage(stages()[0]);
+        expect(tooltip?.textContent).toBe('userHub.steps.uploaded');
         expect(node.querySelector('ol time')).toBeNull();
     },
 );
